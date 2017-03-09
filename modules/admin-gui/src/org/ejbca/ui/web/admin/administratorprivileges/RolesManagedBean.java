@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -63,6 +66,7 @@ import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
  * 
  * @version $Id$
  */
+//@RequestScoped defined in faces-config.xml
 @Deprecated // Superseeded by new Roles config in EJBCA 6.8.0 (remove as part of cleanup)
 public class RolesManagedBean extends BaseManagedBean {
 
@@ -551,12 +555,22 @@ public class RolesManagedBean extends BaseManagedBean {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
         basicAccessRuleSetEncoderCache = null; // We want this to be re-read
-        getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
+        // Was only needed if the admin is allowed to lower his current privileges
+        //getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
     }
 
     private BasicAccessRuleSetEncoder getBasicRuleSetInternal(AdminGroupData role) {
         GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRulesUncategorized(AccessRulesConstants.CREATE_END_ENTITY),
+        Map<String, Set<String>> authorizedaccessrules = ejbLocalHelper.getComplexAccessControlSession().getAuthorizedAvailableAccessRules(getAdmin(),
+                globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
+                globalConfiguration.getEnableKeyRecovery(),
+                ejbLocalHelper.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY),
+                ejbLocalHelper.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
+        Set<String> availableAccessRulesUncategorized = new HashSet<String>();
+        for(Entry<String, Set<String>> entry : authorizedaccessrules.entrySet()) {
+            availableAccessRulesUncategorized.addAll(entry.getValue());
+        }
+        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), availableAccessRulesUncategorized,
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
     }
 
@@ -565,9 +579,13 @@ public class RolesManagedBean extends BaseManagedBean {
     private Map<String, List<AccessRuleData>> getAccessRules() {
         log.trace(">getAccessRules");
         if (allRulesViewCache == null) {
-            AdminGroupData role = getCurrentRoleObject();      
-            Map<String, Set<String>> redactedRules = getAuthorizationDataHandler()
-                    .getRedactedAccessRules(AccessRulesConstants.CREATE_END_ENTITY);
+            AdminGroupData role = getCurrentRoleObject();
+            GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
+            Map<String, Set<String>> redactedRules = ejbLocalHelper.getComplexAccessControlSession().getAllAccessRulesRedactUnauthorizedCas(getAdmin(),
+            		globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
+            		globalConfiguration.getEnableKeyRecovery(),
+                    ejbLocalHelper.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY),
+                    ejbLocalHelper.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
             allRulesViewCache = getCategorizedRuleSet(role, redactedRules);   
         }
         log.trace("<getAccessRules");
@@ -711,7 +729,8 @@ public class RolesManagedBean extends BaseManagedBean {
         }
         allRulesViewCache = null; // We want this to be re-read
         basicAccessRuleSetEncoderCache = null; // We want this to be re-read
-        getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
+        // Was only needed if the admin is allowed to lower his current privileges
+        //getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
     }
 
     /** Invalidates local cache */
@@ -761,12 +780,20 @@ public class RolesManagedBean extends BaseManagedBean {
     // Helper functions
     //
 
+    // Temporary fix until this class is removed (recreate for each request)
+    private AuthorizationDataHandler authorizationDataHandler = null;
     private AuthorizationDataHandler getAuthorizationDataHandler() {
-        return getEjbcaWebBean().getAuthorizationDataHandler();
+        if (authorizationDataHandler==null) {
+            final RoleAccessSessionLocal roleAccessSession = getEjbcaWebBean().getEjb().getRoleAccessSession();
+            final RoleManagementSessionLocal roleManagementSession = getEjbcaWebBean().getEjb().getRoleManagementSession();
+            final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+            authorizationDataHandler = new AuthorizationDataHandler(getAdmin(), roleAccessSession, roleManagementSession, accessControlSession);
+        }
+        return authorizationDataHandler;
     }
 
     private String getRequestParameter(String key) {
-        return (String) FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
     }
 
     private static List<String> integerSetToStringList(Set<Integer> hashSet) {

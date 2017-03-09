@@ -169,7 +169,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 * @return true if admin has access to /services/edit
 	 */
 	public boolean getHasEditRights() {
-	    return ejb.getAccessControlSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+	    return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
 	}
 	
 	/**

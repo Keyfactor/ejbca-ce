@@ -19,7 +19,7 @@ import java.util.HashSet;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -44,7 +44,7 @@ public class HardTokenProfileDataHandler implements Serializable {
     private static final long serialVersionUID = -2864964753767713852L;
   
     private HardTokenSession hardtokensession; 
-    private AccessControlSessionLocal authorizationsession;
+    private AuthorizationSessionLocal authorizationSession;
     private CertificateProfileSession certificateProfileSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private CaSession caSession; 
@@ -52,10 +52,10 @@ public class HardTokenProfileDataHandler implements Serializable {
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
-    public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AccessControlSessionLocal authorizationsession, 
+    public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSessionLocal authorizationSession, 
             EndEntityManagementSessionLocal endEntityManagementSession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
-       this.authorizationsession = authorizationsession;
+       this.authorizationSession = authorizationSession;
        this.certificateProfileSession = certificatesession;
        this.endEntityManagementSession = endEntityManagementSession;
        this.caSession = caSession;
@@ -189,10 +189,10 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck) {
         boolean returnval = false;
-        if (authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource())) {
             returnval = true; // yes authorized to everything
         } else {
-            if (editcheck && authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {      
+            if (editcheck && authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {      
                 HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCaIds(administrator));
                 HashSet<Integer> authorizedcertprofiles =
                         new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_HARDTOKEN));

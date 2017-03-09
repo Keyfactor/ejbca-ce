@@ -14,18 +14,13 @@
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
@@ -36,45 +31,18 @@ public class HardTokenAuthorization implements Serializable {
 
     private static final long serialVersionUID = 164749645578145734L;
   
-    private TreeMap<String, HardTokenIssuerInformation> hardtokenissuers = null;
     private TreeMap<String, Integer> hardtokenprofiles = null;
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
-    private Collection<AdminGroupData> authissueingadmgrps = null;
 
     private AuthenticationToken admin;
     private HardTokenSession hardtokensession;
-    private AccessControlSessionLocal authorizationsession;    
-    private RoleManagementSessionLocal roleManagementSession;
+    private AuthorizationSessionLocal authorizationSession;
 
     /** Creates a new instance of CAAuthorization. */
-    public HardTokenAuthorization(AuthenticationToken admin, HardTokenSession hardtokensession, 
-    		AccessControlSessionLocal authorizationsession, RoleManagementSessionLocal roleManagementSession) {
-      this.admin=admin;
-      this.hardtokensession=hardtokensession;            
-      this.authorizationsession = authorizationsession;
-      this.roleManagementSession = roleManagementSession;
-    }
-
-    /**
-     * Method returning a TreeMap containing Hard Token Alias -> Hard Token Issuer Data
-     * the administrator is authorized to view and edit
-     * @return A TreeMap Hard Token Alias (String) -> HardTokenIssuerData
-     */    
-    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
-        if (hardtokenissuers == null) {
-            hardtokenissuers = new TreeMap<String, HardTokenIssuerInformation>();
-            HashSet<Integer> authRoleIds = new HashSet<Integer>();
-            for (AdminGroupData next : roleManagementSession.getAllRolesAuthorizedToEdit(admin)) {
-                authRoleIds.add(Integer.valueOf(next.getPrimaryKey()));
-            }
-            TreeMap<String, HardTokenIssuerInformation> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
-            for (String alias : allhardtokenissuers.keySet()) {
-                if (authRoleIds.contains(Integer.valueOf(((HardTokenIssuerInformation) allhardtokenissuers.get(alias)).getRoleDataId()))) {
-                    hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
-                }
-            }
-        }
-        return hardtokenissuers;
+    public HardTokenAuthorization(AuthenticationToken authenticationToken, HardTokenSession hardtokensession, AuthorizationSessionLocal authorizationSession) {
+      this.admin = authenticationToken;
+      this.hardtokensession = hardtokensession;
+      this.authorizationSession = authorizationSession;
     }
     
 	/**
@@ -103,7 +71,7 @@ public class HardTokenAuthorization implements Serializable {
      */
 
     public boolean authorizedToHardTokenProfile(String name) {
-        return authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)
+        return authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)
                 && this.getHardTokenProfiles().keySet().contains(name);
     }
 
@@ -119,21 +87,8 @@ public class HardTokenAuthorization implements Serializable {
         return hardtokenprofilesnamemap;
     }
 
-    /**
-     * Returns a Collection of role names authorized to issue hard tokens,
-     * it also only returns the roles the administrator is authorized to edit.
-     */
-    public Collection<AdminGroupData> getHardTokenIssuingRoles() {
-        if (authissueingadmgrps == null) {
-            authissueingadmgrps = roleManagementSession.getAuthorizedRoles(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
-        }
-        return authissueingadmgrps;        	
-    }
-
     public void clear(){      
-	  hardtokenissuers=null;
 	  hardtokenprofiles=null;
 	  hardtokenprofilesnamemap=null;
-	  authissueingadmgrps=null;
     }
 }

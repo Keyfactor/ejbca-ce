@@ -32,7 +32,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -251,7 +251,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private boolean currentCryptoTokenEditMode = true;  // currentCryptoTokenId==0 from start
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
@@ -302,8 +302,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             final List<CryptoTokenGuiInfo> list = new ArrayList<CryptoTokenGuiInfo>();
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
                 final String p11LibraryAlias = getP11LibraryAlias(cryptoTokenInfo.getP11Library());
-                final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
-                final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
+                final boolean allowedActivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
+                final boolean allowedDeactivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean referenced = referencedCryptoTokenIds.contains(Integer.valueOf(cryptoTokenInfo.getCryptoTokenId()));
                 list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced));
                 Collections.sort(list, new Comparator<CryptoTokenGuiInfo>() {
@@ -363,12 +363,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     /** @return true if admin may create new or modify existing CryptoTokens. */
     public boolean isAllowedToModify() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource());
     }
     
     /** @return true if admin may delete CryptoTokens. */
     public boolean isAllowedToDelete() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource());
     }
     
     /** Invoked when admin requests a CryptoToken creation. */
@@ -737,17 +737,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /** @return true if admin may generate keys in the current CryptoTokens. */
     public boolean isAllowedToKeyGeneration() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource() + '/' + getCurrentCryptoTokenId());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource() + '/' + getCurrentCryptoTokenId());
     }
 
     /** @return true if admin may test keys from the current CryptoTokens. */
     public boolean isAllowedToKeyTest() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.TEST_KEYS.resource() + '/' + getCurrentCryptoTokenId());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.TEST_KEYS.resource() + '/' + getCurrentCryptoTokenId());
     }
 
     /** @return true if admin may remove keys from the current CryptoTokens. */
     public boolean isAllowedToKeyRemoval() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.REMOVE_KEYS.resource() + '/' + getCurrentCryptoTokenId());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.REMOVE_KEYS.resource() + '/' + getCurrentCryptoTokenId());
     }
 
     public boolean isKeyPairGuiListEmpty() throws AuthorizationDeniedException {

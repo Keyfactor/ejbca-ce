@@ -30,7 +30,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
@@ -187,7 +187,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     }
         
         
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     
     // Declarations in faces-config.xml
     //@javax.faces.bean.ManagedProperty(value="#{systemConfigMBean}")
@@ -317,7 +317,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToEditCustomCertificateExtension() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()) && !systemConfigMBean.getCustomCertificateExtensionViewMode();
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()) && !systemConfigMBean.getCustomCertificateExtensionViewMode();
     }
    
 }

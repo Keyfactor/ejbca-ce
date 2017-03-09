@@ -56,7 +56,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -156,7 +156,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -2062,8 +2062,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         String endentityauth = endentityprofilestring;
         RAAuthorization raauthorization = null;
         if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, complexAccessControlSession, caSession,
-                    endEntityProfileSession, approvalProfileSession);
+            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);

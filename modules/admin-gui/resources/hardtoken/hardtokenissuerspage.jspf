@@ -117,9 +117,9 @@ function checkselected(){
         <select name="<%=SELECT_ROLE%>" >
           <%Iterator iter = authroles.iterator();
             while(iter.hasNext()){
-              RoleData role = (RoleData) iter.next();%>
-            <option value="<%= role.getPrimaryKey()%>">
-               <c:out value='<%= role.getRoleName() %>'/>
+            	Role role = (Role) iter.next();%>
+            <option value="<%= role.getRoleId()%>">
+               <c:out value='<%= role.getRoleNameFull() %>'/>
             </option>
           <%}%>
         </select>

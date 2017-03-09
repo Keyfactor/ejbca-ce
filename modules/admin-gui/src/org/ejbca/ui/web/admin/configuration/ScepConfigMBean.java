@@ -30,12 +30,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -227,23 +225,18 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private String currentAliasStr;
     private ScepAliasGuiInfo currentAlias = null;
     private String newAlias = "";
-    private InformationMemory informationmemory;
     private ScepConfiguration scepConfig;
     private boolean currentAliasEditMode = false;
 
     private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     private final AuthenticationToken authenticationToken = getAdmin();
-    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
     private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = getEjbcaWebBean().getEnterpriseEjb();
     
     public ScepConfigMBean() {
         super();
-        informationmemory = new InformationMemory(authenticationToken, null, caSession, accessControlSession, null, endentityProfileSession, null,
-                null, null, certProfileSession, globalConfigSession, null, null,
-                (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID), null, null, getEjbcaWebBean());
         scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
@@ -268,7 +261,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAllowedToEdit() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
     
     public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
@@ -428,7 +421,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     /** @return a list of all CA names */
     public List<SelectItem> getAvailableCAs() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Set<String> cas = informationmemory.getAllCANames().keySet();
+        Set<String> cas = getEjbcaWebBean().getInformationMemory().getAllCANames().keySet();
         for (String caname : cas) {
             ret.add(new SelectItem(caname, caname));
         }
@@ -472,7 +465,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
 
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Map<Integer, String> caidname = informationmemory.getCAIdToNameMap();
+        Map<Integer, String> caidname = getEjbcaWebBean().getInformationMemory().getCAIdToNameMap();
         ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
         Iterator<String> itr = caids.iterator();
         while (itr.hasNext()) {
