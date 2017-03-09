@@ -96,7 +96,7 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
@@ -1598,7 +1598,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Get largest possible list of all access rules on this system
         final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true);
         // Migrate one AdminGroupData at the time
-        // TODO: Keep a map of old and new roleIds and upgrade HardTokenIssuers as well
         final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
         final Collection<AdminGroupData> adminGroupDatas = roleMgmtSession.getAllRolesAuthorizedToEdit(authenticationToken);
         for (final AdminGroupData adminGroupData : adminGroupDatas) {
@@ -1607,22 +1606,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final Collection<AccessRuleData> oldAccessRules = adminGroupData.getAccessRules().values();
             final HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
             Role role = new Role(null, roleName, newAccessRules);
-            int failures = 0;
-            do {
-                try {
-                    role = roleSession.persistRole(authenticationToken, role);
-                    failures = 0;
-                } catch (RoleExistsException e) {
-                    failures++;
-                    role.setRoleName(roleName + "-" + failures);
-                } catch (AuthorizationDeniedException e) {
-                    throw new UpgradeFailedException(e);
-                }
-            } while (failures>0 && failures<100);
-            if (failures==100) {
-                throw new UpgradeFailedException("Unable to persist converted role '" + roleName + "'.");
+            // Keep AdminGroupData.primaryKey as RoleData.roleId so HardTokenIssuerData.adminGroupId still works during upgrade
+            // (and use direct DB access since the EJB API wont allow us to assign roleId)
+            final int roleId = adminGroupData.getPrimaryKey().intValue();
+            role.setRoleId(roleId);
+            if (entityManager.find(RoleData.class, roleId)==null) {
+                entityManager.persist(new RoleData(role));
+            } else {
+                log.warn("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists and will not be upgraded!");
+                continue;
             }
-            final int roleId = role.getRoleId();
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
