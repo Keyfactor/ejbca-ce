@@ -39,7 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -75,7 +75,7 @@ public class ProfilesExportServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ProfilesExportServlet.class);
 
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -124,7 +124,7 @@ public class ProfilesExportServlet extends HttpServlet {
       
             final List<Integer> certificateProfileTypes = new ArrayList<>();
             certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
                 //Only root users may use CA profiles
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_ROOTCA);
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_SUBCA);

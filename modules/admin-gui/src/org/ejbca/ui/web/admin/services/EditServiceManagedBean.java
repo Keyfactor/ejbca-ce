@@ -163,7 +163,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * @return true if admin has access to /services/edit
      */
     public boolean getHasEditRights() {
-        return ejb.getAccessControlSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+        return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
     }
 	
 	/** Help method used to edit data in the mail action type. */

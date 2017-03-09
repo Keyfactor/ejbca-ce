@@ -19,37 +19,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
-import org.cesecore.configuration.GlobalConfigurationSession;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.management.RoleManagementSession;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
@@ -69,17 +57,13 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
 public class InformationMemory implements Serializable {
     
     private static final long serialVersionUID = 2L;
-    // Private fields
+
     private AuthenticationToken administrator;
-    // Session Bean interfaces (was *Local originally)
-    private CAAdminSession caadminsession;
-    private CaSessionLocal casession;
-    private EndEntityProfileSession endEntityProfileSession;
-    private PublisherSessionLocal publishersession;
-    private UserDataSourceSession userdatasourcesession = null;
-    private CertificateProfileSession certificateProfileSession;
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
-    private RoleManagementSession roleManagementSession;
+    private CAAdminSessionLocal caAdminSession;
+    private CaSessionLocal caSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    private PublisherSessionLocal publisherSession;
+    private CertificateProfileSessionLocal certificateProfileSession;
     private ApprovalProfileSessionLocal approvalProfileSession;
 
     // Memory variables.
@@ -91,14 +75,9 @@ public class InformationMemory implements Serializable {
     private Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     private Map<Integer, String> publisheridtonamemap = null;
 
-    private TreeMap<String, Integer> authRoles = null;
     private TreeMap<String, Integer> publishernames = null;
-    private Map<Integer, String> roldIdMap = null;
 
-    private Map<String, Set<String>> authorizedaccessrules = null;
-    private Map<String, Set<String>> redactedAccessRules = null;
-
-    private GlobalConfiguration globalconfiguration = null;
+    private GlobalConfiguration globalConfiguration = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfiguration = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfiguration = null;
     private EndEntityProfileNameProxy endentityprofilenameproxy = null;
@@ -106,34 +85,24 @@ public class InformationMemory implements Serializable {
 
     private EjbcaWebBean ejbcaWebBean;
 
-    
-    /** Creates a new instance of ProfileNameProxy */
-    public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSessionLocal caSession, AccessControlSessionLocal authorizationsession,
-            ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
-            HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
-            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession, 
-            ApprovalProfileSessionLocal approvalProfileSession,
-            GlobalConfiguration globalconfiguration, AvailableExtendedKeyUsagesConfiguration ekuConfig, 
+    /** Creates a new instance of InformationMemory */
+    public InformationMemory(AuthenticationToken authenticationToken, GlobalConfiguration globalconfiguration, AvailableExtendedKeyUsagesConfiguration ekuConfig, 
             AvailableCustomCertificateExtensionsConfiguration cceConfig, EjbcaWebBean ejbcaWebBean) {
-        this.caadminsession = caadminsession;
-        this.casession = caSession;
-        this.administrator = administrator;
-        this.endEntityProfileSession = endEntityProfileSession;
-        this.publishersession = publishersession;
-        this.userdatasourcesession = userdatasourcesession;
-        this.globalconfiguration = globalconfiguration;
+        this.administrator = authenticationToken;
+        this.globalConfiguration = globalconfiguration;
         this.availableExtendedKeyUsagesConfiguration = ekuConfig;
         this.availableCustomCertExtensionsConfiguration = cceConfig;
-        this.certificateProfileSession = certificateProfileSession;
-        this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
-                caSession, endEntityProfileSession, approvalProfileSession);
-        this.caauthorization = new CAAuthorization(administrator, caSession, certificateProfileSession);
-        this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, roleManagementSession);
-        this.complexAccessControlSession = complexAccessControlSession;
-        this.roleManagementSession = roleManagementSession;
-        this.approvalProfileSession = approvalProfileSession;
         this.ejbcaWebBean = ejbcaWebBean;
-        
+        this.caAdminSession = ejbcaWebBean.getEjb().getCaAdminSession();
+        this.caSession = ejbcaWebBean.getEjb().getCaSession();
+        this.endEntityProfileSession = ejbcaWebBean.getEjb().getEndEntityProfileSession();
+        this.publisherSession = ejbcaWebBean.getEjb().getPublisherSession();
+        this.certificateProfileSession = ejbcaWebBean.getEjb().getCertificateProfileSession();
+        this.approvalProfileSession = ejbcaWebBean.getEjb().getApprovalProfileSession();
+        final AuthorizationSessionLocal authorizationSession = ejbcaWebBean.getEjb().getAuthorizationSession();
+        this.raauthorization = new RAAuthorization(authenticationToken, ejbcaWebBean.getEjb().getGlobalConfigurationSession(), authorizationSession, caSession, endEntityProfileSession);
+        this.caauthorization = new CAAuthorization(authenticationToken, caSession, certificateProfileSession);
+        this.hardtokenauthorization = new HardTokenAuthorization(authenticationToken, ejbcaWebBean.getEjb().getHardTokenSession(), authorizationSession);
     }
 
     public String getCertificateProfileName(int id) {
@@ -145,7 +114,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<Integer, String> getCAIdToNameMap() {
         if (caidtonamemap == null) {
-            caidtonamemap = casession.getCAIdToNameMap();
+            caidtonamemap = caSession.getCAIdToNameMap();
         }
 
         return caidtonamemap;
@@ -198,7 +167,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<String, Integer> getCANames() {
         TreeMap<String, Integer> canames = new TreeMap<String, Integer>();
-        HashMap<Integer, String> idtonamemap = casession.getCAIdToNameMap();
+        HashMap<Integer, String> idtonamemap = caSession.getCAIdToNameMap();
         for (Integer id : getAuthorizedCAIds()) {
             canames.put(idtonamemap.get(id), id);
         }
@@ -210,7 +179,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<String, Integer> getActiveCANames() {
         TreeMap<String, Integer> canames = new TreeMap<String, Integer>();
-        Map<Integer, String> idtonamemap = this.casession.getActiveCAIdToNameMap(administrator);
+        Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(administrator);
         for (Integer id : idtonamemap.keySet()) {
             canames.put(idtonamemap.get(id), id);
         }
@@ -234,7 +203,7 @@ public class InformationMemory implements Serializable {
         for (Integer caId : caauthorization.getAuthorizedCAIds()) {
             CAInfo caInfo;
             try {
-                caInfo = casession.getCAInfoInternal(caId);
+                caInfo = caSession.getCAInfoInternal(caId);
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("Should not be able to happen, CA ID was just retrieved from the database.", e);
             }
@@ -270,7 +239,7 @@ public class InformationMemory implements Serializable {
      * Returns the system configuration (GlobalConfiguration).
      */
     public GlobalConfiguration getGlobalConfiguration() {
-        return globalconfiguration;
+        return globalConfiguration;
     }
     
     public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() {
@@ -335,7 +304,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<Integer, String> getPublisherIdToNameMap() {
         if (publisheridtonamemap == null) {
-            publisheridtonamemap = publishersession.getPublisherIdToNameMap();
+            publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
         }
         return publisheridtonamemap;
     }
@@ -347,7 +316,7 @@ public class InformationMemory implements Serializable {
         if (publishernames == null) {
             publishernames = new TreeMap<String, Integer>();
             Map<Integer, String> idtonamemap = getPublisherIdToNameMap();
-            for(Integer id : caadminsession.getAuthorizedPublisherIds(administrator)) {
+            for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
                 publishernames.put(idtonamemap.get(id), id);
             }
         }
@@ -373,7 +342,7 @@ public class InformationMemory implements Serializable {
                 }
             });
             // 1. Retrieve a list of all CA's the current user is authorized to
-            for(CAInfo caInfo : casession.getAuthorizedAndNonExternalCaInfos(administrator)) {
+            for(CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(administrator)) {
                 sortedMap.put(caInfo, caInfo.getCAId());
             }
             Collection<Integer> authorizedCas = sortedMap.values(); 
@@ -397,7 +366,7 @@ public class InformationMemory implements Serializable {
                 HashMap<Integer, List<Integer>> certificateProfileMap = new HashMap<Integer, List<Integer>>();
                 for (String certificateProfileIdString : availableCertificateProfiles) {
                     Integer certificateProfileId = Integer.valueOf(certificateProfileIdString);
-                    CertificateProfile certprofile = (CertificateProfile) certificateProfiles.get(certificateProfileId);
+                    CertificateProfile certprofile = certificateProfiles.get(certificateProfileId);
                     if (certprofile == null) {
                         certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId.intValue());
                         //Cache the profile for repeated use
@@ -428,42 +397,6 @@ public class InformationMemory implements Serializable {
         return endentityavailablecas.get(Integer.valueOf(endentityprofileid));
     }
 
-    /** 
-     * @return a map containing the administrator's authorized available access rules, sorted by category
-     */
-
-    public Map<String, Set<String>> getAuthorizedAccessRules(final String endentityAccessRule) {
-        if (authorizedaccessrules == null) {
-            authorizedaccessrules = complexAccessControlSession.getAuthorizedAvailableAccessRules(administrator,
-                    globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
-                    globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
-                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
-        }
-        return authorizedaccessrules;
-    }
-    
-    /**
-     * @return a map containing all available access rules, with unauthorized CAs, End Entity Profiles, Crypto Tokens and Certificate Profiles missing. 
-     */
-
-    public Map<String, Set<String>> getRedactedAccessRules(final String endentityAccessRule) {
-        if (redactedAccessRules == null) {
-            redactedAccessRules = complexAccessControlSession.getAllAccessRulesRedactUnauthorizedCas(administrator,
-                    globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(),
-                    globalconfiguration.getEnableKeyRecovery(), endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule),
-                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true), EjbcaConfiguration.getCustomAvailableAccessRules());
-        }
-        return redactedAccessRules;
-    }
-    
-    public Set<String> getAuthorizedAccessRulesUncategorized(final String endentityAccessRule) {
-        Set<String> accessRulesSet = new HashSet<String>();
-        for(Entry<String, Set<String>> entry : getAuthorizedAccessRules(endentityAccessRule).entrySet()) {
-            accessRulesSet.addAll(entry.getValue());
-        }
-        return accessRulesSet;
-    }
-
     /**
      * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
      */
@@ -471,63 +404,16 @@ public class InformationMemory implements Serializable {
         return hardtokenauthorization.getHardTokenProfiles();
     }
 
-    /**
-     * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
-     */
     public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
-        return hardtokenauthorization.getHardTokenIssuers();
-    }
-
-    /**
-     * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
-     */
-    public Collection<AdminGroupData> getHardTokenIssuingRoles() {
-        return hardtokenauthorization.getHardTokenIssuingRoles();
-    }
-
-    /**
-     * Returns a sorted map with authorized rolename -> roleid
-     */
-
-    public TreeMap<String, Integer> getAuthorizedRoles() {
-        if (authRoles == null) {
-            authRoles = new TreeMap<String, Integer>();
-
-            for (AdminGroupData role : roleManagementSession.getAllRolesAuthorizedToEdit(administrator)) {
-                authRoles.put(role.getRoleName(), Integer.valueOf(role.getPrimaryKey()));
-            }
-        }
-        return authRoles;
-    }
-
-    /**
-     * Returns a map with authorized roleId -> roleName
-     */
-
-    public Map<Integer, String> getRoleIdToNameMap() {
-        if (roldIdMap == null) {
-            TreeMap<String, Integer> roleNames = getAuthorizedRoles();
-            roldIdMap = new HashMap<Integer, String>();
-            Iterator<String> iter = roleNames.keySet().iterator();
-            while (iter.hasNext()) {
-                String next = iter.next();
-                roldIdMap.put(roleNames.get(next), next);
-            }
-
-        }
-
-        return roldIdMap;
+        return ejbcaWebBean.getEjb().getHardTokenSession().getHardTokenIssuers(administrator);
     }
 
     /**
      * Method that should be called every time CA configuration is edited.
      */
     public void cAsEdited() {
-        authRoles = null;
-        roldIdMap = null;
         caidtonamemap = null;
         endentityavailablecas = null;
-        authorizedaccessrules = null;
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
@@ -539,7 +425,6 @@ public class InformationMemory implements Serializable {
     public void endEntityProfilesEdited() {
         endentityprofilenameproxy = null;
         endentityavailablecas = null;
-        authorizedaccessrules = null;
         raauthorization.clear();
     }
 
@@ -563,18 +448,6 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Method that should be called every time a administrative privilegdes has been edited
-     */
-    public void administrativePriviledgesEdited() {
-        endentityavailablecas = null;
-        authRoles = null;
-        roldIdMap = null;
-        raauthorization.clear();
-        caauthorization.clear();
-        hardtokenauthorization.clear();
-    }
-
-    /**
      * Method that should be called every time hard token issuers has been edited
      */
     public void hardTokenDataEdited() {
@@ -585,11 +458,10 @@ public class InformationMemory implements Serializable {
      * Method that should be called every time the system configuration has been edited
      */
     public void systemConfigurationEdited(GlobalConfiguration globalconfiguration) {
-        this.globalconfiguration = globalconfiguration;
+        this.globalConfiguration = globalconfiguration;
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
-        authorizedaccessrules = null;
     }
     
     
@@ -599,12 +471,5 @@ public class InformationMemory implements Serializable {
     
     public void availableCustomCertExtensionsConfigEdited(AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         this.availableCustomCertExtensionsConfiguration = cceConfig;
-    }
-  
-    /**
-     * Method that should be called every time the system configuration has been edited
-     */
-    public void userDataSourceEdited() {
-        authorizedaccessrules = null;
     }
 }
