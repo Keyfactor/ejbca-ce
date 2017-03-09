@@ -12,19 +12,18 @@
  *************************************************************************/
 package org.cesecore.authorization.rules;
 
-import java.util.List;
-
+import java.util.Map;
 
 /**
  * Marker interface to allow access rules to be plugged in. 
  * 
  * @version $Id$
- *
  */
 public interface AccessRulePlugin {
 
-    List<String> getRules();
+    /** @return a map of resources (rules) as map keys and their human readable counterpart as value (if available or otherwise the resource again) */
+    Map<String,String> getRules();
     
+    /** @return a category key this rule set belongs to */
     String getCategory();
-    
 }

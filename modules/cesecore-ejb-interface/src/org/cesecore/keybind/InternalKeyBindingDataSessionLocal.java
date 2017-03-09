@@ -43,6 +43,9 @@ public interface InternalKeyBindingDataSessionLocal {
     /** @return a (copy of a) name to id lookup table */
     Map<String, Integer> getCachedNameToIdMap();
 
+    /** @return a (copy of a) id to name lookup table */
+    Map<Integer, String> getCachedIdToNameMap();
+
     /** Clears the InternalKeyBinding cache. */
     void flushCache();
 
@@ -55,5 +58,4 @@ public interface InternalKeyBindingDataSessionLocal {
     /** Should only be used internally by other methods. This is an Interface method so that we can specify @TransactionAttribute(TransactionAttributeType.REQUIRED). 
      * @return the a cached reference to the specified InternalKeyBinding that MAY NOT be edited. Null if not found. */
     InternalKeyBindingData readData(int id);
-
 }
