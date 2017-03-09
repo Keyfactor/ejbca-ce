@@ -5,7 +5,7 @@
     response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
 %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst
-               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException,org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException,org.cesecore.roles.AdminGroupData,org.ejbca.ui.web.CertificateView,org.ejbca.core.model.authorization.AccessRulesConstants"%>
+               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException,org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException,org.cesecore.roles.Role,org.ejbca.ui.web.CertificateView,org.ejbca.core.model.authorization.AccessRulesConstants"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -190,8 +190,8 @@
     }
   }
 
-  Collection authroles = ejbcawebbean.getInformationMemory().getHardTokenIssuingRoles();
-  Map adminidtonamemap = ejbcawebbean.getInformationMemory().getRoleIdToNameMap();
+  List authroles = tokenbean.getHardTokenIssuingRoles();
+  Map adminidtonamemap = tokenbean.getRoleIdToNameMap();
 
  // Include page
   if( includefile.equals("hardtokenissuerspage.jspf")){

@@ -17,20 +17,25 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException;
@@ -52,6 +57,7 @@ public class HardTokenInterfaceBean implements Serializable {
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
     private HardTokenBatchJobSession hardtokenbatchsession;
+    private RoleSessionLocal roleSession;
     private AuthenticationToken admin;
     private InformationMemory informationmemory;
     private boolean initialized = false;
@@ -73,15 +79,16 @@ public class HardTokenInterfaceBean implements Serializable {
             EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
             hardtokensession = ejbLocalHelper.getHardTokenSession();
             hardtokenbatchsession = ejbLocalHelper.getHardTokenBatchJobSession();
-            AccessControlSessionLocal authorizationsession = ejbLocalHelper.getAccessControlSession();
+            AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
             EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
             CertificateProfileSession certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
             keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
             CaSessionLocal caSession = ejbLocalHelper.getCaSession();
+            roleSession = new EjbLocalHelper().getRoleSession();
             initialized = true;
             this.informationmemory = ejbcawebbean.getInformationMemory();
             this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession,
-                    authorizationsession, endEntityManagementSession, caSession, informationmemory);
+                    authorizationSession, endEntityManagementSession, caSession, informationmemory);
         }
     }
 
@@ -134,7 +141,7 @@ public class HardTokenInterfaceBean implements Serializable {
     }
 
     public String[] getHardTokenIssuerAliases() {
-        return (String[]) hardtokensession.getHardTokenIssuers(admin).keySet().toArray(new String[0]);
+        return hardtokensession.getHardTokenIssuers(admin).keySet().toArray(new String[0]);
     }
 
     /** Returns the alias from id. */
@@ -153,11 +160,22 @@ public class HardTokenInterfaceBean implements Serializable {
     public HardTokenIssuerInformation getHardTokenIssuerInformation(int id) {
         return hardtokensession.getHardTokenIssuerInformation(id);
     }
+    
+    public Map<Integer, String> getRoleIdToNameMap() {
+        final HashMap<Integer, String> roleIdToNameMap = new HashMap<>();
+        for (final Role role : roleSession.getAuthorizedRoles(admin)) {
+            roleIdToNameMap.put(role.getRoleId(), role.getRoleNameFull());
+        }
+        return roleIdToNameMap;
+    }
+    
+    public List<Role> getHardTokenIssuingRoles() {
+        return roleSession.getAuthorizedRolesWithAccessToResource(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
+    }
 
     public void addHardTokenIssuer(String alias, int roleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
-        Iterator<AdminGroupData> iter = this.informationmemory.getHardTokenIssuingRoles().iterator();
-        while (iter.hasNext()) {
-            if (iter.next().getPrimaryKey() == roleId) {
+        for (final Role role : getHardTokenIssuingRoles()) {
+            if (role.getRoleId()==roleId) {
                 if (!hardtokensession.addHardTokenIssuer(admin, alias, roleId, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
                 }

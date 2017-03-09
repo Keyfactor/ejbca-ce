@@ -58,7 +58,7 @@ public abstract class BaseManagedBean implements Serializable {
 
 	/** @return true if the current admin is authorized to the resources or false otherwise */
     protected boolean isAuthorizedTo(final String...resources) {
-        return getEjbcaWebBean().getEjb().getAccessControlSession().isAuthorizedNoLogging(getAdmin(), resources);
+        return getEjbcaWebBean().getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), resources);
     }
 
     protected void addGlobalMessage(final Severity severity, final String messageResource, final Object... params) {

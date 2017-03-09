@@ -45,8 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -285,7 +284,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
 
@@ -1322,17 +1321,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     /** @return true if admin may create new or modify System Configuration. */
     public boolean isAllowedToEditSystemConfiguration() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
     
     /** @return true if admin may create new or modify existing Extended Key Usages. */
     public boolean isAllowedToEditExtendedKeyUsages() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_EDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_EDIT.resource());
     }
     
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToEditCustomCertificateExtension() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource());
     }
     
     // ------------------------------------------------
@@ -1400,22 +1399,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public List<String> getAvailableTabs() {
-        AccessControlSession accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
         final List<String> availableTabs = new ArrayList<String>();
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) && CertificateTransparencyFactory.isCTAvailable()) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) && CertificateTransparencyFactory.isCTAvailable()) {
             availableTabs.add("Certificate Transparency Logs");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Custom Certificate Extensions");
         }
-        if (accessControlSession.isAuthorizedNoLogging(getAdmin(), true, StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
             availableTabs.add("Statedump");
         }
         return availableTabs;

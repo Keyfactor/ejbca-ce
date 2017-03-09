@@ -99,6 +99,28 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<Role> getRolesAuthenticationTokenIsMemberOf(final AuthenticationToken authenticationToken) {
+        final List<Role> roles = new ArrayList<>();
+        for (final int roleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+            roles.add(roleDataSession.getRole(roleId));
+        }
+        return roles;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<Role> getAuthorizedRolesWithAccessToResource(final AuthenticationToken authenticationToken, final String resource) {
+        final List<Role> roles = new ArrayList<>();
+        for (final Role role : getAuthorizedRoles(authenticationToken)) {
+            if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), resource)) {
+                roles.add(role);
+            }
+        }
+        return roles;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
         final List<Role> roles = new ArrayList<>();
         final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);

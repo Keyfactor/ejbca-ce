@@ -58,7 +58,6 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaDat
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
@@ -166,8 +165,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private ApprovalSessionLocal approvalSession;
     @EJB
     private ApprovalExecutionSessionLocal approvalExecutionSession;
-    @EJB
-    private AccessControlSessionLocal accessControlSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -683,8 +680,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             String endEntityProfileAuthorizationString = getEndEntityProfileAuthorizationString(authenticationToken, AccessRulesConstants.APPROVE_END_ENTITY);
             RAAuthorization raAuthorization = new RAAuthorization(authenticationToken, globalConfigurationSession,
-                    accessControlSession, null, caSession, endEntityProfileSession,  
-                    approvalProfileSession);
+                    authorizationSession, caSession, endEntityProfileSession);
             approvals = approvalSession.queryByStatus(request.isSearchingWaitingForMe() || request.isSearchingPending(), request.isSearchingHistorical(),
                     request.isSearchingExpired(), request.getStartDate(), request.getEndDate(), request.getExpiresBefore(), 0, 100, raAuthorization.getCAAuthorizationString(), endEntityProfileAuthorizationString);
         } catch (AuthorizationDeniedException e) {
@@ -736,10 +732,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     // We should find a way to use ComplexAccessControlSession here instead
     private String getEndEntityProfileAuthorizationString(AuthenticationToken authenticationToken, String endentityAccessRule) throws AuthorizationDeniedException {
         // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveCAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVECAACTION);
+        boolean authorizedToApproveCAActions = authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVECAACTION);
         // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-        boolean authorizedToApproveRAActions = accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
-        boolean authorizedToAudit = accessControlSession.isAuthorizedNoLogging(authenticationToken, AuditLogRules.VIEW.resource());
+        boolean authorizedToApproveRAActions = authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        boolean authorizedToAudit = authorizationSession.isAuthorizedNoLogging(authenticationToken, AuditLogRules.VIEW.resource());
         
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions && !authorizedToAudit) {
             throw new AuthorizationDeniedException("Not authorized to query for approvals: "+authorizedToApproveCAActions+", "+authorizedToApproveRAActions+", "+authorizedToAudit);
@@ -792,10 +788,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken authenticationToken, String rapriviledge,
             Collection<Integer> availableEndEntityProfileId) {
         ArrayList<Integer> returnval = new ArrayList<>();
-        Iterator<Integer> iter = availableEndEntityProfileId.iterator();
-        while (iter.hasNext()) {
-            Integer profileid = iter.next();
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge)) {
+        for (final Integer profileid : availableEndEntityProfileId) {
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rapriviledge)) {
                 returnval.add(profileid);
             } else {
                 if (log.isDebugEnabled()) {

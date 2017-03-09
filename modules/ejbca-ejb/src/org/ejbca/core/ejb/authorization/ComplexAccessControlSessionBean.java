@@ -402,6 +402,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     }
 
     @Override
+    @Deprecated
     public Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin, String rapriviledge,
             Collection<Integer> availableEndEntityProfileId) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
@@ -421,6 +422,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    @Deprecated
     public boolean existsEndEntityProfileInRules(int profileid) {
         if (log.isTraceEnabled()) {
             log.trace(">existsEndEntityProfileInRules(" + profileid + ")");

@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +56,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -70,8 +69,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
@@ -83,13 +81,8 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -127,21 +120,15 @@ public class EjbcaWebBean implements Serializable {
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
-    private final AccessControlSessionLocal authorizationSession = ejbLocalHelper.getAccessControlSession();
-    private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
+    private final AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
     private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
-    private final ComplexAccessControlSessionLocal complexAccessControlSession = ejbLocalHelper.getComplexAccessControlSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-    private final HardTokenSessionLocal hardTokenSession = ejbLocalHelper.getHardTokenSession();
     private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
-    private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
-    private final RoleAccessSessionLocal roleAccessSession = ejbLocalHelper.getRoleAccessSession();
-    private final RoleManagementSessionLocal roleManagementSession = ejbLocalHelper.getRoleManagementSession();
+    private final RoleSessionLocal roleSession = ejbLocalHelper.getRoleSession();
     private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
-    private final UserDataSourceSessionLocal userDataSourceSession = ejbLocalHelper.getUserDataSourceSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
 
@@ -153,7 +140,6 @@ public class EjbcaWebBean implements Serializable {
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ServletContext servletContext = null;
-    private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
     private String certificatefingerprint; // Unique key to identify the admin.. usually a hash of the admin's certificate
@@ -182,14 +168,8 @@ public class EjbcaWebBean implements Serializable {
         reloadAvailableExtendedKeyUsagesConfiguration();
         reloadAvailableCustomCertExtensionsConfiguration();
         if (informationmemory == null) {
-            informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
-                    endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, ejbLocalHelper.getApprovalProfileSession(), globalconfiguration, 
-                    availableExtendedKeyUsagesConfig,
-                    availableCustomCertExtensionsConfig, this);
+            informationmemory = new InformationMemory(administrator, globalconfiguration, availableExtendedKeyUsagesConfig, availableCustomCertExtensionsConfig, this);
         }
-        authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
-                authorizationSession);
     }
 
     /* Sets the current user and returns the global configuration */
@@ -241,8 +221,7 @@ public class EjbcaWebBean implements Serializable {
                 details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
             }
             // Also check if this administrator is present in any role, if not, login failed
-            final List<String> roles = roleAccessSession.getRolesMatchingAuthenticationToken(administrator);
-            if (roles.isEmpty()) {
+            if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
                 details.put("reason", "Certificate has no access");
                 auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
                         administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
@@ -495,10 +474,6 @@ public class EjbcaWebBean implements Serializable {
     /* Returns the admin preferences database */
     public AdminPreferenceDataHandler getAdminPreferences() {
         return adminspreferences;
-    }
-
-    public AuthorizationDataHandler getAuthorizationDataHandler() {
-        return authorizedatahandler;
     }
 
     /* Returns the global configuration */

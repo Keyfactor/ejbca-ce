@@ -24,7 +24,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -147,7 +147,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private final CAAdminSessionLocal caAdminSession = ejbLocalhelper.getCaAdminSession();
 	private final CaSessionLocal caSession = ejbLocalhelper.getCaSession(); 
 	private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalhelper.getCryptoTokenManagementSession();
-    private final AccessControlSessionLocal accessControlSession = ejbLocalhelper.getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = ejbLocalhelper.getAuthorizationSession();
 
 	private List<TokenAndCaActivationGuiComboInfo> authorizedTokensAndCas = null;
 	private String authenticationcode;
@@ -163,8 +163,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
                     if (cryptoTokenInfo==null) {
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
                     } else {
-                        final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
-                        final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedActivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedDeactivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
                     }
                 }
@@ -298,7 +298,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
      * @return true if admin is authorized to {@link AccessRulesConstants.REGULAR_CABASICFUNCTIONS}
      */
     public boolean isAuthorizedToBasicFunctions() {
-        return accessControlSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
     }
     
     

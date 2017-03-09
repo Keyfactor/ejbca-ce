@@ -45,6 +45,7 @@ public interface ComplexAccessControlSession {
      * @param rapriviledge should be one of the end entity profile authorization constants defined in AvailableAccessRules.
      * @param availableEndEntityProfileId a list of available EEP ids to test for authorization
      */
+    @Deprecated
     Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin, String rapriviledge,
             Collection<Integer> availableEndEntityProfileId);
     

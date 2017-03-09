@@ -16,8 +16,6 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,6 +38,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
+@Deprecated // Used from deprecated RolesManagedBean
 public class AuthorizationDataHandler implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -47,21 +46,19 @@ public class AuthorizationDataHandler implements Serializable {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private AccessControlSessionLocal authorizationsession;
+    private AccessControlSessionLocal accessControlSession;
     private RoleAccessSession roleAccessSession;
     private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
     private Collection<AdminGroupData> authorizedRoles;
-    private InformationMemory informationmemory;
 
-    /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, RoleAccessSession roleAccessSession,
-            RoleManagementSession roleManagementSession, AccessControlSessionLocal authorizationsession) {
+    /** Creates a new instance of AuthorizationDataHandler */
+    public AuthorizationDataHandler(AuthenticationToken administrator, RoleAccessSession roleAccessSession,
+            RoleManagementSession roleManagementSession, AccessControlSessionLocal accessControlSession) {
         this.roleManagementSession = roleManagementSession;
         this.roleAccessSession = roleAccessSession;
-        this.authorizationsession = authorizationsession;
+        this.accessControlSession = accessControlSession;
         this.administrator = administrator;
-        this.informationmemory = informationmemory;
     }
 
     /**
@@ -73,7 +70,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorized(AuthenticationToken admin, String... resources) {
-        return authorizationsession.isAuthorized(admin, resources);
+        return accessControlSession.isAuthorized(admin, resources);
     }
 
     /**
@@ -85,7 +82,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(AuthenticationToken admin, String... resources) {
-        return authorizationsession.isAuthorizedNoLogging(admin, resources);
+        return accessControlSession.isAuthorizedNoLogging(admin, resources);
     }
 
     /**
@@ -95,13 +92,12 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void addRole(String name) throws AuthorizationDeniedException, RoleExistsException {
         // Authorized to edit administrative privileges
-        if (!authorizationsession.isAuthorized(administrator, StandardRules.EDITROLES.resource())) {
+        if (!accessControlSession.isAuthorized(administrator, StandardRules.EDITROLES.resource())) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
                     StandardRules.EDITROLES.resource(), null);
             throw new AuthorizationDeniedException(msg);
         }
         roleManagementSession.create(administrator, name);
-        informationmemory.administrativePriviledgesEdited();
         this.authorizedRoles = null;
     }
 
@@ -112,7 +108,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void removeRole(String name) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.remove(administrator, name);
-        informationmemory.administrativePriviledgesEdited();
         this.authorizedRoles = null;
     }
 
@@ -123,7 +118,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void renameRole(String oldname, String newname) throws AuthorizationDeniedException, RoleExistsException {
         roleManagementSession.renameRole(administrator, oldname, newname);
-        informationmemory.administrativePriviledgesEdited();
         this.authorizedRoles = null;
     }
 
@@ -156,7 +150,6 @@ public class AuthorizationDataHandler implements Serializable {
     public void addAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException,
             AccessRuleNotFoundException, RoleNotFoundException {
         roleManagementSession.addAccessRulesToRole(administrator, roleAccessSession.findRole(roleName), accessRules);
-        informationmemory.administrativePriviledgesEdited();
     }
 
     /**
@@ -175,7 +168,6 @@ public class AuthorizationDataHandler implements Serializable {
             }
         }
         roleManagementSession.removeAccessRulesFromRole(administrator, role, rulesToRemove);
-        informationmemory.administrativePriviledgesEdited();
     }
 
     /**
@@ -188,35 +180,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void replaceAccessRules(String rolename, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.replaceAccessRulesInRole(administrator, roleAccessSession.findRole(rolename), accessRules);
-        informationmemory.administrativePriviledgesEdited();
-    }
-
-    /**
-     * Method returning all the available access rules authorized to administrator to manage.
-     * 
-     * @returns a map of sets of strings with available access rules, sorted by category
-     */
-    public Map<String, Set<String>> getAvailableAccessRules(final String endentityAccessRule) {
-        return this.informationmemory.getAuthorizedAccessRules(endentityAccessRule);
-    }
-    
-    /**
-     * Method returning all the available access rules authorized to administrator to manage.
-     * 
-     * @returns a map of sets of strings with available access rules, sorted by category
-     */
-    public Map<String, Set<String>> getRedactedAccessRules(final String endentityAccessRule) {
-        return this.informationmemory.getRedactedAccessRules(endentityAccessRule);
-    }
-
-
-    /**
-     * Method returning all the available access rules authorized to administrator to manage.
-     * 
-     * @returns a Collection of strings with available access rules.
-     */
-    public Set<String> getAvailableAccessRulesUncategorized(final String endentityAccessRule) {
-        return this.informationmemory.getAuthorizedAccessRulesUncategorized(endentityAccessRule);
     }
     
     /**
@@ -227,7 +190,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void addAdminEntities(AdminGroupData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.addSubjectsToRole(administrator, role, subjects);
-        informationmemory.administrativePriviledgesEdited();
     }
 
     /**
@@ -238,7 +200,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void removeAdminEntities(AdminGroupData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
         roleManagementSession.removeSubjectsFromRole(administrator, role, subjects);
-        informationmemory.administrativePriviledgesEdited();
     }
 
 }

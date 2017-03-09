@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -151,7 +151,7 @@ public class CAInterfaceBean implements Serializable {
 	public static final int CATOKENTYPE_NULL         = 3;
 
 	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     private CAAdminSessionLocal caadminsession;
     private CaSessionLocal casession;
     private CertificateCreateSessionLocal certcreatesession;
@@ -190,7 +190,7 @@ public class CAInterfaceBean implements Serializable {
           cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
           casession = ejbLocalHelper.getCaSession();
-          accessControlSession = ejbLocalHelper.getAccessControlSession();
+          authorizationSession = ejbLocalHelper.getAuthorizationSession();
           signsession = ejbLocalHelper.getSignSession();
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
           publishersession = ejbLocalHelper.getPublisherSession();               
@@ -234,7 +234,7 @@ public class CAInterfaceBean implements Serializable {
      * @return the name of the CA or null if it does not exists.
      */
     public String getName(Integer caId) {
-        return (String)informationmemory.getCAIdToNameMap().get(caId);
+        return informationmemory.getCAIdToNameMap().get(caId);
     }
 
     public Collection<Integer> getAuthorizedCAs(){
@@ -1107,7 +1107,7 @@ public class CAInterfaceBean implements Serializable {
     public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA)
             throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
 	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<Entry<String, String>>();
-        if (!isEditingCA && accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+        if (!isEditingCA && authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
             availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
         }
@@ -1115,7 +1115,7 @@ public class CAInterfaceBean implements Serializable {
 	        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
                 // Make sure we may use it
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
+                if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
                         && cryptoTokenInfo.isActive()) {
 	                final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
 	                try {
@@ -1147,7 +1147,7 @@ public class CAInterfaceBean implements Serializable {
             final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
                 // Make sure we may use it
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
+                if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
                         && cryptoTokenInfo.isActive()) {
                     final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
                     try {
@@ -1229,11 +1229,11 @@ public class CAInterfaceBean implements Serializable {
 	 * @return true if admin has general read rights to CAs, but no edit rights. 
 	 */
     public boolean hasEditRight() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAEDIT.resource());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAEDIT.resource());
     }
     
     public boolean hasCreateRight() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAADD.resource());
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAADD.resource());
     }
 	
 	public boolean isCaExportable(CAInfo caInfo) throws AuthorizationDeniedException {

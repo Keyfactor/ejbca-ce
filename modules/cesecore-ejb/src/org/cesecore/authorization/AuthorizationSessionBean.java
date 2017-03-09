@@ -71,7 +71,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     @EJB
     private RoleDataSessionLocal roleDataSession;
     @EJB
-    private RoleMemberDataSessionLocal roleMemberSession;
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB
@@ -246,13 +246,13 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             } else {
                 if (accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent()) {
                     // This is the new 6.8.0+ behavior (combine access of matched rules)
-                    for (final int matchingRoleId : roleMemberSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+                    for (final int matchingRoleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
                         accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
                     }
                 } else {
                     // This is the legacy behavior (use priority matching). Remove this once we no longer need to support upgrades to 6.8.0.
                     // Greater tokenMatchKey number has higher priority. When equal, deny trumps accept
-                    final Map<Integer, Integer> roleIdToTokenMatchKeyMap = roleMemberSession.getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(authenticationToken);
+                    final Map<Integer, Integer> roleIdToTokenMatchKeyMap = roleMemberDataSession.getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(authenticationToken);
                     final Map<Integer, Integer> keepMap = new HashMap<>();
                     // 1. Find highest tokenMatchKey number and keep these entries
                     int highest = 0;

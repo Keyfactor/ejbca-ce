@@ -1598,6 +1598,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Get largest possible list of all access rules on this system
         final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true);
         // Migrate one AdminGroupData at the time
+        // TODO: Keep a map of old and new roleIds and upgrade HardTokenIssuers as well
         final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
         final Collection<AdminGroupData> adminGroupDatas = roleMgmtSession.getAllRolesAuthorizedToEdit(authenticationToken);
         for (final AdminGroupData adminGroupData : adminGroupDatas) {

@@ -25,17 +25,17 @@ org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
 org.cesecore.authorization.control.StandardRules,
-org.cesecore.authorization.control.AccessControlSession,
+org.cesecore.authorization.AuthorizationSessionLocal,
 org.cesecore.authorization.AuthorizationDeniedException
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <%
-    AccessControlSession accessControlSession = ejbcawebbean.getEjb().getAccessControlSession();
+    AuthorizationSessionLocal authorizationSession = ejbcawebbean.getEjb().getAuthorizationSession();
     GlobalConfiguration globalconfiguration = null;
     globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); // will check authorization of the page below
-    if (!accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
-        !accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
-        !accessControlSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
+    if (!authorizationSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
+        !authorizationSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
+        !authorizationSession.isAuthorized(ejbcawebbean.getAdminObject(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
         throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
     }
 %>

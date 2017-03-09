@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -48,7 +50,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -63,12 +65,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -117,11 +119,10 @@ public class RAInterfaceBean implements Serializable {
     
     private EndEntityProfileDataHandler    profiles;
 
-    private AccessControlSessionLocal authorizationsession;
+    private AuthorizationSessionLocal authorizationSession;
 	private CaSessionLocal caSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -161,7 +162,7 @@ public class RAInterfaceBean implements Serializable {
     		endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     		certificatesession = ejbLocalHelper.getCertificateStoreSession();
     		caSession = ejbLocalHelper.getCaSession();
-    		authorizationsession = ejbLocalHelper.getAccessControlSession();
+    		authorizationSession = ejbLocalHelper.getAuthorizationSession();
     		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
     		this.profiles = new EndEntityProfileDataHandler(administrator, endEntityProfileSession, informationmemory);
     		hardtokensession = ejbLocalHelper.getHardTokenSession();
@@ -169,7 +170,6 @@ public class RAInterfaceBean implements Serializable {
     		userdatasourcesession = ejbLocalHelper.getUserDataSourceSession();
     		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
-    		complexAccessControlSession = ejbLocalHelper.getComplexAccessControlSession();
     		globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     		initialized =true;
     	} else {
@@ -602,13 +602,35 @@ public class RAInterfaceBean implements Serializable {
         int profileid = endEntityProfileSession.getEndEntityProfileId(name);
         // Check if any users or authorization rule use the profile.
         profileused = endEntityManagementSession.checkForEndEntityProfileId(profileid)
-                      || complexAccessControlSession.existsEndEntityProfileInRules(profileid);
+                      || existsEndEntityProfileInRules(profileid);
         if (!profileused) {
         	profiles.removeEndEntityProfile(name);
         } else {
         	log.info("EndEntityProfile "+name+" is used by either user (UserData table) or access rules (AccessRulesData table), and can not be removed.");
         }
         return !profileused;
+    }
+
+    /** @return true if the End Entity Profile ID is explicitly defined in any Role's access rules. */
+    private boolean existsEndEntityProfileInRules(final int eepId) {
+        if (log.isTraceEnabled()) {
+            log.trace(">existsEndEntityProfileInRules(" + eepId + ")");
+        }
+        final List<String> rolenames = new ArrayList<>();
+        final Pattern idInRulename = Pattern.compile("^"+AccessRulesConstants.ENDENTITYPROFILEPREFIX+"(-?[0-9]+)/.*$");
+        for (final Role role : ejbLocalHelper.getRoleDataSession().getAllRoles()) {
+            for (final String explicitResource : role.getAccessRules().keySet()) {
+                final Matcher matcher = idInRulename.matcher(explicitResource);
+                if (matcher.find() && String.valueOf(eepId).equals(matcher.group(1))) {
+                    rolenames.add(role.getRoleNameFull());
+                    break;
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("End entity profile with id " + eepId + " is present in roles: " + Arrays.toString(rolenames.toArray()));
+        }
+        return !rolenames.isEmpty();
     }
 
     public void renameEndEntityProfile(String oldname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
@@ -717,7 +739,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws AuthorizationDeniedException {
-    	if (!authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+    	if (!authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, "Not authorized to view certificate.");
 	        throw new AuthorizationDeniedException(msg);
         }
@@ -758,7 +780,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public boolean authorizedToEditEndEntityProfiles() {
-        return authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
+        return authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
     }
     
     public boolean authorizedToEditUser(int profileid) {
@@ -801,7 +823,7 @@ public class RAInterfaceBean implements Serializable {
 
     public boolean keyRecoveryPossible(Certificate cert, String username) throws AuthorizationDeniedException {
     	boolean returnval = true;
-    	returnval = authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
+    	returnval = authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
     	if (informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
     		EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
     		if (data != null) {       	
@@ -854,10 +876,10 @@ public class RAInterfaceBean implements Serializable {
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
     	boolean returnval = false;
     	if (log) {
-    		returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
+    		returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
     		        AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	} else {
-    		returnval = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+    		returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
     				+ rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	}
     	return returnval;

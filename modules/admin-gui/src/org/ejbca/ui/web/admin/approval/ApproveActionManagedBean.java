@@ -37,7 +37,7 @@ import org.apache.myfaces.renderkit.html.util.AddResourceFactory;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
@@ -48,7 +48,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -119,15 +118,13 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private RoleAccessSessionLocal roleAccessSession;
     
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
     private CaSessionLocal caSession;
-    @EJB
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -299,8 +296,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     	List<ApprovalDataVO> result;
     	try {
     		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), globalConfigurationSession,
-    				accessControlSession, complexAccessControlSession, caSession, endEntityProfileSession, 
-    				approvalProfileSession);
+    				authorizationSession, caSession, endEntityProfileSession);
     		result = approvalSession.query(query, 0, 1, raAuthorization.getCAAuthorizationString(), 
     		        raAuthorization.getEndEntityProfileAuthorizationString(AccessRulesConstants.APPROVE_END_ENTITY));
     		if (result.size() > 0) {

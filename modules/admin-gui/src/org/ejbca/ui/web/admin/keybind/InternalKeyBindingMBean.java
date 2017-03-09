@@ -50,7 +50,7 @@ import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -219,7 +219,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private static final long serialVersionUID = 2L;
     private final AuthenticationToken authenticationToken = getAdmin();
 
-    private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateStoreSessionLocal certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
@@ -441,7 +441,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 if (cryptoTokenInfo == null) {
                     cryptoTokenName = "unknown";
                 } else {
-                    cryptoTokenAvailable = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource()
+                    cryptoTokenAvailable = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource()
                             + "/" + cryptoTokenId);
                     cryptoTokenActive = cryptoTokenInfo.isActive();
                     cryptoTokenName = cryptoTokenInfo.getName();
@@ -774,7 +774,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     public boolean isAllowedToEdit() {
-        return accessControlSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/"
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/"
                 + getCurrentInternalKeyBindingId());
     }
     
@@ -976,7 +976,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final List<SelectItem> availableCryptoTokens = new ArrayList<SelectItem>();
         for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
             if (current.isActive()
-                    && accessControlSession.isAuthorizedNoLogging(authenticationToken,
+                    && authorizationSession.isAuthorizedNoLogging(authenticationToken,
                             CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
                 availableCryptoTokens.add(new SelectItem(current.getCryptoTokenId(), current.getName()));
             }
