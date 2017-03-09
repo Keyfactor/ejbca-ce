@@ -100,7 +100,7 @@
                                 <h:outputLabel for="level1RuleCheckbox" value="#{ruleSection.header}"/>
                             </h:panelGroup>
                             
-                            <component:addremovelist state="#{ruleSection.state}" enabledLabel="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
+                            <component:addremovelist id="caList" state="#{ruleSection.state}" enabledLabel="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
                             
                             <!-x- FIXME should have two boxes with add/remove buttons, perhaps as a new control -x->
                             <h:panelGroup layout="block" styleClass="accessRuleSectionContents jsSelectAllBoundary">
