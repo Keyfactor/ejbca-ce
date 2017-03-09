@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.ejbca.config.GlobalConfiguration;
@@ -44,6 +45,7 @@ public class RAAuthorization implements Serializable {
 	private List<Integer> authprofileswithmissingcas = null;
     private AuthenticationToken admin;
     private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal accessControlSessionSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
@@ -56,6 +58,23 @@ public class RAAuthorization implements Serializable {
     	this.authorizationSession = authorizationSession;
     	this.caSession = caSession;
     	this.endEntityProfileSession = endEntityProfileSession;
+    }
+
+    /** Creates a new instance of RAAuthorization using legacy access control. */
+    @Deprecated
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal accessControlSessionSession, 
+                    CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+        this.admin = admin;
+        this.globalConfigurationSession = globalConfigurationSession;
+        this.accessControlSessionSession = accessControlSessionSession;
+        this.caSession = caSession;
+        this.endEntityProfileSession = endEntityProfileSession;
+    }
+    private boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, String... resources) {
+        if (authorizationSession==null) {
+            return accessControlSessionSession.isAuthorizedNoLogging(admin, resources);
+        }
+        return authorizationSession.isAuthorizedNoLogging(admin, resources);
     }
 
     /**
@@ -88,9 +107,9 @@ public class RAAuthorization implements Serializable {
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
      
-        authorizedToApproveCAActions = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+        authorizedToApproveCAActions = isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
 
-        authorizedToApproveRAActions = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        authorizedToApproveRAActions = isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
             throw new AuthorizationDeniedException("Not authorized to query for approvals: "+authorizedToApproveCAActions+", "+authorizedToApproveRAActions);
@@ -126,7 +145,7 @@ public class RAAuthorization implements Serializable {
             if (!endentityAccessRule.startsWith(AccessRulesConstants.VIEW_END_ENTITY)) {
                 // Additionally require view access to all the profiles
                 for (final Integer profileid : new ArrayList<Integer>(profileIds)) {
-                    if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY)) {
+                    if (!isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY)) {
                         profileIds.remove(profileid);
                     }
                 }
@@ -179,7 +198,7 @@ public class RAAuthorization implements Serializable {
      * Help function used to check end entity profile authorization.
      */
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
-        return authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
+        return isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
     }  
 }
 
