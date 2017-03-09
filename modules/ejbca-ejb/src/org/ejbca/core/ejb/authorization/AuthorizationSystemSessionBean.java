@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -218,13 +219,13 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         ret.put("USERDATASOURCEACCESSRULES", accessRulesUdsAccess);
         // Insert plugin rules 
         for (final AccessRulePlugin accessRulePlugin : ServiceLoader.load(AccessRulePlugin.class)) {
-            for (final String resource : accessRulePlugin.getRules()) {
-                Map<String,String> accessRulesInCategory = ret.get(accessRulePlugin.getCategory());
-                if (accessRulesInCategory==null) {
-                    accessRulesInCategory = new LinkedHashMap<>();
-                    ret.put(accessRulePlugin.getCategory(), accessRulesInCategory);
-                }
-                accessRulesInCategory.put(resource, resource);
+            Map<String,String> accessRulesInCategory = ret.get(accessRulePlugin.getCategory());
+            if (accessRulesInCategory==null) {
+                accessRulesInCategory = new LinkedHashMap<>();
+                ret.put(accessRulePlugin.getCategory(), accessRulesInCategory);
+            }
+            for (final Entry<String,String> resourceAndName : accessRulePlugin.getRules().entrySet()) {
+                accessRulesInCategory.put(resourceAndName.getKey(), resourceAndName.getValue());
             }
         }
         return ret;
