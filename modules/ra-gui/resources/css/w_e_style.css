@@ -256,8 +256,9 @@ span .approvalStep,
 
 .addRemoveListEnabled label, .addRemoveListAvailable label { color: #fff; }
 
-.collapsableSectionHeader { color: #fff; }
-
+.collapsableSectionHeader { color: #fff; font-weight: bold; }
+.collapsableSection { margin-top: 1em; }
+.checkboxWithSpacing { margin-right: 0.5em; }
 .noticeText { color: #aaa; font-style: italic; }
 
 .language_button,
@@ -1379,6 +1380,10 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #roleMembersForm\:criteriaCaId {
     width: 96%;
   }
+  #roleForm\:roleRules {
+    margin-top: 2.5em;
+  }
+  #roleForm\:endEntityRules .collapsableSection { margin-top: 0.75em; }
 
   .footer > .align-center > p {
     /*footer-texten*/
