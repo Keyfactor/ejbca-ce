@@ -61,6 +61,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -222,6 +223,7 @@ public class OcspKeyRenewalTest {
             // Add authorization rules for this client SSL certificate
             final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
             roleInitSession.initializeAccessWithCert(authenticationToken, TESTCLASSNAME, clientSSLCertificate);
+            roleInitSession.createRoleAndAddCertificateAsRoleMember(clientSSLCertificate, null, TESTCLASSNAME, null, null);
         }
         // Set re-keying URL to our local instance
         final String remotePort = SystemTestsConfiguration.getRemotePortHttps("8443");
@@ -236,6 +238,10 @@ public class OcspKeyRenewalTest {
     }
     
     private static void cleanup() throws Exception {
+        if (clientSSLCertificate!=null) {
+            final RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(new TestX509CertificateAuthenticationToken(clientSSLCertificate));
+        }
         try {
             roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
         } catch (Exception e) {
