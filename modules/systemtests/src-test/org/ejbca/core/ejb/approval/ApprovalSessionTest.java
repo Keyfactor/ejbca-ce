@@ -32,8 +32,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,13 +45,10 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -62,9 +61,10 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
@@ -128,16 +128,13 @@ public class ApprovalSessionTest extends CaTestCase {
     private static AuthenticationToken admin2 = null;
     private static AuthenticationToken admin3 = null;
     private static AuthenticationToken externaladmin = null;
-
-    private static ArrayList<AccessUserAspectData> adminentities;
     
     private static AccumulativeApprovalProfile approvalProfile = null;
     
-    private AdminGroupData role;
+    private Role role;
     private int caid = getTestCAId();
     private int removeApprovalId = 0;
 
-    private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
             EjbRemoteHelper.MODULE_TEST);
@@ -146,8 +143,8 @@ public class ApprovalSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
             SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -229,30 +226,36 @@ public class ApprovalSessionTest extends CaTestCase {
 
             fileHandles.addAll(BatchCreateTool.createAllNew(intadmin,  new File(P12_FOLDER_NAME)));
         }
-        role = roleAccessSessionRemote.findRole(roleName);
-        if (role == null) {
-            role = roleManagementSession.create(intadmin, roleName);
+        final Role oldRole = roleSession.getRole(intadmin, null, roleName);
+        if (oldRole != null) {
+            roleSession.deleteRoleIdempotent(intadmin, oldRole.getRoleId());
         }
+        final HashMap<String,Boolean> accessRules = new HashMap<>();
+        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
+        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
+        accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
+        role = roleSession.persistRole(intadmin, new Role(null, roleName, accessRules));
 
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(intadmin, role, accessRules);
-
-        adminentities = new ArrayList<AccessUserAspectData>();
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, adminusername1));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, adminusername2));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, adminusername3));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, reqadminusername));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), "CN=externalCert,C=SE".hashCode(),
-                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert)));
-        roleManagementSession.addSubjectsToRole(intadmin, roleAccessSessionRemote.findRole(roleName), adminentities);
-        accessControlSession.forceCacheExpire();
+        final RoleMember roleMember1 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null, null);
+        roleMember1.setId(roleMemberSession.createOrEdit(intadmin, roleMember1));
+        final RoleMember roleMember2 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.getRoleId(), null, null);
+        roleMember2.setId(roleMemberSession.createOrEdit(intadmin, roleMember2));
+        final RoleMember roleMember3 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.getRoleId(), null, null);
+        roleMember3.setId(roleMemberSession.createOrEdit(intadmin, roleMember3));
+        final RoleMember roleMember4 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.getRoleId(), null, null);
+        roleMember4.setId(roleMemberSession.createOrEdit(intadmin, roleMember4));
+        final RoleMember roleMember5 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, "CN=externalCert,C=SE".hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.getRoleId(), null, null);
+        roleMember5.setId(roleMemberSession.createOrEdit(intadmin, roleMember5));
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
         admincert2 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername2)).iterator().next();
@@ -272,47 +275,29 @@ public class ApprovalSessionTest extends CaTestCase {
     }
 
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
-        Set<Principal> principals = new HashSet<Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-
+        Set<Principal> principals = new HashSet<Principal>(Arrays.asList(certificate.getSubjectX500Principal()));
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>(Arrays.asList(certificate));
         return new AuthenticationSubject(principals, credentials);
     }
 
     @After
     public void tearDown() throws Exception {
-
         Collection<ApprovalDataVO> approvals = approvalSessionRemote.findApprovalDataVO(intadmin, removeApprovalId);
         if (approvals != null) {
             for (ApprovalDataVO approvalDataVO : approvals) {
                 approvalSessionRemote.removeApprovalRequest(intadmin, approvalDataVO.getId());
             }
         }
-        try {
-            endEntityManagementSession.deleteUser(intadmin, adminusername1);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.deleteUser(intadmin, adminusername2);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.deleteUser(intadmin, adminusername3);
-        } catch (Exception e) {
-            // NOPMD: ignore
-        }
-        try {
-            endEntityManagementSession.deleteUser(intadmin, reqadminusername);
-        } catch (Exception e) {
-            // NOPMD: ignore
+        for (final String username : Arrays.asList(adminusername1, adminusername2, adminusername3, reqadminusername)) {
+            try {
+                endEntityManagementSession.deleteUser(intadmin, username);
+            } catch (Exception e) {
+                // NOPMD: ignore
+            }
         }
         if (role != null) {
-            roleManagementSession.remove(intadmin, role);
+            roleSession.deleteRoleIdempotent(intadmin, role.getRoleId());
         }
-
     }
 
     @Test
@@ -357,7 +342,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             cleanUpList.add(next.getId());
             assertEquals("Status was not expired.", ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
 
@@ -372,7 +357,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             // Then after one of them have expired
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            ApprovalDataVO expired = (ApprovalDataVO) result.iterator().next();
+            ApprovalDataVO expired = result.iterator().next();
 
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
@@ -388,7 +373,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.addApprovalRequest(admin1, ar);
             result = approvalSessionRemote.findApprovalDataVO(admin1, ar.generateApprovalId());
             assertTrue(result.size() == 1);
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             cleanUpList.add(next.getId());
         } finally {
             for (Integer next : cleanUpList) {
@@ -435,7 +420,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
             assertTrue(next.getRemainingApprovals() == 0);
 
@@ -444,7 +429,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertEquals("Status was not expired.", ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
@@ -459,7 +444,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
 
             // Make sure that the approval still have status executed after expiration
@@ -467,7 +452,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
@@ -485,7 +470,7 @@ public class ApprovalSessionTest extends CaTestCase {
             }
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
             approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
@@ -566,7 +551,7 @@ public class ApprovalSessionTest extends CaTestCase {
             Approval rejection = new Approval("rejectiontest", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
             approvalExecutionSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_REJECTED, next.getStatus());
             assertEquals("No approvals expected to be required.", 0, next.getRemainingApprovals());
 
@@ -578,7 +563,7 @@ public class ApprovalSessionTest extends CaTestCase {
             rejection = new Approval("rejectiontest2", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
             approvalExecutionSessionRemote.reject(admin1, nonExecutableRequest.generateApprovalId(), rejection);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_REJECTED, next.getStatus());
             assertEquals("No approvals expected to be required.", 0, next.getRemainingApprovals());
 
@@ -595,7 +580,7 @@ public class ApprovalSessionTest extends CaTestCase {
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertTrue(result.size() == 1);
 
-            next = (ApprovalDataVO) result.iterator().next();
+            next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
 
             // Try to reject an expired request
@@ -775,9 +760,9 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);           
         } finally {
             // Remove the requests
-            int id1 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req1.generateApprovalId()).iterator().next()).getId();
-            int id2 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req2.generateApprovalId()).iterator().next()).getId();
-            int id3 = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, req3.generateApprovalId()).iterator().next()).getId();
+            int id1 = approvalSessionRemote.findApprovalDataVO(admin1, req1.generateApprovalId()).iterator().next().getId();
+            int id2 = approvalSessionRemote.findApprovalDataVO(admin1, req2.generateApprovalId()).iterator().next().getId();
+            int id3 = approvalSessionRemote.findApprovalDataVO(admin1, req3.generateApprovalId()).iterator().next().getId();
 
             approvalSessionRemote.removeApprovalRequest(admin1, id1);
             approvalSessionRemote.removeApprovalRequest(admin1, id2);
@@ -803,8 +788,7 @@ public class ApprovalSessionTest extends CaTestCase {
             assertTrue("At least one expired query was not returned.", result.size() > 0);
         } finally {
             // Remove the requests
-            int expiredRequestId = ((ApprovalDataVO) approvalSessionRemote.findApprovalDataVO(admin1, expiredRequest.generateApprovalId()).iterator()
-                    .next()).getId();
+            int expiredRequestId = approvalSessionRemote.findApprovalDataVO(admin1, expiredRequest.generateApprovalId()).iterator().next().getId();
             approvalSessionRemote.removeApprovalRequest(admin1, expiredRequestId);
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -832,7 +816,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(externaladmin, nonExecutableRequest.generateApprovalId(), approval2);
         result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
         assertTrue(result.size() == 1);
-        next = (ApprovalDataVO) result.iterator().next();
+        next = result.iterator().next();
         assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
         assertTrue(next.getRemainingApprovals() == 0);
 

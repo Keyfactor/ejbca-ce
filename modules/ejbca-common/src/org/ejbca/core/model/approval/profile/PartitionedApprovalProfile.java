@@ -22,9 +22,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.RoleInformation;
+import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.DynamicUiPropertyCallback;
 import org.ejbca.core.model.approval.Approval;
@@ -45,7 +46,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     private static final InternalResources intres = InternalResources.getInstance();
     
-    public static final RoleInformation ANYBODY = new RoleInformation(-1, "Anybody", new ArrayList<AccessUserAspectData>());
+    public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
     
     public static final int EXECUTION_STEP_ID = 0;
     public static final String PROPERTY_NAME = "name";
@@ -160,7 +161,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
                 if (role.equals(ANYBODY)) {
                     return true;
                 } else {
-                    for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
+                    // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
+                    for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
                         if (authenticationToken.matches(accessUserAspect)) {
                             return true;
                         }
@@ -212,7 +214,8 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
             if (role.equals(ANYBODY)) {
                 result = true;
             } else {
-                for (AccessUserAspectData accessUserAspect : role.getAccessUserAspects()) {
+                // Check if authenticationToken matches any of the AccessUserAspects that existed in the Role when the ApprovalProfile was saved.
+                for (final AccessUserAspect accessUserAspect : role.getAccessUserAspects()) {
                     if (authenticationToken.matches(accessUserAspect)) {
                         result = true;
                     }

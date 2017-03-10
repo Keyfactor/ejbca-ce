@@ -29,12 +29,16 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
@@ -59,6 +63,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     private static final long serialVersionUID = -3751383340600251434L;
     private static final InternalResources intres = InternalResources.getInstance();
+    private static final Logger log = Logger.getLogger(ApprovalProfileMBean.class);
 
     /**
      * This enum field represents the types of data fields that can be added to an approval partition dynamically.  
@@ -108,8 +113,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
-
+    private RoleSessionLocal roleSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
 
     @ManagedProperty(value = "#{approvalProfilesMBean}")
     private ApprovalProfilesMBean approvalProfilesMBean;
@@ -441,17 +447,21 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    List<AdminGroupData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
-                    List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for(AdminGroupData role : allAuthorizedRoles) {
-                        //Cull roles which would have access to performing or viewing approvals anyway
-                        if (role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY)
-                                || role.hasAccessToRule(AccessRulesConstants.REGULAR_APPROVECAACTION)) {
-                            RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
-                                    new ArrayList<>(role.getAccessUsers().values()));
-                            roleRepresentations.add(identifierNamePair);
+                    final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleInformation> roleRepresentations = new ArrayList<>();
+                    for (final Role role : allAuthorizedRoles) {
+                        if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                                || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+                            try {
+                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
+                            } catch (AuthorizationDeniedException e) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
+                                }
+                            }
                         }
-                    }                
+                    }
                     if(!roleRepresentations.contains(propertyClone.getDefaultValue())) {
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
