@@ -258,6 +258,8 @@ span .approvalStep,
 
 .collapsableSectionHeader { color: #fff; }
 
+.noticeText { color: #aaa; font-style: italic; }
+
 .language_button,
 .language_button:hover,
 .language_button:hover {
