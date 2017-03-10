@@ -127,17 +127,23 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         for (final Role role : roleDataSession.getAllRoles()) {
             // Verify that the caller is authorized to role's namespace
             if (!isAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo)) {
-                log.debug("'" + authenticationToken.toString() + "' is not authorized to the namespace '"+role.getNameSpace()+"'.");
+                if (log.isDebugEnabled()) {
+                    log.debug("'" + authenticationToken.toString() + "' is not authorized to the namespace '"+role.getNameSpace()+"'.");
+                }
                 continue;
             }
             // Verify that the caller is authorized to all access rules in this role
             if (!isAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo)) {
-                log.debug("'" + authenticationToken.toString() + "' is not authorized to all access rules in role '"+role.getRoleNameFull()+"'.");
+                if (log.isDebugEnabled()) {
+                    log.debug("'" + authenticationToken.toString() + "' is not authorized to all access rules in role '"+role.getRoleNameFull()+"'.");
+                }
                 continue;
             }
             // Verify that the caller is authorized to all CAs that are issuers of members in this role
             if (!isAuthorizedToAllRoleMembersIssuers(authenticationToken, role.getRoleId())) {
-                log.debug("'" + authenticationToken.toString() + "' is not authorized to all members in role '"+role.getRoleNameFull()+"'.");
+                if (log.isDebugEnabled()) {
+                    log.debug("'" + authenticationToken.toString() + "' is not authorized to all members in role '"+role.getRoleNameFull()+"'.");
+                }
                 continue;
             }
             roles.add(role);
