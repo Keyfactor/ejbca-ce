@@ -30,7 +30,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -77,7 +77,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -308,13 +308,13 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @Override
     public void assertAuthorizedToApprove(AuthenticationToken admin, final ApprovalDataVO approvalData) throws AuthorizationDeniedException {
         if (approvalData.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
-            if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+            if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_APPROVECAACTION,
                         null);
                 throw new AuthorizationDeniedException(msg);
             }
         } else {
-            if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
+            if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_APPROVEENDENTITY,
                         null);
                 throw new AuthorizationDeniedException(msg);
@@ -322,7 +322,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
-                if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndEntityProfileId()
+                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + approvalData.getEndEntityProfileId()
                         + AccessRulesConstants.APPROVE_END_ENTITY)) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX
                             + approvalData.getEndEntityProfileId() + AccessRulesConstants.APPROVE_END_ENTITY, null);
@@ -331,7 +331,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
         }
         if (approvalData.getCAId() != ApprovalDataVO.ANY_CA) {
-            if (!accessControlSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCAId())) {
+            if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + approvalData.getCAId())) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
                         StandardRules.CAACCESS.resource() + approvalData.getCAId(), null);
                 throw new AuthorizationDeniedException(msg);
