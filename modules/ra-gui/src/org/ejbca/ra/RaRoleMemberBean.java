@@ -26,6 +26,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -269,25 +270,27 @@ public class RaRoleMemberBean implements Serializable {
     
     public String save() throws AuthorizationDeniedException {
         final RaRoleMemberTokenTypeInfo tokenTypeInfo = tokenTypeInfos.get(tokenType);
-        if (tokenTypeInfo.isIssuedByCA()) {
+        if (!tokenTypeInfo.isIssuedByCA()) {
             caId = RoleMember.NO_ISSUER;
         }
         
-        roleMember.setRoleId(roleId);
-        roleMember.setTokenType(tokenType);
-        roleMember.setTokenIssuerId(caId);
-        roleMember.setTokenMatchKey(matchKey);
-        roleMember.setTokenMatchOperator(tokenTypeInfo.getMatchOperator());
-        roleMember.setTokenMatchValue(getTokenTypeHasMatchValue() ? matchValue : "");
+        final RoleMember roleMemberWithChanges = (RoleMember) SerializationUtils.clone(roleMember);
+        roleMemberWithChanges.setRoleId(roleId);
+        roleMemberWithChanges.setTokenType(tokenType);
+        roleMemberWithChanges.setTokenIssuerId(caId);
+        roleMemberWithChanges.setTokenMatchKey(matchKey);
+        roleMemberWithChanges.setTokenMatchOperator(tokenTypeInfo.getMatchOperator());
+        roleMemberWithChanges.setTokenMatchValue(getTokenTypeHasMatchValue() ? matchValue : "");
         
-        roleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMember);
-        if (roleMember == null) {
+        final RoleMember savedRoleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberWithChanges);
+        if (savedRoleMember == null) {
             if (log.isDebugEnabled()) {
                 log.debug("The role member could not be saved. Role member ID: " + roleMemberId + ". Role ID: " + roleId + ". Match value: '" + matchValue + "'");
             }
             raLocaleBean.addMessageError("role_member_page_error_generic");
             return "";
         }
+        roleMember = savedRoleMember;
         roleMemberId = roleMember.getId();
         
         // If the active filter does not include the newly added role member, then change the filter to show it
