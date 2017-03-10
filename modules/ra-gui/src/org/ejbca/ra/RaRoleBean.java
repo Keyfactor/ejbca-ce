@@ -91,7 +91,26 @@ public class RaRoleBean implements Serializable {
     private boolean hasAccessToEmptyNamespace;
     private List<String> namespaces;
     private List<SelectItem> namespaceOptions = new ArrayList<>();
+    
+    /** Represents a checkbox for a rule in the GUI */
+    public final class RuleCheckboxInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final String accessRule;
+        private final String label;
+        private boolean allowed;
+        public RuleCheckboxInfo(final String accessRule, final String labelMessageKey) {
+            this.accessRule = accessRule;
+            this.label = raLocaleBean.getMessage(labelMessageKey);
+            this.allowed = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule);
+        }
+        public String getAccessRule() { return accessRule; }
+        public String getLabel() { return label; }
+        public boolean isAllowed() { return allowed; }
+        public void setAllowed(final boolean allowed) { this.allowed = allowed; }
+        
+    }
 
+    private List<RuleCheckboxInfo> endEntityRules = new ArrayList<>();
     private AddRemoveListState<String> caListState = new AddRemoveListState<>();
     private AddRemoveListState<String> endEntityProfileListState = new AddRemoveListState<>();
     private Map<Integer,String> eeProfilesWithCustomPermissions = new HashMap<>();
@@ -155,6 +174,12 @@ public class RaRoleBean implements Serializable {
                 endEntityProfileListState.addListItem(accessRule, kv.getName(), enabled);
             }
         }
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_APPROVEENDENTITY, "role_page_access_approveendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_CREATEENDENTITY, "role_page_access_createdeleteendentity")); // we let this one imply delete as well
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_EDITENDENTITY, "role_page_access_editendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_REVOKEENDENTITY, "role_page_access_revokeendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_VIEWENDENTITY, "role_page_access_viewendentity"));
+        endEntityRules.add(new RuleCheckboxInfo(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, "role_page_access_viewendentityhistory"));
     }
 
     public Integer getRoleId() { return roleId; }
@@ -194,6 +219,7 @@ public class RaRoleBean implements Serializable {
         return raLocaleBean.getMessage("role_page_custom_permissions_endentityprofiles", profileList);
     }
     
+    public List<RuleCheckboxInfo> getEndEntityRules() { return endEntityRules; }
     public AddRemoveListState<String> getCaListState() { return caListState; }
     public AddRemoveListState<String> getEndEntityProfileListState() { return endEntityProfileListState; }
 
@@ -242,6 +268,13 @@ public class RaRoleBean implements Serializable {
 
         // Set access rules
         final Map<String,Boolean> accessMap = roleWithChanges.getAccessRules();
+        for (final RuleCheckboxInfo checkboxInfo : endEntityRules) {
+            accessMap.put(checkboxInfo.accessRule, checkboxInfo.allowed);
+            // We let create imply delete, because the "make new request" page needs delete access as well 
+            if (checkboxInfo.accessRule.equals(AccessRulesConstants.REGULAR_CREATEENDENTITY)) {
+                accessMap.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, checkboxInfo.allowed);
+            }
+        }
         accessMap.putAll(caListState.getItemStates());
         accessMap.putAll(endEntityProfileListState.getItemStates());
 
