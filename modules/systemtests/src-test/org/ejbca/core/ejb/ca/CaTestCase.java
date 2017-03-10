@@ -17,6 +17,7 @@ import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -74,6 +75,7 @@ import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -144,6 +146,14 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected void addDefaultRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
+        caAdmin = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=CaUser,CN=CaUser", null, getRoleName(),
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        // Setup legacy authorization as well to support gradual conversions of core
+        addDefaultRoleLegacy();
+    }
+
+    @Deprecated
+    private void addDefaultRoleLegacy() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
         String roleName = getRoleName();
         final Set<Principal> principals = new HashSet<Principal>();
         principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
@@ -179,6 +189,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected void removeDefaultRole() throws RoleNotFoundException, AuthorizationDeniedException {
+        getRoleInitializationSession().removeAllAuthenticationTokensRoles(caAdmin);
+        // Tear down legacy authorization as well to support gradual conversions of core
+        removeDefaultRoleLegacy();
+    }
+    
+    @Deprecated
+    private void removeDefaultRoleLegacy() throws RoleNotFoundException, AuthorizationDeniedException {
         RoleAccessSessionRemote roleAccessSession = CaTestCase.getRoleAccessSession();
         AdminGroupData role = roleAccessSession.findRole(getRoleName());
         if (role != null) {

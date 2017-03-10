@@ -14,17 +14,21 @@ package org.cesecore;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -41,15 +45,33 @@ import org.cesecore.util.EjbRemoteHelper;
  */
 public abstract class RoleUsingTestCase {
 
+    private static final Logger log = Logger.getLogger(RoleUsingTestCase.class);
     private static final AuthenticationToken alwaysAllowAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RoleUsingTestCase"));
 
     private static String roleName;
-    protected static AuthenticationToken roleMgmgToken;
+    protected static TestX509CertificateAuthenticationToken roleMgmgToken;
+    private static RoleInitializationSessionRemote roleInitializationSession;
 
-    public static void setUpAuthTokenAndRole(String roleName) throws RoleExistsException, RoleNotFoundException {
+    protected static RoleInitializationSessionRemote getRoleInitializationSession() {
+        if (roleInitializationSession==null) {
+            roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        }
+        return roleInitializationSession;
+    }
+
+    
+    public static void setUpAuthTokenAndRole(final String roleName) throws RoleExistsException, RoleNotFoundException {
+        String commonName = RoleUsingTestCase.class.getCanonicalName();
+        roleMgmgToken = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN=" + commonName, null, roleName,
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        // Setup legacy authorization as well to support gradual conversions of core
+        setUpAuthTokenAndRoleLegacy(roleName);
+        log.debug("<setUpAuthTokenAndRole roleName="+roleName + " roleMgmgToken="+roleMgmgToken);
+    }
+
+    @Deprecated
+    private static void setUpAuthTokenAndRoleLegacy(String roleName) throws RoleExistsException, RoleNotFoundException {
         RoleUsingTestCase.roleName = roleName;       
-        String commonname = RoleUsingTestCase.class.getCanonicalName();
-        roleMgmgToken = createAuthenticationToken("C=SE,O=Test,CN=" + commonname);
         X509Certificate cert = (X509Certificate) roleMgmgToken.getCredentials().iterator().next();
         // Initialize the role mgmt system with this role that is allowed to edit roles, i.e. needs access to /
         final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -64,6 +86,14 @@ public abstract class RoleUsingTestCase {
     }
 
     public static void tearDownRemoveRole() throws RoleNotFoundException, AuthorizationDeniedException {
+        log.debug(">tearDownRemoveRole roleMgmgToken="+roleMgmgToken);
+        getRoleInitializationSession().removeAllAuthenticationTokensRoles(roleMgmgToken);
+        // Tear down legacy authorization as well to support gradual conversions of core
+        tearDownRemoveRoleLegacy();
+    }
+
+    @Deprecated
+    private static void tearDownRemoveRoleLegacy() throws RoleNotFoundException, AuthorizationDeniedException {
         final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
         final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         if (roleAccessSessionRemote.findRole(roleName) != null) {
@@ -71,13 +101,13 @@ public abstract class RoleUsingTestCase {
         }
     }
     
-    protected static AuthenticationToken createAuthenticationToken(String issuerDn) {
+    protected static TestX509CertificateAuthenticationToken createAuthenticationToken(String issuerDn) {
         Set<Principal> principals = new HashSet<Principal>();
         X500Principal p = new X500Principal(issuerDn);
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
         principals.add(p);
         final SimpleAuthenticationProviderSessionRemote authenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        return authenticationProvider.authenticate(subject);
+        return (TestX509CertificateAuthenticationToken) authenticationProvider.authenticate(subject);
     }
     
 }

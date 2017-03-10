@@ -13,11 +13,14 @@
 package org.cesecore.roles.management;
 
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
@@ -36,7 +39,18 @@ public interface RoleInitializationSessionRemote {
     *  
     * @throws RoleExistsException if the role already exist
     */
+    @Deprecated
     void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException,
             RoleNotFoundException, AuthorizationDeniedException;
 
+    /** @return a new an AuthenticationToken that is RoleMember of a new Role with the requested access rights */
+    TestX509CertificateAuthenticationToken createAuthenticationTokenAndAssignToNewRole(String subjectDn, String roleNameSpace, String roleName, List<String> resourcesAllowed,
+            List<String> resourcesDenied) throws RoleExistsException;
+
+    /** Assign the provided certificate as RoleMember of a new Role with the requested access rights */
+    void createRoleAndAddCertificateAsRoleMember(X509Certificate x509Certificate, String roleNameSpace, String roleName,
+            List<String> resourcesAllowed, List<String> resourcesDenied) throws RoleExistsException;
+
+    /** Remove any role that the provided authentication token is a RoleMember of (note that this will match regular X509CertificateAuthenticationToken so be careful) */
+    void removeAllAuthenticationTokensRoles(TestX509CertificateAuthenticationToken authenticationToken);
 }
