@@ -76,51 +76,30 @@
                 </h:panelGroup>
                 
                 
-                <h:panelGroup id="roleRules" layout="block" styleClass="internal-frame">
-                    <h:panelGroup layout="block" styleClass="collapsableSectionHeader jsSectionHeader">
-                        <h:outputText value="#{msg.role_page_section_cas}" styleClass="jsRuleHeaderText"/>
-                    </h:panelGroup>
-                    
-                    <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
-                        <component:addremovelist state="#{raRoleBean.caListState}" editable="#{raRoleBean.canEdit}"/>
-                    </h:panelGroup>
-                    
-                    <ui:remove>
-                    <!--
-                    <ui:repeat value="#{raRoleBean.ruleSections}" var="ruleSection">
-                        <h:panelGroup layout="block" styleClass="internal-frame">
-                            <h:panelGroup layout="block" styleClass="accessRuleSectionHeader jsRuleHeader">
-                                <h:outputText value="#{ruleSection.header}" styleClass="jsRuleHeaderText"/>
-                                <ui:remove><!-x- Do not remove the following comment. It is used as a template for the Javascript section expand/collapse code -x-></ui:remove>
-                                <!-x-#{ruleSection.fullHeaderText}-x->
-                            </h:panelGroup>
-                            
-                            <h:panelGroup layout="block" styleClass="">
-                                <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{ruleSection.allowed}"/>
-                                <h:outputLabel for="level1RuleCheckbox" value="#{ruleSection.header}"/>
-                            </h:panelGroup>
-                            
-                            <component:addremovelist id="caList" state="#{ruleSection.state}" enabledLabel="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
-                            
-                            <!-x- FIXME should have two boxes with add/remove buttons, perhaps as a new control -x->
-                            <h:panelGroup layout="block" styleClass="accessRuleSectionContents jsSelectAllBoundary">
-                                <h:panelGroup layout="block" styleClass="jsSHow">
-                                    <label><input type="checkbox" value="#{ruleSection.allObjectRulesSelected}" onchange="ejbca.ra.selectAllCheckboxes(this)"/>
-                                    <h:outputText value="#{msg.generic_select_all}"/></label>
-                                </h:panelGroup>
-                                
-                                <ui:repeat value="#{ruleSection.objectRules}" var="objectRule">
-                                    <h:panelGroup layout="block" styleClass="level1Rule">
-                                        <h:selectBooleanCheckbox id="level1RuleCheckbox" value="#{objectRule.allowed}"/>
-                                        <h:outputLabel for="level1RuleCheckbox" value="#{objectRule.header}"/>
-                                    </h:panelGroup>
-                                </ui:repeat>
-                                
-                            </h:panelGroup>
+                <h:panelGroup id="roleRules" layout="block" styleClass="">
+                    <h:panelGroup id="caRules" layout="block" styleClass="internal-frame">
+                        <h:panelGroup layout="block" styleClass="collapsableSectionHeader jsSectionHeader">
+                            <h:outputText value="#{msg.role_page_section_cas}" styleClass="jsRuleHeaderText"/>
                         </h:panelGroup>
-                    </ui:repeat>
-                    -->
-                    </ui:remove>
+                        
+                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
+                            <component:addremovelist id="caList" state="#{raRoleBean.caListState}" enabledHeader="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup id="eeProfileRules" layout="block" styleClass="internal-frame">
+                        <h:panelGroup layout="block" styleClass="collapsableSectionHeader jsSectionHeader">
+                            <h:outputText value="#{msg.role_page_section_endentityprofiles}" styleClass="jsRuleHeaderText"/>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup layout="block" styleClass="collapsableSection jsSectionContent">
+                            <component:addremovelist id="endEntityProfileList" state="#{raRoleBean.endEntityProfileListState}" enabledHeader="#{msg.role_page_allowed_label}" editable="#{raRoleBean.canEdit}"/>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup layout="block" styleClass="noticeText" rendered="#{raRoleBean.hasCustomEndEntityProfilePermissions}">
+                            <h:outputText value="#{raRoleBean.customEndEntityProfilePermissionsNotice}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
                 </h:panelGroup>
                 
                 <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
