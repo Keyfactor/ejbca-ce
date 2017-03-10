@@ -75,7 +75,6 @@ import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -161,8 +160,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         final X509Certificate certificate = caAdmin.getCertificate();
 
-        final RoleManagementSessionRemote roleManagementSession = getRoleManagementSession();
-        AdminGroupData role = CaTestCase.getRoleAccessSession().findRole(roleName);
+        final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
         if (role == null) {
             log.error("Role should not be null here.");
             role = roleManagementSession.create(internalAdmin, roleName);
@@ -196,10 +195,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     @Deprecated
     private void removeDefaultRoleLegacy() throws RoleNotFoundException, AuthorizationDeniedException {
-        RoleAccessSessionRemote roleAccessSession = CaTestCase.getRoleAccessSession();
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         AdminGroupData role = roleAccessSession.findRole(getRoleName());
         if (role != null) {
-            CaTestCase.getRoleManagementSession().remove(internalAdmin, role);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).remove(internalAdmin, role);
         }
     }
     
@@ -207,16 +206,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     }
 
-    private static RoleManagementSessionRemote getRoleManagementSession() {
-        return EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    }
-
     private static CaSessionRemote getCaSession() {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    }
-
-    private static RoleAccessSessionRemote getRoleAccessSession() {
-        return EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     }
 
     /**
@@ -500,7 +491,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                     ApprovalDataVO approvalData = queryResults.get(0);
                     Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                     approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
-                    approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
+                    approvalData = approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                     Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
                     Assert.assertEquals(status.revocationReason, reason);
