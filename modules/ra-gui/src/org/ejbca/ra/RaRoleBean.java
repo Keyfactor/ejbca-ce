@@ -15,8 +15,11 @@ package org.ejbca.ra;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -73,6 +76,8 @@ public class RaRoleBean implements Serializable {
     public void setRaRolesBean(final RaRolesBean raRolesBean) { this.raRolesBean = raRolesBean; }
 
     private static final Object NEW_NAMESPACE_ITEM = "#NEW#";
+    /** Matches e.g. /endentityprofilesrules/12345/create_end_entity, but not /endentityprofilesrules/12345 */
+    private static final Pattern detailedProfileRulePattern = Pattern.compile(".*/([-0-9]+)/.+$");
 
     private boolean initialized = false;
     
@@ -88,6 +93,8 @@ public class RaRoleBean implements Serializable {
     private List<SelectItem> namespaceOptions = new ArrayList<>();
 
     private AddRemoveListState<String> caListState = new AddRemoveListState<>();
+    private AddRemoveListState<String> endEntityProfileListState = new AddRemoveListState<>();
+    private Map<Integer,String> eeProfilesWithCustomPermissions = new HashMap<>();
     
     public void initialize() throws AuthorizationDeniedException {
         if (initialized) {
@@ -130,13 +137,24 @@ public class RaRoleBean implements Serializable {
             caListState.addListItem(accessRule, ca.getName(), enabled);
         }
         
-        /*final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.VIEW_END_ENTITY);
+        final IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.VIEW_END_ENTITY);
+        // Only allow end entity profiles with either full or no access to be edited
+        for (final String accessRule : role.getAccessRules().keySet()) {
+            if (accessRule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
+                final Matcher matcher = detailedProfileRulePattern.matcher(accessRule);
+                if (matcher.matches()) {
+                    int profileId = Integer.parseInt(matcher.group(1));
+                    eeProfilesWithCustomPermissions.put(profileId, authorizedEndEntityProfiles.get(profileId).getName());
+                }
+            }
+        }
         for (final KeyToValueHolder<EndEntityProfile> kv : authorizedEndEntityProfiles.values()) {
-            final EndEntityProfile profile = kv.getValue();
-            final String accessRule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + kv.getId();
-            final boolean enabled = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule);
-            endEntityProfileListState.addListItem(accessRule, profile.getName(), enabled);
-        }*/
+            if (!eeProfilesWithCustomPermissions.containsKey(kv.getId())) {
+                final String accessRule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + kv.getId();
+                final boolean enabled = AccessRulesHelper.hasAccessToResource(role.getAccessRules(), accessRule);
+                endEntityProfileListState.addListItem(accessRule, kv.getName(), enabled);
+            }
+        }
     }
 
     public Integer getRoleId() { return roleId; }
@@ -167,7 +185,17 @@ public class RaRoleBean implements Serializable {
         return raAccessBean.isAuthorizedToEditRoleRules();
     }
     
+    public boolean getHasCustomEndEntityProfilePermissions() {
+        return !eeProfilesWithCustomPermissions.isEmpty();
+    }
+    
+    public String getCustomEndEntityProfilePermissionsNotice() {
+        final String profileList = StringUtils.join(eeProfilesWithCustomPermissions.values(), ", ");
+        return raLocaleBean.getMessage("role_page_custom_permissions_endentityprofiles", profileList);
+    }
+    
     public AddRemoveListState<String> getCaListState() { return caListState; }
+    public AddRemoveListState<String> getEndEntityProfileListState() { return endEntityProfileListState; }
 
 
     public String getPageTitle() {
@@ -215,6 +243,7 @@ public class RaRoleBean implements Serializable {
         // Set access rules
         final Map<String,Boolean> accessMap = roleWithChanges.getAccessRules();
         accessMap.putAll(caListState.getItemStates());
+        accessMap.putAll(endEntityProfileListState.getItemStates());
 
         try {
             role = raMasterApiProxyBean.saveRole(raAuthenticationBean.getAuthenticationToken(), roleWithChanges);

@@ -33,7 +33,7 @@
         <composite:interface>
             <composite:attribute name="state" required="true"/>
             <composite:attribute name="editable" required="false" default="true"/>
-            <composite:attribute name="enabledHeader" required="false" default="#{msg.generic_enabled_list}"/>
+            <composite:attribute name="enabledHeader" required="false" default="#{msg.component_addremovelist_enabled_list}"/>
         </composite:interface>
 
         <composite:implementation>
@@ -46,22 +46,22 @@
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" styleClass="addRemoveListButtons" rendered="#{cc.attrs.editable}">
-                    <h:commandButton id="addButton" action="#{cc.attrs.state.add}" value="#{msg.generic_add_from_list}" styleClass="pure-button ra-button multilistAddButton">
+                    <h:commandButton id="addButton" action="#{cc.attrs.state.add}" value="#{msg.component_addremovelist_add_from_list}" styleClass="pure-button ra-button multilistAddButton">
                         <f:ajax event="click" execute=":#{cc.clientId}:addRemoveListContainer" render=":#{cc.clientId}:addRemoveListContainer" listener="#{cc.attrs.state.add}"
                                     onevent="function(data){ejbca.ra.onAjaxEvent(data,'#{cc.clientId}:addRemoveListContainer');}"
                                     onerror="function(data){ejbca.ra.onAjaxError(data,'#{cc.clientId}:addRemoveListContainer');}"/>
                     </h:commandButton>
-                    <h:commandButton id="addAllButton" action="#{cc.attrs.state.addAll}" value="#{msg.generic_add_all_from_list}" styleClass="pure-button ra-button multilistAddAllButton">
+                    <h:commandButton id="addAllButton" action="#{cc.attrs.state.addAll}" value="#{msg.component_addremovelist_add_all_from_list}" styleClass="pure-button ra-button multilistAddAllButton">
                         <f:ajax event="click" execute=":#{cc.clientId}:addRemoveListContainer" render=":#{cc.clientId}:addRemoveListContainer" listener="#{cc.attrs.state.addAll}"
                                     onevent="function(data){ejbca.ra.onAjaxEvent(data,'#{cc.clientId}:addRemoveListContainer');}"
                                     onerror="function(data){ejbca.ra.onAjaxError(data,'#{cc.clientId}:addRemoveListContainer');}"/>
                     </h:commandButton>
-                    <h:commandButton id="removeButton" action="#{cc.attrs.state.remove}" value="#{msg.generic_remove_from_list}" styleClass="pure-button ra-button multilistRemoveButton">
+                    <h:commandButton id="removeButton" action="#{cc.attrs.state.remove}" value="#{msg.component_addremovelist_remove_from_list}" styleClass="pure-button ra-button multilistRemoveButton">
                         <f:ajax event="click" execute=":#{cc.clientId}:addRemoveListContainer" render=":#{cc.clientId}:addRemoveListContainer" listener="#{cc.attrs.state.remove}"
                                     onevent="function(data){ejbca.ra.onAjaxEvent(data,'#{cc.clientId}:addRemoveListContainer');}"
                                     onerror="function(data){ejbca.ra.onAjaxError(data,'#{cc.clientId}:addRemoveListContainer');}"/>
                     </h:commandButton>
-                    <h:commandButton id="removeAllButton" action="#{cc.attrs.state.removeAll}" value="#{msg.generic_remove_all_from_list}" styleClass="pure-button ra-button multilistRemoveAllButton">
+                    <h:commandButton id="removeAllButton" action="#{cc.attrs.state.removeAll}" value="#{msg.component_addremovelist_remove_all_from_list}" styleClass="pure-button ra-button multilistRemoveAllButton">
                         <f:ajax event="click" execute=":#{cc.clientId}:addRemoveListContainer" render=":#{cc.clientId}:addRemoveListContainer" listener="#{cc.attrs.state.removeAll}"
                                     onevent="function(data){ejbca.ra.onAjaxEvent(data,'#{cc.clientId}:addRemoveListContainer');}"
                                     onerror="function(data){ejbca.ra.onAjaxError(data,'#{cc.clientId}:addRemoveListContainer');}"/>
@@ -69,7 +69,7 @@
                 </h:panelGroup>
                 
                 <h:panelGroup layout="block" styleClass="addRemoveListAvailable">
-                    <h:outputLabel for="enabledList" value="#{msg.generic_available_list}"/>
+                    <h:outputLabel for="enabledList" value="#{msg.component_addremovelist_available_list}"/>
                     <h:selectManyListbox id="availableList" value="#{cc.attrs.state.selectedInAvailableList}" size="10" styleClass="addRemoveList" rendered="#{cc.attrs.editable}">
                         <f:selectItems value="#{cc.attrs.state.availableSelectItems}"/>
                     </h:selectManyListbox>
