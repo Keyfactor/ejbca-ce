@@ -41,9 +41,12 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleInformation;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -115,7 +118,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     @EJB
     private ApprovalExecutionSessionLocal approvalExecutionSession;
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
+    private RoleSessionLocal roleSession;
+    @EJB
+    private RoleMemberSessionLocal roleMemberSession;
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -490,12 +495,20 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         approvalPartition.getPropertyList().get(propertyName));
                 switch (propertyClone.getPropertyCallback()) {
                 case ROLES:
-                    List<AdminGroupData> allAuthorizedRoles = roleAccessSession.getAllAuthorizedRoles(getAdmin());
-                    List<RoleInformation> roleRepresentations = new ArrayList<>();
-                    for (AdminGroupData role : allAuthorizedRoles) {
-                        RoleInformation identifierNamePair = new RoleInformation(role.getPrimaryKey(), role.getRoleName(),
-                                new ArrayList<>(role.getAccessUsers().values()));
-                        roleRepresentations.add(identifierNamePair);
+                    final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleInformation> roleRepresentations = new ArrayList<>();
+                    for (final Role role : allAuthorizedRoles) {
+                        if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                                || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+                            try {
+                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+                                roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
+                            } catch (AuthorizationDeniedException e) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
+                                }
+                            }
+                        }
                     }
                     if (!roleRepresentations.contains(propertyClone.getDefaultValue())) {
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 

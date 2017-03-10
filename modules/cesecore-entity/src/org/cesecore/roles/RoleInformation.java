@@ -13,9 +13,12 @@
 package org.cesecore.roles;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.roles.member.RoleMember;
 
 /**
  * Container POJO used due to the fact RoleData in certain contexts doesn't survive encoding to JSF
@@ -23,27 +26,63 @@ import org.cesecore.authorization.user.AccessUserAspectData;
  * @version $Id$
  *
  */
-@Deprecated
 public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;
     private final int identifier;
     private final String name;
     private final List<AccessUserAspectData> accessUserAspects;
-
-    public RoleInformation(final int identifier, final String name, final List<AccessUserAspectData> accessUserAspects) {
+    // Fields added in EJBCA 6.8.0 that we cannot be sure is ever set (defaults to null)
+    private final String nameSpace;
+    
+    /** @deprecated use fromRoleMembers */
+    @Deprecated
+    public RoleInformation(final int identifier, final String roleName, final List<AccessUserAspectData> accessUserAspects) {
+        this(identifier, null, roleName, accessUserAspects);
+    }
+    
+    private RoleInformation(final int identifier, final String nameSpace, final String roleName, final List<AccessUserAspectData> accessUserAspects) {
         this.identifier = identifier;
-        this.name = name;
+        this.name = roleName;
         this.accessUserAspects = accessUserAspects;
+        this.nameSpace = nameSpace;
+    }
+    
+    /** 
+     * Static helper to create new instance and still allowing deserialization of this class on EJBCA instances that
+     * don't have access to the RoleMember class.
+     * 
+     * Note that this it is in general a bad idea to keep a list of RoleMembers that were part of the Role at a point
+     * in time in this class.
+     */
+    public static RoleInformation fromRoleMembers(final int identifier, final String nameSpace, final String roleName, final List<RoleMember> roleMembers) {
+        final String nameSpaceToUse = StringUtils.isEmpty(nameSpace) ? null : nameSpace;
+        final List<AccessUserAspectData> accessUserAspects = new ArrayList<>();
+        if (roleMembers!=null) {
+            for (final RoleMember roleMember : roleMembers) {
+                final String roleNameForAspect = StringUtils.isEmpty(nameSpace) ? roleName : nameSpace+";"+roleName;
+                accessUserAspects.add(new AccessUserAspectData(roleNameForAspect, roleMember.getTokenIssuerId(), roleMember.getTokenMatchKey(),
+                        roleMember.getTokenType(), roleMember.getAccessMatchType(), roleMember.getTokenMatchValue()));
+            }
+        }
+        return new RoleInformation(identifier, nameSpaceToUse, roleName, accessUserAspects);
     }
 
+    /** @return the Role name */
     public String getName() {
         return name;
     }
 
+    /** @return the Role name space */
+    public String getNameSpace() {
+        return nameSpace;
+    }
+
+    /** @return the Role ID */
     public int getIdentifier() {
         return identifier;
     }
 
+    /** @return the Role name without namespace */
     @Override
     public String toString() {
         return name;
@@ -55,6 +94,9 @@ public class RoleInformation implements Serializable {
         int result = 1;
         result = prime * result + identifier;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        if (nameSpace!=null) {
+            result = prime * result + nameSpace.hashCode();
+        }
         return result;
     }
 
@@ -74,11 +116,15 @@ public class RoleInformation implements Serializable {
                 return false;
         } else if (!name.equals(other.name))
             return false;
+        if (nameSpace == null) {
+            if (other.nameSpace != null)
+                return false;
+        } else if (!nameSpace.equals(other.nameSpace))
+            return false;
         return true;
     }
 
     public List<AccessUserAspectData> getAccessUserAspects() {
         return accessUserAspects;
     }
-
 }

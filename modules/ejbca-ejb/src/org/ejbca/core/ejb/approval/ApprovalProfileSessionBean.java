@@ -33,7 +33,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -63,7 +63,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     private static final InternalResources INTRES = InternalResources.getInstance();
 
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
@@ -353,7 +353,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     
     
     private void authorizedToEditProfile(final AuthenticationToken admin, final int id) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, StandardRules.APPROVALPROFILEEDIT.resource())) {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.APPROVALPROFILEEDIT.resource())) {
             final String msg = INTRES.getLocalizedMessage("store.editapprovalprofilenotauthorized", admin.toString(), id);
             throw new AuthorizationDeniedException(msg);
         }
