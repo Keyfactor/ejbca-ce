@@ -22,11 +22,10 @@ import java.security.KeyPair;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -35,8 +34,6 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
@@ -56,9 +53,6 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -85,8 +79,6 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     private static final String USERNAME = "deltacrltest";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
@@ -103,7 +95,14 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         // Set up base role that can edit roles
-        setUpAuthTokenAndRole(PublishingCrlSessionDeltaCRLTest.class.getSimpleName());
+        setUpAuthTokenAndRole(null, PublishingCrlSessionDeltaCRLTest.class.getSimpleName(), Arrays.asList(
+                StandardRules.CAADD.resource(),
+                StandardRules.CAEDIT.resource(),
+                StandardRules.CAREMOVE.resource(),
+                StandardRules.CAACCESSBASE.resource(),
+                StandardRules.CREATECRL.resource(),
+                StandardRules.CREATECERT.resource()
+                ), null);
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
@@ -120,16 +119,6 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     
     @Before
     public void setUp() throws Exception {
-        // Now we have a role that can edit roles, we can edit this role to include more privileges
-        AdminGroupData role = roleAccessSession.findRole(this.getClass().getSimpleName());
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
         // Remove any lingering testca before starting the tests
         caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         // Now add the test CA so it is available in the tests
@@ -269,16 +258,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             assertNotNull("revset can not be null", revset);
-            Iterator<? extends X509CRLEntry> iter = revset.iterator();
-            boolean found = false;
-            while (iter.hasNext()) {
-                X509CRLEntry ce = iter.next();
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                    // TODO: verify the reason code
-                }
-            }
-            assertTrue(found);
+            assertTrue(isCertificatePresentInCrl(revset, cert));
 
             // Unrevoke the certificate that we just revoked
             // The revokeCertificate method will set the revocation date so the CRL generation code knows if it should be in the state "removeFromCRL" or not
@@ -291,15 +271,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             if (revset != null) {
-                iter = revset.iterator();
-                found = false;
-                while (iter.hasNext()) {
-                    X509CRLEntry ce = (X509CRLEntry) iter.next();
-                    if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                        found = true;
-                    }
-                }
-                assertFalse(found);
+                assertFalse(isCertificatePresentInCrl(revset, cert));
             } // If no revoked certificates exist at all, this test passed...
 
             // Check that when we revoke a certificate it will be present on the
@@ -318,18 +290,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             assertNotNull(revset);
-            iter = revset.iterator();
-            found = false;
-            // log.debug(x509crl.getThisUpdate());
-            while (iter.hasNext()) {
-                X509CRLEntry ce = (X509CRLEntry) iter.next();
-                // log.debug(ce);
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                    // TODO: verify the reason code
-                }
-            }
-            assertTrue(found);
+            assertTrue(isCertificatePresentInCrl(revset, cert));
 
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
@@ -342,19 +303,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             assertNotNull(revset);
-            iter = revset.iterator();
-            found = false;
-            // log.debug(x509crl.getThisUpdate());
-            // log.debug(x509crl.getThisUpdate().getTime());
-            while (iter.hasNext()) {
-                X509CRLEntry ce = (X509CRLEntry) iter.next();
-                // log.debug(ce);
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                    // TODO: verify the reason code
-                }
-            }
-            assertTrue(found);
+            assertTrue(isCertificatePresentInCrl(revset, cert));
 
             // Sleep 1 second so we don't issue the next CRL at the exact same time
             // as the revocation
@@ -366,19 +315,8 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
-            // log.debug(x509crl.getThisUpdate());
             if (revset != null) {
-                iter = revset.iterator();
-                found = false;
-                while (iter.hasNext()) {
-                    X509CRLEntry ce = (X509CRLEntry) iter.next();
-                    // log.debug(ce);
-                    // log.debug(ce.getRevocationDate().getTime());
-                    if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                        found = true;
-                    }
-                }
-                assertFalse(found);
+                assertFalse(isCertificatePresentInCrl(revset, cert));
             } // If no revoked certificates exist at all, this test passed...           
         } finally {
             internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
@@ -388,6 +326,16 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     // 
     // Helper methods
     //
+    
+    private boolean isCertificatePresentInCrl(final Set<? extends X509CRLEntry> revokedCertificates, final X509Certificate x509Certificate) {
+        for (final X509CRLEntry ce : revokedCertificates) {
+            if (ce.getSerialNumber().compareTo(x509Certificate.getSerialNumber()) == 0) {
+                // TODO: verify the reason code
+                return true;
+            }
+        }
+        return false;
+    }
 
     private X509Certificate createCert() throws Exception {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=deltacrltest", testx509ca.getCAId(), null, "deltacrltest@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0,
