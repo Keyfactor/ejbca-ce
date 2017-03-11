@@ -25,10 +25,10 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -47,8 +47,6 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -78,9 +76,6 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -108,8 +103,6 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
@@ -129,7 +122,14 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         // Set up base role that can edit roles
-        setUpAuthTokenAndRole(PublishingCrlSessionTest.class.getSimpleName());
+        setUpAuthTokenAndRole(null, PublishingCrlSessionTest.class.getSimpleName(), Arrays.asList(
+                StandardRules.CAADD.resource(),
+                StandardRules.CAEDIT.resource(),
+                StandardRules.CAREMOVE.resource(),
+                StandardRules.CAACCESSBASE.resource(),
+                StandardRules.CREATECRL.resource(),
+                StandardRules.CREATECERT.resource()
+                ), null);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
     }
@@ -146,16 +146,6 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
     @Before
     public void setUp() throws Exception {
-        // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final AdminGroupData role = roleAccessSession.findRole(this.getClass().getSimpleName());
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
         // Remove any lingering testca before starting the tests
         caSession.removeCA(alwaysAllowToken, X509CADN.hashCode());
         // Now add the test CA so it is available in the tests
@@ -348,16 +338,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             assertNotNull(revset);
-            Iterator<? extends X509CRLEntry> iter = revset.iterator();
-            boolean found = false;
-            while (iter.hasNext()) {
-                X509CRLEntry ce = iter.next();
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                    // TODO: verify the reason code
-                }
-            }
-            assertTrue("Certificate with serial " + cert.getSerialNumber().toString(16) + " not revoked", found);
+            assertTrue("Certificate with serial " + cert.getSerialNumber().toString(16) + " not revoked", isCertificatePresentInCrl(revset, cert));
 
             // Unrevoke the certificate that we just revoked
             internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
@@ -370,15 +351,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
             if (revset != null) {
-                iter = revset.iterator();
-                found = false;
-                while (iter.hasNext()) {
-                    X509CRLEntry ce = iter.next();
-                    if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                        found = true;
-                    }
-                }
-                assertFalse(found);
+                assertFalse(isCertificatePresentInCrl(revset, cert));
             } // If no revoked certificates exist at all, this test passed...
 
             internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
@@ -391,16 +364,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
-            iter = revset.iterator();
-            found = false;
-            while (iter.hasNext()) {
-                X509CRLEntry ce = (X509CRLEntry) iter.next();
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                    // TODO: verify the reason code
-                }
-            }
-            assertTrue(found);
+            assertTrue(isCertificatePresentInCrl(revset, cert));
 
             internalCertificateStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             assertTrue("Was able to re-activate permanently revoked certificate!",
@@ -415,15 +379,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
-            iter = revset.iterator();
-            found = false;
-            while (iter.hasNext()) {
-                X509CRLEntry ce = (X509CRLEntry) iter.next();
-                if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-                    found = true;
-                }
-            }
-            assertTrue(found);
+            assertTrue(isCertificatePresentInCrl(revset, cert));
         } finally {
             internalCertificateStoreSession.removeCertificate(cert);
         }
@@ -594,6 +550,16 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     //
     // Helper methods
     //
+
+    private boolean isCertificatePresentInCrl(final Set<? extends X509CRLEntry> revokedCertificates, final X509Certificate x509Certificate) {
+        for (final X509CRLEntry ce : revokedCertificates) {
+            if (ce.getSerialNumber().compareTo(x509Certificate.getSerialNumber()) == 0) {
+                // TODO: verify the reason code
+                return true;
+            }
+        }
+        return false;
+    }
 
     private X509Certificate createCert() throws Exception {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
