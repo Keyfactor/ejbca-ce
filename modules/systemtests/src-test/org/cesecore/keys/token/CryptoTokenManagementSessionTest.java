@@ -19,20 +19,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.InvalidKeyException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.CryptoTokenRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -48,11 +42,7 @@ import org.junit.Test;
 public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private static final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-
-    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(CryptoTokenManagementSessionTest.class.getSimpleName()));
-
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenManagementSessionTest.class.getSimpleName());
     private static final Logger log = Logger.getLogger(CryptoTokenManagementSessionTest.class);
     
     @BeforeClass
@@ -63,13 +53,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     @Before
     public void setUp() throws Exception {
         // Set up base role that can edit roles
-        super.setUpAuthTokenAndRole(this.getClass().getSimpleName());
-        // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final AdminGroupData role = roleAccessSession.findRole(this.getClass().getSimpleName());
-        // Add rules to the role
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), CryptoTokenRules.BASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
+        super.setUpAuthTokenAndRole(null, this.getClass().getSimpleName(), Arrays.asList(CryptoTokenRules.BASE.resource()), null);
     }
 
     @After

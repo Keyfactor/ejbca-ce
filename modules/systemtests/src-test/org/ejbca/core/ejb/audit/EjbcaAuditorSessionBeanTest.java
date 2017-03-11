@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.audit;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -61,20 +62,12 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     
     @Before
     public void setup() throws RoleExistsException, RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
-        // Set up base role that can edit roles
-        setUpAuthTokenAndRole(ROLE_NAME);
-        // TODO: Since the following is implied by / in the new system and minimization is used, there is no point of keeping the below section
-        // Now we have a role that can edit roles, we can edit this role to include more privileges
-        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
-        // Add rules to the role, for the resource
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
+        super.setUpAuthTokenAndRole(null, ROLE_NAME, Arrays.asList(AuditLogRules.VIEW.resource()), null);
     }
 
     @After
     public void tearDown() throws Exception {
-        tearDownRemoveRole();
+        super.tearDownRemoveRole();
     }
 
     /**
@@ -89,10 +82,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         roleAuditor.getAccessRules().put(AuditLogRules.VIEW.resource(), Role.STATE_DENY);
         roleSession.persistRole(alwaysAllowToken, roleAuditor);
         // Repeat using legacy
-        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
+        testAuthorizationLegacySetup();
         //Create a brand spanking new authenticationToken
         AuthenticationToken authenticationToken = createAuthenticationToken("CN="+ROLE_NAME);
         try {
@@ -104,7 +94,15 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         }
         LOG.trace("<testAuthorization");
     }
-    
+
+    @Deprecated
+    private void testAuthorizationLegacySetup() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException {
+        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
+        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
+        roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
+    }
+
     @Test
     public void testHappyPaths() throws AuthorizationDeniedException {
         LOG.trace(">testHappyPaths");

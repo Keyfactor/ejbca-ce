@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-
-
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -41,21 +39,14 @@ public class CaSessionTest extends RoleUsingTestCase {
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
-        // Initialize role system
-        setUpAuthTokenAndRole("CaSessionTestRoleInitialization");
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         testBase = new CaSessionTestBase(testx509ca, null);            
     }
     
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
-        try {
-            if (testx509ca != null) {
-                CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            }
-        } finally {
-            // Be sure to to this, even if the above fails
-            tearDownRemoveRole();
+        if (testx509ca != null) {
+            CryptoTokenTestUtils.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         }
     }
 
