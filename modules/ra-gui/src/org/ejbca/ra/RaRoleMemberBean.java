@@ -274,6 +274,9 @@ public class RaRoleMemberBean implements Serializable {
             caId = RoleMember.NO_ISSUER;
         }
         
+        // The getRoleMember method returns a reference to an object which should not be edited directly,
+        // so we make a deep copy of it here, which we can edit freely. This code is not performance critical,
+        // so cloning through serialization is OK (and does not require a copy constructor that needs to be maintained).
         final RoleMember roleMemberWithChanges = (RoleMember) SerializationUtils.clone(roleMember);
         roleMemberWithChanges.setRoleId(roleId);
         roleMemberWithChanges.setTokenType(tokenType);
