@@ -24,7 +24,9 @@ import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +36,7 @@ import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -63,8 +66,12 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
@@ -112,9 +119,7 @@ public class RevocationApprovalTest extends CaTestCase {
             "RevocationApprovalTest"));
     private static AuthenticationToken requestingAdmin = null;
     private static AuthenticationToken approvingAdmin = null;
-    private static ArrayList<AccessUserAspectData> adminentities;
 
-    private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -122,8 +127,8 @@ public class RevocationApprovalTest extends CaTestCase {
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
@@ -134,6 +139,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private int approvalCAID;
     private int cryptoTokenId = 0;
     private int approvalProfileId = -1;
+    private int roleId = Role.ROLE_ID_UNASSIGNED;
     
     private List<File> fileHandles = new ArrayList<File>();
 
@@ -162,23 +168,23 @@ public class RevocationApprovalTest extends CaTestCase {
             endEntityManagementSession.addUser(internalAdmin, userdata2, true);
             fileHandles.addAll(BatchCreateTool.createAllNew(internalAdmin, new File(P12_FOLDER_NAME)));
         }
-        AdminGroupData role = roleAccessSession.findRole(getRoleName());
-        if (role == null) {
-            role = roleManagementSession.create(internalAdmin, getRoleName());
+        final Role oldRole = roleSession.getRole(internalAdmin, null, getRoleName());
+        if (oldRole!=null) {
+            roleSession.deleteRoleIdempotent(internalAdmin, oldRole.getRoleId());
         }
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
-        adminentities = new ArrayList<AccessUserAspectData>();
-        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
-        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
-        roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
-        accessControlSession.forceCacheExpire();
-
+        final HashMap<String,Boolean> accessRules = new HashMap<>();
+        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
+        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
+        accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
+        final Role role = roleSession.persistRole(internalAdmin, new Role(null, getRoleName(), accessRules));
+        roleMemberSession.createOrEdit(internalAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminUsername,
+                role.getRoleId(), null, null));
+        roleMemberSession.createOrEdit(internalAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), requestingAdminUsername,
+                role.getRoleId(), null, null));
+        roleId = role.getRoleId();
+        setUpLegacy();
         X509Certificate admincert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminUsername)).iterator().next();
         X509Certificate reqadmincert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(requestingAdminUsername)).iterator()
                 .next();
@@ -200,6 +206,29 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
     }
 
+    @Deprecated
+    private void setUpLegacy() throws Exception {
+        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        AdminGroupData role = roleAccessSession.findRole(getRoleName());
+        if (role == null) {
+            role = roleManagementSession.create(internalAdmin, getRoleName());
+        }
+        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
+        List<AccessUserAspectData> adminentities = new ArrayList<>();
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
+        roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
+        accessControlSession.forceCacheExpire();
+    }
+
     public String getRoleName() {
         return "RevocationApprovalTest";
     }
@@ -216,27 +245,33 @@ public class RevocationApprovalTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        try {
-            endEntityManagementSession.deleteUser(internalAdmin, adminUsername);
-        } catch (Exception e) {
-            // NOPMD:
-        }
-        try {
-            endEntityManagementSession.deleteUser(internalAdmin, requestingAdminUsername);
-        } catch (Exception e) {
-            // NOPMD:
+        roleSession.deleteRoleIdempotent(internalAdmin, roleId);
+        tearDownLegacy();
+        for (final String username : Arrays.asList(adminUsername, requestingAdminUsername, "test01Revocation", "test02Revocation", "test03Revocation", "test01extendedInfoRevokeUser")) {
+            try {
+                endEntityManagementSession.deleteUser(internalAdmin, username);
+            } catch (Exception e) {
+                // NOPMD:
+            }
         }
         caSession.removeCA(internalAdmin, approvalCAID);
         CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
-        
         try {
             approvalProfileSession.removeApprovalProfile(internalAdmin, approvalProfileId);
         } catch (Exception e) {
             // NOPMD:
         }
-        
-        for(File file : fileHandles) {
+        for (File file : fileHandles) {
             FileTools.delete(file);
+        }
+    }
+
+    @Deprecated
+    private void tearDownLegacy() throws Exception {
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        if (roleAccessSession.findRole(getRoleName())!=null) {
+            roleManagementSession.remove(internalAdmin, getRoleName());
         }
     }
 
