@@ -128,7 +128,8 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
                 StandardRules.CAREMOVE.resource(),
                 StandardRules.CAACCESSBASE.resource(),
                 StandardRules.CREATECRL.resource(),
-                StandardRules.CREATECERT.resource()
+                StandardRules.CREATECERT.resource(),
+                StandardRules.CERTIFICATEPROFILEEDIT.resource()
                 ), null);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
