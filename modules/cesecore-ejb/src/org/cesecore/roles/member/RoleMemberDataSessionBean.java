@@ -133,6 +133,17 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Set<Integer> getRoleIdsMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
+        try {
+            return getRoleIdsMatchingAuthenticationTokenOrFail(authenticationToken);
+        } catch (AuthenticationFailedException e) {
+            log.debug(e.getMessage(), e);
+            return new HashSet<>();
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Set<Integer> ret = new HashSet<>();
         if (authenticationToken!=null) {
             // TODO: This a naive implementation iterating over all RoleMemberDatas of this type. See ECA-5607 for suggested improvement.
@@ -141,16 +152,12 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             final TypedQuery<RoleMemberData> query = entityManager
                     .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class)
                     .setParameter("tokenType", authenticationToken.getMetaData().getTokenType());
-            try {
-                for (final RoleMemberData roleMemberData : query.getResultList()) {
-                    if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
-                        if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
-                            ret.add(roleMemberData.getRoleId());
-                        }
+            for (final RoleMemberData roleMemberData : query.getResultList()) {
+                if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
+                    if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
+                        ret.add(roleMemberData.getRoleId());
                     }
                 }
-            } catch (AuthenticationFailedException e) {
-                log.debug(e.getMessage(), e);
             }
         }
         return ret;
@@ -159,24 +166,19 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     @Deprecated
-    public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
+    public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final TypedQuery<RoleMemberData> query = entityManager
                 .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType", RoleMemberData.class)
                 .setParameter("tokenType", authenticationToken.getMetaData().getTokenType());
-        try {
-            final Map<Integer,Integer> ret = new HashMap<>();
-            for (final RoleMemberData roleMemberData : query.getResultList()) {
-                if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
-                    if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
-                        ret.put(roleMemberData.getRoleId(), roleMemberData.getTokenMatchKey());
-                    }
+        final Map<Integer,Integer> ret = new HashMap<>();
+        for (final RoleMemberData roleMemberData : query.getResultList()) {
+            if (roleMemberData.getRoleId()!=RoleMember.NO_ROLE) {
+                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
+                    ret.put(roleMemberData.getRoleId(), roleMemberData.getTokenMatchKey());
                 }
             }
-            return ret;
-        } catch (AuthenticationFailedException e) {
-            log.debug(e.getMessage(), e);
-            return new HashMap<>();
         }
+        return ret;
     }
     
     // TODO: Remove this once there is a better way to match tokens

@@ -187,7 +187,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /** Callback for loading cache misses */
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override
-        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) {
+        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
             HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
             if (authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
@@ -229,9 +229,9 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         log.debug(sb);
     }
 
-    /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens) */
+    /** @return the union of access rules available to the AuthenticationToken if it matches several roles (ignoring any nested tokens)  */
     @SuppressWarnings("deprecation")
-    private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) {
+    private HashMap<String, Boolean> getAccessAvailableToSingleToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         HashMap<String, Boolean> accessRules = new HashMap<>();
         if (authenticationToken!=null) {
             if (authenticationToken.getMetaData().isSuperToken()) {
@@ -246,7 +246,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             } else {
                 if (accessTreeUpdateSession.isNewAuthorizationPatternMarkerPresent()) {
                     // This is the new 6.8.0+ behavior (combine access of matched rules)
-                    for (final int matchingRoleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
+                    for (final int matchingRoleId : roleMemberDataSession.getRoleIdsMatchingAuthenticationTokenOrFail(authenticationToken)) {
                         accessRules = AccessRulesHelper.getAccessRulesUnion(accessRules, roleDataSession.getRole(matchingRoleId).getAccessRules());
                     }
                 } else {
