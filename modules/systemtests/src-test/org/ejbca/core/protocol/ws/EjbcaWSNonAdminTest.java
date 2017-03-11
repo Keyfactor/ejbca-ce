@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -54,9 +56,13 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -123,6 +129,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -540,10 +548,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         File f = BatchCreateTool.createUser(intadmin, new File(P12_FOLDER_NAME), adminusername1);
         fileHandles.addAll(Arrays.asList(f));
-        adminEntities = new ArrayList<AccessUserAspectData>();
-        adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
-        roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
-        accessControlSession.forceCacheExpire();
+        final Role role = roleSession.getRole(intadmin, null, getRoleName());
+        roleMemberSession.createOrEdit(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1,
+                role.getRoleId(), null, null));
+        setupApprovalsLegacy();
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
 
@@ -558,22 +567,39 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             }
         }
 
-        Set<Principal> principals = new HashSet<Principal>();
-        principals.add(admincert1.getSubjectX500Principal());
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(admincert1);
-        admin1 = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
+        Set<Principal> principals = new HashSet<Principal>(Arrays.asList(admincert1.getSubjectX500Principal()));
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>(Arrays.asList(admincert1));
+        admin1 = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
 
-        Set<Principal> reqprincipals = new HashSet<Principal>();
-        principals.add(reqadmincert.getSubjectX500Principal());
-        Set<X509Certificate> reqcredentials = new HashSet<X509Certificate>();
-        reqcredentials.add(reqadmincert);
-        reqadmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, reqcredentials));
+        Set<Principal> reqprincipals = new HashSet<Principal>(Arrays.asList(reqadmincert.getSubjectX500Principal()));
+        Set<X509Certificate> reqcredentials = new HashSet<X509Certificate>(Arrays.asList(reqadmincert));
+        reqadmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, reqcredentials));
       
+    }
+
+    @Deprecated
+    private void setupApprovalsLegacy() throws Exception {
+        adminEntities = new ArrayList<AccessUserAspectData>();
+        adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
+        roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
+        accessControlSession.forceCacheExpire();
     }
 
     protected void removeApprovalAdmins() throws Exception {
         endEntityManagementSession.deleteUser(intadmin, adminusername1);
+        final Role role = roleSession.getRole(intadmin, null, getRoleName());
+        if (role!=null) {
+            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(intadmin, role.getRoleId())) {
+                if (adminusername1.equals(roleMember.getTokenMatchValue())) {
+                    roleMemberSession.remove(intadmin, roleMember.getId());
+                }
+            }
+        }
+        removeApprovalAdminsLegacy();
+    }
+
+    @Deprecated
+    private void removeApprovalAdminsLegacy() throws RoleNotFoundException, AuthorizationDeniedException {
         roleManagementSession.removeSubjectsFromRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
     }
 }
