@@ -54,8 +54,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -66,9 +64,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
@@ -90,8 +85,6 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     
     private static final String USERNAME = "foo";
     
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -108,22 +101,12 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     @Before
     public void setUp() throws Exception {
-    	// Set up base role that can edit roles
-    	setUpAuthTokenAndRole("CertStoreSessionTest");
-
-    	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	AdminGroupData role = roleAccessSession.findRole("CertStoreSessionTest");
-    	assertNotNull("Failed to setup test role.", role);
-
-        // Add rules to the role
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);        
+    	super.setUpAuthTokenAndRole(null, "CertStoreSessionTest", Arrays.asList(StandardRules.CAACCESSBASE.resource()), null);
     }
 
     @After
     public void tearDown() throws Exception {
-    	tearDownRemoveRole();
+    	super.tearDownRemoveRole();
     }
 
     @Test

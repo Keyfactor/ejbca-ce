@@ -14,8 +14,9 @@ package org.cesecore;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
@@ -25,10 +26,12 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -59,18 +62,21 @@ public abstract class RoleUsingTestCase {
         return roleInitializationSession;
     }
 
-    
     public static void setUpAuthTokenAndRole(final String roleName) throws RoleExistsException, RoleNotFoundException {
-        String commonName = RoleUsingTestCase.class.getCanonicalName();
-        roleMgmgToken = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN=" + commonName, null, roleName,
-                Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        setUpAuthTokenAndRole(null, roleName, null, null);
+    }
+
+    public static void setUpAuthTokenAndRole(final String nameSpace, final String roleName, final List<String> resourcesAllowed, final List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
+        final String commonName = RoleUsingTestCase.class.getCanonicalName();
+        roleMgmgToken = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN=" + commonName, nameSpace, roleName,
+                resourcesAllowed, resourcesDenied);
         // Setup legacy authorization as well to support gradual conversions of core
-        setUpAuthTokenAndRoleLegacy(roleName);
+        setUpAuthTokenAndRoleLegacy(roleName, resourcesAllowed, resourcesDenied);
         log.debug("<setUpAuthTokenAndRole roleName="+roleName + " roleMgmgToken="+roleMgmgToken);
     }
 
     @Deprecated
-    private static void setUpAuthTokenAndRoleLegacy(String roleName) throws RoleExistsException, RoleNotFoundException {
+    private static void setUpAuthTokenAndRoleLegacy(String roleName, List<String> resourcesAllowed, List<String> resourcesDenied) throws RoleExistsException, RoleNotFoundException {
         RoleUsingTestCase.roleName = roleName;       
         X509Certificate cert = (X509Certificate) roleMgmgToken.getCredentials().iterator().next();
         // Initialize the role mgmt system with this role that is allowed to edit roles, i.e. needs access to /
@@ -81,6 +87,26 @@ public abstract class RoleUsingTestCase {
                 roleInitSession.initializeAccessWithCert(alwaysAllowAdmin, roleName, cert);
             } catch (AuthorizationDeniedException e) {
                 // NOPMD This can't happen
+            }
+        }
+        if (resourcesAllowed!=null || resourcesDenied!=null) {
+            // Now we have a role that can edit roles, we can edit this role to include more privileges
+            AdminGroupData role = roleAccessSessionRemote.findRole(roleName);
+            List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            if (resourcesAllowed!=null) {
+                for (final String resource : resourcesAllowed) {
+                    accessRules.add(new AccessRuleData(role.getRoleName(), resource, AccessRuleState.RULE_ACCEPT, true));
+                }
+            }
+            if (resourcesDenied!=null) {
+                for (final String resource : resourcesDenied) {
+                    accessRules.add(new AccessRuleData(role.getRoleName(), resource, AccessRuleState.RULE_DECLINE, false));
+                }
+            }
+            try {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).replaceAccessRulesInRole(alwaysAllowAdmin, role, accessRules);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException(e);
             }
         }
     }
