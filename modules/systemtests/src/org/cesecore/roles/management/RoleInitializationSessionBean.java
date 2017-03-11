@@ -129,6 +129,9 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
                     role.getRoleId(),
                     null, null);
             roleMember.setId(roleMemberSession.createOrEdit(alwaysAllowAuthenticationToken, roleMember));
+            if (log.isDebugEnabled()) {
+                log.debug("Added role '"+role.getRoleNameFull()+"' ("+role.getRoleId()+") matching certificate " + CertTools.getSubjectDN(x509Certificate));
+            }
         } catch (AuthorizationDeniedException e) {
             // AlwaysAllowLocalAuthenticationToken should never be denied access
             throw new IllegalStateException(e);
@@ -155,10 +158,18 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         if (authenticationToken==null) {
             log.debug("TestX509CertificateAuthenticationToken was null. No clean up will take place.");
         } else {
+            final List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+            if (log.isDebugEnabled()) {
+                log.debug("Removing " + roles.size() + " roles matching " + authenticationToken);
+            }
             final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken("removeAllAuthenticationTokensRoles");
-            for (final Role role : roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken)) {
+            for (final Role role : roles) {
                 try {
-                    roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.getRoleId());
+                    if (roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.getRoleId())) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Removed role '"+role.getRoleNameFull()+"' ("+role.getRoleId()+") matching " + authenticationToken);
+                        }
+                    }
                 } catch (AuthorizationDeniedException e) {
                     // AlwaysAllowLocalAuthenticationToken should never be denied access
                     throw new IllegalStateException(e);

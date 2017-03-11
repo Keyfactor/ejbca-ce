@@ -138,14 +138,15 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected void setUp() throws Exception { // NOPMD: this is a base class
         log.trace(">CaTestCase.setUp()");
-        super.setUpAuthTokenAndRole(getRoleName());
+        super.setUpAuthTokenAndRole(getRoleName()+"Base");
         removeTestCA(); // We can't be sure this CA was not left over from
         createTestCA();
         addDefaultRole();
     }
     
     protected void addDefaultRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
-        caAdmin = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=CaUser,CN=CaUser", null, getRoleName(),
+        final String commonName = CaTestCase.class.getCanonicalName();
+        caAdmin = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN="+commonName, null, getRoleName(),
                 Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
         // Setup legacy authorization as well to support gradual conversions of core
         addDefaultRoleLegacy();
@@ -154,12 +155,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     @Deprecated
     private void addDefaultRoleLegacy() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
         String roleName = getRoleName();
-        final Set<Principal> principals = new HashSet<Principal>();
-        principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
-        final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = getAuthenticationProviderSession();
-        caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         final X509Certificate certificate = caAdmin.getCertificate();
-
         final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
         AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
         if (role == null) {

@@ -22,25 +22,19 @@ import static org.junit.Assert.fail;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -60,10 +54,6 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
     private static KeyPair keys;
 
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    
-    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateProfileSessionTest"));
     
     @BeforeClass
     public static void setUpCryptoProvider() throws Exception {
@@ -74,21 +64,15 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
     @Before
     public void setUp() throws Exception{
     	// Set up base role that can edit roles
-    	setUpAuthTokenAndRole("CertProfileSessionTest");
-
-    	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	AdminGroupData role = roleAccessSession.findRole("CertProfileSessionTest");
-
-        // Add rules to the role
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
+        super.setUpAuthTokenAndRole(null, "CertProfileSessionTest", Arrays.asList(
+    	        StandardRules.CAACCESSBASE.resource(),
+    	        StandardRules.CERTIFICATEPROFILEEDIT.resource()
+    	        ), null);
     }
     
     @After
     public void tearDown() throws Exception {
-    	tearDownRemoveRole();
+        super.tearDownRemoveRole();
     }
 
     /**
