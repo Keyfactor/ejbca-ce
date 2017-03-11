@@ -263,7 +263,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
 
     @Override
     protected String generateUniqueId() {
-        return generateUniqueId(isVerified, userName);
+        return generateUniqueId(isVerified, userName, referenceNumber, sha1Hash, sha1Salt, hashAlgorithm);
     }
 
     @Override

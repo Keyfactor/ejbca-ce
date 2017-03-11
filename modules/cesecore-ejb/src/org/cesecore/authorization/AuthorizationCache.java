@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.ValidityDate;
 
@@ -39,8 +40,8 @@ public enum AuthorizationCache {
 
     /** Call-back interface for loading access rules on cache miss */
     public interface AuthorizationCacheCallback {
-        /** @return the access rules for the specified authenticationToken */
-        HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken);
+        /** @return the access rules for the specified authenticationToken  */
+        HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 
         /** @return the update number for the current state of roles and members used to determine if there are authorization changes */
         int getUpdateNumber();
@@ -88,7 +89,11 @@ public enum AuthorizationCache {
                         }
                         // Recalculate the authorization right away if this AuthenticationToken was seen recently
                         if (entry.timeOfLastUse+purgeUnusedAuthorizationAfter<now) {
-                            get(entry.authenticationToken, authorizationCacheCallback);
+                            try {
+                                get(entry.authenticationToken, authorizationCacheCallback);
+                            } catch (AuthenticationFailedException e) {
+                                log.debug("Unexpected failure during refresh if authroization cache: " + e.getMessage());
+                            }
                         }
                     }
                 } else if (entry.timeOfLastUse+purgeUnusedAuthorizationAfter<now) {
@@ -103,8 +108,8 @@ public enum AuthorizationCache {
         }
     }
 
-    /** @return the access rules granted to the specified authenticationToken using the callback to load them if needed. Never null. */
-    public HashMap<String, Boolean> get(final AuthenticationToken authenticationToken, final AuthorizationCacheCallback authorizationCacheCallback) {
+    /** @return the access rules granted to the specified authenticationToken using the callback to load them if needed. Never null.  */
+    public HashMap<String, Boolean> get(final AuthenticationToken authenticationToken, final AuthorizationCacheCallback authorizationCacheCallback) throws AuthenticationFailedException {
         if (authenticationToken==null || authorizationCacheCallback==null) {
             return new HashMap<>();
         }
