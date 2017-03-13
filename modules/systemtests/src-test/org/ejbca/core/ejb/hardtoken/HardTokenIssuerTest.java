@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.ejb.hardtoken;
 
 import static org.junit.Assert.assertEquals;
@@ -19,25 +18,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
-import org.cesecore.util.CertTools;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
@@ -48,22 +40,21 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-
 /**
  * Tests the Hard Token Issuer entity bean.
  *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class HardTokenIssuerTest {
+public class HardTokenIssuerTest extends RoleUsingTestCase {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
     
     private HardTokenSessionRemote hardTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
+    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     
-    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HardTokenIssuerTest"));
-
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken("HardTokenIssuerTest");
 
     @Before
     public void setUp() throws Exception {
@@ -141,44 +132,38 @@ public class HardTokenIssuerTest {
     @Test
     public void test05removeHardTokenIssuers() throws Exception {
         log.trace(">test05removeHardTokenIssuers()");
-        boolean ret = false;
         try {
             hardTokenSession.removeHardTokenIssuer(internalAdmin, "TEST");
             hardTokenSession.removeHardTokenIssuer(internalAdmin, "TEST2");
-            ret = true;
         } catch (Exception pee) {
+            fail("Removing HardTokenIssuers failed: " + pee.getMessage());
         }
-        assertTrue("Removing Certificate Profile failed", ret);
         log.trace("<test05removeHardTokenIssuers()");
     }
 
     @Test
     public void testIsAuthorizedToHardTokenIssuer() throws Exception {
-        final TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
-                .authenticate(new AuthenticationSubject(null, null));
-
-        final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
-        final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
         final String rolename = "testGetAuthorizedToHardTokenIssuer";
+        super.setUpAuthTokenAndRole(null, rolename, Arrays.asList(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS),
+                Arrays.asList(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS));
+        TestX509CertificateAuthenticationToken admin = roleMgmgToken;
         final String alias = "spacemonkeys";
         try {
-            AdminGroupData role = roleManagementSession.create(internalAdmin, rolename);
-            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
-            role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
-            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
-            role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
+            int roleId = roleSession.getRole(internalAdmin, null, rolename).getRoleId();
+            {
+                // Do legacy setup for now. Kill this during clean up.
+                roleId = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(rolename).getPrimaryKey();
+            }
             HardTokenIssuer issuer = new HardTokenIssuer();
             issuer.setDescription(alias);
-            if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, role.getPrimaryKey(), issuer)) {
+            if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, roleId, issuer)) {
                 fail("Could not add hard token issuer, test can not continue");
             }
             assertTrue(hardTokenSession.isAuthorizedToHardTokenIssuer(admin, alias));
             
             // Test authorization to edit with an unauthorized admin
             try {
-                hardTokenSession.addHardTokenIssuer(admin, alias, role.getPrimaryKey(), issuer);
+                hardTokenSession.addHardTokenIssuer(admin, alias, roleId, issuer);
                 fail("admin should not have been authorized to edit issuer");
             } catch (AuthorizationDeniedException e) {
                 assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
@@ -214,41 +199,33 @@ public class HardTokenIssuerTest {
 
         } finally {
             hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
-            roleManagementSession.remove(internalAdmin, rolename);
+            super.tearDownRemoveRole();
         }
     }
     
     @Test
     public void testIsAuthorizedToHardTokenIssuerWithoutBeingMemberOfRole() throws Exception {
-        final TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
-                .authenticate(new AuthenticationSubject(null, null));
-
-        final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
-        final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
         final String rolename = "testGetAuthorizedToHardTokenIssuer";
+        final String issuerDn = "CN="+rolename;
+        final TestX509CertificateAuthenticationToken admin = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(issuerDn, null, rolename,
+                Arrays.asList(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS), null);
         final String anotherRolename = "AnotherRoleName";
+        final String anotherIssuerDn = "CN="+anotherRolename;
+        final TestX509CertificateAuthenticationToken admin2 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(anotherIssuerDn, null, anotherRolename,
+                Arrays.asList(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS), null);
         final String alias = "spacemonkeys";
         try {
-            AdminGroupData role = roleManagementSession.create(internalAdmin, rolename);
-            AdminGroupData anotherRole = roleManagementSession.create(internalAdmin, anotherRolename);
-            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
-            role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
-            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
-            role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
-            anotherRole = roleManagementSession.addAccessRulesToRole(internalAdmin, anotherRole, accessRules);
-            HardTokenIssuer issuer = new HardTokenIssuer();
-            issuer.setDescription(alias);
-            if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, anotherRole.getPrimaryKey(), issuer)) {
+            final Role anotherRole = roleSession.getRole(internalAdmin, null, anotherRolename);
+            HardTokenIssuer hardTokenIssuer = new HardTokenIssuer();
+            hardTokenIssuer.setDescription(alias);
+            if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, anotherRole.getRoleId(), hardTokenIssuer)) {
                 fail("Could not add hard token issuer, test can not continue");
             }
             assertFalse(hardTokenSession.isAuthorizedToHardTokenIssuer(admin, alias));
         } finally {
             hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
-            roleManagementSession.remove(internalAdmin, rolename);
-            roleManagementSession.remove(internalAdmin, anotherRolename);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(admin2);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(admin);
         }
     }
-
 }
