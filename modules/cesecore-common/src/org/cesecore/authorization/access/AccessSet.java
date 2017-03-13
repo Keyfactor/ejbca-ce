@@ -13,10 +13,13 @@
 package org.cesecore.authorization.access;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -136,10 +139,11 @@ public final class AccessSet implements Serializable {
         return true; // all resources match
     }
     
-    /** @deprecated Used in tests only */
-    @Deprecated
+    /** Use in tests only */
     public void dumpRules() {
-        for (final String resource : set) {
+        final List<String> resources = new ArrayList<>(set);
+        Collections.sort(resources);
+        for (final String resource : resources) {
             log.debug("Resource: " + resource);
         }
     }
@@ -182,6 +186,10 @@ public final class AccessSet implements Serializable {
     /**
      * Conversion from EJBCA 6.8.0+ access rules to the AccessSet introduced in EJBCA 6.6.0.
      * 
+     * Note:
+     * - AccessSet created via this method will not grant access to a configured rules that don't exist on the system.
+     * - ...and this means that access to non-existing resources will never be granted via an AccessSet any more
+     * 
      * @param accessRules the EJBCA 6.8.0+ style access rules
      * @param allResources whole universe of resources that exists
      * @return an AccessSet of every single accepted resource enriched with "*SOME" and "*ALL", but no "*RECURSIVE"
@@ -202,15 +210,14 @@ public final class AccessSet implements Serializable {
                 final String allResource = matcher.replaceFirst("/$1/" + WILDCARD_ALL + "$3");
                 if (authorizedToResource) {
                     ret.add(matcher.replaceFirst("/$1/" + WILDCARD_SOME + "$3"));
+                    // Add the "allResource" as well (it will be removed later if not all IDs where authorized)
                     ret.add(allResource);
                 } else {
                     falsePositives.add(allResource);
                 }
             }
         }
-        for (final String current : falsePositives) {
-            ret.remove(current);
-        }
+        ret.removeAll(falsePositives);
         // Since expect the whole universe of rules to be provided, there should be no need to add the WILDCARD_RECURSIVE rule
         return new AccessSet(ret);
     }
