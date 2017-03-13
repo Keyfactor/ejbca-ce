@@ -247,7 +247,9 @@ public class RaRoleBean implements Serializable {
     }
 
     public String save() throws AuthorizationDeniedException {
-        // Don't change the orignal role in case some error occurs
+        // The getRole method returns a reference to an object which should not be edited directly,
+        // so we make a deep copy of it here, which we can edit freely. This code is not performance critical,
+        // so cloning through serialization is OK (and does not require a copy constructor that needs to be maintained).
         final Role roleWithChanges = (Role) SerializationUtils.clone(role);
         // Check and set namespace
         final String namespaceToUse;
