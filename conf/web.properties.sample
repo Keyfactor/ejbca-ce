@@ -40,7 +40,7 @@ superadmin.password=ejbca
 # importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
 superadmin.batch=true
 
-# The password used to protect the web servers SSL keystore. Default is serverpwd
+# The password used to protect the web server's SSL keystore. Default is serverpwd
 # Choose a good password here.
 # If upgrading from EJBCA 3.1, enter here the password found in 
 #   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml
