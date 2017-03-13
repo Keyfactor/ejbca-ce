@@ -851,6 +851,7 @@ WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFl
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:add(port="993", host="my.mail.server")
 /subsystem=mail/mail-session="java:/EjbcaMail":add(jndi-name=java:/EjbcaMail, from=noreply@mymail)
 /subsystem=mail/mail-session="java:/EjbcaMail"/server=smtp:add(outbound-socket-binding-ref=ejbca-mail-smtp, tls=true, username=smtpuser, password=smtppassword)
+:reload
 </source>
 </subsubsection>
 
@@ -1075,6 +1076,7 @@ ant deploy-keystore
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:add(port="993", host="my.mail.server")
 /subsystem=mail/mail-session="java:/EjbcaMail":add(jndi-name=java:/EjbcaMail, from=noreply@mymail)
 /subsystem=mail/mail-session="java:/EjbcaMail"/server=smtp:add(outbound-socket-binding-ref=ejbca-mail-smtp, tls=true, username=smtpuser, password=smtppassword)
+:reload
 </source>
 </subsubsection>
 
