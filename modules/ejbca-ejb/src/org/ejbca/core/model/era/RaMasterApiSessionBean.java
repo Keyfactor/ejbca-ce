@@ -230,18 +230,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
-        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-        return AccessSet.fromAccessRules(accessRules, authorizationSystemSession.getAllResources(false));
+        return authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
     }
     
     @Override
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens)  {
         final List<AccessSet> ret = new ArrayList<>();
-        final Set<String> allResourcesInUse = authorizationSystemSession.getAllResources(false);
         for (final AuthenticationToken authenticationToken : authenticationTokens) {
             try {
-                final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-                ret.add(AccessSet.fromAccessRules(accessRules, allResourcesInUse));
+                ret.add(authorizationSystemSession.getAccessSetForAuthToken(authenticationToken));
             } catch (AuthenticationFailedException e) {
                 // Always add, even if null. Otherwise the caller won't be able to determine which AccessSet belongs to which AuthenticationToken
                 ret.add(null);

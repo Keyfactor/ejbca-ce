@@ -20,5 +20,4 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface AuthorizationSessionRemote extends AuthorizationSession {
-
 }
