@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionRemote;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -34,14 +35,18 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionRemote;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +60,12 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
 
     private static final Logger log = Logger.getLogger(AccessControlSessionBeanTest.class);
     
+    private AuthorizationSessionRemote authorizationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class);
+    private AuthorizationSystemSessionRemote authorizationSystemSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class);
+    //private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    //private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -148,113 +159,88 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
 
     @Test
     public void testNestedIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
-        // Let's set up a role and a nice resource tree to play with.
-        final String roleNameClients = "Dragon";
-        final String roleNameViaRaServer = "LonelyMountainRaServer";
-        final String roleNameViaProxyServer = "MiddleEarthProxyServer";
+        TestX509CertificateAuthenticationToken authenticationTokenClient = null;
+        TestX509CertificateAuthenticationToken authenticationTokenRaServer = null;
+        TestX509CertificateAuthenticationToken authenticationTokenProxyServer = null;
         try {
-            final AdminGroupData roleClients = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameClients);
-            final AdminGroupData roleViaRaServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaRaServer);
-            final AdminGroupData roleViaProxyServer = roleManagementSession.create(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
+            // Let's set up a role and a nice resource tree to play with.
+            final String roleNameClients = "Dragon";
+            final String roleNameViaRaServer = "LonelyMountainRaServer";
+            final String roleNameViaProxyServer = "MiddleEarthProxyServer";
             final String issuerDnClients = "CN="+roleNameClients;
             final String issuerViaRaServer = "CN="+roleNameViaRaServer;
             final String issuerViaProxyServer = "CN="+roleNameViaProxyServer;
-            final int caIdClients = issuerDnClients.hashCode();
-            final int caIdViaRaServer = issuerViaRaServer.hashCode();
-            final int caIdViaProxyServer = issuerViaProxyServer.hashCode();
-            final X509CertificateAuthenticationToken authenticationTokenClient = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDnClients);
-            final X509CertificateAuthenticationToken authenticationTokenRaServer = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerViaRaServer);
-            final X509CertificateAuthenticationToken authenticationTokenProxyServer = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerViaProxyServer);
-            final List<AccessUserAspectData> accessUsersClients = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
-                    roleClients.getRoleName(), caIdClients, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameClients)}));
-            final List<AccessUserAspectData> accessUsersViaRaServer = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
-                    roleViaRaServer.getRoleName(), caIdViaRaServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaRaServer)}));
-            final List<AccessUserAspectData> accessUsersViaProxyServer = new ArrayList<>(Arrays.asList(new AccessUserAspectData[] { new AccessUserAspectData(
-                    roleViaProxyServer.getRoleName(), caIdViaProxyServer, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, roleNameViaProxyServer)}));
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleClients, accessUsersClients);
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessUsersViaRaServer);
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessUsersViaProxyServer);
-            // Give the access to do anything
-            final List<AccessRuleData> accessRulesClients = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
-                    new AccessRuleData(roleClients.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true)
-            }));
-            // Limit anything from the RA server access to a few rules
-            final List<AccessRuleData> accessRulesViaRaServer = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
-                    new AccessRuleData(roleClients.getRoleName(), "/sleepongold", AccessRuleState.RULE_ACCEPT, false),
-                    new AccessRuleData(roleClients.getRoleName(), "/hunt/dwarfs", AccessRuleState.RULE_ACCEPT, false)
-            }));
-            final List<AccessRuleData> accessRulesViaProxyServer = new ArrayList<AccessRuleData>(Arrays.asList(new AccessRuleData[]{
-                    new AccessRuleData(roleClients.getRoleName(), "/beshotbyarrow", AccessRuleState.RULE_ACCEPT, false),
-                    new AccessRuleData(roleClients.getRoleName(), "/hunt", AccessRuleState.RULE_ACCEPT, true)
-            }));
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleClients, accessRulesClients);
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaRaServer, accessRulesViaRaServer);
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, roleViaProxyServer, accessRulesViaProxyServer);
-            
+            authenticationTokenClient = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(issuerDnClients, null, roleNameClients,
+                    Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+            authenticationTokenRaServer = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(issuerViaRaServer, null, roleNameViaRaServer,
+                    Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), StandardRules.CREATECRL.resource()), null);
+            authenticationTokenProxyServer = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(issuerViaProxyServer, null, roleNameViaProxyServer,
+                    Arrays.asList(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAFUNCTIONALITY.resource()), null);
             // Direct access by almighty client should allow anything
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/beshotbyarrow"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
-            AccessSet accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenClient);
-            assertTrue(accessSet.isAuthorized("/beshotbyarrow"));
-            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
-            assertTrue(accessSet.isAuthorized("/hunt/elfs"));
-            assertTrue(accessSet.isAuthorized("/sleepongold"));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.CREATECRL.resource()));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
+            final AccessSet accessSet1 = authorizationSystemSession.getAccessSetForAuthToken(authenticationTokenClient);
+            accessSet1.dumpRules();
+            assertTrue(accessSet1.isAuthorized(AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(accessSet1.isAuthorized(StandardRules.CREATECRL.resource()));
+            assertTrue(accessSet1.isAuthorized(StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            assertTrue(accessSet1.isAuthorized(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
             
             // Direct access by RA server
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/beshotbyarrow"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
-            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenRaServer);
-            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
-            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
-            assertTrue(accessSet.isAuthorized("/sleepongold"));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.CREATECRL.resource()));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
+            final AccessSet accessSet2 = authorizationSystemSession.getAccessSetForAuthToken(authenticationTokenRaServer);
+            assertFalse(accessSet2.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet2.isAuthorized(AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(accessSet2.isAuthorized(StandardRules.CREATECRL.resource()));
+            assertTrue(accessSet2.isAuthorized(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
             
             // Direct access by Proxy server
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenProxyServer, StandardRules.ROLE_ROOT.resource()));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/beshotbyarrow"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenProxyServer, "/hunt/elfs"));
-            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenProxyServer);
-            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
-            assertTrue(accessSet.isAuthorized("/beshotbyarrow"));
-            assertTrue(accessSet.isAuthorized("/hunt/elfs"));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenProxyServer, StandardRules.ROLE_ROOT.resource()));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenProxyServer, AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenProxyServer, StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            final AccessSet accessSet3 = authorizationSystemSession.getAccessSetForAuthToken(authenticationTokenProxyServer);
+            assertFalse(accessSet3.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertTrue(accessSet3.isAuthorized(AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(accessSet3.isAuthorized(StandardRules.CERTIFICATEPROFILEEDIT.resource()));
             
             // Access by RA server via Proxy server
             authenticationTokenRaServer.appendNestedAuthenticationToken(authenticationTokenProxyServer);
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/beshotbyarrow"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/dwarfs"));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/sleepongold"));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenRaServer, "/hunt/elfs"));
-            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenRaServer);
-            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
-            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
-            assertFalse(accessSet.isAuthorized("/sleepongold"));
-            assertFalse(accessSet.isAuthorized("/hunt/elfs"));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.CREATECRL.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenRaServer, StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            final AccessSet accessSet4 = authorizationSystemSession.getAccessSetForAuthToken(authenticationTokenRaServer);
+            assertFalse(accessSet4.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet4.isAuthorized(AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(accessSet4.isAuthorized(StandardRules.CREATECRL.resource()));
+            assertFalse(accessSet4.isAuthorized(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
+            assertFalse(accessSet4.isAuthorized(StandardRules.CERTIFICATEPROFILEEDIT.resource()));
             
             // Access by Client via RA server via Proxy server
             authenticationTokenClient.appendNestedAuthenticationToken(authenticationTokenRaServer);
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/beshotbyarrow"));
-            assertTrue(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/dwarfs"));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/hunt/elfs"));
-            assertFalse(accessControlSession.isAuthorized(authenticationTokenClient, "/sleepongold"));
-            accessSet = accessControlSession.getAccessSetForAuthToken(authenticationTokenClient);
-            assertFalse(accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
-            assertFalse(accessSet.isAuthorized("/beshotbyarrow"));
-            assertTrue(accessSet.isAuthorized("/hunt/dwarfs"));
-            assertFalse(accessSet.isAuthorized("/hunt/elfs"));
-            assertFalse(accessSet.isAuthorized("/sleepongold"));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenClient, AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.CREATECRL.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            assertFalse(authorizationSession.isAuthorized(authenticationTokenClient, StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
+            final AccessSet accessSet5 = authorizationSystemSession.getAccessSetForAuthToken(authenticationTokenClient);
+            assertFalse(accessSet5.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessSet5.isAuthorized(AccessRulesConstants.ROLE_ADMINISTRATOR));
+            assertTrue(accessSet5.isAuthorized(StandardRules.CREATECRL.resource()));
+            assertFalse(accessSet5.isAuthorized(StandardRules.CERTIFICATEPROFILEEDIT.resource()));
+            assertFalse(accessSet5.isAuthorized(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()));
             
         } finally {
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameClients);
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameViaRaServer);
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleNameViaProxyServer);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationTokenClient);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationTokenRaServer);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationTokenProxyServer);
         }
     }
 
@@ -308,96 +294,37 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
                 //ignore
             }
         }
-        
     }
     
     @Test
     public void testAccessSets() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
-        final String roleName = "TestAccessSet";
-        final String otherRoleName = "TestAccessSetOther";
-        final String unrelatedRoleName = "TestAccessSetUnrelated";
+        log.trace(">testAccessSets");
+        TestX509CertificateAuthenticationToken authenticationToken = null;
         try {
-            final AdminGroupData role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
-            final String organization = "PrimeKey Solutions TEST";
-            final String issuerDn = "CN="+roleName;//+",O="+organization;
-            final X509CertificateAuthenticationToken authenticationToken = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDn);
-            final int caId = issuerDn.hashCode();
-           
-            // Create a role for this admin
-            List<AccessUserAspectData> accessUsers = new ArrayList<>();
-            accessUsers.add(new AccessUserAspectData(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                    AccessMatchType.TYPE_EQUALCASE, roleName));
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, role, accessUsers);
-            
-            List<AccessRuleData> accessRules = new ArrayList<>();
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive", AccessRuleState.RULE_ACCEPT, true));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept", AccessRuleState.RULE_ACCEPT, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/notused", AccessRuleState.RULE_NOTUSED, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/accept", AccessRuleState.RULE_ACCEPT, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/notused", AccessRuleState.RULE_NOTUSED, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/accept/notused", AccessRuleState.RULE_NOTUSED, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/acceptRecursive/notused/notused", AccessRuleState.RULE_NOTUSED, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept/accept", AccessRuleState.RULE_ACCEPT, false));
-            accessRules.add(new AccessRuleData(role.getRoleName(), "/accept/notused", AccessRuleState.RULE_NOTUSED, false));
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
-            
-            // Create a less specific role
-            final AdminGroupData otherRole = roleManagementSession.create(alwaysAllowAuthenticationToken, otherRoleName);
-            accessUsers = new ArrayList<>();
-            accessUsers.add(new AccessUserAspectData(otherRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
-                    AccessMatchType.TYPE_EQUALCASE, organization));
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, otherRole, accessUsers);
-            
-            accessRules = new ArrayList<>();       
-            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/otherrole", AccessRuleState.RULE_ACCEPT, true));
-            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/notused/other", AccessRuleState.RULE_ACCEPT, false));
-            accessRules.add(new AccessRuleData(otherRole.getRoleName(), "/ca/*ALL/edit", AccessRuleState.RULE_ACCEPT, false));
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, otherRole, accessRules);
-            
-            // Create a role that shouldn't match our admin
-            final AdminGroupData unrelatedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unrelatedRoleName);
-            accessUsers = new ArrayList<>();
-            accessUsers.add(new AccessUserAspectData(unrelatedRole.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_ORGANIZATION,
-                    AccessMatchType.TYPE_EQUALCASE, "Not matching"));
-            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, unrelatedRole, accessUsers);
-            
-            accessRules = new ArrayList<>();       
-            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/restricted", AccessRuleState.RULE_ACCEPT, true));
-            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/notused/other", AccessRuleState.RULE_ACCEPT, false));
-            accessRules.add(new AccessRuleData(unrelatedRole.getRoleName(), "/ca/*ALL/edit", AccessRuleState.RULE_ACCEPT, false));
-            roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, unrelatedRole, accessRules);
-            
+            final String roleName = "TestAccessSet";
+            authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+roleName, null, roleName,
+                    Arrays.asList(StandardRules.CAFUNCTIONALITY.resource(), StandardRules.SYSTEMFUNCTIONALITY.resource()),
+                    Arrays.asList(StandardRules.VIEWROLES.resource(), StandardRules.EDITROLES.resource()));
             // Now get an AccessSet and perform some testing on it
-            final AccessSet set = accessControlSession.getAccessSetForAuthToken(authenticationToken);
-
+            final AccessSet accessSet = authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
             log.debug("Now dumping the allowed resources in the AccessSet:");
-            set.dumpRules();
-            
-            assertFalse("Should not have / access", set.isAuthorized(StandardRules.ROLE_ROOT.resource()));
-           
-            assertTrue("Should have /acceptRecursive access", set.isAuthorized("/acceptRecursive"));            
-            assertTrue("Should have /accept access", set.isAuthorized("/accept"));
-            assertFalse("Should not have /notused acccess", set.isAuthorized("/notused"));
-            assertFalse("Should not have /unexistent access", set.isAuthorized("/unexistent"));
-            
-            assertTrue(set.isAuthorized("/acceptRecursive/accept"));
-            assertTrue(set.isAuthorized("/acceptRecursive/notused"));
-            assertTrue(set.isAuthorized("/acceptRecursive/unexistent"));
-            
-            assertTrue(set.isAuthorized("/acceptRecursive/accept/notused"));
-            assertTrue(set.isAuthorized("/acceptRecursive/notused/notused"));
-            
-            assertTrue(set.isAuthorized("/accept/accept"));
-            assertFalse(set.isAuthorized("/accept/notused"));
-            assertFalse(set.isAuthorized("/accept/unexistent"));
-      
-            assertTrue(set.isAuthorized("/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-            assertTrue(set.isAuthorized("/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-
+            accessSet.dumpRules();
+            assertFalse("Should not have / access", accessSet.isAuthorized(StandardRules.ROLE_ROOT.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.CAFUNCTIONALITY.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.SYSTEMFUNCTIONALITY.resource()));
+            assertFalse(accessSet.isAuthorized(StandardRules.VIEWROLES.resource()));
+            assertFalse(accessSet.isAuthorized(StandardRules.EDITROLES.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.CAADD.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.CAEDIT.resource()));
+            // Behaviors change after EJBCA 6.8.0, used to allow non-existing resources using recursive rule
+            assertFalse(accessSet.isAuthorized(StandardRules.CAFUNCTIONALITY.resource()+"/unexistent"));
+            assertTrue(accessSet.isAuthorized(StandardRules.SYSTEMCONFIGURATION_VIEW.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.CAFUNCTIONALITY.resource(), StandardRules.SYSTEMFUNCTIONALITY.resource()));
+            assertTrue(accessSet.isAuthorized(StandardRules.CAADD.resource(), StandardRules.CAEDIT.resource()));
+            assertFalse(accessSet.isAuthorized(StandardRules.CAADD.resource(), StandardRules.CAEDIT.resource(), StandardRules.VIEWROLES.resource()));
         } finally {
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleName);
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, otherRoleName);
-            roleManagementSession.remove(alwaysAllowAuthenticationToken, unrelatedRoleName);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+            log.trace("<testAccessSets");
         }
     }
 }

@@ -31,7 +31,6 @@ import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
-import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
@@ -192,16 +191,6 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         RemoteAccessSetCacheHolder.forceEmptyCache();
     }
     
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public AccessSet getAccessSetForAuthToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final AccessSet ret;
-        log.trace(">getOwnAccessSet");
-        ret = accessTreeCache.getAccessSetForAuthToken(authenticationToken);
-        log.trace("<getOwnAccessSet");
-        return ret;
-    }
-
     /**
      * Method used check if a reconstruction of authorization tree is needed in the authorization beans.
      * 

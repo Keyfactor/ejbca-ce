@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,6 +31,10 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
@@ -68,6 +73,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
 
     private static final Logger log = Logger.getLogger(AuthorizationSystemSessionBean.class);
 
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -258,5 +265,17 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         }
         log.info("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
         return false;
+    }
+
+    @Override
+    @Deprecated
+    public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
+        final Set<String> allResources = new HashSet<>(getAllResources(false));
+        // Since we no longer support the recursive rule in AccessSets from EJBCA 6.8.0 we also need to include non-configurable access rules
+        // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
+        allResources.add(StandardRules.CAADD.resource());
+        allResources.add(StandardRules.CAREMOVE.resource());
+        return AccessSet.fromAccessRules(accessRules, allResources);
     }
 }
