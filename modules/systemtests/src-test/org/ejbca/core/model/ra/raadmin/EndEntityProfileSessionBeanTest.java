@@ -95,7 +95,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         // Set up base role that can edit roles
         setUpAuthTokenAndRole(null, ROLENAME, Arrays.asList(
                 StandardRules.CAACCESSBASE.resource(),
-                AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES
+                AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES,
+                AccessRulesConstants.ENDENTITYPROFILEBASE
                 ), null);
     }
 
@@ -466,17 +467,16 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     
     @Test
     public void testAuthorization() throws Exception {
-        
+        log.trace(">testAuthorization");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
-
         try {
             EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile("TESTEEPROFNOAUTH");
             assertNull(eep);
             EndEntityProfile profile = new EndEntityProfile();
-            profile.setAvailableCAs(Collections.singletonList(123)); // Dummy CA id
+            profile.setAvailableCAs(Collections.singletonList(123));
             endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
             eep = endEntityProfileSession.getEndEntityProfile("TESTEEPROFNOAUTH");
             assertNotNull(eep);
@@ -511,13 +511,15 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
-            
             // Test getting authorized end entity profiles IDs, get only profiles we have create access to (same as addendentity.jsp does)
-            Collection<Integer> ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
+            Collection<Integer> ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(alwaysAllowToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertNotNull(ids1);
             // Some IDs we know should be in there (there might be others as well depending on the system the test runs on so we can't be too strict
-            int id1 = endEntityProfileSession.getEndEntityProfileId("TESTEEPROFNOAUTH");
-            assertTrue("Id should be amongst authorized Ids: "+id1, ids1.contains(id1));
+            final int id1 = endEntityProfileSession.getEndEntityProfileId("TESTEEPROFNOAUTH");
+            // We cannot access an EEP with a non-existing CA unless we are root
+            Collection<Integer> ids3 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
+            assertNotNull(ids3);
+            assertFalse("Id should not be amongst authorized Ids: "+id1, ids3.contains(id1));
             // Should not be in this one, since not authorized
             Collection<Integer> ids2 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(adminTokenNoAuth, AccessRulesConstants.CREATE_END_ENTITY);
             assertNotNull(ids2);
@@ -536,10 +538,10 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             roleInstance1.getAccessRules().put(StandardRules.CAACCESS.resource() + caid, Role.STATE_DENY);
             roleSession.persistRole(alwaysAllowToken, roleInstance1);
             // TODO: Remove during clean up
-            AdminGroupData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
+            AdminGroupData role = roleAccessSession.findRole(ROLENAME);
             List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_DECLINE, false));
-            roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+            roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
             try {
                 // Now it should fail
                 endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
@@ -568,7 +570,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             // TODO: Remove during clean up
             accessRules = new ArrayList<>();
             accessRules.add(new AccessRuleData(role.getRoleName(), AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + id1 + AccessRulesConstants.CREATE_END_ENTITY, AccessRuleState.RULE_DECLINE, false));
-            roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+            roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertFalse("Id should not be amongst authorized Ids: "+id1, ids1.contains(id1));
             // Replace the deny rule with an accept rule so we can edit the profile later on
@@ -579,13 +581,18 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
             accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(role.getRoleName(), AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + id1 + AccessRulesConstants.CREATE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-            roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+            roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
             ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(roleMgmgToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertTrue("Id should be amongst authorized Ids: "+id1, ids1.contains(id1));
         } finally {
-            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH");
-            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH1");
-            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, "TESTEEPROFNOAUTH2");
+            for (final String eepName : Arrays.asList("TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1", "TESTEEPROFNOAUTH2")) {
+                try {
+                    endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepName);
+                } catch (Exception e) {
+                    log.debug(e.getMessage());
+                }
+            }
+            log.trace("<testAuthorization");
         }
     }
 
