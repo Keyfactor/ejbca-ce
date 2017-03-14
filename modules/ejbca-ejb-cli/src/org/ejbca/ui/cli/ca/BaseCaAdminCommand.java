@@ -202,7 +202,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         }
         EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class).initializeAuthorizationModuleWithSuperAdmin(authenticationToken, caid,
                 superAdminCN);
-        EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class).initializeAuthorizationModule(authenticationToken, caid,
+        EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class).initializeAuthorizationModule(getAuthenticationToken(), caid,
                 superAdminCN);
         // Add certificate match by common name to "Super Administrator Role"
         final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null,
