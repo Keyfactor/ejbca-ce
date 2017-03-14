@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.authorization;
 
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.Local;
 
@@ -27,8 +26,8 @@ public interface AuthorizationSystemSessionLocal extends AuthorizationSystemSess
     /** @return a Map<category name, Map<resource,resourceName>> */
     Map<String, Map<String, String>> getAllResourceAndResourceNamesByCategory();
 
-    /** @return a Set of all resources on this installation (optionally ignoring if certain resources is not in use) */
-    Set<String> getAllResources(boolean ignoreLimitations);
+    /** @return a Map of all <resource,resourceName>, on this installation (optionally ignoring if certain resources is not in use) */
+    Map<String,String> getAllResources(boolean ignoreLimitations);
 
     /**
      * Setup the initial Role with the a single EJBCA CLI RoleMember under the condition that this is system is

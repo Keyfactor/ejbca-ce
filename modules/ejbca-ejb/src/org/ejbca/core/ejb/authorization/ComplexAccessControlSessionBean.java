@@ -178,6 +178,8 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         
     }
 
+    @Deprecated
+    @Override
     public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,
             AuthorizationDeniedException {
         if (log.isTraceEnabled()) {

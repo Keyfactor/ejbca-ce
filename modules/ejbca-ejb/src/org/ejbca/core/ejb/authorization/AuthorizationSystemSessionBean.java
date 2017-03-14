@@ -33,18 +33,22 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRulePlugin;
 import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -98,7 +102,25 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     private EntityManager entityManager;
 
     @Override
-    public Set<String> getAllResources(final boolean ignoreLimitations) {
+    public Map<String,String> getAllResources(final AuthenticationToken authenticationToken, final boolean ignoreLimitations) {
+        final Map<String,String> authorizedResources = new HashMap<>();
+        try {
+            final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
+            for (final Entry<String,String> entry : getAllResources(ignoreLimitations).entrySet()) {
+                if (AccessRulesHelper.hasAccessToResource(accessRules, entry.getKey())) {
+                    authorizedResources.put(AccessRulesHelper.normalizeResource(entry.getKey()), AccessRulesHelper.normalizeResource(entry.getValue()));
+                }
+            }
+        } catch (AuthenticationFailedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to get resources due to authentication failure: " + e.getMessage());
+            }
+        }
+        return authorizedResources;
+    }
+
+    @Override
+    public Map<String,String> getAllResources(final boolean ignoreLimitations) {
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         final Map<Integer, String> eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         final Map<Integer, String> userDataSourceIdToNameMap = userDataSourceSession.getUserDataSourceIdToNameMap();
@@ -110,9 +132,9 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<String, Map<String,String>> categorizedAccessRules = getAllResourceAndResourceNamesByCategory(
                 endEntityProfileLimitationsEnabled, hardTokenIssuingEnabled, keyRecoveryEnabled,
                 Arrays.asList(EjbcaConfiguration.getCustomAvailableAccessRules()), eepIdToNameMap, userDataSourceIdToNameMap, cryptoTokenIdToNameMap, caIdToNameMap);
-        final Set<String> ret = new HashSet<>();
+        final Map<String,String> ret = new HashMap<>();
         for (final Map<String,String> acessRuleMap : categorizedAccessRules.values()) {
-            ret.addAll(acessRuleMap.keySet());
+            ret.putAll(acessRuleMap);
         }
         return ret;
     }
@@ -267,11 +289,35 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         return false;
     }
 
+    /*
+     * Note:
+     * This is expected to be invoked by the CLI user during "ant install" or similar operation.
+     * The StartupSingletonBean should have initialized by the SUPERADMIN_ROLE at startup on a fresh system and authorized the CLI user.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public boolean initializeAuthorizationModuleWithSuperAdmin(AuthenticationToken authenticationToken, int caId, String superAdminCN) throws AuthorizationDeniedException {
+        if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
+            log.info("The Role '" + SUPERADMIN_ROLE + "' has not been initialized. Cannot add SuperAdmin '" + superAdminCN + "'.");
+            return false;
+        }
+        final Role role = roleSession.getRole(authenticationToken, null, SUPERADMIN_ROLE);
+        if (role==null) {
+            log.info("The Role '" + SUPERADMIN_ROLE + "' does not exist. Cannot add SuperAdmin '" + superAdminCN + "'.");
+            return false;
+        }
+        // We don't care if the caller has done this before. If the caller is authorized we comply.
+        roleMemberSession.createOrEdit(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                superAdminCN, role.getRoleId(), null, null));
+        return true;
+    }
+
     @Override
     @Deprecated
     public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
-        final Set<String> allResources = new HashSet<>(getAllResources(false));
+        final Set<String> allResources = new HashSet<>(getAllResources(false).keySet());
         // Since we no longer support the recursive rule in AccessSets from EJBCA 6.8.0 we also need to include non-configurable access rules
         // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
         allResources.add(StandardRules.CAADD.resource());

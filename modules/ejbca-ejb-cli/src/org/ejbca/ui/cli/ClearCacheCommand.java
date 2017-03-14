@@ -15,7 +15,6 @@ package org.ejbca.ui.cli;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationSessionRemote;
-import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
@@ -25,7 +24,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
@@ -134,8 +132,6 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             log.info("Flushing Authorization cache.");
             // Flush access control
             EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
-            EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
-            EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class).forceRemoteCacheExpire();
         }
         if (cacache) {
             log.info("Flushing CA cache.");

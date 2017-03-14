@@ -1596,7 +1596,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase680() throws UpgradeFailedException {
         log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
         // Get largest possible list of all access rules on this system
-        final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true);
+        final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true).keySet();
         // Migrate one AdminGroupData at the time
         final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
         final Collection<AdminGroupData> adminGroupDatas = roleMgmtSession.getAllRolesAuthorizedToEdit(authenticationToken);
