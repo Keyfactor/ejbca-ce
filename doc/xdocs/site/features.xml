@@ -28,7 +28,8 @@
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
 <li><a href="docs/userguide.html#End%20Entities">Admin registration</a> and <a href="docs/adminguide.html#Self%20Registration">self-registration</a> work-flows out of the box. Supports virtually any work-flow with <a href="docs/adminguide.html#Customizing%20EJBCA">plug-ins</a> and integration.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
-<li>Browser enrollment with Firefox, IE, etc.</li>
+<li>Easy to use RA web UI for self registration and issuance by administrators.</li>
+<li>Legacy browser enrollment with Firefox.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>Mobile enrollment, i.e. iOS using <a href="docs/adminguide.html#Tested devices">SCEP</a>.</li>
@@ -81,6 +82,7 @@
 <li>Simple installation and configuration.</li>
 <li>Administration through Web GUI, command line or Web Services.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
+<li>Easy to use RA web UI for self registration and issuance by administrators.</li>
 <li>Configurable entity profiles for different types of users.</li>
 <li>Notification system for e-mail notification to users and administrators when a user is added or certificates expire etc.</li>
 <li>Random or manual password for initial user authentication.</li>
@@ -115,8 +117,9 @@
   <subsection name="Enterprise Edition features">
 <ul>
 <li>Support and maintenance from PrimeKey, world renowned PKI experts.</li>
-<li>Maintenance and security releases.</li>
-<li>Common Criteria EAL4+ and CWA 14167 certified.</li>
+<li>Regular maintenance and security releases.</li>
+<li>Common Criteria EAL4+ certified.</li>
+<li>Used in many WebTrust, CWA 14167 and eIDAS audited installations.</li>
 <li>Integrity protected <a href="docs/adminguide.html#Logging">audit log</a> (log signing), with digital signature or HMAC protection.</li>
 <li>Full database integrity protection of all tables, to detect database manipulation.</li>
 <li>Command line tool for verification of audit and database integrity protection.</li>
@@ -132,7 +135,7 @@
 <li><a href="docs/adminguide.html#Cert%20Safe%20publisher%20for%20a%20HTTPS%20server%20(Enterprise%20only)">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
 <li>Direct Validation Authority (OCSP responder) updates from CA to VA. Ideal for low latency revocation and white listing.</li>
-<li><a href="docs/externalra.html">External RA</a> with a polling model for RA to CA communication, for high security environments.</li>
+<li><a href="docs/externalra.html">External RA</a> with a polling model for RA to CA communication, for high security environments. Ability to run the RA web UI in polling mode.</li>
 <li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
 <li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality, State and Country).</li>
 <li>eIDAS specific fields as defined in ETSI EN 319 412 (organizationIdentifier).</li>
