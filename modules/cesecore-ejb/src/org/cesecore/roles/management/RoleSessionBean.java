@@ -108,6 +108,23 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
         return roles;
     }
+
+    /*
+     * NOTE: This separate method for remote EJB calls exists for a good reason: If this is invoked as a part of a
+     * local transaction, the LocalJvmOnlyAuthenticationToken will be valid for subsequent authentication calls.
+     */
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOfRemote(AuthenticationToken authenticationTokenForAuhtorization, AuthenticationToken authenticationTokenToCheck) {
+        if (authenticationTokenToCheck instanceof NestableAuthenticationToken) {
+            ((NestableAuthenticationToken) authenticationTokenToCheck).initRandomToken();
+        } else if (authenticationTokenToCheck instanceof LocalJvmOnlyAuthenticationToken) {
+            // Ensure that the matching procedure below also works for remote EJB calls
+            ((LocalJvmOnlyAuthenticationToken) authenticationTokenToCheck).initRandomToken();
+        }
+        final List<Role> roles = getRolesAuthenticationTokenIsMemberOf(authenticationTokenToCheck);
+        roles.retainAll(getAuthorizedRoles(authenticationTokenForAuhtorization));
+        return roles;
+    }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -410,18 +427,5 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             }
         }
         return new ArrayList<>(namespaces);
-    }
-
-    @Override
-    public List<Role> getRolesAuthenticationTokenIsMemberOfRemote(AuthenticationToken authenticationTokenForAuhtorization, AuthenticationToken authenticationTokenToCheck) {
-        if (authenticationTokenToCheck instanceof NestableAuthenticationToken) {
-            ((NestableAuthenticationToken) authenticationTokenToCheck).initRandomToken();
-        } else if (authenticationTokenToCheck instanceof LocalJvmOnlyAuthenticationToken) {
-            // Ensure that the matching procedure below also works for remote EJB calls
-            ((LocalJvmOnlyAuthenticationToken) authenticationTokenToCheck).initRandomToken();
-        }
-        final List<Role> roles = getRolesAuthenticationTokenIsMemberOf(authenticationTokenToCheck);
-        roles.retainAll(getAuthorizedRoles(authenticationTokenForAuhtorization));
-        return roles;
     }
 }
