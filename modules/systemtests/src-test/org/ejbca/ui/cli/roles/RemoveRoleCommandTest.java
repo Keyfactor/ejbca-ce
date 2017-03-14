@@ -15,14 +15,17 @@ package org.ejbca.ui.cli.roles;
 import static org.junit.Assert.assertNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -42,6 +45,7 @@ public class RemoveRoleCommandTest {
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
@@ -69,22 +73,28 @@ public class RemoveRoleCommandTest {
     @Before
     public void setup() throws Exception {
         roleManagementSession.create(authenticationToken, TESTCLASS_NAME);
+        roleSession.persistRole(authenticationToken, new Role(null, TESTCLASS_NAME));
     }
 
     @After
     public void teardown() throws Exception {
-        AdminGroupData role = roleAccessSession.findRole(TESTCLASS_NAME);
-        if (role != null) {
-            roleManagementSession.remove(authenticationToken, role);
+        AdminGroupData adminGroupData = roleAccessSession.findRole(TESTCLASS_NAME);
+        if (adminGroupData != null) {
+            roleManagementSession.remove(authenticationToken, adminGroupData);
+        }
+        final Role role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        if (role!=null) {
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
         }
     }
 
     @Test
-    public void testRemoveRole() {
+    public void testRemoveRole() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
-        AdminGroupData role = roleAccessSession.findRole(TESTCLASS_NAME);
-        assertNull("Role was not removed,", role);
-
+        AdminGroupData adminGroupData = roleAccessSession.findRole(TESTCLASS_NAME);
+        assertNull("Role was not removed,", adminGroupData);
+        final Role role = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        //assertNull("Role was not removed,", role);
     }
 }
