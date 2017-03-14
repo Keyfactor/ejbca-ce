@@ -15,10 +15,13 @@ package org.ejbca.ui.cli.roles;
 import static org.junit.Assert.assertNotNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Test;
@@ -31,6 +34,7 @@ public class AddRoleCommandTest {
 
     private final String TESTCLASS_NAME = AddRoleCommandTest.class.getSimpleName();
 
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
@@ -44,13 +48,18 @@ public class AddRoleCommandTest {
         if (role != null) {
             roleManagementSession.remove(authenticationToken, role);
         }
+        final Role oldRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        if (oldRole!=null) {
+            roleSession.deleteRoleIdempotent(authenticationToken, oldRole.getRoleId());
+        }
     }
 
     @Test
-    public void testAddRoleCommand() {
+    public void testAddRoleCommand() throws AuthorizationDeniedException {
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertNotNull("Role was not added.", roleAccessSession.findRole(TESTCLASS_NAME));
+        final Role addedRole = roleSession.getRole(authenticationToken, null, TESTCLASS_NAME);
+        //assertNotNull("Role was not added.", addedRole);
     }
-
 }
