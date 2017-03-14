@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.cesecore.roles.management;
 
+import java.util.List;
+
 import javax.ejb.Remote;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.Role;
 
 /**
  * Remote interface for Role management operations.
@@ -22,4 +27,6 @@ import javax.ejb.Remote;
 @Remote
 public interface RoleSessionRemote extends RoleSession {
 
+    /** @return a List of Roles the authenticationTokenToCheck is a member of (without taking nesting into account) */
+    List<Role> getRolesAuthenticationTokenIsMemberOfRemote(AuthenticationToken authenticationTokenForAuhtorization, AuthenticationToken authenticationTokenToCheck);
 }
