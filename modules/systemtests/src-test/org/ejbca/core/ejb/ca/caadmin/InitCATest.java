@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -60,9 +61,13 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
@@ -95,6 +100,8 @@ public class InitCATest extends CaTestCase {
     private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalKeyBindingMgmtSessionRemote keyBindMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
@@ -205,10 +212,15 @@ public class InitCATest extends CaTestCase {
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
             
-            AdminGroupData role = roleManagementSession.create(admin, ROLE_NAME);
+            final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
+            final int roleMemberId = roleMemberSession.createOrEdit(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                    origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser",
+                    role.getRoleId(), null, null));
+            // Do the same in the legacy system (TODO: Remove this)
+            AdminGroupData adminGroupData = roleManagementSession.create(admin, ROLE_NAME);
             final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(ROLE_NAME, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "TestUser"));
-            role = roleManagementSession.addSubjectsToRole(admin, role, subjects);
+            adminGroupData = roleManagementSession.addSubjectsToRole(admin, adminGroupData, subjects);
             
             // Now change a value and initialize
             log.debug("Trying to initialize with changed Subject DN");
@@ -227,7 +239,7 @@ public class InitCATest extends CaTestCase {
             
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
             assertEquals("CAId was not updated in end-entity profile.", newCaId, Integer.parseInt(eeProf.getAvailableCAs().iterator().next()));
-            assertEquals("CAId was not updated in end-entity profile.", newCaId, (int)eeProf.getDefaultCA());
+            assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
             
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
             assertEquals("CAId was not updated in user data source.", newCaId, (int)userdatasource.getApplicableCAs().iterator().next());
@@ -244,8 +256,10 @@ public class InitCATest extends CaTestCase {
             cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             assertEquals("CA Subject DN was not updated in CMP config", NEW_DN, cmpConfig.getCMPDefaultCA(CMP_ALIAS));
             
-            role = roleAccessSession.findRole(ROLE_NAME);
-            assertEquals("CAId was not updated in role subject", newCaId, (int)role.getAccessUsers().values().iterator().next().getCaId());
+            adminGroupData = roleAccessSession.findRole(ROLE_NAME);
+            assertEquals("CAId was not updated in role subject", newCaId, adminGroupData.getAccessUsers().values().iterator().next().getCaId().intValue());
+            final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMemberId);
+            //assertEquals("CAId was not updated in role subject", newCaId, roleMemberAfterInit.getTokenIssuerId());
         } finally {
             log.debug("Cleaning up");
             deleteTestData();
@@ -305,6 +319,14 @@ public class InitCATest extends CaTestCase {
         final Integer keybindIdToDelete = keyBindMgmtSession.getIdFromName(KEYBINDING_NAME);
         if (keybindIdToDelete != null) {
             keyBindMgmtSession.deleteInternalKeyBinding(admin, keybindIdToDelete);
+        }
+        try {
+            final Role role = roleSession.getRole(admin, null, ROLE_NAME);
+            if (role!=null) {
+                roleSession.deleteRoleIdempotent(admin, role.getRoleId());
+            }
+        } catch (Exception e) {
+            log.debug(e.getMessage());
         }
         try {
             roleManagementSession.remove(admin, ROLE_NAME);
