@@ -13,8 +13,11 @@
 
 package org.ejbca.ui.cli.roles;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -25,6 +28,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -37,7 +41,9 @@ import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
 
     private static final Logger log = Logger.getLogger(BaseRolesCommand.class);
-    
+
+    private Map<String,String> resourceNameToResourceMap = null;
+
     private static Set<String[]> commandAliases = new HashSet<String[]>();
     static {
         commandAliases.add(new String[] { "admins" });
@@ -159,4 +165,16 @@ public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
     }
 
     protected abstract Logger getLogger();
+
+    public Map<String, String> getResourceNameToResourceMap() {
+        if (resourceNameToResourceMap==null) {
+            final Map<String,String> authorizedResourcesMap = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class).
+                    getAllResources(getAuthenticationToken(), false);
+            resourceNameToResourceMap = new HashMap<>();
+            for (final Entry<String,String> entry: authorizedResourcesMap.entrySet()) {
+                resourceNameToResourceMap.put(entry.getValue(), entry.getKey());
+            }
+        }
+        return resourceNameToResourceMap;
+    }
 }
