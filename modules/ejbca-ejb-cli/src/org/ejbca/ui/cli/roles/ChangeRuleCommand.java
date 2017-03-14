@@ -96,10 +96,14 @@ public class ChangeRuleCommand extends BaseRolesCommand {
             } else if (rule == AccessRuleState.RULE_ACCEPT) {
                 if (role.getAccessRules().put(resource, Role.STATE_ALLOW)==null) {
                     getLogger().info("Added accept rule for resource '" + resourceName + "'.");
+                } else {
+                    getLogger().info("Replaces existing access rule with allow rule for resource '" + resourceName + "'.");
                 }
             } else {
                 if (role.getAccessRules().put(resource, Role.STATE_DENY)==null) {
                     getLogger().info("Added deny rule for resource '" + resourceName + "'.");
+                } else {
+                    getLogger().info("Replaces existing access rule with deny rule for resource '" + resourceName + "'.");
                 }
             }
             try {
