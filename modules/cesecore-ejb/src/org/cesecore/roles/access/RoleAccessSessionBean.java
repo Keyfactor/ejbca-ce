@@ -26,8 +26,6 @@ import javax.persistence.Query;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
-import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -91,23 +89,6 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
         }
         return roleNames;
     }
-
-    /*
-     * NOTE: This separate method for remote EJB calls exists for a good reason: If this is invoked as a part of a
-     * local transaction, the LocalJvmOnlyAuthenticationToken will be valid for subsequent authentication calls.
-     */
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<String> getRolesMatchingAuthenticationTokenRemote(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        if (authenticationToken instanceof NestableAuthenticationToken) {
-            ((NestableAuthenticationToken) authenticationToken).initRandomToken();
-        } else if (authenticationToken instanceof LocalJvmOnlyAuthenticationToken) {
-            // Ensure that the matching procedure below also works for remote EJB calls
-            ((LocalJvmOnlyAuthenticationToken) authenticationToken).initRandomToken();
-        }
-        return getRolesMatchingAuthenticationToken(authenticationToken);
-    }
-
 
     @Override
     public List<AdminGroupData> getAllAuthorizedRoles(AuthenticationToken authenticationToken) {

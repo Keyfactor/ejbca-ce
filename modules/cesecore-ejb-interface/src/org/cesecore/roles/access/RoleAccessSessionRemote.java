@@ -12,12 +12,7 @@
  *************************************************************************/
 package org.cesecore.roles.access;
 
-import java.util.List;
-
 import javax.ejb.Remote;
-
-import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Remote interface for RoleAccess
@@ -28,13 +23,4 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 @Deprecated
 @Remote
 public interface RoleAccessSessionRemote extends RoleAccessSession {
-
-    /**
-     * Get a list of role that match the given authentication token
-     * 
-     * @param authenticationToken a token to match with
-     * @return a list of role that match the given authentication token
-     * @throws AuthenticationFailedException if any errors were found with the authentication token
-     */
-    List<String> getRolesMatchingAuthenticationTokenRemote(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
