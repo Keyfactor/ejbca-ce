@@ -35,6 +35,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -82,7 +83,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -114,9 +115,13 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -157,10 +162,12 @@ public class NestedMessageContentTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(NestedMessageContentTest.class);
     
-    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
+    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("NestedMessageContentTest");
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -177,9 +184,29 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    @Override
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("NestedMessageContentTest");
+        EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        for (final String username : Arrays.asList("cmpTestAdmin", "\\ nestedCMPTest/")) {
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.keyCompromise);
+            } catch (Exception e){
+                log.debug(e.getMessage());
+            }
+        }
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN.toString());
     }
 
     public NestedMessageContentTest() throws Exception {
@@ -934,28 +961,6 @@ public class NestedMessageContentTest extends CmpTestCase {
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
     }   
     
-    
-    @AfterClass
-    public static void afterClass() throws Exception {
-        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
-        EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(admin, "cmpTestAdmin", ReasonFlags.keyCompromise);
-        } catch(Exception e){
-            // NOPMD
-        }
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(admin, "\\ nestedCMPTest/", ReasonFlags.keyCompromise);
-        } catch(Exception e){
-        }
-        
-        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN.toString());
-        
-
-    }
-    
-
     private static X509Certificate getCertFromCredentials(AuthenticationToken authToken) {
         X509Certificate certificate = null;
         Set<?> inputcreds = authToken.getCredentials();
@@ -978,15 +983,19 @@ public class NestedMessageContentTest extends CmpTestCase {
         X509Certificate cert = (X509Certificate) token.getCredentials().iterator().next();
 
         // Initialize the role mgmt system with this role that is allowed to edit roles
-
-        String roleName = "Super Administrator Role";
-        AdminGroupData roledata = this.roleAccessSessionRemote.findRole(roleName); 
-        // Create a user aspect that matches the authentication token, and add that to the role.
-        List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
-        this.roleManagementSession.addSubjectsToRole(this.admin, roledata, accessUsers);
-
+        String roleName = getRoleName();
+        final Role role = roleSession.getRole(ADMIN, null, roleName);
+        roleMemberSession.createOrEdit(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null, null));
+        {   // TODO: Remove during clean up
+            AdminGroupData roledata = this.roleAccessSessionRemote.findRole(roleName);
+            // Create a user aspect that matches the authentication token, and add that to the role.
+            List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+            accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+            this.roleManagementSession.addSubjectsToRole(ADMIN, roledata, accessUsers);
+        }
         return token;
     }
     
@@ -1052,21 +1061,29 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
             AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
-        String rolename = "Super Administrator Role";
-        
-        AdminGroupData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");
-        if (roledata != null) {            
-
-            //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
-            //Certificate cert = credentials.iterator().next();
-
-            List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
-            
-            this.roleManagementSession.removeSubjectsFromRole(this.admin, roledata, accessUsers);
+        String rolename = getRoleName();
+        if (cert!=null) {
+            final Role role = roleSession.getRole(ADMIN, null, rolename);
+            if (role!=null) {
+                final String tokenMatchValue = CertTools.getSerialNumberAsString(cert);
+                for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(ADMIN, role.getRoleId())) {
+                    if (tokenMatchValue.equals(roleMember.getTokenMatchValue())) {
+                        roleMemberSession.remove(ADMIN, roleMember.getId());
+                    }
+                }
+            }
         }
-        
+        {   // TODO: Remove during clean up
+            AdminGroupData roledata = this.roleAccessSessionRemote.findRole(rolename);
+            if (roledata != null) {
+
+                List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+                accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                        AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+
+                this.roleManagementSession.removeSubjectsFromRole(ADMIN, roledata, accessUsers);
+            }
+        }
         this.endEntityManagementSession.revokeAndDeleteUser(this.admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
     }
     
@@ -1081,12 +1098,4 @@ public class NestedMessageContentTest extends CmpTestCase {
             ins.close();
         }
     }
-
-    
-    @Override
-    public String getRoleName() {
-        return this.getClass().getSimpleName(); 
-    }
-    
-
 }
