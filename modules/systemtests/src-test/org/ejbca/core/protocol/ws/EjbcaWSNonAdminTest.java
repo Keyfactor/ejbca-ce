@@ -143,7 +143,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         setAdminCAName();
-        fileHandles =  setupAccessRights(WS_ADMIN_ROLENAME);
+        fileHandles = setupAccessRights(WS_ADMIN_ROLENAME);
     }
 
     @AfterClass
@@ -152,17 +152,24 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             FileTools.delete(file);
         }
     }
+
+    @AfterClass
+    public static void cleanUpAdmins() throws Exception {
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        cleanUpAdmins(WS_ADMIN_ROLENAME);
+        if (endEntityManagementSession.existsUser("WSTESTTOKENUSER1")) {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
+    }
     
     @Before
     public void setUp() throws Exception {
         super.setUp();
-           
         approvalProfile = new AccumulativeApprovalProfile(WS_APPROVAL_PROFILE_NAME);
         // We will use 1 single approval to test with
         approvalProfile.setNumberOfApprovalsRequired(1);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
-
         configurationSession.backupConfiguration();
         configurationSession.updateProperty("jaxws.approvalprofileid", String.valueOf(approvalProfileId));
     }
@@ -171,21 +178,22 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     public void tearDown() throws Exception {
         super.tearDown();
         configurationSession.restoreConfiguration();
-        approvalProfileSession.removeApprovalProfile(intadmin, approvalProfile);
+        if (approvalProfile!=null) {
+            approvalProfileSession.removeApprovalProfile(intadmin, approvalProfile);
+        }
     }
     
+    @Override
     public String getRoleName() {
         return "EjbcaWSTestNonAdmin";
     }
 
     private void setUpNonAdmin() throws Exception {
         if (new File(TEST_NONADMIN_FILE).exists()) {
-            
             System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
             System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
             System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
             System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
-
             createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
         } else {
             log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
@@ -519,16 +527,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } catch (NoSuchEndEntityException e) {
             // NOPMD: ignore that it did not exist, it means the previous test failed
         }
-    }
-
-    @AfterClass
-    public static void cleanUpAdmins() throws Exception {
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        cleanUpAdmins(WS_ADMIN_ROLENAME);
-        if (endEntityManagementSession.existsUser("WSTESTTOKENUSER1")) {
-            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        }
-
     }
 
     //

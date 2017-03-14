@@ -39,9 +39,18 @@ public interface RoleInitializationSessionRemote {
     *  
     * @throws RoleExistsException if the role already exist
     */
-    @Deprecated
     void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException,
             RoleNotFoundException, AuthorizationDeniedException;
+
+    /** Method used to initialize an initial role with access to edit roles, i.e. a superadmin "/" rule, and "editroles".
+    * If only would have EDITROLES rule, the admin could only edit roles with the EDITROLE rule.
+    * LocalOnly, should only be used from test code.
+    *  
+    * @throws RoleExistsException if the role already exist
+    */
+    @Deprecated
+    void initializeAccessWithCertLegacy(AuthenticationToken authenticationToken, String roleName, Certificate certificate)
+            throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException;
 
     /** @return a new an AuthenticationToken that is RoleMember of a new Role with the requested access rights */
     TestX509CertificateAuthenticationToken createAuthenticationTokenAndAssignToNewRole(String subjectDn, String roleNameSpace, String roleName, List<String> resourcesAllowed,
@@ -53,4 +62,5 @@ public interface RoleInitializationSessionRemote {
 
     /** Remove any role that the provided authentication token is a RoleMember of (note that this will match regular X509CertificateAuthenticationToken so be careful) */
     void removeAllAuthenticationTokensRoles(TestX509CertificateAuthenticationToken authenticationToken);
+
 }

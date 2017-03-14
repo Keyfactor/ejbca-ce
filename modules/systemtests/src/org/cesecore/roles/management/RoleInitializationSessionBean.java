@@ -74,23 +74,39 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         if (log.isTraceEnabled()) {
             log.trace(">initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
         }
+        final HashMap<String,Boolean> accessRules = new HashMap<>();
+        accessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+        final Role role = roleSession.persistRole(authenticationToken, new Role(null, roleName, accessRules));
+        final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                CertTools.getIssuerDN(certificate).hashCode(),
+                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
+                CertTools.getSerialNumber(certificate).toString(16),
+                role.getRoleId(),
+                null, null);
+        roleMemberSession.createOrEdit(authenticationToken, roleMember);
+        initializeAccessWithCertLegacy(authenticationToken, roleName, certificate);
+        if (log.isTraceEnabled()) {
+            log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
+        }
+    }
+
+    @Override
+    @Deprecated
+    public void initializeAccessWithCertLegacy(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
         // Create a role
         AdminGroupData role = roleMgmg.create(authenticationToken, roleName);
-
         // Create a user aspect that matches the authentication token, and add that to the role.
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(role.getRoleName(), CertTools.getIssuerDN(certificate).hashCode(),
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(
                         CertTools.getSubjectDN(certificate), "CN")));
         roleMgmg.addSubjectsToRole(authenticationToken, role, accessUsers);
-
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleMgmg.addAccessRulesToRole(authenticationToken, role, accessRules);
-        if (log.isTraceEnabled()) {
-            log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
-        }
     }
 
     @Override
