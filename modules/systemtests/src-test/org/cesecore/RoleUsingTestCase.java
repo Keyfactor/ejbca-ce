@@ -84,7 +84,7 @@ public abstract class RoleUsingTestCase {
         if (roleAccessSessionRemote.findRole(roleName) == null) {
             final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
             try {
-                roleInitSession.initializeAccessWithCert(alwaysAllowAdmin, roleName, cert);
+                roleInitSession.initializeAccessWithCertLegacy(alwaysAllowAdmin, roleName, cert);
             } catch (AuthorizationDeniedException e) {
                 // NOPMD This can't happen
             }
