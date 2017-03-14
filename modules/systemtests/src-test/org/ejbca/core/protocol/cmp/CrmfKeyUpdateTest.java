@@ -1703,7 +1703,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             }
         }
         {   // TODO: Remove during clean up
-            AdminGroupData roledata = this.roleAccessSessionRemote.findRole("Super Administrator Role");
+            AdminGroupData roledata = this.roleAccessSessionRemote.findRole(rolename);
             if (roledata != null) {
 
                 List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();

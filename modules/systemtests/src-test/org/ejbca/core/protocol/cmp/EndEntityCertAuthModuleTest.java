@@ -80,6 +80,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -196,6 +197,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         for (final CA ca : Arrays.asList(adminca, ca1, ca2)) {
             try {
                 if (caSession.existsCa(ca.getCAId())) {
+                    CryptoTokenTestUtils.removeCryptoToken(ADMIN, ca.getCAToken().getCryptoTokenId());
                     caSession.removeCA(ADMIN, ca.getCAId());
                     log.debug("Removed CA: " + ca.getName());
                 }
