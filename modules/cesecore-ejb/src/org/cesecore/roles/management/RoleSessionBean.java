@@ -35,6 +35,8 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
+import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
+import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -408,5 +410,18 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             }
         }
         return new ArrayList<>(namespaces);
+    }
+
+    @Override
+    public List<Role> getRolesAuthenticationTokenIsMemberOfRemote(AuthenticationToken authenticationTokenForAuhtorization, AuthenticationToken authenticationTokenToCheck) {
+        if (authenticationTokenToCheck instanceof NestableAuthenticationToken) {
+            ((NestableAuthenticationToken) authenticationTokenToCheck).initRandomToken();
+        } else if (authenticationTokenToCheck instanceof LocalJvmOnlyAuthenticationToken) {
+            // Ensure that the matching procedure below also works for remote EJB calls
+            ((LocalJvmOnlyAuthenticationToken) authenticationTokenToCheck).initRandomToken();
+        }
+        final List<Role> roles = getRolesAuthenticationTokenIsMemberOf(authenticationTokenToCheck);
+        roles.retainAll(getAuthorizedRoles(authenticationTokenForAuhtorization));
+        return roles;
     }
 }
