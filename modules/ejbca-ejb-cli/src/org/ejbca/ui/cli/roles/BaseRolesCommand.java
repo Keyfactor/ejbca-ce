@@ -43,6 +43,7 @@ public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
     private static final Logger log = Logger.getLogger(BaseRolesCommand.class);
 
     private Map<String,String> resourceNameToResourceMap = null;
+    private Map<String,String> resourceToResourceNameMap = null;
 
     private static Set<String[]> commandAliases = new HashSet<String[]>();
     static {
@@ -176,5 +177,13 @@ public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
             }
         }
         return resourceNameToResourceMap;
+    }
+
+    public Map<String, String> getResourceToResourceNameMap() {
+        if (resourceToResourceNameMap==null) {
+            resourceToResourceNameMap = EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class).
+                    getAllResources(getAuthenticationToken(), false);
+        }
+        return resourceToResourceNameMap;
     }
 }
