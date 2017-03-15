@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -41,7 +42,7 @@ public class AuthorizationCacheTest {
     private static final Logger log = Logger.getLogger(AuthorizationCacheTest.class);
     
     @Test
-    public void testBasicOperations() throws InterruptedException {
+    public void testBasicOperations() throws InterruptedException, AuthenticationFailedException {
         log.trace(">testBasicOperations");
         AuthorizationCache.INSTANCE.reset();
         final AtomicInteger updateNumber = new AtomicInteger(0);
@@ -197,7 +198,11 @@ public class AuthorizationCacheTest {
         @Override
         public void run() {
             countDownLatch.countDown();
-            result = AuthorizationCache.INSTANCE.get(authenticationToken, authorizationCacheCallback);
+            try {
+                result = AuthorizationCache.INSTANCE.get(authenticationToken, authorizationCacheCallback);
+            } catch (AuthenticationFailedException e) {
+                log.debug(e.getMessage());
+            }
         }
     }
 }
