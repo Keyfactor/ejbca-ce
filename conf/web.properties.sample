@@ -100,6 +100,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # we suggest you stick with the default the first time you install if you wan't to add your own language.
 # Note: Some available languages are incompletely translated (<50%); before adding them, check completeness with the following command:
 #       modules/admin-gui/resources/languages/language-tool.sh -s
+# When adding languages to this do _NOT_ change the order as this affects the already configured languages for admins, i.e. it's based on index in this list.
 # Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh
 #web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
 
