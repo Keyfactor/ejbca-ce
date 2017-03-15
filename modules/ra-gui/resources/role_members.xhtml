@@ -184,14 +184,14 @@
                         </ui:remove>
                         
                         
-                        <h:column>
+                        <h:column rendered="#{raAccessBean.authorizedToEditRoleMembers}">
                             <h:link id="editButton" styleClass="viewMoreLink" outcome="role_member" includeViewParams="true">
                                 <f:param name="roleMemberId" value="#{raRoleMember.roleMember.id}"/>
                                 <h:outputText value="#{msg.role_members_page_edit_command}"/>
                             </h:link>
                         </h:column>
                         
-                        <h:column>
+                        <h:column rendered="#{raAccessBean.authorizedToEditRoleMembers}">
                             <h:link id="removeButton" styleClass="viewMoreLink" outcome="role_member_remove" includeViewParams="true">
                                 <f:param name="roleMemberId" value="#{raRoleMember.roleMember.id}"/>
                                 <h:outputText value="#{msg.role_members_page_remove_command}"/>

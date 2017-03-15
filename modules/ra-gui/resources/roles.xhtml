@@ -96,7 +96,8 @@
                         <h:column>
                             <h:link id="editButton" styleClass="editLink" outcome="role_edit" includeViewParams="true">
                                 <f:param name="roleId" value="#{raRole.roleId}"/>
-                                <h:outputText value="#{msg.roles_page_edit_command}" styleClass="viewMoreLink"/>
+                                <h:outputText value="#{msg.roles_page_edit_command}" styleClass="viewMoreLink" rendered="#{raAccessBean.authorizedToEditRoleRules}"/>
+                                <h:outputText value="#{msg.roles_page_view_command}" styleClass="viewMoreLink" rendered="#{not raAccessBean.authorizedToEditRoleRules}"/>
                             </h:link>
                         </h:column>
                         

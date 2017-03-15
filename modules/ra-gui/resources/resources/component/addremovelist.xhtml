@@ -40,7 +40,7 @@
             <h:panelGroup layout="block" styleClass="addRemoveList" id="addRemoveListContainer">
                 <h:panelGroup layout="block" styleClass="addRemoveListEnabled">
                     <h:outputLabel for="enabledList" value="#{cc.attrs.enabledHeader}"/>
-                    <h:selectManyListbox id="enabledList" value="#{cc.attrs.state.selectedInEnabledList}" size="10" styleClass="addRemoveList">
+                    <h:selectManyListbox id="enabledList" value="#{cc.attrs.state.selectedInEnabledList}" size="10" styleClass="addRemoveList" disabled="#{not cc.attrs.editable}">
                         <f:selectItems value="#{cc.attrs.state.enabledSelectItems}"/>
                     </h:selectManyListbox>
                 </h:panelGroup>
@@ -68,9 +68,9 @@
                     </h:commandButton>
                 </h:panelGroup>
                 
-                <h:panelGroup layout="block" styleClass="addRemoveListAvailable">
+                <h:panelGroup layout="block" styleClass="addRemoveListAvailable" rendered="#{cc.attrs.editable}">
                     <h:outputLabel for="enabledList" value="#{msg.component_addremovelist_available_list}"/>
-                    <h:selectManyListbox id="availableList" value="#{cc.attrs.state.selectedInAvailableList}" size="10" styleClass="addRemoveList" rendered="#{cc.attrs.editable}">
+                    <h:selectManyListbox id="availableList" value="#{cc.attrs.state.selectedInAvailableList}" size="10" styleClass="addRemoveList">
                         <f:selectItems value="#{cc.attrs.state.availableSelectItems}"/>
                     </h:selectManyListbox>
                 </h:panelGroup>
