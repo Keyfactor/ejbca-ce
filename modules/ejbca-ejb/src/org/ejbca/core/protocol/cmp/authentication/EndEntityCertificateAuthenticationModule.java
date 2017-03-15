@@ -40,7 +40,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -91,7 +91,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private AuthenticationToken admin;
     private CaSession caSession;
     private CertificateStoreSession certSession;
-    private AccessControlSession authSession;
+    private AuthorizationSession authSession;
     private EndEntityProfileSession eeProfileSession;
     private EndEntityAccessSession eeAccessSession;
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
@@ -105,10 +105,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private static volatile boolean implExists = true;
 
     private CmpVendorMode impl;
-    
+
     public EndEntityCertificateAuthenticationModule( final AuthenticationToken admin, String authparam, String confAlias, 
             CmpConfiguration cmpConfig, boolean authenticated, 
-            final CaSession caSession, final CertificateStoreSession certSession, final AccessControlSession authSession, 
+            final CaSession caSession, final CertificateStoreSession certSession, final AuthorizationSession authSession, 
             final EndEntityProfileSession eeprofSession, final EndEntityAccessSession eeaccessSession, 
             final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession) {
         authenticationparameter = authparam;

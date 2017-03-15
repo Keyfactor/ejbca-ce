@@ -23,6 +23,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.internal.InternalResources;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -51,6 +52,7 @@ public class BaseCmpMessageHandler {
 
 	protected AuthenticationToken admin;
 	protected String confAlias;
+	protected EjbBridgeSessionLocal ejbBridgeSession;
 	protected CaSessionLocal caSession;
 	protected EndEntityProfileSessionLocal endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
@@ -60,16 +62,15 @@ public class BaseCmpMessageHandler {
 	    this.confAlias = null;
 	}
 
-	protected BaseCmpMessageHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, 
-	                EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession, 
-	                CmpConfiguration cmpConfig) {
-		this.admin = admin;
-		this.confAlias = configAlias;
-		this.cmpConfiguration = cmpConfig;
-		this.caSession = caSession;
-		this.endEntityProfileSession = endEntityProfileSession;
-		this.certificateProfileSession = certificateProfileSession;
-	}
+    protected BaseCmpMessageHandler(final AuthenticationToken admin, String configAlias, EjbBridgeSessionLocal ejbBridgeSession) {
+        this.admin = admin;
+        this.confAlias = configAlias;
+        this.cmpConfiguration = (CmpConfiguration) ejbBridgeSession.getGlobalConfigurationSession().getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.ejbBridgeSession = ejbBridgeSession;
+        this.caSession = ejbBridgeSession.getCaSession();
+        this.endEntityProfileSession = ejbBridgeSession.getEndEntityProfileSession();
+        this.certificateProfileSession = ejbBridgeSession.getCertificateProfileSession();
+    }
 
 	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. 
 	 * @throws AuthorizationDeniedException 

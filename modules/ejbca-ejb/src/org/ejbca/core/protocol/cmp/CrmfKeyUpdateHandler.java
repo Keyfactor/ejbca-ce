@@ -27,6 +27,8 @@ import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSession;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -39,6 +41,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -53,10 +56,14 @@ import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -78,36 +85,22 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     /** strings for error messages defined in internal resources */
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 
-    private final AccessControlSession authorizationSession;
+    private final AuthorizationSession authorizationSession;
     private final CertificateStoreSession certStoreSession;
     private final EndEntityAccessSession endEntityAccessSession;
     private final EndEntityManagementSession endEntityManagementSession;
     private final SignSession signSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
-    
-    /**
-     * Construct the message handler.
-     * @param admin
-     * @param caSession
-     * @param certificateProfileSession
-     * @param certificateRequestSession
-     * @param endEntityProfileSession
-     * @param signSession
-     * @param endEntityManagementSession
-     */
-    public CrmfKeyUpdateHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, 
-            EndEntityAccessSession endEntityAccessSession, EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, 
-            CertificateStoreSession certStoreSession, AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, 
-            EndEntityManagementSession endEntityManagementSession, GlobalConfigurationSession globalConfigSession) {
-        
-        super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID));
-        this.signSession = signSession;
-        this.endEntityAccessSession = endEntityAccessSession;
-        this.certStoreSession = certStoreSession;
-        this.authorizationSession = authSession;
-        this.authenticationProviderSession = authProviderSession;
-        this.endEntityManagementSession = endEntityManagementSession;
 
+
+    public CrmfKeyUpdateHandler(AuthenticationToken authenticationToken, String configAlias, EjbBridgeSessionLocal ejbBridgeSession) {
+        super(authenticationToken, configAlias, ejbBridgeSession);
+        this.signSession = ejbBridgeSession.getSignSession();
+        this.endEntityAccessSession = ejbBridgeSession.getEndEntityAccessSession();
+        this.certStoreSession = ejbBridgeSession.getCertificateStoreSession();
+        this.authorizationSession = ejbBridgeSession.getAuthorizationSession();
+        this.authenticationProviderSession = ejbBridgeSession.getWebAuthenticationProviderSession();
+        this.endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
     }
 
     @Override

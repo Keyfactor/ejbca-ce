@@ -24,10 +24,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -35,25 +34,24 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -101,80 +99,65 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final EndEntityAccessSession endEntityAccessSession;
 	private final CertificateRequestSession certificateRequestSession;
     private final CertificateStoreSession certStoreSession;
-    private final AccessControlSession authorizationSession;
+    private final AuthorizationSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
-    private final EndEntityManagementSession eeManagementSession;
-	
-	/**
-	 * Construct the message handler.
-	 * 
-	 * @param admin
-	 * @param caSession
-	 * @param certificateProfileSession
-	 * @param certificateRequestSession
-	 * @param endEntityAccessSession
-	 * @param endEntityProfileSession
-	 * @param signSession
-	 * @param certStoreSession
-	 * @param authSession
-	 * @param authProviderSession
-	 */
-    public CrmfMessageHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession,
-            CertificateRequestSession certificateRequestSession, EndEntityAccessSession endEntityAccessSession,
-            EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession,
-            AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, EndEntityManagementSession endEntityManagementSession, 
-            GlobalConfigurationSession globalConfSession) {
-		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID));
-		this.signSession = signSession;
-		this.certificateRequestSession = certificateRequestSession;
-		this.endEntityAccessSession = endEntityAccessSession;
-		this.certStoreSession = certStoreSession;
-		this.authorizationSession = authSession;
-		this.authenticationProviderSession = authProviderSession;
-		this.eeManagementSession = endEntityManagementSession;
-		
-		if (this.cmpConfiguration.getRAMode(this.confAlias)) {
-			// create UsernameGeneratorParams
-			this.usernameGenParams = new UsernameGeneratorParams();
-			this.usernameGenParams.setMode(this.cmpConfiguration.getRANameGenScheme(this.confAlias));
-			this.usernameGenParams.setDNGeneratorComponent(this.cmpConfiguration.getRANameGenParams(this.confAlias));
-			this.usernameGenParams.setPrefix(this.cmpConfiguration.getRANameGenPrefix(this.confAlias));
-			this.usernameGenParams.setPostfix(this.cmpConfiguration.getRANameGenPostfix(this.confAlias));
-			this.userPwdParams =  this.cmpConfiguration.getRAPwdGenParams(this.confAlias);
-			this.allowCustomCertSerno = this.cmpConfiguration.getAllowRACustomSerno(this.confAlias);
-			this.responseProt = this.cmpConfiguration.getResponseProtection(this.confAlias);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("cmp.operationmode=ra");
-				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
-				LOG.debug("cmp.ra.passwordgenparams="+userPwdParams);
-				LOG.debug("cmp.responseprotection="+responseProt);
-			}
-		} else {
-			this.usernameGenParams = null;
-			this.userPwdParams = "random";
-			this.responseProt = null;
-			this.allowCustomCertSerno = false;
-		}
-		// Checks if an extended user data hander is configured and if so, creates the handler class.
-		final String handlerClass = cmpConfiguration.getCertReqHandlerClass(this.confAlias);
-		if (StringUtils.isNotEmpty(handlerClass)) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("CertReqHandlerClass="+handlerClass);
-			}
-			ExtendedUserDataHandler tmp;
-			try {
-				tmp = (ExtendedUserDataHandler)Class.forName(handlerClass).newInstance();
-			} catch (Exception e) {
-				tmp = null;
-				LOG.warn("The configured unid class '"+handlerClass+"' is not existing.");
-			}
-			this.extendedUserDataHandler = tmp;			
-		} else {
-			this.extendedUserDataHandler = null;
-		}
-	}
+    private final EndEntityManagementSession endEntityManagementSession;
 
-	@Override
+    /** Construct the message handler. */
+    public CrmfMessageHandler(final AuthenticationToken authenticationToken, final String configAlias, final EjbBridgeSessionLocal ejbBridgeSession,
+            CertificateRequestSessionLocal certificateRequestSession) {
+        super(authenticationToken, configAlias, ejbBridgeSession);
+        this.ejbBridgeSession = ejbBridgeSession;
+        this.signSession = ejbBridgeSession.getSignSession();
+        this.certificateRequestSession = certificateRequestSession;
+        this.endEntityAccessSession = ejbBridgeSession.getEndEntityAccessSession();
+        this.certStoreSession = ejbBridgeSession.getCertificateStoreSession();
+        this.authorizationSession = ejbBridgeSession.getAuthorizationSession();
+        this.authenticationProviderSession = ejbBridgeSession.getWebAuthenticationProviderSession();
+        this.endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
+        
+        if (this.cmpConfiguration.getRAMode(this.confAlias)) {
+            // create UsernameGeneratorParams
+            this.usernameGenParams = new UsernameGeneratorParams();
+            this.usernameGenParams.setMode(this.cmpConfiguration.getRANameGenScheme(this.confAlias));
+            this.usernameGenParams.setDNGeneratorComponent(this.cmpConfiguration.getRANameGenParams(this.confAlias));
+            this.usernameGenParams.setPrefix(this.cmpConfiguration.getRANameGenPrefix(this.confAlias));
+            this.usernameGenParams.setPostfix(this.cmpConfiguration.getRANameGenPostfix(this.confAlias));
+            this.userPwdParams =  this.cmpConfiguration.getRAPwdGenParams(this.confAlias);
+            this.allowCustomCertSerno = this.cmpConfiguration.getAllowRACustomSerno(this.confAlias);
+            this.responseProt = this.cmpConfiguration.getResponseProtection(this.confAlias);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("cmp.operationmode=ra");
+                LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
+                LOG.debug("cmp.ra.passwordgenparams="+userPwdParams);
+                LOG.debug("cmp.responseprotection="+responseProt);
+            }
+        } else {
+            this.usernameGenParams = null;
+            this.userPwdParams = "random";
+            this.responseProt = null;
+            this.allowCustomCertSerno = false;
+        }
+        // Checks if an extended user data hander is configured and if so, creates the handler class.
+        final String handlerClass = cmpConfiguration.getCertReqHandlerClass(this.confAlias);
+        if (StringUtils.isNotEmpty(handlerClass)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("CertReqHandlerClass="+handlerClass);
+            }
+            ExtendedUserDataHandler tmp;
+            try {
+                tmp = (ExtendedUserDataHandler)Class.forName(handlerClass).newInstance();
+            } catch (Exception e) {
+                tmp = null;
+                LOG.warn("The configured unid class '"+handlerClass+"' is not existing.");
+            }
+            this.extendedUserDataHandler = tmp;         
+        } else {
+            this.extendedUserDataHandler = null;
+        }
+    }
+
+    @Override
 	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
@@ -211,7 +194,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						
 						final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, 
 						                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, 
-						                authenticationProviderSession, eeManagementSession, this.cmpConfiguration);
+						                authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 						ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  username,  authenticated);
 						if(authenticationModule == null) {
 						    String errmsg = messageVerifyer.getErrorMessage();
@@ -335,7 +318,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         CAInfo cainfo = this.caSession.getCAInfoInternal(caId, null, true);
         final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(cainfo, this.confAlias, admin, caSession, 
                 endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, 
-                authenticationProviderSession, eeManagementSession, this.cmpConfiguration);
+                authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
         if(authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();

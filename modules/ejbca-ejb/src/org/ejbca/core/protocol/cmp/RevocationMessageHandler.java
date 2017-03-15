@@ -38,30 +38,26 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.AuthorizationSession;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -88,24 +84,22 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	
 	private EndEntityManagementSession endEntityManagementSession;
     private CertificateStoreSession certificateStoreSession;
-    private AccessControlSession authorizationSession;
+    private AuthorizationSession authorizationSession;
     private EndEntityAccessSession endEntityAccessSession;
-    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
 	
-	public RevocationMessageHandler(final AuthenticationToken admin, String configAlias, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
-	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
-	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession,
-	        final CryptoTokenSessionLocal cryptoTokenSession, GlobalConfigurationSession globalConfigSession) {
-		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID));
-		responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
-		this.endEntityManagementSession = endEntityManagementSession;
-        this.certificateStoreSession = certStoreSession;
-        this.authorizationSession = authSession;
-        this.endEntityAccessSession = eeAccessSession;
-        this.authenticationProviderSession = authProviderSession;
+    public RevocationMessageHandler(AuthenticationToken authenticationToken, String configAlias, EjbBridgeSessionLocal ejbBridgeSession, final CryptoTokenSessionLocal cryptoTokenSession) {
+        super(authenticationToken, configAlias, ejbBridgeSession);
+        this.responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
+        this.endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
+        this.certificateStoreSession = ejbBridgeSession.getCertificateStoreSession();
+        this.authorizationSession = ejbBridgeSession.getAuthorizationSession();
+        this.endEntityAccessSession = ejbBridgeSession.getEndEntityAccessSession();
+        this.authenticationProviderSession = ejbBridgeSession.getWebAuthenticationProviderSession();
         this.cryptoTokenSession = cryptoTokenSession;
-	}
+    }
+
 	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
