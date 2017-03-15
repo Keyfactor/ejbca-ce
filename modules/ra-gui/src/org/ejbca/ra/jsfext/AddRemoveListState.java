@@ -22,7 +22,9 @@ import java.util.Map;
 import javax.faces.model.SelectItem;
 
 /**
- * Backing state for the addremovelist.xhtml component. The getEnabledItems() and getItemStates() methods returns the enabled items.
+ * Backing state for the addremovelist.xhtml component, which is a list with an "Enabled" and an "Available" list that items may be moved between.
+ * 
+ * The getEnabledItems() and getItemStates() methods returns the enabled items.
  * Note that the type in the generic parameter must implement the equals() method.
  * @version $Id$
  */
@@ -36,13 +38,13 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
     private final List<SelectItem> enabledSelectItems = new ArrayList<>();
     /** List of available items, excluding the enabled items */
     private final List<SelectItem> availableSelectItems = new ArrayList<>();
-
-//    /**
-//     * @param enabledList List of enabled items. Will be modified
-//     * @param availableList List of available items. Will not be modified
-//     */
-//    public AddRemoveListState(final List<T> enabledList, final List<T> availableList) {
     
+    /**
+     * Adds an item to be listed in the component
+     * @param value Item value. Not displayed to the user, but will be visible in the HTML source code.
+     * @param label Label to show in the lists in the user interface
+     * @param enabled If the item is enabled.
+     */
     public void addListItem(final T value, final String label, final boolean enabled) {
         final SelectItem item = new SelectItem(value, label);
         if (enabled) {
@@ -52,11 +54,15 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
         }
     }
 
+    /** Internal method that returns the currently selected items in the enabled list. These can be removed with the "Remove" button. */
     public List<T> getSelectedInEnabledList() { return selectedInEnabledList; }
     public void setSelectedInEnabledList(final List<T> selectedInEnabledList) { this.selectedInEnabledList = selectedInEnabledList; }
+    /** Internal method that returns the currently selected items in the available list. These can be added with the "Add" button. */
     public List<T> getSelectedInAvailableList() { return selectedInAvailableList; }
     public void setSelectedInAvailableList(final List<T> selectedInAvailableList) { this.selectedInAvailableList = selectedInAvailableList; }
+    /** Internal method that returns the items that are currently enabled, that the user can remove */
     public List<SelectItem> getEnabledSelectItems() { return enabledSelectItems; }
+    /** Internal method that returns the items that are currently available but not enabled, that the user can add */
     public List<SelectItem> getAvailableSelectItems() { return availableSelectItems; }
     
     /** Returns the enabled items */
@@ -82,6 +88,7 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
         return state;
     }
     
+    /** Internal method that's called when the user clicks the "Add" button */
     public void add() {
         for (final T selected : selectedInAvailableList) {
             for (final Iterator<SelectItem> iter = availableSelectItems.iterator(); iter.hasNext(); ) {
@@ -95,6 +102,7 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
         selectedInAvailableList.clear();
     }
     
+    /** Internal method that's called when the user clicks the "Remove" button */
     public void remove() {
         for (final T selected : selectedInEnabledList) {
             for (final Iterator<SelectItem> iter = enabledSelectItems.iterator(); iter.hasNext(); ) {
@@ -108,12 +116,14 @@ public final class AddRemoveListState<T extends Serializable> implements Seriali
         selectedInEnabledList.clear();
     }
     
+    /** Internal method that's called when the user clicks the "Add all" button */
     public void addAll() {
         enabledSelectItems.addAll(availableSelectItems);
         selectedInAvailableList.clear();
         availableSelectItems.clear();
     }
     
+    /** Internal method that's called when the user clicks the "Remove all" button */
     public void removeAll() {
         availableSelectItems.addAll(enabledSelectItems);
         selectedInEnabledList.clear();
