@@ -27,7 +27,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -150,10 +149,6 @@ public class HardTokenIssuerTest extends RoleUsingTestCase {
         final String alias = "spacemonkeys";
         try {
             int roleId = roleSession.getRole(internalAdmin, null, rolename).getRoleId();
-            {
-                // Do legacy setup for now. Kill this during clean up.
-                roleId = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(rolename).getPrimaryKey();
-            }
             HardTokenIssuer issuer = new HardTokenIssuer();
             issuer.setDescription(alias);
             if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, roleId, issuer)) {
