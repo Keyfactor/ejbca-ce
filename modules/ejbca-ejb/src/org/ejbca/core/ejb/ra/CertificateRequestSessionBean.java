@@ -40,7 +40,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -94,7 +94,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
