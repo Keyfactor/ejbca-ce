@@ -37,7 +37,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -66,7 +66,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -171,7 +171,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     
     private void assertAuthorization(final AuthenticationToken authenticationToken, final String configID, final String errorMsg) throws AuthorizationDeniedException {
         final String accessRule = getAccessRuleFromConfigId(configID);
-        if (!accessSession.isAuthorized(authenticationToken, accessRule)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, accessRule)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", accessRule, errorMsg);
             throw new AuthorizationDeniedException(msg);
         }

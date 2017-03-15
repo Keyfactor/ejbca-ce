@@ -27,7 +27,7 @@ import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -53,7 +53,7 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
     @EJB
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
 
@@ -67,7 +67,7 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
     public void log(final AuthenticationToken authToken, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String customId, String searchDetail1, String searchDetail2,
             Map<String, Object> additionalDetails) throws AuditRecordStorageException, AuthorizationDeniedException {        
         // We need to check that admin have rights to log
-        if (!accessSession.isAuthorized(authToken, AuditLogRules.LOG.resource())) {
+        if (!authorizationSession.isAuthorized(authToken, AuditLogRules.LOG.resource())) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AuditLogRules.LOG.resource(), null);
             throw new AuthorizationDeniedException(msg);
         }

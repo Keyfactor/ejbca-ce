@@ -48,7 +48,7 @@ import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -73,7 +73,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private static final Random rnd = new SecureRandom();
 
     @EJB
-    private AccessControlSessionLocal accessControlSessionSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
@@ -85,7 +85,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
         final List<Integer> auhtorizedCryptoTokenIds = new ArrayList<Integer>();
         for (final Integer current : allCryptoTokenIds) {
-            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + current.toString())) {
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + current.toString())) {
                 auhtorizedCryptoTokenIds.add(current);
             }
         }
@@ -102,7 +102,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public CryptoTokenInfo getCryptoTokenInfo(final AuthenticationToken authenticationToken, final int cryptoTokenId)
             throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId)) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -200,7 +200,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
      * @throws AuthorizationDeniedException thrown if authorization was denied.
      */
     private void assertAuthorizedToModifyCryptoTokens(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+        if (!authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -215,7 +215,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             log.trace(">saveCryptoToken: " + tokenName + ", " + cryptoTokenId);
         }
         // Note that an admin that is authorized to modify a token could gain access to another HSM slot etc..
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+        if (!authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -281,7 +281,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (log.isTraceEnabled()) {
             log.trace(">saveCryptoToken: cryptoTokenId=" + cryptoTokenId + ", newName=" + newName);
         }
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+        if (!authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -310,7 +310,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     // Only removes reference
     @Override
     public void deleteCryptoToken(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource() + "/" + cryptoTokenId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource() + "/" + cryptoTokenId)) {
             throw new AuthorizationDeniedException();
         }
         if (cryptoTokenSession.removeCryptoToken(cryptoTokenId)) {
@@ -373,7 +373,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             CryptoTokenOfflineException {
         final String[] requiredAuthorization = new String[] { CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource() + "/" + cryptoTokenId,
                 CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId };
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, requiredAuthorization)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, requiredAuthorization)) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(requiredAuthorization),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -732,7 +732,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private void assertAuthorization(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource)
             throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, resource)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, resource)) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", resource, authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
