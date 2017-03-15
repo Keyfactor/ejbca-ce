@@ -13,23 +13,19 @@
 
 package org.ejbca.ui.cli.roles;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -72,76 +68,70 @@ public class RemoveAdminCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String roleName = parameters.get(ROLE_NAME_KEY);
-        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
-        if (role == null) {
-            getLogger().error("No such role \"" + roleName + "\".");
+        final String roleName = parameters.get(ROLE_NAME_KEY);
+        final Role role;
+        try {
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("Not authorized to role '" + roleName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        String caName = parameters.get(CA_NAME_KEY);
-        CAInfo caInfo;
+        if (role == null) {
+            getLogger().error("No such role '" + roleName + "'.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        final String caName = parameters.get(CA_NAME_KEY);
+        final CAInfo caInfo;
         try {
             caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
         } catch (CADoesntExistsException e) {
-            getLogger().error("No such CA \"" + caName + "\".");
+            getLogger().error("No such CA '" + caName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("CLI user not authorized to CA " + caName + "\".");
+            getLogger().error("CLI user not authorized to CA '" + caName + "'.");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (caInfo == null) {
-            getLogger().error("No such CA \"" + caName + "\".");
+            getLogger().error("No such CA '" + caName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, parameters.get(MATCH_WITH_KEY));
-        if (matchWith == null) {
-            getLogger().error("No such thing to match with as \"" + parameters.get(MATCH_WITH_KEY) + "\".");
+        final String tokenType = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
+        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(tokenType,
+                parameters.get(MATCH_WITH_KEY));
+        if (accessMatchValue == null) {
+            getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        AccessMatchType matchType = AccessMatchType.matchFromName(parameters.get(MATCH_TYPE_KEY));
-        if (matchType == null) {
-            getLogger().error("No such type to match with as \"" + parameters.get(MATCH_TYPE_KEY) + "\".");
+        final AccessMatchType accessMatchType = AccessMatchType.matchFromName(parameters.get(MATCH_TYPE_KEY));
+        if (accessMatchType == null) {
+            getLogger().error("No such type to match with as '" + parameters.get(MATCH_TYPE_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        String matchValue = parameters.get(MATCH_VALUE_KEY);
-        int caId;
+        final String tokenMatchValue = parameters.get(MATCH_VALUE_KEY);
+        final int caId = caInfo.getCAId();
+        final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
         try {
-            caId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName).getCAId();
-        } catch (CADoesntExistsException e) {
-            getLogger().error("No such CA \"" + caName + "\".");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            boolean foundMatch = false;
+            for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId())) {
+                if (tokenType.equals(roleMember.getTokenType()) &&
+                        caId == roleMember.getTokenIssuerId() &&
+                        accessMatchValue.getNumericValue()==roleMember.getTokenMatchKey() &&
+                        accessMatchType.getNumericValue()==roleMember.getTokenMatchOperator() &&
+                        tokenMatchValue.equals(roleMember.getTokenMatchValue())) {
+                    roleMemberSession.remove(getAuthenticationToken(), roleMember.getId());
+                    foundMatch = true;
+                    getLogger().info("Removed role member: " + "'" + caName + "' " + accessMatchValue + " " + accessMatchType + " '" +
+                            tokenMatchValue + "' from role " + roleName);
+                }
+            }
+            if (!foundMatch) {
+                getLogger().info("Could not find any matching admin in role \"" + roleName + "\".");
+            }
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("CLI user not authorized to CA " + caName + "\".");
+            getLogger().info("Not authorized to members of role '" + roleName + "'.");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
-        AccessUserAspectData accessUserAspectData = new AccessUserAspectData(roleName, caId, matchWith, matchType, matchValue);
-
-        for (AccessUserAspectData currentAdminEntity : role.getAccessUsers().values()) {
-            if (currentAdminEntity.getMatchValue().equals(accessUserAspectData.getMatchValue())
-                    && currentAdminEntity.getMatchWith() == accessUserAspectData.getMatchWith()
-                    && currentAdminEntity.getMatchType() == accessUserAspectData.getMatchType()
-                    && currentAdminEntity.getCaId().equals(accessUserAspectData.getCaId())) {
-                Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
-                adminEntities.add(accessUserAspectData);
-
-                try {
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).removeSubjectsFromRole(getAuthenticationToken(),
-                            role, adminEntities);
-                    log.info("Removed admin/subject: " + "\"" + caName + "\" " + matchWith + " " + matchType + " \"" + matchValue + "\" from role " + roleName);
-                } catch (RoleNotFoundException e) {
-                    throw new IllegalStateException("Previously found role " + role.getRoleName() + " was not found.");
-                } catch (AuthorizationDeniedException e) {
-                    getLogger().error("CLI user not authorized to role " + role.getRoleName() + "\".");
-                    return CommandResult.AUTHORIZATION_FAILURE;
-                }
-
-               return CommandResult.SUCCESS;
-            }
-        }
-        getLogger().info("Could not find any matching admin in role \"" + roleName + "\".");
-        return CommandResult.FUNCTIONAL_FAILURE;
-
+        return CommandResult.SUCCESS;
     }
 
     @Override
@@ -158,5 +148,4 @@ public class RemoveAdminCommand extends BaseRolesCommand {
     protected Logger getLogger() {
         return log;
     }
-
 }

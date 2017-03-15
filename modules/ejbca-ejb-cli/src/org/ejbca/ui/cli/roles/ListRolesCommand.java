@@ -13,13 +13,16 @@
 
 package org.ejbca.ui.cli.roles;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -39,12 +42,22 @@ public class ListRolesCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        Collection<AdminGroupData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
-                getAuthenticationToken());
-        Collections.sort((List<AdminGroupData>) roles);
-        for (AdminGroupData role : roles) {
-            int numberOfAdmins = role.getAccessUsers().size();
-            getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        Collections.sort(roles);
+        final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+        for (final Role role : roles) {
+            List<RoleMember> roleMembers;
+            try {
+                roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
+                final String roleMembersString = " (" + roleMembers.size() + " admin"+(roleMembers.isEmpty()?"":"s")+")";
+                if (StringUtils.isEmpty(role.getNameSpace())) {
+                    getLogger().info("'" + role.getRoleName() + "' " + roleMembersString);
+                } else {
+                    getLogger().info("["+role.getNameSpace()+"] '" + role.getRoleName() + "' " + roleMembersString + " (Not modifyable from CLI due to namespace.)");
+                }
+            } catch (AuthorizationDeniedException e) {
+                getLogger().info(role.getRoleName() + " (? admins)");
+            }
         }
         return CommandResult.SUCCESS;
     }

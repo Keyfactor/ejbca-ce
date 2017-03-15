@@ -15,10 +15,8 @@ package org.ejbca.ui.cli.roles;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -28,7 +26,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Remove admin role
+ * Remove admin role.
+ * 
+ * @version $Id$
  */
 public class RemoveRoleCommand extends BaseRolesCommand {
 
@@ -48,22 +48,23 @@ public class RemoveRoleCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String roleName = parameters.get(ROLE_NAME_KEY);
-        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
-        if (role == null) {
-            getLogger().error("No such role \"" + roleName + "\".");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        }
+        final String roleName = parameters.get(ROLE_NAME_KEY);
+        final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).remove(getAuthenticationToken(), role);
-            return CommandResult.SUCCESS;
-        } catch (RoleNotFoundException e) {
-            getLogger().error("No such role \"" + roleName + "\".");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            final Role role = roleSession.getRole(getAuthenticationToken(), null, roleName);
+            if (role == null) {
+                getLogger().error("No such role '" + roleName + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            if (!roleSession.deleteRoleIdempotent(getAuthenticationToken(), role.getRoleId())) {
+                getLogger().error("No such role '" + roleName + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
         } catch (AuthorizationDeniedException e) {
             log.error("ERROR: Not authorized to remove role " + roleName);
             return CommandResult.AUTHORIZATION_FAILURE;
         }
+        return CommandResult.SUCCESS;
     }
 
     @Override
@@ -80,5 +81,4 @@ public class RemoveRoleCommand extends BaseRolesCommand {
     protected Logger getLogger() {
         return log;
     }
-
 }

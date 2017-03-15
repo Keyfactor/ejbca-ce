@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -133,7 +134,9 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         Collections.sort(roles);
         final StringBuilder availableRoles = new StringBuilder();
         for (final Role role : roles) {
-            availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleNameFull() + "\"");
+            if (StringUtils.isEmpty(role.getNameSpace())) {
+                availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + "'" + role.getRoleName() + "'");
+            }
         }
         sb.append("Available roles: " + availableRoles + "\n");
         final List<String> resourceNames = new ArrayList<>(super.getResourceNameToResourceMap().keySet());
