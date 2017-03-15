@@ -78,7 +78,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -241,7 +241,7 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -453,9 +453,7 @@ public class EjbcaWS implements IEjbcaWS {
 								log.info("No certificate found for CA with subjectDN: "+issuerDN);
 								break;
 							}
-							Iterator<java.security.cert.Certificate> iter = cacerts.iterator();
-							while (iter.hasNext()) {
-								java.security.cert.Certificate cert = (java.security.cert.Certificate)iter.next();
+							for (final java.security.cert.Certificate cert : cacerts) {
 								try {
 									lastcert.verify(cert.getPublicKey());
 									// this was the right certificate
@@ -1001,7 +999,7 @@ public class EjbcaWS implements IEjbcaWS {
 			CVCertificate certObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
 			java.security.cert.Certificate iscert = new CardVerifiableCertificate(certObject); 
 			ArrayList<Certificate> retval = new ArrayList<Certificate>();
-			retval.add(new Certificate((java.security.cert.Certificate)iscert));
+			retval.add(new Certificate(iscert));
 			// Get the certificate chain
 			if (user != null) {
 				int caid = user.getCAId();
@@ -2332,9 +2330,7 @@ public class EjbcaWS implements IEjbcaWS {
 			ejbhelper.isAuthorizedToHardTokenData(admin, username, viewPUKData);
 
 			Collection<HardTokenInformation> hardtokens = hardTokenSession.getHardTokens(admin, username, viewPUKData);
-			Iterator<HardTokenInformation> iter = hardtokens.iterator();
-			while(iter.hasNext()){
-				HardTokenInformation next = (HardTokenInformation) iter.next();
+			for (final HardTokenInformation next : hardtokens) {
 				int caid = next.getSignificantIssuerDN().hashCode();
 				caSession.verifyExistenceOfCA(caid);
 				if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
@@ -2545,7 +2541,7 @@ public class EjbcaWS implements IEjbcaWS {
 			Collection<Integer> caids = caSession.getAuthorizedCaIds(admin);
 			HashMap<Integer, String> map = caSession.getCAIdToNameMap();
 			for (Integer id : caids ) {
-				String name = (String)map.get(id);
+				String name = map.get(id);
 				if (name != null) {
 					ret.put(name, id);
 				}
@@ -2625,7 +2621,7 @@ public class EjbcaWS implements IEjbcaWS {
 			    final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
 				for (String id : cas ) {
 					Integer i = Integer.valueOf(id);
-					String name = (String)map.get(i);
+					String name = map.get(i);
 					if (name != null) {
 						ret.put(name, i);
 					}
