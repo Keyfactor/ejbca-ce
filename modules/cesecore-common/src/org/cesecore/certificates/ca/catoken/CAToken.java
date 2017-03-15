@@ -68,6 +68,9 @@ public class CAToken extends UpgradeableDataHashMap {
 
     public static final String SOFTPRIVATESIGNKEYALIAS = "signKey";
     public static final String SOFTPRIVATEDECKEYALIAS = "encryptKey";
+    /** These aliases were changed in EJBCA 6.4.1 */
+    private static final String OLDPRIVATESIGNKEYALIAS = "privatesignkeyalias";   
+    protected static final String OLDPRIVATEDECKEYALIAS = "privatedeckeyalias";
 
     /** A sequence for the keys, updated when keys are re-generated */
     public static final String SEQUENCE = "sequence";
@@ -375,14 +378,18 @@ public class CAToken extends UpgradeableDataHashMap {
                     // be able to use soft keystores that does not have a specific test or default key
                     if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) &&
                     		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null)) {
-                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to signKey.");
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                        // The soft key alias was changed from privatesignkeyalias to signKey in EJBCA 6.4.1, which is long after
+                        // we changed the classpath. So if we come in here, we are upgrading a token that is way before 6.4.1, meaning 
+                        // that it uses the old key aliases
+                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to privatesignkeyalias.");
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.OLDPRIVATESIGNKEYALIAS);
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.OLDPRIVATESIGNKEYALIAS);
                     }
                     if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) &&
                     		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING) == null)) {
-                    	log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to encryptKey.");
-                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                        // Same as above regarding key aliases
+                        log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to privatedeckeyalias.");
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.OLDPRIVATEDECKEYALIAS);
                     }
                     setCATokenPropertyData(storeProperties(prop)); // Stores property string in "data"
                 } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.PKCS11CAToken")) {
