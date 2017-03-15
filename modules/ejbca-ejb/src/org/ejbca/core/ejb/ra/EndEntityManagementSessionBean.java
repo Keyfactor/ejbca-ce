@@ -589,8 +589,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         entityManager.persist(userDataClone);
         entityManager.remove(currentUserData);
         // Find all entities and update the username (we cant just do UPDATE ... SET username.. WHERE username since rowProtection might be enabled)
-        final List<CertificateData> certificateDatas = (List<CertificateData>) entityManager.createQuery(
-                "SELECT a FROM CertificateData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        final List<CertificateData> certificateDatas = entityManager.createQuery(
+                "SELECT a FROM CertificateData a WHERE a.username=:username", CertificateData.class).setParameter("username", currentUsername).getResultList();
         int updatedPublisherQueueDataRows = 0;
         for (final CertificateData certificateData : certificateDatas) {
             final String fingerprint = certificateData.getFingerprint();
@@ -642,7 +642,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Update CLI admins where this username is used in AdminEntityData table.
         final List<RoleMemberData> roleMemberDatas = entityManager.createQuery(
-                "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue", RoleMemberData.class)
+                "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.tokenMatchKey=:tokenMatchKey AND a.tokenMatchValue=:tokenMatchValue", RoleMemberData.class)
                 .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
                 .setParameter("tokenMatchKey", CliUserAccessMatchValue.USERNAME.getNumericValue())
                 .setParameter("tokenMatchValue", currentUsername)
