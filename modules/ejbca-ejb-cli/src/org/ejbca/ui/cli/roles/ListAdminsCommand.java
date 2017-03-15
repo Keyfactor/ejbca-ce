@@ -13,17 +13,22 @@
 
 package org.ejbca.ui.cli.roles;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -54,35 +59,61 @@ public class ListAdminsCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-
-        String roleName = parameters.get(ROLE_NAME_KEY);
-        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
+        final String roleName = parameters.get(ROLE_NAME_KEY);
+        final Role role;
+        try {
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+        } catch (AuthorizationDeniedException e1) {
+            getLogger().error("Not authorizied to role '" + roleName + "'.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
         if (role == null) {
-            getLogger().error("No such role \"" + roleName + "\".");
+            getLogger().error("No such role '" + roleName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
-            String caName;
-            try {
-                CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
-                        userAspect.getCaId());
-                caName = "\"" + info.getName() +  "\" ";
-            } catch (CADoesntExistsException e) {
-                if (userAspect.getCaId() == 0) {
-                    //0 is reserved for internal use
-                    caName = "[Admin unbound to CA] ";
-                } else {
-                    caName = "[Nonexistent CA with ID " + userAspect.getCaId() + "] ";
+        final List<RoleMember> roleMembers;
+        try {
+            roleMembers = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).getRoleMembersByRoleId(
+                    getAuthenticationToken(), role.getRoleId());
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("Not authorizied to members of role '" + roleName + "'.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
+        Collections.sort(roleMembers, new Comparator<RoleMember>(){
+            @Override
+            public int compare(final RoleMember roleMember1, final RoleMember roleMember2) {
+                final int compareTokenType = roleMember1.getTokenType().compareTo(roleMember2.getTokenType());
+                if (compareTokenType != 0) {
+                    return compareTokenType;
                 }
-            } catch (AuthorizationDeniedException e) {
-                log.error("CLI user not authorized to CA with ID: " + userAspect.getCaId());
-                return CommandResult.FUNCTIONAL_FAILURE;
+                final int compareTokenMatchKey = Integer.valueOf(roleMember1.getTokenMatchKey()).compareTo(Integer.valueOf(roleMember2.getTokenMatchKey()));
+                if (compareTokenMatchKey != 0) {
+                    return compareTokenMatchKey;
+                }
+                final int compareTokenMatchValue = roleMember1.getTokenMatchValue().compareTo(roleMember1.getTokenMatchValue());
+                return compareTokenMatchValue;
+            }}
+        );
+        for (final RoleMember roleMember : roleMembers) {
+            String caName;
+            if (roleMember.getTokenIssuerId() == RoleMember.NO_ISSUER) {
+                caName = "[Admin unbound to CA]";
+            } else {
+                try {
+                    final CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
+                            roleMember.getTokenIssuerId());
+                    caName = "'" + info.getName() +  "'";
+                } catch (CADoesntExistsException e) {
+                    caName = "[Unknown CA with ID " + roleMember.getTokenIssuerId() + "]";
+                } catch (AuthorizationDeniedException e) {
+                    caName = "[(Name redacted) CA with ID " + roleMember.getTokenIssuerId() + "]";
+                }
             }
-            AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(userAspect.getTokenType(),
-                    userAspect.getMatchWith());
-            AccessMatchType matchType = userAspect.getMatchTypeAsType();
-            String matchValue = userAspect.getMatchValue();
-            getLogger().info( caName + matchWith + " " + matchType + " \"" + matchValue + "\"");
+            final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(roleMember.getTokenType(),
+                    roleMember.getTokenMatchKey());
+            final AccessMatchType accessMatchType = roleMember.getAccessMatchType();
+            final String tokenMatchValue = roleMember.getTokenMatchValue();
+            getLogger().info( caName + " " + accessMatchValue + " " + accessMatchType + " \"" + tokenMatchValue + "\"");
         }
         return CommandResult.SUCCESS;
 

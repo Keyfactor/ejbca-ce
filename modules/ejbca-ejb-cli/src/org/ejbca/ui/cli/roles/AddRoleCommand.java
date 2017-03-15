@@ -15,8 +15,9 @@ package org.ejbca.ui.cli.roles;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -49,7 +50,7 @@ public class AddRoleCommand extends BaseRolesCommand {
     public CommandResult execute(ParameterContainer parameters) {
         String roleName = parameters.get(NAME_KEY);
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).create(getAuthenticationToken(), roleName);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), new Role(null, roleName));
             return CommandResult.SUCCESS;
         } catch (RoleExistsException e) {
             log.error("ERROR: Role of name " + roleName + " already exists.");
@@ -74,5 +75,4 @@ public class AddRoleCommand extends BaseRolesCommand {
     protected Logger getLogger() {
         return log;
     }
-
 }
