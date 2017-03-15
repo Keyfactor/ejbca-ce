@@ -225,7 +225,9 @@ public class RaRoleBean implements Serializable {
 
 
     public String getPageTitle() {
-        if (roleId != null) {
+        if (!getCanEdit()) {
+            return raLocaleBean.getMessage("role_page_title_view", role.getRoleName());
+        } else if (roleId != null) {
             return raLocaleBean.getMessage("role_page_title_edit", role.getRoleName());
         } else if (cloneFromRoleId != null) {
             return raLocaleBean.getMessage("role_page_title_clone", role.getRoleName());

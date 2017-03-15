@@ -50,7 +50,7 @@
         <h:panelGroup layout="block" class="header" id="title">
             <h1><h:outputText value="#{raRoleMemberBean.removePageTitle}"/></h1>
         </h:panelGroup>
-        <h:outputText value="#{msg.manage_role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
+        <h:outputText value="#{msg.role_members_page_error_unauthorized}" rendered="#{not raAccessBean.authorizedToEditRoleMembers}"/>
         <h:panelGroup layout="block" styleClass="content-body" rendered="#{raAccessBean.authorizedToEditRoleMembers}">
             <h:form id="roleForm" class="pure-form">
                 <h:panelGroup id="basic" styleClass="">

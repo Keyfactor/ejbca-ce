@@ -261,6 +261,12 @@ span .approvalStep,
 .checkboxWithSpacing { margin-right: 0.5em; }
 .noticeText { color: #aaa; font-style: italic; }
 
+/* when viewing a read-only page, use black color on form fields, so they are easily readable */
+.readOnlyView input[disabled],
+.readOnlyView select[disabled],
+.readOnlyView select[disabled] option {
+    color: #000 !important; }
+
 .language_button,
 .language_button:hover,
 .language_button:hover {
