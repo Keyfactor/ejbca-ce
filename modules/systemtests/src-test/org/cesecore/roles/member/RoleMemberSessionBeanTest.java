@@ -57,8 +57,6 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     private RoleMember roleMember;
     
     
-    
-    
     @Before
     public void setUp() throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
         final String unauthorizedDN = "CN=RoleMemberSessionBeanTest";
@@ -70,8 +68,8 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         role = new Role(null, "TestMembersRole");
         persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);
         
-        roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "", RoleMember.NO_ISSUER, 0, 0, "", persistedTestRole.getRoleId(), "TestValue", "");
-        
+        roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "CertificateAuthenticationToken", RoleMember.NO_ISSUER, 0, 0, "",
+                                    persistedTestRole.getRoleId(), "TestValue", "");
     }
     
     
@@ -89,7 +87,6 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         
         int editedRoleMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         assertEquals(persistedMemberId, editedRoleMemberId);
-        
     }
    
     @Test
@@ -113,20 +110,23 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         assertNull(retrievedMember);
     }
     
-    @Ignore //Nullpointer for some reason. Fix later
     @Test
-    public void testGetMembersById() throws AuthorizationDeniedException, RoleExistsException {
-        int numberOfTestEntries = 1;
+    public void testGetMembersById() throws AuthorizationDeniedException {
+        int numberOfTestEntries = 3;
         
         for (int i = 0; i < numberOfTestEntries; i++) {
             roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         }
         
-        List<RoleMember> ret = roleMemberSessionRemote.getRoleMembersByRoleId(authenticationToken, persistedTestRole.getRoleId());
-        assertNotNull(ret);
+        List<RoleMember> returnedRoleMembers = roleMemberSessionRemote.getRoleMembersByRoleId(authenticationToken, persistedTestRole.getRoleId());
         
+        assertEquals(numberOfTestEntries, returnedRoleMembers.size());
+        for (RoleMember roleMember : returnedRoleMembers) {
+            assertEquals(persistedTestRole.getRoleId(), roleMember.getRoleId());
+        }
     }
     
+    //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
         roleMemberSessionRemote.createOrEdit(unauthorizedAuthenticationToken, roleMember);
@@ -144,6 +144,11 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         RoleMember retrievedMember = roleMemberSessionRemote.getRoleMember(unauthorizedAuthenticationToken, persistedMemberId);
         assertNull(retrievedMember);
+    }
+    
+    @Test(expected = AuthorizationDeniedException.class)
+    public void testGetMembersByIdUnauthorized() throws AuthorizationDeniedException {
+        roleMemberSessionRemote.getRoleMembersByRoleId(unauthorizedAuthenticationToken, INVALID_USER_ID);
     }
     
     
