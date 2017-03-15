@@ -25,25 +25,20 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -64,22 +59,15 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
-	/** CA Session used to sign the response */
-	private CaSessionLocal caSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
     
-	public ConfirmationMessageHandler(AuthenticationToken admin, String configAlias, CaSessionLocal caSession, 
-	        EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession, 
-	        AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProvSession, 
-	        CryptoTokenSessionLocal cryptoTokenSession, GlobalConfigurationSession globalConfigSession) {
-
-		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID));
-		responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
-		this.caSession = caSession;
+    public ConfirmationMessageHandler(AuthenticationToken authenticationToken, String configAlias, EjbBridgeSessionLocal ejbBridgeSession, CryptoTokenSessionLocal cryptoTokenSession) {
+        super(authenticationToken, configAlias, ejbBridgeSession);
+        this.responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
         this.cryptoTokenSession = cryptoTokenSession;
-	}
+    }
 	
-	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
+    public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
