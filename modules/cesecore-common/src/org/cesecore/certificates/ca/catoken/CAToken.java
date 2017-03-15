@@ -286,7 +286,7 @@ public class CAToken extends UpgradeableDataHashMap {
                     prop.setProperty(key, value.trim());
                 }
             } catch (IOException e) {
-                log.error("Error getting PCKS#11 token properties: ", e);
+                log.error("Error getting PKCS#11 token properties: ", e);
             }
         }
         return prop;
