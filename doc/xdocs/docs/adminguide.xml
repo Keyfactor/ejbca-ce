@@ -2351,6 +2351,14 @@ Information on how to use the Registration Authority (RA) UI is available <a hre
 available as an add-on module to <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
 <p>This module provides an environment where Active Directory Domain Users and Computers will seamlessly auto enroll for 
 certificates issued by EJBCA.</p>
+<subsection name="Legacy Script based Autoenrollment">
+<p>
+Script based Autoenrollment is a legacy way of doing autoenrollment and uses login scripts and VB scripts to automatically enroll clients. 
+It is kept for legacy reasons. More information can be found in the <a href="https://www.ejbca.org/guides.html#Native%20Autoenrollment%20for%20Windows%20(Enterprise%20only)">Guides</a>.
+<br/>
+The Native autoenrollment (above) provides a more seamless experience.
+</p>
+</subsection>
 </section>
 
 <section name="External RA (Enterprise Edition Only)">
