@@ -789,6 +789,10 @@ backend ocsp_back
   
   <section name="Script based Autoenrollment for Windows clients with EJBCA">
   <p>
+  Script based Autoenrollment is a legacy way of doing autoenrollment and is kept for legacy reasons. 
+  Native autoenrollment (above) provides a more seamless experience.
+  </p>
+  <p>
   This section will show you how to set up automatic certificate enroll of
   machines and users in an Windows environment with EJBCA.
   </p><p>
