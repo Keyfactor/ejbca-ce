@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
@@ -28,20 +27,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * 
  * This class contains tests that involve rule changes from the CLI
  * 
  * @version $Id$
- *
  */
 public class ChangeRulesTest {
 
     private static final String ROLENAME = "ChangeRulesTest";
     
-    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    
-    private AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ChangeRulesTest"));
-    private ChangeRuleCommand command = new ChangeRuleCommand();
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken("ChangeRulesTest");
+    private final ChangeRuleCommand command = new ChangeRuleCommand();
     private int roleId = Role.ROLE_ID_UNASSIGNED;
     
     @Before

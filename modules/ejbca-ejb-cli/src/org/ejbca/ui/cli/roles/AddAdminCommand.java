@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli.roles;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,17 +21,16 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -77,59 +74,62 @@ public class AddAdminCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String roleName = parameters.get(ROLE_NAME_KEY);
-        if (EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName) == null) {
-            getLogger().error("No such role \"" + roleName + "\".");
+        final String roleName = parameters.get(ROLE_NAME_KEY);
+        final Role role;
+        try {
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("No authorized to role '" + roleName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        String caName = parameters.get(CA_NAME_KEY);
-        CAInfo caInfo;
+        if (role == null) {
+            getLogger().error("No such role '" + roleName + "'.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        final String caName = parameters.get(CA_NAME_KEY);
+        final CAInfo caInfo;
         try {
             caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
         } catch (CADoesntExistsException e) {
-            getLogger().error("No such CA \"" + caName + "\".");
+            getLogger().error("No such CA '" + caName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException e) {
             log.error("ERROR: CLI user not authorized to CA");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (caInfo == null) {
-            getLogger().error("No such CA \"" + caName + "\".");
+            getLogger().error("No such CA '" + caName + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        int caid = caInfo.getCAId();
-        AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, parameters.get(MATCH_WITH_KEY));
-        if (matchWith == null) {
-            getLogger().error("No such thing to match with as \"" + parameters.get(MATCH_WITH_KEY) + "\".");
+        final int caId = caInfo.getCAId();
+        final String tokenType = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
+        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
+                tokenType, parameters.get(MATCH_WITH_KEY));
+        if (accessMatchValue == null) {
+            getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        final AccessMatchType matchType;
-        if (matchWith.getAvailableAccessMatchTypes().isEmpty()) {
-            matchType = AccessMatchType.TYPE_UNUSED;
+        final AccessMatchType accessMatchType;
+        if (accessMatchValue.getAvailableAccessMatchTypes().isEmpty()) {
+            accessMatchType = AccessMatchType.TYPE_UNUSED;
         } else {
             // Just grab the first one, since we according to ECA-3164 only will have a single allowed match operator for each match key
-            matchType = matchWith.getAvailableAccessMatchTypes().get(0);
+            accessMatchType = accessMatchValue.getAvailableAccessMatchTypes().get(0);
         }
         final String matchTypeParam = parameters.get(MATCH_TYPE_KEY);
         if (StringUtils.isNotEmpty(matchTypeParam)) {
-            log.info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + matchWith.name() + " implies " + matchType.name() + ".");
+            log.info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + accessMatchValue.name() + " implies " + accessMatchType.name() + ".");
         }
-        String matchValue = parameters.get(MATCH_VALUE_KEY);
-        AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
-        Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(accessUser);
+        final String matchValue = parameters.get(MATCH_VALUE_KEY);
+        final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType, caId,
+                accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(), matchValue, role.getRoleId(), null, null);
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).addSubjectsToRole(getAuthenticationToken(),
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName), accessUsers);
-            return CommandResult.SUCCESS;
-        } catch (RoleNotFoundException e) {
-            throw new IllegalStateException("Previously found role suddenly not found.", e);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).createOrEdit(getAuthenticationToken(), roleMember);
         } catch (AuthorizationDeniedException e) {
             log.error("ERROR: CLI user not authorized to edit role");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-
+        return CommandResult.SUCCESS;
     }
 
     @Override
@@ -139,29 +139,32 @@ public class AddAdminCommand extends BaseRolesCommand {
 
     @Override
     public String getFullHelpText() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + ".\n");
-        Collection<AdminGroupData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
-                getAuthenticationToken());
-        Collections.sort((List<AdminGroupData>) roles);
+        final List<Role> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getAuthorizedRoles(getAuthenticationToken());
+        Collections.sort(roles);
         String availableRoles = "";
-        for (AdminGroupData role : roles) {
-            availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
-        }
-        sb.append("Available Roles: " + availableRoles + "\n");
-
-        String availableCas = "";
-        for (String caname : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaNames(getAuthenticationToken())) {
-            availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caname + "\"";
-        }
-        sb.append("Available CAs: " + availableCas + "\n");
-        String availableMatchers = "";
-        for (AccessMatchValue currentMatchWith : X500PrincipalAccessMatchValue.values()) {
-            if (!X500PrincipalAccessMatchValue.NONE.equals(currentMatchWith)) {
-                availableMatchers += (availableMatchers.length() == 0 ? "" : ", ") + currentMatchWith;
+        for (final Role role : roles) {
+            availableRoles += availableRoles.length() == 0 ? "" : ", ";
+            if (StringUtils.isEmpty(role.getNameSpace())) {
+                availableRoles += "'" + role.getRoleName() + "'";
+            } else {
+                availableRoles += "["+role.getNameSpace()+"] '" + role.getRoleName() + "'" + " (Not modifyable from CLI due to namespace.)";
             }
         }
-        sb.append("Match with is one of: " + availableMatchers + "\n");
+        sb.append("Available Roles: " + availableRoles + "\n");
+        String availableCas = "";
+        for (final String caName : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCaNames(getAuthenticationToken())) {
+            availableCas += (availableCas.length() == 0 ? "" : ", ") + "" + caName + "";
+        }
+        sb.append("Available CAs: " + availableCas + "\n");
+        String availableAccessMatchValues = "";
+        for (final AccessMatchValue accessMatchValue : X500PrincipalAccessMatchValue.values()) {
+            if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
+                availableAccessMatchValues += (availableAccessMatchValues.length() == 0 ? "" : ", ") + accessMatchValue;
+            }
+        }
+        sb.append("Match with is one of: " + availableAccessMatchValues + "\n");
         return sb.toString();
     }
 
@@ -169,5 +172,4 @@ public class AddAdminCommand extends BaseRolesCommand {
     protected Logger getLogger() {
         return log;
     }
-
 }
