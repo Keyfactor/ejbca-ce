@@ -32,7 +32,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -58,7 +58,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
 
@@ -239,7 +239,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     }
 
     private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }

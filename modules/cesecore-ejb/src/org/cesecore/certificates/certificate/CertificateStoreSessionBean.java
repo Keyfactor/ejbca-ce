@@ -58,7 +58,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -96,7 +96,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -1342,7 +1342,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
     
     private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
         	final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
@@ -1508,7 +1508,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateLimitedCertificateDataStatus(final AuthenticationToken admin, final int caId, final String issuerDn, final String subjectDn, final String username, final BigInteger serialNumber,
             final int status, final Date revocationDate, final int reasonCode, final String caFingerprint) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caId)) {
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caId);
             throw new AuthorizationDeniedException(msg);
         }

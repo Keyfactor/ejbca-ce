@@ -37,7 +37,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -67,7 +67,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
 
@@ -248,7 +248,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
-        final boolean rootAccess = accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+        final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> cpEntry : CertificateProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();
                 // Check if all profiles available CAs exists in authorizedcaids.          
@@ -277,7 +277,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @Override
     public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken admin) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             return returnval;
         }
         
@@ -312,7 +312,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             final CertificateProfile cprofile = CertificateProfileCache.INSTANCE.getProfileCache(entityManager).get(Integer.valueOf(id));
             try {
                 if (cprofile != null) {
-                    returnval = (CertificateProfile) cprofile.clone();
+                    returnval = cprofile.clone();
                 }
             } catch (CloneNotSupportedException e) {
                 LOG.error("Should never happen: ", e);
@@ -534,9 +534,9 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         // Perform authorization check
         boolean ret = false;
         if (logging) {
-            ret = accessSession.isAuthorized(admin, rules.toArray(new String[0]));
+            ret = authorizationSession.isAuthorized(admin, rules.toArray(new String[rules.size()]));
         } else {
-            ret = accessSession.isAuthorizedNoLogging(admin, rules.toArray(new String[0]));
+            ret = authorizationSession.isAuthorizedNoLogging(admin, rules.toArray(new String[rules.size()]));
         }
         return ret;
     }

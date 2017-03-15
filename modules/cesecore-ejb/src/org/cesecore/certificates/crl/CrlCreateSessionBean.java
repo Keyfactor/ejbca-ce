@@ -32,7 +32,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -58,7 +58,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     private static final InternalResources intres = InternalResources.getInstance();
     
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CrlStoreSessionLocal crlSession;
     @EJB
@@ -150,7 +150,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     }
 
     private void authorizedToCreateCRL(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
-    	if (!accessSession.isAuthorized(admin, StandardRules.CREATECRL.resource())) {
+    	if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECRL.resource())) {
     		final String msg = intres.getLocalizedMessage("createcrl.notauthorized", admin.toString(), caid);
     		throw new AuthorizationDeniedException(msg);
     	}

@@ -60,7 +60,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -105,7 +105,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private static final InternalResources intres = InternalResources.getInstance();
 
     @EJB
-    private AccessControlSessionLocal accessControlSessionSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
@@ -155,7 +155,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final List<Integer> allIds = internalKeyBindingDataSession.getIds(internalKeyBindingType);
         final List<Integer> authorizedIds = new ArrayList<Integer>();
         for (final Integer current : allIds) {
-            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken,
+            if (authorizationSession.isAuthorizedNoLogging(authenticationToken,
                     InternalKeyBindingRules.VIEW.resource() + "/" + current.toString())) {
                 authorizedIds.add(current);
             }
@@ -190,7 +190,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -201,7 +201,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -212,7 +212,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -227,7 +227,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -346,7 +346,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
                 + "/" + cryptoTokenId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
@@ -424,7 +424,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public int persistInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken,
+        if (!authorizationSession.isAuthorized(authenticationToken,
                 InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBinding.getId(), CryptoTokenRules.USE.resource() + "/"
                         + internalKeyBinding.getCryptoTokenId())) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
@@ -461,7 +461,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @Override
     public boolean deleteInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.DELETE.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.DELETE.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.DELETE.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -484,7 +484,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public String generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -517,7 +517,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public byte[] getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -544,7 +544,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public byte[] generateCsrForNextKey(final AuthenticationToken authenticationToken, final int internalKeyBindingId, final byte[] name) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -606,7 +606,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public String updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CertificateImportException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -748,7 +748,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] derEncodedCertificate)
             throws AuthorizationDeniedException, CertificateImportException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -890,7 +890,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     private void assertAuthorization(AuthenticationToken authenticationToken, final String... rules) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, rules)) {
+        if (!authorizationSession.isAuthorized(authenticationToken, rules)) {
             if (rules.length == 1) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", rules[0], authenticationToken.toString());
                 throw new AuthorizationDeniedException(msg);

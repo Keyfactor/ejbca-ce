@@ -34,7 +34,7 @@ import org.cesecore.audit.impl.queued.QueuedAuditorSessionLocal;
 import org.cesecore.audit.log.AuditLogResetException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -53,7 +53,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
 	private static final Logger LOG = Logger.getLogger(SecurityEventsAuditorSessionBean.class);
 
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private IntegrityProtectedAuditorSessionLocal integrityProtectedAuditorSession;
     @EJB
@@ -134,7 +134,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
 
 	/** Assert that we are authorized to the requested resource. */
     private void assertAuthorization(final AuthenticationToken token, final String accessRule) throws AuthorizationDeniedException {
-        if (!accessControlSession.isAuthorized(token, accessRule)) {
+        if (!authorizationSession.isAuthorized(token, accessRule)) {
 			throw new AuthorizationDeniedException("not authorized to: "+ token.toString());				
 		} 
     }
