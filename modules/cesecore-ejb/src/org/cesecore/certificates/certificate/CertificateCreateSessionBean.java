@@ -51,7 +51,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -116,7 +116,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
-    private AccessControlSessionLocal accessSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
@@ -319,7 +319,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Even though CA is passed as an argument to this method, we do check authorization on that.
         // To make sure we properly log authorization checks needed to issue a cert.
         // We need to check that admin have rights to create certificates, and have access to the CA
-        if (!accessSession.isAuthorized(admin, StandardRules.CREATECERT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECERT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
             final String msg = intres.getLocalizedMessage("createcert.notauthorized", admin.toString(), ca.getCAId());
             throw new AuthorizationDeniedException(msg);
         }
