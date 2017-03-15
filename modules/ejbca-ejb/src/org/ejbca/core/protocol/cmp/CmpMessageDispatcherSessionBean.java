@@ -29,23 +29,15 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -75,25 +67,9 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
     @EJB
-	private SignSessionLocal signSession;
-	@EJB
-	private EndEntityManagementSessionLocal endEntityManagementSession;
-	@EJB
-	private CaSessionLocal caSession;
-	@EJB
-	private EndEntityAccessSessionLocal endEntityAccessSession;
-	@EJB
-	private EndEntityProfileSessionLocal endEntityProfileSession;
-	@EJB
-	private CertificateProfileSessionLocal certificateProfileSession;
+    private EjbBridgeSessionLocal ejbBridgeSession;
 	@EJB
 	private CertificateRequestSessionLocal certificateRequestSession;
-	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
-	@EJB
-	private AccessControlSessionLocal authSession;
-	@EJB
-	private WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	@EJB
 	private CryptoTokenSessionLocal cryptoTokenSession;
 	@EJB
@@ -171,36 +147,28 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, 
-				                        endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, 
-				                        authenticationProviderSession, endEntityManagementSession, globalConfigSession);
+				handler = new CrmfMessageHandler(admin, confAlias, ejbBridgeSession, certificateRequestSession);
 				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, 
-				                        endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, 
-				                        authenticationProviderSession, endEntityManagementSession, globalConfigSession);
+				handler = new CrmfMessageHandler(admin, confAlias, ejbBridgeSession, certificateRequestSession);
 				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 7:
 			    // Key Update request (kur, Key Update Request)
-			    handler = new CrmfKeyUpdateHandler(admin, confAlias, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, 
-			                            signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession, 
-			                            globalConfigSession);
+			    handler = new CrmfKeyUpdateHandler(admin, confAlias, ejbBridgeSession);
 			    cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 			    break;
 			case 19:
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-			    handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, 
-			                           authSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
+			    handler = new ConfirmationMessageHandler(admin, confAlias, ejbBridgeSession, cryptoTokenSession);
 			    cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, confAlias, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession,
-				        certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
+				handler = new RevocationMessageHandler(admin, confAlias, ejbBridgeSession, cryptoTokenSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
             case 20:
