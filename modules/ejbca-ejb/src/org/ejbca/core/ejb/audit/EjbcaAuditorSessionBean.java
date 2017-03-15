@@ -23,7 +23,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -33,7 +33,7 @@ import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
@@ -52,11 +52,10 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<? extends AuditLogEntry> selectAuditLog(final AuthenticationToken token, final String device, final int firstResult, final int maxResults,
             final String whereClause, final String orderClause, final List<Object> parameters) throws AuthorizationDeniedException {
@@ -83,7 +82,7 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
         if (LOG.isDebugEnabled()) {
             LOG.debug("queryString: " + queryString);
         }
-        final Query query = entityManager.createQuery(queryString);
+        final TypedQuery<AuditLogEntry> query = entityManager.createQuery(queryString, AuditLogEntry.class);
         query.setFirstResult(firstResult);
         if (maxResults>0) {
             query.setMaxResults(maxResults);
@@ -97,7 +96,7 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
         //Prune out result pertaining to unauthorized CAs
         Set<Integer> authorizedCaIds = new HashSet<>(caSession.getAuthorizedCaIds(token));
         List<AuditLogEntry> resultList = new ArrayList<>();
-        for(AuditLogEntry auditLogEntry : (List<AuditLogEntry>) query.getResultList()) {
+        for (final AuditLogEntry auditLogEntry : query.getResultList()) {
             //The following values may leak CA Ids. 
             if ( auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CA)
                  || auditLogEntry.getModuleTypeValue().equals(ModuleTypes.CERTIFICATE)
@@ -142,9 +141,8 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
 
     /** Assert that we are authorized to the requested resource. */
     private void assertAuthorization(final AuthenticationToken token, final String accessRule) throws AuthorizationDeniedException {
-        if (!accessControlSession.isAuthorized(token, accessRule)) {
+        if (!authorizationSession.isAuthorized(token, accessRule)) {
             throw new AuthorizationDeniedException("not authorized to: "+ token.toString());                
         } 
     }
-
 }

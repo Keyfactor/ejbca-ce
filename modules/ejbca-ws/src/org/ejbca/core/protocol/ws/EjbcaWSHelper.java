@@ -50,7 +50,7 @@ import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -116,7 +116,7 @@ public class EjbcaWSHelper {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private WebServiceContext wsContext;
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     private CAAdminSession caAdminSession;
     private CaSessionLocal caSession;
     private CertificateStoreSession certificateStoreSession;
@@ -128,7 +128,7 @@ public class EjbcaWSHelper {
     private EndEntityManagementSession endEntityManagementSession;
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
-    protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSessionLocal caSession,
+    protected EjbcaWSHelper(WebServiceContext wsContext, AuthorizationSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSessionLocal caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
             EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession endEntityManagementSession,
             WebAuthenticationProviderSessionLocal authenticationSession, CryptoTokenManagementSessionLocal cryptoTokenManagementSession) {

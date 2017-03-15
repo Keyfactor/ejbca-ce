@@ -49,7 +49,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -117,7 +117,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private TimerService timerService; // When the sessionContext is injected, the timerService should be looked up.
 
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
@@ -638,7 +638,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(ApprovalSessionLocal.class, approvalSession);
             ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
             ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
-            ejbs.put(AccessControlSessionLocal.class, authorizationSession);
+            ejbs.put(AuthorizationSessionLocal.class, authorizationSession);
             ejbs.put(CAAdminSessionLocal.class, caAdminSession);
             ejbs.put(CaSessionLocal.class, caSession);
             ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
@@ -780,7 +780,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public void unload() {
         log.debug("Unloading all timers.");
         // Get all services
-        for (Timer timer : (Collection<Timer>) timerService.getTimers()) {
+        for (final Timer timer : timerService.getTimers()) {
             try {
                 timer.cancel();
             } catch (Exception e) {
@@ -821,7 +821,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isDebugEnabled()) {
             log.debug("cancelTimer: " + id);
         }
-        for (Timer next : (Collection<Timer>) timerService.getTimers()) {
+        for (final Timer next : timerService.getTimers()) {
             try {
                 if (id.equals(next.getInfo())) {
                     next.cancel();

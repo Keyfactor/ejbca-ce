@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -44,11 +43,9 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -59,8 +56,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
@@ -110,7 +107,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -122,10 +119,9 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
+    private RoleSessionLocal roleSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
-
 
     public static final int NO_ISSUER = 0;
 
@@ -555,27 +551,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
-     
         if (htih != null) {
-            AdminGroupData role = roleAccessSession.findRole(htih.getAdminGroupId());
-            boolean adminInRole = false;
-            if(role != null) {
-                for (Entry<Integer, AccessUserAspectData> entry : role.getAccessUsers().entrySet()) {
-                    try {
-                        if (admin.matches(entry.getValue())) {
-                            adminInRole = true;
-                            break;
-                        }
-                    } catch (AuthenticationFailedException e) {
-                        // If AuthenticationFailedException was thrown for this token, then the token
-                        // was invalid to begin with. Fail nicely and return false;
-                        log.info("AuthenticationFailedException when evaluating authentication token " + admin, e);
+            if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)) {
+                final List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(admin);
+                for (final Role role : roles) {
+                    if (role.getRoleId()==htih.getAdminGroupId()) {
+                        returnval = true;
                         break;
                     }
                 }
             }
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS) && adminInRole;
-               
         }
         if (log.isTraceEnabled()) {
         	log.trace("<isAuthorizedToHardTokenIssuer(" + returnval + ")");
@@ -752,7 +737,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                         hardtokendata)));
         if (certificates != null) {
             for ( Certificate cert : certificates ) {
-                addHardTokenCertificateMapping(admin, tokensn, (X509Certificate)cert);
+                addHardTokenCertificateMapping(admin, tokensn, cert);
             }
         }
         if (copyof != null) {

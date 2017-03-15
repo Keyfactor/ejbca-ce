@@ -39,6 +39,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.naming.InvalidNameException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -56,7 +57,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -83,6 +84,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -157,7 +159,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -613,8 +615,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + certificateDatas.size() + " rows of CertificateData.");
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + updatedPublisherQueueDataRows + " rows of PublisherQueueData.");
         }
-        final List<CertReqHistoryData> certReqHistoryDatas = (List<CertReqHistoryData>) entityManager.createQuery(
-                "SELECT a FROM CertReqHistoryData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        final List<CertReqHistoryData> certReqHistoryDatas = entityManager.createQuery(
+                "SELECT a FROM CertReqHistoryData a WHERE a.username=:username", CertReqHistoryData.class).setParameter("username", currentUsername).getResultList();
         for (final CertReqHistoryData current : certReqHistoryDatas) {
             // Note: Ignore the username inside certReqHistoryData.getUserDataVO(), since this should reflect the state of the UserData at the time of certificate issuance
             current.setUsername(newUsername);
@@ -622,16 +624,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isDebugEnabled()) {
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + certReqHistoryDatas.size() + " rows of CertReqHistoryData.");
         }
-        final List<KeyRecoveryData> keyRecoveryDatas = (List<KeyRecoveryData>) entityManager.createQuery(
-                "SELECT a FROM KeyRecoveryData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        final List<KeyRecoveryData> keyRecoveryDatas = entityManager.createQuery(
+                "SELECT a FROM KeyRecoveryData a WHERE a.username=:username", KeyRecoveryData.class).setParameter("username", currentUsername).getResultList();
         for (final KeyRecoveryData current : keyRecoveryDatas) {
             current.setUsername(newUsername);
         }
         if (log.isDebugEnabled()) {
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + keyRecoveryDatas.size() + " rows of KeyRecoveryData.");
         }
-        final List<HardTokenData> hardTokenDatas = (List<HardTokenData>) entityManager.createQuery(
-                "SELECT a FROM HardTokenData a WHERE a.username=:username").setParameter("username", currentUsername).getResultList();
+        final List<HardTokenData> hardTokenDatas = entityManager.createQuery(
+                "SELECT a FROM HardTokenData a WHERE a.username=:username", HardTokenData.class).setParameter("username", currentUsername).getResultList();
         for (final HardTokenData current : hardTokenDatas) {
             current.setUsername(newUsername);
         }
@@ -639,8 +641,18 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + hardTokenDatas.size() + " rows of HardTokenData.");
         }
         // Update CLI admins where this username is used in AdminEntityData table.
-        final List<AccessUserAspectData> accessUserAspectDatas = (List<AccessUserAspectData>) entityManager.createQuery(
-                "SELECT a FROM AccessUserAspectData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue")
+        final List<RoleMemberData> roleMemberDatas = entityManager.createQuery(
+                "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue", RoleMemberData.class)
+                .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
+                .setParameter("tokenMatchKey", CliUserAccessMatchValue.USERNAME.getNumericValue())
+                .setParameter("tokenMatchValue", currentUsername)
+                .getResultList();
+        for (final RoleMemberData current : roleMemberDatas) {
+            current.setTokenMatchValue(newUsername);
+        }
+        // And do the same for the legacy use-case
+        final List<AccessUserAspectData> accessUserAspectDatas = entityManager.createQuery(
+                "SELECT a FROM AccessUserAspectData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue", AccessUserAspectData.class)
                 .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
                 .setParameter("matchWith", CliUserAccessMatchValue.USERNAME.getNumericValue())
                 .setParameter("matchValue", currentUsername)
@@ -1944,7 +1956,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.debug("Checking for " + caIds.size() + " CAs");
             log.debug("Generated query string: " + queryString);
         }
-        javax.persistence.Query query = entityManager.createQuery(queryString);
+        TypedQuery<UserData> query = entityManager.createQuery(queryString, UserData.class);
         query.setParameter("timeModified", timeModified);
         query.setParameter("status", status);
         if (caIds.size() > 0) {
@@ -1952,7 +1964,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 query.setParameter("caId" + i, caIds.get(i));
             }
         }
-        final List<UserData> queryResult = (List<UserData>) query.getResultList();
+        final List<UserData> queryResult = query.getResultList();
         final List<EndEntityInformation> ret = new ArrayList<EndEntityInformation>(queryResult.size());
         for (UserData userData : queryResult) {
             ret.add(userData.toEndEntityInformation());

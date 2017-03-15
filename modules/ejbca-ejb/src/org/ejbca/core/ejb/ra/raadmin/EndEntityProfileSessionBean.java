@@ -35,7 +35,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -69,7 +69,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private EntityManager entityManager;
 
     @EJB
-    private AccessControlSessionLocal authSession;
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -278,9 +278,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
     	
-    	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+    	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         	for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
@@ -288,7 +288,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         		final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
                 boolean authorizedToProfile = false;
                 // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
-                if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
+                if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
                     authorizedToProfile = true;
                     if (availableCasString != null) {
                         for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
@@ -322,7 +322,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
         allcaids.add(Integer.valueOf(SecConst.ALLCAS));
-        if (!authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             // we can only see profiles with missing CA Ids if we have root rule access
             return returnval;
         }
@@ -590,7 +590,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @param editcheck is true for edit, add, remove, clone and rename operations. false for get.
      */    
     private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
             authorizedToProfileCas(admin, profile);
         } else {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, admin.toString());
