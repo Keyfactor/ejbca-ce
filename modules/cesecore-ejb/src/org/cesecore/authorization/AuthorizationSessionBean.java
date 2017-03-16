@@ -43,6 +43,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.config.CesecoreConfiguration;
@@ -211,6 +212,11 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         public long getKeepUnusedEntriesFor() {
             // Setting this to the same as the background cache refresh interval means that any token that has not been used will be purged
             return CesecoreConfiguration.getCacheAuthorizationTime();
+        }
+
+        @Override
+        public void listedForAuthorizationCacheReload(final AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+            accessTreeUpdateSession.addReloadEvent(authorizationCacheReloadListener);
         }
     };
 

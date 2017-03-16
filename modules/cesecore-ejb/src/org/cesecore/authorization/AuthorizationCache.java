@@ -16,11 +16,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.access.AuthorizationCacheReload;
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -48,6 +51,9 @@ public enum AuthorizationCache {
         
         /** @return the number of milliseconds to keep cache entries for after an authentication token was last seen */
         long getKeepUnusedEntriesFor();
+
+        /** Invoked by cache on first cache miss to start listening to authorization updates */
+        void listedForAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener);
     }
     
     private class AuthorizationCacheEntry {
@@ -60,6 +66,14 @@ public enum AuthorizationCache {
     
     private ConcurrentHashMap<String, AuthorizationCacheEntry> cacheMap = new ConcurrentHashMap<>();
     private AtomicInteger latestUpdateNumber = new AtomicInteger(0);
+
+    private final AtomicBoolean authorizationCacheReloadListenerRegistered = new AtomicBoolean(false);
+    private final AuthorizationCacheReloadListener authorizationCacheReloadListener = new AuthorizationCacheReloadListener() {
+        @Override
+        public void onReload(final AuthorizationCacheReload event) {
+            setUpdateNumberIfLower(event.getAccessTreeUpdateNumber());
+        }
+    };
     
     public void clear(final int updateNumber) {
         setUpdateNumberIfLower(updateNumber);
@@ -74,7 +88,11 @@ public enum AuthorizationCache {
 
     /** Re-build the authorization cache for all entries that been seen recently (as determined by authorizationCacheCallback.getKeepUnusedEntriesFor()). */
     public void refresh(final AuthorizationCacheCallback authorizationCacheCallback) {
-        setUpdateNumberIfLower(authorizationCacheCallback.getUpdateNumber());
+        final int refreshUpdateNumber = authorizationCacheCallback.getUpdateNumber();
+        if (log.isTraceEnabled()) {
+            log.trace("Starting cache refresh when update number was " + refreshUpdateNumber + ".");
+        }
+        setUpdateNumberIfLower(refreshUpdateNumber);
         final long purgeUnusedAuthorizationAfter = authorizationCacheCallback.getKeepUnusedEntriesFor();
         final long now = System.currentTimeMillis();
         final HashSet<String> existingKeysWhenInvoked = new HashSet<>(cacheMap.keySet());
@@ -117,6 +135,10 @@ public enum AuthorizationCache {
         final AuthorizationCacheEntry authorizationCacheEntry = new AuthorizationCacheEntry();
         AuthorizationCacheEntry ret = cacheMap.putIfAbsent(key, authorizationCacheEntry);
         if (ret == null) {
+            // Start subscribing to authorization system updates on first cache miss (which happens on application startup)
+            if (!authorizationCacheReloadListenerRegistered.getAndSet(true)) {
+                authorizationCacheCallback.listedForAuthorizationCacheReload(authorizationCacheReloadListener);
+            }
             ret = authorizationCacheEntry;
             try {
                 ret.authenticationToken = authenticationToken;
@@ -136,6 +158,9 @@ public enum AuthorizationCache {
                 log.debug("Added entry for key '" + key + "'.");
             }
         } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Cache hit for key '" + key + "'.");
+            }
             try {
                 // Block while it is loading (if it is still loading)
                 ret.countDownLatch.await();
