@@ -20,7 +20,7 @@ import java.io.Serializable;
  * &#64;Asynchronous so it doesn't block the caller (currently
  * {@link org.cesecore.authorization.cache.AccessTreeUpdateSessionBean#signalForAccessTreeUpdate()})
  * 
- * Currently we can't use JEE events, because JBoss 7.1.1 has a problem that prevents JEE Events from working.
+ * Currently we can't use JEE events, because it requires that we use CDI.
  * Instead the method {@link org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal.addReloadEvent(AuthorizationCacheReloadListener)} can be used
  * 
  * @version $Id$
