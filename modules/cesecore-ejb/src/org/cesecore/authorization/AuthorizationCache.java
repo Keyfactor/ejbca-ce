@@ -73,6 +73,10 @@ public enum AuthorizationCache {
         public void onReload(final AuthorizationCacheReload event) {
             setUpdateNumberIfLower(event.getAccessTreeUpdateNumber());
         }
+        @Override
+        public String getListenerName() {
+            return AuthorizationCache.class.getSimpleName();
+        }
     };
     
     public void clear(final int updateNumber) {
