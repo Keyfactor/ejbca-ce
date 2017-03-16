@@ -215,7 +215,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         }
 
         @Override
-        public void listedForAuthorizationCacheReload(final AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+        public void subscribeToAuthorizationCacheReload(final AuthorizationCacheReloadListener authorizationCacheReloadListener) {
             accessTreeUpdateSession.addReloadEvent(authorizationCacheReloadListener);
         }
     };
