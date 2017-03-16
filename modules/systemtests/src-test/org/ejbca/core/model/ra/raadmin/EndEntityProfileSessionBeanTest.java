@@ -47,6 +47,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -555,7 +556,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             assertFalse("Id should not be amongst authorized Ids: "+id1, ids1.contains(id1));
             // Remove the deny rule again so we can remove the profile later on
             final Role roleInstance2 = roleSession.getRole(alwaysAllowToken, null, ROLENAME);
-            roleInstance2.getAccessRules().remove(StandardRules.CAACCESS.resource() + caid);
+            roleInstance2.getAccessRules().remove(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caid));
             roleSession.persistRole(alwaysAllowToken, roleInstance2);
             // TODO: Remove during clean up
             roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
