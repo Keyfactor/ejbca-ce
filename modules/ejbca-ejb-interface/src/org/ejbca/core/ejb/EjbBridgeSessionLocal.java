@@ -35,6 +35,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -112,6 +113,7 @@ public interface EjbBridgeSessionLocal {
 	RoleManagementSessionLocal getRoleManagementSession();
     RoleDataSessionLocal getRoleDataSession();
     RoleMemberSessionLocal getRoleMemberSession();
+    RoleMemberDataSessionLocal getRoleMemberDataSession();
     RoleSessionLocal getRoleSession();
 	SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession();
 	SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession();
