@@ -13,7 +13,7 @@
 package org.cesecore.authorization.access;
 
 /**
- * Workaround until we can use JEE Events. See the comments in AccessTreeUpdateSessionBean
+ * Interface for subscriber to AuthorizationCacheReload events.
  * 
  * @version $Id$
  */

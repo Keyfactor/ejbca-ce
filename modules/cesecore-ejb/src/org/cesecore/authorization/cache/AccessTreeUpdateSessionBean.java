@@ -38,13 +38,6 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
 
     private static final Logger LOG = Logger.getLogger(AccessTreeUpdateSessionBean.class);
 
-    // JBoss 7.1.1 has a problem with JEE Events (see Johans comment in ECA-4919, probably caused by https://bz.apache.org/bugzilla/show_bug.cgi?id=50789)
-    // The problem is that you get an exception when a META-INF/beans.xml file is present.
-    // So for now we just use the standard java Runnable interface (which can only be set within the same JVM)
-    // Once this problem is solved, we can do:
-    /*@Inject
-    private Event<AuthorizationCacheReload> authCacheReloadEvent;*/
-    
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -79,8 +72,6 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
         }
         LOG.debug("Invoking event");
         final AuthorizationCacheReload event = new AuthorizationCacheReload(accessTreeUpdateData.getAccessTreeUpdateNumber());
-        // When the problem with JEE Events is solved, we can do this:
-        //authCacheReloadEvent.fire(event);
         AuthorizationCacheReloadListeners.INSTANCE.onReload(event);
         LOG.debug("Done invoking event");
     }
