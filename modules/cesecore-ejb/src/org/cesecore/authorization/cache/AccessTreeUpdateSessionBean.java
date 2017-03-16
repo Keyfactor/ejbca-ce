@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -44,7 +41,6 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
     // JBoss 7.1.1 has a problem with JEE Events (see Johans comment in ECA-4919, probably caused by https://bz.apache.org/bugzilla/show_bug.cgi?id=50789)
     // The problem is that you get an exception when a META-INF/beans.xml file is present.
     // So for now we just use the standard java Runnable interface (which can only be set within the same JVM)
-    private final Collection<AuthorizationCacheReloadListener> authCacheReloadEvent = new ArrayList<>();
     // Once this problem is solved, we can do:
     /*@Inject
     private Event<AuthorizationCacheReload> authCacheReloadEvent;*/
@@ -85,16 +81,14 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
         final AuthorizationCacheReload event = new AuthorizationCacheReload(accessTreeUpdateData.getAccessTreeUpdateNumber());
         // When the problem with JEE Events is solved, we can do this:
         //authCacheReloadEvent.fire(event);
-        for (AuthorizationCacheReloadListener observer : authCacheReloadEvent) {
-            observer.onReload(event);
-        }
+        AuthorizationCacheReloadListeners.INSTANCE.onReload(event);
         LOG.debug("Done invoking event");
     }
     
     // When the problem with JEE Events is solved, we can remove this method
     @Override
     public void addReloadEvent(final AuthorizationCacheReloadListener observer) {
-        authCacheReloadEvent.add(observer);
+        AuthorizationCacheReloadListeners.INSTANCE.addListener(observer);
     }
 
     @Override
