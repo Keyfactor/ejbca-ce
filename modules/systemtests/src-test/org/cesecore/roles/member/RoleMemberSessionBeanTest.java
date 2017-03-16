@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -72,9 +73,20 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
                                     persistedTestRole.getRoleId(), "TestValue", "");
     }
     
+    @After
+    public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
+        final Role role = roleSessionRemote.getRole(authenticationToken, null, "TestMembersRole");
+        if (role != null) {
+            roleSessionRemote.deleteRoleIdempotent(authenticationToken, role.getRoleId());
+        } else {
+            log.info("Removing database test entries failed");
+        }
+        tearDownRemoveRole();
+    }
+    
     
     @Test
-    public void testCreateOrEdit() throws AuthorizationDeniedException {
+    public void testCreateOrEditRoleMember() throws AuthorizationDeniedException {
         int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         RoleMember retrievedRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedMemberId);
         
@@ -88,9 +100,9 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         int editedRoleMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         assertEquals(persistedMemberId, editedRoleMemberId);
     }
-   
+    
     @Test
-    public void testRemove() throws AuthorizationDeniedException {
+    public void testRemoveRoleMember() throws AuthorizationDeniedException {
         int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
         boolean isRemoved = roleMemberSessionRemote.remove(authenticationToken, persistedMemberId);
         assertNull(roleMemberSessionRemote.getRoleMember(authenticationToken, persistedMemberId));
@@ -111,7 +123,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     }
     
     @Test
-    public void testGetMembersById() throws AuthorizationDeniedException {
+    public void testGetRoleMembersByRoleId() throws AuthorizationDeniedException {
         int numberOfTestEntries = 3;
         
         for (int i = 0; i < numberOfTestEntries; i++) {
@@ -126,6 +138,13 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         }
     }
     
+    @Test
+    public void testAddAndRemoveRoleMembersToRole() {
+        
+    }
+    
+    
+    
     //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
@@ -135,15 +154,13 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     @Test(expected = AuthorizationDeniedException.class)
     public void testRemoveUnauthorized() throws AuthorizationDeniedException {
         int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        boolean isRemoved = roleMemberSessionRemote.remove(unauthorizedAuthenticationToken, persistedMemberId);
-        assertFalse(isRemoved);
+        roleMemberSessionRemote.remove(unauthorizedAuthenticationToken, persistedMemberId);
     }
     
     @Test(expected = AuthorizationDeniedException.class)
     public void testGetRoleMemberUnauthorized() throws AuthorizationDeniedException {
         int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        RoleMember retrievedMember = roleMemberSessionRemote.getRoleMember(unauthorizedAuthenticationToken, persistedMemberId);
-        assertNull(retrievedMember);
+        roleMemberSessionRemote.getRoleMember(unauthorizedAuthenticationToken, persistedMemberId);
     }
     
     @Test(expected = AuthorizationDeniedException.class)
@@ -152,35 +169,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     }
     
     
-    @After
-    public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
-        final Role role = roleSessionRemote.getRole(authenticationToken, null, "TestMembersRole");
-        if (role != null) {
-            roleSessionRemote.deleteRoleIdempotent(authenticationToken, role.getRoleId());
-        } else {
-            log.info("Removing database test entries failed");
-        }
-        tearDownRemoveRole();
-    }
-    
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
