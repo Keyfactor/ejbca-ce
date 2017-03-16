@@ -25,6 +25,7 @@ import javax.ejb.TransactionManagementType;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.Filter;
@@ -83,9 +84,13 @@ public class UpgradeStatusSingletonBean implements UpgradeStatusSingletonLocal {
 
         @Override
         public boolean add(final LoggingEvent loggingEvent) {
+            // Hard code a filter so we only keep DEBUG and above here in the in-memory buffer
+            if (!loggingEvent.getLevel().isGreaterOrEqual(Level.DEBUG)) {
+                return false;
+            }
             final boolean added = super.add(loggingEvent);
             while (added && size()>MAX_ENTRIES_IN_LIST) {
-               super.remove();
+                super.remove();
             }
             return added;
         }  
