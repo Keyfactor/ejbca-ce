@@ -14,8 +14,14 @@ package org.cesecore.authorization.access;
 
 /**
  * Workaround until we can use JEE Events. See the comments in AccessTreeUpdateSessionBean
+ * 
  * @version $Id$
  */
 public interface AuthorizationCacheReloadListener {
+
+    /** Invoked when the authorization system has been modified. */
     void onReload(AuthorizationCacheReload event);
+
+    /** @return a human readable name for logging of who is subscribing to events. */
+    String getListenerName();
 }
