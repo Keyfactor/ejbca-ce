@@ -53,7 +53,7 @@ public enum AuthorizationCache {
         long getKeepUnusedEntriesFor();
 
         /** Invoked by cache on first cache miss to start listening to authorization updates */
-        void listedForAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener);
+        void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener);
     }
     
     private class AuthorizationCacheEntry {
@@ -141,7 +141,7 @@ public enum AuthorizationCache {
         if (ret == null) {
             // Start subscribing to authorization system updates on first cache miss (which happens on application startup)
             if (!authorizationCacheReloadListenerRegistered.getAndSet(true)) {
-                authorizationCacheCallback.listedForAuthorizationCacheReload(authorizationCacheReloadListener);
+                authorizationCacheCallback.subscribeToAuthorizationCacheReload(authorizationCacheReloadListener);
             }
             ret = authorizationCacheEntry;
             try {
