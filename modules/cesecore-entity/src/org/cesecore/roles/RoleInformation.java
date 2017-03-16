@@ -30,6 +30,7 @@ public class RoleInformation implements Serializable {
     private static final long serialVersionUID = 1L;
     private final int identifier;
     private final String name;
+    @SuppressWarnings("deprecation")
     private final List<AccessUserAspectData> accessUserAspects;
     // Fields added in EJBCA 6.8.0 that we cannot be sure is ever set (defaults to null)
     private final String nameSpace;
@@ -54,6 +55,7 @@ public class RoleInformation implements Serializable {
      * Note that this it is in general a bad idea to keep a list of RoleMembers that were part of the Role at a point
      * in time in this class.
      */
+    @SuppressWarnings("deprecation")
     public static RoleInformation fromRoleMembers(final int identifier, final String nameSpace, final String roleName, final List<RoleMember> roleMembers) {
         final String nameSpaceToUse = StringUtils.isEmpty(nameSpace) ? null : nameSpace;
         final List<AccessUserAspectData> accessUserAspects = new ArrayList<>();
