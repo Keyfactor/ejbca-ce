@@ -71,7 +71,6 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -99,9 +98,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -301,15 +298,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules1.put(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW);
         accessRules1.put(StandardRules.CAACCESS.resource() + ca1.getCAId(), Role.STATE_ALLOW);
         accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.VIEW_END_ENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.EDIT_END_ENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.CREATE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.DELETE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.REVOKE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.VIEW_END_ENTITY_HISTORY, Role.STATE_ALLOW);
         accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.APPROVE_END_ENTITY, Role.STATE_DENY);
         accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id, Role.STATE_DENY);
         final Role role1 = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLE, accessRules1));
         // Add the second RA role
         roleMemberSession.createOrEdit(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
@@ -325,17 +315,10 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules2.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW);
         accessRules2.put(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW);
         accessRules2.put(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW);
-        accessRules2.put(StandardRules.CAACCESS.resource() + ca1.getCAId(), Role.STATE_ALLOW);
+        accessRules2.put(StandardRules.CAACCESS.resource() + ca2.getCAId(), Role.STATE_ALLOW);
         accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.VIEW_END_ENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.EDIT_END_ENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.CREATE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.DELETE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.REVOKE_END_ENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.VIEW_END_ENTITY_HISTORY, Role.STATE_ALLOW);
         accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY, Role.STATE_DENY);
         accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id, Role.STATE_DENY);
         final Role role2 = roleSession.persistRole(ADMIN, new Role(null, RA2_ADMIN_ROLE, accessRules2));
         roleMemberSession.createOrEdit(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
@@ -464,6 +447,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
      */
     @Test
     public void test01RA1SuccessfullCRMF() throws Exception {
+        log.trace(">test01RA1SuccessfullCRMF");
         // Send CRMF message signed by RA1Admin to RA1
         String testUsername = "ra1testuser";
         String fingerprintCert = null;
@@ -550,6 +534,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
+        log.trace("<test01RA1SuccessfullCRMF");
     }
 
     /**
@@ -560,7 +545,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
      */
     @Test
     public void test01RA1FailedCRMF() throws Exception {
-
+        log.trace(">test01RA1FailedCRMF");
         // Send CRMF message signed by RA2Admin to RA1
         String testUsername = "ra1testuser";
         X500Name testUserDN = new X500Name("CN=" + testUsername);
@@ -648,12 +633,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         expectedErrMsg = "'CN=" + RA1_ADMIN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
-        
+        log.trace("<test01RA1FailedCRMF");
     }
 
-    
-    
-    
     /**
      * 1- Sends a revocation request signed by RA2Admin to RA1. Expected: Fail
      * 2- Sends a revocation request signed by RA1Admin to RA1. Expected: Success
@@ -662,7 +644,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
      */
     @Test
     public void test03RevocationRequest() throws Exception {
-
+        log.trace(">test03RevocationRequest");
         String username = "ra1testuser";
         String fingerprintCert = null;
         try {
@@ -730,6 +712,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(fingerprintCert);
             endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
+            log.trace("<test03RevocationRequest");
         }
     }
     
@@ -740,7 +723,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
      */
     @Test
     public void test04RevocationRequest() throws Exception {
-
+        log.trace(">test04RevocationRequest");
         String username = "ra1testuser";
         String fingerprintCert = null;
         try {
@@ -791,11 +774,10 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(fingerprintCert);
             endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
+            log.trace("<test04RevocationRequest");
         }
     }
-    
-    
-    
+
     private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();
@@ -820,9 +802,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
-
         return user;
-
     }
 
     private static X509Certificate getCertFromAuthenticationToken(AuthenticationToken authToken) {
@@ -852,7 +832,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     }
 
     private AuthenticationToken createTokenWithCert(String adminName, AuthenticationSubject subject, KeyPair keys, int _caid, int eepid, int cpid) {
-
         // A small check if we have added a "fail" credential to the subject.
         // If we have we will return null, so we can test authentication failure.
         Set<?> usercredentials = subject.getCredentials();
@@ -865,7 +844,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 }
             }
         }
-
         X509Certificate certificate = null;
         // If there was no certificate input, create a self signed
         String dn = "CN="+adminName;
@@ -880,33 +858,15 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 }
             }
         }
-
         try {
             createUser(adminName, dn, "foo123", true, _caid, eepid, cpid);
-        } catch (AuthorizationDeniedException e1) {
-            throw new IllegalStateException(e1.getLocalizedMessage(), e1);
-        } catch (EndEntityProfileValidationException e1) {
-            throw new IllegalStateException(e1.getLocalizedMessage(), e1);
-        } catch (WaitingForApprovalException e1) {
-            throw new IllegalStateException(e1.getLocalizedMessage(), e1);
-        } catch (EjbcaException e1) {
-            throw new IllegalStateException(e1.getLocalizedMessage(), e1);
-        } catch (Exception e1) {
-            throw new IllegalStateException(e1.getLocalizedMessage(), e1);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
-
         try {
             certificate = (X509Certificate) signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (NoSuchEndEntityException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        } catch (EjbcaException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        } catch (CesecoreException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
+        } catch (EjbcaException | AuthorizationDeniedException | CesecoreException e) {
+            throw new IllegalStateException(e);
         }
         assertNotNull("Failed to create a test user certificate", certificate);
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
@@ -914,11 +874,9 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         assertNotNull("Failed to create authentication token.", result);
         return result;
     }
-    
-    
+
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
-
 }
