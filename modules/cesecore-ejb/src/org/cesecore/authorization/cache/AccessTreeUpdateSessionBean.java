@@ -76,7 +76,6 @@ public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal
         LOG.debug("Done invoking event");
     }
     
-    // When the problem with JEE Events is solved, we can remove this method
     @Override
     public void addReloadEvent(final AuthorizationCacheReloadListener observer) {
         AuthorizationCacheReloadListeners.INSTANCE.addListener(observer);
