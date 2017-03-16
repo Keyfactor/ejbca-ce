@@ -35,6 +35,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * @version $Id$
  * 
  */
+@Deprecated //replaced with hashmap in Role (EJBCA 6.8.0)
 @Entity
 @Table(name = "AccessRuleData")
 public class AccessRuleData extends ProtectedData implements Serializable, Comparable<AccessRuleData> {
