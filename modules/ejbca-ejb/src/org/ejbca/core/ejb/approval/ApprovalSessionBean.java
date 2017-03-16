@@ -43,7 +43,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -53,7 +52,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -111,8 +109,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private SessionContext sessionContext;
     
     @EJB
-    private AccessControlSessionLocal authorizationSession;
-    @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private CaSessionLocal caSession;
@@ -124,8 +120,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private RoleAccessSessionLocal roleAccessSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     
