@@ -23,6 +23,7 @@ import javax.ejb.Local;
  * 
  */
 @Local
+@Deprecated
 public interface AccessRuleManagementSessionLocal {
 
     void persistRule(AccessRuleData rule);
