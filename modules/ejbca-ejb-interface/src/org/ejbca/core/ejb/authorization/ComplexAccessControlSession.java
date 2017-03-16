@@ -22,8 +22,8 @@ import org.cesecore.roles.RoleExistsException;
 
 /**
  * @version $Id$
- *
  */
+@Deprecated // Use AuthorizationSystemSession
 public interface ComplexAccessControlSession {
 	
 	/** Initializes the authorization module with a superadmin rule matching the given caid and superadminCN
