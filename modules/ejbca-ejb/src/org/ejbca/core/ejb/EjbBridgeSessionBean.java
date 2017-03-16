@@ -38,6 +38,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -117,7 +118,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB RoleAccessSessionLocal roleAccessSession;
 	@EJB RoleManagementSessionLocal roleManagementSession;
     @EJB RoleDataSessionLocal roleDataSession;
-	@EJB RoleMemberSessionLocal roleMemberSession;
+	@EJB RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB RoleMemberSessionLocal roleMemberSession;
     @EJB RoleSessionLocal roleSession;
 	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
 	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
@@ -166,6 +168,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
 	@Override public RoleManagementSessionLocal getRoleManagementSession() { return roleManagementSession; }
     @Override public RoleDataSessionLocal getRoleDataSession() { return roleDataSession; }
+    @Override public RoleMemberDataSessionLocal getRoleMemberDataSession() { return roleMemberDataSession; }
     @Override public RoleMemberSessionLocal getRoleMemberSession() { return roleMemberSession; }
     @Override public RoleSessionLocal getRoleSession() { return roleSession; }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
