@@ -23,7 +23,6 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.ejbca.config.GlobalConfiguration;
@@ -45,7 +44,6 @@ public class RAAuthorization implements Serializable {
 	private List<Integer> authprofileswithmissingcas = null;
     private AuthenticationToken admin;
     private AuthorizationSessionLocal authorizationSession;
-    private AccessControlSessionLocal accessControlSessionSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
@@ -60,20 +58,7 @@ public class RAAuthorization implements Serializable {
     	this.endEntityProfileSession = endEntityProfileSession;
     }
 
-    /** Creates a new instance of RAAuthorization using legacy access control. */
-    @Deprecated
-    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal accessControlSessionSession, 
-                    CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
-        this.admin = admin;
-        this.globalConfigurationSession = globalConfigurationSession;
-        this.accessControlSessionSession = accessControlSessionSession;
-        this.caSession = caSession;
-        this.endEntityProfileSession = endEntityProfileSession;
-    }
     private boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, String... resources) {
-        if (authorizationSession==null) {
-            return accessControlSessionSession.isAuthorizedNoLogging(admin, resources);
-        }
         return authorizationSession.isAuthorizedNoLogging(admin, resources);
     }
 

@@ -22,9 +22,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * @version $Id$
- * 
  */
 @Local
+@Deprecated // Use AuthorizationSystemSession
 public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
 
     public static final String SUPERADMIN_ROLE = "Super Administrator Role";

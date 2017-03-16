@@ -16,9 +16,9 @@ import javax.ejb.Remote;
 
 /**
  * @version $Id$
- *
  */
 @Remote
+@Deprecated // Use AuthorizationSystemSession
 public interface ComplexAccessControlSessionRemote extends ComplexAccessControlSession {
 
 }
