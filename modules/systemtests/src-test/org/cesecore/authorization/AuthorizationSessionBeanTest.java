@@ -215,11 +215,11 @@ public class AuthorizationSessionBeanTest {
             final HashMap<String,Boolean> accessRules2 = new HashMap<>();
             accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
             accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_ALLOW);
             accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
             accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
             accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_ALLOW);
             final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
             final String subjectAndIssuerDn = "CN="+commonName;
             final int caId = subjectAndIssuerDn.hashCode();
@@ -288,11 +288,11 @@ public class AuthorizationSessionBeanTest {
             final HashMap<String,Boolean> accessRules2 = new HashMap<>();
             accessRules2.put("/allowInBoth", Role.STATE_ALLOW);
             accessRules2.put("/allowInBoth/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/allowInBoth/denyInFirst", Role.STATE_ALLOW);
             accessRules2.put("/allowInFirst/allowInFirst", Role.STATE_DENY);
             accessRules2.put("/allowInFirst/denyInFirst", Role.STATE_ALLOW);
             accessRules2.put("/somerule/allowInFirst", Role.STATE_DENY);
-            accessRules2.put("/somerule/denyInFirst", Role.STATE_DENY);
+            accessRules2.put("/somerule/denyInFirst", Role.STATE_ALLOW);
             final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(nameSpace, roleName2, accessRules2));
             final String organisation = "Testing";
             final String subjectAndIssuerDn = "CN="+commonName + ",O="+organisation;
