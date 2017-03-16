@@ -65,7 +65,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -170,8 +169,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private CertificateRequestSessionLocal certificateRequestSession;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationSession;
-    @EJB
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
@@ -659,7 +656,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
             ejbs.put(EndEntityAccessSessionLocal.class, endEntityAccessSession);
             ejbs.put(WebAuthenticationProviderSessionLocal.class, webAuthenticationSession);
-            ejbs.put(ComplexAccessControlSessionLocal.class, complexAccessControlSession);
             ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
             ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
             ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
