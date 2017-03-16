@@ -33,8 +33,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -54,6 +55,11 @@ import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.roles.AccessRulesHelper;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleDataSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.core.EjbcaException;
@@ -81,8 +87,8 @@ public class CADataHandler implements Serializable {
     private AuthenticationToken administrator;
     private InformationMemory info;
     
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
-    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
+    private RoleDataSessionLocal roleDataSession;
+    private RoleMemberDataSessionLocal roleMemberDataSession;
     private CAAdminSessionLocal caadminsession; 
     private CaSessionLocal caSession;
     private CertificateProfileSession certificateProfileSession;
@@ -93,8 +99,8 @@ public class CADataHandler implements Serializable {
     
     /** Creates a new instance of CADataHandler */
     public CADataHandler(final AuthenticationToken authenticationToken, final EjbLocalHelper ejb, final EjbcaWebBean ejbcawebbean) {
-       this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
-       this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
+       this.roleDataSession = ejb.getRoleDataSession();
+       this.roleMemberDataSession = ejb.getRoleMemberDataSession();
        this.caadminsession = ejb.getCaAdminSession();
        this.caSession = ejb.getCaSession();
        this.endEntitySession = ejb.getEndEntityManagementSession();
@@ -124,10 +130,10 @@ public class CADataHandler implements Serializable {
           if (aliases == null || !aliases.hasMoreElements()) {
               throw new Exception("This file does not contain any aliases.");
           }
-          privateSignatureKeyAlias = (String)aliases.nextElement();
+          privateSignatureKeyAlias = aliases.nextElement();
           if (aliases.hasMoreElements()) {
               while (aliases.hasMoreElements()) {
-                  privateSignatureKeyAlias += " " + (String)aliases.nextElement();
+                  privateSignatureKeyAlias += " " + aliases.nextElement();
               }
               throw new Exception("You have to specify any of the following aliases: " + privateSignatureKeyAlias);
           }
@@ -212,21 +218,38 @@ public class CADataHandler implements Serializable {
         info.cAsEdited();
     }
   
-  /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */  
-  public boolean removeCA(int caid) throws AuthorizationDeniedException{     
-    boolean caidexits = this.endEntitySession.checkForCAId(caid) ||
-                        this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
-                        this.endEntityProfileSession.existsCAInEndEntityProfiles(caid) ||
-                        (accessRuleManagementSession.existsCaInAccessRules(caid) && this.accessUserAspectManagerSession.existsCAInAccessUserAspects(caid));   
-    if(!caidexits){
-        caSession.removeCA(administrator, caid);
-      info.cAsEdited();
+    /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */  
+    public boolean removeCA(final int caId) throws AuthorizationDeniedException{     
+        final boolean caIdIsPresent = this.endEntitySession.checkForCAId(caId) ||
+                this.certificateProfileSession.existsCAIdInCertificateProfiles(caId) ||
+                this.endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
+                isCaIdInUseByRoleOrRoleMember(caId);   
+        if (!caIdIsPresent) {
+            caSession.removeCA(administrator, caId);
+            info.cAsEdited();
+        }
+        return !caIdIsPresent;
     }
-    
-    return !caidexits;
-  }
+
+    /** @return true if the CA ID is in use by any Role's access rule or as RoleMember.tokenIssuerId */
+    private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
+        for (final Role role : roleDataSession.getAllRoles()) {
+            if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
+                return true;
+            }
+            for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
+                if (roleMember.getTokenIssuerId()==caId) {
+                    // Do more expensive checks if it is a potential match
+                    final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                            roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                    if (accessMatchValue.isIssuedByCa()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
   /** @return true if CA with the new name already existed */  
   public boolean renameCA(int caId, String newname) throws AuthorizationDeniedException, CADoesntExistsException {

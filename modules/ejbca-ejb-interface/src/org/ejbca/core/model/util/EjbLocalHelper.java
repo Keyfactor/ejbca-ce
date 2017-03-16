@@ -40,6 +40,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -166,6 +167,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Deprecated @Override public RoleAccessSessionLocal getRoleAccessSession() { return getEjbLocal().getRoleAccessSession(); }
     @Deprecated @Override public RoleManagementSessionLocal getRoleManagementSession() { return getEjbLocal().getRoleManagementSession(); }
     @Override public RoleMemberSessionLocal getRoleMemberSession() { return getEjbLocal().getRoleMemberSession(); }
+    @Override public RoleMemberDataSessionLocal getRoleMemberDataSession() { return getEjbLocal().getRoleMemberDataSession(); }
     @Override public RoleSessionLocal getRoleSession() {return getEjbLocal().getRoleSession(); }
     @Override public RoleDataSessionLocal getRoleDataSession() {return getEjbLocal().getRoleDataSession(); }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return getEjbLocal().getSecurityEventsAuditorSession(); }
