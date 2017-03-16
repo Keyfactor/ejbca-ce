@@ -174,6 +174,8 @@ public class RevocationApprovalTest extends CaTestCase {
         }
         final HashMap<String,Boolean> accessRules = new HashMap<>();
         accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
+        accessRules.put(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW);
+        accessRules.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW);
         accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
         accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
         final Role role = roleSession.persistRole(internalAdmin, new Role(null, getRoleName(), accessRules));
@@ -511,7 +513,7 @@ public class RevocationApprovalTest extends CaTestCase {
             
             
             List<Certificate> usercerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-            assertEquals(3, usercerts.size());
+            assertEquals("Wrong number of certificates in database for end entity '"+username+"'", 3, usercerts.size());
             for(Certificate cert : usercerts) {
                 assertEquals("Certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
                 if(CertTools.getSerialNumber(cert).equals(CertTools.getSerialNumber(usercert))) {
@@ -530,20 +532,17 @@ public class RevocationApprovalTest extends CaTestCase {
             assertEquals(2, revEEReqIds.size());
             assertTrue(revEEReqIds.contains(Integer.valueOf(4711)));
             assertTrue(revEEReqIds.contains(Integer.valueOf(4712)));
-            
-            
         } finally {
             try {
                 this.internalCertStoreSession.removeCertificate(usercertfp);
                 this.internalCertStoreSession.removeCertificate(usercert2fp);
                 this.internalCertStoreSession.removeCertificate(usercert3fp);
-            } catch(Exception e) {} 
-
+            } catch(Exception e) {
+                log.debug(e.getMessage());
+            }
             if (endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
             }
-            
-            
         }
     }
 } 
