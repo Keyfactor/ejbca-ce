@@ -147,11 +147,10 @@ public class KeyRecoveryTest extends CaTestCase {
         accessRules.put(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW);
         accessRules.put(StandardRules.CAACCESS.resource() + getTestCAId(), Role.STATE_ALLOW);
         final Role role = roleSession.persistRole(internalAdmin, new Role(null, KEYRECOVERY_ROLE, accessRules));
-        final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+        roleMemberSession.persist(internalAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                CertTools.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN"), role.getRoleId(), null, null);
-        roleMemberSession.createOrEdit(internalAdmin, roleMember);
+                CertTools.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN"), role.getRoleId(), null, null));
         setUpLegacy();
     }
 

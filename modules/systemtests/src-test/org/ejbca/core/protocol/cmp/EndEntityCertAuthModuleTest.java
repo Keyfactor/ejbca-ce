@@ -302,7 +302,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
         final Role role1 = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLE, accessRules1));
         // Add the second RA role
-        roleMemberSession.createOrEdit(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA1_ADMIN, role1.getRoleId(), null, null));
         final HashMap<String,Boolean> accessRules2 = new HashMap<>();
@@ -320,7 +320,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY, Role.STATE_DENY);
         accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
         final Role role2 = roleSession.persistRole(ADMIN, new Role(null, RA2_ADMIN_ROLE, accessRules2));
-        roleMemberSession.createOrEdit(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA2_ADMIN, role2.getRoleId(), null, null));
 

@@ -77,15 +77,14 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         final HashMap<String,Boolean> accessRules = new HashMap<>();
         accessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
         final Role role = roleSession.persistRole(authenticationToken, new Role(null, roleName, accessRules));
-        final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+        roleMemberSession.persist(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(certificate).hashCode(),
                 X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
                 CertTools.getSerialNumber(certificate).toString(16),
                 role.getRoleId(),
-                null, null);
-        roleMemberSession.createOrEdit(authenticationToken, roleMember);
+                null, null));
         initializeAccessWithCertLegacy(authenticationToken, roleName, certificate);
         if (log.isTraceEnabled()) {
             log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
@@ -136,15 +135,14 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
                 roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.getRoleId());
             }
             final Role role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(roleNameSpace, roleName, initialAccessRules));
-            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+            roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                     X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(x509Certificate).hashCode(),
                     X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
                     CertTools.getSerialNumber(x509Certificate).toString(16),
                     role.getRoleId(),
-                    null, null);
-            roleMember.setId(roleMemberSession.createOrEdit(alwaysAllowAuthenticationToken, roleMember));
+                    null, null));
             if (log.isDebugEnabled()) {
                 log.debug("Added role '"+role.getRoleNameFull()+"' ("+role.getRoleId()+") matching certificate " + CertTools.getSubjectDN(x509Certificate));
             }
