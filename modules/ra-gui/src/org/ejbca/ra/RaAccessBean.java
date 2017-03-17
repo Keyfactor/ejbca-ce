@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -23,6 +24,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.authorization.access.AuthorizationCacheReload;
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
@@ -46,12 +50,17 @@ public class RaAccessBean implements Serializable {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
     
+    private static AtomicBoolean reloadEventRegistered = new AtomicBoolean(false);
+    
     private boolean isAuthorized(String... resources) {
+        enureCacheReloadEventRegistered();
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
         AccessSet myAccess;
         final ConcurrentCache<AuthenticationToken,AccessSet> cache = RemoteAccessSetCacheHolder.getCache();
@@ -78,6 +87,27 @@ public class RaAccessBean implements Serializable {
             entry.close();
         }
         return myAccess.isAuthorized(resources);
+    }
+    
+    private void enureCacheReloadEventRegistered() {
+        if (reloadEventRegistered.compareAndSet(false, true)) {
+          accessTreeUpdateSession.addReloadEvent(new AuthorizationCacheReloadListener() {
+                private int lastUpdate = -1;
+                
+                @Override
+                public void onReload(final AuthorizationCacheReload event) {
+                    if (event.getAccessTreeUpdateNumber() > lastUpdate) {
+                        lastUpdate = event.getAccessTreeUpdateNumber();
+                        RemoteAccessSetCacheHolder.forceEmptyCache();
+                    }
+                }
+                
+                @Override
+                public String getListenerName() {
+                    return RemoteAccessSetCacheHolder.class.getName();
+                }
+            });
+        }
     }
     
     // Methods for checking authorization to various parts of EJBCA can be defined below
