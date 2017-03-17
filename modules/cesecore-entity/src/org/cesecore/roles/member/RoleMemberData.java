@@ -47,7 +47,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     private int tokenIssuerId;
     private int tokenMatchKey;
     private int tokenMatchOperator;
-    private String tokenMatchValue;
+    private String tokenMatchValueColumn;
     private int roleId;
     
     private String memberBindingType;
@@ -85,7 +85,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         this.tokenIssuerId = tokenIssuerId;
         this.tokenMatchKey = tokenMatchKey;
         this.tokenMatchOperator = tokenMatchOperator;
-        this.tokenMatchValue = tokenMatchValue;
+        this.tokenMatchValueColumn = tokenMatchValue;
         this.roleId = roleId;
         this.memberBindingType = memberBindingType;
         this.memberBindingValue = memberBindingValue;
@@ -136,13 +136,36 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         this.tokenMatchOperator = tokenMatchOperator;
     }
 
-    /** @return the actual value with which we match */
+    //@Column(name="tokenMatchValue")
+    @Deprecated
+    /** @deprecated (Only for database mapping) {@link #getTokenMatchValue()} */
+    public String getTokenMatchValueColumn() {
+        return tokenMatchValueColumn;
+    }
+    @Deprecated
+    /** @deprecated (Only for database mapping) {@link #setTokenMatchValue(String)} */
+    public void setTokenMatchValueColumn(final String tokenMatchValueColumn) {
+        this.tokenMatchValueColumn = tokenMatchValueColumn;
+    }
+
+    @Transient
+    /** @return the actual value with which we match (never returns null) */
     public String getTokenMatchValue() {
-        return tokenMatchValue;
+        final String tokenMatchValue = getTokenMatchValueColumn();
+        return tokenMatchValue==null ? "" : tokenMatchValue;
     }
     
+    @Transient
     public void setTokenMatchValue(final String tokenMatchValue) {
-        this.tokenMatchValue = tokenMatchValue;
+        if (tokenMatchValue!=null && tokenMatchValue.trim().isEmpty()) {
+            /* 
+             * Store the value as NULL since Oracle converts "" to NULL anyway and we might want to
+             * be able to do database agnostic "... WHERE tokenMatchValue IS NULL" in the future.
+             */
+            this.setTokenMatchValueColumn(null);
+        } else {
+            this.setTokenMatchValueColumn(tokenMatchValue);
+        }
     }
 
     /** @return the role to which this member belongs or 0 if it is not assigned to a role. */
@@ -248,12 +271,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     @Override
     public int compareTo(RoleMemberData o) {
         return new CompareToBuilder().append(this.tokenType, o.tokenType).append(this.tokenIssuerId, o.tokenIssuerId).append(this.tokenMatchKey, o.tokenMatchKey)
-                .append(this.tokenMatchOperator, o.tokenMatchOperator).append(this.tokenMatchValue, o.tokenMatchValue).toComparison();
+                .append(this.tokenMatchOperator, o.tokenMatchOperator).append(this.tokenMatchValueColumn, o.tokenMatchValueColumn).toComparison();
     }
     
     @Transient
     public RoleMember asValueObject() {
-        return new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, memberBindingType, memberBindingValue);
+        return new RoleMember(primaryKey, tokenType, tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValueColumn, roleId, memberBindingType, memberBindingValue);
     }
     
     /** Sets all fields except the ID */
@@ -263,7 +286,6 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
         setTokenIssuerId(roleMember.getTokenIssuerId());
         setTokenMatchKey(roleMember.getTokenMatchKey());
         setTokenMatchOperator(roleMember.getTokenMatchOperator());
-        setTokenMatchValue(roleMember.getTokenMatchValue());
         setTokenMatchValue(roleMember.getTokenMatchValue());
         setRoleId(roleMember.getRoleId());
         setMemberBindingType(roleMember.getMemberBindingType());
