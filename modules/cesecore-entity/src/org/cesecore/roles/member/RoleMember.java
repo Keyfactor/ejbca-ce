@@ -63,6 +63,19 @@ public class RoleMember implements Serializable {
         this.memberBindingValue = memberBindingValue;
     }
 
+    /** Copy constructor */
+    public RoleMember(final RoleMember roleMember) {
+        this.id = roleMember.id;
+        this.tokenType = roleMember.tokenType;
+        this.tokenIssuerId = roleMember.tokenIssuerId;
+        this.tokenMatchKey = roleMember.tokenMatchKey;
+        this.tokenMatchOperator = roleMember.tokenMatchOperator;
+        this.tokenMatchValue = roleMember.tokenMatchValue;
+        this.roleId = roleMember.roleId;
+        this.memberBindingType = roleMember.memberBindingType;
+        this.memberBindingValue = roleMember.memberBindingValue;
+    }
+
     public int getId() {
         return id;
     }

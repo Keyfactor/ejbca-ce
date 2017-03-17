@@ -259,7 +259,7 @@ public class InitCATest extends CaTestCase {
             adminGroupData = roleAccessSession.findRole(ROLE_NAME);
             assertEquals("CAId was not updated in role subject", newCaId, adminGroupData.getAccessUsers().values().iterator().next().getCaId().intValue());
             final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMember.getId());
-            //assertEquals("CAId was not updated in role subject", newCaId, roleMemberAfterInit.getTokenIssuerId());
+            assertEquals("CAId was not updated in role subject", newCaId, roleMemberAfterInit.getTokenIssuerId());
         } finally {
             log.debug("Cleaning up");
             deleteTestData();
