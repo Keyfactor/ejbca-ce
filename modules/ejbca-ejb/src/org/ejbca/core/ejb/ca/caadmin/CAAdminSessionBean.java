@@ -155,6 +155,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -245,6 +246,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
     private RevocationSessionLocal revocationSession;
+    @EJB
+    private RoleSessionLocal roleSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
@@ -516,6 +519,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update Roles
+        roleSession.updateCaId(fromId, toId, false, true);
+        // ...and the same for legacy (to be removed)
         final Random random = new Random(System.nanoTime()); 
         for (AdminGroupData role : roleAccessSession.getAllRoles()) {
             final String roleName = role.getRoleName();
@@ -2115,8 +2120,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         endEntityProfileSession.changeEndEntityProfile(authenticationToken, allEndEntityProfileIdMap.get(endEntityProfileId), endEntityProfile);                            
                     }
                 }
-                
                 //If CA has gone through Name Change, clone all this CA specific access rules with new one with replaced caid for every roles.
+                roleSession.updateCaId(caidBeforeNameChange, caid, true, false);
+                // ...and the same in the legacy system (remove this)
                 for(AdminGroupData adminGroupData : roleAccessSession.getAllRoles()){
                     final List<AccessRuleData> accessRulesToBeAdded = new ArrayList<AccessRuleData>();
                     for(Map.Entry<Integer, AccessRuleData > accessRuleData: adminGroupData.getAccessRules().entrySet()){

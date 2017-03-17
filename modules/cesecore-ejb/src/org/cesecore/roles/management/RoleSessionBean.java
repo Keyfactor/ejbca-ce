@@ -425,4 +425,37 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
         return new ArrayList<>(namespaces);
     }
+    
+    @Override
+    public boolean updateCaId(final int caIdOld, final int caIdNew, final boolean keepOldAccessRule, final boolean updateRoleMembers) {
+        final String resourceOld = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caIdOld);
+        final String resourceNew = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caIdNew);
+        boolean hasChangedAnything = false;
+        for (final Role role : roleDataSession.getAllRoles()) {
+            final Boolean state = role.getAccessRules().get(resourceOld);
+            if (state!=null) {
+                if (!keepOldAccessRule) {
+                    role.getAccessRules().remove(resourceOld);
+                }
+                role.getAccessRules().put(resourceNew, state);
+                roleDataSession.persistRole(role);
+                hasChangedAnything = true;
+            }
+            if (updateRoleMembers) {
+                for (final RoleMember roleMember : roleMemberDataSession.findRoleMemberByRoleId(role.getRoleId())) {
+                    if (roleMember.getTokenIssuerId()==caIdOld) {
+                        // Do more expensive checks if it is a potential match
+                        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                                roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                        if (accessMatchValue.isIssuedByCa()) {
+                            roleMember.setTokenIssuerId(caIdNew);
+                            roleMemberDataSession.persistRoleMember(roleMember);
+                            hasChangedAnything = true;
+                        }
+                    }
+                }
+            }
+        }
+        return hasChangedAnything;
+    }
 }

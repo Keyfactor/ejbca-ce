@@ -331,11 +331,11 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         final int caIdNew = caInfoAfterNameChange.getCAId();
         final Map<String,Boolean> accessRulesForRole1 = roleSession.getRole(internalAdmin, null, testRole1).getAccessRules();
         assertEquals(Role.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
-        //assertEquals(Role.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
+        assertEquals(Role.STATE_ALLOW, accessRulesForRole1.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
         final Map<String,Boolean> accessRulesForRole2 = roleSession.getRole(internalAdmin, null, testRole2).getAccessRules();
         assertEquals(Role.STATE_ALLOW, accessRulesForRole2.get(StandardRules.CAACCESS.resource()));
         assertEquals(Role.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdOld + "/"));
-        //assertEquals(Role.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
+        assertEquals(Role.STATE_DENY, accessRulesForRole2.get(StandardRules.CAACCESS.resource() + caIdNew + "/"));
         final Map<String,Boolean> accessRulesForRole3 = roleSession.getRole(internalAdmin, null, testRole3).getAccessRules();
         assertEquals(1, accessRulesForRole3.size());
         assertEquals(Role.STATE_ALLOW, accessRulesForRole3.get(StandardRules.CAACCESS.resource() + DUMMY_CA_ID + "/"));

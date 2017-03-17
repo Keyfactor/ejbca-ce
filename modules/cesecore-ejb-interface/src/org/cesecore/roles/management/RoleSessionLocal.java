@@ -38,5 +38,15 @@ public interface RoleSessionLocal extends RoleSession {
     List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken);
 
     /** @return a list of all Roles that have access to the resource and the caller is allowed to see */
-    List<Role> getAuthorizedRolesWithAccessToResource(AuthenticationToken authenticationToken, String resource);    
+    List<Role> getAuthorizedRolesWithAccessToResource(AuthenticationToken authenticationToken, String resource);
+
+    /** 
+     * Update Role access rules and optionally any RoleMember relating to the CA ID.
+     * 
+     * Authorization to perform this operation should be checked by the caller and implied by the type of operation.
+     * 
+     * @param keepOldAccessRule when true, the /ca/(caIdOld)/ rule will be kept as well.
+     * @param updateRoleMembers update the RoleMember.tokenIssuerId for members issued by this CA
+     */
+    boolean updateCaId(int caIdOld, int caIdNew, boolean keepOldAccessRule, boolean updateRoleMembers);    
 }
