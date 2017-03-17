@@ -16,10 +16,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,6 +33,8 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
+import org.cesecore.authorization.access.AuthorizationCacheReload;
+import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.junit.Test;
 
 /**
@@ -66,6 +71,10 @@ public class AuthorizationCacheTest {
             public long getKeepUnusedEntriesFor() {
                 return keepUnusedEntriesFor.get();
             }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                // Not needed for this test
+            }
         };
         // The callback should only populate the cache for one of the tokens
         assertNotNull(AuthorizationCache.INSTANCE.get(at1, callback));
@@ -89,6 +98,10 @@ public class AuthorizationCacheTest {
             public long getKeepUnusedEntriesFor() {
                 return keepUnusedEntriesFor.get();
             }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                // Not needed for this test
+            }
         };
         assertNotNull(AuthorizationCache.INSTANCE.get(at2, callbackEmpty));
         assertEquals(1, AuthorizationCache.INSTANCE.get(at2, callbackEmpty).size());
@@ -111,6 +124,152 @@ public class AuthorizationCacheTest {
         AuthorizationCache.INSTANCE.refresh(callback);
         assertEquals(0, AuthorizationCache.INSTANCE.get(at1, callback).size());
         log.trace("<testBasicOperations");
+    }
+
+    /** Test already cached entries are reloaded if there is an update to the authorization system */
+    @Test
+    public void testSubscribeToAuthorizationCacheReload() throws InterruptedException, AuthenticationFailedException {
+        log.trace(">testSubscribeToAuthorizationCacheReload");
+        AuthorizationCache.INSTANCE.reset();
+        final AtomicInteger updateNumber = new AtomicInteger(0);
+        final AtomicLong keepUnusedEntriesFor = new AtomicLong(3600000L);
+        final HashMap<String, Boolean> accessRules1 = new HashMap<>();
+        accessRules1.put("/rule1", Boolean.TRUE);
+        final AuthenticationToken at1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest1"));
+        final Set<AuthorizationCacheReloadListener> authorizationCacheReloadListeners = new HashSet<>();
+        final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
+            @Override
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+                if (at1==authenticationToken) {
+                    return accessRules1;
+                }
+                return null;
+            }
+            @Override
+            public int getUpdateNumber() {
+                return updateNumber.get();
+            }
+            @Override
+            public long getKeepUnusedEntriesFor() {
+                return keepUnusedEntriesFor.get();
+            }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                authorizationCacheReloadListeners.add(authorizationCacheReloadListener);
+            }
+        };
+        // The callback should only populate the cache for one of the tokens
+        assertNotNull(AuthorizationCache.INSTANCE.get(at1, callback));
+        assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback).size());
+        assertNotNull(AuthorizationCache.INSTANCE.get(null, callback));
+        assertEquals(0, AuthorizationCache.INSTANCE.get(null, callback).size());
+        assertNotNull(AuthorizationCache.INSTANCE.get(at1, null));
+        assertEquals(0, AuthorizationCache.INSTANCE.get(at1, null).size());
+        assertEquals("Cache never subscribed to updates.", 1, authorizationCacheReloadListeners.size());
+        // Update the underlying access rules for this token
+        final HashMap<String, Boolean> accessRules2 = new HashMap<>(accessRules1);
+        accessRules2.put("/rule2", Boolean.TRUE);
+        updateNumber.incrementAndGet();
+        final AuthorizationCacheCallback callback2 = new AuthorizationCacheCallback() {
+            @Override
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+                if (at1==authenticationToken) {
+                    return accessRules2;
+                }
+                return null;
+            }
+            @Override
+            public int getUpdateNumber() {
+                return updateNumber.get();
+            }
+            @Override
+            public long getKeepUnusedEntriesFor() {
+                return keepUnusedEntriesFor.get();
+            }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                fail("This should only be invoked once on first from the cache.");
+            }
+        };
+        // Before AuthorizationCacheReload notification or cache refresh it the change should not be detected
+        assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback2).size());
+        // After AuthorizationCacheReload notification it should be detected
+        authorizationCacheReloadListeners.iterator().next().onReload(new AuthorizationCacheReload(updateNumber.get()));
+        assertEquals(2, AuthorizationCache.INSTANCE.get(at1, callback2).size());
+        log.trace("<testSubscribeToAuthorizationCacheReload");
+    }
+
+    /** Test cache refresh similar to what AuthorizationSessionBean timeout performs on the cache */
+    @Test
+    public void testAuthorizationCacheRefresh() throws InterruptedException, AuthenticationFailedException {
+        log.trace(">testAuthorizationCacheRefresh");
+        AuthorizationCache.INSTANCE.reset();
+        final AtomicInteger updateNumber = new AtomicInteger(0);
+        final AtomicLong keepUnusedEntriesFor = new AtomicLong(3600000L);
+        final HashMap<String, Boolean> accessRules1 = new HashMap<>();
+        accessRules1.put("/rule1", Boolean.TRUE);
+        final AuthenticationToken at1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest1"));
+        final Set<AuthorizationCacheReloadListener> authorizationCacheReloadListeners = new HashSet<>();
+        final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
+            @Override
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+                if (at1==authenticationToken) {
+                    return accessRules1;
+                }
+                return null;
+            }
+            @Override
+            public int getUpdateNumber() {
+                return updateNumber.get();
+            }
+            @Override
+            public long getKeepUnusedEntriesFor() {
+                return keepUnusedEntriesFor.get();
+            }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                authorizationCacheReloadListeners.add(authorizationCacheReloadListener);
+            }
+        };
+        // The callback should only populate the cache for one of the tokens
+        assertNotNull(AuthorizationCache.INSTANCE.get(at1, callback));
+        assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback).size());
+        assertNotNull(AuthorizationCache.INSTANCE.get(null, callback));
+        assertEquals(0, AuthorizationCache.INSTANCE.get(null, callback).size());
+        assertNotNull(AuthorizationCache.INSTANCE.get(at1, null));
+        assertEquals(0, AuthorizationCache.INSTANCE.get(at1, null).size());
+        assertEquals("Cache never subscribed to updates.", 1, authorizationCacheReloadListeners.size());
+        // Update the underlying access rules for this token
+        final HashMap<String, Boolean> accessRules2 = new HashMap<>(accessRules1);
+        accessRules2.put("/rule2", Boolean.TRUE);
+        updateNumber.incrementAndGet();
+        final AuthorizationCacheCallback callback2 = new AuthorizationCacheCallback() {
+            @Override
+            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+                if (at1==authenticationToken) {
+                    return accessRules2;
+                }
+                return null;
+            }
+            @Override
+            public int getUpdateNumber() {
+                return updateNumber.get();
+            }
+            @Override
+            public long getKeepUnusedEntriesFor() {
+                return keepUnusedEntriesFor.get();
+            }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                fail("This should only be invoked once on first from the cache.");
+            }
+        };
+        // Before AuthorizationCacheReload notification or cache refresh it the change should not be detected
+        assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback2).size());
+        // After AuthorizationCache refresh it should be detected
+        AuthorizationCache.INSTANCE.refresh(callback2);
+        assertEquals(2, AuthorizationCache.INSTANCE.get(at1, callback2).size());
+        log.trace("<testAuthorizationCacheRefresh");
     }
 
     /** Verify that only one of many calling threads for a cache entry will do the actual database lookup. */
@@ -150,6 +309,10 @@ public class AuthorizationCacheTest {
             @Override
             public long getKeepUnusedEntriesFor() {
                 return keepUnusedEntriesFor.get();
+            }
+            @Override
+            public void subscribeToAuthorizationCacheReload(AuthorizationCacheReloadListener authorizationCacheReloadListener) {
+                // Not needed for this test
             }
         };
         final List<CacheReaderThread> cacheReaderThreads = new ArrayList<>();
