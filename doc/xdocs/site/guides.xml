@@ -501,6 +501,7 @@ Router#debug crypto pki validation
   This example was created on Ubuntu 64-bit Server 7.10 using the Apache Web Server 2.2 package,
   but should be easy to adapt to any system able to run Apache.
   </p>
+  <p>In order to support OCSP GET requests through the proxy in recent version of Apache (2.4) you may need to activate, mod_lbmethod_byrequests. You may also need to use the 'nocanon' directory to ProxyPass in order to correctly-forward encoded slash characters(/).</p>
   <p>
   Start by installing EJBCA as normal. If you intend to have the CA on the same machine as
   the proxy you should modify $EJBCA_HOME/conf/web.properties to only listen to localhost
