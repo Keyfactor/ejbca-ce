@@ -642,7 +642,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Update CLI admins where this username is used in AdminEntityData table.
         final List<RoleMemberData> roleMemberDatas = entityManager.createQuery(
-                "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.tokenMatchKey=:tokenMatchKey AND a.tokenMatchValue=:tokenMatchValue", RoleMemberData.class)
+                "SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.tokenMatchKey=:tokenMatchKey AND a.tokenMatchValueColumn=:tokenMatchValue", RoleMemberData.class)
                 .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
                 .setParameter("tokenMatchKey", CliUserAccessMatchValue.USERNAME.getNumericValue())
                 .setParameter("tokenMatchValue", currentUsername)
