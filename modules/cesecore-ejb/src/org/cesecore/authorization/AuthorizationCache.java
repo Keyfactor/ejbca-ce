@@ -88,6 +88,7 @@ public enum AuthorizationCache {
     protected void reset() {
         cacheMap.clear();
         latestUpdateNumber.set(0);
+        authorizationCacheReloadListenerRegistered.set(false);
     }
 
     /** Re-build the authorization cache for all entries that been seen recently (as determined by authorizationCacheCallback.getKeepUnusedEntriesFor()). */
