@@ -53,7 +53,6 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -272,10 +271,9 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             // We won't create any RoleMember for a Super Admin certificate here
             // Add CLI user role member
             final String username = EjbcaConfiguration.getCliDefaultUser();
-            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, CliAuthenticationTokenMetaData.TOKEN_TYPE,
+            roleMemberDataSession.persistRoleMember(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, CliAuthenticationTokenMetaData.TOKEN_TYPE,
                     RoleMember.NO_ISSUER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    username, role.getRoleId(), null, null);
-            roleMember.setId(roleMemberDataSession.createOrEdit(new RoleMemberData(roleMember)));
+                    username, role.getRoleId(), null, null));
             // Add CLI user end entity
             final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
                     SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
@@ -307,7 +305,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             return false;
         }
         // We don't care if the caller has done this before. If the caller is authorized we comply.
-        roleMemberSession.createOrEdit(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 superAdminCN, role.getRoleId(), null, null));
         return true;

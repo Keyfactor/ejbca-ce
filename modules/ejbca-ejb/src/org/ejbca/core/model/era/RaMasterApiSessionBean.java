@@ -345,12 +345,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (log.isDebugEnabled()) {
             log.debug("Persisting a role member with ID " + roleMember.getRoleId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
         }
-        int id = roleMemberSession.createOrEdit(authenticationToken, roleMember);
-        if (id == RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
-            return null;
-        }
-        roleMember.setId(id);
-        return roleMember;
+        return roleMemberSession.persist(authenticationToken, roleMember);
     }
     
     @Override

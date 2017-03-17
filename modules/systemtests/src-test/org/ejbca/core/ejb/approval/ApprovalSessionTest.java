@@ -236,26 +236,21 @@ public class ApprovalSessionTest extends CaTestCase {
         accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
         role = roleSession.persistRole(intadmin, new Role(null, roleName, accessRules));
 
-        final RoleMember roleMember1 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null, null);
-        roleMember1.setId(roleMemberSession.createOrEdit(intadmin, roleMember1));
-        final RoleMember roleMember2 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null, null));
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.getRoleId(), null, null);
-        roleMember2.setId(roleMemberSession.createOrEdit(intadmin, roleMember2));
-        final RoleMember roleMember3 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername2, role.getRoleId(), null, null));
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.getRoleId(), null, null);
-        roleMember3.setId(roleMemberSession.createOrEdit(intadmin, roleMember3));
-        final RoleMember roleMember4 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername3, role.getRoleId(), null, null));
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.getRoleId(), null, null);
-        roleMember4.setId(roleMemberSession.createOrEdit(intadmin, roleMember4));
-        final RoleMember roleMember5 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), reqadminusername, role.getRoleId(), null, null));
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, "CN=externalCert,C=SE".hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.getRoleId(), null, null);
-        roleMember5.setId(roleMemberSession.createOrEdit(intadmin, roleMember5));
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(externalcert), role.getRoleId(), null, null));
 
         admincert1 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername1)).iterator().next();
         admincert2 = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(adminusername2)).iterator().next();

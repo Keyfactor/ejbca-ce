@@ -18,7 +18,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -33,15 +32,12 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-
-
 /**
+ * Test of RoleMemberSessionBean.
  * 
  * @version $Id$
- *
  */
 public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
 
@@ -56,8 +52,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     private Role role;
     private Role persistedTestRole;
     private RoleMember roleMember;
-    
-    
+
     @Before
     public void setUp() throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
         final String unauthorizedDN = "CN=RoleMemberSessionBeanTest";
@@ -83,40 +78,39 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         }
         tearDownRemoveRole();
     }
-    
-    
+
     @Test
     public void testCreateOrEditRoleMember() throws AuthorizationDeniedException {
-        int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        RoleMember retrievedRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedMemberId);
+        final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        final RoleMember retrievedRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedRoleMember.getId());
         
         assertNotNull(retrievedRoleMember);
-        assertEquals(persistedMemberId, retrievedRoleMember.getId());
+        assertEquals(persistedRoleMember.getId(), retrievedRoleMember.getId());
         
         //Testing if editing a RoleMember updates rather than creating a new entry in DB.
-        roleMember.setId(persistedMemberId);
-        roleMember.setTokenMatchValue("EditedValue");
+        this.roleMember.setId(persistedRoleMember.getId());
+        final String NEWTOKENMATCHVALUE = "EditedValue";
+        this.roleMember.setTokenMatchValue(NEWTOKENMATCHVALUE);
         
-        int editedRoleMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        assertEquals(persistedMemberId, editedRoleMemberId);
+        final RoleMember editedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        assertEquals(persistedRoleMember.getId(), editedRoleMember.getId());
+        assertEquals(NEWTOKENMATCHVALUE, editedRoleMember.getTokenMatchValue());
     }
     
     @Test
     public void testRemoveRoleMember() throws AuthorizationDeniedException {
-        int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        boolean isRemoved = roleMemberSessionRemote.remove(authenticationToken, persistedMemberId);
-        assertNull(roleMemberSessionRemote.getRoleMember(authenticationToken, persistedMemberId));
+        final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        boolean isRemoved = roleMemberSessionRemote.remove(authenticationToken, persistedRoleMember.getId());
+        assertNull(roleMemberSessionRemote.getRoleMember(authenticationToken, persistedRoleMember.getId()));
         assertTrue(isRemoved);
         isRemoved = roleMemberSessionRemote.remove(authenticationToken, INVALID_USER_ID);
         assertFalse(isRemoved);
     }
-    
-    
+
     @Test
     public void testGetRoleMember() throws AuthorizationDeniedException {
-        RoleMember retrievedMember;
-        int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        retrievedMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedMemberId);
+        final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        RoleMember retrievedMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedRoleMember.getId());
         assertNotNull(retrievedMember);
         retrievedMember = roleMemberSessionRemote.getRoleMember(authenticationToken, INVALID_USER_ID);
         assertNull(retrievedMember);
@@ -124,14 +118,11 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     
     @Test
     public void testGetRoleMembersByRoleId() throws AuthorizationDeniedException {
-        int numberOfTestEntries = 3;
-        
+        final int numberOfTestEntries = 3;
         for (int i = 0; i < numberOfTestEntries; i++) {
-            roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
+            roleMemberSessionRemote.persist(authenticationToken, roleMember);
         }
-        
         List<RoleMember> returnedRoleMembers = roleMemberSessionRemote.getRoleMembersByRoleId(authenticationToken, persistedTestRole.getRoleId());
-        
         assertEquals(numberOfTestEntries, returnedRoleMembers.size());
         for (RoleMember roleMember : returnedRoleMembers) {
             assertEquals(persistedTestRole.getRoleId(), roleMember.getRoleId());
@@ -142,34 +133,27 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     public void testAddAndRemoveRoleMembersToRole() {
         
     }
-    
-    
-    
+
     //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
-        roleMemberSessionRemote.createOrEdit(unauthorizedAuthenticationToken, roleMember);
+        roleMemberSessionRemote.persist(unauthorizedAuthenticationToken, roleMember);
     }
      
     @Test(expected = AuthorizationDeniedException.class)
     public void testRemoveUnauthorized() throws AuthorizationDeniedException {
-        int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        roleMemberSessionRemote.remove(unauthorizedAuthenticationToken, persistedMemberId);
+        final RoleMember roleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        roleMemberSessionRemote.remove(unauthorizedAuthenticationToken, roleMember.getId());
     }
     
     @Test(expected = AuthorizationDeniedException.class)
     public void testGetRoleMemberUnauthorized() throws AuthorizationDeniedException {
-        int persistedMemberId = roleMemberSessionRemote.createOrEdit(authenticationToken, roleMember);
-        roleMemberSessionRemote.getRoleMember(unauthorizedAuthenticationToken, persistedMemberId);
+        final RoleMember roleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
+        roleMemberSessionRemote.getRoleMember(unauthorizedAuthenticationToken, roleMember.getId());
     }
     
     @Test(expected = AuthorizationDeniedException.class)
     public void testGetMembersByIdUnauthorized() throws AuthorizationDeniedException {
         roleMemberSessionRemote.getRoleMembersByRoleId(unauthorizedAuthenticationToken, INVALID_USER_ID);
     }
-    
-    
-
 }
-
-

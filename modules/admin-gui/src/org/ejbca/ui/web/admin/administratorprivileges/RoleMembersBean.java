@@ -301,7 +301,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             final String memberBindingType = null;
             final String memberBindingValue = null;
             try {
-                roleMemberSession.createOrEdit(getAdmin(), new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenMatchKey,
+                roleMemberSession.persist(getAdmin(), new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType, tokenIssuerId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), memberBindingType, memberBindingValue));
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");

@@ -102,7 +102,6 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
-import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -1668,9 +1667,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     // None of the other known tokens when writing this upgrade use any operator
                     tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
                 }
-                final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
-                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null);
-                roleMemberDataSession.createOrEdit(roleMember);
+                roleMemberDataSession.persistRoleMember(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
+                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null));
             }           
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");

@@ -547,7 +547,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         File f = BatchCreateTool.createUser(intadmin, new File(P12_FOLDER_NAME), adminusername1);
         fileHandles.addAll(Arrays.asList(f));
         final Role role = roleSession.getRole(intadmin, null, getRoleName());
-        roleMemberSession.createOrEdit(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1,
                 role.getRoleId(), null, null));
         setupApprovalsLegacy();
