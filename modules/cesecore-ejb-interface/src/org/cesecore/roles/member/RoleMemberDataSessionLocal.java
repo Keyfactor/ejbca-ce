@@ -25,7 +25,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * CRUD session bean for managing RoleMemberData objects
  * 
  * @version $Id$
- *
  */
 @Local
 public interface RoleMemberDataSessionLocal extends RoleMemberDataSession {
@@ -33,11 +32,11 @@ public interface RoleMemberDataSessionLocal extends RoleMemberDataSession {
     /**
      * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
      * 
-     * @param accessUserAspectData the AccessUserAspectData to persist.
+     * @param roleMemberData the RoleMemberData entity to persist.
      * 
      * @return the id of the persisted entity
      */
-    int createOrEdit(final RoleMemberData roleMember);
+    int createOrEdit(final RoleMemberData roleMemberData);
     
 
     /**
