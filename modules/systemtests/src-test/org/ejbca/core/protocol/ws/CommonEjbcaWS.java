@@ -421,12 +421,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
         if (!adminExists) {
             log.info("Adding member to role: " + wsadminRoleName);
-            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            roleMemberSession.persist(intAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caInfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    TEST_ADMIN_USERNAME, role.getRoleId(), null, null);
-            roleMemberSession.createOrEdit(intAdmin, roleMember);
-            // It should not be necessary to manually clear caches after this change
-            //EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
+                    TEST_ADMIN_USERNAME, role.getRoleId(), null, null));
         }
         // Do legacy setup as well until everything is migrated
         setupAccessRightsLegacy(wsadminRoleName, caInfo.getCAId());

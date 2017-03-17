@@ -213,9 +213,9 @@ public class InitCATest extends CaTestCase {
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
             
             final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
-            final int roleMemberId = roleMemberSession.createOrEdit(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser",
-                    role.getRoleId(), null, null));
+            final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                    X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null, null));
             // Do the same in the legacy system (TODO: Remove this)
             AdminGroupData adminGroupData = roleManagementSession.create(admin, ROLE_NAME);
             final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
@@ -258,7 +258,7 @@ public class InitCATest extends CaTestCase {
             
             adminGroupData = roleAccessSession.findRole(ROLE_NAME);
             assertEquals("CAId was not updated in role subject", newCaId, adminGroupData.getAccessUsers().values().iterator().next().getCaId().intValue());
-            final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMemberId);
+            final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMember.getId());
             //assertEquals("CAId was not updated in role subject", newCaId, roleMemberAfterInit.getTokenIssuerId());
         } finally {
             log.debug("Cleaning up");

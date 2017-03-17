@@ -61,6 +61,7 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
 
     /** Construct the object from RoleMember value object */
     public RoleMemberData(final RoleMember roleMember) {
+        setPrimaryKey(roleMember.getId());
         updateValuesFromValueObject(roleMember);
     }
 

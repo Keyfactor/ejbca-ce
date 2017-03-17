@@ -55,20 +55,30 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    
     @Override
-    public int createOrEdit(RoleMemberData roleMember) {
-        if (roleMember.getPrimaryKey() == 0) {
-            roleMember.setPrimaryKey(findFreePrimaryKey());
-            entityManager.persist(roleMember);
+    public RoleMember persistRoleMember(final RoleMember roleMember) {
+        if (roleMember==null) {
+            // Successfully did nothing
+            return null;
+        }
+        if (roleMember.getId() == RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
+            roleMember.setId(findFreePrimaryKey());
+            entityManager.persist(new RoleMemberData(roleMember));
         } else {
-            entityManager.merge(roleMember);
+            final RoleMemberData roleMemberData = find(roleMember.getId());
+            if (roleMemberData==null) {
+                // Must have been removed by another process, but caller wants to persist it, so we proceed
+                roleMember.setId(findFreePrimaryKey());
+                entityManager.persist(new RoleMemberData(roleMember));
+            } else {
+                // Since the entity is managed, we just update its values
+                roleMemberData.updateValuesFromValueObject(roleMember);
+            }
         }
         accessTreeUpdateSession.signalForAccessTreeUpdate();
-        return roleMember.getPrimaryKey();
-
+        return roleMember;
     }
-    
+
     private int findFreePrimaryKey() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override

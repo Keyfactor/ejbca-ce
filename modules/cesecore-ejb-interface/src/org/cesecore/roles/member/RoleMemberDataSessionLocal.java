@@ -30,14 +30,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 public interface RoleMemberDataSessionLocal extends RoleMemberDataSession {
 
     /**
-     * Saves a RoleMemberData object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
+     * Saves a RoleMember object to the database, either overwriting an existing one with the same primary key or editing an existing instance.
      * 
-     * @param roleMemberData the RoleMemberData entity to persist.
+     * @param roleMember the RoleMember entity to persist.
      * 
-     * @return the id of the persisted entity
+     * @return the RoleMember representing what was actually persisted
      */
-    int createOrEdit(final RoleMemberData roleMemberData);
-    
+    RoleMember persistRoleMember(RoleMember roleMember);
 
     /**
      * Finds an RoleMemberData by its primary key.

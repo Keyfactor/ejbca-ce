@@ -124,7 +124,7 @@ public class AddAdminCommand extends BaseRolesCommand {
         final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType, caId,
                 accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(), matchValue, role.getRoleId(), null, null);
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).createOrEdit(getAuthenticationToken(), roleMember);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).persist(getAuthenticationToken(), roleMember);
         } catch (AuthorizationDeniedException e) {
             log.error("ERROR: CLI user not authorized to edit role");
             return CommandResult.FUNCTIONAL_FAILURE;

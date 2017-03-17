@@ -92,6 +92,10 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Role getRole(final int roleId) {
+        if (roleId==Role.ROLE_ID_UNASSIGNED) {
+            // The reserved ID will never have a database entry, so return quickly with what we know will be the result
+            return null;
+        }
         // 1. Check cache if it is time to sync-up with database
         if (RoleCache.INSTANCE.shouldCheckForUpdates(roleId)) {
             if (log.isDebugEnabled()) {

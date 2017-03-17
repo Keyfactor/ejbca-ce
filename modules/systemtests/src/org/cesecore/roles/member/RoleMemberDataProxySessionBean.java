@@ -37,9 +37,7 @@ public class RoleMemberDataProxySessionBean implements RoleMemberDataProxySessio
 
     @Override
     public int createOrEdit(RoleMember roleMember) {
-        return roleMemberDataSession.createOrEdit(new RoleMemberData(roleMember.getId(), roleMember.getTokenType(), roleMember.getTokenIssuerId(),
-                roleMember.getTokenMatchKey(), roleMember.getTokenMatchOperator(), roleMember.getTokenMatchValue(),
-                roleMember.getRoleId(), roleMember.getMemberBindingType(), roleMember.getMemberBindingValue()));
+        return roleMemberDataSession.persistRoleMember(roleMember).getId();
     }
 
     @Override
@@ -48,8 +46,8 @@ public class RoleMemberDataProxySessionBean implements RoleMemberDataProxySessio
     }
 
     @Override
-    public int createOrEdit(RoleMemberData roleMember) {
-        return roleMemberDataSession.createOrEdit(roleMember);
+    public int createOrEdit(RoleMemberData roleMemberData) {
+        return roleMemberDataSession.persistRoleMember(roleMemberData.asValueObject()).getId();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

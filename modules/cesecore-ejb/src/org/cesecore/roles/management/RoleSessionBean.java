@@ -51,7 +51,6 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
-import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 
 /**
  * Implementation of the RoleSession interfaces.
@@ -67,13 +66,11 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
-    @EJB
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

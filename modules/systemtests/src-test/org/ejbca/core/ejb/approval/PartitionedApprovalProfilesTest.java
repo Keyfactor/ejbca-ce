@@ -97,7 +97,6 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
 
     private static RoleMember roleMember1 = null;
     private static RoleMember roleMember2 = null;
-    private static RoleMember roleMember3 = null;
     private static AuthenticationToken admin1 = null;
     private static AuthenticationToken admin2 = null;
     private static AuthenticationToken reqadmin = null;
@@ -150,18 +149,12 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
         role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, roleName, accessRules));
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        roleMember1 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+        roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.getRoleId(), null, null);
-        roleMember1.setId(roleMemberSession.createOrEdit(alwaysAllowAuthenticationToken, roleMember1));
-        roleMember2 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.getRoleId(), null, null));
+        roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.getRoleId(), null, null);
-        roleMember2.setId(roleMemberSession.createOrEdit(alwaysAllowAuthenticationToken, roleMember2));
-        roleMember3 = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), reqadminusername, role.getRoleId(), null, null);
-        roleMember3.setId(roleMemberSession.createOrEdit(alwaysAllowAuthenticationToken, roleMember3));
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.getRoleId(), null, null));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(alwaysAllowAuthenticationToken, new File(P12_FOLDER_NAME)));
 

@@ -14,7 +14,9 @@ package org.cesecore.roles.member;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -22,15 +24,24 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventType;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 
@@ -54,42 +65,87 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
-    
-    private void checkRoleAuth(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
-        // Check existence and authorization of referenced objects 
-        if (roleMember.getRoleId() != RoleMember.NO_ROLE && roleSession.getRole(authenticationToken, roleMember.getRoleId()) == null) {
+    /** @return the authorized role */
+    private Role lookupRoleAndCheckAuthorization(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        // Check existence and authorization of referenced objects
+        final Role role = roleSession.getRole(authenticationToken, roleMember.getRoleId());
+        if (roleMember.getRoleId() != RoleMember.NO_ROLE && role == null) {
             throw new IllegalStateException("Role with ID " + roleMember.getRoleId() + " was not found, or administrator is not authorized to it");
         }
         if (roleMember.getTokenIssuerId() != RoleMember.NO_ISSUER) {
-            if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + roleMember.getTokenIssuerId())) {
-                throw new AuthorizationDeniedException("CA with ID " + roleMember.getTokenIssuerId() + " was not found, or administrator is not authorized to it");
+            // Do more expensive fully correct check if it is potentially issued by a CA
+            final AuthenticationTokenMetaData metaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
+            final AccessMatchValue accessMatchValue = metaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+            if (accessMatchValue.isIssuedByCa()) {
+                // According to the meta data, this tokenIssuerId should be interpreted as a CA ID
+                final int caId = roleMember.getTokenIssuerId();
+                if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
+                    throw new AuthorizationDeniedException("CA with ID " + caId + " was not found, or administrator is not authorized to it");
+                }
             }
         }
+        return role;
     }
-    
+
     @Override
-    public int createOrEdit(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+    public RoleMember persist(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        if (roleMember==null) {
+            // Successfully did nothing
+            return null;
+        }
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
-        
-        final RoleMemberData roleMemberData;
+        RoleMember oldRoleMember = null;
         if (roleMember.getId() != RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
-            roleMemberData = roleMemberDataSession.find(roleMember.getId());
-            if (roleMemberData == null) {
-                return RoleMember.ROLE_MEMBER_ID_UNASSIGNED;
+            // Try to locate an existing RoleMember
+            oldRoleMember = roleMemberDataSession.findRoleMember(roleMember.getId());
+            // If the role Id will change, assert that we have access to the old value first
+            if (oldRoleMember != null && roleMember.getRoleId()!=oldRoleMember.getRoleId()) {
+                lookupRoleAndCheckAuthorization(authenticationToken, oldRoleMember);
             }
-            checkRoleAuth(authenticationToken, roleMemberData.asValueObject());
-        } else {
-            roleMemberData = new RoleMemberData();
         }
-        
-        checkRoleAuth(authenticationToken, roleMember);
-        roleMemberData.updateValuesFromValueObject(roleMember);
-        
         if (log.isDebugEnabled()) {
-            log.debug("Persisting a role member with ID " + roleMember.getRoleId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
+            log.debug("Persisting a role member with ID " + roleMember.getId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
         }
-        return roleMemberDataSession.createOrEdit(roleMemberData);
+        final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
+        final RoleMember persistedRoleMember = roleMemberDataSession.persistRoleMember(roleMember);
+        final boolean addedRoleMember = oldRoleMember==null;
+        final String tokenType = persistedRoleMember.getTokenType();
+        final int tokenMatchKey = persistedRoleMember.getTokenMatchKey();
+        final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
+        // TODO: This would be a suitable candidate for RoleMember.memberBinding* under ECA-5714
+        final String memberBinding = persistedRoleMember.getTokenMatchValue();
+        final String msg;
+        if (addedRoleMember) {
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminadded", memberBinding, role.getRoleNameFull());
+        } else {
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", memberBinding, role.getRoleNameFull());
+        }
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        details.put("id", persistedRoleMember.getId());
+        if (addedRoleMember || !oldRoleMember.getTokenType().equals(persistedRoleMember.getTokenType())) {
+            details.put("tokenType", persistedRoleMember.getTokenType());
+        }
+        if (addedRoleMember || oldRoleMember.getTokenMatchKey()!=persistedRoleMember.getTokenMatchKey()) {
+            details.put("tokenMatchKey", tokenMatchKeyName + " (" + persistedRoleMember.getTokenMatchKey()+ ")");
+        }
+        if (addedRoleMember || oldRoleMember.getTokenMatchOperator()!=persistedRoleMember.getTokenMatchOperator()) {
+            details.put("tokenMatchOperator", persistedRoleMember.getAccessMatchType().name() + " (" + persistedRoleMember.getTokenMatchOperator()+ ")");
+        }
+        if (addedRoleMember || !StringUtils.equals(oldRoleMember.getTokenMatchValue(), persistedRoleMember.getTokenMatchValue())) {
+            details.put("tokenMatchValue", persistedRoleMember.getTokenMatchValue());
+        }
+        if (addedRoleMember || oldRoleMember.getRoleId()!=persistedRoleMember.getRoleId()) {
+            details.put("roleId", roleMember.getRoleId());
+            details.put("nameSpace", role.getNameSpace());
+            details.put("roleName", role.getRoleName());
+        }
+        final EventType eventType = addedRoleMember ? EventTypes.ROLE_ACCESS_USER_ADDITION : EventTypes.ROLE_ACCESS_USER_CHANGE;
+        securityEventsLoggerSession.log(eventType, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
+        return persistedRoleMember;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -101,7 +157,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
         // Authorization checks
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), false);
-        checkRoleAuth(authenticationToken, roleMember);
+        lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
         return roleMember;
     }
 
@@ -140,8 +196,29 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             return false;
         }
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
-        checkRoleAuth(authenticationToken, roleMember);
-        return roleMemberDataSession.remove(roleMemberId);
+        final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
+        final boolean removed = roleMemberDataSession.remove(roleMemberId);
+        if (removed) {
+            final String tokenType = roleMember.getTokenType();
+            final int tokenMatchKey = roleMember.getTokenMatchKey();
+            final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
+            // TODO: This would be a suitable candidate for RoleMember.memberBinding* under ECA-5714
+            final String memberBinding = roleMember.getTokenMatchValue();
+            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", memberBinding, role.getRoleNameFull());
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("id", roleMember.getId());
+            details.put("tokenType", roleMember.getTokenType());
+            details.put("tokenMatchKey", tokenMatchKeyName + " (" + roleMember.getTokenMatchKey()+ ")");
+            details.put("tokenMatchOperator", roleMember.getAccessMatchType().name() + " (" + roleMember.getTokenMatchOperator()+ ")");
+            details.put("tokenMatchValue", roleMember.getTokenMatchValue());
+            details.put("roleId", roleMember.getRoleId());
+            details.put("nameSpace", role.getNameSpace());
+            details.put("roleName", role.getRoleName());
+            securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+        return removed;
     }
 
 }
