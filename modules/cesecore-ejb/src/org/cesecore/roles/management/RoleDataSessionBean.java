@@ -130,7 +130,7 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
     @Override
     public int persistRole(final Role role) {
         if (role.getRoleId()==Role.ROLE_ID_UNASSIGNED) {
-            role.setRoleId(findFreeRoleId());
+            role.setRoleId(role.getOverriddenRoleId() != null ? role.getOverriddenRoleId() : findFreeRoleId());
             entityManager.persist(new RoleData(role));
         } else {
             // Retrieve RoleData as a managed JPA entity and update it with the Role value object

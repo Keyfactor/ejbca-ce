@@ -48,6 +48,9 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     private int roleId;
     private String roleName;
     private String nameSpace;
+    
+    /** Internal value, used only by Statedump to force a role to have a particular ID */
+    private transient Integer overriddenRoleId;
 
     public Role(final String nameSpace, final String roleName) {
         this.roleId = ROLE_ID_UNASSIGNED;
@@ -201,5 +204,18 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     /** Sort access rules by name. Assumes normalized form. */
     public void sortAccessRules() {
         AccessRulesHelper.sortAccessRules(getAccessRules());
+    }
+
+    /** Overridden ID, used by Statedump */
+    public Integer getOverriddenRoleId() {
+        return overriddenRoleId;
+    }
+    
+    /**
+     * Internal method to override the role ID during creation (when roleId must be set to ROLE_ID_UNASSIGNED).
+     * Not serialized, and only used internally by Statedump.
+     */
+    public void setOverriddenRoleId(final Integer overriddenRoleId) {
+        this.overriddenRoleId = overriddenRoleId;
     }
 }
