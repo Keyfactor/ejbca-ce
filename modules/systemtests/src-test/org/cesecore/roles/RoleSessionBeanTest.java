@@ -19,7 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -32,7 +32,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -140,7 +139,6 @@ public class RoleSessionBeanTest {
         assertEquals(retrievedRole.getRoleName(), newName);
         cleanUpRole(null, defaultName);
         cleanUpRole(null, newName);
-        
     }
     
     /**
@@ -160,11 +158,11 @@ public class RoleSessionBeanTest {
             role = new Role(null, ROLE_NAME);
             assertTrue(ROLE_NAME.equals(role.getRoleName()));
 
-            role.getAccessRules().put(RULE1, true);
+            role.getAccessRules().put(RULE1, Role.STATE_ALLOW);
             role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
 
             // Check the returned role
-            assertTrue(role.getAccessRules().size() == 1);
+            assertEquals(1 ,role.getAccessRules().size());
             assertEquals(Role.STATE_ALLOW, role.getAccessRules().get(AccessRulesHelper.normalizeResource(RULE1)));   
           
             // Do the same check for a role retrieved from the database,
@@ -197,9 +195,7 @@ public class RoleSessionBeanTest {
         } catch (RoleExistsException e) {
             fail("Attempt to add a role: " + role.getRoleName() + " fail because it already exists. Is the database clean?");
         } finally {
-            //Clean up
             cleanUpRole(null, "RoleSessionBeanTest.testAddRemoveAccess");
-
         }
     }
     
@@ -219,8 +215,7 @@ public class RoleSessionBeanTest {
         Role unAuthRole = new Role(null, unAuthRoleName);
         cleanUpRole(null, authRoleName);
         cleanUpRole(null, unAuthRoleName);
-        List<String> accessRules = new ArrayList<>();
-        accessRules.add(StandardRules.EDITROLES.toString());
+        List<String> accessRules = Arrays.asList(StandardRules.EDITROLES.toString());
         
         //Create tokens representing access rules of created roles
         AuthenticationToken authToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, authRole.getRoleName(), accessRules, null);
@@ -231,9 +226,10 @@ public class RoleSessionBeanTest {
         assertNotNull(authRole);
         assertNotNull(unAuthRole);
         
-        //Test edit
+        //Test edit. AuthorizationDeniedException is expected
         try {
             roleSession.deleteRoleIdempotent(unAuthToken, authRole.getRoleId());
+            fail("Was able to edit role without proper authorization");
         } finally {
             cleanUpRole(null, authRoleName);
             cleanUpRole(null, unAuthRoleName);
@@ -250,13 +246,9 @@ public class RoleSessionBeanTest {
         final String someDN = "CN=SomeDN";
         final String strongAdminRoleName = "StrongAdmin";
         final String weakAdminRoleName = "WeakAdmin";
-        List<String> strongRules = new ArrayList<>();
-        List<String> weakRules = new ArrayList<>();
-        List<String> weakDeniedRules = new ArrayList<>();
-        strongRules.add("/");
-        strongRules.add("/bar/foo");
-        weakRules.add("/");
-        weakDeniedRules.add("/bar/foo");
+        List<String> strongRules = Arrays.asList("/", "/bar/foo");
+        List<String> weakRules = Arrays.asList("/");
+        List<String> weakDeniedRules = Arrays.asList("/bar/foo");
 
         try {
             AuthenticationToken strongToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, strongAdminRoleName, strongRules, null);
@@ -277,7 +269,6 @@ public class RoleSessionBeanTest {
             cleanUpRole(null, strongAdminRoleName);
             cleanUpRole(null, weakAdminRoleName);
         }
-        
     }
     
     /**
@@ -300,26 +291,10 @@ public class RoleSessionBeanTest {
         try {
             List<String> authorizedNameSpaces = roleSession.getAuthorizedNamespaces(adminToken);
             assertEquals(1, authorizedNameSpaces.size());
-            assertEquals("TestAllowedNameSpace", authorizedNameSpaces.get(0));
+            assertEquals(allowedNameSpace , authorizedNameSpaces.get(0));
         } finally {
             cleanUpRole(allowedNameSpace, adminRoleName);
             cleanUpRole(deniedNameSpace, anotherAdminRoleName);
-            
         }
     }
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
