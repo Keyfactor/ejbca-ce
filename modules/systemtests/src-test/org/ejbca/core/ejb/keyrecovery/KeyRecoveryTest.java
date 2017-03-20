@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Random;
 
 import javax.ejb.RemoveException;
@@ -142,11 +141,11 @@ public class KeyRecoveryTest extends CaTestCase {
     public void setUp() throws Exception {
         super.setUp();
         admin = createCaAuthenticatedToken();
-        final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + SecConst.EMPTY_ENDENTITYPROFILE + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW);
-        accessRules.put(StandardRules.CAACCESS.resource() + getTestCAId(), Role.STATE_ALLOW);
-        final Role role = roleSession.persistRole(internalAdmin, new Role(null, KEYRECOVERY_ROLE, accessRules));
+        final Role role = roleSession.persistRole(internalAdmin, new Role(null, KEYRECOVERY_ROLE, Arrays.asList(
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + SecConst.EMPTY_ENDENTITYPROFILE + AccessRulesConstants.KEYRECOVERY_RIGHTS,
+                AccessRulesConstants.REGULAR_KEYRECOVERY,
+                StandardRules.CAACCESS.resource() + getTestCAId()
+                ), null));
         roleMemberSession.persist(internalAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, getTestCAId(),
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),

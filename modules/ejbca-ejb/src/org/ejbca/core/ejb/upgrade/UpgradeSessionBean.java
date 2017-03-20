@@ -96,9 +96,9 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -196,6 +196,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private RoleDataSessionLocal roleDataSession;
     @SuppressWarnings("deprecation")
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
@@ -1609,8 +1611,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // (and use direct DB access since the EJB API wont allow us to assign roleId)
             final int roleId = adminGroupData.getPrimaryKey().intValue();
             role.setRoleId(roleId);
-            if (entityManager.find(RoleData.class, roleId)==null) {
-                entityManager.persist(new RoleData(role));
+            if (roleDataSession.getRole(roleId)==null) {
+                roleDataSession.persistRole(role);
             } else {
                 log.warn("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists and will not be upgraded!");
                 continue;

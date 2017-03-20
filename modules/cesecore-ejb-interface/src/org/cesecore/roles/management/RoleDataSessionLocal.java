@@ -50,9 +50,7 @@ public interface RoleDataSessionLocal {
     /** 
      * Persist (creating a new row if needed) the role to the database.
      * 
-     * @return persisted role's id
+     * @return persisted version of the role
      */
-    int persistRole(Role role);
-
-
+    Role persistRole(Role role);
 }

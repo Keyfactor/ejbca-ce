@@ -250,7 +250,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 throw new IllegalArgumentException("Role name cannot be empty.");
             }
             // Persist new role
-            role.setRoleId(roleDataSession.persistRole(role));
+            role.setRoleId(roleDataSession.persistRole(role).getRoleId());
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleadded", role.getRoleName());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);

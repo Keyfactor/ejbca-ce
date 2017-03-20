@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -737,9 +736,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             if (oldRole!=null) {
                 roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
             }
-            final HashMap<String,Boolean> accessRules = new HashMap<>();
-            accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
-            final Role role = roleSession.persistRole(admin, new Role(null, testRole, accessRules));
+            final Role role = roleSession.persistRole(admin, new Role(null, testRole, Arrays.asList(StandardRules.CAACCESSBASE.resource()), null));
             roleMemberSession.persist(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                     X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(adminCert).hashCode(),

@@ -128,19 +128,27 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
     }
 
     @Override
-    public int persistRole(final Role role) {
+    public Role persistRole(final Role role) {
+        if (role==null) {
+            // Successfully did nothing
+            return null;
+        }
         if (role.getRoleId()==Role.ROLE_ID_UNASSIGNED) {
-            role.setRoleId(role.getOverriddenRoleId() != null ? role.getOverriddenRoleId() : findFreeRoleId());
+            role.setRoleId(findFreeRoleId());
             entityManager.persist(new RoleData(role));
         } else {
-            // Retrieve RoleData as a managed JPA entity and update it with the Role value object
-            // to correctly increase the RoleData.rowVersion used for optimistic locking.
             final RoleData roleData = getRoleData(role.getRoleId());
-            roleData.setRole(role);
+            if (roleData==null) {
+                // Must have been removed by another process, but caller wants to persist it, so we proceed (keeping the requested Role ID)
+                entityManager.persist(new RoleData(role));
+            } else {
+                // Since the entity is managed, we just update its values
+                roleData.setRole(role);
+            }
         }
         RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
         accessTreeUpdateSession.signalForAccessTreeUpdate();
-        return role.getRoleId();
+        return role;
     }
 
     /** @return a integer Id that is currently unused in the database */
@@ -159,7 +167,7 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
         // Use an DELETE query instead of entityManager.remove to tolerate concurrent deletion better
         final Query query = entityManager.createQuery("DELETE FROM RoleData a WHERE a.id=:id");
         query.setParameter("id", roleId);
-        boolean ret = query.executeUpdate()==1;
+        final boolean ret = query.executeUpdate()==1;
         if (ret) {
             accessTreeUpdateSession.signalForAccessTreeUpdate();
         }
