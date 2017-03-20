@@ -24,11 +24,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -66,7 +66,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         role = new Role(null, "TestMembersRole");
         persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);
         
-        roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "CertificateAuthenticationToken", RoleMember.NO_ISSUER, 0, 0, "",
+        roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, 0, 0, "",
                                     persistedTestRole.getRoleId(), "TestValue", "");
     }
     
@@ -82,8 +82,19 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
             roleSessionRemote.deleteRoleIdempotent(authenticationToken, cleanUpRole.getRoleId());
         }
     }
-    
  
+    /**
+     * When adding a null RoleMember, nothing is expected to happen and no exceptions should
+     * be thrown unless AuthenticationToken is denied
+     * @throws AuthorizationDeniedException
+     */
+    @Test
+    public void testAddNullRoleMember() throws AuthorizationDeniedException {
+        RoleMember nullMember = null;
+        nullMember = roleMemberSessionRemote.persist(authenticationToken, nullMember);
+        assertNull(nullMember);
+    }
+    
     /**
      * Tests behavior while creating, editing and persisting roles.
      * @throws AuthorizationDeniedException
@@ -92,7 +103,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     public void testCreateOrEditRoleMember() throws AuthorizationDeniedException {
         final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
         final RoleMember retrievedRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, persistedRoleMember.getId());
-        
+        assertNotNull(persistedRoleMember);
         assertNotNull(retrievedRoleMember);
         assertEquals(persistedRoleMember.getId(), retrievedRoleMember.getId());
         
@@ -149,7 +160,6 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
             assertEquals(persistedTestRole.getRoleId(), roleMember.getRoleId());
         }
     }
-    
     
     //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
