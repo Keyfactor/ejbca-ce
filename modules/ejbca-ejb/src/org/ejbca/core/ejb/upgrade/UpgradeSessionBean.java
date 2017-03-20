@@ -60,6 +60,8 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMeta
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
@@ -130,9 +132,7 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
-import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
@@ -1123,14 +1123,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
                 continue;
             }
-            //Find roles which correspond to the old Auditor
-            Collection<AccessRuleTemplate> newRulesFor642 = new ArrayList<>();
-            newRulesFor642.add(new AccessRuleTemplate(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
-            newRulesFor642.add(new AccessRuleTemplate(StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
-            newRulesFor642.add(new AccessRuleTemplate(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT, false));
-            newRulesFor642.add(new AccessRuleTemplate(StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT, false));
-            newRulesFor642.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-
             //If role is the old auditor from 6.4.0
             String rolename = role.getRoleName();
             try {            
@@ -1180,16 +1172,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // We'll tolerate that the role has some external rules added to it
         // We won't use the method in defaultRoles, because it presumes knowledge of external rules. 
         //So, simply verify that all rules but the new ones are in the selected role. 
-        Set<String> ignoreRules = new HashSet<>(Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                StandardRules.EKUCONFIGURATION_VIEW.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource(),
-                AccessRulesConstants.REGULAR_VIEWENDENTITY));
-        for (AccessRuleTemplate auditorRule : DefaultRoles.AUDITOR.getRuleSet()) {
-            if (!ignoreRules.contains(auditorRule.getAccessRuleName()) && !role.hasAccessToRule(auditorRule.getAccessRuleName())) {
+        Set<String> ignoreRules = new HashSet<>(Arrays.asList(
+                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+                StandardRules.EKUCONFIGURATION_VIEW.resource(),
+                StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
+                StandardRules.VIEWROLES.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY)
+                );
+        final List<String> ejbcaPre642AuditorRules = Arrays.asList(
+                AccessRulesConstants.ROLE_ADMINISTRATOR, 
+                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                AuditLogRules.VIEW.resource(), // Was recursive
+                InternalKeyBindingRules.VIEW.resource(), // Was recursive
+                StandardRules.CAVIEW.resource(),
+                StandardRules.CERTIFICATEPROFILEVIEW.resource(),
+                StandardRules.APPROVALPROFILEVIEW.resource(),
+                CryptoTokenRules.VIEW.resource(), // Was recursive
+                AccessRulesConstants.REGULAR_VIEWPUBLISHER,
+                AccessRulesConstants.SERVICES_VIEW,
+                AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES,
+                AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, // Was recursive
+                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+                StandardRules.EKUCONFIGURATION_VIEW.resource(),
+                StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
+                StandardRules.VIEWROLES.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY
+                );
+        for (String auditorRule : ejbcaPre642AuditorRules) {
+            if (!ignoreRules.contains(auditorRule) && !role.hasAccessToRule(auditorRule)) {
                 return false;
             }
         }
-        for(String ignoreRule : ignoreRules) {
-            if(role.hasAccessToRule(ignoreRule)) {
+        for (String ignoreRule : ignoreRules) {
+            if (role.hasAccessToRule(ignoreRule)) {
                 //We're already a 6.4.2 auditor
                 return false;
             }
