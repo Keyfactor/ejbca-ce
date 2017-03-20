@@ -46,7 +46,7 @@ public class SimpleTimeValidator implements Validator {
             maximumValue = Long.parseLong((String) component.getAttributes().get("maximumValue")); 
         }
         boolean failed = true;
-        if (!StringTools.hasSqlStripChars(value)) {
+        if (StringTools.hasSqlStripChars(value).isEmpty()) {
             try {
                 final long millis = format.parseMillis(value);
                 if (minimumValue <= millis && millis <= maximumValue) {

@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.web.admin;
 
+import java.util.Set;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -36,9 +38,15 @@ public class LegalCharsValidator implements Validator {
 		if (log.isDebugEnabled()) {
 			log.debug("Validating component " + uIComponent.getClientId(facesContext) + " with value \"" + textFieldValue + "\"");
 		}
-		if (StringTools.hasSqlStripChars(textFieldValue)) {
-		    final String msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDCHARS");
-			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
-		}
+		
+        Set<String> invalidCharacters = StringTools.hasSqlStripChars(textFieldValue);
+        if (!invalidCharacters.isEmpty()) {
+            StringBuilder sb = new StringBuilder("");
+            for (String error : invalidCharacters) {
+                sb.append(", " + error);
+            }
+            final String msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDCHARS") + sb.substring(2);
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+        }
 	}
 }
