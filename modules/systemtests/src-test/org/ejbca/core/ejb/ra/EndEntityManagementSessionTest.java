@@ -44,12 +44,8 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -74,10 +70,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -135,8 +128,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
     private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -717,21 +708,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
             // Now add the administrator to a role that has access to /ca/* but not ee profiles
-            {
-                AdminGroupData role = roleAccessSession.findRole(testRole);
-                if (role == null) {
-                    role = roleManagementSession.create(roleMgmgToken, testRole);
-                }
-                final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-                accessRules.add(new AccessRuleData(testRole, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-                role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
-
-                final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-                accessUsers.add(new AccessUserAspectData(testRole, CertTools.getIssuerDN(adminCert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                        AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN")));
-                roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
-                EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
-            }
             final Role oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
                 roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
@@ -778,12 +754,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             final Role oldRole = roleSession.getRole(admin, null, testRole);
             if (oldRole!=null) {
                 roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
-            }
-            {
-                AdminGroupData role = roleAccessSession.findRole(testRole);
-                if (role != null) {
-                    roleManagementSession.remove(roleMgmgToken, role);
-                }
             }
         }
     }

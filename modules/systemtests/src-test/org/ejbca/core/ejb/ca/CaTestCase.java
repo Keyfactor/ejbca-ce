@@ -35,14 +35,8 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -71,11 +65,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -148,32 +139,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final String commonName = CaTestCase.class.getCanonicalName();
         caAdmin = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN="+commonName, null, getRoleName(),
                 Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        // Setup legacy authorization as well to support gradual conversions of core
-        addDefaultRoleLegacy();
-    }
-
-    @Deprecated
-    private void addDefaultRoleLegacy() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
-        String roleName = getRoleName();
-        final X509Certificate certificate = caAdmin.getCertificate();
-        final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        AdminGroupData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
-        if (role == null) {
-            log.error("Role should not be null here.");
-            role = roleManagementSession.create(internalAdmin, roleName);
-        }
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(roleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
-
-        final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(),
-                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(
-                        CertTools.getSubjectDN(certificate), "CN")));
-        roleManagementSession.addSubjectsToRole(internalAdmin, role, accessUsers);
-
-        final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-        accessControlSession.forceCacheExpire();
     }
 
     protected void tearDown() throws Exception { // NOPMD: this is a base class
@@ -185,17 +150,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     protected void removeDefaultRole() throws RoleNotFoundException, AuthorizationDeniedException {
         getRoleInitializationSession().removeAllAuthenticationTokensRoles(caAdmin);
-        // Tear down legacy authorization as well to support gradual conversions of core
-        removeDefaultRoleLegacy();
-    }
-    
-    @Deprecated
-    private void removeDefaultRoleLegacy() throws RoleNotFoundException, AuthorizationDeniedException {
-        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-        AdminGroupData role = roleAccessSession.findRole(getRoleName());
-        if (role != null) {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).remove(internalAdmin, role);
-        }
     }
     
     private static SimpleAuthenticationProviderSessionRemote getAuthenticationProviderSession() {

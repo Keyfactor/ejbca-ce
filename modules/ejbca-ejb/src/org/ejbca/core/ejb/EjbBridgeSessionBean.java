@@ -21,7 +21,6 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -86,7 +85,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
 	@EJB ApprovalProfileSessionLocal approvalProfileSession;
-	@EJB AccessControlSessionLocal accessControlSession;
 	@EJB AccessRuleManagementSessionLocal accessRuleManagementSession;
     @EJB AuthorizationSessionLocal authorizationSession;
     @EJB AuthorizationSystemSessionLocal authorizationSystemSession;
@@ -136,7 +134,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
 	@Override public ApprovalProfileSessionLocal getApprovalProfileSession() { return approvalProfileSession; }
-	@Override public AccessControlSessionLocal getAccessControlSession() { return accessControlSession; }
 	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return accessRuleManagementSession; }
     @Override public AuthorizationSessionLocal getAuthorizationSession() { return authorizationSession; }
     @Override public AuthorizationSystemSessionLocal getAuthorizationSystemSession() { return authorizationSystemSession; }

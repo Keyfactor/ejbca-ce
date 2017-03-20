@@ -101,12 +101,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -148,12 +144,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -183,7 +176,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
-import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -425,44 +417,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     caInfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     TEST_ADMIN_USERNAME, role.getRoleId(), null, null));
         }
-        // Do legacy setup as well until everything is migrated
-        setupAccessRightsLegacy(wsadminRoleName, caInfo.getCAId());
         return fileHandles;
-    }
-
-    @Deprecated // TODO: Remove during cleanup before 6.8.0 release
-    private static void setupAccessRightsLegacy(final String wsadminRoleName, final int caId) throws CADoesntExistsException,
-            AuthorizationDeniedException, EndEntityExistsException, WaitingForApprovalException, EjbcaException,
-            RoleExistsException, RoleNotFoundException, UnrecoverableKeyException, InvalidAlgorithmParameterException, OperatorCreationException,
-            CertificateException, SignRequestSignatureException, IllegalKeyException, CertificateCreateException, IllegalNameException,
-            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
-            InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
-            InvalidKeySpecException, IOException, NoSuchEndEntityException, EndEntityProfileValidationException {
-        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        boolean adminExists = false;
-        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
-        if (role == null) {
-            log.info("Creating new role: "+wsadminRoleName);
-            role = roleManagementSession.create(intAdmin, wsadminRoleName);
-            final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(wsadminRoleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
-            role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
-        }
-        for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
-            if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
-                adminExists = true;
-            }
-        }
-        if (!adminExists) {
-            log.info("Adding admin to role: "+wsadminRoleName);
-            List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-            list.add(new AccessUserAspectData(wsadminRoleName, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
-                    TEST_ADMIN_USERNAME));
-            roleManagementSession.addSubjectsToRole(intAdmin, role, list);
-            accessControlSession.forceCacheExpire();
-        } 
     }
 
     protected static void cleanUpAdmins(final String wsadminRoleName) throws Exception {
@@ -513,23 +468,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final Role role = roleSession.getRole(intAdmin, null, wsadminRoleName);
         if (role != null) {
             roleSession.deleteRoleIdempotent(intAdmin, role.getRoleId());
-            // It should not be necessary to manually clear caches after this change
-            //EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
-        }
-        // Do legacy clean up as well until everything is migrated
-        cleanUpAdminsLegacy(wsadminRoleName);
-    }
-
-    @Deprecated // TODO: Remove during cleanup before 6.8.0 release
-    private static void cleanUpAdminsLegacy(final String wsadminRoleName) throws Exception {
-        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        // Remove from role
-        AdminGroupData role = roleAccessSession.findRole(wsadminRoleName);
-        if (role != null) {
-            roleManagementSession.remove(intAdmin, role);
-            accessControlSession.forceCacheExpire();
         }
     }
 
@@ -1556,7 +1494,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "PKCS12", "foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
-        alias = (String) en.nextElement();
+        alias = en.nextElement();
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
         assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
@@ -1574,7 +1512,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "PKCS12", "foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
-        alias = (String) en.nextElement();
+        alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
         assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
@@ -1586,7 +1524,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ks2 = KeyStoreHelper.getKeyStore(ksenv2.getKeystoreData(), "JKS", "foo456");
         assertNotNull(ks2);
         en = ks2.aliases();
-        alias = (String) en.nextElement();
+        alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
         assertEquals(cert2.getSubjectX500Principal().getName(), getReversedDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
@@ -1605,7 +1543,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         boolean certFound = false;
         for (int i = 0; i < foundcerts.size(); i++) {
-            java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
+            java.security.cert.Certificate cert = CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
             if (CertTools.getSerialNumber(gencert).equals(CertTools.getSerialNumber(cert))) {
                 certFound = true;
             }
@@ -1623,7 +1561,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         certFound = false;
         for (int i = 0; i < foundcerts.size(); i++) {
-            java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
+            java.security.cert.Certificate cert = CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
             if (CertTools.getSerialNumber(gencert).equals(CertTools.getSerialNumber(cert))) {
                 certFound = true;
             }
@@ -2299,18 +2237,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(foundcerts != null);
         assertTrue(foundcerts.size() > 1);
         log.debug("foundcerts.size: " + foundcerts.size());
-        java.security.cert.Certificate cacert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(
-                foundcerts.size() - 1).getCertificateData());
+        java.security.cert.Certificate cacert = CertificateHelper.getCertificate(foundcerts.get(foundcerts.size() - 1).getCertificateData());
         assertTrue("(What we expected to be) the CA certificate was not self signed.", CertTools.isSelfSigned(cacert));
-        java.security.cert.Certificate cert = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(0)
-                .getCertificateData());
+        java.security.cert.Certificate cert = CertificateHelper.getCertificate(foundcerts.get(0).getCertificateData());
         log.debug("CA cert's SubjectDN: " + CertTools.getSubjectDN(cacert));
         log.debug("Cert's IssuerDN: " + CertTools.getIssuerDN(cert));
         log.debug("Cert's SubjectDN: " + CertTools.getSubjectDN(cert));
         assertEquals(getDN(CA1_WSTESTUSER1) + " is not " + CertTools.getSubjectDN(cert), getDN(CA1_WSTESTUSER1), CertTools.getSubjectDN(cert));
         for (int i = 1; i < foundcerts.size(); i++) {
-            java.security.cert.Certificate cert2 = (java.security.cert.Certificate) CertificateHelper.getCertificate(foundcerts.get(i)
-                    .getCertificateData());
+            java.security.cert.Certificate cert2 = CertificateHelper.getCertificate(foundcerts.get(i).getCertificateData());
             cert.verify(cert2.getPublicKey()); // will throw if verification
             // fails
             cert = cert2;
@@ -2462,7 +2397,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             boolean foundcert1 = false;
             boolean foundcert2 = false;
             for(Certificate expirewscert : certs) {
-                java.security.cert.Certificate expirecert = (java.security.cert.Certificate) CertificateHelper.getCertificate(expirewscert.getCertificateData());
+                java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
                 if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
@@ -2480,7 +2415,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             foundcert1 = false;
             foundcert2 = false;
             for(Certificate expirewscert : certs) {
-                java.security.cert.Certificate expirecert = (java.security.cert.Certificate) CertificateHelper.getCertificate(expirewscert.getCertificateData());
+                java.security.cert.Certificate expirecert = CertificateHelper.getCertificate(expirewscert.getCertificateData());
                 if(StringUtils.equalsIgnoreCase(CertTools.getSubjectDN(cert1), CertTools.getSubjectDN(expirecert)) && StringUtils.equalsIgnoreCase(CertTools.getIssuerDN(cert1), CertTools.getIssuerDN(expirecert))) {
                     foundcert1 = true;
                 }
@@ -2797,11 +2732,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertEquals(1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
             assertEquals(2, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
-            publisherQueueSession.removeQueueData(((PublisherQueueData) publisherQueueSession.getPendingEntriesForPublisher(publisherID).iterator()
-                    .next()).getPk());
+            publisherQueueSession.removeQueueData(publisherQueueSession.getPendingEntriesForPublisher(publisherID).iterator().next().getPk());
             assertEquals(1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
-            publisherQueueSession.removeQueueData(((PublisherQueueData) publisherQueueSession.getPendingEntriesForPublisher(publisherID).iterator()
-                    .next()).getPk());
+            publisherQueueSession.removeQueueData(publisherQueueSession.getPendingEntriesForPublisher(publisherID).iterator().next().getPk());
             assertEquals(0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
         } catch (EjbcaException_Exception e) {
             assertTrue(e.getMessage(), false);
