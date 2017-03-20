@@ -130,9 +130,10 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
                 StandardRules.CAACCESS.resource() + caInfo.getCAId()
                 ), null));
         roleSession.persistRole(internalAdmin, new Role(null, testRole2, Arrays.asList(
-                StandardRules.CAACCESS.resource(),
-                StandardRules.CAACCESS.resource() + caInfo.getCAId()
-                ), null));
+                StandardRules.CAACCESS.resource()
+                ), Arrays.asList(
+                        StandardRules.CAACCESS.resource() + caInfo.getCAId()
+                        )));
         roleSession.persistRole(internalAdmin, new Role(null, testRole3, Arrays.asList(
                 StandardRules.CAACCESS.resource() + DUMMY_CA_ID
                 ), null));
