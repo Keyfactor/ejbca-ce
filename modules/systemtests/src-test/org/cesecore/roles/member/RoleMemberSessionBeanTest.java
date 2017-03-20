@@ -28,10 +28,12 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -70,15 +72,22 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     
     @After
     public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
-        final Role role = roleSessionRemote.getRole(authenticationToken, null, "TestMembersRole");
-        if (role != null) {
-            roleSessionRemote.deleteRoleIdempotent(authenticationToken, role.getRoleId());
-        } else {
-            log.info("Removing database test entries failed");
-        }
+        cleanUpRole(null, "TestMembersRole");
         tearDownRemoveRole();
     }
-
+    
+    private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
+        final Role cleanUpRole = roleSessionRemote.getRole(authenticationToken, nameSpace, roleName);
+        if (cleanUpRole!=null) {
+            roleSessionRemote.deleteRoleIdempotent(authenticationToken, cleanUpRole.getRoleId());
+        }
+    }
+    
+ 
+    /**
+     * Tests behavior while creating, editing and persisting roles.
+     * @throws AuthorizationDeniedException
+     */
     @Test
     public void testCreateOrEditRoleMember() throws AuthorizationDeniedException {
         final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
@@ -97,6 +106,10 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         assertEquals(NEWTOKENMATCHVALUE, editedRoleMember.getTokenMatchValue());
     }
     
+    /**
+     * Verifies if removed roles are deleted permanently
+     * @throws AuthorizationDeniedException
+     */
     @Test
     public void testRemoveRoleMember() throws AuthorizationDeniedException {
         final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
@@ -107,6 +120,10 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         assertFalse(isRemoved);
     }
 
+    /**
+     * Simple retrieve test. Accessing roles members in database
+     * @throws AuthorizationDeniedException
+     */
     @Test
     public void testGetRoleMember() throws AuthorizationDeniedException {
         final RoleMember persistedRoleMember = roleMemberSessionRemote.persist(authenticationToken, this.roleMember);
@@ -116,6 +133,10 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         assertNull(retrievedMember);
     }
     
+    /**
+     * Tests if all role members belonging to a role are retrieved correctly on query
+     * @throws AuthorizationDeniedException
+     */
     @Test
     public void testGetRoleMembersByRoleId() throws AuthorizationDeniedException {
         final int numberOfTestEntries = 3;
@@ -129,15 +150,11 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         }
     }
     
-    @Test
-    public void testAddAndRemoveRoleMembersToRole() {
-        
-    }
-
+    
     //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
-        roleMemberSessionRemote.persist(unauthorizedAuthenticationToken, roleMember);
+        roleMemberSessionRemote.persist(unauthorizedAuthenticationToken, this.roleMember);
     }
      
     @Test(expected = AuthorizationDeniedException.class)
