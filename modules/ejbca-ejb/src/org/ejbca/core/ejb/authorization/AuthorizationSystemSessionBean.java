@@ -265,9 +265,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
             log.info("No roles or CAs exist, intializing Super Administrator Role with default CLI user.");
             // Create "Super Administrator Role"
-            final Role role = new Role(null, SUPERADMIN_ROLE);
-            role.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-            role.setRoleId(roleDataSession.persistRole(role));
+            final Role role = roleDataSession.persistRole(new Role(null, SUPERADMIN_ROLE, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
             // We won't create any RoleMember for a Super Admin certificate here
             // Add CLI user role member
             final String username = EjbcaConfiguration.getCliDefaultUser();

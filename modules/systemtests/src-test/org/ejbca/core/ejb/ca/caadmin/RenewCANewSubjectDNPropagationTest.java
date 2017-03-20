@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -127,16 +126,16 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         createTestCertificateProfile(testProfileName2);
 
         final CAInfo caInfo = caSession.getCAInfo(internalAdmin, "TEST");
-        final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-        accessRules1.put(StandardRules.CAACCESS.resource() + caInfo.getCAId(), Role.STATE_ALLOW);
-        roleSession.persistRole(internalAdmin, new Role(null, testRole1, accessRules1));
-        final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-        accessRules2.put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
-        accessRules2.put(StandardRules.CAACCESS.resource() + caInfo.getCAId(), Role.STATE_DENY);
-        roleSession.persistRole(internalAdmin, new Role(null, testRole2, accessRules2));
-        final HashMap<String,Boolean> accessRules3 = new HashMap<>();
-        accessRules3.put(StandardRules.CAACCESS.resource() + DUMMY_CA_ID, Role.STATE_ALLOW);
-        roleSession.persistRole(internalAdmin, new Role(null, testRole3, accessRules3));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole1, Arrays.asList(
+                StandardRules.CAACCESS.resource() + caInfo.getCAId()
+                ), null));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole2, Arrays.asList(
+                StandardRules.CAACCESS.resource(),
+                StandardRules.CAACCESS.resource() + caInfo.getCAId()
+                ), null));
+        roleSession.persistRole(internalAdmin, new Role(null, testRole3, Arrays.asList(
+                StandardRules.CAACCESS.resource() + DUMMY_CA_ID
+                ), null));
         setUpLegacy(caInfo);
     }
 

@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -230,12 +229,11 @@ public class ApprovalSessionTest extends CaTestCase {
         if (oldRole != null) {
             roleSession.deleteRoleIdempotent(intadmin, oldRole.getRoleId());
         }
-        final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
-        accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
-        role = roleSession.persistRole(intadmin, new Role(null, roleName, accessRules));
-
+        role = roleSession.persistRole(intadmin, new Role(null, roleName, Arrays.asList(
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY,
+                AccessRulesConstants.ENDENTITYPROFILEBASE,
+                StandardRules.CAACCESSBASE.resource()
+                ), null));
         roleMemberSession.persist(intadmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null, null));
