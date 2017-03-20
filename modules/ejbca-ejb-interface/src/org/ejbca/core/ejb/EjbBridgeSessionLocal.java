@@ -43,7 +43,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -93,7 +92,6 @@ public interface EjbBridgeSessionLocal {
 	CertificateProfileSessionLocal getCertificateProfileSession();
 	CertificateStoreSessionLocal getCertificateStoreSession();
 	CertReqHistorySessionLocal getCertReqHistorySession();
-	ComplexAccessControlSessionLocal getComplexAccessControlSession();
 	RevocationSessionLocal getRevocationSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();
