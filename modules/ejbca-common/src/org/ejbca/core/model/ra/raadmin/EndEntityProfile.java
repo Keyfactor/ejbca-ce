@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -1782,8 +1783,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     private void checkForIllegalChars(final String str) throws EndEntityProfileValidationException {
-    	if (StringTools.hasSqlStripChars(str)) {
-    		throw new EndEntityProfileValidationException("Invalid " + str + ". Contains illegal characters.");    		
+        Set<String> invalidCharacters = StringTools.hasSqlStripChars(str);
+    	if (!invalidCharacters.isEmpty()) {
+    	    StringBuilder sb = new StringBuilder("");
+    	    for(String error : invalidCharacters) {
+    	        sb.append(", " + error) ;
+    	    }	    
+    		throw new EndEntityProfileValidationException("Invalid " + str + ". Contains illegal characters: " + sb.substring(2));    		
     	}    	
     }
 

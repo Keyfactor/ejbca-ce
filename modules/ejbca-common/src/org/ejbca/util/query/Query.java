@@ -146,7 +146,7 @@ public class Query implements Serializable {
         	matches.add(new ApprovalMatch(matchwith, matchtype, matchvalue));
         	break;
         }
-        if (StringTools.hasSqlStripChars(matchvalue)) {
+        if (!StringTools.hasSqlStripChars(matchvalue).isEmpty()) {
             hasIllegalSqlChars = true;
         }
     }
