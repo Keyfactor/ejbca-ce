@@ -57,7 +57,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionRemote;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
@@ -201,8 +200,6 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             log.info("Initalizing authorization module with caid=" + caid + " and superadmin CN '" + superAdminCN + "'.");
         }
         EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSystemSessionRemote.class).initializeAuthorizationModuleWithSuperAdmin(authenticationToken, caid,
-                superAdminCN);
-        EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class).initializeAuthorizationModule(getAuthenticationToken(), caid,
                 superAdminCN);
         // Add certificate match by common name to "Super Administrator Role"
         final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null,

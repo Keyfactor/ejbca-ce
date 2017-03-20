@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -26,9 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -38,7 +35,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -46,8 +42,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -165,48 +159,5 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         //Add all created aspects to role
         role.setAccessUsers(newUsers);
         
-    }
-
-    @Deprecated
-    @Override
-    public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,
-            AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">initializeAuthorizationModule(" + caid + ", " + superAdminCN);
-        }
-        // In this method we need to use the entityManager explicitly instead of the role management session bean.
-        // This is because it is also used to initialize the first rule that will allow the AlwayAllowAuthenticationToken to do anything.
-        // Without this role and access rule we are not authorized to use the role management session bean
-        AdminGroupData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
-        if (role == null) {
-            log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
-            roleMgmtSession.create(admin, SUPERADMIN_ROLE);
-        }
-        Map<Integer, AccessRuleData> rules = role.getAccessRules();
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
-        try {
-        if (!rules.containsKey(rule.getPrimaryKey())) {
-            log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
-            Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
-            newrules.add(rule);
-            roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
-        }
-        Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
-        AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
-                superAdminCN);
-        if (!users.containsKey(aua.getPrimaryKey())) {
-            log.debug("Adding new AccessUserAspect for '" + superAdminCN + "' to " + SUPERADMIN_ROLE + ".");
-            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(aua);
-            roleMgmtSession.addSubjectsToRole(admin, role, subjects);
-        }
-        } catch(RoleNotFoundException e) {
-            throw new IllegalStateException("Newly created role " + role.getRoleName() + " was not found.", e);
-        }
-        accessTreeUpdateSession.signalForAccessTreeUpdate();
-        accessControlSession.forceCacheExpire();
-        if (log.isTraceEnabled()) {
-            log.trace("<initializeAuthorizationModule(" + caid + ", " + superAdminCN);
-        }
     }
 }
