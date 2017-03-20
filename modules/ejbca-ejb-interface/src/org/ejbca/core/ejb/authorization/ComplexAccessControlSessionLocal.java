@@ -19,7 +19,7 @@ import javax.ejb.Local;
  */
 @Local
 @Deprecated // Use AuthorizationSystemSession
-public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
+public interface ComplexAccessControlSessionLocal {
 
     public static final String SUPERADMIN_ROLE = "Super Administrator Role";
     public static final String TEMPORARY_SUPERADMIN_ROLE = "Temporary Super Administrator Group";
@@ -29,15 +29,4 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      * to do operations with the CLI (command line interface).  
      */
     void createSuperAdministrator();
-    
-    /** 
-     * initializes the authorization module, if no roles or CAs exists in the system. This is done during startup 
-     * so that we can use the CLI after this to install and configure the system further.
-     * This method only performs any operation of RoleData and CAData both have no entries. 
-     * 
-     * @return true if initialization was done. This also means that this is a fresh installation of EJBCA.
-     * @deprecated superseded by AuthorizationSystemSessionLocal.initializeAuthorizationModule()
-     */
-    @Deprecated
-    boolean initializeAuthorizationModule();
 }

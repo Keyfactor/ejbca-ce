@@ -59,7 +59,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -98,7 +97,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
@@ -174,8 +172,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CertReqHistorySessionLocal certreqHistorySession;
-    @EJB
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -650,18 +646,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         for (final RoleMemberData current : roleMemberDatas) {
             current.setTokenMatchValue(newUsername);
         }
-        // And do the same for the legacy use-case
-        final List<AccessUserAspectData> accessUserAspectDatas = entityManager.createQuery(
-                "SELECT a FROM AccessUserAspectData a WHERE a.tokenType=:tokenType AND a.matchWith=:matchWith AND a.matchValue=:matchValue", AccessUserAspectData.class)
-                .setParameter("tokenType", CliAuthenticationTokenMetaData.TOKEN_TYPE)
-                .setParameter("matchWith", CliUserAccessMatchValue.USERNAME.getNumericValue())
-                .setParameter("matchValue", currentUsername)
-                .getResultList();
-        for (final AccessUserAspectData current : accessUserAspectDatas) {
-            current.setMatchValue(newUsername);
-        }
         if (log.isDebugEnabled()) {
-            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + accessUserAspectDatas.size() + " rows of AdminEntityData.");
+            log.debug("Changed username '" + currentUsername + "' to '" + newUsername + "' in " + roleMemberDatas.size() + " rows of RoleMemberData.");
         }
         final String msg = intres.getLocalizedMessage("ra.editedentityrename", currentUsername, newUsername);
         auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -1940,7 +1926,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         return returnval;
     }
 
-    @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<EndEntityInformation> findUsers(List<Integer> caIds, long timeModified, int status) {
