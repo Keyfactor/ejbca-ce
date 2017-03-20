@@ -551,11 +551,6 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
     
     @Override
-    public List<AdminGroupData> getAuthorizedRoles(AuthenticationToken admin, String resource) {
-        return getAuthorizedRoles(admin, resource, false);
-    }
-    
-    @Override
     public List<AdminGroupData> getAuthorizedRoles(String resource, boolean requireRecursive) {
         return getAuthorizedRoles(roleAccessSession.getAllRoles(), resource, requireRecursive);
     }
@@ -588,13 +583,6 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         return authissueingadmgrps;
     }
     
-    @Override
-    public List<AdminGroupData> getAuthorizedRoles(AuthenticationToken admin, String resource, boolean requireRecursive) {
-        // Look for Roles that have access rules that allows the group access to the rule below.
-        Collection<AdminGroupData> roles = getAllRolesAuthorizedToEdit(admin);       
-        return getAuthorizedRoles(roles, resource, requireRecursive);
-    }
-
     @Override
     public AdminGroupData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final AdminGroupData role,
             final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {

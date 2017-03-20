@@ -16,7 +16,6 @@ import java.util.List;
 
 import javax.ejb.Local;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.AdminGroupData;
 
 /**
@@ -33,19 +32,4 @@ public interface RoleManagementSessionLocal extends RoleManagementSession {
      * @return a Collection of role names authorized to the resource,
      */
     List<AdminGroupData> getAuthorizedRoles(String resource, boolean requireRecursive);
-    
-    /**
-     * @return a Collection of role names authorized to the resource,
-     * it also only returns only the roles the administrator is authorized to edit.
-     */
-    List<AdminGroupData> getAuthorizedRoles(AuthenticationToken admin, String resource);
-    
-    /**
-     * @param requireRecursive if recursive access is required for the resource
-     * 
-     * @return a Collection of role names authorized to the resource,
-     * it also only returns only the roles the administrator is authorized to edit.
-     */
-    List<AdminGroupData> getAuthorizedRoles(AuthenticationToken admin, String resource, boolean requireRecursive);
-
 }
