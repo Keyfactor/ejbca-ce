@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.config.CmpConfiguration;
@@ -264,18 +265,14 @@ public final class CAIdTools {
      * @return True if there was a change.
      */
     public static boolean updateCAIds(final Role role, final List<RoleMember> roleMembers, final int fromId, final int toId, final String toSubjectDN) {
-        final String toReplace = StandardRules.CAACCESS.resource()+String.valueOf(fromId);
-        final String toReplaceSlash = toReplace+"/";
         boolean changed = false;
-        // Look for references from access rules
-        for (final String accessRuleName : new ArrayList<>(role.getAccessRules().keySet())) {
-            if (accessRuleName.equals(toReplace) || accessRuleName.startsWith(toReplaceSlash)) {
-                final String newName = StandardRules.CAACCESS.resource() + String.valueOf(toId) + accessRuleName.substring(toReplace.length());
-                final boolean state = role.getAccessRules().get(accessRuleName);
-                role.getAccessRules().remove(accessRuleName);
-                role.getAccessRules().put(newName, state);
-                changed = true;
-            }
+        // Look for references from access rules (currently only the /ca/<CA ID> rule) */
+        final String oldResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + String.valueOf(fromId));
+        final String newResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + String.valueOf(toId));
+        final Boolean state = role.getAccessRules().remove(oldResource);
+        if (state != null) { // rule for old CA ID exists
+            role.put(newResource, state);
+            changed = true;
         }
         // Look for references from members
         for (final RoleMember roleMember : roleMembers) {
