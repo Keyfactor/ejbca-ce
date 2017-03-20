@@ -271,7 +271,7 @@ public final class CAIdTools {
         final String newResource = AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + String.valueOf(toId));
         final Boolean state = role.getAccessRules().remove(oldResource);
         if (state != null) { // rule for old CA ID exists
-            role.put(newResource, state);
+            role.getAccessRules().put(newResource, state);
             changed = true;
         }
         // Look for references from members
