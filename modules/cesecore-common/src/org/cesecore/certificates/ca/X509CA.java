@@ -983,7 +983,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         // Make sure the DN does not contain dangerous characters
-        if (StringTools.hasStripChars(subjectDNName.toString())) {
+        if (!StringTools.hasStripChars(subjectDNName.toString()).isEmpty()) {
             if (log.isTraceEnabled()) {
             	log.trace("DN with illegal name: "+subjectDNName);
             }

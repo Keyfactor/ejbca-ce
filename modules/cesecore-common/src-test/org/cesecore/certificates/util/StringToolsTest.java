@@ -75,7 +75,7 @@ public class StringToolsTest {
         log.trace(">test03Strip()");
         String strip1 = "foo$bar:far%";
         String stripped = StringTools.strip(strip1);
-        assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1).isEmpty());
         assertEquals("String not stripped correctly!", stripped, "foo/bar:far/");
         log.trace("<test03Strip()");
     }
@@ -85,23 +85,22 @@ public class StringToolsTest {
         log.trace(">test04Strip()");
         String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/\\<\\>bar";
         String stripped = StringTools.strip(strip1);
-        assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1).isEmpty());
         assertEquals("String not stripped correctly! " + stripped, "CN=foo, O=Acme\\, Inc, OU=//\\<\\>bar", stripped);
 
         strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>\"bar";
         stripped = StringTools.strip(strip1);
-        assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1).isEmpty());
         assertEquals("String not stripped correctly! " + stripped, "CN=foo, O=Acme\\, Inc, OU=//<>\"bar", stripped);
-
         strip1 = "CN=foo\\+bar, O=Acme\\, Inc";
         stripped = StringTools.strip(strip1);
-        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertTrue("String does not have chars to be stripped!", StringTools.hasSqlStripChars(strip1).isEmpty());
         assertEquals("String not stripped correctly! " + stripped, "CN=foo\\+bar, O=Acme\\, Inc", stripped);
 
         // Multi-valued.. not supported by EJBCA yet.. let it through for backwards compatibility.
         strip1 = "CN=foo+CN=bar, O=Acme\\, Inc";
         stripped = StringTools.strip(strip1);
-        assertFalse("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertTrue("String does not have chars to be stripped!", StringTools.hasSqlStripChars(strip1).isEmpty());
         assertEquals("String not stripped correctly! " + stripped, "CN=foo+CN=bar, O=Acme\\, Inc", stripped);
 
         log.trace("<test04Strip()");
@@ -112,9 +111,9 @@ public class StringToolsTest {
         ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, forbidden);
         final String stripped = StringTools.strip(input);
         if ( input.equals(output) ) {
-            assertFalse("The string do NOT have chars that should be stripped!", StringTools.hasStripChars(input));
+            assertTrue("The string do NOT have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
         } else {
-            assertTrue("The string DO have chars that should be stripped!", StringTools.hasStripChars(input));
+            assertFalse("The string DO have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
         }
         assertEquals("String not stripped correctly!", output, stripped);
     }
@@ -225,43 +224,34 @@ public class StringToolsTest {
     @Test
     public void testHasSqlStripChars() throws Exception {
         String str = "select * from Table";
-        boolean ret = StringTools.hasSqlStripChars(str);
-        assertFalse(ret);
+        assertTrue(StringTools.hasSqlStripChars(str).isEmpty());
 
         str = "select * from Table; delete from password";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         str = "select * from User where username like 'foo\\%'";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         // check that we can escape commas
         str = "foo\\,";
-        ret = StringTools.hasSqlStripChars(str);
-        assertFalse(ret);
+        assertTrue(StringTools.hasSqlStripChars(str).isEmpty());
 
         str = "foo\\;";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         // Check that escaping does not work for other characters
         str = "foo\\?";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         str = "foo\\?bar";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         str = "\\?bar";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
         // Check special case that a slash at the end also returns bad
         str = "foo\\";
-        ret = StringTools.hasSqlStripChars(str);
-        assertTrue(ret);
+        assertFalse(StringTools.hasSqlStripChars(str).isEmpty());
 
     }
 

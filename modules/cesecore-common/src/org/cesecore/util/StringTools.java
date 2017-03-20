@@ -208,10 +208,10 @@ public final class StringTools {
      * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
      * 
      * @param str the string whose contents would be stripped.
-     * @return true if some chars in the string would be stripped, false if not.
+     * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
      */
-    public static boolean hasSqlStripChars(final String str) {
+    public static  Set<String> hasSqlStripChars(final String str) {
     	return hasStripChars(str, stripSqlChars);
     }
     
@@ -219,10 +219,10 @@ public final class StringTools {
      * Checks if a string contains characters that would be potentially dangerous to use as DN, username etc.
      * 
      * @param str the string whose contents would be stripped.
-     * @return true if some chars in the string would be stripped, false if not.
+     * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
      */
-    public static boolean hasStripChars(final String str) {
+    public static  Set<String> hasStripChars(final String str) {
     	return hasStripChars(str, CharSet.getForbidden());
     }
     
@@ -230,11 +230,12 @@ public final class StringTools {
      * Check if 'str' has any chars that should be stripped by a call to {@link #strip(String, CharSet)}.
      * @param str the string to be tested.
      * @param checkThese characters that must be stripped.
-     * @return true if a call to {@link #strip(String, CharSet) will change 'str'.
+     * @return the offending characters with descriptions, or an empty set otherwise.
      */
-    private static boolean hasStripChars(final String str, final CharSet checkThese) {
+    private static Set<String> hasStripChars(final String str, final CharSet checkThese) {
+        Set<String> result = new HashSet<>();
         if (str == null) {
-            return false;
+            return result;
         }
         int index = 0;
         final int end = str.length();
@@ -243,20 +244,21 @@ public final class StringTools {
                 // Found an escape character.
                 if (index + 1 == end) {
                     // If this is the last character.
-                    return true;
+                     result.add("A trailing escape charater ('\').");
+                     break;
                 }
                 if (!isAllowedEscape(str.charAt(index + 1))) {
-                    // We did not allow this character to be escaped.
-                    return true;
+                    result.add("Character that may not be ecaped: " + str.charAt(index + 1));
+                    break;
                 }
                 index++; // Skip one extra..
             } else if ( checkThese.contains(str.charAt(index)) ) {
                 // Found an illegal character.
-                return true;
+                result.add("'" + str.charAt(index) + "'");
             }
             index++;
         }
-        return false;
+        return result;
     }
 
     /**

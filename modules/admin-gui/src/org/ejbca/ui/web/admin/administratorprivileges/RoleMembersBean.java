@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -277,8 +278,13 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             }
             // Validate that the tokenMatchValue contains no illegal characters
             // (Check this here instead of using an f:validator validatorId="legalCharsValidator" since we might need to do PRG later)
-            if (StringTools.hasSqlStripChars(tokenMatchValue)) {
-                super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "INVALIDCHARS");
+            Set<String> invalidCharacters = StringTools.hasSqlStripChars(tokenMatchValue);
+            if (!invalidCharacters.isEmpty()) {
+                StringBuilder sb = new StringBuilder("");
+                for (String error : invalidCharacters) {
+                    sb.append(", " + error);
+                }
+                super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "INVALIDCHARS", sb.substring(2) );
                 return;
             }
             // If the tokenMatchValue should be a hex number, validate that it is

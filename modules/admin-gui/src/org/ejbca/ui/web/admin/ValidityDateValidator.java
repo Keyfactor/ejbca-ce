@@ -50,7 +50,7 @@ public class ValidityDateValidator implements Validator {
             maximumValue = Long.parseLong((String) component.getAttributes().get("maximumValue")); 
         }
         boolean failed = true;
-        if (!StringTools.hasSqlStripChars(value)) {
+        if (StringTools.hasSqlStripChars(value).isEmpty()) {
             // Parse ISO8601 date.
             try {
                 ValidityDate.parseAsIso8601(value);
