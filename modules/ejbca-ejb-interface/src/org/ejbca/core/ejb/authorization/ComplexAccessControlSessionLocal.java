@@ -12,13 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 import javax.ejb.Local;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * @version $Id$
@@ -46,32 +40,4 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      */
     @Deprecated
     boolean initializeAuthorizationModule();
-    
-    /**
-     * Method to check if an end entity profile exists in any end entity profile
-     * rules. Used to avoid desynchronization of profilerules.
-     * 
-     * @param profileid the profile id to search for.
-     * @return true if profile exists in any of the accessrules.
-     */
-    boolean existsEndEntityProfileInRules(int profileid);
-    
-    /**
-     * Method used to collect all access rules, but will perform authorization checks on CAs, and EEPs and CPs dependent on CAs. Is used by
-     * the advanced roles administration page in the UI to display all rules without leaking information about CA's.
-     * 
-     * @param admin is the administrator calling the method.
-     * @param availableCaIds A Collection<Integer> of all CA IDs
-     * @param enableendentityprofilelimitations Include End Entity Profile access rules
-     * @param usehardtokenissuing Include Hard Token access rules
-     * @param usekeyrecovery Include Key Recovery access rules
-     * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
-     * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
-     * @param 
-     * @return a LinkedHashMap of strings representing the available access rules, keyed by category
-     */
-    Map<String, Set<String>> getAllAccessRulesRedactUnauthorizedCas(AuthenticationToken authenticationToken, boolean enableendentityprofilelimitations,
-            boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds,
-            Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules);
-   
 }
