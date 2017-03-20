@@ -66,10 +66,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -106,11 +103,8 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -188,7 +182,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final  CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -200,8 +194,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private static String originalForbiddenChars;
@@ -258,7 +250,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         super.tearDown();
         // Restore WS admin access
         setAccessRulesForWsAdmin(Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        setAccessRulesForWsAdmin(new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
         // Restore key recovery, end entity profile limitations etc
         if (originalGlobalConfiguration!=null) {
             globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
@@ -279,16 +270,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 role.getAccessRules().put(resource, Role.STATE_DENY);
             }
         }
-    }
-
-    @Deprecated
-    private void setAccessRulesForWsAdmin(final AccessRuleData...accessRuleDatas) throws AuthorizationDeniedException, RoleNotFoundException {
-        final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-        final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>(Arrays.asList(accessRuleDatas));
-        final AdminGroupData adminGroupData = roleAccessSession.findRole(WS_ADMIN_ROLENAME);
-        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", adminGroupData);
-        roleManagementSession.replaceAccessRulesInRole(intAdmin, adminGroupData, accessRules);
     }
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
@@ -826,7 +807,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 user1.setEndEntityProfileName(KEY_RECOVERY_EEP);
                 user1.setCertificateProfileName("ENDUSER");
                 setAccessRulesForWsAdmin(Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-                setAccessRulesForWsAdmin(new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
                 ejbcaraws.editUser(user1);
                 setAccessRulesForWsAdmin(Arrays.asList(
                         AccessRulesConstants.ROLE_ADMINISTRATOR,
@@ -841,19 +821,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_KEYRECOVERY
                         ), null);
-                setAccessRulesForWsAdmin(
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        // Additionally we need to have edit rights to clear the password, since this is currently not implicitly granted for non-key recovery
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.EDIT_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        // Additionally we need to have access to key recovery in this special case
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false)
-                        );
                 KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
                 assertNotNull(ks);
@@ -883,15 +850,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                         AccessRulesConstants.REGULAR_KEYRECOVERY,
                         AccessRulesConstants.REGULAR_VIEWENDENTITY
                         ), null);
-                setAccessRulesForWsAdmin(
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false)
-                        );
                 ejbcaraws.keyRecover("WSTESTUSERKEYREC2",cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
                 assertEquals("EjbcaWS.keyRecover failed to set status for end entity.", EndEntityConstants.STATUS_KEYRECOVERY, endEntityAccessSession.findUser(intAdmin, "WSTESTUSERKEYREC2").getStatus());
                 // A new PK12 request now should return the same key and certificate
@@ -905,16 +863,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_KEYRECOVERY
                         ), null);
-                setAccessRulesForWsAdmin(
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false),
-                        // Additionally we need to have access to key recovery in this special case
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRuleState.RULE_ACCEPT, false),
-                        new AccessRuleData(WS_ADMIN_ROLENAME, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false)
-                        );
                 KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
                 assertNotNull(ks2);
@@ -1602,12 +1550,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         if (oldRole!=null) {
             roleSession.deleteRoleIdempotent(intAdmin, oldRole.getRoleId());
         }
-        {   // TODO: Remove during clean up
-            AdminGroupData role = roleAccessSession.findRole(rolename);
-            if(role != null) {
-                roleManagementSession.remove(intAdmin, role);
-            }
-        }
         File fileHandle = null;
         try {
             CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
@@ -1644,13 +1586,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
             List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId());
             assertTrue("New role "+rolename+" should have been empty.", roleMembers.isEmpty());
-            // TODO: Remove
-            AdminGroupData adminGroupData = roleManagementSession.create(intAdmin, rolename);
-            // Set access rules for the new role
-            adminGroupData = roleManagementSession.addAccessRulesToRole(intAdmin, adminGroupData, Arrays.asList(
-                    new AccessRuleData(rolename, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true)));
-            // Verify that there are no admins from the start
-            assertTrue(adminGroupData.getAccessUsers().size()==0);
             
             // Add adminUser to a non-existing role. It should fail
             try {
@@ -1675,15 +1610,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(), roleMember.getTokenMatchKey());
             assertEquals(AccessMatchType.TYPE_EQUALCASE.getNumericValue(), roleMember.getTokenMatchOperator());
             assertEquals(adminUser.getCertificateDN(), roleMember.getTokenMatchValue());
-            // TODO: Remove
-            adminGroupData = roleAccessSession.findRole(rolename);
-            Collection <AccessUserAspectData> admins = adminGroupData.getAccessUsers().values();
-            assertTrue(admins.size()==1);
-            AccessUserAspectData addedAdmin = admins.iterator().next();
-            assertEquals(cainfo.getCAId(), addedAdmin.getCaId().intValue());
-            assertEquals(AccessMatchType.TYPE_EQUALCASE.getNumericValue(), addedAdmin.getMatchType());
-            assertEquals(adminUser.getCertificateDN(), addedAdmin.getMatchValue());
-            assertEquals(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(), addedAdmin.getMatchWith());
             // Remove adminUser specified by a non-existing CA. It should fail
             try {
                 ejbcaraws.removeSubjectFromRole(rolename, "NoneExistingCA", X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
@@ -1700,18 +1626,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             final Role roleAfterRemove = roleSession.getRole(intAdmin, null, rolename);
             final List<RoleMember> roleMembersAfterRemove = roleMemberSession.getRoleMembersByRoleId(intAdmin, roleAfterRemove.getRoleId());
             assertTrue("Failed to remove subject to role.", roleMembersAfterRemove.isEmpty());
-            // TODO: Remove
-            adminGroupData = roleAccessSession.findRole(rolename);            
-            assertTrue(adminGroupData.getAccessUsers().values().size()==0);
         } finally {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, testAdminUsername, RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN);
             final Role role = roleSession.getRole(intAdmin, null, rolename);
             if (role!=null) {
                 roleSession.deleteRoleIdempotent(intAdmin, role.getRoleId());
-            }
-            // TODO Remove
-            if(roleAccessSession.findRole(rolename)!=null) {
-                roleManagementSession.remove(intAdmin, roleAccessSession.findRole(rolename));
             }
             if( fileHandle != null) {
                 FileTools.delete(fileHandle);
