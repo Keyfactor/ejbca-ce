@@ -60,7 +60,7 @@ public class RaAccessBean implements Serializable {
     private static AtomicBoolean reloadEventRegistered = new AtomicBoolean(false);
     
     private boolean isAuthorized(String... resources) {
-        enureCacheReloadEventRegistered();
+        ensureCacheReloadEventRegistered();
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
         AccessSet myAccess;
         final ConcurrentCache<AuthenticationToken,AccessSet> cache = RemoteAccessSetCacheHolder.getCache();
@@ -89,7 +89,7 @@ public class RaAccessBean implements Serializable {
         return myAccess.isAuthorized(resources);
     }
     
-    private void enureCacheReloadEventRegistered() {
+    private void ensureCacheReloadEventRegistered() {
         if (reloadEventRegistered.compareAndSet(false, true)) {
           accessTreeUpdateSession.addReloadEvent(new AuthorizationCacheReloadListener() {
                 private int lastUpdate = -1;
