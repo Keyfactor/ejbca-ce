@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -277,8 +279,13 @@ public final class CAIdTools {
         // Look for references from members
         for (final RoleMember roleMember : roleMembers) {
             if (roleMember.getTokenIssuerId() == fromId) {
-                roleMember.setTokenIssuerId(toId);
-                changed = true;
+                // Also check that tokenIssuerId refers to a CA. This check is more expensive performance-wise so it's done last
+                final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(
+                        roleMember.getTokenType()).getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey());
+                if (accessMatchValue.isIssuedByCa()) {
+                    roleMember.setTokenIssuerId(toId);
+                    changed = true;
+                }
             }
         }
         return changed;
