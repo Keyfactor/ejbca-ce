@@ -167,16 +167,16 @@ public class RoleSessionBeanTest {
           
             // Do the same check for a role retrieved from the database,
             Role foundRole = roleSession.getRole(alwaysAllowAuthenticationToken, role.getRoleId());
-            assertTrue(foundRole.getAccessRules().size() == 1);
+            assertEquals(1, foundRole.getAccessRules().size());
             assertEquals(Role.STATE_ALLOW, foundRole.getAccessRules().get(AccessRulesHelper.normalizeResource(RULE1)));
 
             // Add another rule
-            role.getAccessRules().put(RULE2, true);
+            role.getAccessRules().put(RULE2, Role.STATE_ALLOW);
             role = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
 
             // Check that both rules (and only those two) are there.
             LinkedHashMap<String, Boolean> retrievedRules = roleSession.getRole(alwaysAllowAuthenticationToken, role.getRoleId()).getAccessRules();
-            assertTrue(retrievedRules.size() == 2);
+            assertEquals(2, retrievedRules.size());
             assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE1)));
             assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE2)));
 
