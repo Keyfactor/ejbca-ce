@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.RoleExistsException;
@@ -37,37 +33,4 @@ public interface ComplexAccessControlSession {
 	 */
     @Deprecated
     void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException;
-
-    /**
-     * Method used to return an Collection of Integers indicating which end entity profiles the administrator is authorized to view.
-     * 
-     * @param admin, the administrator
-     * @param rapriviledge should be one of the end entity profile authorization constants defined in AvailableAccessRules.
-     * @param availableEndEntityProfileId a list of available EEP ids to test for authorization
-     */
-    @Deprecated
-    Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin, String rapriviledge,
-            Collection<Integer> availableEndEntityProfileId);
-    
-    /**
-     * Method used to collect an administrators available access rules based on which rule he himself is authorized to.
-     * 
-     * @param admin is the administrator calling the method.
-     * @param availableCaIds A Collection<Integer> of all CA IDs
-     * @param enableendentityprofilelimitations Include End Entity Profile access rules
-     * @param usehardtokenissuing Include Hard Token access rules
-     * @param usekeyrecovery Include Key Recovery access rules
-     * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
-     * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
-     * @return a LinkedHashMap of strings representing the available access rules, keyed by category
-     */
-    Map<String, Set<String>> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
-            boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
-            Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules);
-
-
-    /**
-     * Asks all remote RAs to clears their per-AuthenticationToken caches.
-     */
-    void forceRemoteCacheExpire();
 }
