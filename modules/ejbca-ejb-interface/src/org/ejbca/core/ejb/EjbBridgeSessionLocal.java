@@ -18,7 +18,6 @@ import javax.ejb.Local;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -79,7 +78,6 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @Local
 public interface EjbBridgeSessionLocal {
 
-	AccessControlSessionLocal getAccessControlSession();
 	AccessRuleManagementSessionLocal getAccessRuleManagementSession();
 	AccessUserAspectManagerSessionLocal getAccessUserAspectSession();
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
