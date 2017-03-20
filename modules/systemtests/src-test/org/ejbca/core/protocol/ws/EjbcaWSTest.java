@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -1642,9 +1641,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
             // Create a new role
             log.info("Creating new role: "+rolename);
-            final HashMap<String,Boolean> accessRules = new HashMap<>();
-            accessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-            final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, accessRules));
+            final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
             List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId());
             assertTrue("New role "+rolename+" should have been empty.", roleMembers.isEmpty());
             // TODO: Remove

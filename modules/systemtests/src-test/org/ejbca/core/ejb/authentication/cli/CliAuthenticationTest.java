@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +65,6 @@ import org.junit.Test;
  * that the CLI should use.
  * 
  * @version $Id$
- * 
  */
 public class CliAuthenticationTest {
 
@@ -95,9 +94,7 @@ public class CliAuthenticationTest {
         if (oldRole!=null) {
             roleSession.deleteRoleIdempotent(internalToken, oldRole.getRoleId());
         }
-        final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
-        final Role role = roleSession.persistRole(internalToken, new Role(null, CLI_TEST_ROLENAME, accessRules));
+        final Role role = roleSession.persistRole(internalToken, new Role(null, CLI_TEST_ROLENAME, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
         roleMemberSession.persist(internalToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, CliAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, CliUserAccessMatchValue.USERNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 CliAuthenticationTestHelperSessionRemote.USERNAME, role.getRoleId(), null, null));

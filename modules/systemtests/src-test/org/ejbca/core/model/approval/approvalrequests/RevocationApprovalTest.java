@@ -26,7 +26,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -102,7 +101,6 @@ import org.junit.runners.MethodSorters;
 /**
  * 
  * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RevocationApprovalTest extends CaTestCase {
@@ -172,13 +170,13 @@ public class RevocationApprovalTest extends CaTestCase {
         if (oldRole!=null) {
             roleSession.deleteRoleIdempotent(internalAdmin, oldRole.getRoleId());
         }
-        final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
-        accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
-        final Role role = roleSession.persistRole(internalAdmin, new Role(null, getRoleName(), accessRules));
+        final Role role = roleSession.persistRole(internalAdmin, new Role(null, getRoleName(), Arrays.asList(
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY,
+                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                AccessRulesConstants.REGULAR_DELETEENDENTITY,
+                AccessRulesConstants.ENDENTITYPROFILEBASE,
+                StandardRules.CAACCESSBASE.resource()
+                ), null));
         roleMemberSession.persist(internalAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminUsername,
                 role.getRoleId(), null, null));

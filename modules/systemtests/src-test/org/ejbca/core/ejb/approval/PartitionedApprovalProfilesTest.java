@@ -21,7 +21,6 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,7 +77,6 @@ import org.junit.Test;
  * System tests for partitioned approval profiles 
  * 
  * @version $Id$
- *
  */
 public class PartitionedApprovalProfilesTest extends CaTestCase {
 
@@ -143,11 +141,11 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         if (oldRole != null) {
             roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, oldRole.getRoleId());
         }
-        final HashMap<String,Boolean> accessRules = new HashMap<>();
-        accessRules.put(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW);
-        accessRules.put(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW);
-        accessRules.put(StandardRules.CAACCESSBASE.resource(), Role.STATE_ALLOW);
-        role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, roleName, accessRules));
+        role = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, roleName, Arrays.asList(
+                AccessRulesConstants.REGULAR_APPROVEENDENTITY,
+                AccessRulesConstants.ENDENTITYPROFILEBASE,
+                StandardRules.CAACCESSBASE.resource()
+                ), null));
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
         roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
