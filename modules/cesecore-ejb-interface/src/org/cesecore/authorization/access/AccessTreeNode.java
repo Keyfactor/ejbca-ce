@@ -63,6 +63,7 @@ import org.cesecore.roles.AdminGroupData;
  * @version $Id$
  * 
  */
+@Deprecated
 public class AccessTreeNode {
 
     private static final Logger log = Logger.getLogger(AccessTreeNode.class);
