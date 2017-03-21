@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -35,7 +34,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.roles.RoleExistsException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
@@ -178,10 +176,6 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
         } catch (IllegalCryptoTokenException e) {
             log.error(e.getMessage());
         } catch (AuthorizationDeniedException e) {
-            log.error(e.getMessage());
-        } catch (AccessRuleNotFoundException e) {
-            log.error(e.getMessage());
-        } catch (RoleExistsException e) {
             log.error(e.getMessage());
         } catch (CertPathValidatorException e) {
             log.error(e.getMessage());

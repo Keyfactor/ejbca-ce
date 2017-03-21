@@ -36,7 +36,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -135,7 +134,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         addDefaultRole();
     }
     
-    protected void addDefaultRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
+    protected void addDefaultRole() throws RoleExistsException {
         final String commonName = CaTestCase.class.getCanonicalName();
         caAdmin = getRoleInitializationSession().createAuthenticationTokenAndAssignToNewRole("C=SE,O=Test,CN="+commonName, null, getRoleName(),
                 Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
