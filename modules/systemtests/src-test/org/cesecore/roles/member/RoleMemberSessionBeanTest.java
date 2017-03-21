@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -33,7 +32,6 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -43,7 +41,6 @@ import org.junit.Test;
  */
 public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
 
-    private static final Logger log = Logger.getLogger(RoleMemberSessionBeanTest.class);
     private static final int INVALID_USER_ID = -1;
     private RoleMemberSessionRemote roleMemberSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleSessionRemote roleSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
@@ -161,7 +158,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         }
     }
     
-    //Authorization tests
+    //Authorization tests. Expects AuthorizationDeniedException to be thrown will invalid AuthenticationToken
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
         roleMemberSessionRemote.persist(unauthorizedAuthenticationToken, this.roleMember);
