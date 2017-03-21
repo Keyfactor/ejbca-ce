@@ -112,6 +112,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Mohammad Anwari, <!--  mdamt@mdamt.net -->Add CESeCore API support for RFC-4683 idOnSim OtherName (altName).</li>
 <li>Andres Jakobs, <!-- AndresJakobs@web.de -->Admin GUI support for eIDAS QC extension (type and PDS url), Default "CA issuer URI" for CA. WS CA cert update.</li>
 <li>Mauricio Giacomini Penteado, <!-- mauricio.penteado@lcmtec.com.br -->Overridable and Non-overridable OIDs extension list limitations (ECA-5139).</li>
+<li>Jean-Sébastien Bevilacqua , <!-- realitix@gmail.com -->Patch for not removing end entity profile in legacy script based auto enrollment.</li>
 </ul>
     </section>
   </body>
