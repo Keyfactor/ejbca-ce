@@ -24,6 +24,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
  * 
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 @Remote
 public interface UpgradeTestSessionRemote {
 
