@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles.management;
+package org.ejbca.core.ejb.upgrade;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +26,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
 /**
- * The Roles Management interface manages the list of roles and which access rules applies to defined roles. The roles interface also manages the list
+ * The legacy Roles Management interface manages the list of roles and which access rules applies to defined roles. The roles interface also manages the list
  * of Subjects who are part of the roles. There are three distinct methods to this interface:
  * <ul>
  * <li>
@@ -43,7 +43,7 @@ import org.cesecore.roles.RoleNotFoundException;
  */
 @Deprecated
 @Local
-public interface RoleManagementSessionLocal {
+public interface LegacyRoleManagementSessionLocal {
 
     /**
      * @return a Collection of role names authorized to the resource,
@@ -126,4 +126,27 @@ public interface RoleManagementSessionLocal {
     AdminGroupData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final AdminGroupData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException;
 
+    /**
+     * Retrieves all roles in the database..
+     * 
+     * @return all the roles in the database.
+     */
+    List<AdminGroupData> getAllRoles();
+
+
+    /**
+     * Finds a specific role by name.
+     * @param roleName
+     *            Name of the sought role.
+     * 
+     * @return The sought roll, null if not found
+     */
+    AdminGroupData getRole(String roleName);
+
+
+    /**
+     * Creates a super administrator role and a default CLI user. A role and default CLI user is needed in order
+     * to do operations with the CLI (command line interface).  
+     */
+    void createSuperAdministrator();
 }
