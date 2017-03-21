@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,18 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles.management;
+package org.ejbca.core.ejb.upgrade;
+
+import java.util.List;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessUserAspectData;
+
 /**
- * Remote interface for RoleManagementSession
+ * Interface for the bean helping with setup from tests of upgrade functionality.
  * 
  * @version $Id$
- *
  */
-@Deprecated
 @Remote
-public interface RoleManagementSessionRemote extends RoleManagementSession {
+public interface UpgradeTestSessionRemote {
+
+    void createRole(String roleName, List<AccessRuleData> accessRules, List<AccessUserAspectData> accessUserAspectDatas);
+
+    void deleteRole(String roleName);
+
+    List<AccessRuleData> getAccessRuleDatas(String roleName);
 
 }
