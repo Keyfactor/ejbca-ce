@@ -55,9 +55,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputText id="currentCryptoTokenId" value="#{cryptoTokenMBean.currentCryptoTokenId}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		<h:outputLabel for="currentCryptoTokenName" value="#{web.text.CRYPTOTOKEN_NAME}"/>
 		<h:panelGroup id="currentCryptoTokenName">
-	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="45" title="#{web.text.FORMAT_ID_STR}">
-	    		<f:validator validatorId="legalCharsValidator"/>
-	    	</h:inputText>
+	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" size="45" title="#{web.text.FORMAT_ID_STR}"/>
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		<h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}"/>

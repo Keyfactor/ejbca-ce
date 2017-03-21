@@ -187,7 +187,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             }
         }
         if (cryptoTokenId == null) {
-            throw new RuntimeException("Failed to allocate a new cryptoTokenId.");
+            throw new IllegalStateException("Failed to allocate a new cryptoTokenId.");
         }
         createCryptoToken(authenticationToken, tokenName, cryptoTokenId, className, properties, data, authenticationCode);
         return cryptoTokenId.intValue();
