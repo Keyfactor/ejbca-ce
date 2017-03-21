@@ -33,7 +33,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -60,11 +59,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -102,8 +97,6 @@ public class InitCATest extends CaTestCase {
     private final InternalKeyBindingMgmtSessionRemote keyBindMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private final UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
@@ -216,12 +209,6 @@ public class InitCATest extends CaTestCase {
             final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                     X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null, null));
-            // Do the same in the legacy system (TODO: Remove this)
-            AdminGroupData adminGroupData = roleManagementSession.create(admin, ROLE_NAME);
-            final List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(new AccessUserAspectData(ROLE_NAME, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "TestUser"));
-            adminGroupData = roleManagementSession.addSubjectsToRole(admin, adminGroupData, subjects);
-            
             // Now change a value and initialize
             log.debug("Trying to initialize with changed Subject DN");
             retrievedCaInfo.setSubjectDN(NEW_DN);
@@ -255,9 +242,6 @@ public class InitCATest extends CaTestCase {
             
             cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             assertEquals("CA Subject DN was not updated in CMP config", NEW_DN, cmpConfig.getCMPDefaultCA(CMP_ALIAS));
-            
-            adminGroupData = roleAccessSession.findRole(ROLE_NAME);
-            assertEquals("CAId was not updated in role subject", newCaId, adminGroupData.getAccessUsers().values().iterator().next().getCaId().intValue());
             final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMember.getId());
             assertEquals("CAId was not updated in role subject", newCaId, roleMemberAfterInit.getTokenIssuerId());
         } finally {
@@ -328,9 +312,6 @@ public class InitCATest extends CaTestCase {
         } catch (Exception e) {
             log.debug(e.getMessage());
         }
-        try {
-            roleManagementSession.remove(admin, ROLE_NAME);
-        } catch (RoleNotFoundException e) { } // NOPMD already deleted or non-existent
         final CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (cmpConfig.aliasExists(CMP_ALIAS)) {
             cmpConfig.removeAlias(CMP_ALIAS);
@@ -338,5 +319,4 @@ public class InitCATest extends CaTestCase {
         }
         log.trace("<deleteTestData");
     }
-
 }
