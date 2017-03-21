@@ -24,7 +24,6 @@ import java.util.List;
 import org.cesecore.audit.audit.AuditLogReportElem;
 import org.cesecore.audit.audit.AuditLogValidationReport;
 import org.cesecore.audit.audit.AuditLogValidatorException;
-import org.cesecore.audit.audit.SecurityEventsAuditorSession;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedAuditorProxySessionRemote;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -52,7 +51,7 @@ import org.junit.Test;
  */
 public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
 
-    private final SecurityEventsAuditorSession securityEventsAuditor = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
+    private final SecurityEventsAuditorSessionRemote securityEventsAuditor = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
 
     private static KeyPair keys;
 
