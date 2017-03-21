@@ -79,7 +79,7 @@ public class RaAccessBean implements Serializable {
                     myAccess = raMasterApiProxyBean.getUserAccessSet(authenticationToken);
                 } catch (AuthenticationFailedException e) {
                     log.info("Failed to match authentication token '" + authenticationToken + "' to a role.");
-                    myAccess = new AccessSet(); // empty access set
+                    myAccess = AccessSet.createEmptyAccessSet();
                 }
                 entry.putValue(myAccess);
             }
