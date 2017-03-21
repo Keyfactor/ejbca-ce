@@ -63,14 +63,11 @@ public final class AccessSet implements Serializable {
     /** New way of storing access rules, in both the AccessSet and in the database. Will be null if only the legacy set is available */
     private HashMap<String,Boolean> accessMap;
 
-    /** Creates an AccessSet that contains no access rules. Used for deserialization also */
-    public AccessSet() {
-        this.set = new HashSet<>();
-        this.accessMap = null;
-    }
+    /** No-args constructor for deserialization only. To create an empty AccessSet, use {@link #createEmptyAccessSet()} */
+    public AccessSet() { }
 
     /**
-     * Creates an AccessSet with old an style 6.6.0 access set, which can't contain deny rules and works using the old access rule system.
+     * Creates an AccessSet with a legacy 6.6.0 access rule set, which can't contain deny rules and works using the old access rule system.
      * @deprecated Since 6.8.0
      */
     @Deprecated
@@ -99,6 +96,13 @@ public final class AccessSet implements Serializable {
         } else {
             accessMap = null;
         }
+    }
+
+    public static AccessSet createEmptyAccessSet() {
+        final AccessSet as = new AccessSet();
+        as.set = new HashSet<>();
+        as.accessMap = new HashMap<>();
+        return as;
     }
 
     public boolean isAuthorized(final String... resources) {
@@ -251,7 +255,7 @@ public final class AccessSet implements Serializable {
      *
      * @param allResources whole universe of resources that exists
      */
-    private void initializeSOMERulesAndBuildLegacySet(final Set<String> allResources) { // XXX can we skip allResources?
+    private void initializeSOMERulesAndBuildLegacySet(final Set<String> allResources) {
         set = new HashSet<>();
         for (final String current : allResources) {
             // De-normalize if needed
