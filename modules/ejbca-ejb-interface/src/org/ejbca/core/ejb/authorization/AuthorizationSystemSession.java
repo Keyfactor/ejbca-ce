@@ -23,7 +23,7 @@ import org.cesecore.authorization.access.AccessSet;
  */
 public interface AuthorizationSystemSession {
 
-    public static final String SUPERADMIN_ROLE = ComplexAccessControlSessionLocal.SUPERADMIN_ROLE;
+    public static final String SUPERADMIN_ROLE = "Super Administrator Role";
 
     /**
      * Returns all rules that the given authenticationToken is allowed to access. Includes *SOME wildcard rules

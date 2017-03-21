@@ -29,8 +29,6 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
 
 /**
  * SSB helping with setup from tests of upgrade functionality.
@@ -46,9 +44,7 @@ public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
     private AuthenticationToken alwaysAllowToken = new AlwaysAllowLocalAuthenticationToken(UpgradeTestSessionBean.class.getSimpleName());
 
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
-    @EJB
-    private RoleManagementSessionLocal roleManagementSession;
+    private LegacyRoleManagementSessionLocal roleManagementSession;
     
     @Override
     public void createRole(final String roleName, final List<AccessRuleData> accessRules, final List<AccessUserAspectData> accessUserAspectDatas) {
@@ -72,7 +68,7 @@ public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
 
     @Override
     public List<AccessRuleData> getAccessRuleDatas(String readOnlyRoleName) {
-        final AdminGroupData adminGroupData = roleAccessSession.findRole(readOnlyRoleName);
+        final AdminGroupData adminGroupData = roleManagementSession.getRole(readOnlyRoleName);
         return new ArrayList<>(adminGroupData.getAccessRules().values());
     }
 }

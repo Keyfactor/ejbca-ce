@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles.management;
+package org.ejbca.core.ejb.upgrade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
+import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -35,31 +37,42 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.access.AccessTree;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.ProfileID;
+import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
+import org.ejbca.core.ejb.ra.UserData;
+import org.ejbca.core.model.SecConst;
 
 /**
- * Implementation of the RoleManagementSession interface.
+ * Implementation of the legacy role management needed by upgrade.
  * 
+ * @deprecated since EJBCA 6.8.0
  * @version $Id$
  */
 @Deprecated
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RoleManagementSessionBean implements RoleManagementSessionLocal {
+public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSessionLocal {
 
+    private static final Logger log = Logger.getLogger(LegacyRoleManagementSessionBean.class);
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
-
-    @EJB private RoleAccessSessionLocal roleAccessSession;
 
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
@@ -69,28 +82,24 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
 
     @Override
     public AdminGroupData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException {
-        if (roleAccessSession.findRole(roleName) == null) {
+        if (getRole(roleName) == null) {
             AdminGroupData role = new AdminGroupData(findFreeRoleId(), roleName);
             entityManager.persist(role);
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.roleadded", roleName);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
+                    authenticationToken.toString(), null, null, null, msg);
             return role;
         } else {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.erroraddroleexists", roleName);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_CREATION, EventStatus.FAILURE, ModuleTypes.ROLES, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
+                    authenticationToken.toString(), null, null, null, msg);
             throw new RoleExistsException(msg);
         }
     }
 
     @Override
     public void deleteIfPresentNoAuth(AuthenticationToken authenticationToken, String roleName) {
-        final AdminGroupData role = roleAccessSession.findRole(roleName);
+        final AdminGroupData role = getRole(roleName);
         if (role != null) {
             for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
                 entityManager.remove(userAspect);
@@ -106,7 +115,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     @Override
     public AdminGroupData addAccessRulesToRole(AuthenticationToken authenticationToken, final AdminGroupData role, final Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException {
-        AdminGroupData result = roleAccessSession.findRole(role.getPrimaryKey());
+        AdminGroupData result = getRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
             throw new RoleNotFoundException(msg);
@@ -140,7 +149,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     @Override
     public AdminGroupData removeAccessRulesFromRole(AuthenticationToken authenticationToken, final AdminGroupData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException {
-        AdminGroupData result = roleAccessSession.findRole(role.getPrimaryKey());
+        AdminGroupData result = getRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
             throw new RoleNotFoundException(msg);
@@ -160,7 +169,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     @Override
     public AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, final AdminGroupData role, Collection<AccessUserAspectData> accessUserAspectDatas)
             throws RoleNotFoundException {
-        if (roleAccessSession.findRole(role.getPrimaryKey()) == null) {
+        if (getRole(role.getPrimaryKey()) == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
             throw new RoleNotFoundException(msg);
         }
@@ -214,7 +223,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     @Override
     public Collection<AdminGroupData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
         List<AdminGroupData> result = new ArrayList<AdminGroupData>();
-        for (AdminGroupData role : roleAccessSession.getAllRoles()) {
+        for (AdminGroupData role : getAllRoles()) {
             result.add(role);
         }
         return result;
@@ -222,7 +231,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         
     @Override
     public List<AdminGroupData> getAuthorizedRoles(String resource, boolean requireRecursive) {
-        Collection<AdminGroupData> roles = roleAccessSession.getAllRoles();
+        Collection<AdminGroupData> roles = getAllRoles();
         Collection<AdminGroupData> onerole = new ArrayList<AdminGroupData>();
         ArrayList<AdminGroupData> authissueingadmgrps = new ArrayList<AdminGroupData>();
         for (AdminGroupData role : roles) {
@@ -281,7 +290,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return roleAccessSession.findRole(Integer.valueOf(i)) == null;
+                return getRole(Integer.valueOf(i)) == null;
             }
         };
         return Integer.valueOf(ProfileID.getNotUsedID(db));
@@ -293,7 +302,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     public AdminGroupData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final AdminGroupData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException {
         
-        AdminGroupData result = roleAccessSession.findRole(role.getPrimaryKey());
+        AdminGroupData result = getRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
             throw new RoleNotFoundException(msg);
@@ -367,13 +376,83 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         return result;
     }
 
-    private AccessRuleData createAccessRuleData(final String accessRuleName, final String roleName, final AccessRuleState state, boolean isRecursive) {
-        AccessRuleData result = null;
-        int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessRuleName);
-        if (entityManager.find(AccessRuleData.class, primaryKey) == null) {
-            result = new AccessRuleData(primaryKey, accessRuleName, state, isRecursive);
-            entityManager.persist(result);
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<AdminGroupData> getAllRoles() {
+        final List<AdminGroupData> allRoles = entityManager.createQuery("SELECT a FROM AdminGroupData a", AdminGroupData.class).getResultList();
+        return allRoles != null ? allRoles : new ArrayList<AdminGroupData>();
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public AdminGroupData getRole(final String roleName) {
+        final TypedQuery<AdminGroupData> query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.roleName=:roleName", AdminGroupData.class);
+        query.setParameter("roleName", roleName);
+        return QueryResultWrapper.getSingleResult(query);
+    }
+
+    private AdminGroupData getRole(final Integer primaryKey) {
+        return entityManager.find(AdminGroupData.class, primaryKey);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void createSuperAdministrator() {
+        final String TEMPORARY_SUPERADMIN_ROLE = "Temporary Super Administrator Group";
+        final String SUPERADMIN_ROLE = AuthorizationSystemSession.SUPERADMIN_ROLE;
+        // Create the Super Admin
+        AdminGroupData role = getRole(SUPERADMIN_ROLE);
+        if (role == null) {
+            log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
+            role = new AdminGroupData(1, SUPERADMIN_ROLE);
+            entityManager.persist(role);
+        } else {
+            log.debug("'" + SUPERADMIN_ROLE + "' already exists, not creating new.");            
         }
-        return result;
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
+        if (!role.getAccessRules().containsKey(rule.getPrimaryKey())) {
+            log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
+            Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
+            newrules.put(rule.getPrimaryKey(), rule);
+            role.setAccessRules(newrules);
+        } else {
+            log.debug("rule '/' already exists in " + SUPERADMIN_ROLE + ".");
+        }
+        // Pick up the aspects from the old temp. super admin group and add them to the new one.        
+        Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();
+        AdminGroupData oldSuperAdminRole = getRole(TEMPORARY_SUPERADMIN_ROLE);
+        if (oldSuperAdminRole != null) {
+            Map<Integer, AccessUserAspectData> oldSuperAdminAspects = oldSuperAdminRole.getAccessUsers();
+            Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
+            for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
+                AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
+                        X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, aspect.getMatchWith());
+                AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
+                        aspect.getMatchTypeAsType(), aspect.getMatchValue());
+                if (existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {
+                    log.debug(SUPERADMIN_ROLE + " already contains aspect matching " + aspect.getMatchValue() + " for CA with ID " + aspect.getCaId());
+                } else {
+                    newUsers.put(superAdminUserAspect.getPrimaryKey(), superAdminUserAspect);
+                }
+            }
+        }
+        // Create the CLI Default User
+        Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, CliUserAccessMatchValue.USERNAME,
+                AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
+        if (!users.containsKey(defaultCliUserAspect.getPrimaryKey())) {
+            log.debug("Adding new AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' to " + SUPERADMIN_ROLE + ".");
+            newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
+            UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
+                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+            defaultCliUserData.setStatus(EndEntityConstants.STATUS_GENERATED);
+            if (entityManager.find(UserData.class, defaultCliUserData.getUsername())==null) {
+                entityManager.persist(defaultCliUserData);
+            }
+        } else {
+            log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
+        }
+        // Add all created aspects to role
+        role.setAccessUsers(newUsers);
     }
 }
