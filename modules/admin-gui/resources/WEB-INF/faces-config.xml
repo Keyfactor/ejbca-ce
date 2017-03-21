@@ -58,15 +58,6 @@
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    	<managed-bean-name>rolesManagedBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.administratorprivileges.RolesManagedBean</managed-bean-class>
-    	<managed-bean-scope>request</managed-bean-scope>
-    	<managed-property>
-            <property-name>currentRole</property-name>
-            <value>#{param.currentRole}</value>
-        </managed-property>
-  </managed-bean>
-  <managed-bean>
     	<managed-bean-name>cryptoTokenMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
