@@ -129,7 +129,6 @@ public class RoleSessionBeanTest {
         //Set up role
         Role roleToRename = new Role(null, defaultName);
         roleToRename = roleSession.persistRole(alwaysAllowAuthenticationToken, roleToRename);
-        int persistedRoleId = roleToRename.getRoleId();
         //Rename
         roleToRename.setRoleName(newName);
         roleSession.persistRole(alwaysAllowAuthenticationToken, roleToRename);
@@ -186,7 +185,7 @@ public class RoleSessionBeanTest {
             
             //Verify database commit
             retrievedRules = role.getAccessRules();
-            assertTrue(retrievedRules.size() == 1);
+            assertEquals(1, retrievedRules.size());
             assertEquals(Role.STATE_ALLOW, retrievedRules.get(AccessRulesHelper.normalizeResource(RULE2)));
 
             // Verify that futureRama has been removed entirely
@@ -286,7 +285,8 @@ public class RoleSessionBeanTest {
         final String anotherAdminRoleName = "AnotherAdminRole";
         
         AuthenticationToken adminToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(authDN, allowedNameSpace, adminRoleName, null, null);
-        AuthenticationToken anotherAdminToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(unAuthDN, deniedNameSpace, anotherAdminRoleName, null, null);
+        //This namespace should not be visible by 'TestAllowedNameSpace'
+        roleInitSession.createAuthenticationTokenAndAssignToNewRole(unAuthDN, deniedNameSpace, anotherAdminRoleName, null, null);
         
         try {
             List<String> authorizedNameSpaces = roleSession.getAuthorizedNamespaces(adminToken);
