@@ -26,16 +26,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
@@ -54,8 +49,6 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     private final static String ROLE_NAME = "EjbcaSecurityAuditTest";
     
     private EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaAuditorSessionBeanTest"));
@@ -81,8 +74,6 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         final Role roleAuditor = roleSession.getRole(alwaysAllowToken, null, ROLE_NAME);
         roleAuditor.getAccessRules().put(AuditLogRules.VIEW.resource(), Role.STATE_DENY);
         roleSession.persistRole(alwaysAllowToken, roleAuditor);
-        // Repeat using legacy
-        testAuthorizationLegacySetup();
         //Create a brand spanking new authenticationToken
         AuthenticationToken authenticationToken = createAuthenticationToken("CN="+ROLE_NAME);
         try {
@@ -93,14 +84,6 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
             LOG.debug(e.getMessage());
         }
         LOG.trace("<testAuthorization");
-    }
-
-    @Deprecated
-    private void testAuthorizationLegacySetup() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException {
-        final AdminGroupData role = roleAccessSession.findRole(ROLE_NAME);
-        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
     }
 
     @Test
