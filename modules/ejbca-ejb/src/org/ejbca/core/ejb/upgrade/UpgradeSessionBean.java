@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -90,7 +88,6 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
@@ -787,49 +784,17 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	 * Also, set token types to the standard X500 principal if otherwise null. Since token types is a new concept, 
          * all existing aspects/admin entities must be of this type
     	 */
-    	Collection<AdminGroupData> roles = legacyRoleManagementSession.getAllRoles();
-    	for (AdminGroupData role : roles) {
-    	    Collection<AccessUserAspectData> updatedUsers = new ArrayList<>();
-    	    for(AccessUserAspectData userAspect : role.getAccessUsers().values()) {
-    	        if(userAspect.getTokenType() == null) {
-    	            userAspect.setTokenType(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
-    	            updatedUsers.add(userAspect);
-    	        }
-    	    }
-    	    try {
-                role = legacyRoleManagementSession.addSubjectsToRole(admin, role, updatedUsers);
-            } catch (RoleNotFoundException e) {
-                log.error("Not possible to edit subjects for role: "+role.getRoleName(), e);
-            }
-    
-    	    //The old "/super_administrator" rule is replaced by a rule to access "/" (StandardRules.ROLE_ROOT.resource()) with recursive=true.
-    	    // therefore we must insert a new access rule in the database in all roles that have super_administrator access.
-    		final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
-    		final Collection<AccessRuleData> rules = rulemap.values();
-    		for (AccessRuleData rule : rules) {
-    			if (StringUtils.equals("/super_administrator", rule.getAccessRuleName()) && 
-    					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
-    				// Now we add a new rule
-    				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
-    				log.info("Replacing all rules of the role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+StandardRules.ROLE_ROOT+"' rule.");
-    				final Collection<AccessRuleData> newrules = new ArrayList<>();
-    				newrules.add(slashRule);
-    				try {
-    					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
-    					legacyRoleManagementSession.replaceAccessRulesInRoleNoAuth(admin, role, newrules);
-    				} catch (RoleNotFoundException e) {
-    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    				}  		    		
-    				break; // no need to continue with this role
-    			}
-    		}
-    	}
+    	legacyRoleManagementSession.setTokenTypeWhenNull(admin);
+        //The old "/super_administrator" rule is replaced by a rule to access "/" (StandardRules.ROLE_ROOT.resource()) with recursive=true.
+        // therefore we must insert a new access rule in the database in all roles that have super_administrator access.
+        // Note from EJBCA 6.8.0 rewrite: Since this will be normalized and minimized in a later upgrade adding this rule is sufficient
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList("/super_administrator"), Arrays.asList(StandardRules.ROLE_ROOT.resource()), true);
     	
     	accessTreeUpdateSession.signalForAccessTreeUpdate();
     	log.error("(this is not an error) Finished upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
         return ret;
     }
-
 
     /**
      * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration 
@@ -839,29 +804,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     @SuppressWarnings("deprecation")
     private boolean addEKUAndCustomCertExtensionsAccessRulestoRoles() {
-        Collection<AdminGroupData> roles = new ArrayList<>(legacyRoleManagementSession.getAllRoles());
-        for (AdminGroupData role : roles) {
-            final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
-            final Collection<AccessRuleData> rules = new ArrayList<>(rulemap.values());
-            for (AccessRuleData rule : rules) {
-                if (StringUtils.equals(StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), rule.getAccessRuleName()) && 
-                        rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
-                    // Now we add a new rule
-                    final Collection<AccessRuleData> newrules = new ArrayList<>();
-                    final AccessRuleData editAvailableEKURule = new AccessRuleData(role.getRoleName(), StandardRules.EKUCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
-                    final AccessRuleData editCustomCertExtensionsRule = new AccessRuleData(role.getRoleName(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
-                    newrules.add(editAvailableEKURule);
-                    newrules.add(editCustomCertExtensionsRule);
-                    try {
-                        legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, newrules);
-                        log.info("Added rule '" + editAvailableEKURule.toString() + "' to role '"+role.getRoleName()+"' since the role contained the '"+StandardRules.SYSTEMCONFIGURATION_EDIT+"' rule.");
-                    } catch (Exception e) {
-                        log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-                    }                
-                }
-            }
-        }
-        
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+        		Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()),
+                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), false);
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         return true;
     }
@@ -920,103 +865,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules640() throws UpgradeFailedException {
-        try {
-            // Any roles that had access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
-            // should be given access to /ca_functionality/view_ca
-            Set<AdminGroupData> viewCaRoles = new HashSet<>(legacyRoleManagementSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_ACTIVATECA, false));
-            viewCaRoles.addAll(legacyRoleManagementSession.getAuthorizedRoles(StandardRules.CAFUNCTIONALITY.resource(), true));
-            for (AdminGroupData role : viewCaRoles) {
-                //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CAVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-            // Next, any roles with access to /ca_functionality/edit_certificate_profiles should have be given access to /ca_functionality/view_certificate_profiles
-            List<AdminGroupData> certificateProfileRoles = legacyRoleManagementSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEEDIT.resource(), false);
-            for (AdminGroupData role : certificateProfileRoles) {
-              //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.CERTIFICATEPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-            // Any roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
-            List<AdminGroupData> publisherRoles = legacyRoleManagementSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITPUBLISHER, false);
-            for (AdminGroupData role : publisherRoles) {
-                //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWPUBLISHER, AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-            // Any roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
-            List<AdminGroupData> endEntityProfileRoles = legacyRoleManagementSession.getAuthorizedRoles(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, false);
-            for (AdminGroupData role : endEntityProfileRoles) {
-              //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-            // Any roles with access to "/" should be given /services/edit, /services/view and /peer/view (+recursive)
-            List<AdminGroupData> rootAccessRoles = legacyRoleManagementSession.getAuthorizedRoles(StandardRules.ROLE_ROOT.resource(), false);
-            for (AdminGroupData role : rootAccessRoles) {
-              //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                ArrayList<AccessRuleData> accessRulesList = new ArrayList<>();
-                AccessRuleData servicesEdit = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_EDIT, AccessRuleState.RULE_ACCEPT,
-                        false);
-                AccessRuleData servicesView = new AccessRuleData(role.getRoleName(), AccessRulesConstants.SERVICES_VIEW, AccessRuleState.RULE_ACCEPT,
-                        false);
-                AccessRuleData peerView = new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
-                        AccessRuleState.RULE_ACCEPT, true);
-                if (!role.getAccessRules().containsValue(peerView)) {
-                    accessRulesList.add(peerView);
-                }
-                if (!role.getAccessRules().containsValue(servicesEdit)) {
-                    accessRulesList.add(servicesEdit);
-                }
-                if (!role.getAccessRules().containsValue(servicesView)) {
-                    accessRulesList.add(servicesView);
-                }
-                legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, accessRulesList);
-            }           
-            // Any roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
-            List<AdminGroupData> keybindingProfileRoles = legacyRoleManagementSession.getAuthorizedRoles(InternalKeyBindingRules.BASE.resource(), false);
-            for (AdminGroupData role : keybindingProfileRoles) {
-                //Skip if superadmin 
-                if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                    continue;
-                }
-                //Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), InternalKeyBindingRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-        } catch (RoleNotFoundException e) {
-            throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
-        }
+        // Roles with access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
+        // should be given access to /ca_functionality/view_ca
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
+                Arrays.asList(AccessRulesConstants.REGULAR_ACTIVATECA), Arrays.asList(StandardRules.CAVIEW.resource()), false);
+        // Roles with access to /ca_functionality/edit_certificate_profiles should be given access to /ca_functionality/view_certificate_profiles
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
+                Arrays.asList(StandardRules.CERTIFICATEPROFILEEDIT.resource()), Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), false);
+        // Roles with access to /ca_functionality/edit_publisher should be given /ca_functionality/view_publisher
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
+                Arrays.asList(AccessRulesConstants.REGULAR_EDITPUBLISHER), Arrays.asList(AccessRulesConstants.REGULAR_VIEWPUBLISHER), false);
+        // Roles with access to /ra_functionality/edit_end_entity_profiles should be given /ra_functionality/view_end_entity_profiles
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
+                Arrays.asList(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES), Arrays.asList(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES), false);
+        // Roles with access to "/" (non-recursive) should be given /services/edit, /services/view and /peer/view (+recursive)
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.SERVICES_EDIT, AccessRulesConstants.SERVICES_VIEW), false);
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), Arrays.asList(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW), true);
+        // Roles with access to /internalkeybinding should be given /internalkeybinding/view (+recursive)
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(InternalKeyBindingRules.BASE.resource()), Arrays.asList(InternalKeyBindingRules.VIEW.resource()), true);
     }
     
     /**
@@ -1031,96 +900,41 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules642() throws UpgradeFailedException {
-        for (AdminGroupData role : legacyRoleManagementSession.getAllRoles()) {
-            //Skip if superadmin 
-            if(role.hasAccessToRule(StandardRules.ROLE_ROOT.resource(), true)) {
-                continue;
-            }
-            //If role is the old auditor from 6.4.0
-            String rolename = role.getRoleName();
-            try {            
-                if (matches640Auditor(role)) {
-                    List<AccessRuleData> newAccessRules = new ArrayList<>();
-                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
-                            false));
-                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
-                            false));
-                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
-                            false));
-                    newAccessRules.add(new AccessRuleData(rolename, StandardRules.VIEWROLES.resource(), AccessRuleState.RULE_ACCEPT,
-                            false));
-                    newAccessRules.add(new AccessRuleData(rolename, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT,
-                            false));
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
-                } else {
-                    List<AccessRuleData> newAccessRules = new ArrayList<>();
-                    //Not an Auditor, but there may be other cases where we should grant access. 
-                    if (role.hasAccessToRule(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
-                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                                AccessRuleState.RULE_ACCEPT, false));
-                    }
-                    if (role.hasAccessToRule(StandardRules.EKUCONFIGURATION_EDIT.resource())) {
-                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.EKUCONFIGURATION_VIEW.resource(), AccessRuleState.RULE_ACCEPT,
-                                false));
-                    }
-                    if (role.hasAccessToRule(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource())) {
-                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                                AccessRuleState.RULE_ACCEPT, false));
-                    }
-                    if (role.hasAccessToRule(StandardRules.EDITROLES.resource())) {
-                        newAccessRules.add(new AccessRuleData(rolename, StandardRules.VIEWROLES.resource(),
-                                AccessRuleState.RULE_ACCEPT, false));
-                    }                   
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, newAccessRules);
-                }           
-            } catch (RoleNotFoundException e) {
-                throw new UpgradeFailedException("Newly accessed role was not available", e);
-            }
-        }
-    }
-    
-    private boolean matches640Auditor(AdminGroupData role) {
-        // We'll tolerate that the role has some external rules added to it
-        // We won't use the method in defaultRoles, because it presumes knowledge of external rules. 
-        //So, simply verify that all rules but the new ones are in the selected role. 
-        Set<String> ignoreRules = new HashSet<>(Arrays.asList(
-                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
-                StandardRules.EKUCONFIGURATION_VIEW.resource(),
-                StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
-                StandardRules.VIEWROLES.resource(),
-                AccessRulesConstants.REGULAR_VIEWENDENTITY)
-                );
-        final List<String> ejbcaPre642AuditorRules = Arrays.asList(
+        // If role is the old auditor from 6.4.0, grant new view rights
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(), Arrays.asList(
                 AccessRulesConstants.ROLE_ADMINISTRATOR, 
                 AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                AuditLogRules.VIEW.resource(), // Was recursive
-                InternalKeyBindingRules.VIEW.resource(), // Was recursive
+                AuditLogRules.VIEW.resource(),
+                InternalKeyBindingRules.VIEW.resource(),
                 StandardRules.CAVIEW.resource(),
                 StandardRules.CERTIFICATEPROFILEVIEW.resource(),
                 StandardRules.APPROVALPROFILEVIEW.resource(),
-                CryptoTokenRules.VIEW.resource(), // Was recursive
+                CryptoTokenRules.VIEW.resource(),
                 AccessRulesConstants.REGULAR_VIEWPUBLISHER,
                 AccessRulesConstants.SERVICES_VIEW,
                 AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES,
-                AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, // Was recursive
+                AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW,
                 StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
                 StandardRules.EKUCONFIGURATION_VIEW.resource(),
                 StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
                 StandardRules.VIEWROLES.resource(),
                 AccessRulesConstants.REGULAR_VIEWENDENTITY
-                );
-        for (String auditorRule : ejbcaPre642AuditorRules) {
-            if (!ignoreRules.contains(auditorRule) && !role.hasAccessToRule(auditorRule)) {
-                return false;
-            }
-        }
-        for (String ignoreRule : ignoreRules) {
-            if (role.hasAccessToRule(ignoreRule)) {
-                //We're already a 6.4.2 auditor
-                return false;
-            }
-        }
-        return true;
+                ), Arrays.asList(
+                        StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
+                        StandardRules.EKUCONFIGURATION_VIEW.resource(),
+                        StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource(),
+                        StandardRules.VIEWROLES.resource(),
+                        AccessRulesConstants.REGULAR_VIEWENDENTITY
+                        ), false);
+        // Other cases where we should grant additional access.
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.SYSTEMCONFIGURATION_VIEW.resource()), false);
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.EKUCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.EKUCONFIGURATION_VIEW.resource()), false);
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource()), Arrays.asList(StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource()), false);
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
+                Arrays.asList(StandardRules.EDITROLES.resource()), Arrays.asList(StandardRules.VIEWROLES.resource()), false);
     }
 
     /**
@@ -1281,38 +1095,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
-        try {
-            log.debug("migrateDatabase660: Upgrading roles with approval rules");
-            // Any roles with access to /ca_functionality/view_certifcate_profiles should be given /ca_functionality/view_approval_profiles
-            List<AdminGroupData> endEntityProfileRoles = legacyRoleManagementSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEVIEW.resource(), false);
-            for (AdminGroupData role : endEntityProfileRoles) {
-                // Skip if CA Admin or SuperAdmin
-                if (role.hasAccessToRule(StandardRules.CAFUNCTIONALITY.resource(), true)) {
-                    continue;
-                }
-                // Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.APPROVALPROFILEVIEW.resource(), AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-            // Any roles with access to /ca_functionality/edit_certificate_profiles should be given /ca_functionality/edit_approval_profiles
-            endEntityProfileRoles = legacyRoleManagementSession.getAuthorizedRoles(StandardRules.CERTIFICATEPROFILEEDIT.resource(), false);
-            for (AdminGroupData role : endEntityProfileRoles) {
-                // Skip if CA Admin or SuperAdmin
-                if (role.hasAccessToRule(StandardRules.CAFUNCTIONALITY.resource(), true)) {
-                    continue;
-                }
-                // Find 
-                AccessRuleData newRule = new AccessRuleData(role.getRoleName(), StandardRules.APPROVALPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false);
-                if (!role.getAccessRules().containsValue(newRule)) {
-                    legacyRoleManagementSession.addAccessRulesToRole(authenticationToken, role, Arrays.asList(newRule));
-                }
-            }
-        } catch (RoleNotFoundException e) {
-            throw new UpgradeFailedException("Upgrade failed, for some reason retrieved role does not exist in database.", e);
-        }
-        
+        log.debug("migrateDatabase660: Upgrading roles with approval rules");
+        // Any roles with access to /ca_functionality/view_certifcate_profiles should be given /ca_functionality/view_approval_profiles
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
+                Arrays.asList(StandardRules.CERTIFICATEPROFILEVIEW.resource()), Arrays.asList(StandardRules.APPROVALPROFILEVIEW.resource()), false);
+        // Any roles with access to /ca_functionality/edit_certificate_profiles should be given /ca_functionality/edit_approval_profiles
+        legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
+                Arrays.asList(StandardRules.CERTIFICATEPROFILEEDIT.resource()), Arrays.asList(StandardRules.APPROVALPROFILEEDIT.resource()), false);
         // Create AccumulativeApprovalProfile for all CA's and Certificate Profiles running approvals
         //Sort cache by the number of approvals
         Map<Integer, Integer> approvalProfileCache = new HashMap<>();
@@ -1463,7 +1252,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final Set<String> allResourcesInUseOnThisInstallation = authorizationSystemSession.getAllResources(true).keySet();
         // Migrate one AdminGroupData at the time
         final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
-        final Collection<AdminGroupData> adminGroupDatas = legacyRoleManagementSession.getAllRolesAuthorizedToEdit(authenticationToken);
+        final Collection<AdminGroupData> adminGroupDatas = legacyRoleManagementSession.getAllRoles();
         for (final AdminGroupData adminGroupData : adminGroupDatas) {
             // Convert AdminGroupData and linked AccessRuleDatas to RoleData
             final String roleName = adminGroupData.getRoleName();
@@ -1508,9 +1297,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() &&
                             tokenMatchOperator == AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
                         // The implementation always does case insensitive compare
-                        log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.name() +
-                                " match operator " + AccessMatchType.TYPE_EQUALCASE.name() + " with and match value '" + tokenMatchValue +
-                                "'. Changing match operator type to defacto operator TYPE_EQUALCASEINS.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.name() +
+                                    " match operator " + AccessMatchType.TYPE_EQUALCASE.name() + " with and match value '" + tokenMatchValue +
+                                    "'. Changing match operator type to defacto operator TYPE_EQUALCASEINS.");
+                        }
                         tokenMatchOperator = AccessMatchType.TYPE_EQUALCASEINS.getNumericValue();
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
@@ -1522,10 +1313,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 } else if (CliAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType) || "UsernameBasedAuthenticationToken".equals(tokenType)) {
                     if (tokenMatchOperator != AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
                         // The implementation always does case sensitive compare
-                        log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + CliUserAccessMatchValue.USERNAME.name() +
-                                " match operator " + tokenMatchOperator + " with and match value '" + tokenMatchValue +
-                                "'. Changing match operator type to defacto operator TYPE_EQUALCASE.");
-                        log.debug("Found admin of type " + tokenType + " with and value='"+tokenMatchValue+"'. Changing operator type to defacto operator equals.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + CliUserAccessMatchValue.USERNAME.name() +
+                                    " match operator " + tokenMatchOperator + " with and match value '" + tokenMatchValue +
+                                    "'. Changing match operator type to defacto operator TYPE_EQUALCASE.");
+                        }
                         tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
                     }
                 } else {
@@ -1573,11 +1365,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             Thread.currentThread().interrupt();
         }
         // Empty the legacy AdminEntityData, AdmingGroupData and AccessRulesData tables.
-        log.info("Cleaning up legacy roles and rules.");
-        // TODO 
         log.error("Clean up not implemented yet! Failing post-upgrade!");
         return false; // Fail it
         /*
+        log.info("Cleaning up legacy roles and rules.");
+        legacyRoleManagementSession.deleteAllRoles(authenticationToken);
         log.info("Post upgrade to 6.8.0 complete.");
         return true;
         */
@@ -1688,13 +1480,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *                                                  Public Web Users
      */
     private void removeOldRoles500() {
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken("UpgradeSessionBean.removeOldRoles");
         final String defaultRoleName = "DEFAULT";
         final String tempSuperAdminRoleName = "Temporary Super Administrator Group";
         final String publicWebRoleName = "Public Web Users";
-        legacyRoleManagementSession.deleteIfPresentNoAuth(admin, defaultRoleName);
-        legacyRoleManagementSession.deleteIfPresentNoAuth(admin, tempSuperAdminRoleName);
-        legacyRoleManagementSession.deleteIfPresentNoAuth(admin, publicWebRoleName);
+        legacyRoleManagementSession.deleteRole(authenticationToken, defaultRoleName);
+        legacyRoleManagementSession.deleteRole(authenticationToken, tempSuperAdminRoleName);
+        legacyRoleManagementSession.deleteRole(authenticationToken, publicWebRoleName);
     }
 
     private List<CertificatePolicy> getNewPolicies(final List<CertificatePolicy> policies) {

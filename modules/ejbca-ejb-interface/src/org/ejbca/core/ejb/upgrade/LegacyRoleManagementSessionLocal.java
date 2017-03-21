@@ -18,12 +18,10 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 
 /**
  * The legacy Roles Management interface manages the list of roles and which access rules applies to defined roles. The roles interface also manages the list
@@ -46,12 +44,6 @@ import org.cesecore.roles.RoleNotFoundException;
 public interface LegacyRoleManagementSessionLocal {
 
     /**
-     * @return a Collection of role names authorized to the resource,
-     */
-    List<AdminGroupData> getAuthorizedRoles(String resource, boolean requireRecursive);
-
-
-    /**
      * Adds a legacy role.
      * 
      * @param authenticationToken only used for audit logging
@@ -67,7 +59,7 @@ public interface LegacyRoleManagementSessionLocal {
      * @param authenticationToken only used for audit logging
      * @param roleName The name of the role to remove.
      */
-    void deleteIfPresentNoAuth(AuthenticationToken authenticationToken, String roleName);
+    void deleteRole(AuthenticationToken authenticationToken, String roleName);
 
     /**
      * Associates a list of access rules to a role. If the given role already exists, replace it.
@@ -75,56 +67,20 @@ public interface LegacyRoleManagementSessionLocal {
      * @param authenticationToken only used for audit logging
      * @param role The role
      * @param accessRules A collection of access rules. 
-     * @throws RoleNotFoundException if the role does not exist
      * 
      * @return the merged {@link AdminGroupData} with the new access rules
      */
-    AdminGroupData addAccessRulesToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessRuleData> accessRules)
-            throws RoleNotFoundException;
+    AdminGroupData addAccessRulesToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessRuleData> accessRules);
 
-    /**
-     * Removes the given access rules from a role.
-     * 
-     * @param authenticationToken only used for audit logging
-     * @param role The role.
-     * @param accessRules A collection of access rules. If these rules haven't been removed from persistence, they will be here.
-     * @throws RoleNotFoundException if the role does not exist
-     * @return the merged {@link AdminGroupData} with the new access rules
-     */
-    AdminGroupData removeAccessRulesFromRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessRuleData> accessRules)
-            throws RoleNotFoundException;
-    
     /**
      * Gives the collection of subjects the given role. If the subject already exists, update it with the new value.
      * 
      * @param authenticationToken only used for audit logging
      * @param subjects A collection of subjects
      * @param role The role to give.
-     * @throws RoleNotFoundException if the role does not exist
-     * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * @return the merged {@link AdminGroupData} with the new subjects
-     * 
-     *             TODO: Rename this method AddAccessUserAspectsToRole
      */
-    AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessUserAspectData> subjects)
-            throws RoleNotFoundException;
-
-    /**
-     * Retrieves a list of the roles which the given subject is authorized to edit, by checking if that subject has rights to the CA's behind all
-     * access user aspects in that role, and all CA-based rules
-     * 
-     * @param authenticationToken An authentication token for the subject
-     * @return a list of roles which the subject is authorized to edit.
-     */
-    Collection<AdminGroupData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
-
-    /**
-     * Never use this method except during upgrade.
-     * 
-     * @deprecated Remove this method once 4.0.x -> 5.0.x support has been dropped. 
-     */
-    AdminGroupData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final AdminGroupData role,
-            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException;
+    AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessUserAspectData> subjects);
 
     /**
      * Retrieves all roles in the database..
@@ -136,9 +92,8 @@ public interface LegacyRoleManagementSessionLocal {
 
     /**
      * Finds a specific role by name.
-     * @param roleName
-     *            Name of the sought role.
      * 
+     * @param roleName Name of the sought role.
      * @return The sought roll, null if not found
      */
     AdminGroupData getRole(String roleName);
@@ -149,4 +104,30 @@ public interface LegacyRoleManagementSessionLocal {
      * to do operations with the CLI (command line interface).  
      */
     void createSuperAdministrator();
+
+    /**
+     * Add the grantedAccessRules to the role when conditions are met.
+     * 
+     * @param authenticationToken only used for audit logging
+     * @param skipWhenRecursiveAccessTo ignore all roles that have recursive access to the rule
+     * @param requiredAccessRules all access rules that the role must be authorized to in order to extend the grants (if a grantedAccessRules is present here it is not required)
+     * @param grantedAccessRules the access rules to grant
+     * @param grantedAccessRecursive true if the access rules should be granted as recursive
+     */
+    void addAccessRuleDataToRolesWhenAccessIsImplied(AuthenticationToken authenticationToken, String skipWhenRecursiveAccessTo, List<String> requiredAccessRules,
+            List<String> grantedAccessRules, boolean grantedAccessRecursive);
+
+    /**
+     * Set the tokenType to X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE if it was not set before.
+     * 
+     * @param authenticationToken only used for audit logging
+     */
+    void setTokenTypeWhenNull(AuthenticationToken authenticationToken);
+
+    /**
+     * Delete ALL legacy AdminGroupData, AdminEntityData and AccessRuleData.
+     * 
+     * @param authenticationToken only used for audit logging
+     */
+    void deleteAllRoles(AuthenticationToken authenticationToken);
 }
