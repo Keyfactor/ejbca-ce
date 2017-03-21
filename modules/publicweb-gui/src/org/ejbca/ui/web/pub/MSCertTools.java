@@ -223,7 +223,6 @@ public class MSCertTools {
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 
 		boolean newEndEntityProfile = false;
-		endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);	// TODO: This for debug and really inefficient..
 		EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileName);
 
 		if (endEntityProfile == null) {
