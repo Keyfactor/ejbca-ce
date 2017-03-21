@@ -60,7 +60,6 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.roles.RoleExistsException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -393,13 +392,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info(signedByStr);
 
             if (superAdminCN != null) {
-                try {
-                    initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
-                } catch (RoleExistsException e) {
-                    log.error("Tryin to initialize Authorization module (since " + SUPERADMIN_CN_KEY
-                            + " was set), but module is already initialized.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                }
+                initAuthorizationModule(getAuthenticationToken(), dn.hashCode(), superAdminCN);
             }
             // Transform our mixed properties into CA Token properties and cryptoTokenProperties
             final Properties caTokenProperties = new Properties();
