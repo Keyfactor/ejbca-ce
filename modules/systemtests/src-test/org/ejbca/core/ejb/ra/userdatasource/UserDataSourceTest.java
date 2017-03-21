@@ -25,17 +25,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -66,7 +58,6 @@ public class UserDataSourceTest extends RoleUsingTestCase {
 
     private RoleInitializationSessionRemote roleInitializationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
-    private RoleManagementSessionRemote roleManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
     private TestX509CertificateAuthenticationToken admin;
@@ -172,19 +163,6 @@ public class UserDataSourceTest extends RoleUsingTestCase {
                 "CN="+rolename, null, rolename, Arrays.asList(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES), null);
         final String alias = "spacemonkeys";
         try {
-            {   // Remove during cleanup
-                final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
-                final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
-                AdminGroupData role = roleManagementSessionRemote.create(internalAdmin, rolename);
-                Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-                subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
-                role = roleManagementSessionRemote.addSubjectsToRole(internalAdmin, role, subjects);
-                Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-                // Not authorized to user data sources
-                accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, true));
-                role = roleManagementSessionRemote.addAccessRulesToRole(internalAdmin, role, accessRules);
-            }
-
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
             userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
             userdatasource.setDescription("Used in Junit Test, Remove this one");
@@ -226,9 +204,6 @@ public class UserDataSourceTest extends RoleUsingTestCase {
         } finally {
             userDataSourceSession.removeUserDataSource(internalAdmin, alias);
             roleInitializationSessionRemote.removeAllAuthenticationTokensRoles(adminNoAuth);
-            // Remove during cleanup
-            roleManagementSessionRemote.remove(internalAdmin, rolename);
         }
     }
-
 }

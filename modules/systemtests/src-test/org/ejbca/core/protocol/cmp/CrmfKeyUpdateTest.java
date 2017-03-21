@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.ejb.RemoveException;
@@ -69,7 +68,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -88,11 +86,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -140,8 +135,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -1494,10 +1487,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     }
 
-    
-
-    
-    
     private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();
@@ -1615,14 +1604,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null, null));
-        {   // TODO: Remove during clean up
-            AdminGroupData roledata = this.roleAccessSessionRemote.findRole(roleName);
-            // Create a user aspect that matches the authentication token, and add that to the role.
-            List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
-            this.roleManagementSession.addSubjectsToRole(ADMIN, roledata, accessUsers);
-        }
         return token;
     }
 
@@ -1655,32 +1636,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
                 }
             }
         }
-
         try {
             createUser(adminName, dn, "foo123");
-        } catch (AuthorizationDeniedException e1) {
-            throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (EndEntityProfileValidationException e1) {
-            throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (WaitingForApprovalException e1) {
-            throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (EjbcaException e1) {
-            throw new IllegalStateException("Error encountered when creating admin user", e1);
-        } catch (Exception e1) {
-            throw new IllegalStateException("Error encountered when creating admin user", e1);
+        } catch (Exception e) {
+            throw new IllegalStateException("Error encountered when creating admin user", e);
         }
-
         try {
             certificate = (X509Certificate) this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (NoSuchEndEntityException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (EjbcaException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CesecoreException e) {
+        } catch (EjbcaException | AuthorizationDeniedException | CesecoreException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         }
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
@@ -1690,9 +1653,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
             AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
-        String rolename = getRoleName();
         if (cert!=null) {
-            final Role role = roleSession.getRole(ADMIN, null, rolename);
+            final Role role = roleSession.getRole(ADMIN, null, getRoleName());
             if (role!=null) {
                 final String tokenMatchValue = CertTools.getSerialNumberAsString(cert);
                 for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(ADMIN, role.getRoleId())) {
@@ -1702,18 +1664,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
                 }
             }
         }
-        {   // TODO: Remove during clean up
-            AdminGroupData roledata = this.roleAccessSessionRemote.findRole(rolename);
-            if (roledata != null) {
-
-                List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-                accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                        AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
-
-                this.roleManagementSession.removeSubjectsFromRole(ADMIN, roledata, accessUsers);
-            }
-        }
         this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
-
 }
