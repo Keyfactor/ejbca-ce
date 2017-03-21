@@ -63,7 +63,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -114,8 +113,6 @@ public class OcspKeyRenewalTest {
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(RoleManagementSessionRemote.class);
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
 
@@ -241,12 +238,6 @@ public class OcspKeyRenewalTest {
         if (clientSSLCertificate!=null) {
             final RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
             roleInitializationSession.removeAllAuthenticationTokensRoles(new TestX509CertificateAuthenticationToken(clientSSLCertificate));
-        }
-        try {
-            roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
-        } catch (Exception e) {
-            //Ignore any failures.
-            log.debug(e.getMessage());
         }
         try {
             // find all certificates for Ocsp signing user and remove them
