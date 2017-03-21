@@ -28,7 +28,6 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 
 /**
  * SSB helping with setup from tests of upgrade functionality.
@@ -56,14 +55,14 @@ public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
             if (accessUserAspectDatas!=null) {
                 roleManagementSession.addSubjectsToRole(alwaysAllowToken, adminGroupData, accessUserAspectDatas);
             }
-        } catch (RoleNotFoundException | RoleExistsException e) {
+        } catch (RoleExistsException e) {
             throw new EJBException(e);
         }
     }
 
     @Override
     public void deleteRole(final String roleName) {
-        roleManagementSession.deleteIfPresentNoAuth(alwaysAllowToken, roleName);
+        roleManagementSession.deleteRole(alwaysAllowToken, roleName);
     }
 
     @Override
