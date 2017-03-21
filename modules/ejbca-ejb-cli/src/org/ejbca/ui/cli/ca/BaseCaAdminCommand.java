@@ -35,7 +35,6 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAConstants;
@@ -48,7 +47,6 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.roles.Role;
-import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -193,7 +191,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
     }
 
     protected void initAuthorizationModule(AuthenticationToken authenticationToken, int caid, String superAdminCN)
-            throws AccessRuleNotFoundException, RoleExistsException, AuthorizationDeniedException {
+            throws AuthorizationDeniedException {
         if (superAdminCN == null) {
             log.info("Not initializing authorization module.");
         } else {

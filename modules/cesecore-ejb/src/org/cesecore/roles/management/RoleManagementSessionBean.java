@@ -13,6 +13,7 @@
 package org.cesecore.roles.management;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,13 +37,8 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleExistsException;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.AccessUserAspectExistsException;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectNotFoundException;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AdminGroupData;
@@ -63,12 +59,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
 
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
 
-    @EJB
-    private AccessUserAspectManagerSessionLocal accessUserAspectSession;
-    @EJB
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
-    @EJB
-    private RoleAccessSessionLocal roleAccessSession;
+    @EJB private RoleAccessSessionLocal roleAccessSession;
 
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
@@ -101,8 +92,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     public void deleteIfPresentNoAuth(AuthenticationToken authenticationToken, String roleName) {
         final AdminGroupData role = roleAccessSession.findRole(roleName);
         if (role != null) {
-            accessUserAspectSession.remove(role.getAccessUsers().values());
-            accessRuleManagementSession.remove(role.getAccessRules().values());
+            for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
+                entityManager.remove(userAspect);
+            }
+            removeAccessRuleDatas(role.getAccessRules().values());
             entityManager.remove(role);
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.roleremoved", roleName);
             securityEventsLogger.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
@@ -124,14 +117,14 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         Collection<AccessRuleData> rulesMerged = new ArrayList<AccessRuleData>();
         for (AccessRuleData accessRule : accessRules) {
             // If this rule isn't persisted, persist it.
-            if (accessRuleManagementSession.find(accessRule.getPrimaryKey()) == null) {
-                accessRuleManagementSession.persistRule(accessRule);
+            if (entityManager.find(AccessRuleData.class, accessRule.getPrimaryKey()) == null) {
+                entityManager.persist(accessRule);
                 rulesAdded.add(accessRule);
             }
             // If the rule exists, then merely update its values.
             if (rules.containsKey(accessRule.getPrimaryKey())) {
                 rules.remove(accessRule.getPrimaryKey());
-                accessRule = accessRuleManagementSession.setState(accessRule, accessRule.getInternalState(), accessRule.getRecursive());
+                accessRule = setAccessRuleDataState(accessRule, accessRule.getInternalState(), accessRule.getRecursive());
                 rulesMerged.add(accessRule);
             }
             rules.put(accessRule.getPrimaryKey(), accessRule);
@@ -155,12 +148,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         Map<Integer, AccessRuleData> resultAccessRules = result.getAccessRules();
         for (AccessRuleData accessRule : accessRules) {
             if (resultAccessRules.containsKey(accessRule.getPrimaryKey())) {
-                // Due to optimistic locking, update accessRule
-                accessRule = accessRuleManagementSession.find(accessRule.getPrimaryKey());
-                resultAccessRules.remove(accessRule.getPrimaryKey());
-                accessRuleManagementSession.remove(accessRule);
-            } else {
-                throw new AccessRuleNotFoundException("Access rule " + accessRule + " does not exist in role " + role + ", could not remove.");
+                removeAccessRuleDatas(Arrays.asList(accessRule));
             }
         }
         result.setAccessRules(resultAccessRules);
@@ -170,7 +158,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
     }
 
     @Override
-    public AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, final AdminGroupData role, Collection<AccessUserAspectData> users)
+    public AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, final AdminGroupData role, Collection<AccessUserAspectData> accessUserAspectDatas)
             throws RoleNotFoundException {
         if (roleAccessSession.findRole(role.getPrimaryKey()) == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
@@ -179,27 +167,23 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         Map<Integer, AccessUserAspectData> existingUsers = role.getAccessUsers();
         final StringBuilder subjectsAdded = new StringBuilder();
         final StringBuilder subjectsChanged = new StringBuilder();
-        for (AccessUserAspectData userAspect : users) {
-            if(accessUserAspectSession.find(userAspect.getLegacyPrimaryKey()) != null) {
+        for (AccessUserAspectData accessUserAspectData : accessUserAspectDatas) {
+            AccessUserAspectData legacyVersion = getAccessUserAspectData(accessUserAspectData.getLegacyPrimaryKey());
+            if (legacyVersion != null) {
                 //If an aspect exists using the old primary key, remove it so that we can replace it with the new one.
-                accessUserAspectSession.remove(accessUserAspectSession.find(userAspect.getLegacyPrimaryKey()));
+                entityManager.remove(legacyVersion);
             }
-            if (accessUserAspectSession.find(userAspect.getPrimaryKey()) == null) {
+            if (getAccessUserAspectData(accessUserAspectData.getPrimaryKey()) == null) {
                 // if userAspect hasn't been persisted, do so.
-                try {
-                    accessUserAspectSession.persistAccessUserAspect(userAspect);
-                } catch (AccessUserAspectExistsException e) {
-                    throw new IllegalStateException("Tried to persist user aspect with primary key " + userAspect.getPrimaryKey()
-                            + " which was apparently found in the database in spite of a previous check.");
-                }
+                entityManager.persist(accessUserAspectData);
             }
-            if (existingUsers.containsKey(userAspect.getPrimaryKey())) {
-                existingUsers.remove(userAspect.getPrimaryKey());
-                subjectsChanged.append("[" + userAspect.toString() + "]");
+            if (existingUsers.containsKey(accessUserAspectData.getPrimaryKey())) {
+                existingUsers.remove(accessUserAspectData.getPrimaryKey());
+                subjectsChanged.append("[" + accessUserAspectData.toString() + "]");
             } else {
-                subjectsAdded.append("[" + userAspect.toString() + "]");
+                subjectsAdded.append("[" + accessUserAspectData.toString() + "]");
             }
-            existingUsers.put(userAspect.getPrimaryKey(), userAspect);
+            existingUsers.put(accessUserAspectData.getPrimaryKey(), accessUserAspectData);
         }
         role.setAccessUsers(existingUsers);
         AdminGroupData result = entityManager.merge(role);
@@ -219,36 +203,12 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
         }
         return result;
     }
-
-    @Override
-    public AdminGroupData removeSubjectsFromRole(AuthenticationToken authenticationToken, final AdminGroupData role, Collection<AccessUserAspectData> subjects)
-            throws RoleNotFoundException {
-        AdminGroupData result = roleAccessSession.findRole(role.getPrimaryKey());
-        if (result == null) {
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
-            throw new RoleNotFoundException(msg);
-        }
-        StringBuilder subjectStrings = new StringBuilder();
-        Map<Integer, AccessUserAspectData> accessUsersFromResult = result.getAccessUsers();
-        for (AccessUserAspectData subject : subjects) {
-            if (accessUsersFromResult.containsKey(subject.getPrimaryKey())) {
-                subject = accessUserAspectSession.find(subject.getPrimaryKey());
-                accessUsersFromResult.remove(subject.getPrimaryKey());
-                accessUserAspectSession.remove(subject);
-                subjectStrings.append("[" + subject.toString() + "]");
-            } else {
-                throw new AccessUserAspectNotFoundException("Access user aspect " + subject + " not found in role " + role);
-            }
-        }
-        result.setAccessUsers(accessUsersFromResult);
-        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminremoved", subjectStrings, role.getRoleName());
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", msg);
-        securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                authenticationToken.toString(), null, null, null, details);
-
-        return result;
+    
+    /** Finds an AccessUserAspectData by its primary key. A primary key can be generated statically from AccessUserAspectData. */
+    private AccessUserAspectData getAccessUserAspectData(final int primaryKey) {
+        return entityManager.find(AccessUserAspectData.class, primaryKey);
     }
+
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -354,25 +314,18 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
                 if(!oldRule.equals(rule)) {
                     changedRules.add(oldRule);
                 }
-                AccessRuleData newRule = accessRuleManagementSession.setState(rule, rule.getInternalState(), rule.getRecursive());
+                AccessRuleData newRule = setAccessRuleDataState(rule, rule.getInternalState(), rule.getRecursive());
                 rulesFromResult.remove(ruleKey);
                 rulesToResult.put(newRule.getPrimaryKey(), newRule);         
             } else {
-                try {
-                    newRules.add(accessRuleManagementSession.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(),
-                            rule.getRecursive()));
-                } catch (AccessRuleExistsException e) {
-                    throw new Error("Access rule exists, but wasn't found in persistence in previous call.", e);
-                }
                 rulesToResult.put(rule.getPrimaryKey(), rule);
             }
-
         }
         logAccessRulesAdded(authenticationToken, role.getRoleName(), newRules);
         logAccessRulesChanged(authenticationToken, role.getRoleName(), changedRules);
 
         //And for whatever remains:
-        accessRuleManagementSession.remove(rulesFromResult.values());
+        removeAccessRuleDatas(rulesFromResult.values());
         result.setAccessRules(rulesToResult);
         result = entityManager.merge(result);
         logAccessRulesRemoved(authenticationToken, role.getRoleName(), rulesFromResult.values());
@@ -385,12 +338,42 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal {
             for(AccessRuleData changedRule : changedRules) {
                 changedRulesMsg.append("[" + changedRule.toString() + "]");
             }
-       
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessruleschanged", rolename, changedRulesMsg);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         }
+    }
+
+    private void removeAccessRuleDatas(Collection<AccessRuleData> accessRules) {
+        for (final AccessRuleData accessRule : accessRules) {
+            entityManager.remove(getAccessRuleDataManaged(accessRule));
+        }
+    }
+
+    private AccessRuleData getAccessRuleDataManaged(final AccessRuleData accessRuleData) {
+        if (entityManager.contains(accessRuleData)) {
+            // If this was already managed, assume that rowVersion is proper
+            return accessRuleData;
+        }
+        return entityManager.find(AccessRuleData.class, accessRuleData.getPrimaryKey());
+    }
+
+    private AccessRuleData setAccessRuleDataState(final AccessRuleData rule, final AccessRuleState state, boolean isRecursive) {
+        AccessRuleData result = getAccessRuleDataManaged(rule);
+        result.setInternalState(state);
+        result.setRecursive(isRecursive);
+        return result;
+    }
+
+    private AccessRuleData createAccessRuleData(final String accessRuleName, final String roleName, final AccessRuleState state, boolean isRecursive) {
+        AccessRuleData result = null;
+        int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessRuleName);
+        if (entityManager.find(AccessRuleData.class, primaryKey) == null) {
+            result = new AccessRuleData(primaryKey, accessRuleName, state, isRecursive);
+            entityManager.persist(result);
+        }
+        return result;
     }
 }

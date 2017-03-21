@@ -26,7 +26,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -54,7 +53,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaAuditorSessionBeanTest"));
     
     @Before
-    public void setup() throws RoleExistsException, RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
+    public void setup() throws RoleExistsException, RoleNotFoundException {
         super.setUpAuthTokenAndRole(null, ROLE_NAME, Arrays.asList(AuditLogRules.VIEW.resource()), null);
     }
 

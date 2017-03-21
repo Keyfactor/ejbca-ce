@@ -110,20 +110,6 @@ public interface RoleManagementSessionLocal {
             throws RoleNotFoundException;
 
     /**
-     * Removes the role from the list of subjects.
-     * 
-     * @param authenticationToken only used for audit logging
-     * @param subjects A collection of subjects.
-     * @param role The role to remove.
-     * @throws RoleNotFoundException if the role does not exist
-     * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     * @return the merged {@link AdminGroupData} with the new subjects
-     */
-    AdminGroupData removeSubjectsFromRole(AuthenticationToken authenticationToken, AdminGroupData role, Collection<AccessUserAspectData> subjects)
-            throws RoleNotFoundException;
-    
-    
-    /**
      * Retrieves a list of the roles which the given subject is authorized to edit, by checking if that subject has rights to the CA's behind all
      * access user aspects in that role, and all CA-based rules
      * 
