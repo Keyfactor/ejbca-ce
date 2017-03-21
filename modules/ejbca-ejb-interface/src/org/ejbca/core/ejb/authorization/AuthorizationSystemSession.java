@@ -18,7 +18,7 @@ import org.cesecore.authorization.access.AccessSet;
 
 /**
  * Interface for high level authorization system tasks.
- * 
+ *
  * @version $Id$
  */
 public interface AuthorizationSystemSession {
@@ -28,8 +28,6 @@ public interface AuthorizationSystemSession {
     /**
      * Returns all rules that the given authenticationToken is allowed to access. Includes *SOME wildcard rules
      * @throws AuthenticationFailedException On authentication errors, such as an invalid password for a CLI token
-     * @deprecated since EJBCA 6.8.0 and only provided for compatibility with older RA peers
      */
-    @Deprecated
     AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
