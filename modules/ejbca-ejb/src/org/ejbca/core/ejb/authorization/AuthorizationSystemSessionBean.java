@@ -67,7 +67,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * This session bean handles high level authorization system tasks.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AuthorizationSystemSessionRemote")
@@ -245,7 +245,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                     AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_REMOVE_RIGHTS);
         }
         ret.put("USERDATASOURCEACCESSRULES", accessRulesUdsAccess);
-        // Insert plugin rules 
+        // Insert plugin rules
         for (final AccessRulePlugin accessRulePlugin : ServiceLoader.load(AccessRulePlugin.class)) {
             Map<String,String> accessRulesInCategory = ret.get(accessRulePlugin.getCategory());
             if (accessRulesInCategory==null) {
@@ -310,7 +310,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     }
 
     @Override
-    @Deprecated
     public AccessSet getAccessSetForAuthToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
         final Set<String> allResources = new HashSet<>(getAllResources(false).keySet());
@@ -318,6 +317,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
         allResources.add(StandardRules.CAADD.resource());
         allResources.add(StandardRules.CAREMOVE.resource());
-        return AccessSet.fromAccessRules(accessRules, allResources);
+        return new AccessSet(accessRules, allResources);
     }
 }
