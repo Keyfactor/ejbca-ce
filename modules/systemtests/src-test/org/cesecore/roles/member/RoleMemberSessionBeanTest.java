@@ -158,7 +158,7 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         }
     }
     
-    //Authorization tests. Expects AuthorizationDeniedException to be thrown will invalid AuthenticationToken
+    //Authorization tests
     @Test(expected = AuthorizationDeniedException.class)
     public void testCreateOrEditUnauthorized() throws AuthorizationDeniedException {
         roleMemberSessionRemote.persist(unauthorizedAuthenticationToken, this.roleMember);
