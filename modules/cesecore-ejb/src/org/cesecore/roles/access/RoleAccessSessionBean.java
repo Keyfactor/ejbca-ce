@@ -13,24 +13,17 @@
 package org.cesecore.roles.access;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
-import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.util.QueryResultWrapper;
 
@@ -39,13 +32,10 @@ import org.cesecore.util.QueryResultWrapper;
  *
  */
 @Deprecated
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleAccessSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccessSessionRemote {
+public class RoleAccessSessionBean implements RoleAccessSessionLocal {
 
-    @EJB
-    private CaSessionLocal caSession;
-    
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
     
@@ -61,54 +51,14 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AdminGroupData findRole(final String roleName) {
-        final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.roleName=:roleName");
+        final TypedQuery<AdminGroupData> query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.roleName=:roleName", AdminGroupData.class);
         query.setParameter("roleName", roleName);
-        return (AdminGroupData) QueryResultWrapper.getSingleResult(query);
+        return QueryResultWrapper.getSingleResult(query);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AdminGroupData findRole(final Integer primaryKey) {
-        final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE a.primaryKey=:primaryKey");
-        query.setParameter("primaryKey", primaryKey);
-
-        return (AdminGroupData) QueryResultWrapper.getSingleResult(query);
-    }
-    
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final List<AdminGroupData> roleDatas = getAllRoles();
-        final List<String> roleNames = new ArrayList<String>();
-        for (final AdminGroupData roleData : roleDatas) {
-            for (final AccessUserAspectData a : roleData.getAccessUsers().values()) {
-                if (authenticationToken.matches(a)) {
-                    roleNames.add(roleData.getRoleName());
-                }
-            }
-        }
-        return roleNames;
-    }
-
-    @Override
-    public List<AdminGroupData> getAllAuthorizedRoles(AuthenticationToken authenticationToken) {
-        List<AdminGroupData> roles = new ArrayList<>();
-        roleLoop: for(AdminGroupData role : getAllRoles()) {
-            // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
-            for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-                if (!caSession.authorizedToCANoLogging(authenticationToken, accessUserAspect.getCaId())) {
-                    continue roleLoop;
-                }
-            }
-            // Secondly, walk through all CAs and make sure that there are no differences. 
-            for (Integer caId : caSession.getAllCaIds()) {
-                if(!caSession.authorizedToCANoLogging(authenticationToken, caId) && role.hasAccessToRule(StandardRules.CAACCESS.resource() + caId)) {
-                    continue roleLoop;
-                }
-            }
-            roles.add(role);
-        }
-        Collections.sort(roles);
-        return roles;
+        return entityManager.find(AdminGroupData.class, primaryKey);
     }
 }

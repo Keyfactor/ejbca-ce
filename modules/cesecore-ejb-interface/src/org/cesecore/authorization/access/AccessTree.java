@@ -26,6 +26,7 @@ import org.cesecore.roles.AdminGroupData;
  * @version $Id$
  * 
  */
+@Deprecated
 public class AccessTree {
 
     private AccessTreeNode rootNode = null;

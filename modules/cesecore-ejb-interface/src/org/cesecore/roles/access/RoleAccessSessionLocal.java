@@ -16,25 +16,40 @@ import java.util.List;
 
 import javax.ejb.Local;
 
-import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.AdminGroupData;
 
 /**
  * Local interface for RoleAccess
  * 
  * @version $Id$
- *
  */
 @Deprecated
 @Local
-public interface RoleAccessSessionLocal extends RoleAccessSession {
+public interface RoleAccessSessionLocal {
 
     /**
-     * Get a list of role that match the given authentication token, i.e. roles that the authentication token is part of
+     * Retrieves all roles in the database..
      * 
-     * @param authenticationToken a token to match with
-     * @return a list of role that match the given authentication token, can be an empty list but not null
-     * @throws AuthenticationFailedException if any errors were found with the authentication token
+     * @return all the roles in the database.
      */
-    List<String> getRolesMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+    List<AdminGroupData> getAllRoles();
+    
+    /**
+     * Finds a RoleData object by its primary key.
+     * 
+     * @param primaryKey
+     *            The primary key.
+     * @return the found entity instance or null if the entity does not exist.
+     */
+    AdminGroupData findRole(final Integer primaryKey);
+
+    /**
+     * Finds a specific role by name.
+     * @param roleName
+     *            Name of the sought role.
+     * 
+     * @return The sought roll, null if not found
+     */
+    AdminGroupData findRole(final String roleName);
 }
