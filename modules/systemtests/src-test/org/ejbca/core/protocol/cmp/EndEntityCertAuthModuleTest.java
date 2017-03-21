@@ -29,7 +29,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,13 +58,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -83,12 +78,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSession;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
@@ -98,7 +89,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -150,8 +140,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private static final RoleManagementSession roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private static final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -286,100 +274,45 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
         // Add the first RA role
-        final HashMap<String,Boolean> accessRules1 = new HashMap<>();
-        accessRules1.put(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW);
-        accessRules1.put(StandardRules.CREATECERT.resource(), Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_CREATEENDENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_EDITENDENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW);
-        accessRules1.put(StandardRules.CAACCESS.resource() + ca1.getCAId(), Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id, Role.STATE_ALLOW);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.APPROVE_END_ENTITY, Role.STATE_DENY);
-        accessRules1.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
-        final Role role1 = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLE, accessRules1));
+        final Role role1 = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLE, Arrays.asList(
+                AccessRulesConstants.ROLE_ADMINISTRATOR,
+                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                StandardRules.CREATECERT.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY,
+                AccessRulesConstants.REGULAR_CREATEENDENTITY,
+                AccessRulesConstants.REGULAR_EDITENDENTITY,
+                AccessRulesConstants.REGULAR_DELETEENDENTITY,
+                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY,
+                StandardRules.CAACCESS.resource() + ca1.getCAId(),
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id
+                ), Arrays.asList(
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.APPROVE_END_ENTITY,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.KEYRECOVERY_RIGHTS
+                        )));
         // Add the second RA role
         roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA1_ADMIN, role1.getRoleId(), null, null));
-        final HashMap<String,Boolean> accessRules2 = new HashMap<>();
-        accessRules2.put(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW);
-        accessRules2.put(StandardRules.CREATECERT.resource(), Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_CREATEENDENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_EDITENDENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_DELETEENDENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_REVOKEENDENTITY, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW);
-        accessRules2.put(StandardRules.CAACCESS.resource() + ca2.getCAId(), Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id, Role.STATE_ALLOW);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY, Role.STATE_DENY);
-        accessRules2.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS, Role.STATE_DENY);
-        final Role role2 = roleSession.persistRole(ADMIN, new Role(null, RA2_ADMIN_ROLE, accessRules2));
+        final Role role2 = roleSession.persistRole(ADMIN, new Role(null, RA2_ADMIN_ROLE, Arrays.asList(
+                AccessRulesConstants.ROLE_ADMINISTRATOR,
+                AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                StandardRules.CREATECERT.resource(),
+                AccessRulesConstants.REGULAR_VIEWENDENTITY,
+                AccessRulesConstants.REGULAR_CREATEENDENTITY,
+                AccessRulesConstants.REGULAR_EDITENDENTITY,
+                AccessRulesConstants.REGULAR_DELETEENDENTITY,
+                AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+                AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY,
+                StandardRules.CAACCESS.resource() + ca2.getCAId(),
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id
+                ), Arrays.asList(
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.APPROVE_END_ENTITY,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.KEYRECOVERY_RIGHTS
+                        )));
         roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA2_ADMIN, role2.getRoleId(), null, null));
-
-        // TODO: Remove the below code during clean up
-        // Create AdminRoles for RA1 and RA2
-        AdminGroupData ra1role = roleManagementSession.create(ADMIN, RA1_ADMIN_ROLE);
-        AdminGroupData ra2role = roleManagementSession.create(ADMIN, RA2_ADMIN_ROLE);
-        
-        // Add Admins to roles RA1 and RA2
-        List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(RA1_ADMIN_ROLE, adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, RA1_ADMIN));
-        roleManagementSession.addSubjectsToRole(ADMIN, ra1role, accessUsers);
-
-        accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(RA2_ADMIN_ROLE, adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASEINS, RA2_ADMIN));
-        roleManagementSession.addSubjectsToRole(ADMIN, ra2role, accessUsers);
-
-        // Add access rules to roles
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();       
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));            
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_REVOKEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, StandardRules.CAACCESS.resource() + ca1.getCAId(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.EDIT_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.CREATE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.DELETE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.REVOKE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA1_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep1Id + AccessRulesConstants.VIEW_END_ENTITY_HISTORY, AccessRuleState.RULE_ACCEPT, false));    
-        roleManagementSession.addAccessRulesToRole(ADMIN, ra1role, accessRules);            
-
-        accessRules = new ArrayList<AccessRuleData>();       
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));            
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_REVOKEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, StandardRules.CAACCESS.resource() + ca2.getCAId(), AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.VIEW_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.EDIT_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.CREATE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.DELETE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.REVOKE_END_ENTITY, AccessRuleState.RULE_ACCEPT, false));
-        accessRules.add(new AccessRuleData(RA2_ADMIN_ROLE, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eep2Id + AccessRulesConstants.VIEW_END_ENTITY_HISTORY, AccessRuleState.RULE_ACCEPT, false));    
-        roleManagementSession.addAccessRulesToRole(ADMIN, ra2role, accessRules);            
     }
     
     @After
@@ -394,7 +327,6 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 if (role!=null) {
                     roleSession.deleteRoleIdempotent(ADMIN, role.getRoleId());
                 }
-                roleManagementSession.remove(ADMIN, roleAccessSession.findRole(roleName));
                 log.debug("Removed role: " + roleName);
             } catch (Exception e) {
                 log.debug(e.getMessage());

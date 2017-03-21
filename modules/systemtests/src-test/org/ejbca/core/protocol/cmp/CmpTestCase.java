@@ -705,12 +705,12 @@ public abstract class CmpTestCase extends CaTestCase {
         //}
         if (signed) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull("Protection algorithm was null when expecting a signed response, this was propably an unprotected error message: "+header.getFreeText(), algId);
+            assertNotNull("Protection algorithm was null when expecting a signed response, this was probably an unprotected error message: "+header.getFreeText(), algId);
             assertEquals(expectedSignAlg, algId.getAlgorithm().getId());
         }
         if (pbe) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was propably an unprotected error message: "+header.getFreeText(), algId);
+            assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: "+header.getFreeText(), algId);
             assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
                     .getAlgorithm().getId()); // 1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
         }
