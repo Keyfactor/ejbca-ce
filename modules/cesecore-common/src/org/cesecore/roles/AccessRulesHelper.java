@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 
 /**
  * Helper methods for interactions with maps of access rules and resources.
- * 
+ *
  * @version $Id$
  */
 public abstract class AccessRulesHelper {
@@ -65,7 +65,6 @@ public abstract class AccessRulesHelper {
 
     /** Normalize access rules (make sure rules always end with a '/') */
     public static String normalizeResource(final String resource) {
-        // For each rule, check if there are higher level rules (e.g. shorter path) with the same access state
         if (!resource.endsWith("/")) {
             return resource + "/";
         }
@@ -127,11 +126,11 @@ public abstract class AccessRulesHelper {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
         /*
          * Simple example of algorithm:
-         * 
+         *
          * /a/   allow
          * /a/b/ deny    (remove this deny, since it is granted by other role)
          * /b/   deny    (keep since it is not granted by other role)
-         * 
+         *
          * /a/   allow
          * /a/c/ deny    (remove this deny, since it is granted by other role)
          * /c/d  deny    (keep since it is not granted by other role)
@@ -161,12 +160,12 @@ public abstract class AccessRulesHelper {
         final HashMap<String, Boolean> accessRules = new HashMap<>();
         /*
          * Simple example of algorithm:
-         * 
+         *
          * /a/   allow
          * /a/b/ deny
          * /b/   deny
          * /c/d/ allow
-         * 
+         *
          * /a/   allow
          * /a/c/ deny
          * /c/d/ deny

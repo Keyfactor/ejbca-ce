@@ -61,10 +61,16 @@ public interface RaMasterApi {
      */
     int getApiVersion();
 
-    /** Returns an AccessSet containing the access rules that are allowed for the given authentication token. */
+    /**
+     * Returns an AccessSet containing the access rules that are allowed for the given authentication token.
+     * Note that AccessSets do not support deny rules.
+     */
     AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-    
-    /** Gets multiple access sets at once. Returns them in the same order as in the parameter */
+
+    /**
+     * Gets multiple access sets at once. Returns them in the same order as in the parameter.
+     * Note that AccessSets do not support deny rules.
+     */
     List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
@@ -325,7 +331,7 @@ public interface RaMasterApi {
     /**
      * Gets approval profile for specified action.
      * @param authenticationToken auth. token to be checked if it has access to the specified caInfo and certificateProfile
-     * @param action. Check CAInfo.AVAILABLE_APPROVALSETTINGS for valid values.
+     * @param action Check CAInfo.AVAILABLE_APPROVALSETTINGS for valid values.
      * @param caId id of specified CA
      * @param certificateProfileId id of specified certificate profile
      * @return approval profile if it is required for specified caInfo and certificateProfile, null if it is not

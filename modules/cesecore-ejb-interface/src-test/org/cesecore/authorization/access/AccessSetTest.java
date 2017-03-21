@@ -23,16 +23,16 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
- * 
+ *
  * @version $Id$
  */
 public final class AccessSetTest {
-    
+
     private static final Logger log = Logger.getLogger(AccessSetTest.class);
-    
+
     private final AccessSet as = makeAccessSet("/test", "/one/two", "/three", "/three/four", "/three/four/five",
             "/six", "/six/" + AccessSet.WILDCARD_RECURSIVE, "/seven/eight", "/seven/eight/" + AccessSet.WILDCARD_RECURSIVE,
-            "/nine/" + AccessSet.WILDCARD_ALL, "/ten/eleven/" + AccessSet.WILDCARD_ALL + "/subresource",
+            "/nine/", "/ten/eleven/subresource", // currently not used by the test
             "/twelve/" + AccessSet.WILDCARD_SOME, "/twelve/-123456",
             "/thirteen/" + AccessSet.WILDCARD_SOME + "/subres", "/thirteen/98765/subres");
 
@@ -43,7 +43,7 @@ public final class AccessSetTest {
         assertTrue(as.isAuthorized("/three"));
         log.trace("<testSimpleAllowed");
     }
-    
+
     @Test
     public void testSimpleDenied() {
         log.trace(">testSimpleDenied");
@@ -51,7 +51,7 @@ public final class AccessSetTest {
         assertFalse(as.isAuthorized("/nonexistent"));
         log.trace("<testSimpleDenied");
     }
-    
+
     @Test
     public void testNested() {
         log.trace(">testNested");
@@ -63,7 +63,7 @@ public final class AccessSetTest {
         assertFalse(as.isAuthorized("/three/four/nine"));
         log.trace("<testNested");
     }
-    
+
     @Test
     public void testRecursive() {
         log.trace(">testRecursive");
@@ -77,7 +77,7 @@ public final class AccessSetTest {
         assertTrue(as.isAuthorized("/seven/eight/test/bla/bla/bla"));
         log.trace("<testRecursive");
     }
-    
+
     @Test
     public void testSlashRecurisve() {
         log.trace(">testSlashRecurisve");
@@ -88,21 +88,7 @@ public final class AccessSetTest {
         assertTrue(sr.isAuthorized("/one/-1234/three"));
         log.trace("<testSlashRecurisve");
     }
-    
-    @Test
-    public void testAllWilcard() {
-        log.trace(">testAllWilcard");
-        assertTrue(as.isAuthorized("/nine/12345"));
-        assertTrue(as.isAuthorized("/nine/-12345678"));
-        assertTrue(as.isAuthorized("/ten/eleven/12345/subresource"));
-        assertTrue(as.isAuthorized("/ten/eleven/-12345678/subresource"));
-        assertFalse(as.isAuthorized("/nine"));
-        assertFalse(as.isAuthorized("/nine/notanumber"));
-        assertFalse(as.isAuthorized("/nine/notanumber/xyz"));
-        assertFalse(as.isAuthorized("/nine/45678/notgranted"));
-        log.trace("<testAllWilcard");
-    }
-    
+
     @Test
     public void testSomeWilcard() {
         log.trace(">testSomeWilcard");
@@ -112,7 +98,7 @@ public final class AccessSetTest {
         assertFalse(as.isAuthorized("/thirteen/22222/subres"));
         log.trace("<testAllWilcard");
     }
-    
+
     @Test
     public void testBadResources() {
         log.trace(">testBadResources");
@@ -131,7 +117,7 @@ public final class AccessSetTest {
         }
         log.trace("<testBadResources");
     }
-    
+
     private AccessSet makeAccessSet(final String... resources) {
         final Collection<String> col = new ArrayList<>();
         for (final String resource : resources) {
@@ -139,5 +125,5 @@ public final class AccessSetTest {
         }
         return new AccessSet(col);
     }
-    
+
 }

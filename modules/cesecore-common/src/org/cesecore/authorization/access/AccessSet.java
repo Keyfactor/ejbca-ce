@@ -29,14 +29,14 @@ import org.cesecore.roles.AccessRulesHelper;
 
 /**
  * Represents all access rules that a given AuthenticationToken is allowed to access.
- * 
+ *
  * @version $Id$
  */
 public final class AccessSet implements Serializable {
-    
+
     private static final Logger log = Logger.getLogger(AccessSet.class);
     private static final long serialVersionUID = -6522714939328731306L;
-    
+
     /**
      * Wildcard meaning: Access is granted to some items. Used only in calls to isAuthorized to query
      * whether we have access to any of the items (and in AccessSet objects for faster access control checks).
@@ -44,37 +44,49 @@ public final class AccessSet implements Serializable {
      * Example: "/cryptotoken/use/*SOME", which would check if we have access to use any cryptotoken.
      */
     public static final String WILDCARD_SOME = "*SOME";
-    
-    /**
-     * Wildcard meaning: Access is granted to all items (which must be numeric ids, currently).
-     * Used in access rules only, never in calls to isAuthorized. EJBCA does not expose this feature (yet), but it's
-     * tested here in CESeCore in AccessSetTest. Consider it an experimental feature.
-     * <p>
-     * Example: "/ca/*ALL", which would grant access to all CAs.
-     */
-    public static final String WILDCARD_ALL = "*ALL";
-    
+
     /**
      * Wildcard meaning: Access is granted recursively to all subresources (but not the resource itself, for performance reasons).
      * Used internally only, never in calls to isAuthorized (AccessSets don't have anything like the requireRecursive parameter).
      * <p>
      * Example: "/*RECURSIVE" together with "/", which would grant access to everything
+     * @deprecated Since 6.8.0
      */
-    public static final String WILDCARD_RECURSIVE = "*RECURSIVE";
-    
+    @Deprecated
+    static final String WILDCARD_RECURSIVE = "*RECURSIVE";
+
     private static final Pattern idInRulename = Pattern.compile("^/(.+)/(-?[0-9]+)(/|$)");
-    private static final String WILDCARD_REPLACEMENT = "/$1/" + WILDCARD_ALL + "$3";
-    
-    private final Collection<String> set;
-    
-    /** No-args constructor is used for deserialization only */
+
+    /** Legacy storage of access rules in the AccessSet, used in EJBCA 6.6.0 and 6.7.0 */
+    @Deprecated
+    private Collection<String> set;
+    /** New way of storing access rules, in both the AccessSet and in the database. Will be null if only the legacy set is available */
+    private HashMap<String,Boolean> accessMap;
+
+    /** Creates an AccessSet that contains no access rules. Used for deserialization also */
     public AccessSet() {
         this.set = new HashSet<>();
+        this.accessMap = null;
     }
-    
-    /** Creates an AccessSet with access to the given access rules collection as built from AccessSet. */
-    public AccessSet(final Collection<String> set) {
-        this.set = new HashSet<>(set);
+
+    /**
+     * Creates an AccessSet with old an style 6.6.0 access set, which can't contain deny rules and works using the old access rule system.
+     * @deprecated Since 6.8.0
+     */
+    @Deprecated
+    public AccessSet(final Collection<String> legacySet) {
+        this.set = new HashSet<>(legacySet);
+        this.accessMap = null;
+    }
+
+    /**
+     * Creates an AccessSet from the given access rules. The list of all available resources must be provided in order to create the legacy access set.
+     * @param accessRules Access rule map
+     * @param allResources List of all possible access rules.
+     */
+    public AccessSet(final HashMap<String, Boolean> accessRules, final Set<String> allResources) {
+        this.accessMap = accessRules;
+        initializeSOMERulesAndBuildLegacySet(allResources);
     }
 
     /** Creates an access set merged from two access sets. */
@@ -82,9 +94,28 @@ public final class AccessSet implements Serializable {
         set = new HashSet<>(a.set.size() + b.set.size());
         set.addAll(a.set);
         set.addAll(b.set);
+        if (a.accessMap != null && b.accessMap != null) {
+            accessMap = AccessRulesHelper.getAccessRulesUnion(a.accessMap, b.accessMap);
+        } else {
+            accessMap = null;
+        }
     }
 
     public boolean isAuthorized(final String... resources) {
+        if (accessMap != null) {
+            // Use the new system
+            for (final String resource : resources) {
+                if (!AccessRulesHelper.hasAccessToResource(accessMap, resource)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return isAuthorizedLegacy(resources);
+        }
+    }
+
+    private boolean isAuthorizedLegacy(final String... resources) {
         // Note that "*SOME" rules are added when the rules for the AccessSet are built, and don't need to be handled here
         NEXT_RESOURCE: for (final String resource : resources) {
             if (resource.charAt(0) != '/') {
@@ -92,12 +123,12 @@ public final class AccessSet implements Serializable {
             } else if (resource.length() != 1 && resource.charAt(resource.length() - 1) == '/') {
                 throw new IllegalArgumentException("Resource should not end with /");
             }
-            
+
             // Check for exact rule
             if (set.contains(resource)) {
                 continue NEXT_RESOURCE; // OK. Check next resource
             }
-            
+
             // Check for recursive rules
             int depth = 0;
             String parentResource = resource;
@@ -118,41 +149,53 @@ public final class AccessSet implements Serializable {
                 // Recursive rules are always accept rules, so it's safe to ignore some of them and continue
                 log.debug("Resource had more than 100 components, only the first 100 were checked for recursive accept access: " + resource);
             }
-            
-            // If it contains an id, check for *ALL rules also
-            final Matcher matcher = idInRulename.matcher(resource);
-            if (matcher.find()) {
-                final String withWildcardAll = matcher.replaceFirst(WILDCARD_REPLACEMENT);
-                if (!isAuthorized(withWildcardAll)) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("No access rule for " + resource + ". Denying access. Number of allowed resources=" + set.size());
-                    }
-                    return false;
-                }
-            } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("No access rule for " + resource + ". Denying access. Number of allowed resources=" + set.size());
-                }
-                return false;
+
+            if (log.isTraceEnabled()) {
+                log.trace("No access rule for " + resource + ". Denying access. Number of allowed resources=" + set.size());
             }
+            return false;
         }
         return true; // all resources match
     }
-    
+
     /** Use in tests only */
     public void dumpRules() {
-        final List<String> resources = new ArrayList<>(set);
-        Collections.sort(resources);
-        for (final String resource : resources) {
-            log.debug("Resource: " + resource);
+        if (accessMap != null) {
+            final List<String> resources = new ArrayList<>(accessMap.keySet());
+            Collections.sort(resources);
+            for (final String resource : resources) {
+                log.debug("Resource: " + resource + (accessMap.get(resource) ? "" : "=DENY"));
+            }
+        } else {
+            final List<String> resources = new ArrayList<>(set);
+            Collections.sort(resources);
+            log.debug("Legacy set");
+            for (final String resource : resources) {
+                log.debug("Resource: " + resource);
+            }
         }
     }
 
+    /** Returns a textual representation of all rules from the new-style access map */
     @Override
     public String toString() {
-        return Arrays.toString(set.toArray());
+        if (accessMap != null) {
+            final StringBuilder sb = new StringBuilder();
+            final List<String> ruleNames = new ArrayList<>(accessMap.keySet());
+            Collections.sort(ruleNames);
+            for (final String ruleName : ruleNames) {
+                sb.append(ruleName);
+                if (!accessMap.get(ruleName)) {
+                    sb.append("=DENY");
+                }
+                sb.append(", ");
+            }
+            return sb.toString();
+        } else {
+            return "(Legacy set) " + Arrays.toString(set.toArray());
+        }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -172,6 +215,13 @@ public final class AccessSet implements Serializable {
         } else if (!set.equals(other.set)) {
             return false;
         }
+        if (accessMap == null) {
+            if (other.accessMap != null) {
+                return false;
+            }
+        } else if (!accessMap.equals(other.accessMap)) {
+            return false;
+        }
         return true;
     }
 
@@ -180,45 +230,45 @@ public final class AccessSet implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((set == null) ? 0 : set.hashCode());
+        result = prime * result + ((accessMap == null) ? 0 : accessMap.hashCode());
         return result;
     }
-    
+
     /**
-     * Conversion from EJBCA 6.8.0+ access rules to the AccessSet introduced in EJBCA 6.6.0.
-     * 
+     * Provides two functions at the same time (for performance):
+     *
+     * 1. Inserts "*SOME" rules into the accessMap.
+     *
+     * 2. Converts from EJBCA 6.8.0+ access rules to the old version of AccessSet introduced in EJBCA 6.6.0,
+     * for compatibility with old RA clients. The result of the conversion is written to "set", which is a
+     * HashSet of every single accepted resource enriched with "*SOME" but no "*RECURSIVE".
+     *
+     * Before calling this method, the "accessMap" variable is expected to contain the 6.8.0+ access rule structure.
+     *
      * Note:
-     * - AccessSet created via this method will not grant access to a configured rules that don't exist on the system.
-     * - ...and this means that access to non-existing resources will never be granted via an AccessSet any more
-     * 
-     * @param accessRules the EJBCA 6.8.0+ style access rules
+     * - The legacy set created via this method will not grant access to a configured rules that don't exist on the system.
+     * - ...and this means that access to non-existing resources will not be granted to old RA clients.
+     *
      * @param allResources whole universe of resources that exists
-     * @return an AccessSet of every single accepted resource enriched with "*SOME" and "*ALL", but no "*RECURSIVE"
      */
-    public static AccessSet fromAccessRules(final HashMap<String, Boolean> accessRules, final Set<String> allResources) {
-        final Set<String> ret = new HashSet<>();
-        final Set<String> falsePositives = new HashSet<>();
+    private void initializeSOMERulesAndBuildLegacySet(final Set<String> allResources) { // XXX can we skip allResources?
+        set = new HashSet<>();
         for (final String current : allResources) {
             // De-normalize if needed
             final String resource = (current.length()>1 && current.charAt(current.length()-1)=='/') ? current.substring(0, current.length()-1) : current;
-            final boolean authorizedToResource = AccessRulesHelper.hasAccessToResource(accessRules, resource);
+            final boolean authorizedToResource = AccessRulesHelper.hasAccessToResource(accessMap, resource);
             if (authorizedToResource) {
-                ret.add(resource);
-            }
-            // Check if we have an (integer) ID in the resource
-            final Matcher matcher = idInRulename.matcher(resource);
-            if (matcher.find()) {
-                final String allResource = matcher.replaceFirst("/$1/" + WILDCARD_ALL + "$3");
-                if (authorizedToResource) {
-                    ret.add(matcher.replaceFirst("/$1/" + WILDCARD_SOME + "$3"));
-                    // Add the "allResource" as well (it will be removed later if not all IDs where authorized)
-                    ret.add(allResource);
-                } else {
-                    falsePositives.add(allResource);
+                set.add(resource);
+                // Check if we have an (integer) ID in the resource
+                final Matcher matcher = idInRulename.matcher(resource);
+                if (matcher.find()) {
+                    // Add "*SOME" resource
+                    final String someResource = matcher.replaceFirst("/$1/" + WILDCARD_SOME + "$3");
+                    accessMap.put(AccessRulesHelper.normalizeResource(someResource), true); // =Role.STATE_ALLOW, which is not available from cesecore-common
+                    set.add(someResource);
                 }
             }
         }
-        ret.removeAll(falsePositives);
         // Since expect the whole universe of rules to be provided, there should be no need to add the WILDCARD_RECURSIVE rule
-        return new AccessSet(ret);
     }
 }
