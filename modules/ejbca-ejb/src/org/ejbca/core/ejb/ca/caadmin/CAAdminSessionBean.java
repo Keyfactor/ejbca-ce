@@ -46,7 +46,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -81,8 +80,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
@@ -150,11 +147,6 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.roles.AdminGroupData;
-import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -248,10 +240,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private RevocationSessionLocal revocationSession;
     @EJB
     private RoleSessionLocal roleSession;
-    @EJB
-    private RoleAccessSessionLocal roleAccessSession;
-    @EJB
-    private RoleManagementSessionLocal roleManagementSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
@@ -520,34 +508,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         
         // Update Roles
         roleSession.updateCaId(fromId, toId, false, true);
-        // ...and the same for legacy (to be removed)
-        final Random random = new Random(System.nanoTime()); 
-        for (AdminGroupData role : roleAccessSession.getAllRoles()) {
-            final String roleName = role.getRoleName();
-            final Map<Integer,AccessRuleData> rules = new HashMap<>(role.getAccessRules());
-            final Map<Integer,AccessUserAspectData> users = new HashMap<>(role.getAccessUsers());
-            if (CAIdTools.updateCAIds(roleName, rules, users, fromId, toId, toDN)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Changing CA Ids in Role "+roleName);
-                }
-                try {
-                    // Rename old role so we can replace it without getting locked out
-                    final String oldTempName = roleName + "_CAIdUpdateOld" + random.nextLong();
-                    roleManagementSession.renameRole(authenticationToken, roleName, oldTempName);
-                    
-                    AdminGroupData newRole = roleManagementSession.create(authenticationToken, roleName);
-                    newRole = roleManagementSession.addAccessRulesToRole(authenticationToken, newRole, rules.values());
-                    newRole = roleManagementSession.addSubjectsToRole(authenticationToken, newRole, users.values());
-
-                    roleManagementSession.remove(authenticationToken, oldTempName);
-                } catch (RoleNotFoundException e) {
-                    throw new IllegalStateException("Newly created temporary role was not found", e);
-                } catch (RoleExistsException e) {
-                    throw new IllegalStateException("Temporary role name already exists", e);
-                }
-            }
-        }
-        
         log.debug("Done updating CA Ids");
         final String detailsMsg = intres.getLocalizedMessage("caadmin.updatedcaid", fromId, toId, toDN);
         auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(toId),
@@ -557,9 +517,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void renewAndRevokeCmsCertificate(final AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException, CAOfflineException, CertificateRevokeException {
         CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next(); 
+        for (final ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
             if (next instanceof CmsCAServiceInfo) {
                 List<Certificate> cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
                 if (cmscerts != null) {
@@ -2120,21 +2078,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         endEntityProfileSession.changeEndEntityProfile(authenticationToken, allEndEntityProfileIdMap.get(endEntityProfileId), endEntityProfile);                            
                     }
                 }
-                //If CA has gone through Name Change, clone all this CA specific access rules with new one with replaced caid for every roles.
+                // If CA has gone through Name Change, clone all this CA specific access rules with new one with replaced caid for every roles.
                 roleSession.updateCaId(caidBeforeNameChange, caid, true, false);
-                // ...and the same in the legacy system (remove this)
-                for(AdminGroupData adminGroupData : roleAccessSession.getAllRoles()){
-                    final List<AccessRuleData> accessRulesToBeAdded = new ArrayList<AccessRuleData>();
-                    for(Map.Entry<Integer, AccessRuleData > accessRuleData: adminGroupData.getAccessRules().entrySet()){
-                        String accessRuleName = accessRuleData.getValue().getAccessRuleName();
-                        if(accessRuleName.contains(caidBeforeNameChange + "")){
-                          accessRulesToBeAdded.add(new AccessRuleData(adminGroupData.getRoleName(), accessRuleName.replace(caidBeforeNameChange+"", caid+""), accessRuleData.getValue().getInternalState(), accessRuleData.getValue().getRecursiveBool())); 
-                        }
-                    }
-                    roleManagementSession.addAccessRulesToRole(authenticationToken, adminGroupData, accessRulesToBeAdded);
-                }
             }
-            
             // Audit log
             final String detailsMsg = intres.getLocalizedMessage("caadmin.renewdca", Integer.valueOf(caid));
             auditSession.log(EjbcaEventTypes.CA_RENEWED, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),

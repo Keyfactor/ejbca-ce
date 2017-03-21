@@ -23,8 +23,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -35,9 +33,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
@@ -130,8 +126,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		return ret;
 	}
 
-	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
-	@Deprecated @Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return getEjbLocal().getAccessUserAspectSession(); }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
 	@Override public ApprovalSessionLocal getApprovalSession() { return getEjbLocal().getApprovalSession(); }
 	@Override public ApprovalProfileSessionLocal getApprovalProfileSession() { return getEjbLocal().getApprovalProfileSession(); }
@@ -160,8 +154,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
 	@Override public PublisherSessionLocal getPublisherSession() { return getEjbLocal().getPublisherSession(); }
     @Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return getEjbLocal().getRaMasterApiProxyBean(); }
-    @Deprecated @Override public RoleAccessSessionLocal getRoleAccessSession() { return getEjbLocal().getRoleAccessSession(); }
-    @Deprecated @Override public RoleManagementSessionLocal getRoleManagementSession() { return getEjbLocal().getRoleManagementSession(); }
     @Override public RoleMemberSessionLocal getRoleMemberSession() { return getEjbLocal().getRoleMemberSession(); }
     @Override public RoleMemberDataSessionLocal getRoleMemberDataSession() { return getEjbLocal().getRoleMemberDataSession(); }
     @Override public RoleSessionLocal getRoleSession() {return getEjbLocal().getRoleSession(); }

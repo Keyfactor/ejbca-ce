@@ -18,8 +18,6 @@ import javax.ejb.Local;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -30,9 +28,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
-import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
@@ -78,8 +74,6 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @Local
 public interface EjbBridgeSessionLocal {
 
-	AccessRuleManagementSessionLocal getAccessRuleManagementSession();
-	AccessUserAspectManagerSessionLocal getAccessUserAspectSession();
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	ApprovalProfileSessionLocal getApprovalProfileSession();
@@ -105,8 +99,6 @@ public interface EjbBridgeSessionLocal {
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
 	AdminPreferenceSessionLocal getRaAdminSession();
-	RoleAccessSessionLocal getRoleAccessSession();
-	RoleManagementSessionLocal getRoleManagementSession();
     RoleDataSessionLocal getRoleDataSession();
     RoleMemberSessionLocal getRoleMemberSession();
     RoleMemberDataSessionLocal getRoleMemberDataSession();

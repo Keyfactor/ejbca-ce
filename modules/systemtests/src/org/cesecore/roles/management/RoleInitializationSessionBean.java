@@ -15,7 +15,6 @@ package org.cesecore.roles.management;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,15 +33,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionLocal;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
-import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -65,8 +60,6 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
 	@EJB
-	private RoleManagementSessionLocal roleMgmg;
-	@EJB
 	private SimpleAuthenticationProviderSessionLocal simpleAuthenticationProviderSession;
 	
 	@Override
@@ -85,27 +78,9 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
                 CertTools.getSerialNumber(certificate).toString(16),
                 role.getRoleId(),
                 null, null));
-        initializeAccessWithCertLegacy(authenticationToken, roleName, certificate);
         if (log.isTraceEnabled()) {
             log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
         }
-    }
-
-    @Override
-    @Deprecated
-    public void initializeAccessWithCertLegacy(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException, AuthorizationDeniedException {
-        // Create a role
-        AdminGroupData role = roleMgmg.create(authenticationToken, roleName);
-        // Create a user aspect that matches the authentication token, and add that to the role.
-        List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(role.getRoleName(), CertTools.getIssuerDN(certificate).hashCode(),
-                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(
-                        CertTools.getSubjectDN(certificate), "CN")));
-        roleMgmg.addSubjectsToRole(authenticationToken, role, accessUsers);
-        // Add rules to the role
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleMgmg.addAccessRulesToRole(authenticationToken, role, accessRules);
     }
 
     @Override
