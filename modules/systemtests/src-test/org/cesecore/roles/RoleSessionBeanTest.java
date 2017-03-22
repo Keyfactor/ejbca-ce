@@ -26,11 +26,17 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Test;
 
@@ -42,6 +48,7 @@ import org.junit.Test;
 public class RoleSessionBeanTest {
     
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final Logger log = Logger.getLogger(RoleSessionBeanTest.class);
 
@@ -271,30 +278,89 @@ public class RoleSessionBeanTest {
     }
     
     /**
-     * Tests if an admin can view admins within different namespaces. This should not be possible
-     * @throws RoleExistsException
-     * @throws AuthorizationDeniedException
+     * Verify name space handling:
+     * - Admins should be able to see the namespaces of all roles they are part of
+     * - Admin belonging to empty namespace should see all namespaces of roles the admin is authorized to
+     *   (which implies access to all members' tokenIssuerIds)
+     * - Otherwise namespaces should not be visible
      */
     @Test
     public void testGetAuthorizedNamespaces() throws RoleExistsException, AuthorizationDeniedException {
-        final String allowedNameSpace = "TestAllowedNameSpace";
-        final String deniedNameSpace = "TestDeniedNameSpace";
-        final String authDN = "CN=AuthDN";
-        final String unAuthDN = "CN=UnAuthDN";
-        final String adminRoleName = "AdminRole";
-        final String anotherAdminRoleName = "AnotherAdminRole";
-        
-        AuthenticationToken adminToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(authDN, allowedNameSpace, adminRoleName, null, null);
-        //This namespace should not be visible by 'TestAllowedNameSpace'
-        roleInitSession.createAuthenticationTokenAndAssignToNewRole(unAuthDN, deniedNameSpace, anotherAdminRoleName, null, null);
-        
+        log.trace(">testGetAuthorizedNamespaces");
+        final String TESTNAME = "testGetAuthorizedNamespaces";
+        final String nameSpace1 = TESTNAME + " NameSpace 1";
+        final String nameSpace2 = TESTNAME + " NameSpace 2";
+        final String nameSpace3 = TESTNAME + " NameSpace 3";
+        final String nameSpace4 = "";
+        final String commonRoleName = TESTNAME + "Role";
+        final String subjectDn1 = "CN="+nameSpace1;
+        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                subjectDn1, nameSpace1, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace2, nameSpace2, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace3, nameSpace3, commonRoleName, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace4, nameSpace4, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
         try {
-            List<String> authorizedNameSpaces = roleSession.getAuthorizedNamespaces(adminToken);
-            assertEquals(1, authorizedNameSpaces.size());
-            assertEquals(allowedNameSpace , authorizedNameSpaces.get(0));
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3), null, false);
+            // Authentication token matching RoleMember that belongs to Role with empty name space should see all namespaces
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4),
+                    Arrays.asList(nameSpace3), true);
+            // Add authenticationToken1 matched by CN to Role 2 (with nameSpace2)
+            addRoleMemberToRole(nameSpace2, commonRoleName, subjectDn1);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2), null, false);
+            // And again, add authenticationToken1 matched by CN to Role 3 (with nameSpace3)
+            addRoleMemberToRole(nameSpace3, commonRoleName, subjectDn1);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2, nameSpace3), null, false);
+            // Sanity check that adding authenticationToken1 did not grant more access to the other authenticationTokens
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4),
+                    Arrays.asList(nameSpace3), true);
+            // Grant additional access to authenticationToken4 and expect that namespace3 will now also be visible
+            final Role role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
+            role4.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace3, nameSpace4), null, true);
         } finally {
-            cleanUpRole(allowedNameSpace, adminRoleName);
-            cleanUpRole(deniedNameSpace, anotherAdminRoleName);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken1);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken2);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken3);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken4);
+            log.trace("<testGetAuthorizedNamespaces");
+        }
+    }
+
+    /** Add self signed certificate match to a role identified by name */
+    private void addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
+        final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
+        roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, subjectDn.hashCode(), X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null, null));
+    }
+    
+    /** Verify that actualNameSpaces contain the desired namespaces */
+    private void assertNameSpacePresence(List<String> actualNameSpaces, List<String> requiredNameSpaces, List<String> notAllowedNameSpaces, boolean allowMoreNameSpaces) {
+        log.debug("actualNameSpaces: " + Arrays.toString(actualNameSpaces.toArray()));
+        if (requiredNameSpaces!=null) {
+            log.debug("requiredNameSpaces: " + Arrays.toString(requiredNameSpaces.toArray()) + " allowMoreNameSpaces="+allowMoreNameSpaces);
+            if (allowMoreNameSpaces) {
+                assertTrue("Admin should at least belong to " + requiredNameSpaces.size() + " namespace(s).", actualNameSpaces.size() >= requiredNameSpaces.size());
+            } else {
+                assertEquals("Admin should at belong to " + requiredNameSpaces.size() + " namespace(s).", requiredNameSpaces.size(), actualNameSpaces.size());
+            }
+            for (final String requiredNameSpace : requiredNameSpaces) {
+                assertTrue("Not authorized to expected name space '" + requiredNameSpace + "'.", actualNameSpaces.contains(requiredNameSpace));
+            }
+        }
+        if (notAllowedNameSpaces!=null) {
+            log.debug("notAllowedNameSpaces: " + Arrays.toString(notAllowedNameSpaces.toArray()));
+            for (final String notAllowedNameSpace : notAllowedNameSpaces) {
+                assertFalse("Authorized to unexpected name space '" + notAllowedNameSpace + "'.", actualNameSpaces.contains(notAllowedNameSpace));
+            }
         }
     }
 }
