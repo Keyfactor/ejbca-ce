@@ -460,7 +460,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             customQuery += " AND " + endEntityProfileAuthorizationString;
         }
         if (StringUtils.isNotEmpty(orderByString)) {
-            customQuery += orderByString;
+            customQuery += " " + orderByString;
         }
         
         final List<ApprovalData> approvalDataList = findByCustomQuery(index, numberofrows, customQuery);
