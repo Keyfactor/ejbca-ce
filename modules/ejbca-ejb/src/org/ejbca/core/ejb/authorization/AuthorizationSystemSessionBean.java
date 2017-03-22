@@ -262,6 +262,8 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public boolean initializeAuthorizationModule() {
+        // Since RoleData might be empty when this is invoked on a not yet upgraded system, we also check if there are any CAs present.
+        // (The CLI admin might have been reconfigured or removed in the old authorization system and we don't want to change this.)
         if (roleDataSession.getAllRoles().isEmpty() && caSession.getAllCaIds().isEmpty()) {
             log.info("No roles or CAs exist, intializing Super Administrator Role with default CLI user.");
             // Create "Super Administrator Role" (with roleId "1" to ensure that upgraded installations still have the same roleId)
