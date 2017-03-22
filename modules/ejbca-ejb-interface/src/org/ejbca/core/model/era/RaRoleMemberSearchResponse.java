@@ -41,10 +41,10 @@ public class RaRoleMemberSearchResponse implements Serializable {
     public void merge(final RaRoleMemberSearchResponse other) {
         final Map<Integer,RoleMember> roleMemberMap = new HashMap<>();
         for (final RoleMember roleMember : roleMembers) {
-            roleMemberMap.put(roleMember.getRoleId(), roleMember);
+            roleMemberMap.put(roleMember.getId(), roleMember);
         }
         for (final RoleMember roleMember : other.roleMembers) {
-            roleMemberMap.put(roleMember.getRoleId(), roleMember);
+            roleMemberMap.put(roleMember.getId(), roleMember);
         }
         this.roleMembers.clear();
         this.roleMembers.addAll(roleMemberMap.values());
