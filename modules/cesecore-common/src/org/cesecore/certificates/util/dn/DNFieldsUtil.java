@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * DN string utilities.
@@ -68,25 +69,43 @@ public abstract class DNFieldsUtil {
      * @param map the map of DN attributes and values.
      * @return true if the DN map contains non-empty values for both C and CN.
      */
-    private static final boolean mapContainsCountryAndCN(final Map<String,String> map) {
+    public static final boolean mapContainsCountryAndCN(final Map<String,String> map) {
         boolean result = false;
         if (map.size() >= 2) {
-            result = StringUtils.isNotBlank(map.get("C")) && StringUtils.isNotBlank(map.get("CN"));
+            result = StringUtils.isNotBlank(map.get(CeSecoreNameStyle.DefaultSymbols.get(CeSecoreNameStyle.C))) 
+                  && StringUtils.isNotBlank(CeSecoreNameStyle.DefaultSymbols.get(CeSecoreNameStyle.CN));
         }
         return result;
     }
 
     /**
-     * The method checks if the two subject-DN belongs to the same CSCA (C and CN must be equal, SN could be changed).
+     * The method checks if the two subject-DN maps are equal except the 'SN' attribute.
      * @param map1 the left side subject-DN map.
      * @param map2 the right side subject-DN map.
-     * @return true if both subject-DN belongs to the same CSCA.
+     * @return true if both subject-DN are equal except the 'SN' attribute (accepts null or empty Strings as values, but not for 'SN' attribute).
      */
-    public static final boolean caCertificatesOfSameCSCA(final Map<String,String> map1, final Map<String,String> map2) {
-        if (!mapContainsCountryAndCN(map1) || !mapContainsCountryAndCN(map2)) {
+    public static final boolean dnEqualsWithOtherSerialNumber(final Map<String,String> map1, final Map<String,String> map2) {
+        if (map1.size() < 2 || map2.size() < 2 || map1.size() != map2.size()) {
             return false;
         }
-        return StringUtils.equals(map1.get("C"), map2.get("C")) && StringUtils.equals(map1.get("CN"), map2.get("CN"));
+        String key, value1, value2;
+        final String snAttributeKey = CeSecoreNameStyle.DefaultSymbols.get(CeSecoreNameStyle.SN);
+        boolean result = true;
+        for (Map.Entry<String,String> entry : map1.entrySet()) {
+            key = entry.getKey();
+            value1 = entry.getValue();
+            value2 = map2.get(key);
+            if (snAttributeKey.equals( key)) { // check that serial numbers are not blank and not equal. 
+                if (StringUtils.isBlank(value1) || StringUtils.isBlank(value2) || value1 == value2) {
+                    result = false;
+                }
+            } else { // All other DN attributes must be equal.
+                if (!StringUtils.equals(value1, value2)) {
+                	result = false;
+                }
+            }
+        }
+        return result;
     }
 
 

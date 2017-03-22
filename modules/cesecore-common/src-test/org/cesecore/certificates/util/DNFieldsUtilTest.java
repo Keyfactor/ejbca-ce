@@ -77,20 +77,20 @@ public class DNFieldsUtilTest {
     }
     
     @Test
-    public void testCaCertificatesOfSameCSCA() {
+    public void testDnEqualsWithOtherSerialNumber() {
         // Test empty DN strings.
         String string1 = StringUtils.EMPTY;
         String string2 = StringUtils.EMPTY;
-        assertFalse("Empty DNs do not belong to the same CSCA (no valid CSCA subject-DNs).", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string2)));
+        assertFalse("Empty DNs do not belong to the same CSCA (no valid CSCA subject-DNs).", DNFieldsUtil.dnEqualsWithOtherSerialNumber(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string2)));
         
         // Test CSCA subject-DNs without serialNumber
         string1 = "C=SE,CN=CSCA";
-        assertTrue("DNs with the same values for C and CN can belong to the subject-DN of the same CSCA.", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
+        assertTrue("DNs with the same values for C and CN can belong to the subject-DN of the same CSCA.", DNFieldsUtil.dnEqualsWithOtherSerialNumber(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
 
         // Test subject-DN string with a missing attribute.
         string1 = "C=SE";
         string2 = "C=SE";
-        assertFalse("A subject-DN string with missing CN does not belong to a CSCA certificate.", DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
+        assertFalse("A subject-DN string with missing CN does not belong to a CSCA certificate.", DNFieldsUtil.dnEqualsWithOtherSerialNumber(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
 
     }
     
