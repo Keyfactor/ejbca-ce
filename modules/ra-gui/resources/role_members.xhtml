@@ -127,7 +127,8 @@
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{not empty raRoleMember.roleName ? raRoleMember.roleName : msg.role_members_page_role_none}" style="white-space: nowrap" styleClass="#{empty raRoleMember.roleName ? &quot;noneCell&quot; : &quot;&quot;}"/>
+                            <h:outputText value="#{not empty raRoleMember.roleName ? raRoleMember.roleName : msg.role_members_page_role_none}" style="white-space: nowrap"
+                                styleClass="#{empty raRoleMember.roleName ? &quot;noneCell&quot; : &quot;&quot;}" title="#{raRoleMember.title}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
