@@ -84,9 +84,10 @@ public class RaRoleMembersBean implements Serializable {
     private Map<Integer,String> caIdToNameMap;
     private Map<Integer,String> roleIdToNameMap;
     private Map<Integer,String> roleIdToNamespaceMap;
-    private boolean hasNamespaces;
+    private boolean hasMultipleNamespaces;
+    private boolean hasMultipleTokenTypes;
     
-    private enum SortBy { ROLE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
+    private enum SortBy { ROLE, ROLENAMESPACE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
     private SortBy sortBy = SortBy.ROLE;
     private boolean sortAscending = true;
     
@@ -168,13 +169,19 @@ public class RaRoleMembersBean implements Serializable {
         
         // Add names of CAs and roles
         resultsFiltered = new ArrayList<>();
+        hasMultipleTokenTypes = false;
+        String lastTokenType = null;
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
-            final String title = (hasNamespaces && namespace != null ? raLocaleBean.getMessage("role_members_page_namespace", namespace) : "");
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
-            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, title, tokenTypeText));
+            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, StringUtils.defaultString(namespace), tokenTypeText));
+            // Check if there's more than one token type. If so, the token type column will be shown
+            if (lastTokenType != null && !hasMultipleTokenTypes && !lastTokenType.equals(member.getTokenType())) {
+                hasMultipleTokenTypes = true;
+            }
+            lastTokenType = member.getTokenType();
         }
         
         sort();
@@ -199,6 +206,7 @@ public class RaRoleMembersBean implements Serializable {
                 switch (sortBy) {
                 // TODO locale-aware sorting
                 case ROLE: return o1.getRoleName().compareTo(o2.getRoleName()) * sortDir;
+                case ROLENAMESPACE: return o1.getRoleNamespace().compareTo(o2.getRoleNamespace()) * sortDir;
                 case CA: return o1.getCaName().compareTo(o2.getCaName()) * sortDir;
                 case TOKENTYPE: return StringUtils.defaultString(rm1.getTokenType()).compareTo(StringUtils.defaultString(rm2.getTokenType())) * sortDir;
                 case TOKENMATCHVALUE: return StringUtils.defaultString(rm1.getTokenMatchValue()).compareTo(StringUtils.defaultString(rm2.getTokenMatchValue())) * sortDir;
@@ -212,6 +220,8 @@ public class RaRoleMembersBean implements Serializable {
     
     public String getSortedByRole() { return getSortedBy(SortBy.ROLE); }
     public void sortByRole() { sortBy(SortBy.ROLE, true); }
+    public String getSortedByRoleNamespace() { return getSortedBy(SortBy.ROLENAMESPACE); }
+    public void sortByRoleNamespace() { sortBy(SortBy.ROLENAMESPACE, true); }
     public String getSortedByCA() { return getSortedBy(SortBy.CA); }
     public void sortByCA() { sortBy(SortBy.CA, true); }
     public String getSortedByTokenType() { return getSortedBy(SortBy.TOKENTYPE); }
@@ -262,6 +272,13 @@ public class RaRoleMembersBean implements Serializable {
         sortAscending = value;
     }
     
+    public boolean getHasMultipleTokenTypes() {
+        return hasMultipleTokenTypes;
+    }
+    
+    public boolean getHasMultipleNamespaces() {
+        return hasMultipleNamespaces;
+    }
     
     public boolean isOnlyOneRoleAvailable() { return getAvailableRoles().size()==2; } // two including the "any role" choice
     public List<SelectItem> getAvailableRoles() {
@@ -277,7 +294,7 @@ public class RaRoleMembersBean implements Serializable {
             roleIdToNameMap = new HashMap<>();
             roleIdToNamespaceMap = new HashMap<>();
             String lastNamespace = null;
-            hasNamespaces = false;
+            hasMultipleNamespaces = false;
             for (final Role role : roles) {
                 roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
                 if (!StringUtils.isEmpty(role.getNameSpace())) {
@@ -285,13 +302,13 @@ public class RaRoleMembersBean implements Serializable {
                 }
                 // Check if there's more than one namespace. If so the namespaces are shown in the GUI
                 if (lastNamespace != null && !lastNamespace.equals(role.getNameSpace())) {
-                    hasNamespaces = true;
+                    hasMultipleNamespaces = true;
                 }
                 lastNamespace = role.getNameSpace();
             }
             availableRoles.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
             for (final Role role : roles) {
-                final String label = hasNamespaces ? role.getRoleNameFull() : role.getRoleName();
+                final String label = hasMultipleNamespaces ? role.getRoleNameFull() : role.getRoleName();
                 availableRoles.add(new SelectItem(role.getRoleId(), label));
             }
         }

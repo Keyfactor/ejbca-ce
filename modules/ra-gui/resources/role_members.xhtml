@@ -128,7 +128,18 @@
                                 </h:commandButton>
                             </f:facet>
                             <h:outputText value="#{not empty raRoleMember.roleName ? raRoleMember.roleName : msg.role_members_page_role_none}" style="white-space: nowrap"
-                                styleClass="#{empty raRoleMember.roleName ? &quot;noneCell&quot; : &quot;&quot;}" title="#{raRoleMember.title}"/>
+                                styleClass="#{empty raRoleMember.roleName ? &quot;noneCell&quot; : &quot;&quot;}"/>
+                        </h:column>
+                        <h:column rendered="#{raRoleMembersBean.hasMultipleNamespaces}">
+                            <f:facet name="header">
+                                <h:outputLabel for="sortRoleNamespace" value="#{msg.role_members_page_colhead_role_namespace} #{raRoleMembersBean.sortedByRoleNamespace}"/>
+                                <h:commandButton id="sortRoleNamespace" action="#{raRoleMembersBean.sortByRoleNamespace}" value="#{msg.generic_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":roleMembersForm:filteredResults"
+                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
+                                        onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText value="#{raRoleMember.roleNamespace}" style="white-space: nowrap"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
@@ -141,7 +152,7 @@
                             </f:facet>
                             <h:outputText value="#{raRoleMember.caName}" style="white-space: nowrap"/>
                         </h:column>
-                        <h:column>
+                        <h:column rendered="#{raRoleMembersBean.hasMultipleTokenTypes}">
                             <f:facet name="header">
                                 <h:outputLabel for="sortTokenType" value="#{msg.role_members_page_colhead_tokentype} #{raRoleMembersBean.sortedByTokenType}"/>
                                 <h:commandButton id="sortTokenType" action="#{raRoleMembersBean.sortByTokenType}" value="#{msg.generic_sort_command}" style="display: none;">
