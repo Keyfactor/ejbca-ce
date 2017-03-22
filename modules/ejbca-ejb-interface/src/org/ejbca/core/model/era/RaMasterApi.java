@@ -56,6 +56,11 @@ public interface RaMasterApi {
     boolean isBackendAvailable();
     
     /**
+     * Get the current (lowest) back-end API version.
+     * 
+     * Note that this will not lead to a request over network since peers (if any) will report their API version when
+     * connecting and this will return the cached and current number.
+     * 
      * @return the current (lowest) back-end API version
      * @since Master RA API version 1 (EJBCA 6.8.0)
      */
