@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -82,6 +83,9 @@ import org.junit.Test;
 @SuppressWarnings("deprecation")
 public class UpgradeSessionBeanTest {
 
+    private static final Logger log = Logger.getLogger(UpgradeSessionBeanTest.class);
+    private static final String TESTCLASS = UpgradeSessionBeanTest.class.getSimpleName();
+    
     private ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -114,7 +118,7 @@ public class UpgradeSessionBeanTest {
     @Test
     public void testUpgradeTo640AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         //Create a role specifically to test that read only access is given. 
-        final String readOnlyRoleName = "ReadOnlyRole"; 
+        final String readOnlyRoleName = TESTCLASS + " ReadOnlyRole"; 
         final List<AccessRuleData> oldAccessRules = Arrays.asList(
                 new AccessRuleData(readOnlyRoleName, AccessRulesConstants.REGULAR_ACTIVATECA, AccessRuleState.RULE_ACCEPT, false),
                 new AccessRuleData(readOnlyRoleName, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
@@ -143,18 +147,10 @@ public class UpgradeSessionBeanTest {
             assertAccessRuleDataIsPresent(upgradedAccessRules, readOnlyRoleName, InternalKeyBindingRules.VIEW.resource(), true);
         } finally {
             upgradeTestSession.deleteRole(readOnlyRoleName);
+            deleteRole(null, readOnlyRoleName);
         }
     }
     
-    private void assertAccessRuleDataIsPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
-        assertTrue("Role was not upgraded with rule " + rule, accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
-    }
-
-    private void assertAccessRuleDataIsNotPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
-        assertFalse("Role was upgraded with rule " + rule + ", even though it shouldn't have.",
-                accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
-    }
-
    /**
     * This test will perform the upgrade step to 6.4.0 and tests update of access rules. Rules specific to editing available extended key usages and 
     * custom certificate extensions should be added to any role that is already allowed to edit system configurations, but not other roles.
@@ -162,13 +158,13 @@ public class UpgradeSessionBeanTest {
    @Test
    public void testUpgradeTo640EKUAndCustomCertExtensionsAccessRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
        // Add a role whose access rules should change after upgrade
-       final String sysConfigRoleName = "SystemConfigRole"; 
+       final String sysConfigRoleName = TESTCLASS + " SystemConfigRole"; 
        final List<AccessRuleData> oldSysConfigAccessRules = Arrays.asList(
                new AccessRuleData(sysConfigRoleName, StandardRules.SYSTEMCONFIGURATION_EDIT.resource(), AccessRuleState.RULE_ACCEPT, false)
                );
        upgradeTestSession.createRole(sysConfigRoleName, oldSysConfigAccessRules, null);
        // Add a role whose access rules should NOT change after upgrade (except for also being allowed to view EEPs)
-       final String caAdmRoleName = "CaAdminRole"; 
+       final String caAdmRoleName = TESTCLASS + " CaAdminRole"; 
        final List<AccessRuleData> oldCaAdmAccessRules = Arrays.asList(
                new AccessRuleData(caAdmRoleName, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
                new AccessRuleData(caAdmRoleName, StandardRules.CERTIFICATEPROFILEEDIT.resource(), AccessRuleState.RULE_ACCEPT, false),
@@ -204,6 +200,8 @@ public class UpgradeSessionBeanTest {
        } finally {
            upgradeTestSession.deleteRole(sysConfigRoleName);
            upgradeTestSession.deleteRole(caAdmRoleName);
+           deleteRole(null, sysConfigRoleName);
+           deleteRole(null, caAdmRoleName);
        }
    }
    
@@ -212,7 +210,7 @@ public class UpgradeSessionBeanTest {
     */
    @Test
    public void testUpgradeTo660ApprovalRules() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-       final String testRoleName = "TestRole"; 
+       final String testRoleName = TESTCLASS + " TestRole"; 
        // Test view (auditor) access
        try {
            final List<AccessRuleData> oldAccessRules = Arrays.asList(
@@ -227,6 +225,7 @@ public class UpgradeSessionBeanTest {
            assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEVIEW.resource(), false);
        } finally {
            upgradeTestSession.deleteRole(testRoleName);
+           deleteRole(null, testRoleName);
        }
        // Test edit access
        try {
@@ -242,6 +241,7 @@ public class UpgradeSessionBeanTest {
            assertAccessRuleDataIsPresent(upgradedAccessRules, testRoleName, StandardRules.APPROVALPROFILEEDIT.resource(), false);
        } finally {
            upgradeTestSession.deleteRole(testRoleName);
+           deleteRole(null, testRoleName);
        }
    }
    
@@ -380,8 +380,8 @@ public class UpgradeSessionBeanTest {
      */
     @Test
     public void testUpgradeTo642AuditorRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-        final String oldAuditorName = "640Auditor"; 
-        final String editSystemAdminName = "EditSystemAdmin";
+        final String oldAuditorName = TESTCLASS + " 640Auditor"; 
+        final String editSystemAdminName = TESTCLASS + " EditSystemAdmin";
         try {
             final Set<String> newRules = new HashSet<>(Arrays.asList(
                     StandardRules.SYSTEMCONFIGURATION_VIEW.resource(),
@@ -445,6 +445,8 @@ public class UpgradeSessionBeanTest {
         } finally {
             upgradeTestSession.deleteRole(oldAuditorName);
             upgradeTestSession.deleteRole(editSystemAdminName);
+            deleteRole(null, oldAuditorName);
+            deleteRole(null, editSystemAdminName);
         }
     }
     
@@ -486,7 +488,7 @@ public class UpgradeSessionBeanTest {
     
     @Test
     public void upgradeTo680RoleMembers() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
-        final String roleName = "upgradeTo680RoleMembers";
+        final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
         final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
                 new AccessUserAspectData(roleName, 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE")
                 );
@@ -507,5 +509,25 @@ public class UpgradeSessionBeanTest {
             upgradeTestSession.deleteRole(roleName);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
         }
+    }
+
+    private void deleteRole(final String nameSpace, final String roleName) {
+        try {
+            final Role role = roleSession.getRole(alwaysAllowtoken, null, roleName);
+            if (role!=null) {
+                roleSession.deleteRoleIdempotent(alwaysAllowtoken, role.getRoleId());
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.debug(e.getMessage());
+        }
+    }
+    
+    private void assertAccessRuleDataIsPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
+        assertTrue("Role was not upgraded with rule " + rule, accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
+    }
+
+    private void assertAccessRuleDataIsNotPresent(final List<AccessRuleData> accessRules, final String roleName, final String rule, final boolean recursive) {
+        assertFalse("Role was upgraded with rule " + rule + ", even though it shouldn't have.",
+                accessRules.contains(new AccessRuleData(roleName, rule, AccessRuleState.RULE_ACCEPT, recursive)));
     }
 }
