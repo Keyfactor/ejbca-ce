@@ -199,6 +199,7 @@
         <jboss:admsilent arg="/subsystem=web/connector=http:remove" failonerror="false" />
         <jboss:admsilent arg="/system-property=org.apache.catalina.connector.URI_ENCODING:remove" failonerror="false" />
         <jboss:admsilent arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove" failonerror="false" />
+        <jboss:admsilent arg="/system-property=org.apache.tomcat.util.http.Parameters.MAX_COUNT:remove" failonerror="false" />
         <jboss:admsilent arg="/interfaces=/interface=http:remove" failonerror="false" />
         <jboss:admsilent arg="/interfaces=/interface=httpspub:remove" failonerror="false" />
         <jboss:admsilent arg="/interfaces=/interface=httpspriv:remove" failonerror="false" />
@@ -237,6 +238,8 @@
         <!--  Configure URI encoding to to be able to use UTF-8 in URLs, for downloading certificate and CRLs. -->
         <jboss:adm arg='/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="${web.contentencoding}")' />
         <jboss:adm arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value=true)" />
+    	<!-- Ability to have very large forms, for example advanced access rules with many many rules -->
+        <jboss:adm arg="/system-property=org.apache.tomcat.util.http.Parameters.MAX_COUNT:add(value=2048)" />
         <!--  Configure WSDL web-host rewriting to use the request host. Needed for webservices to work correctly when requiring client certificate. -->
         <jboss:adm arg="/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)" />
         <jboss:adm arg="/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)" />
