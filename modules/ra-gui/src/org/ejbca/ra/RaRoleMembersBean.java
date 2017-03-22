@@ -271,12 +271,17 @@ public class RaRoleMembersBean implements Serializable {
                 }
             });
             roleIdToNameMap = new HashMap<>();
+            boolean hasNamespaces = false;
             for (final Role role : roles) {
                 roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
+                if (!StringUtils.isEmpty(role.getNameSpace())) {
+                    hasNamespaces = true;
+                }
             }
             availableRoles.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
             for (final Role role : roles) {
-                availableRoles.add(new SelectItem(role.getRoleId(), role.getRoleName()));
+                final String label = hasNamespaces ? role.getRoleNameFull() : role.getRoleName();
+                availableRoles.add(new SelectItem(role.getRoleId(), label));
             }
         }
         return availableRoles;
