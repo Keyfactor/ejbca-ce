@@ -24,15 +24,13 @@ import org.cesecore.authorization.access.AuthorizationCacheReload;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * Bean to handle the AuthorizationTreeUpdateData entity.
  * 
- * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessTreeUpdateSessionLocal")
+@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessTreeUpdateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal {
 
