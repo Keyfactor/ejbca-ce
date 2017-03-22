@@ -168,6 +168,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -617,7 +618,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
         // Create CA
         CA ca = createCAObject(cainfo, caToken, certprofile);
-
         if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
             try {
@@ -647,6 +647,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Special handling for uninitialized CAs
             ca.setCertificateChain(new ArrayList<Certificate>());
             ca.setStatus(CAConstants.CA_UNINITIALIZED);
+            
             if (log.isDebugEnabled()) {
                 log.debug("Setting CA status to: " + CAConstants.CA_UNINITIALIZED);
             }
@@ -1742,17 +1743,31 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         
-        
         final String oldSubjectDn = CertTools.getSubjectDN(oldCaCertificate);
+        boolean storeCscaWithChangedSubjectDn = false;
         if (!oldSubjectDn.equals(newSubjectDn)) {
             // Could be a CSCA certificate with other SubjectDN SN (C and CN attribute must match). 
             // This is only for X.509 CAs (serialNumber in CVC certificates is the key sequence).
         	// For example the German CSCA has same subjectDN except a SN (serialNumber) element after rollover.
-            if (!DNFieldsUtil.caCertificatesOfSameCSCA(DNFieldsUtil.dnStringToMap(oldSubjectDn), DNFieldsUtil.dnStringToMap(newSubjectDn))) {
+            boolean sameCsca = true;
+            final Map<String,String> oldSubjectDnMap = DNFieldsUtil.dnStringToMap(oldSubjectDn);
+            final Map<String,String> newSubjectDnMap = DNFieldsUtil.dnStringToMap(newSubjectDn);
+            if (!DNFieldsUtil.mapContainsCountryAndCN( oldSubjectDnMap)) {
+                sameCsca = false;
+            }
+            if (!DNFieldsUtil.mapContainsCountryAndCN( newSubjectDnMap)) {
+                sameCsca = false;
+            }
+            if (!DNFieldsUtil.dnEqualsWithOtherSerialNumber(oldSubjectDnMap, newSubjectDnMap)) {
+                sameCsca = false;
+            }
+            if (!sameCsca) {
                 throw new CertificateImportException("Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
             }
             if (caInfo instanceof X509CAInfo) {
                 caInfo.setSubjectDN(newSubjectDn);
+                caInfo.setCertificateChain(certificates); // required for storing!
+                storeCscaWithChangedSubjectDn = true;
             }
         }
         
@@ -1776,10 +1791,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caInfo.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
         }
         ca.setCertificateChain(certificates);
+        
+        // Only for CSCAs: Set state to CAConstants.CA_UNINITIALIZED to store the CA with a new subject-DN and CA-ID.
+        if (storeCscaWithChangedSubjectDn) {    
+            final int currentCaState = caInfo.getStatus();
+            caInfo.setCertificateChain(certificates);
+            // Don't set CA-ID here, it is derived later by the CA certificates subject DN in editCA().
+            // caInfo.setCAId(CAData.calculateCAId(ca.getSubjectDN()));
+            caInfo.setStatus(CAConstants.CA_UNINITIALIZED);
+            editCA(authenticationToken, caInfo);
+            caInfo.setStatus(currentCaState);
+            // Add CA certificate chain again, because it is removed in createCA() for CAs with state CAConstants.CA_UNINITIALIZED.
+            caInfo.setCertificateChain(certificates);
+        } // ECA-5337 What can happen between that short period of time until second editCA() is called? Transaction?
+     
         // Update CA in database
-        caSession.editCAWithNewSubjectDn(authenticationToken, ca, true);
-        // Persist ("Publish") the CA certificates to the local CertificateData database.
-        publishCACertificate(authenticationToken, certificates, null, ca.getSubjectDN());
+        editCA(authenticationToken, caInfo);
     }
            
     @Override
