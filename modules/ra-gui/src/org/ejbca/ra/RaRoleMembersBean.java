@@ -83,6 +83,8 @@ public class RaRoleMembersBean implements Serializable {
     private List<RaRoleMemberGUIInfo> resultsFiltered = new ArrayList<>();
     private Map<Integer,String> caIdToNameMap;
     private Map<Integer,String> roleIdToNameMap;
+    private Map<Integer,String> roleIdToNamespaceMap;
+    private boolean hasNamespaces;
     
     private enum SortBy { ROLE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
     private SortBy sortBy = SortBy.ROLE;
@@ -169,8 +171,10 @@ public class RaRoleMembersBean implements Serializable {
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
+            final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
+            final String title = (hasNamespaces && namespace != null ? raLocaleBean.getMessage("role_members_page_namespace", namespace) : "");
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
-            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, tokenTypeText));
+            resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, title, tokenTypeText));
         }
         
         sort();
@@ -271,12 +275,19 @@ public class RaRoleMembersBean implements Serializable {
                 }
             });
             roleIdToNameMap = new HashMap<>();
-            boolean hasNamespaces = false;
+            roleIdToNamespaceMap = new HashMap<>();
+            String lastNamespace = null;
+            hasNamespaces = false;
             for (final Role role : roles) {
                 roleIdToNameMap.put(role.getRoleId(), role.getRoleName());
                 if (!StringUtils.isEmpty(role.getNameSpace())) {
+                    roleIdToNamespaceMap.put(role.getRoleId(), role.getNameSpace());
+                }
+                // Check if there's more than one namespace. If so the namespaces are shown in the GUI
+                if (lastNamespace != null && !lastNamespace.equals(role.getNameSpace())) {
                     hasNamespaces = true;
                 }
+                lastNamespace = role.getNameSpace();
             }
             availableRoles.add(new SelectItem(null, raLocaleBean.getMessage("role_members_page_criteria_role_optionany")));
             for (final Role role : roles) {
