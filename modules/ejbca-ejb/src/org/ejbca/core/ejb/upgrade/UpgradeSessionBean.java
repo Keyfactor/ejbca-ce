@@ -1399,6 +1399,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * we will get a database error during insert. Reading works fine though, so this is good for a post upgrade in order
      * to allow for 100% uptime upgrades.
      */
+    @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase500(String dbtype) {
         log.error("(this is not an error) Starting post upgrade from EJBCA 4.0.x to ejbca 5.0.x");
         boolean ret = true;
@@ -1478,13 +1479,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *                                                  Temporary Super Administrator Group
      *                                                  Public Web Users
      */
+    @SuppressWarnings("deprecation")
     private void removeOldRoles500() {
-        final String defaultRoleName = "DEFAULT";
-        final String tempSuperAdminRoleName = "Temporary Super Administrator Group";
-        final String publicWebRoleName = "Public Web Users";
-        legacyRoleManagementSession.deleteRole(authenticationToken, defaultRoleName);
-        legacyRoleManagementSession.deleteRole(authenticationToken, tempSuperAdminRoleName);
-        legacyRoleManagementSession.deleteRole(authenticationToken, publicWebRoleName);
+        legacyRoleManagementSession.deleteRole(authenticationToken, "DEFAULT");
+        legacyRoleManagementSession.deleteRole(authenticationToken, "Temporary Super Administrator Group");
+        legacyRoleManagementSession.deleteRole(authenticationToken, "Public Web Users");
     }
 
     private List<CertificatePolicy> getNewPolicies(final List<CertificatePolicy> policies) {
