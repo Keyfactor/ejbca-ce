@@ -1263,12 +1263,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // (and use direct DB access since the EJB API wont allow us to assign roleId)
             final int roleId = adminGroupData.getPrimaryKey().intValue();
             role.setRoleId(roleId);
-            if (roleDataSession.getRole(roleId)==null) {
-                roleDataSession.persistRole(role);
-            } else {
-                log.warn("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists and will not be upgraded!");
-                continue;
+            if (roleDataSession.getRole(roleId)!=null) {
+                log.info("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists. Will perform merge old role members into this role and overwrite configured access rules.");
             }
+            roleDataSession.persistRole(role);
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
@@ -1324,9 +1322,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     // None of the other known tokens when writing this upgrade use any operator
                     tokenMatchOperator = AccessMatchType.TYPE_UNUSED.getNumericValue();
                 }
-                roleMemberDataSession.persistRoleMember(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType,
+                // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
+                roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
                         tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null));
-            }           
+            }
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
     }
