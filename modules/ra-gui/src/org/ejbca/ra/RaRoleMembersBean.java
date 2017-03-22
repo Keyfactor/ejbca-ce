@@ -85,7 +85,6 @@ public class RaRoleMembersBean implements Serializable {
     private Map<Integer,String> roleIdToNameMap;
     private Map<Integer,String> roleIdToNamespaceMap;
     private boolean hasMultipleNamespaces;
-    private boolean hasMultipleTokenTypes;
     
     private enum SortBy { ROLE, ROLENAMESPACE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
     private SortBy sortBy = SortBy.ROLE;
@@ -169,19 +168,12 @@ public class RaRoleMembersBean implements Serializable {
         
         // Add names of CAs and roles
         resultsFiltered = new ArrayList<>();
-        hasMultipleTokenTypes = false;
-        String lastTokenType = null;
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
             final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
             resultsFiltered.add(new RaRoleMemberGUIInfo(member, caName, roleName, StringUtils.defaultString(namespace), tokenTypeText));
-            // Check if there's more than one token type. If so, the token type column will be shown
-            if (lastTokenType != null && !hasMultipleTokenTypes && !lastTokenType.equals(member.getTokenType())) {
-                hasMultipleTokenTypes = true;
-            }
-            lastTokenType = member.getTokenType();
         }
         
         sort();
@@ -272,10 +264,6 @@ public class RaRoleMembersBean implements Serializable {
         sortAscending = value;
     }
     
-    public boolean getHasMultipleTokenTypes() {
-        return hasMultipleTokenTypes;
-    }
-    
     public boolean getHasMultipleNamespaces() {
         return hasMultipleNamespaces;
     }
@@ -339,6 +327,7 @@ public class RaRoleMembersBean implements Serializable {
     }
     
     public boolean isOnlyOneTokenTypeAvailable() { return getAvailableTokenTypes().size()==2; } // two including the "any token type" choice
+    public boolean getHasMultipleTokenTypes() { return getAvailableTokenTypes().size()>2; }     // dito
     public List<SelectItem> getAvailableTokenTypes() {
         if (availableTokenTypes == null) {
             if (tokenTypeInfos == null) {
