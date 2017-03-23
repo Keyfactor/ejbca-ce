@@ -132,7 +132,7 @@ and at least one of:
 <p>This example configuration will create one <i>RA User</i> that can request certificates (needing Approval) and one <i>RA Admin</i> that can approve the requests.</p>
 <p>We will assume that you already have a CA (names High Assurance CA), a Certificate Profile (named EV TLS) and an End Entity Profile (also named EV TLS), where the profiles are set to issue from that CA.</p>
 <subsection name="Create Roles">
-<p>In order to set up approvals we first need to roles that will be part of the approval process.</p>
+<p>In order to set up approvals we first need two roles that will be part of the approval process.</p>
 <ul>
 <li>In the Admin GUI, go to Administrator Roles</li>
 <li>Add a role called 'RA User'</li>
