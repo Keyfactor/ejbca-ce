@@ -1796,14 +1796,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (storeCscaWithChangedSubjectDn) {    
             final int currentCaState = caInfo.getStatus();
             caInfo.setCertificateChain(certificates);
-            // Don't set CA-ID here, it is derived later by the CA certificates subject DN in editCA().
+            // Don't set CA-ID here, it is derived later by the CA certificates subject DN in editCA(), if we set state to UNINITIALIZED.
             // caInfo.setCAId(CAData.calculateCAId(ca.getSubjectDN()));
             caInfo.setStatus(CAConstants.CA_UNINITIALIZED);
             editCA(authenticationToken, caInfo);
             caInfo.setStatus(currentCaState);
             // Add CA certificate chain again, because it is removed in createCA() for CAs with state CAConstants.CA_UNINITIALIZED.
             caInfo.setCertificateChain(certificates);
-        } // ECA-5337 What can happen between that short period of time until second editCA() is called? Transaction?
+        }
      
         // Update CA in database
         editCA(authenticationToken, caInfo);
