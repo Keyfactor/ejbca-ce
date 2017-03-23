@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -1281,7 +1282,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 }
                 final int tokenMatchKey = accessUserAspect.getMatchWith();
                 int tokenMatchOperator = accessUserAspect.getMatchType();
-                final String tokenMatchValue = accessUserAspect.getMatchValue();
+                String tokenMatchValue = accessUserAspect.getMatchValue();
                 // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
                 if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
                     if (tokenMatchKey == X500PrincipalAccessMatchValue.NONE.getNumericValue() ||
@@ -1292,15 +1293,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                                 "' will be dropped since it will never grant any access.");
                         continue;
                     }
-                    if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() &&
-                            tokenMatchOperator == AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
+                    if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()) {
                         // The implementation always does case insensitive compare
-                        if (log.isDebugEnabled()) {
-                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " with match key " + X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.name() +
-                                    " match operator " + AccessMatchType.TYPE_EQUALCASE.name() + " with and match value '" + tokenMatchValue +
-                                    "'. Changing match operator type to defacto operator TYPE_EQUALCASEINS.");
+                        if (log.isDebugEnabled() && tokenMatchOperator == AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
+                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " has case sensitive serial number match value '" + tokenMatchValue +
+                                    "'. In 6.8.0 it will match as case insensitive.");
                         }
-                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASEINS.getNumericValue();
+                        tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
+                        tokenMatchValue = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT);
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
                             tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {

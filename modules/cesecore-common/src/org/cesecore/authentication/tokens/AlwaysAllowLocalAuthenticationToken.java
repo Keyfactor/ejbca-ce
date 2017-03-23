@@ -47,6 +47,16 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
     }
     
     @Override
+    public int getPreferredMatchKey() {
+        return AuthenticationToken.NO_PREFERRED_MATCH_KEY; // not applicable to this type of authentication token
+    }
+    
+    @Override
+    public String getPreferredMatchValue() {
+        return null;
+    }
+    
+    @Override
     public boolean equals(Object authenticationToken) {
         if (this == authenticationToken) {
             return true;

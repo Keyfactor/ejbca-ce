@@ -133,6 +133,17 @@ public class CliAuthenticationToken extends AuthenticationToken {
         }
         return false;
     }
+    
+    @Override
+    public int getPreferredMatchKey() {
+        return CliUserAccessMatchValue.USERNAME.getNumericValue();
+    }
+    
+    /** Returns the username */
+    @Override
+    public String getPreferredMatchValue() {
+        return userName;
+    }
    
 
     /**
