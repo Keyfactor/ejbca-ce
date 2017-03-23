@@ -74,6 +74,7 @@ public interface RaMasterApi {
      * 1. authorized by the local system
      * 2. authorized by the remote system(s)
      * 
+     * The local authorization system is always checked first and authorization is cached separately for local and remote system.
      * Since actual authorization check is performed during API call, a local override can never harm the remote system.
      * 
      * @return true if the authenticationToken is authorized to all the resources
