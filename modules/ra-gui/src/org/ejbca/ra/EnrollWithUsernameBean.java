@@ -264,7 +264,12 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         selectedAlgorithm = null;
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(value.toString());
+        final String valueStr = value.toString();
+        if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
+            log.info("CSR uploaded was too large: "+valueStr.length());
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));            
+        }
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
         if (pkcs10CertificateRequest == null) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
