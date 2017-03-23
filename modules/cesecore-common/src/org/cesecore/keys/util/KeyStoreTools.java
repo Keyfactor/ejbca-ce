@@ -48,9 +48,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.crypto.ec.CustomNamedCurves;
+import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -211,7 +214,7 @@ public class KeyStoreTools {
         if (StringUtils.contains(Security.getProvider(this.providerName).getClass().getName(), "iaik")) {
             throw new InvalidAlgorithmParameterException("IAIK ECC key generation not implemented.");
         }
-        final ECGenParameterSpec keyParams;
+        final AlgorithmParameterSpec keyParams;
         if (StringUtils.equals(ecNamedCurveBc,"implicitlyCA")) {
             if (log.isDebugEnabled()) {
                 log.debug("Generating implicitlyCA encoded ECDSA key pair");
@@ -222,11 +225,22 @@ public class KeyStoreTools {
             keyParams = null;
         } else {
             // Convert it to the OID if possible since the human friendly name might differ in the provider
-            final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(ecNamedCurveBc);
-            if (log.isDebugEnabled()) {
-                log.debug("keySpecification '"+ecNamedCurveBc+"' transformed into OID " + oidOrName);
+            if (ECUtil.getNamedCurveOid(ecNamedCurveBc) != null) {
+                final String oidOrName = AlgorithmTools.getEcKeySpecOidFromBcName(ecNamedCurveBc);
+                if (log.isDebugEnabled()) {
+                    log.debug("keySpecification '"+ecNamedCurveBc+"' transformed into OID " + oidOrName);
+                }
+                keyParams = new ECGenParameterSpec(oidOrName);
+            } else {
+                log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + ecNamedCurveBc);
+                // This may be a new curve without OID, like curve25519 and we have to do something a bit different
+                X9ECParameters ecP = CustomNamedCurves.getByName("curve25519");
+                if (ecP == null) {
+                    throw new IllegalArgumentException("Can not generate EC curve, no OID and no ECParameters found: "+ecNamedCurveBc);
+                }
+                keyParams = new org.bouncycastle.jce.spec.ECParameterSpec(
+                        ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed()); 
             }
-            keyParams = new ECGenParameterSpec(oidOrName);
         }
         try {
             generateKeyPair(
