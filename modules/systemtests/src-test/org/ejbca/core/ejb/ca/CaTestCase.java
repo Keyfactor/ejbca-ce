@@ -521,8 +521,12 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
 
     protected static void createEllipticCurveDsaCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+    InvalidAlgorithmException, AuthorizationDeniedException {
+        createEllipticCurveDsaCa("secp256r1");
+    }
+    protected static void createEllipticCurveDsaCa(final String keySpec) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             InvalidAlgorithmException, AuthorizationDeniedException {
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECDSA_CA_NAME, "secp256r1");
+        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECDSA_CA_NAME, keySpec);
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();

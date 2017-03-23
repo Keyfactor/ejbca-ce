@@ -81,11 +81,14 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
+import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
@@ -167,9 +170,21 @@ public final class KeyTools {
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
-                // We have EC keys
-                ECGenParameterSpec bcSpec = new ECGenParameterSpec(keySpec);
-                keygen.initialize(bcSpec, new SecureRandom());
+                // Check if we have an OID for this named curve
+                if (ECUtil.getNamedCurveOid(keySpec) != null) {
+                    ECGenParameterSpec bcSpec = new ECGenParameterSpec(keySpec);
+                    keygen.initialize(bcSpec, new SecureRandom());                    
+                } else {
+                    log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + keySpec);
+                    // This may be a new curve without OID, like curve25519 and we have to do something a bit different
+                    X9ECParameters ecP = CustomNamedCurves.getByName("curve25519");
+                    if (ecP == null) {
+                        throw new IllegalArgumentException("Can not generate EC curve, no OID and no ECParameters found: "+keySpec);
+                    }
+                    org.bouncycastle.jce.spec.ECParameterSpec ecSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+                            ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed()); 
+                    keygen.initialize(ecSpec, new SecureRandom());                    
+                }
                 // The old code should work in BC v1.50b6 and later, but in versions prior to that the below produces a key with explicit parameter encoding instead of named curves.
                 // There is a test for this in KeyToolsTest.testGenKeysECDSAx9
                 //                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
