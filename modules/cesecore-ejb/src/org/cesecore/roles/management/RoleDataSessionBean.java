@@ -144,7 +144,6 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
             final RoleData roleData = getRoleData(role.getRoleId());
             if (roleData==null) {
                 // Must have been removed by another process, but caller wants to persist it, so we proceed (keeping the requested Role ID)
-                authorizationMightHaveChanged = isRoleMembersPresent(role.getRoleId());
                 entityManager.persist(new RoleData(role));
             } else {
                 final Role oldRole = roleData.getRole();
