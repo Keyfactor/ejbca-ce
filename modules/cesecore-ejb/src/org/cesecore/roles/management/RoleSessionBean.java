@@ -112,9 +112,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
      */
     @Override
     public List<Role> getRolesAuthenticationTokenIsMemberOfRemote(AuthenticationToken authenticationTokenForAuhtorization, AuthenticationToken authenticationTokenToCheck) {
-        if (authenticationTokenToCheck instanceof NestableAuthenticationToken) {
-            ((NestableAuthenticationToken) authenticationTokenToCheck).initRandomToken();
-        } else if (authenticationTokenToCheck instanceof LocalJvmOnlyAuthenticationToken) {
+        if (authenticationTokenToCheck instanceof LocalJvmOnlyAuthenticationToken) {
             // Ensure that the matching procedure below also works for remote EJB calls
             ((LocalJvmOnlyAuthenticationToken) authenticationTokenToCheck).initRandomToken();
         }
