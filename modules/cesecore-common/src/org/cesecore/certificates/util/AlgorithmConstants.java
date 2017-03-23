@@ -55,8 +55,14 @@ public final class AlgorithmConstants {
     public static final String KEYSPECPREFIX_ECGOST3410 = "GostR3410-";
     
     public static final List<String> BLACKLISTED_EC_CURVES = Arrays.asList(new String[]{
-            // Can't be generated with BouncyCastle 1.5.4
+            // Can't be generated with BouncyCastle 1.54
             "FRP256v1",
+    });
+
+    // Extra EC curves that we want to include that are not part of the "standard" curves in BC (ECNamedCurveTable.getNames)
+    public static final List<String> EXTRA_EC_CURVES = Arrays.asList(new String[]{
+            // Part of CustomNamedCurves in BouncyCastle 1.54
+            "curve25519",
     });
 
     private AlgorithmConstants () {} // Not for instantiation
