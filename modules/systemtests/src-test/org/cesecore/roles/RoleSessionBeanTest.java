@@ -313,18 +313,27 @@ public class RoleSessionBeanTest {
             addRoleMemberToRole(nameSpace2, commonRoleName, subjectDn1);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2), null, false);
             // And again, add authenticationToken1 matched by CN to Role 3 (with nameSpace3)
-            addRoleMemberToRole(nameSpace3, commonRoleName, subjectDn1);
+            RoleMember roleMember = addRoleMemberToRole(nameSpace3, commonRoleName, subjectDn1);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2, nameSpace3), null, false);
             // Sanity check that adding authenticationToken1 did not grant more access to the other authenticationTokens
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3), null, false);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4),
                     Arrays.asList(nameSpace3), true);
+            // Remove authenticationToken1 matched by CN from Role 3 (with nameSpace3) and expect that this namespace is no longer available
+            roleMemberSession.remove(alwaysAllowAuthenticationToken, roleMember.getId());
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1, nameSpace2), null, false);
             // Grant additional access to authenticationToken4 and expect that namespace3 will now also be visible
             final Role role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
             role4.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
             roleSession.persistRole(alwaysAllowAuthenticationToken, role4);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace3, nameSpace4), null, true);
+            // Revoke additional access from authenticationToken4 and expect that namespace3 will no longer be visible
+            final Role role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4, commonRoleName);
+            role4b.getAccessRules().clear();
+            role4b.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4), null, true);
         } finally {
             roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken1);
             roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken2);
@@ -334,12 +343,13 @@ public class RoleSessionBeanTest {
         }
     }
 
-    /** Add self signed certificate match to a role identified by name */
-    private void addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
+    /** Add self signed certificate match to a role identified by name and return the persisted RoleMember */
+    private RoleMember addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
         final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
-        roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
+        return roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, subjectDn.hashCode(), X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null, null));
+        
     }
     
     /** Verify that actualNameSpaces contain the desired namespaces */
