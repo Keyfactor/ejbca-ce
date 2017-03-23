@@ -177,9 +177,9 @@ public final class KeyTools {
                 } else {
                     log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + keySpec);
                     // This may be a new curve without OID, like curve25519 and we have to do something a bit different
-                    X9ECParameters ecP = CustomNamedCurves.getByName("curve25519");
+                    X9ECParameters ecP = CustomNamedCurves.getByName(keySpec);
                     if (ecP == null) {
-                        throw new IllegalArgumentException("Can not generate EC curve, no OID and no ECParameters found: "+keySpec);
+                        throw new InvalidAlgorithmParameterException("Can not generate EC curve, no OID and no ECParameters found: "+keySpec);
                     }
                     org.bouncycastle.jce.spec.ECParameterSpec ecSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
                             ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed()); 
