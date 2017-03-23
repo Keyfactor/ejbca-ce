@@ -133,6 +133,7 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
             // Successfully did nothing
             return null;
         }
+        boolean authorizationMightHaveChanged = false;
         if (role.getRoleId()==Role.ROLE_ID_UNASSIGNED) {
             role.setRoleId(findFreeRoleId());
             entityManager.persist(new RoleData(role));
@@ -142,12 +143,19 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
                 // Must have been removed by another process, but caller wants to persist it, so we proceed (keeping the requested Role ID)
                 entityManager.persist(new RoleData(role));
             } else {
+                final Role oldRole = roleData.getRole();
+                if (!role.getAccessRules().equals(oldRole.getAccessRules())) {
+                    authorizationMightHaveChanged = true;
+                }
                 // Since the entity is managed, we just update its values
                 roleData.setRole(role);
             }
         }
         RoleCache.INSTANCE.updateWith(role.getRoleId(), role.hashCode(), Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
-        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        // If we only created a new Role that has no members yet or the access rules did no change, the authorization would not have changed
+        if (authorizationMightHaveChanged) {
+            accessTreeUpdateSession.signalForAccessTreeUpdate();
+        }
         return role;
     }
 
