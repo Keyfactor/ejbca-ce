@@ -138,6 +138,8 @@ import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalReques
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
@@ -1408,6 +1410,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public CertificateProfile getCertificateProfile(int id) {
+        return certificateProfileSession.getCertificateProfile(id);
+    }
+
+    @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
@@ -1469,6 +1476,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public EndEntityInformation searchUser(final AuthenticationToken admin, String username) {
         return endEntityAccessSession.findUser(username);
     }
+    
+    @Override
+    public void checkUserStatus(AuthenticationToken admin, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
+        endEntityAuthenticationSessionLocal.authenticateUser(admin, username, password);
+    }
+
+
     
     @Override
     public byte[] generateKeyStore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{

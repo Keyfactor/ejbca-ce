@@ -357,6 +357,11 @@ textarea#keyPairForm\:certificateRequest {
   margin: 0 auto 2% auto;
   display: block; }
 
+textarea#enrollWithUsernameForm\:certificateRequest {
+  width: 98%;
+  margin: 0 auto 2% auto;
+  display: block; }
+
 #newFileInput {
   margin-left: 5%;
   color: #fff;
@@ -454,6 +459,13 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:generateKeyStorePem,
 #enrollWithRequestIdForm\:generatePkcs12,
 #enrollWithRequestIdForm\:generateJks,
+#enrollWithUsernameForm\:generateDer,
+#enrollWithUsernameForm\:generatePkcs7,
+#enrollWithUsernameForm\:generatePemFullChain,
+#enrollWithUsernameForm\:generatePem,
+#enrollWithUsernameForm\:generateKeyStorePem,
+#enrollWithUsernameForm\:generatePkcs12,
+#enrollWithUsernameForm\:generateJks,
 #requestInfoForm\:confirmRequestButton,
 #searchCertsButton,
 #requestStatusButton,

@@ -107,6 +107,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
 
     public static String PARAM_REQUESTID = "requestId";
+    public static String PARAM_USERNAME = "username";
+    public static String PARAM_ENROLLMENT_CODE = "enrollmentcode";
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -1034,7 +1036,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size()>1 && StringUtils.isEmpty(getSelectedEndEntityProfile())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_eep_nochoice"), raLocaleBean.getMessage("enroll_select_eep_nochoice"), true));
         }
-        sortSelectItemsByLabel(ret);
+        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
         return ret;
     }
 
@@ -1058,7 +1060,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size()>1 && StringUtils.isEmpty(getSelectedCertificateProfile())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_cp_nochoice"), raLocaleBean.getMessage("enroll_select_cp_nochoice"), true));
         }
-        sortSelectItemsByLabel(ret);
+        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
         return ret;
     }
 
@@ -1093,7 +1095,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size()>1 && StringUtils.isEmpty(getSelectedCertificateAuthority())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ca_nochoice"), raLocaleBean.getMessage("enroll_select_ca_nochoice"), true));
         }
-        sortSelectItemsByLabel(ret);
+        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
         return ret;
     }
 
@@ -1214,14 +1216,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
                 }
             }
-            sortSelectItemsByLabel(availableAlgorithmSelectItems);
+            EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
             this.availableAlgorithmSelectItems = availableAlgorithmSelectItems;
         }
         return availableAlgorithmSelectItems;
     }
 
     /** Sort the provided list by label with the exception of any item with null value that ends up first. */
-    private void sortSelectItemsByLabel(final List<SelectItem> items) {
+    protected static void sortSelectItemsByLabel(final List<SelectItem> items) {
         Collections.sort(items, new Comparator<SelectItem>() {
             @Override
             public int compare(final SelectItem item1, final SelectItem item2) {

@@ -28,6 +28,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -35,6 +36,8 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -269,6 +272,9 @@ public interface RaMasterApi {
     /** @return map of authorized certificate profiles for the provided authentication token*/
     IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken);
     
+    /** @return CertificateProfile with the specified Id or null if it can not be found */
+    CertificateProfile getCertificateProfile(int id);
+    
     /**
      * Adds (end entity) user.
      * @param admin authentication token
@@ -374,4 +380,6 @@ public interface RaMasterApi {
      * @throws EjbcaException exception with errorCode if check fails
      */
     void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException;
+
+    void checkUserStatus(AuthenticationToken authenticationToken, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException;
 }
