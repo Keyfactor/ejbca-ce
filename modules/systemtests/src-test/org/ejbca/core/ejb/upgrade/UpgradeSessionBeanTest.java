@@ -487,10 +487,11 @@ public class UpgradeSessionBeanTest {
     }
     
     @Test
-    public void upgradeTo680RoleMembers() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    public void upgradeTo680RoleMembers() throws AuthorizationDeniedException {
         final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
         final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
-                new AccessUserAspectData(roleName, 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE")
+                new AccessUserAspectData(roleName, 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"),
+                new AccessUserAspectData(roleName, 4712, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "123abcDEF")
                 );
         upgradeTestSession.createRole(roleName, null, oldAccessUserAspectDatas);
         int newRoleId = Role.ROLE_ID_UNASSIGNED;
@@ -500,11 +501,20 @@ public class UpgradeSessionBeanTest {
             final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
             newRoleId = newRole.getRoleId();
             final List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
-            assertEquals("For some strange reason, a single role member was turned into several", 1, newRoleMembers.size());
-            final RoleMember newRoleMember = newRoleMembers.get(0);
-            assertEquals("Match value token type was not upgraded properly." , X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, newRoleMember.getTokenType());
-            assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenMatchKey());
-            assertEquals("Match value value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
+            assertEquals("Wrong number of role members", 2, newRoleMembers.size());
+            for (final RoleMember newRoleMember : newRoleMembers) {
+                assertEquals("Match value token type was not upgraded properly." , X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, newRoleMember.getTokenType());
+                if (newRoleMember.getTokenIssuerId() == 4711)  {
+                    assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), newRoleMember.getTokenMatchKey());
+                    assertEquals("Match value operator was not upgraded properly." , AccessMatchType.TYPE_EQUALCASE.getNumericValue(), newRoleMember.getTokenMatchOperator());
+                    assertEquals("Match value value was not upgraded properly." , "SE", newRoleMember.getTokenMatchValue());
+                } else {
+                    // Check that the serial number is normalized
+                    assertEquals("Match value key was not upgraded properly." , X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(), newRoleMember.getTokenMatchKey());
+                    assertEquals("Match value operator was not upgraded properly." , AccessMatchType.TYPE_EQUALCASE.getNumericValue(), newRoleMember.getTokenMatchOperator());
+                    assertEquals("Match value value was not upgraded properly." , "123ABCDEF", newRoleMember.getTokenMatchValue());
+                }
+            }
         } finally {
             upgradeTestSession.deleteRole(roleName);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);

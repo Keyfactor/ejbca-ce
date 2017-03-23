@@ -248,6 +248,17 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
 
         return returnvalue;
     }
+    
+    @Override
+    public int getPreferredMatchKey() {
+        return X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue();
+    }
+    
+    /** Returns the serial number as a decimal string */
+    @Override
+    public String getPreferredMatchValue() {
+        return CertTools.getSerialNumberAsString(certificate);
+    }
 
     /** Returns user information of the user this authentication token belongs to. */
     @Override

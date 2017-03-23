@@ -95,6 +95,16 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
             return false;
         }
     }
+    
+    @Override
+    public int getPreferredMatchKey() {
+        return AuthenticationToken.NO_PREFERRED_MATCH_KEY; // not applicable to this type of authentication token
+    }
+    
+    @Override
+    public String getPreferredMatchValue() {
+        return null;
+    }
 
     /** Returns information of the entity this authentication token belongs to. */
     @Override

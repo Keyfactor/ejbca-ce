@@ -46,6 +46,17 @@ public class UsernameBasedAuthenticationToken extends AuthenticationToken{
     }
     
     @Override
+    public int getPreferredMatchKey() {
+        return 0; // doesn't use match keys
+    }
+    
+    /** Returns the username */
+    @Override
+    public String getPreferredMatchValue() {
+        return username;
+    }
+    
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
