@@ -75,6 +75,11 @@
                                         	<h:outputLink value="enrollwithrequestid.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
+                                        <li class="pure-menu-item">
+                                        	<h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_username}"/></h:outputLink>
+                                        </li>
+                                    </ui:fragment>
                                 </ul>
                             </li>
                         </ui:fragment>

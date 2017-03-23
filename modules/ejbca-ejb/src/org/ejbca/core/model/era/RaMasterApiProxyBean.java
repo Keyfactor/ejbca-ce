@@ -47,6 +47,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -54,6 +55,8 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -715,6 +718,25 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public CertificateProfile getCertificateProfile(int id) {
+        CertificateProfile ret = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.getCertificateProfile(id);
+                    if (ret != null) {
+                        // If we did get a hit, we don't need to cycle through other implementations
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
     public boolean addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -797,6 +819,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return null;
+    }
+
+    @Override
+    public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)
+            throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    raMasterApi.checkUserStatus(authenticationToken, username, password);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
     }
 
     @Override
