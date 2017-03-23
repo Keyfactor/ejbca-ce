@@ -41,6 +41,8 @@ public abstract class AuthenticationToken implements Serializable {
     private final Set<? extends Principal> principals;
     private final Set<?> credentials;
     private transient String uniqueId = null;
+    
+    public static final int NO_PREFERRED_MATCH_KEY = -1;
 
     public AuthenticationToken(Set<? extends Principal> principals, Set<?> credentials) {
         this.principals = principals;
@@ -117,6 +119,18 @@ public abstract class AuthenticationToken implements Serializable {
     public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
         return getMetaData().getAccessMatchValueIdMap().get(databaseValue);
     }
+    
+    /**
+     * Returns the preferred match key for this type of authentication token. E.g. serial number for X.509 tokens
+     * If not applicable to this authentication token, then it returns {@link #NO_PREFERRED_MATCH_KEY}.
+     */
+    public abstract int getPreferredMatchKey();
+    
+    /**
+     * Returns the preferred match value for this authentication token. E.g. the serial number of X.509 tokens.
+     * <b>Note:</b> For performance reasons, this value must support case sensitive searching.
+     */
+    public abstract String getPreferredMatchValue();
     
     /** @return a String that is guaranteed to be unique across all AuthenticationTokens of this type. */
     protected abstract String generateUniqueId();

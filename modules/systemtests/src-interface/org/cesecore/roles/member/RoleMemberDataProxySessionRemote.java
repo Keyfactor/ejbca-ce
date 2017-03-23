@@ -13,8 +13,13 @@
 package org.cesecore.roles.member;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.Remote;
+
+import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * @version $Id$
@@ -67,4 +72,10 @@ public interface RoleMemberDataProxySessionRemote {
 
     /** @return true if the EJBCA 6.8.0 union of access rules from multiple matched roles is in use */
     boolean isNewAuthorizationPatternMarkerPresent();
+    
+    /** @see {@link org.cesecore.roles.member.RoleMemberDataSessionLocal#getRoleIdsMatchingAuthenticationTokenOrFail(AuthenticationToken)} */
+    Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+    
+    /** @see {@link org.cesecore.roles.member.RoleMemberDataSessionBean#getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken)} */
+    Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 }
