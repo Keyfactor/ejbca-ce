@@ -43,6 +43,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     private static final String NAME_KEY = "--name";
     private static final String RULE_KEY = "--rule";
     private static final String STATE_KEY = "--state";
+    @Deprecated
     private static final String RECURSIVE_KEY = "-R";
 
     {
@@ -51,7 +52,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         registerParameter(new Parameter(RULE_KEY, "Rule", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The rule to change"));
         registerParameter(new Parameter(STATE_KEY, "Rule State", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The state of the rule."));
-        registerParameter(Parameter.createFlag(RECURSIVE_KEY, "Set this switch if rule is to be recursive. Default is false."));
+        registerParameter(Parameter.createFlag(RECURSIVE_KEY, "(Deprecated) Set this switch if rule is to be recursive. Default is false."));
     }
 
     @Override

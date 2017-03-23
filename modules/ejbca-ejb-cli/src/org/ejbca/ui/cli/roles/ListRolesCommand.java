@@ -49,7 +49,7 @@ public class ListRolesCommand extends BaseRolesCommand {
             List<RoleMember> roleMembers;
             try {
                 roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
-                final String roleMembersString = " (" + roleMembers.size() + " admin"+(roleMembers.isEmpty()?"":"s")+")";
+                final String roleMembersString = " (" + roleMembers.size() + " admin"+(roleMembers.size()==1?"":"s")+")";
                 if (StringUtils.isEmpty(role.getNameSpace())) {
                     getLogger().info("'" + role.getRoleName() + "' " + roleMembersString);
                 } else {
