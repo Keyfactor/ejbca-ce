@@ -294,18 +294,20 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             newAuditMap.put(entry.getKey(), entry.getValue().booleanValue() ? "allow" : "deny");
         }
         final Map<Object, Object> auditLogDiffMap = UpgradeableDataHashMap.diffMaps(oldAuditMap, newAuditMap);
-        final StringBuilder rulesMsg = new StringBuilder();
-        for (Map.Entry<Object, Object> entry : auditLogDiffMap.entrySet()) {
-            rulesMsg.append("[" + entry.getKey().toString() + ":"+entry.getValue().toString()+"]");
+        if (!auditLogDiffMap.isEmpty()) {
+            final StringBuilder rulesMsg = new StringBuilder();
+            for (Map.Entry<Object, Object> entry : auditLogDiffMap.entrySet()) {
+                rulesMsg.append("[" + entry.getKey().toString() + ":"+entry.getValue().toString()+"]");
+            }
+            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.accessruleschanged", role.getRoleNameFull(), rulesMsg.toString());
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("roleId", role.getRoleId());
+            details.put("roleName", role.getRoleName());
+            details.put("nameSpace", role.getNameSpace());
+            securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
         }
-        final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.accessruleschanged", role.getRoleNameFull(), rulesMsg.toString());
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", msg);
-        details.put("roleId", role.getRoleId());
-        details.put("roleName", role.getRoleName());
-        details.put("nameSpace", role.getNameSpace());
-        securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                authenticationToken.toString(), null, null, null, details);
         return role;
     }
 
