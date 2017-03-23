@@ -59,7 +59,9 @@ public class ListRulesCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             for (final Entry<String,Boolean> entry : AccessRulesHelper.getAsListSortedByKey(role.getAccessRules())) {
-            	getLogger().info(super.getResourceToResourceNameMap().get(entry.getKey()) + " " + (entry.getValue() ? "ALLOW" : "DENY"));
+                final String resource = entry.getKey();
+                final String resourceName = super.getResourceToResourceNameMap().get(resource);
+            	getLogger().info((resourceName==null?resource:resourceName) + " " + (entry.getValue() ? "ALLOW" : "DENY"));
             }
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {

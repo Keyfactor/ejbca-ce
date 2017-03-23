@@ -80,7 +80,7 @@ public class AddAdminCommand extends BaseRolesCommand {
             role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
         } catch (AuthorizationDeniedException e) {
             getLogger().error("No authorized to role '" + roleName + "'.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (role == null) {
             getLogger().error("No such role '" + roleName + "'.");
