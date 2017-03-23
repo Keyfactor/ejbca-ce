@@ -55,8 +55,8 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                 "Name of the issuing CA"));
         registerParameter(new Parameter(MATCH_WITH_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The MatchWith Value"));
-        registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The MatchType"));
+        registerParameter(new Parameter(MATCH_TYPE_KEY, "Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "(Deprected) Match operator type. Kept to prevent legacy scripts from breaking. Currently implied by " + MATCH_WITH_KEY +" switch."));
         registerParameter(new Parameter(MATCH_VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The value to match against."));
     }
@@ -102,10 +102,21 @@ public class RemoveAdminCommand extends BaseRolesCommand {
             getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        final AccessMatchType accessMatchType = AccessMatchType.matchFromName(parameters.get(MATCH_TYPE_KEY));
-        if (accessMatchType == null) {
-            getLogger().error("No such type to match with as '" + parameters.get(MATCH_TYPE_KEY) + "'.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+        final String accessMatchTypeParam = parameters.get(MATCH_TYPE_KEY);
+        final AccessMatchType accessMatchType;
+        if (accessMatchTypeParam==null) {
+            if (accessMatchValue.getAvailableAccessMatchTypes().isEmpty()) {
+                accessMatchType = AccessMatchType.TYPE_UNUSED;
+            } else {
+                accessMatchType = accessMatchValue.getAvailableAccessMatchTypes().get(0);
+            }
+            getLogger().info("Using '"+accessMatchType+"' implied by '" + accessMatchValue + "'.");
+        } else {
+            accessMatchType = AccessMatchType.matchFromName(parameters.get(MATCH_TYPE_KEY));
+            if (accessMatchType == null) {
+                getLogger().error("No such type to match with as '" + parameters.get(MATCH_TYPE_KEY) + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
         }
         final String tokenMatchValue = parameters.get(MATCH_VALUE_KEY);
         final int caId = caInfo.getCAId();

@@ -189,7 +189,10 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<String,String> accessRulesCaAccess = new LinkedHashMap<>();
         accessRulesCaAccess.put(StandardRules.CAACCESSBASE.resource(), StandardRules.CAACCESSBASE.resource());
         for (final int caId : caIdToNameMap.keySet()) {
-            final String caName = caIdToNameMap.get(caId);
+            String caName = caIdToNameMap.get(caId);
+            if (caName==null) {
+                caName = String.valueOf(caId);
+            }
             accessRulesCaAccess.put(StandardRules.CAACCESS.resource() + caId, StandardRules.CAACCESS.resource() + caName);
         }
         ret.put("CAACCESSRULES", accessRulesCaAccess);
@@ -200,7 +203,10 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRulesConstants.ENDENTITYPROFILEBASE);
             // Add all authorized End Entity Profiles
             for (final int eepId : eepIdToNameMap.keySet()) {
-                final String eepName = eepIdToNameMap.get(eepId);
+                String eepName = eepIdToNameMap.get(eepId);
+                if (eepName==null) {
+                    eepName = String.valueOf(eepId);
+                }
                 // Administrator is authorized to this End Entity Profile, add it.
                 accessRulesEepAccess.put(AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId, AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepName);
                 for (final String subResource : AccessRulesConstants.ENDENTITYPROFILE_ENDINGS) {
@@ -226,7 +232,10 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
             accessRulesCtAccess.put(rule.resource(), rule.resource());
         }
         for (final int cryptoTokenId : cryptoTokenIdToNameMap.keySet()) {
-            final String cryptoTokenName = cryptoTokenIdToNameMap.get(cryptoTokenId);
+            String cryptoTokenName = cryptoTokenIdToNameMap.get(cryptoTokenId);
+            if (cryptoTokenName==null) {
+                cryptoTokenName = String.valueOf(cryptoTokenId);
+            }
             for (final CryptoTokenRules rule : CryptoTokenRules.values()) {
                 if (!rule.equals(CryptoTokenRules.BASE) && !rule.equals(CryptoTokenRules.MODIFY_CRYPTOTOKEN) && !rule.equals(CryptoTokenRules.DELETE_CRYPTOTOKEN)) {
                     accessRulesCtAccess.put(rule.resource() + "/" + cryptoTokenId, rule.resource() + "/" + cryptoTokenName);
@@ -238,7 +247,10 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<String,String> accessRulesUdsAccess = new LinkedHashMap<>();
         accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEBASE, AccessRulesConstants.USERDATASOURCEBASE);
         for (final int userDataSourceId : userDataSourceIdToNameMap.keySet()) {
-            final String userDataSourceName = userDataSourceIdToNameMap.get(userDataSourceId);
+            String userDataSourceName = userDataSourceIdToNameMap.get(userDataSourceId);
+            if (userDataSourceName==null) {
+                userDataSourceName = String.valueOf(userDataSourceId);
+            }
             accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_FETCH_RIGHTS,
                     AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceName + AccessRulesConstants.UDS_FETCH_RIGHTS);
             accessRulesUdsAccess.put(AccessRulesConstants.USERDATASOURCEPREFIX + userDataSourceId + AccessRulesConstants.UDS_REMOVE_RIGHTS,
