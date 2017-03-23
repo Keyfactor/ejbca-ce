@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -134,8 +135,52 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String... resources) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.isAuthorizedNoLogging(authenticationToken, resources)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        RaAuthorizationResult combinedResult = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    final RaAuthorizationResult raAuthorizationResult = raMasterApi.getAuthorization(authenticationToken);
+                    if (combinedResult==null) {
+                        combinedResult = raAuthorizationResult;
+                    } else {
+                        final HashMap<String, Boolean> accessRules = AccessRulesHelper.getAccessRulesUnion(combinedResult.getAccessRules(),
+                                raAuthorizationResult.getAccessRules());
+                        // Sum of update numbers is strictly growing under the assumption that all backends are still connected
+                        final int combinedUpdateNumber = combinedResult.getUpdateNumber() + raAuthorizationResult.getUpdateNumber();
+                        combinedResult = new RaAuthorizationResult(accessRules, combinedUpdateNumber);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (combinedResult==null) {
+            combinedResult = new RaAuthorizationResult(null, 0);
+        }
+        return combinedResult;
+    }
+
+    @Override
+    @Deprecated
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        AccessSet merged = AccessSet.createEmptyAccessSet();
+        AccessSet merged = new AccessSet(new HashSet<String>());
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -150,6 +195,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    @Deprecated
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
         final List<AuthenticationToken> tokens = new ArrayList<>(authenticationTokens);
         final AccessSet[] merged = new AccessSet[authenticationTokens.size()];

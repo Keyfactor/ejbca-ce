@@ -62,20 +62,42 @@ public interface RaMasterApi {
      * connecting and this will return the cached and current number.
      * 
      * @return the current (lowest) back-end API version
-     * @since Master RA API version 1 (EJBCA 6.8.0)
+     * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     int getApiVersion();
 
     /**
+     * The AuthenticationToken is preliminary authorized to a resource if it is either
+     * 1. authorized by the local system
+     * 2. authorized by the remote system(s)
+     * 
+     * Since actual authorization check is performed during API call, a local override can never harm the remote system.
+     * 
+     * @return true if the authenticationToken is authorized to all the resources
+     */
+    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String...resources);
+
+    /**
+     * @return the access rules and corresponding authorization system update number for the specified AuthenticationToken.
+     * @throws AuthenticationFailedException if the provided authenticationToken is invalid
+     * @since RA Master API version 1 (EJBCA 6.8.0)
+     */
+    RaAuthorizationResult getAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+
+    /**
      * Returns an AccessSet containing the access rules that are allowed for the given authentication token.
      * Note that AccessSets do not support deny rules.
+     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
      */
+    @Deprecated
     AccessSet getUserAccessSet(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
 
     /**
      * Gets multiple access sets at once. Returns them in the same order as in the parameter.
      * Note that AccessSets do not support deny rules.
+     * @deprecated RA Master API version 1 (EJBCA 6.8.0). Use {@link #getAuthorization(AuthenticationToken)} instead.
      */
+    @Deprecated
     List<AccessSet> getUserAccessSets(List<AuthenticationToken> authenticationTokens);
 
     /** @return a list with information about non-external CAs that the caller is authorized to see. */
