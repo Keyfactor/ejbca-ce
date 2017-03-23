@@ -124,21 +124,6 @@ public final class AccessSetTest {
         log.trace("<testBadResources");
     }
     
-    @Test
-    public void testNewAccessMap() {
-        log.trace(">testNewAccessMap");
-        final AccessSet asNew = makeNewAccessSet();
-        // The new access rule representation is a plain Map<String,Boolean> that is used with
-        // AccessRulesHelper (which is tested in AccessRulesHelperTest). So let's only do basic testing here
-        assertTrue(asNew.isAuthorized("/a/"));
-        assertFalse(asNew.isAuthorized("/b/"));
-        assertTrue(asNew.isAuthorized("/b/c/"));
-        assertTrue(asNew.isAuthorized("/b/c/d/"));
-        assertFalse(asNew.isAuthorized("/b/c/e/"));
-        assertTrue(asNew.isAuthorized("/nonexistent"));
-        log.trace("<testNewAccessMap");
-    }
-    
     @SuppressWarnings("deprecation")
     @Test
     public void testConvertAndMerge() {
@@ -181,7 +166,7 @@ public final class AccessSetTest {
         accessRules.put("/b/c/", true);
         accessRules.put("/b/c/e/", false);
         accessRules.put("/nonexistent/", true);
-        return new AccessSet(accessRules, allResources);
+        return AccessSet.fromAccessRules(accessRules, allResources);
     }
 
 }

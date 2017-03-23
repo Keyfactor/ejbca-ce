@@ -58,6 +58,7 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaDat
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
@@ -160,6 +161,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private static final Logger log = Logger.getLogger(RaMasterApiSessionBean.class);
 
     @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+    @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
@@ -229,11 +232,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
+    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resources) {
+        return authorizationSession.isAuthorizedNoLogging(authenticationToken, resources);
+    }
+
+    @Override
+    public RaAuthorizationResult getAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        final HashMap<String, Boolean> accessRules = authorizationSession.getAccessAvailableToAuthenticationToken(authenticationToken);
+        final int updateNumber = accessTreeUpdateSession.getAccessTreeUpdateNumber();
+        return new RaAuthorizationResult(accessRules, updateNumber);
+    }
+
+    @Override
+    @Deprecated
     public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
         return authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
     }
     
     @Override
+    @Deprecated
     public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens)  {
         final List<AccessSet> ret = new ArrayList<>();
         for (final AuthenticationToken authenticationToken : authenticationTokens) {
@@ -1597,5 +1614,4 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
-
 }

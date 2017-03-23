@@ -321,6 +321,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         // ..but this is kind of theoretical since we currently don't support any of these operations from the RA
         allResources.add(StandardRules.CAADD.resource());
         allResources.add(StandardRules.CAREMOVE.resource());
-        return new AccessSet(accessRules, allResources);
+        return AccessSet.fromAccessRules(accessRules, allResources);
     }
 }
