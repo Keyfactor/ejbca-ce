@@ -37,17 +37,27 @@ import org.cesecore.util.ValidityDate;
  * @version $Id$
  */
 public enum AuthorizationCache {
-    INSTANCE;
+    INSTANCE, RAINSTANCE;
     
     private final Logger log = Logger.getLogger(AuthorizationCache.class);
 
+    public static class AuthorizationResult {
+        final HashMap<String, Boolean> accessRules;
+        final int updateNumber;
+
+        public AuthorizationResult(final HashMap<String, Boolean> accessRules, final int updateNumber) {
+            this.accessRules = accessRules;
+            this.updateNumber = updateNumber;
+        }
+
+        public HashMap<String, Boolean> getAccessRules() { return accessRules; }
+        public int getUpdateNumeber() { return updateNumber; }
+    }
+    
     /** Call-back interface for loading access rules on cache miss */
     public interface AuthorizationCacheCallback {
-        /** @return the access rules for the specified authenticationToken  */
-        HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
-
-        /** @return the update number for the current state of roles and members used to determine if there are authorization changes */
-        int getUpdateNumber();
+        /** @return the access rules and corresponding update number for the specified authenticationToken  */
+        AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
         
         /** @return the number of milliseconds to keep cache entries for after an authentication token was last seen */
         long getKeepUnusedEntriesFor();
@@ -92,8 +102,8 @@ public enum AuthorizationCache {
     }
 
     /** Re-build the authorization cache for all entries that been seen recently (as determined by authorizationCacheCallback.getKeepUnusedEntriesFor()). */
-    public void refresh(final AuthorizationCacheCallback authorizationCacheCallback) {
-        final int refreshUpdateNumber = authorizationCacheCallback.getUpdateNumber();
+    public void refresh(final AuthorizationCacheCallback authorizationCacheCallback, final int refreshUpdateNumber) {
+        //final int refreshUpdateNumber = authorizationCacheCallback.getUpdateNumber();
         if (log.isTraceEnabled()) {
             log.trace("Starting cache refresh when update number was " + refreshUpdateNumber + ".");
         }
@@ -133,8 +143,13 @@ public enum AuthorizationCache {
 
     /** @return the access rules granted to the specified authenticationToken using the callback to load them if needed. Never null.  */
     public HashMap<String, Boolean> get(final AuthenticationToken authenticationToken, final AuthorizationCacheCallback authorizationCacheCallback) throws AuthenticationFailedException {
+        return getAuthorizationResult(authenticationToken, authorizationCacheCallback).accessRules;
+    }
+
+    /** @return the access rules granted to the specified authenticationToken and corresponding update number using the callback to load them if needed. Never null.  */
+    public AuthorizationResult getAuthorizationResult(final AuthenticationToken authenticationToken, final AuthorizationCacheCallback authorizationCacheCallback) throws AuthenticationFailedException {
         if (authenticationToken==null || authorizationCacheCallback==null) {
-            return new HashMap<>();
+            return new AuthorizationResult(new HashMap<String,Boolean>(), 0);
         }
         final String key = authenticationToken.getUniqueId();
         final AuthorizationCacheEntry authorizationCacheEntry = new AuthorizationCacheEntry();
@@ -147,13 +162,13 @@ public enum AuthorizationCache {
             ret = authorizationCacheEntry;
             try {
                 ret.authenticationToken = authenticationToken;
-                ret.updateNumber = authorizationCacheCallback.getUpdateNumber();
+                final AuthorizationResult authorizationResult = authorizationCacheCallback.loadAuthorization(authenticationToken);
+                ret.updateNumber = authorizationResult.updateNumber;
                 setUpdateNumberIfLower(ret.updateNumber);
                 ret.accessRules = new HashMap<>();
-                final HashMap<String, Boolean> loadedAccessRules = authorizationCacheCallback.loadAccessRules(authenticationToken);
-                if (loadedAccessRules != null) {
+                if (authorizationResult.accessRules != null) {
                     // Cache a copy of the loaded access rules map
-                    ret.accessRules.putAll(loadedAccessRules);
+                    ret.accessRules.putAll(authorizationResult.accessRules);
                 }
             } finally {
                 // Ensure that we release any waiting thread
@@ -180,13 +195,13 @@ public enum AuthorizationCache {
                         log.debug("Removed entry for key '" + key + "' since its updateNumber was " + ret.updateNumber + ".");
                     }
                 }
-                return get(authenticationToken, authorizationCacheCallback);
+                return getAuthorizationResult(authenticationToken, authorizationCacheCallback);
             }
             // Don't care about last time of use here, just be happy that it was found if it was found 
         }
         // Weak indication of last use, so rebuild can eventually purge unused entries
         ret.timeOfLastUse = System.currentTimeMillis();
-        return ret.accessRules;
+        return new AuthorizationResult(ret.accessRules, ret.updateNumber);
     }
 
     /** Non-blocking atomic update of the last known update number. */

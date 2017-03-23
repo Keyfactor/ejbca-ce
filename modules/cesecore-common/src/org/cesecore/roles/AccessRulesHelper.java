@@ -29,6 +29,18 @@ public abstract class AccessRulesHelper {
 
     //private static final Logger log = Logger.getLogger(AccessRulesHelper.class);
 
+    /** @return true if the provided map of access rules allows access to all the given resources */
+    public static boolean hasAccessToResources(final HashMap<String, Boolean> accessRules, final String...resources) {
+        if (resources!=null) {
+            for (final String resource : resources) {
+                if (!AccessRulesHelper.hasAccessToResource(accessRules, resource)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /** @return true if the provided map of access rules allows access to the given resource */
     public static boolean hasAccessToResource(final HashMap<String, Boolean> accessRules, final String resource) {
         if (resource==null || resource.charAt(0)!='/') {

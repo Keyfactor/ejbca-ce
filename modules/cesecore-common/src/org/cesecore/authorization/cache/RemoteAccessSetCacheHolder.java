@@ -22,8 +22,11 @@ import org.cesecore.util.ConcurrentCache;
 
 /**
  * Holds a ConcurrentCache which can be filled with cached AccessSets from remote systems etc. 
+ * 
  * @version $Id$
+ * @deprecated since EJBCA 6.8.0
  */
+@Deprecated
 public final class RemoteAccessSetCacheHolder {
     
     private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolder.class);

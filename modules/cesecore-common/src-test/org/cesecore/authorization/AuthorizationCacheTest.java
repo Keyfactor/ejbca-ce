@@ -33,6 +33,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
+import org.cesecore.authorization.AuthorizationCache.AuthorizationResult;
 import org.cesecore.authorization.access.AuthorizationCacheReload;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.junit.Test;
@@ -57,15 +58,11 @@ public class AuthorizationCacheTest {
         final AuthenticationToken at1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest1"));
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 if (at1==authenticationToken) {
-                    return accessRules1;
+                    return new AuthorizationResult(accessRules1, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -87,12 +84,8 @@ public class AuthorizationCacheTest {
         final AuthenticationToken at2 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AuthorizationCacheTest2"));
         final AuthorizationCacheCallback callbackEmpty = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -107,21 +100,21 @@ public class AuthorizationCacheTest {
         assertEquals(1, AuthorizationCache.INSTANCE.get(at2, callbackEmpty).size());
         // Without increasing the updateNumer, nothing should happen when the cache is refreshed
         accessRules1.put("/rule2", Boolean.TRUE);
-        AuthorizationCache.INSTANCE.refresh(callback);
+        AuthorizationCache.INSTANCE.refresh(callback, updateNumber.get());
         assertNotNull(AuthorizationCache.INSTANCE.get(at1, callback));
         assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback).size());
         updateNumber.incrementAndGet();
-        AuthorizationCache.INSTANCE.refresh(callback);
+        AuthorizationCache.INSTANCE.refresh(callback, updateNumber.get());
         assertNotNull(AuthorizationCache.INSTANCE.get(at1, callback));
         assertEquals(2, AuthorizationCache.INSTANCE.get(at1, callback).size());
         // When the cache is refreshed, even if the updateNumber is not changed, unused entries will be removed
         accessRules1.clear();
         Thread.sleep(100L);
-        AuthorizationCache.INSTANCE.refresh(callback);
+        AuthorizationCache.INSTANCE.refresh(callback, updateNumber.get());
         assertEquals(2, AuthorizationCache.INSTANCE.get(at1, callback).size());
         keepUnusedEntriesFor.set(0L);
         Thread.sleep(100L);
-        AuthorizationCache.INSTANCE.refresh(callback);
+        AuthorizationCache.INSTANCE.refresh(callback, updateNumber.get());
         assertEquals(0, AuthorizationCache.INSTANCE.get(at1, callback).size());
         log.trace("<testBasicOperations");
     }
@@ -139,15 +132,11 @@ public class AuthorizationCacheTest {
         final Set<AuthorizationCacheReloadListener> authorizationCacheReloadListeners = new HashSet<>();
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 if (at1==authenticationToken) {
-                    return accessRules1;
+                    return new AuthorizationResult(accessRules1, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -172,15 +161,11 @@ public class AuthorizationCacheTest {
         updateNumber.incrementAndGet();
         final AuthorizationCacheCallback callback2 = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 if (at1==authenticationToken) {
-                    return accessRules2;
+                    return new AuthorizationResult(accessRules2, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -212,15 +197,11 @@ public class AuthorizationCacheTest {
         final Set<AuthorizationCacheReloadListener> authorizationCacheReloadListeners = new HashSet<>();
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 if (at1==authenticationToken) {
-                    return accessRules1;
+                    return new AuthorizationResult(accessRules1, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -245,15 +226,11 @@ public class AuthorizationCacheTest {
         updateNumber.incrementAndGet();
         final AuthorizationCacheCallback callback2 = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 if (at1==authenticationToken) {
-                    return accessRules2;
+                    return new AuthorizationResult(accessRules2, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {
@@ -267,7 +244,7 @@ public class AuthorizationCacheTest {
         // Before AuthorizationCacheReload notification or cache refresh it the change should not be detected
         assertEquals(1, AuthorizationCache.INSTANCE.get(at1, callback2).size());
         // After AuthorizationCache refresh it should be detected
-        AuthorizationCache.INSTANCE.refresh(callback2);
+        AuthorizationCache.INSTANCE.refresh(callback2, updateNumber.get());
         assertEquals(2, AuthorizationCache.INSTANCE.get(at1, callback2).size());
         log.trace("<testAuthorizationCacheRefresh");
     }
@@ -288,7 +265,7 @@ public class AuthorizationCacheTest {
         final AtomicInteger loadInvocations = new AtomicInteger(0);
         final AuthorizationCacheCallback callback = new AuthorizationCacheCallback() {
             @Override
-            public HashMap<String, Boolean> loadAccessRules(AuthenticationToken authenticationToken) {
+            public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
                 loadInvocations.incrementAndGet();
                 if (at1==authenticationToken) {
                     countDownLatchThreadsStarted.countDown();
@@ -298,13 +275,9 @@ public class AuthorizationCacheTest {
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
-                    return accessRules1;
+                    return new AuthorizationResult(accessRules1, updateNumber.get());
                 }
-                return null;
-            }
-            @Override
-            public int getUpdateNumber() {
-                return updateNumber.get();
+                return new AuthorizationResult(null, updateNumber.get());
             }
             @Override
             public long getKeepUnusedEntriesFor() {

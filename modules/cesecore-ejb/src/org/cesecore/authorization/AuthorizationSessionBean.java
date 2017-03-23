@@ -43,6 +43,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.AuthorizationCache.AuthorizationCacheCallback;
+import org.cesecore.authorization.AuthorizationCache.AuthorizationResult;
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.cache.RemoteAccessSetCacheHolder;
@@ -176,7 +177,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         if (log.isTraceEnabled()) {
             log.trace("updateCache");
         }
-        AuthorizationCache.INSTANCE.refresh(authorizationCacheCallback);
+        AuthorizationCache.INSTANCE.refresh(authorizationCacheCallback, accessTreeUpdateSession.getAccessTreeUpdateNumber());
     }
     
     @Override
@@ -188,7 +189,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /** Callback for loading cache misses */
     private AuthorizationCacheCallback authorizationCacheCallback = new AuthorizationCacheCallback() {
         @Override
-        public HashMap<String, Boolean> loadAccessRules(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+        public AuthorizationResult loadAuthorization(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
             HashMap<String, Boolean> accessRules = getAccessAvailableToSingleToken(authenticationToken);
             if (authenticationToken instanceof NestableAuthenticationToken) {
                 final List<NestableAuthenticationToken> nestedAuthenticatonTokens = ((NestableAuthenticationToken)authenticationToken).getNestedAuthenticationTokens();
@@ -200,12 +201,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
             if (log.isDebugEnabled()) {
                 debugLogAccessRules(authenticationToken, accessRules);
             }
-            return accessRules;
-        }
-
-        @Override
-        public int getUpdateNumber() {
-            return accessTreeUpdateSession.getAccessTreeUpdateNumber();
+            return new AuthorizationResult(accessRules, accessTreeUpdateSession.getAccessTreeUpdateNumber());
         }
 
         @Override
