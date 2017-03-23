@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /**
- * Result of an authorization request.
+ * Result of an authorization request from RA.
  * 
  * @version $Id$
  * @since RaMasterApi version 1

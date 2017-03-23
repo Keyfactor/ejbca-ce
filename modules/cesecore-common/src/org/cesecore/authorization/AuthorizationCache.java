@@ -41,6 +41,7 @@ public enum AuthorizationCache {
     
     private final Logger log = Logger.getLogger(AuthorizationCache.class);
 
+    /** The access available to an authentication token and corresponding version of the authorization systems updateNumber */
     public static class AuthorizationResult {
         final HashMap<String, Boolean> accessRules;
         final int updateNumber;
