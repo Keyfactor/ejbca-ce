@@ -43,9 +43,6 @@ public interface InternalKeyBindingDataSessionLocal {
     /** @return a (copy of a) name to id lookup table */
     Map<String, Integer> getCachedNameToIdMap();
 
-    /** @return a (copy of a) id to name lookup table */
-    Map<Integer, String> getCachedIdToNameMap();
-
     /** Clears the InternalKeyBinding cache. */
     void flushCache();
 

@@ -13,11 +13,9 @@
 package org.cesecore.keybind;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import javax.annotation.PostConstruct;
@@ -211,17 +209,6 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @Override
     public Map<String,Integer> getCachedNameToIdMap() {
         return InternalKeyBindingCache.INSTANCE.getNameToIdMap();
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Map<Integer,String> getCachedIdToNameMap() {
-        final Map<Integer,String> idToNameMap = new HashMap<>();
-        // Since we enforce name uniqueness we can reverse the map
-        for (final Entry<String,Integer> entry : InternalKeyBindingCache.INSTANCE.getNameToIdMap().entrySet()) {
-            idToNameMap.put(entry.getValue(), entry.getKey());
-        }
-        return idToNameMap;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
