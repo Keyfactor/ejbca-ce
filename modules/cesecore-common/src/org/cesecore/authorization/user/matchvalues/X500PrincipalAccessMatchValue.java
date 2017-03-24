@@ -71,12 +71,6 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
 
     @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
-        switch(this) {
-        case WITH_SERIALNUMBER:
-            // Compared as BigInteger
-            return Arrays.asList(AccessMatchType.TYPE_EQUALCASEINS);
-        default:
-        }
         return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
 }

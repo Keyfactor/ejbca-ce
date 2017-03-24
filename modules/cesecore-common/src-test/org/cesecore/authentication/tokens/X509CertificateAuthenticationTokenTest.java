@@ -195,7 +195,7 @@ public class X509CertificateAuthenticationTokenTest {
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid).times(2);
                 EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()).times(2);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
-                EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
+                EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_NOT_EQUALCASEINS);
                 EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE).times(2);
                 EasyMock.replay(accessUser);
@@ -238,7 +238,7 @@ public class X509CertificateAuthenticationTokenTest {
     public void testAuthFailAfterSerialization() throws IOException, ClassNotFoundException {
         final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
-        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(certificate));
+        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASE, CertTools.getSerialNumberAsString(certificate));
         // Verify happy path first
         assertTrue("Regular matching was not successful.", authenticationToken.matches(accessUser));
         // Simulate remote EJB call using serialization. This should destroy the "transient" shared secret.
@@ -254,7 +254,7 @@ public class X509CertificateAuthenticationTokenTest {
     public void testBadSerialNumber() {
         final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
-        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "qwerty_1");
+        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASE, "qwerty_1");
         // Will always return false, but not throw an exception
         assertFalse("matching was succesful, should not have been.", authenticationToken.matches(accessUser));
     }
