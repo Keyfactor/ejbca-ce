@@ -979,7 +979,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         final Role role = roleSession.getRole(ADMIN, null, roleName);
         roleMemberSession.persist(ADMIN, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null, null));
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), CertTools.getSerialNumberAsString(cert), role.getRoleId(), null, null));
         return token;
     }
     

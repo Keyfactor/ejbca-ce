@@ -74,7 +74,7 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
                 X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 CertTools.getIssuerDN(certificate).hashCode(),
                 X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 CertTools.getSerialNumber(certificate).toString(16),
                 role.getRoleId(),
                 null, null));
@@ -114,7 +114,7 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
                     X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(x509Certificate).hashCode(),
                     X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     CertTools.getSerialNumber(x509Certificate).toString(16),
                     role.getRoleId(),
                     null, null));
