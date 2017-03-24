@@ -32,7 +32,7 @@ import org.junit.Test;
 public class AccessMatchValueReverseLookupRegistryTest {
 
     @Test
-    public void testVanillaMatchValue() throws SecurityException, NoSuchMethodException {
+    public void testVanillaMatchValue() throws SecurityException {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.register(new VanillaAuthenticationTokenMetaData());
         } catch (InvalidMatchValueException e) {
@@ -94,6 +94,10 @@ public class AccessMatchValueReverseLookupRegistryTest {
         @Override
         public List<AccessMatchType> getAvailableAccessMatchTypes() {
             return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+        }
+        @Override
+        public String normalizeMatchValue(final String value) {
+            return value;
         }
     }
 }

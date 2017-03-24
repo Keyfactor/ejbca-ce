@@ -56,4 +56,9 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
         // Always use case sensitive match for usernames
         return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
+
+    @Override
+    public String normalizeMatchValue(final String value) {
+        return value != null ? value.trim() : null;
+    }
 }

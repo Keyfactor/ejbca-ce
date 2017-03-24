@@ -110,6 +110,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             log.debug("Persisting a role member with ID " + roleMember.getId() + " and match value '" + roleMember.getTokenMatchValue() + "'");
         }
         final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
+        normalizeRoleMember(roleMember);
         final RoleMember persistedRoleMember = roleMemberDataSession.persistRoleMember(roleMember);
         final boolean addedRoleMember = oldRoleMember==null;
         final String tokenType = persistedRoleMember.getTokenType();
@@ -123,7 +124,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         } else {
             msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", memberBinding, role.getRoleNameFull());
         }
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         details.put("id", persistedRoleMember.getId());
         if (addedRoleMember || !oldRoleMember.getTokenType().equals(persistedRoleMember.getTokenType())) {
@@ -146,6 +147,17 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final EventType eventType = addedRoleMember ? EventTypes.ROLE_ACCESS_USER_ADDITION : EventTypes.ROLE_ACCESS_USER_CHANGE;
         securityEventsLoggerSession.log(eventType, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
         return persistedRoleMember;
+    }
+    
+    /**
+     * Normalizes data in the role member, e.g. changing serial numbers to uppercase without leading zeros.
+     * @param roleMember
+     */
+    private void normalizeRoleMember(final RoleMember roleMember) {
+        final AccessMatchValue matchKey = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(roleMember.getTokenType(), roleMember.getTokenMatchKey());
+        if (matchKey != null) {
+            roleMember.setTokenMatchValue(matchKey.normalizeMatchValue(roleMember.getTokenMatchValue()));
+        }
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -205,7 +217,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             // TODO: This would be a suitable candidate for RoleMember.memberBinding* under ECA-5714
             final String memberBinding = roleMember.getTokenMatchValue();
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", memberBinding, role.getRoleNameFull());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("id", roleMember.getId());
             details.put("tokenType", roleMember.getTokenType());

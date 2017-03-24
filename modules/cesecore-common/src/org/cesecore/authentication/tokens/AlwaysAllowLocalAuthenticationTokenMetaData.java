@@ -60,6 +60,11 @@ public class AlwaysAllowLocalAuthenticationTokenMetaData extends AuthenticationT
         public List<AccessMatchType> getAvailableAccessMatchTypes() {
             return Arrays.asList();
         }
+        
+        @Override
+        public String normalizeMatchValue(final String value) {
+            return null; // does not have a value
+        }
     }
     
     public AlwaysAllowLocalAuthenticationTokenMetaData() {

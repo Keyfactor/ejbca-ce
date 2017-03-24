@@ -14,6 +14,7 @@ package org.cesecore.authorization.user.matchvalues;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -72,5 +73,16 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
         return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+    }
+    
+    @Override
+    public String normalizeMatchValue(final String value) {
+        if (value == null) {
+            return null;
+        } else if (this == WITH_SERIALNUMBER) {
+            return value.trim().toUpperCase(Locale.ROOT).replaceAll("^0+([0-9A-F]+)$", "$1");
+        } else {
+            return value; // no normalization
+        }
     }
 }
