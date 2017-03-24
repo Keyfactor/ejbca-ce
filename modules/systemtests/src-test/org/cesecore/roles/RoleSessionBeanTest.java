@@ -343,6 +343,101 @@ public class RoleSessionBeanTest {
         }
     }
 
+    /**
+     * Verify name space handling when Roles are reassigned to different namespaces:
+     * - Admins should be able to see the namespaces of all roles they are part of
+     * - Admin belonging to empty namespace should see all namespaces of roles the admin is authorized to
+     *   (which implies access to all members' tokenIssuerIds)
+     * - Otherwise namespaces should not be visible
+     */
+    @Test
+    public void testGetAuthorizedNamespacesAfterReassign() throws RoleExistsException, AuthorizationDeniedException {
+        log.trace(">testGetAuthorizedNamespaces");
+        final String TESTNAME = "testGetAuthorizedNamespaces";
+        final String nameSpace1a = TESTNAME + " NameSpace 1a";
+        final String nameSpace2a = TESTNAME + " NameSpace 2a";
+        final String nameSpace3a = TESTNAME + " NameSpace 3a";
+        final String nameSpace1b = TESTNAME + " NameSpace 1b";
+        final String nameSpace2b = TESTNAME + " NameSpace 2b";
+        final String nameSpace3b = TESTNAME + " NameSpace 3b";
+        final String nameSpace4a = "";
+        final String nameSpace4b = TESTNAME + " NameSpace 4b";
+        final String commonRoleName = TESTNAME + "Role";
+        final String subjectDn1 = "CN="+nameSpace1a;
+        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                subjectDn1, nameSpace1a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace2a, nameSpace2a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace3a, nameSpace3a, commonRoleName, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+nameSpace4a, nameSpace4a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        try {
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace1a, nameSpace1b);
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace2a, nameSpace2b);
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace3a, nameSpace3b);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2b), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3b), null, false);
+            // Authentication token matching RoleMember that belongs to Role with empty name space should see all namespaces
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
+                    Arrays.asList(nameSpace3b, nameSpace1a, nameSpace2a, nameSpace3a), true);
+            // Add authenticationToken1 matched by CN to Role 2 (with nameSpace2)
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace2b, nameSpace2a);
+            addRoleMemberToRole(nameSpace2a, commonRoleName, subjectDn1);
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace2a, nameSpace2b);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b),
+                    Arrays.asList(nameSpace1a, nameSpace2a), false);
+            // And again, add authenticationToken1 matched by CN to Role 3 (with nameSpace3)
+            RoleMember roleMember = addRoleMemberToRole(nameSpace3b, commonRoleName, subjectDn1);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace3b),
+                    Arrays.asList(nameSpace1a, nameSpace2a, nameSpace3a), false);
+            // Sanity check that adding authenticationToken1 did not grant more access to the other authenticationTokens
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken2), Arrays.asList(nameSpace2b), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken3), Arrays.asList(nameSpace3b), null, false);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
+                    Arrays.asList(nameSpace3b), true);
+            // Remove authenticationToken1 matched by CN from Role 3 (with nameSpace3) and expect that this namespace is no longer available
+            roleMemberSession.remove(alwaysAllowAuthenticationToken, roleMember.getId());
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1b, nameSpace2b),
+                    Arrays.asList(nameSpace1a, nameSpace2a), false);
+            // Grant additional access to authenticationToken4 and expect that namespace3 will now also be visible
+            final Role role4 = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
+            role4.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace3b, nameSpace4a),
+                    Arrays.asList(nameSpace1a, nameSpace2a, nameSpace3a), true);
+            // Revoke additional access from authenticationToken4 and expect that namespace3 will no longer be visible
+            final Role role4b = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace4a, commonRoleName);
+            role4b.getAccessRules().clear();
+            role4b.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(alwaysAllowAuthenticationToken, role4b);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
+                    Arrays.asList(nameSpace1a, nameSpace2a), true);
+            // Verify that move from empty namespace4a to non-empty namespace4b will prevent access to other namespaces
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace4a, nameSpace4b);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace4b),
+                    Arrays.asList(nameSpace1a, nameSpace2a, nameSpace1b, nameSpace2b, nameSpace4a), false);
+            // ...and moving back should restore access
+            reassignRoleToDifferentNameSpace(commonRoleName, nameSpace4b, nameSpace4a);
+            assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
+                    Arrays.asList(nameSpace1a, nameSpace2a), true);
+        } finally {
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken1);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken2);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken3);
+            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken4);
+            log.trace("<testGetAuthorizedNamespaces");
+        }
+    }
+    
+    /** Move a Role from one name space to another */
+    private void reassignRoleToDifferentNameSpace(final String roleName, final String oldNameSpace, final String newNameSpace) throws AuthorizationDeniedException, RoleExistsException {
+        final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, oldNameSpace, roleName);
+        role.setNameSpace(newNameSpace);
+        roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+    }
+
     /** Add self signed certificate match to a role identified by name and return the persisted RoleMember */
     private RoleMember addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
         final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
