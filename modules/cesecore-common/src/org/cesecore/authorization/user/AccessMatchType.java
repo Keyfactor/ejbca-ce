@@ -23,6 +23,7 @@ public enum AccessMatchType {
 
     TYPE_UNUSED(0),
     TYPE_EQUALCASE(1000),
+    /** Case insensitive. Can be used for textual match values, e.g. a Common Name. Do <b>NOT</b> use with serial numbers (a change since 6.8.0)  */
     TYPE_EQUALCASEINS(1001),
     @Deprecated
     TYPE_NOT_EQUALCASE(1002),

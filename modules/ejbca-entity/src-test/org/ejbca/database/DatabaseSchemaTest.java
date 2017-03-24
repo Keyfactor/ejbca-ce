@@ -203,7 +203,7 @@ public class DatabaseSchemaTest {
         LOG.trace(">testAdminEntityData");
         logMemStats();
         AccessUserAspectData entity = new AccessUserAspectData(VARCHAR_250B, BOGUS_INTEGER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER,
-                AccessMatchType.TYPE_EQUALCASEINS, VARCHAR_250B);
+                AccessMatchType.TYPE_EQUALCASE, VARCHAR_250B);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
