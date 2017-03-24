@@ -58,4 +58,11 @@ public interface AccessMatchValue {
 
     /** @return a list of valid match operators for this match */
     List<AccessMatchType> getAvailableAccessMatchTypes();
+    
+    /**
+     * Normalizes a match value string. If normalization is not applicable for the
+     * match key, then it returns the string unchanged. If the match key does not
+     * have match values at all, then it returns null.
+     */
+    String normalizeMatchValue(String value);
 }
