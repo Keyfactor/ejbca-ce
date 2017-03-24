@@ -40,10 +40,10 @@ public class InternalKeyBindingRulesReference implements AccessRulePlugin {
         }
         try {
             final InternalKeyBindingDataSessionLocal internalKeyBindingDataSession = new EjbLocalHelper().getInternalKeyBindingDataSession();
-            for (final Entry<Integer,String> entry : internalKeyBindingDataSession.getCachedIdToNameMap().entrySet()) {
+            for (final Entry<String,Integer> entry : internalKeyBindingDataSession.getCachedNameToIdMap().entrySet()) {
                 for (final InternalKeyBindingRules rule : InternalKeyBindingRules.values()) {
                     if (!InternalKeyBindingRules.BASE.equals(rule)) {
-                        allRules.put(rule.resource() + "/" + entry.getKey(), rule.resource() + "/" + entry.getValue());
+                        allRules.put(rule.resource() + "/" + entry.getValue(), rule.resource() + "/" + entry.getKey());
                     }
                 }
                 
