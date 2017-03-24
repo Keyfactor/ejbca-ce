@@ -55,4 +55,9 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
         return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
     }
+    
+    @Override
+    public String normalizeMatchValue(final String value) {
+        return value != null ? value.trim() : null;
+    }
 }

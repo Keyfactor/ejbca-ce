@@ -25,6 +25,8 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -155,6 +157,41 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         assertEquals(numberOfTestEntries, returnedRoleMembers.size());
         for (RoleMember roleMember : returnedRoleMembers) {
             assertEquals(persistedTestRole.getRoleId(), roleMember.getRoleId());
+        }
+    }
+    
+    @Test
+    public void testNormalization() throws AuthorizationDeniedException {
+        RoleMember testRoleMember = roleMemberSessionRemote.persist(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                RoleMember.NO_ISSUER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                "0", persistedTestRole.getRoleId(), "Test", ""));
+        try {
+            testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
+            assertEquals("0", testRoleMember.getTokenMatchValue());
+            
+            testRoleMember.setTokenMatchValue("0abc");
+            roleMemberSessionRemote.persist(authenticationToken, testRoleMember);
+            testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
+            assertEquals("ABC", testRoleMember.getTokenMatchValue());
+            
+            testRoleMember.setTokenMatchValue("000001000");
+            roleMemberSessionRemote.persist(authenticationToken, testRoleMember);
+            testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
+            assertEquals("1000", testRoleMember.getTokenMatchValue());
+            
+            testRoleMember.setTokenMatchValue("00000000");
+            roleMemberSessionRemote.persist(authenticationToken, testRoleMember);
+            testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
+            assertEquals("0", testRoleMember.getTokenMatchValue());
+            
+            // Only serial numbers should be normalized
+            testRoleMember.setTokenMatchKey(X500PrincipalAccessMatchValue.WITH_UID.getNumericValue());
+            testRoleMember.setTokenMatchValue("00000000");
+            roleMemberSessionRemote.persist(authenticationToken, testRoleMember);
+            testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
+            assertEquals("00000000", testRoleMember.getTokenMatchValue());
+        } finally {
+            roleMemberSessionRemote.remove(authenticationToken, testRoleMember.getId());
         }
     }
     
