@@ -15,6 +15,7 @@ package org.cesecore.roles.management;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,11 +148,31 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         if (authenticationToken==null) {
             log.debug("TestX509CertificateAuthenticationToken was null. No clean up will take place.");
         } else {
-            final List<Role> roles = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+            final List<Role> roles = new ArrayList<>(roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken));
+            // Check that we really added the match value to each of these roles, so we don't accidently nuke other roles
+            final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken("removeAllAuthenticationTokensRoles");
+            for (final Role role : new ArrayList<>(roles)) {
+                try {
+                    boolean roleMemberAddedToRoleByThisClass = false;
+                    final X509Certificate certificate = authenticationToken.getCertificate();
+                    for (final RoleMember roleMember : roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.getRoleId())) {
+                        if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(roleMember.getTokenType()) &&
+                                roleMember.getTokenMatchKey() == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue() &&
+                                CertTools.getSerialNumber(certificate).toString(16).equals(roleMember.getTokenMatchValue())) {
+                            roleMemberAddedToRoleByThisClass = true;
+                            break;
+                        }
+                    }
+                    if (!roleMemberAddedToRoleByThisClass) {
+                        roles.remove(role);
+                    }
+                } catch (AuthorizationDeniedException e) {
+                    log.debug("Unexpected authorization failure for AlwaysAllowLocalAuthenticationToken: " + e.getMessage());
+                }
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Removing " + roles.size() + " roles matching " + authenticationToken);
             }
-            final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken("removeAllAuthenticationTokensRoles");
             for (final Role role : roles) {
                 try {
                     if (roleSession.deleteRoleIdempotent(alwaysAllowAuthenticationToken, role.getRoleId())) {
