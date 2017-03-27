@@ -503,7 +503,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
-            // Test getting authorized end entity profiles IDs, get only profiles we have create access to (same as addendentity.jsp does)
+            // Test getting authorized end entity profiles IDs, get only profiles we have create access to
+            // First check that root access can retrieve all EEPs (even with a non-existing CA)
             Collection<Integer> ids1 = endEntityProfileSession.getAuthorizedEndEntityProfileIds(alwaysAllowToken, AccessRulesConstants.CREATE_END_ENTITY);
             assertNotNull(ids1);
             // Some IDs we know should be in there (there might be others as well depending on the system the test runs on so we can't be too strict
