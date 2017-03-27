@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.authentication.cli;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -185,8 +186,8 @@ public class CliAuthenticationTest {
         CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword("monkeys");
-        //assertNull("Authentication token was returned for incorrect password", authenticationToken);
-        assertFalse("Authentication token was authorized dispite incorrect password", authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
+        assertNotNull("Authentication token was not returned for incorrect password", authenticationToken);
+        assertFalse("Authentication token was authorized despite incorrect password", authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
         //Examine the last log entry
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
