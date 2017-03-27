@@ -156,6 +156,8 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         final TypedQuery<RoleMemberData> query;
         final int preferredMatchKey = authenticationToken.getPreferredMatchKey();
         if (preferredMatchKey != AuthenticationToken.NO_PREFERRED_MATCH_KEY) {
+            final List<AccessMatchType> accessMatchType = authenticationToken.getMetaData().getAccessMatchValueIdMap().get(preferredMatchKey).getAvailableAccessMatchTypes();
+            final int preferredOperator = accessMatchType.isEmpty() ? AccessMatchType.TYPE_UNUSED.getNumericValue() : accessMatchType.get(0).getNumericValue();
             // Optimized search for preferred match values (e.g. serial number match key) amongst members with that match key.
             // For members with other match keys, we include everything in the search
             query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0 AND "+
@@ -163,11 +165,11 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
                     "NOT (a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator))", RoleMemberData.class)
                     .setParameter("tokenType", tokenType)
                     .setParameter("preferredTokenMatchKey", preferredMatchKey)
-                    .setParameter("operator", AccessMatchType.TYPE_EQUALCASE.getNumericValue())
+                    .setParameter("operator", preferredOperator)
                     .setParameter("preferredTokenMatchValue", authenticationToken.getPreferredMatchValue());
         } else {
             // Search for all members with the same token type
-            query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId!=0", RoleMemberData.class)
+            query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0", RoleMemberData.class)
                     .setParameter("tokenType", tokenType);
         }
         return query;
