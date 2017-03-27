@@ -112,7 +112,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
         normalizeRoleMember(roleMember);
         final RoleMember persistedRoleMember = roleMemberDataSession.persistRoleMember(roleMember);
-        final boolean addedRoleMember = oldRoleMember==null;
+        final boolean addedRoleMember = (oldRoleMember==null);
         final String tokenType = persistedRoleMember.getTokenType();
         final int tokenMatchKey = persistedRoleMember.getTokenMatchKey();
         final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
@@ -129,6 +129,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         details.put("id", persistedRoleMember.getId());
         if (addedRoleMember || !oldRoleMember.getTokenType().equals(persistedRoleMember.getTokenType())) {
             details.put("tokenType", persistedRoleMember.getTokenType());
+        }
+        if (addedRoleMember || oldRoleMember.getTokenIssuerId()!=persistedRoleMember.getTokenIssuerId()) {
+            details.put("tokenIssuerId", roleMember.getTokenIssuerId());
         }
         if (addedRoleMember || oldRoleMember.getTokenMatchKey()!=persistedRoleMember.getTokenMatchKey()) {
             details.put("tokenMatchKey", tokenMatchKeyName + " (" + persistedRoleMember.getTokenMatchKey()+ ")");
@@ -221,6 +224,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("msg", msg);
             details.put("id", roleMember.getId());
             details.put("tokenType", roleMember.getTokenType());
+            details.put("tokenIssuerId", roleMember.getTokenIssuerId());
             details.put("tokenMatchKey", tokenMatchKeyName + " (" + roleMember.getTokenMatchKey()+ ")");
             details.put("tokenMatchOperator", roleMember.getAccessMatchType().name() + " (" + roleMember.getTokenMatchOperator()+ ")");
             details.put("tokenMatchValue", roleMember.getTokenMatchValue());
@@ -232,5 +236,4 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         }
         return removed;
     }
-
 }

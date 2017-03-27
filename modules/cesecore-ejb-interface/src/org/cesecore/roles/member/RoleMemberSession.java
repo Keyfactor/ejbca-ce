@@ -33,7 +33,7 @@ public interface RoleMemberSession {
 
     /**
      * Adds or updates a Role Member (use ID RoleMember.ROLE_MEMBER_ID_UNASSIGNED to assign when adding a RoleMember).
-     * @return The persisted version of the role member
+     * @return The persisted version of the role member (and null if the provided roleMember was null)
      * @throws AuthorizationDeniedException If access was denied to editing this role member or the referenced CA or Role.
      */
     RoleMember persist(AuthenticationToken authenticationToken, RoleMember roleMember) throws AuthorizationDeniedException;
