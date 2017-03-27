@@ -1294,13 +1294,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         continue;
                     }
                     if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()) {
-                        // The implementation always does case insensitive compare
-                        if (log.isDebugEnabled() && tokenMatchOperator == AccessMatchType.TYPE_EQUALCASE.getNumericValue()) {
-                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " has case sensitive serial number match value '" + tokenMatchValue +
-                                    "'. In 6.8.0 it will match as case insensitive.");
+                        final String serialNumberUppercase = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT);
+                        if (!serialNumberUppercase.equals(tokenMatchValue)) {
+                            log.info("Admin in role '" + roleName + "' of type " + tokenType + " has serial number match value '" + tokenMatchValue +
+                                    "'. In 6.8.0 all serial numbers are converted to uppercase and match as case sensitive.");
+                        } else if (log.isDebugEnabled() && tokenMatchOperator == AccessMatchType.TYPE_EQUALCASEINS.getNumericValue()) {
+                            log.debug("Admin in role '" + roleName + "' of type " + tokenType + " has case insensitive serial number match value '" + tokenMatchValue +
+                                    "'. In 6.8.0 all serial numbers are converted to uppercase and match as case sensitive.");
                         }
                         tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
-                        tokenMatchValue = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT);
+                        tokenMatchValue = serialNumberUppercase;
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
                             tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {
