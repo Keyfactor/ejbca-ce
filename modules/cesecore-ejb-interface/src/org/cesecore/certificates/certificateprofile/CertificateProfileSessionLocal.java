@@ -33,7 +33,7 @@ public interface CertificateProfileSessionLocal extends CertificateProfileSessio
     /**
      * Checks authorization to profiles. Only profiles that refer to CA's that the authentication token is 
      * authorized to will be OK. Also checks the passed in extra resources. 
-     * Does this in a single call to accessControlSession to keep it efficient   
+     * Does this in a single call to authorizationSession to keep it efficient
      * 
      * @param admin Administrator performing the operation
      * @param profile Certificate Profile that we want to check authorization for
