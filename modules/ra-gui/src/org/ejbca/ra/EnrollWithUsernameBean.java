@@ -64,6 +64,9 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EnrollWithUsernameBean.class);
 
+    public static String PARAM_USERNAME = "username";
+    public static String PARAM_ENROLLMENT_CODE = "enrollmentcode";
+
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
@@ -74,14 +77,8 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         this.raAuthenticationBean = raAuthenticationBean;
     }
 
-    @ManagedProperty(value = "#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
-
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
-        this.raLocaleBean = raLocaleBean;
-    }
-
     private String username;
+    private String enrollmentCode;
     // Since enrollmentCode of the EnrollWithRequestIdBean is managed through JSF, and it won't let me set a password field
     // through GET param, we need this temporary var in order to be able to pass enrollment code in the URL
     private String paramEnrollmentCode;
@@ -93,8 +90,8 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     @PostConstruct
     protected void postConstruct() {
         final HttpServletRequest httpServletRequest = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        username = httpServletRequest.getParameter(EnrollMakeNewRequestBean.PARAM_USERNAME);
-        paramEnrollmentCode = httpServletRequest.getParameter(EnrollMakeNewRequestBean.PARAM_ENROLLMENT_CODE);
+        username = httpServletRequest.getParameter(EnrollWithUsernameBean.PARAM_USERNAME);
+        paramEnrollmentCode = httpServletRequest.getParameter(EnrollWithUsernameBean.PARAM_ENROLLMENT_CODE);
         super.setRaAuthenticationBean(raAuthenticationBean);
         super.postConstruct();
     }
@@ -103,13 +100,14 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
      * User friendly as the user can not accidentally change the pre defined username */
     public boolean isUsernameDisabled() {
         final HttpServletRequest httpServletRequest = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        return httpServletRequest.getParameter(EnrollMakeNewRequestBean.PARAM_USERNAME) != null;
+        return httpServletRequest.getParameter(EnrollWithUsernameBean.PARAM_USERNAME) != null;
     }
     
     @Override
     public void reset() {
         this.certificateProfile = null;
         this.selectedAlgorithm = null;
+        enrollmentCode = null;        
         super.reset();
     }
     
@@ -201,14 +199,12 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             log.info("No full key algorithm was provided: "+selectedAlgorithm);
             return;
         }
-        //final String keyAlg = getEndEntityInformation().getExtendedinformation().getKeyStoreAlgorithmType();
         final String keyAlg = parts[0];
         if (StringUtils.isEmpty(keyAlg)) {
             raLocaleBean.addMessageError("enroll_no_key_algorithm");
             log.info("No key algorithm was provided: "+selectedAlgorithm);
             return;
         }
-        //final String keySpec = getEndEntityInformation().getExtendedinformation().getKeyStoreAlgorithmSubType();
         final String keySpec = parts[1];
         if (StringUtils.isEmpty(keySpec)) {
             raLocaleBean.addMessageError("enroll_no_key_specification");
@@ -296,7 +292,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             selectedAlgorithm = keyAlgorithm + " " + keySpecification;// Save for later use
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = value.toString();
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+        } catch (InvalidKeyException | NumberFormatException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
@@ -406,6 +402,22 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     public void setSelectedAlgorithm(String selectedAlgorithm) {
         this.selectedAlgorithm = selectedAlgorithm;
     }
+
+    /**
+     * @return the enrollment code
+     */
+    public String getEnrollmentCode() {
+        return enrollmentCode;
+    }
+
+    /**
+     * @param enrollmentCode the enrollment code to set
+     */
+    public void setEnrollmentCode(String enrollmentCode) {
+        this.enrollmentCode = enrollmentCode;
+    }
+    
+    
 
 
 }

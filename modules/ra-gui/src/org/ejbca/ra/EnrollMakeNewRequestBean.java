@@ -107,8 +107,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final Logger log = Logger.getLogger(EnrollMakeNewRequestBean.class);
 
     public static String PARAM_REQUESTID = "requestId";
-    public static String PARAM_USERNAME = "username";
-    public static String PARAM_ENROLLMENT_CODE = "enrollmentcode";
     public static int MAX_CSR_LENGTH = 10240;
     
     @EJB

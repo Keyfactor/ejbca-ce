@@ -73,7 +73,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     @ManagedProperty(value = "#{raLocaleBean}")
-    private RaLocaleBean raLocaleBean;
+    protected RaLocaleBean raLocaleBean;
 
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
@@ -83,7 +83,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
     private byte[] generatedToken;
-    private String enrollmentCode;
     private IdNameHashMap<CAInfo> authorizedCAInfos;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
 
@@ -99,7 +98,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void reset() {
         requestStatus = ApprovalDataVO.STATUS_WAITINGFORAPPROVAL;
         endEntityInformation = null;
-        enrollmentCode = null;
     }
 
     /**
@@ -427,19 +425,4 @@ public class EnrollWithRequestIdBean implements Serializable {
         this.generatedToken = generatedToken;
     }
 
-    /**
-     * @return the enrollment code
-     */
-    public String getEnrollmentCode() {
-        return enrollmentCode;
-    }
-
-    /**
-     * @param enrollmentCode the enrollment code to set
-     */
-    public void setEnrollmentCode(String enrollmentCode) {
-        this.enrollmentCode = enrollmentCode;
-    }
-    
-    
 }
