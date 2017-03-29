@@ -760,6 +760,7 @@ JkWorkersFile /etc/libapache2-mod-jk/workers.properties
   </section>
 
   <section name="Setting up a HA Proxy in front of EJBCA">
+  <subsection name="OCSP URL rewriting">
     <p>
       Scenario: redirect "http://ocsp.website.com" -> "http://1.2.3.4:80/ejbca/publicweb/status/ocsp"
     </p>
@@ -779,6 +780,27 @@ backend ocsp_back
         server ejbca 1.2.3.4:80 check
 [...] 
     </source>
+   </subsection>
+   <subsection name="TLS Pass-through">
+   <p>Scenario: Have a proxy in front of Admin UI/WebService but just pass-through the TLS traffic in order to keep mutual authentication 
+   (allowing client certificate authentication to work in EJBCA). To do this you must use tcp mode. Hide 192.168.10.32/33 behind proxy.</p>
+   <source>
+[...]
+frontend ejbca_front
+    bind *:443
+    option tcplog
+    mode tcp
+    default_backend ca_nodes
+    
+backend ca_nodes
+    mode tcp
+    balance roundrobin
+    option ssl-hello-chk
+    server web01 192.168.10.32:8443 check
+    server web02 192.168.10.33:8443 check
+[...]
+   </source>
+   </subsection>
   </section>
 
   <section name="Native Autoenrollment for Windows (Enterprise only)">
