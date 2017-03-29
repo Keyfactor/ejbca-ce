@@ -62,7 +62,9 @@ public final class AlgorithmConstants {
     // Extra EC curves that we want to include that are not part of the "standard" curves in BC (ECNamedCurveTable.getNames)
     public static final List<String> EXTRA_EC_CURVES = Arrays.asList(new String[]{
             // Part of CustomNamedCurves in BouncyCastle 1.54
-            "curve25519",
+            // Commented out due to experimental nature 2017-04 as the signatures using this currently probably is not correct
+            // Should probably wait for edDSA, See ECA-5796 and linked issues.
+            //"curve25519",
     });
 
     private AlgorithmConstants () {} // Not for instantiation
