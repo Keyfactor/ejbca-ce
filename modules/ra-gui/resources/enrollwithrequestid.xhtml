@@ -79,7 +79,7 @@
 							</h:panelGroup>
 							<h:panelGroup id="enteredRequestEnrollmentCode" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
-								<h:inputSecret id="enrollmentCode" value="#{enrollWithRequestIdBean.endEntityInformation.enrollmentCode}" autocomplete="off">
+								<h:inputSecret id="enrollmentCode" value="#{enrollWithRequestIdBean.endEntityInformation.password}" autocomplete="off">
 									<f:validateRequired/>
 								</h:inputSecret>
 								<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
