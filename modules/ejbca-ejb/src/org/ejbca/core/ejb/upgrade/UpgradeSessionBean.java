@@ -101,6 +101,7 @@ import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -1390,25 +1391,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Change to use union role access rules instead of enum priority matching
         accessTreeUpdateSession.setNewAuthorizationPatternMarker();
         log.info("Admins belonging to multiple roles will now be granted the combined access when cache expires.");
-        /* DEVELOPMENT: Comment out this section before 6.8.0 release */
-        log.warn("DEVELOPMENT: Sleep for a bit so the GUI can be easily tested (and demo nested exceptions)...", new Exception("exceptiontext", new Exception("nestedexceptiontext")));
-        try {
-            for (int i=10; i>=0; i--) {
-                Thread.sleep(1000L);
-                log.info("(Countdown for demo purpose " + i + ")");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         // Empty the legacy AdminEntityData, AdmingGroupData and AccessRulesData tables.
-        log.error("Clean up not implemented yet! Failing post-upgrade!");
-        return false; // Fail it
-        /*
-        log.info("Cleaning up legacy roles and rules.");
-        legacyRoleManagementSession.deleteAllRoles(authenticationToken);
+        if (EjbcaConfiguration.getIsInProductionMode()) {
+            log.info("Cleaning up legacy roles and rules.");
+            legacyRoleManagementSession.deleteAllRoles(authenticationToken);
+        } else {
+            log.warn("This EJBCA installation is not running in production mode, so the tables AdminEntityData, AdmingGroupData and AccessRulesData will not be emptied.");
+        }
         log.info("Post upgrade to 6.8.0 complete.");
         return true;
-        */
     }
 
     /** Add the previously global configuration configured approval notification */
