@@ -301,6 +301,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 globalConfig.setStatedumpLockedDown(false);
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig);
                 setEndEntityProfileInCertificateData(true);
+                // Since we know that this is a brand new installation, no upgrade should be needed
+                setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
+                setLastPostUpgradedToVersion("6.8.0");
             }
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
@@ -526,7 +529,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("6.8.0");
         }
-        // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded()
+        // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
