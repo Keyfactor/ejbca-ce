@@ -53,6 +53,7 @@ public class AddAdminCommand extends BaseRolesCommand {
     private static final String MATCH_WITH_KEY = "--with";
     private static final String MATCH_TYPE_KEY = "--type";
     private static final String MATCH_VALUE_KEY = "--value";
+    private static final String DESCRIPTION_KEY = "--description";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -65,6 +66,8 @@ public class AddAdminCommand extends BaseRolesCommand {
                 "(Ignored) Match operator type. Kept to prevent legacy scripts from breaking. Currently implied by " + MATCH_WITH_KEY +" switch."));
         registerParameter(new Parameter(MATCH_VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The value to match against."));
+        registerParameter(new Parameter(DESCRIPTION_KEY, "Description", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "A human readable description of the role member."));
     }
 
     @Override
@@ -120,9 +123,10 @@ public class AddAdminCommand extends BaseRolesCommand {
         if (StringUtils.isNotEmpty(matchTypeParam)) {
             log.info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + accessMatchValue.name() + " implies " + accessMatchType.name() + ".");
         }
+        final String description = parameters.get(DESCRIPTION_KEY);
         final String matchValue = parameters.get(MATCH_VALUE_KEY);
-        final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, tokenType, caId,
-                accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(), matchValue, role.getRoleId(), null, null);
+        final RoleMember roleMember = new RoleMember(tokenType, caId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
+                matchValue, role.getRoleId(), description);
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).persist(getAuthenticationToken(), roleMember);
         } catch (AuthorizationDeniedException e) {

@@ -339,8 +339,7 @@ CREATE TABLE RoleMemberData (
     tokenMatchOperator INTEGER NOT NULL,
     tokenMatchValue VARCHAR(2000),
     roleId INTEGER NOT NULL,
-    memberBindingType VARCHAR(255),
-    memberBindingValue VARCHAR(255),
+    description VARCHAR(255),
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (primaryKey)

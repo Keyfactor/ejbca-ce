@@ -76,7 +76,8 @@ public class RoleMemberDataSessionTest {
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
                 roleMemberProxySession.findRoleMember(0));
         final RoleMemberData roleMember = new RoleMemberData(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                RoleMember.NO_ISSUER, X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "SE", RoleMember.NO_ROLE, null, null);
+                RoleMember.NO_ISSUER, X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "SE",
+                RoleMember.NO_ROLE, "Human readable comment");
         int roleMemberId = -1;
         try {
             roleMemberId = roleMemberProxySession.createOrEdit(roleMember);
@@ -143,7 +144,7 @@ public class RoleMemberDataSessionTest {
         if (role.getRoleId() == Role.ROLE_ID_UNASSIGNED) {
             throw new IllegalStateException("Missing Role ID");
         }
-        return roleMemberProxySession.createOrEdit(new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                tokenType, tokenIssuerId, matchKey, AccessMatchType.TYPE_EQUALCASE.getNumericValue(), matchValue, role.getRoleId(), null, null));
+        return roleMemberProxySession.createOrEdit(new RoleMember(tokenType, tokenIssuerId, matchKey, AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                matchValue, role.getRoleId(), null));
     }
 }

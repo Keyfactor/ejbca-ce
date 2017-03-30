@@ -203,9 +203,9 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null,
                 AuthorizationSystemSession.SUPERADMIN_ROLE);
         if (role!=null) {
-            final RoleMember roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            final RoleMember roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    superAdminCN, role.getRoleId(), null, null);
+                    superAdminCN, role.getRoleId(), null);
             EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).persist(getAuthenticationToken(), roleMember);
         }
     }

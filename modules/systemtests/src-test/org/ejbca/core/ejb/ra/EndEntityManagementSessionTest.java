@@ -713,14 +713,13 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 roleSession.deleteRoleIdempotent(admin, oldRole.getRoleId());
             }
             final Role role = roleSession.persistRole(admin, new Role(null, testRole, Arrays.asList(StandardRules.CAACCESSBASE.resource()), null));
-            roleMemberSession.persist(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                    X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     CertTools.getIssuerDN(adminCert).hashCode(),
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                     CertTools.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
                     role.getRoleId(),
-                    null, null));
+                    null));
             // We must enforce end entity profile limitations for this, with false it should be ok now
             eelimitation = setEnableEndEntityProfileLimitations(false);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization

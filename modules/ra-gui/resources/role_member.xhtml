@@ -95,11 +95,14 @@
                         
                         <h:panelGroup id="parentMatchValue" layout="block" styleClass="pure-u-1" rendered="#{raRoleMemberBean.tokenTypeHasMatchValue}">
                             <h:outputLabel for="matchValue" value="#{msg.role_member_page_matchvalue_label}" styleClass="pure-u-lg-1-5"/>
-                            <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" size="20"/>
+                            <h:inputText id="matchValue" value="#{raRoleMemberBean.matchValue}" styleClass="pure-input pure-u-lg-3-5" size="20"/>
                         </h:panelGroup>
                     </h:panelGroup>
                     
-                    <ui:remove><!-- TODO member bindings (ECA-5714). perhaps have a "Use default member binding" and automatically link to the username based on the cert serno --></ui:remove>
+                    <h:panelGroup id="parentDescription" layout="block" styleClass="pure-u-1">
+                        <h:outputLabel for="description" value="#{msg.role_member_page_description_label}" styleClass="pure-u-lg-1-5"/>
+                        <h:inputText id="description" value="#{raRoleMemberBean.description}" styleClass="pure-input pure-u-lg-3-5 bottomMargin" size="20"/>
+                    </h:panelGroup>
 
                     <h:panelGroup id="buttons" layout="block" styleClass="pure-u-lg-5-5">
                         <h:commandButton id="saveButton" action="#{raRoleMemberBean.save}" value="#{raRoleMemberBean.saveButtonText}" styleClass="pure-button ra-button executeActionButton saveButton"/>

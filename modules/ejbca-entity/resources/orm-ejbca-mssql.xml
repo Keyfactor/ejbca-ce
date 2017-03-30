@@ -145,8 +145,7 @@
             <basic fetch="EAGER" name="tokenMatchOperator"><column name="tokenMatchOperator" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenMatchValueColumn"><column name="tokenMatchValue" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="memberBindingType"><column name="memberBindingType" column-definition="VARCHAR(256)"/></basic>
-            <basic fetch="EAGER" name="memberBindingValue"><column name="memberBindingValue" column-definition="VARCHAR(256)"/></basic>
+            <basic fetch="EAGER" name="descriptionColumn"><column name="description" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->

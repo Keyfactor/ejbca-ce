@@ -116,13 +116,11 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         final String tokenType = persistedRoleMember.getTokenType();
         final int tokenMatchKey = persistedRoleMember.getTokenMatchKey();
         final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
-        // TODO: This would be a suitable candidate for RoleMember.memberBinding* under ECA-5714
-        final String memberBinding = persistedRoleMember.getTokenMatchValue();
         final String msg;
         if (addedRoleMember) {
-            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminadded", memberBinding, role.getRoleNameFull());
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminadded", persistedRoleMember.getTokenMatchValue(), role.getRoleNameFull());
         } else {
-            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", memberBinding, role.getRoleNameFull());
+            msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminchanged", persistedRoleMember.getTokenMatchValue(), role.getRoleNameFull());
         }
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
@@ -146,6 +144,9 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("roleId", roleMember.getRoleId());
             details.put("nameSpace", role.getNameSpace());
             details.put("roleName", role.getRoleName());
+        }
+        if (addedRoleMember || !StringUtils.equals(oldRoleMember.getDescription(), persistedRoleMember.getDescription())) {
+            details.put("description", persistedRoleMember.getDescription());
         }
         final EventType eventType = addedRoleMember ? EventTypes.ROLE_ACCESS_USER_ADDITION : EventTypes.ROLE_ACCESS_USER_CHANGE;
         securityEventsLoggerSession.log(eventType, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
@@ -217,9 +218,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             final String tokenType = roleMember.getTokenType();
             final int tokenMatchKey = roleMember.getTokenMatchKey();
             final String tokenMatchKeyName = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, tokenMatchKey).name();
-            // TODO: This would be a suitable candidate for RoleMember.memberBinding* under ECA-5714
-            final String memberBinding = roleMember.getTokenMatchValue();
-            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", memberBinding, role.getRoleNameFull());
+            final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.adminremoved", roleMember.getTokenMatchValue(), role.getRoleNameFull());
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("id", roleMember.getId());
@@ -231,6 +230,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             details.put("roleId", roleMember.getRoleId());
             details.put("nameSpace", role.getNameSpace());
             details.put("roleName", role.getRoleName());
+            details.put("description", roleMember.getDescription());
             securityEventsLoggerSession.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         }

@@ -65,8 +65,8 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
         role = new Role(null, "TestMembersRole");
         persistedTestRole = roleSessionRemote.persistRole(authenticationToken, role);
         
-        roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, 0, 0, "",
-                                    persistedTestRole.getRoleId(), "TestValue", "");
+        roleMember = new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, RoleMember.NO_ISSUER, 0, 0, "",
+                                    persistedTestRole.getRoleId(), "TestValue");
     }
     
     @After
@@ -162,9 +162,9 @@ public class RoleMemberSessionBeanTest extends RoleUsingTestCase {
     
     @Test
     public void testNormalization() throws AuthorizationDeniedException {
-        RoleMember testRoleMember = roleMemberSessionRemote.persist(authenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+        RoleMember testRoleMember = roleMemberSessionRemote.persist(authenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 RoleMember.NO_ISSUER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                "0", persistedTestRole.getRoleId(), "Test", ""));
+                "0", persistedTestRole.getRoleId(), "Test"));
         try {
             testRoleMember = roleMemberSessionRemote.getRoleMember(authenticationToken, testRoleMember.getId());
             assertEquals("0", testRoleMember.getTokenMatchValue());
