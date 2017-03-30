@@ -100,12 +100,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * Test of appovals.
+ * 
+ * Note/TODO:
+ * A lot of tests in this class is written in such a way that they are sensitive to timing on a highly loaded test
+ * server. This needs to rewritten in a more robust way at a future point in time to avoid false negatives.
+ * 
  * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner$
  */
 public class ApprovalSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
-    private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalSessionTest"));
+    private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(ApprovalSessionTest.class.getSimpleName());
 
     private static final String P12_FOLDER_NAME = "p12";
 
@@ -295,7 +301,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @Test
     public void testAddApprovalRequest() throws Exception {
-
+        log.trace(">testAddApprovalRequest");
         final long originalValidity = approvalProfile.getRequestExpirationPeriod();
         approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -316,7 +322,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             // Test that the approvalRequest exists now
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
 
             ApprovalDataVO next = result.iterator().next();
             cleanUpList.add(next.getId());
@@ -375,6 +381,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalProfile.setNumberOfApprovalsRequired(2);
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+            log.trace("<testAddApprovalRequest");
         }
     }
 
@@ -411,16 +418,16 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
 
             next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
-            assertTrue(next.getRemainingApprovals() == 0);
+            assertEquals(0, next.getRemainingApprovals());
 
             // Test that the approval expires as it should
             Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
 
             next = result.iterator().next();
             assertEquals("Status was not expired.", ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
@@ -436,17 +443,17 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalExecutionSessionRemote.approve(admin2, nonExecutableRequest.generateApprovalId(), approval2);
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
             next = result.iterator().next();
             assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
 
             // Make sure that the approval still have status executed after expiration
             Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
 
             next = result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXECUTED);
+            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_EXECUTED, next.getStatus());
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
@@ -462,7 +469,7 @@ public class ApprovalSessionTest extends CaTestCase {
             } catch (AdminAlreadyApprovedRequestException e) {
             }
             result = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
             next = result.iterator().next();
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
         } finally {
@@ -473,6 +480,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @Test
     public void testApproveFromCli() throws Exception {
+        log.trace(">testApproveFromCli");
         final AuthenticationToken cliReqAuthToken = getCliAdmin();
         final String username = "ApprovalEndEntityUsername";
         final String clearpwd = "foo123";
@@ -502,6 +510,7 @@ public class ApprovalSessionTest extends CaTestCase {
             }
         }
         approvalProfile.setNumberOfApprovalsRequired(2);
+        log.trace("<testApproveFromCli");
     }
 
     private AuthenticationToken getCliAdmin() {
@@ -571,16 +580,17 @@ public class ApprovalSessionTest extends CaTestCase {
             // Test that the approval exipres as it should
             Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            assertTrue(result.size() == 1);
+            assertEquals(1, result.size());
 
             next = result.iterator().next();
-            assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_EXPIRED);
+            assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_EXPIRED, next.getStatus());
 
             // Try to reject an expired request
             try {
                 approvalExecutionSessionRemote.reject(admin2, nonExecutableRequest.generateApprovalId(), rejection);
                 fail("It shouln't be possible to reject and expired request");
             } catch (ApprovalException e) {
+                log.debug("Caught expected exception: " + e.getMessage());
             }
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
@@ -593,6 +603,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @Test
     public void testIsApproved() throws Exception {
+        log.trace(">testIsApproved");
         final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
         approvalProfile.setApprovalExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -636,12 +647,13 @@ public class ApprovalSessionTest extends CaTestCase {
         } finally {
             approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
-
+            log.trace("<testIsApproved");
         }
     }
     
     @Test
     public void testExtendApprovalRequest() throws Exception {
+        log.trace(">testExtendApprovalRequest");
         final long originalValidity = approvalProfile.getRequestExpirationPeriod();
         approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -665,14 +677,15 @@ public class ApprovalSessionTest extends CaTestCase {
             }
             
             // Enable approval extension
-            approvalProfile.setMaxExtensionTime(2000);
+            approvalProfile.setMaxExtensionTime(3000);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
             
             // Extend the validity of the request
-            approvalSessionProxyRemote.extendApprovalRequestNoAuth(admin1, requestId, 1000);
+            approvalSessionProxyRemote.extendApprovalRequestNoAuth(admin1, requestId, 2000);
 
             // Should have been unexpired, so findNonExpiredApprovalRequest should return it.
-            // And the approvalId (the request hash) should not change by a change of expiry date.  
+            // And the approvalId (the request hash) should not change by a change of expiry date.
+            log.debug("Trying to find approval with ApprovalId " + nonExecutableRequest.generateApprovalId());
             result = approvalSessionRemote.findNonExpiredApprovalRequest(admin1, nonExecutableRequest.generateApprovalId());
             assertNotNull(result);
             assertEquals(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, result.getStatus()); // should not change at all during the test, just a safety check
@@ -685,11 +698,13 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfile.setMaxExtensionTime(0);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+            log.trace("<testExtendApprovalRequest");
         }
     }
 
     @Test
     public void testFindNonExpiredApprovalRequest() throws Exception {
+        log.trace(">testFindNonExpiredApprovalRequest");
         final long originalValidity = approvalProfile.getRequestExpirationPeriod();
         approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -713,12 +728,13 @@ public class ApprovalSessionTest extends CaTestCase {
             }
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+            log.trace("<testFindNonExpiredApprovalRequest");
         }
-
     }
 
     @Test
     public void testQuery() throws Exception {
+        log.trace(">testQuery");
         // Add a few requests
         DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
         DummyApprovalRequest req2 = new DummyApprovalRequest(admin1, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
@@ -760,11 +776,13 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, id1);
             approvalSessionRemote.removeApprovalRequest(admin1, id2);
             approvalSessionRemote.removeApprovalRequest(admin1, id3);
+            log.trace("<testQuery");
         }
     }
 
     //@Test
     public void testExpiredQuery() throws Exception {
+        log.trace(">testExpiredQuery");
         final long originalValidity = approvalProfile.getRequestExpirationPeriod();
         approvalProfile.setRequestExpirationPeriod(0);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
@@ -785,6 +803,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, expiredRequestId);
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+            log.trace("<testExpiredQuery");
         }
     }
     
@@ -800,24 +819,24 @@ public class ApprovalSessionTest extends CaTestCase {
         Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
         approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
         Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
+        assertEquals(1, result.size());
         ApprovalDataVO next = result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-        assertTrue(next.getRemainingApprovals() == 1);
+        assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
+        assertEquals(1, next.getRemainingApprovals());
 
         Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
         approvalExecutionSessionRemote.approve(externaladmin, nonExecutableRequest.generateApprovalId(), approval2);
         result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-        assertTrue(result.size() == 1);
+        assertEquals(1, result.size());
         next = result.iterator().next();
-        assertTrue("Status = " + next.getStatus(), next.getStatus() == ApprovalDataVO.STATUS_APPROVED);
-        assertTrue(next.getRemainingApprovals() == 0);
+        assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_APPROVED, next.getStatus());
+        assertEquals(0, next.getRemainingApprovals());
 
         log.trace("<testApprovalsWithExternalAdmins()");
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
-
 }
