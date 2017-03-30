@@ -1315,7 +1315,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final StringBuilder sb = new StringBuilder("SELECT a FROM RoleMemberData a WHERE a.tokenIssuerId IN (:caId) AND a.roleId IN (:roleId) AND a.tokenType IN (:tokenType)");
         // TODO only search by exact tokenMatchValue if it seems to be a serial number?
         if (!StringUtils.isEmpty(request.getGenericSearchString())) {
-            sb.append(" AND (a.tokenMatchValueColumn LIKE :searchStringInexact OR a.memberBindingValue LIKE :searchStringInexact)");
+            sb.append(" AND (a.tokenMatchValueColumn LIKE :searchStringInexact OR a.descriptionColumn LIKE :searchStringInexact)");
         }
         final Query query = entityManager.createQuery(sb.toString());
         query.setParameter("caId", authorizedLocalCaIds);

@@ -86,7 +86,7 @@ public class RaRoleMembersBean implements Serializable {
     private Map<Integer,String> roleIdToNamespaceMap;
     private boolean hasMultipleNamespaces;
     
-    private enum SortBy { ROLE, ROLENAMESPACE, CA, TOKENTYPE, TOKENMATCHVALUE, BINDING };
+    private enum SortBy { ROLE, ROLENAMESPACE, CA, TOKENTYPE, TOKENMATCHVALUE, DESCRIPTION };
     private SortBy sortBy = SortBy.ROLE;
     private boolean sortAscending = true;
     
@@ -169,7 +169,7 @@ public class RaRoleMembersBean implements Serializable {
         // Add names of CAs and roles
         resultsFiltered = new ArrayList<>();
         for (final RoleMember member : lastExecutedResponse.getRoleMembers()) {
-            final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()));
+            final String caName = StringUtils.defaultString(caIdToNameMap.get(member.getTokenIssuerId()), raLocaleBean.getMessage("role_members_page_info_unknownca"));
             final String roleName = StringUtils.defaultString(roleIdToNameMap.get(member.getRoleId()));
             final String namespace = roleIdToNamespaceMap.get(member.getRoleId());
             final String tokenTypeText = raLocaleBean.getMessage("role_member_token_type_" + member.getTokenType());
@@ -216,7 +216,7 @@ public class RaRoleMembersBean implements Serializable {
                 case CA: return o1.getCaName().compareTo(o2.getCaName()) * sortDir;
                 case TOKENTYPE: return StringUtils.defaultString(rm1.getTokenType()).compareTo(StringUtils.defaultString(rm2.getTokenType())) * sortDir;
                 case TOKENMATCHVALUE: return StringUtils.defaultString(rm1.getTokenMatchValue()).compareTo(StringUtils.defaultString(rm2.getTokenMatchValue())) * sortDir;
-                case BINDING: return StringUtils.defaultString(rm1.getMemberBindingValue()).compareTo(StringUtils.defaultString(rm2.getMemberBindingValue())) * sortDir;
+                case DESCRIPTION: return StringUtils.defaultString(rm1.getDescription()).compareTo(StringUtils.defaultString(rm2.getDescription())) * sortDir;
                 default:
                     throw new IllegalStateException("Invalid sortBy value");
                 }
@@ -234,8 +234,8 @@ public class RaRoleMembersBean implements Serializable {
     public void sortByTokenType() { sortBy(SortBy.TOKENTYPE, true); }
     public String getSortedByTokenMatchValue() { return getSortedBy(SortBy.TOKENMATCHVALUE); }
     public void sortByTokenMatchValue() { sortBy(SortBy.TOKENMATCHVALUE, true); }
-    public String getSortedByBinding() { return getSortedBy(SortBy.BINDING); }
-    public void sortByBinding() { sortBy(SortBy.BINDING, true); }
+    public String getSortedByDescription() { return getSortedBy(SortBy.DESCRIPTION); }
+    public void sortByDescription() { sortBy(SortBy.DESCRIPTION, true); }
     
     public String getSortColumn() {
         return sortBy.name();

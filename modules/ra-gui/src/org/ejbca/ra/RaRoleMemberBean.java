@@ -83,6 +83,7 @@ public class RaRoleMemberBean implements Serializable {
     private int caId;
     private Integer matchKey;
     private String matchValue;
+    private String description;
     
     public void initialize() throws AuthorizationDeniedException {
         if (tokenType != null && tokenTypeInfos != null) {
@@ -99,6 +100,7 @@ public class RaRoleMemberBean implements Serializable {
             caId = roleMember.getTokenIssuerId();
             matchKey = roleMember.getTokenMatchKey();
             matchValue = roleMember.getTokenMatchValue();
+            description = roleMember.getDescription();
             if (roleId != RoleMember.NO_ROLE) {
                 role = raMasterApiProxyBean.getRole(raAuthenticationBean.getAuthenticationToken(), roleId);
                 if (role == null) {
@@ -106,7 +108,7 @@ public class RaRoleMemberBean implements Serializable {
                 }
             }
         } else {
-            roleMember = new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, "", RoleMember.NO_ISSUER, 0, 0, "", 0, "", "");
+            roleMember = new RoleMember("", RoleMember.NO_ISSUER, 0, 0, "", 0, "");
             // Default values
             if (StringUtils.isEmpty(tokenType)) {
                 tokenType = "CertificateAuthenticationToken";
@@ -178,6 +180,13 @@ public class RaRoleMemberBean implements Serializable {
         this.matchValue = matchValue;
     }
     
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description.trim();
+    }
 
     public List<SelectItem> getAvailableRoles() {
         if (availableRoles == null) {
@@ -284,6 +293,7 @@ public class RaRoleMemberBean implements Serializable {
         roleMemberWithChanges.setTokenMatchKey(matchKey);
         roleMemberWithChanges.setTokenMatchOperator(tokenTypeInfo.getMatchOperator());
         roleMemberWithChanges.setTokenMatchValue(getTokenTypeHasMatchValue() ? matchValue : "");
+        roleMemberWithChanges.setDescription(description);
         
         final RoleMember savedRoleMember = raMasterApiProxyBean.saveRoleMember(raAuthenticationBean.getAuthenticationToken(), roleMemberWithChanges);
         if (savedRoleMember == null) {

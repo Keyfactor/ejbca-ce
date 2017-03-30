@@ -113,7 +113,8 @@ public class ListAdminsCommand extends BaseRolesCommand {
                     roleMember.getTokenMatchKey());
             final AccessMatchType accessMatchType = roleMember.getAccessMatchType();
             final String tokenMatchValue = roleMember.getTokenMatchValue();
-            getLogger().info( caName + " " + accessMatchValue + " " + accessMatchType + " \"" + tokenMatchValue + "\"");
+            final String description = roleMember.getDescription();
+            getLogger().info( caName + " " + accessMatchValue + " " + accessMatchType + " \"" + tokenMatchValue + "\"" + " \"" + description + "\"");
         }
         return CommandResult.SUCCESS;
 

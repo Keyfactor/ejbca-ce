@@ -147,12 +147,12 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 StandardRules.CAACCESSBASE.resource()
                 ), null));
         final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-        roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.getRoleId(), null, null));
-        roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.getRoleId(), null, null));
+        roleMember1 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername1, role.getRoleId(), null));
+        roleMember2 = roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(), adminusername2, role.getRoleId(), null));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(alwaysAllowAuthenticationToken, new File(P12_FOLDER_NAME)));
 

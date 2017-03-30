@@ -178,23 +178,17 @@
                                 <h:outputText value="#{raRoleMember.roleMember.tokenMatchValue}"/>
                             </h:outputLink>
                         </h:column>
-                        
-                        <ui:remove>
-                        <!-- Member bindings are not yet fully implemented. See ECA-5714
                         <h:column>
                             <f:facet name="header">
-                                <h:outputLabel for="sortBinding" value="#{msg.role_members_page_colhead_binding} #{raRoleMembersBean.sortedByBinding}"/>
-                                <h:commandButton id="sortBinding" action="#{raRoleMembersBean.sortByBinding}" value="#{msg.generic_sort_command}" style="display: none;">
+                                <h:outputLabel for="sortDescription" value="#{msg.role_members_page_colhead_description} #{raRoleMembersBean.sortedByDescription}"/>
+                                <h:commandButton id="sortDescription" action="#{raRoleMembersBean.sortByDescription}" value="#{msg.generic_sort_command}" style="display: none;">
                                     <f:ajax execute="@this" render=":roleMembersForm:filteredResults"
                                         onevent="function(data){ejbca.ra.onAjaxEvent(data,'roleMembersForm:filteredResults');}"
                                         onerror="function(data){ejbca.ra.onAjaxError(data,'roleMembersForm:filteredResults');}"/>
                                 </h:commandButton>
                             </f:facet>
-                            <h:outputText value="#{raRoleMember.roleMember.memberBindingValue}" style="white-space: nowrap"/>
+                            <h:outputText value="#{raRoleMember.roleMember.description}" style="white-space: nowrap"/>
                         </h:column>
-                        -->
-                        </ui:remove>
-                        
                         
                         <h:column rendered="#{raAccessBean.authorizedToEditRoleMembers}">
                             <h:link id="editButton" styleClass="viewMoreLink" outcome="role_member" includeViewParams="true">
