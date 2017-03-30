@@ -413,9 +413,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
         if (!adminExists) {
             log.info("Adding member to role: " + wsadminRoleName);
-            roleMemberSession.persist(intAdmin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED, X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+            roleMemberSession.persist(intAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     caInfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    TEST_ADMIN_USERNAME, role.getRoleId(), null, null));
+                    TEST_ADMIN_USERNAME, role.getRoleId(), null));
         }
         return fileHandles;
     }

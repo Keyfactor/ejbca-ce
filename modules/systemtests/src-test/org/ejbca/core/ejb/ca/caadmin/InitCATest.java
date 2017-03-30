@@ -206,9 +206,9 @@ public class InitCATest extends CaTestCase {
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
             
             final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
-            final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                    X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
-                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null, null));
+            final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                    origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
+                    AccessMatchType.TYPE_EQUALCASE.getNumericValue(), "TestUser", role.getRoleId(), null));
             // Now change a value and initialize
             log.debug("Trying to initialize with changed Subject DN");
             retrievedCaInfo.setSubjectDN(NEW_DN);

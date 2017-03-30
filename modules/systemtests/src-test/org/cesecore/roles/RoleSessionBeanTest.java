@@ -441,9 +441,9 @@ public class RoleSessionBeanTest {
     /** Add self signed certificate match to a role identified by name and return the persisted RoleMember */
     private RoleMember addRoleMemberToRole(final String nameSpace, final String roleName, final String subjectDn) throws AuthorizationDeniedException {
         final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
-        return roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(RoleMember.ROLE_MEMBER_ID_UNASSIGNED,
-                X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, subjectDn.hashCode(), X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
-                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null, null));
+        return roleMemberSession.persist(alwaysAllowAuthenticationToken, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                subjectDn.hashCode(), X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue(),
+                AccessMatchType.TYPE_EQUALCASE.getNumericValue(), subjectDn, role.getRoleId(), null));
         
     }
     

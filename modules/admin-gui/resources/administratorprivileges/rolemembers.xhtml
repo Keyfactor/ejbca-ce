@@ -58,8 +58,8 @@
                 <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
-                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth"
-                    headerClass="listHeader" rowClasses="Row0,Row1" columnClasses="caColumn alignmiddle,typeColumn alignmiddle,typeColumn alignmiddle,valueColumn alignmiddle,commandColumn alignmiddle">
+                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth" headerClass="listHeader" rowClasses="Row0,Row1"
+                    columnClasses="caColumn alignmiddle,typeColumn alignmiddle,typeColumn alignmiddle,valueColumn alignmiddle,valueColumn alignmiddle,commandColumn alignmiddle">
                     <h:column>
                         <f:facet name="header">
                             <h:outputText value="#{web.text.MATCHWITH}"/>
@@ -104,6 +104,15 @@
                             <f:param name="textfieldserialnumber" value="#{roleMember.tokenMatchValue}"/>
                             <h:outputText value="#{roleMember.tokenMatchValue}"/>
                         </h:outputLink>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="#{web.text.ROLEMEMBERS_DESCRIPTION}" />
+                            <h:panelGroup id="descriptionBlock" layout="block" rendered="#{roleMembersBean.authorizedToEditRole}">
+                                <h:inputText id="description" value="#{roleMembersBean.description}"/>
+                            </h:panelGroup>
+                        </f:facet>
+                        <h:outputText value="#{roleMember.description}"/>
                     </h:column>
                     <h:column rendered="#{roleMembersBean.authorizedToEditRole}">
                         <f:facet name="header">
@@ -151,6 +160,10 @@
                             rendered="#{roleMembersBean.isTokenMatchValueUsed(roleMembersBean.roleMemberToDelete)}"/>
                         <h:outputText value="#{roleMembersBean.roleMemberToDelete.tokenMatchValue}"
                             rendered="#{roleMembersBean.isTokenMatchValueUsed(roleMembersBean.roleMemberToDelete)}"/>
+                        <h:outputLabel value="#{web.text.ROLEMEMBERS_DESCRIPTION}"
+                            rendered="#{not empty roleMembersBean.roleMemberToDelete.description}"/>
+                        <h:outputText value="#{roleMembersBean.roleMemberToDelete.description}"
+                            rendered="#{not empty roleMembersBean.roleMemberToDelete.description}"/>
                     </h:panelGrid>
                     <h:panelGroup styleClass="alignright fullwidth" layout="block">
                         <h:commandButton value="#{web.text.CANCEL}" action="#{roleMembersBean.actionDeleteRoleMemberReset}">

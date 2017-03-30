@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.net.URL;
+import java.security.cert.Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -70,6 +72,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -93,6 +96,7 @@ import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
@@ -163,6 +167,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private CaSessionLocal caSession;
     @EJB
     private CertificateProfileSessionLocal certProfileSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
@@ -1283,6 +1289,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final int tokenMatchKey = accessUserAspect.getMatchWith();
                 int tokenMatchOperator = accessUserAspect.getMatchType();
                 String tokenMatchValue = accessUserAspect.getMatchValue();
+                String description = "";
                 // Straighten out comparison operators that don't make sense, since previous versions of EJBCA might have allowed such configuration
                 if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
                     if (tokenMatchKey == X500PrincipalAccessMatchValue.NONE.getNumericValue() ||
@@ -1304,6 +1311,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         }
                         tokenMatchOperator = AccessMatchType.TYPE_EQUALCASE.getNumericValue();
                         tokenMatchValue = serialNumberUppercase;
+                        // If the certificate is present in the local database, we try to find a human readable description from the certificate
+                        try {
+                            final CAInfo caInfo = caSession.getCAInfoInternal(tokenIssuerId);
+                            final String issuerDn = caInfo.getSubjectDN();
+                            final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn, new BigInteger(tokenMatchValue, 16));
+                            if (certificate!=null) {
+                                final List<String> commonNames = CertTools.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
+                                if (!commonNames.isEmpty()) {
+                                    // Use the first found CN of the mapped certificate
+                                    description = commonNames.get(0);
+                                }
+                            } else {
+                                description = "external client certificate";
+                                // Since we made the database lookup, take the chance to inform about meaningless configuration
+                                if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                                    log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
+                                            "' does match a local certificate even though this is required by the '"+WebConfiguration.CONFIG_REQCERTINDB+"' setting." +
+                                            "Migrating admin anyway.");
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
+                                    "' could not be interpreted as a hex value. Admin will not be migrated.");
+                        } catch (CADoesntExistsException e) {
+                            log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
+                                    "' is issued by a CA with ID " + tokenIssuerId + " that is unknown to this system. Migrating admin anyway.");
+                        }
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||
                             tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASEINS.getNumericValue()) {
@@ -1327,7 +1361,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 }
                 // Assign upgraded role members the same ID as the old AdminEndEntity.primaryKey so members are merged in case this runs several times (like in tests)
                 roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
-                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, null, null));
+                        tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
