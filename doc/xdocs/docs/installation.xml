@@ -777,7 +777,7 @@ ant clean deployear
 <note>If you are moving an existing installation that already have TLS keystores available, this step is not needed.</note>
 <p></p>
 <source>
-ant install
+ant runinstall
 </source>
 </subsubsection>
 
