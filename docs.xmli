@@ -42,8 +42,8 @@
         <path location="modules/dist/cesecore-common.jar"/>
         <path location="modules/dist/cesecore-entity.jar"/>
        	<path location="modules/dist/cesecore-ejb-interface.jar"/>
-		<path location="lib/bcprov-jdk15on-154.jar" />
-		<path location="lib/bcpkix-jdk15on-154.jar" />
+		<path location="lib/bcprov-jdk15on-156.jar" />
+		<path location="lib/bcpkix-jdk15on-156.jar" />
     </path>
     
     <!-- =================================================================== -->
