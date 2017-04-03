@@ -48,5 +48,8 @@ public interface RoleSessionLocal extends RoleSession {
      * @param keepOldAccessRule when true, the /ca/(caIdOld)/ rule will be kept as well.
      * @param updateRoleMembers update the RoleMember.tokenIssuerId for members issued by this CA
      */
-    boolean updateCaId(int caIdOld, int caIdNew, boolean keepOldAccessRule, boolean updateRoleMembers);    
+    boolean updateCaId(int caIdOld, int caIdNew, boolean keepOldAccessRule, boolean updateRoleMembers);
+
+    /** @throws AuthorizationDeniedException if changing this role would affect the access granted to the specified authenticationToken. */
+    void assertNonImportantRoleMembership(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 }
