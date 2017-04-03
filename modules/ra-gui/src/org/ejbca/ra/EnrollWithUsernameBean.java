@@ -279,10 +279,15 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
                 final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
+                final List<String> availableEcCurves = certificateProfile.getAvailableEcCurvesAsList(); 
                 final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-                if(!availableKeyAlgorithms.contains(keyAlgorithm) ||
-                        !availableBitLengths.contains(Integer.parseInt(keySpecification))){
+                try {
+                if ( !availableKeyAlgorithms.contains(keyAlgorithm) || 
+                        (!availableEcCurves.contains(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ) {
                     throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+                }
+                } catch (NumberFormatException e) {
+                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));                    
                 }
             } else {
                 if (log.isDebugEnabled()) {
@@ -292,7 +297,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             selectedAlgorithm = keyAlgorithm + " " + keySpecification;// Save for later use
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = value.toString();
-        } catch (InvalidKeyException | NumberFormatException | NoSuchAlgorithmException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
