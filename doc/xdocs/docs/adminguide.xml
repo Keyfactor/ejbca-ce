@@ -6279,7 +6279,7 @@ The main purpose of the Security Audit Log is to provide information to an audit
 but is not so interested in what the system did not do.
 </p>
 <p>
-The Security Audit Log is stored in the database and the System Log is stroed in log files. By default the System Log also contains the Security Audit Log, but this can be configured.
+The Security Audit Log is stored in the database and the System Log is stored in log files. By default the System Log also contains the Security Audit Log, but this can be configured.
 </p>
 </subsection>
 <subsection name="Security Audit Log">
@@ -6529,6 +6529,31 @@ You can, in run-time, change between DEBUG and INFO logging with the simple jbos
 <li>Sign logs with <a href="security.html#External%20Log%20Signing">external tools</a> as they are being rotated.</li>
 </ul>
 </subsection>
+<subsection name="Exporting Audit Logs">
+<p>
+All installations have their specific requirements how audit logs should be handled. There are several ways to Export Audit Logs.
+</p>
+<ul>
+<li>Rotate system log files (including the audit log) and archive/process the rotated log files</li>
+<li>Use a SYSLOG appended to send the System log (including the Audit log) to a central log server that performs monitoring functions</li>
+<li>Export the database audit log using the Local Database CLI</li>
+<li>Export the database audit log using database tools</li>
+<li>Export a specific view from the View Log page in Admin GUI to an XML file</li>
+<li>Export a specific view from the View Log page in Admin GUI to a signed CMS (Cryptographic Message Syntax)</li>
+</ul>
+</subsection>
+<subsection name="Log Monitoring">
+<p>
+When monitoring logs from EJBCA the common trigger to monitor for are ERROR events in the System Log.
+Example where there is a error to initialize an (this is a specific exampe and not applicable to all HSMs) HSM during startup:
+</p>
+<source>
+10:46:53,099 ERROR [org.cesecore.keys.token.p11.Pkcs11Wrapper] (default task-9) Wrong arguments were passed to sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance threw an exception
+</source>
+<p>
+An error event like this should trigger an operator to take a look at the system to gauge what is wrong.
+</p>
+</subsection>
 </section>
 
 <section name="Command Line Interfaces">
@@ -6646,7 +6671,9 @@ cd dist/ejbca-db-cli
  <p>The cli contains command that directly accesses a database, export, import, copy, verify audit log and OCSP monitoring. 
  Run the command to get a description about all available commands.</p>
 <p>To verify database protection just make sure that you have conf/databaseprotection.properties configured. If you are using database protection for your CA, you can use the same file.
-For verification, you can also use a verification token, without the private key, so you can do verification on another host from the CA.</p>
+For verification, you can also use a verification token, without the private key, so you can do verification on another host from the CA. The file conf/databaseprotection.properties.sample
+provide example configuration and documentation for the various options.</p>
+
 <p>You can also use the DB tool to create databaseprotection in case you started off not enabling it, and want to enable it later.</p>
 <ul>
 <li>Shut down EJBCA</li>
