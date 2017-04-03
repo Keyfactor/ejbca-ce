@@ -36,7 +36,6 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
-import org.cesecore.authentication.tokens.NestableAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -81,7 +80,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
             assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         }
-        return role;
+        // Always return a copy to prevent shared access
+        return role==null ? null : new Role(role);
     }
 
     @Override
@@ -93,7 +93,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
             assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         }
-        return role;
+        // Always return a copy to prevent shared access
+        return role==null ? null : new Role(role);
     }
     
     @Override
@@ -175,8 +176,8 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Check that authenticationToken is allowed to remove the role with all its rights
         final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
-        assertNotMember(authenticationToken, role, roleIdsCallerBelongsTo);
         assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
+        assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
         boolean ret = roleDataSession.deleteRoleNoAuthorizationCheck(role.getRoleId());
         RoleCache.INSTANCE.updateWith(role.getRoleId(), 0, null, null);
         final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleremoved", role.getRoleNameFull());
@@ -218,7 +219,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         // Is the authToken authorized to the role as provided as an argument?
         final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
-        assertNotMember(authenticationToken, role, roleIdsCallerBelongsTo);
+        assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
         assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         // Is the authToken authorized to the role found by id in the database?
         final Role roleById = role.getRoleId()==Role.ROLE_ID_UNASSIGNED ? null : roleDataSession.getRole(role.getRoleId());
@@ -386,12 +387,44 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, tokenIssuerAccessRules.toArray(new String[tokenIssuerAccessRules.size()]));
     }
 
-    /** @throws AuthorizationDeniedException if the caller part of this role (to prevent suicide). */
-    private void assertNotMember(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) throws AuthorizationDeniedException {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void assertNonImportantRoleMembership(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
+        final Role role = roleDataSession.getRole(roleId);
+        if (role!=null) {
+            // Check that authenticationToken is allowed to remove the role with all its rights
+            final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
+            assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
+        }
+    }
+
+    private void assertNonImportantRoleMembership(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) throws AuthorizationDeniedException {
         if (role.getRoleId()!=Role.ROLE_ID_UNASSIGNED) {
             // Check that authenticationToken is not about to lock itself out by modifying its own role
             if (roleIdsCallerBelongsTo.contains(role.getRoleId())) {
-                throw new AuthorizationDeniedException("Current AuthenticationToken belongs to this role.");
+                if (log.isDebugEnabled()) {
+                    log.debug("'"+authenticationToken+"' relies on match from Role with id " + role.getRoleId() + " for access.");
+                }
+                // As long as the admin does not lower its own privileges we are ok with
+                HashMap<String, Boolean> accessRulesBefore = new HashMap<>();
+                HashMap<String, Boolean> accessRulesAfter = new HashMap<>();
+                for (final int roleId : roleIdsCallerBelongsTo) {
+                    final HashMap<String, Boolean> accessRulesFromRole = roleDataSession.getRole(roleId).getAccessRules();
+                    accessRulesBefore = AccessRulesHelper.getAccessRulesUnion(accessRulesBefore, accessRulesFromRole);
+                    if (roleId!=role.getRoleId()) {
+                        accessRulesAfter = AccessRulesHelper.getAccessRulesUnion(accessRulesAfter, accessRulesFromRole);
+                    }
+                }
+                if (!accessRulesBefore.equals(accessRulesAfter)) {
+                    throw new AuthorizationDeniedException("Granted access of caller might be affected by this change.");
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Access granted to '"+authenticationToken+"' would not be affected by not being a member of Role with id " + role.getRoleId() + ".");
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("'"+authenticationToken+"' does not rely on match from Role with id " + role.getRoleId() + ".");
+                }
             }
         }
     }
@@ -411,6 +444,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         return true;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getAuthorizedNamespaces(final AuthenticationToken authenticationToken) {
         final Set<String> namespaces = new HashSet<>();
