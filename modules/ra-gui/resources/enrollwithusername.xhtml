@@ -86,8 +86,8 @@
 					<h:panelGroup layout="block" styleClass="internal-frame">
 							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
 							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
-								rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePkcs12 || enrollWithUsernameBean.renderGenerateKeyStorePem}">
-								<h:outputLabel for="keyAlgField" value="#{msg.enroll_key_algorithm}" />
+								rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePkcs12 || enrollWithUsernameBean.renderGenerateKeyStorePem || enrollWithUsernameBean.renderGenerateKeyStoreJks}">
+								<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
 								<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{enrollWithUsernameBean.selectedAlgorithm}">
 									<f:selectItems value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
 								</h:selectOneMenu>
