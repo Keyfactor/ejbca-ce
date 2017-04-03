@@ -22,6 +22,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -148,12 +149,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     @Transient
     /** @return the actual value with which we match (never returns null) */
     public String getTokenMatchValue() {
-        return super.emptyWhenNull(getTokenMatchValueColumn());
+        return StringUtils.defaultIfEmpty(getTokenMatchValueColumn(), "");
     }
     
     @Transient
     public void setTokenMatchValue(final String tokenMatchValue) {
-        this.setTokenMatchValueColumn(super.nullWhenEmpty(tokenMatchValue));
+        this.setTokenMatchValueColumn(StringUtils.defaultIfEmpty(tokenMatchValue, null));
     }
 
     /** @return the role to which this member belongs or 0 if it is not assigned to a role. */
@@ -180,12 +181,12 @@ public class RoleMemberData extends ProtectedData implements Serializable, Compa
     @Transient
     /** @return a human readable description of the role member */
     public String getDescription() {
-        return super.emptyWhenNull(getDescriptionColumn());
+        return StringUtils.defaultIfEmpty(getDescriptionColumn(), "");
     }
 
     @Transient
     public void setDescription(final String description) {
-        this.setDescriptionColumn(super.nullWhenEmpty(description));
+        this.setDescriptionColumn(StringUtils.defaultIfEmpty(description, null));
     }
     
     public int getRowVersion() {

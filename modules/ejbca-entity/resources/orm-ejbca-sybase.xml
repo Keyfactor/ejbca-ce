@@ -155,7 +155,7 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="roleName"><column name="roleName" column-definition="VARCHAR(255)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="nameSpace"><column name="nameSpace" column-definition="VARCHAR(255)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="nameSpaceColumn"><column name="nameSpace" column-definition="VARCHAR(255)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
