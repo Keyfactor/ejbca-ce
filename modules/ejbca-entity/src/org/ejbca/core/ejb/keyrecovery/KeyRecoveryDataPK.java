@@ -17,6 +17,8 @@ import java.io.Serializable;
 
 /**
  * Primary key for KeyRecoveryData.
+ * 
+ * @version $Id$
  */
 public class KeyRecoveryDataPK implements Serializable {
 
