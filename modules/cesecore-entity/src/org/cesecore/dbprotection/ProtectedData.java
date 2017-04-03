@@ -168,20 +168,4 @@ public abstract class ProtectedData {
     public String calculateProtection() {
         return impl.calculateProtection(this);
     }
-
-    /** 
-     * Helper method to convert null values to empty Strings, since Oracle store these as NULL.
-     * Using a consistent storage will allow future migration between databases.
-     */
-    protected String emptyWhenNull(final String input) {
-        return input==null ? "" : input;
-    }
-
-    /** 
-     * Helper method to convert empty Strings to null, since Oracle store these as NULL
-     * Using a consistent storage will allow future migration between databases.
-     */
-    protected String nullWhenEmpty(final String input) {
-        return (input!=null && input.trim().isEmpty()) ? null : input;
-    }
 }

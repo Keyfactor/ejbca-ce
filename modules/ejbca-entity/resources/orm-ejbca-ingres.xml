@@ -162,7 +162,7 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic fetch="EAGER" name="roleName"><column name="roleName" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="nameSpace"><column name="nameSpace" column-definition="VARCHAR(256)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="nameSpaceColumn"><column name="nameSpace" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="LONG VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>

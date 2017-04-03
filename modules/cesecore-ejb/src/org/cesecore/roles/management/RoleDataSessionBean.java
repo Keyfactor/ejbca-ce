@@ -81,11 +81,11 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
 
     private RoleData getRoleData(final String nameSpace, final String roleName) {
         if (StringUtils.isEmpty(nameSpace)) {
-            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpace IS NULL");
+            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpaceColumn IS NULL");
             query.setParameter("roleName", roleName);
             return QueryResultWrapper.getSingleResult(query);
         } else {
-            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpace=:nameSpace");
+            final Query query = entityManager.createQuery("SELECT a FROM RoleData a WHERE a.roleName=:roleName AND a.nameSpaceColumn=:nameSpace");
             query.setParameter("roleName", roleName);
             query.setParameter("nameSpace", nameSpace);
             return QueryResultWrapper.getSingleResult(query);

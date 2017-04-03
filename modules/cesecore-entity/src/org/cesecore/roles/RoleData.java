@@ -28,6 +28,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
@@ -44,7 +45,7 @@ public class RoleData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private int id;
-    private String nameSpace;
+    private String nameSpaceColumn;
     private String roleName;
     private String rawData;
     private int rowVersion = 0;
@@ -61,23 +62,24 @@ public class RoleData extends ProtectedData implements Serializable {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    /** Use {@link #getNameSpaceNeverNull()} instead */
-    // @Column
-    public String getNameSpace() { return nameSpace; }
-    /** Use {@link #setNameSpaceNeverNull(String)} instead */
-    public void setNameSpace(String nameSpace) { this.nameSpace = nameSpace; }
+    //@Column(name="nameSpace")
+    @Deprecated
+    /** @deprecated (Only for database mapping) {@link #getNameSpaceNeverNull()} */
+    public String getNameSpaceColumn() { return nameSpaceColumn; }
+    @Deprecated
+    /** @deprecated (Only for database mapping) {@link #setNameSpaceNeverNull(String)} */
+    public void setNameSpaceColumn(String nameSpaceColumn) { this.nameSpaceColumn = nameSpaceColumn; }
 
     // Ensure that we treat empty string as null for consistent behavior with Oracle
     @Transient
-    public String getNameSpaceNeverNull() {
-        final String nameSpace = getNameSpace();
-        return nameSpace == null ? "" : nameSpace;
+    public String getNameSpace() {
+        return StringUtils.defaultIfEmpty(getNameSpaceColumn(), "");
     }
 
     // Ensure that we treat empty string as null for consistent behavior with Oracle
     @Transient
-    public void setNameSpaceNeverNull(final String nameSpace) {
-        setNameSpace("".equals(nameSpace) ? null : nameSpace);
+    public void setNameSpace(final String nameSpace) {
+        setNameSpaceColumn(StringUtils.defaultIfEmpty(nameSpace, null));
     }
 
     // @Column
@@ -112,13 +114,13 @@ public class RoleData extends ProtectedData implements Serializable {
 
     @Transient
     public Role getRole() {
-        return new Role(getId(), getNameSpaceNeverNull(), getRoleName(), getDataMap());
+        return new Role(getId(), getNameSpace(), getRoleName(), getDataMap());
     }
 
     @Transient
     public void setRole(final Role role) {
         setId(role.getRoleId());
-        setNameSpaceNeverNull(role.getNameSpace());
+        setNameSpace(role.getNameSpace());
         setRoleName(role.getRoleName());
         setDataMap(role.getRawData());
     }
@@ -143,7 +145,7 @@ public class RoleData extends ProtectedData implements Serializable {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getNameSpaceNeverNull()).append(getRoleName()).append(getRawData()).append(getRawData());
+        build.append(getId()).append(getNameSpace()).append(getRoleName()).append(getRawData()).append(getRawData());
         return build.toString();
     }
 

@@ -223,13 +223,13 @@ public class DatabaseSchemaTest {
 
     @Test
     public void testAdminGroupData() {
-        LOG.trace(">testRoleData");
+        LOG.trace(">testAdminGroupData");
         logMemStats();
         AdminGroupData entity = new AdminGroupData(BOGUS_INTEGER, VARCHAR_250B);
         entity.setRowProtection(CLOB_10KiB);
         entity.setRowVersion(0);
         storeAndRemoveEntity(entity);
-        LOG.trace("<testRoleData");
+        LOG.trace("<testAdminGroupData");
     }
 
     @Test
@@ -238,7 +238,7 @@ public class DatabaseSchemaTest {
         logMemStats();
         RoleData entity = new RoleData();
         entity.setId(123);
-        entity.setNameSpaceNeverNull(VARCHAR_250B);
+        entity.setNameSpace(VARCHAR_250B);
         entity.setRoleName(VARCHAR_250B);
         entity.setRawData(CLOB_1MiB);
         entity.setRowProtection(CLOB_10KiB);
