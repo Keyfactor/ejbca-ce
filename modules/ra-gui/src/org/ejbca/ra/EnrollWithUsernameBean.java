@@ -282,10 +282,10 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
                 final List<String> availableEcCurves = certificateProfile.getAvailableEcCurvesAsList(); 
                 final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
                 try {
-                if ( !availableKeyAlgorithms.contains(keyAlgorithm) || 
-                        (!availableEcCurves.contains(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
-                }
+                    if ( !availableKeyAlgorithms.contains(keyAlgorithm) || 
+                            (!availableEcCurves.contains(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ) {
+                        throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
+                    }
                 } catch (NumberFormatException e) {
                     throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));                    
                 }
