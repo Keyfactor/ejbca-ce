@@ -113,8 +113,18 @@ function checkselected(){
         <%= ejbcawebbean.getText("ROLE") %>
         &nbsp;
       </td>
+       <%  
+       String BUTTON_DISABLED = ""; 
+       if(authroles.isEmpty()) {
+		BUTTON_DISABLED = "disabled";
+       } %>
       <td width="*"> 
-        <select name="<%=SELECT_ROLE%>" >
+        <select name="<%=SELECT_ROLE%>"<%= BUTTON_DISABLED %>>
+	        <%if(authroles.isEmpty()) { %>
+		        <option>
+		        	<c:out value = '<%= ejbcawebbean.getText("NOAUTHORIZEDROLES", true) %>'/>
+		        </option>
+	        <% } %>
           <%Iterator iter = authroles.iterator();
             while(iter.hasNext()){
             	Role role = (Role) iter.next();%>
@@ -129,10 +139,10 @@ function checkselected(){
       <td width="150px">
         &nbsp;
       </td>
-      <td width="*">            
-        <input type="submit" name="<%= BUTTON_ADD_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields())' value="<%= ejbcawebbean.getText("ADDISSUER") %>">&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAME") %>">&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
+      <td width="*">
+        <input type="submit" name="<%= BUTTON_ADD_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields())' value="<%= ejbcawebbean.getText("ADDISSUER")%>"<%= BUTTON_DISABLED %>>&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAME") %>"<%= BUTTON_DISABLED %>>&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>"<%= BUTTON_DISABLED %>>
       </td>
     </tr> 
   </table>
