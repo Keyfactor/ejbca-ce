@@ -96,6 +96,7 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
             // Successfully did nothing
             return null;
         }
+        assertNonImportantRoleMembership(authenticationToken, roleMember);
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
         RoleMember oldRoleMember = null;
         if (roleMember.getId() != RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
@@ -205,12 +206,48 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
         return ret;
     }
 
+    /** @throws AuthorizationDeniedException if the provided RoleMember is the only member in the particular RoleMember's Role matching the authentication token */
+    private void assertNonImportantRoleMembership(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        final List<RoleMember> roleMembers = getRoleMembersByRoleId(authenticationToken, roleMember.getRoleId());
+        int count = 0;
+        for (final RoleMember current : roleMembers) {
+            if (current.getTokenType().equals(roleMember.getTokenType()) &&
+                    current.getTokenIssuerId()==roleMember.getTokenIssuerId() &&
+                    current.getTokenMatchKey()==roleMember.getTokenMatchKey() &&
+                    current.getTokenMatchOperator()==roleMember.getTokenMatchOperator() &&
+                    StringUtils.equals(current.getTokenMatchValue(), roleMember.getTokenMatchValue())) {
+                count++;
+            }
+        }
+        // If there are no duplicate matches for this RoleMember...
+        if (count<2) {
+            if (log.isDebugEnabled()) {
+                log.debug("No RoleMember provides the same match as the one with id " + roleMember.getId() + ". count="+count);
+            }
+            // ...and the caller relies on this match for access the access granted by this Role...
+            for (final RoleMember current : roleMemberDataSession.getRoleMembersMatchingAuthenticationToken(authenticationToken)) {
+                if (roleMember.getId() == current.getId()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("'"+authenticationToken+"' relies on match from RoleMember with id " + roleMember.getId() + ".");
+                    }
+                    // ...also check if there are other roles that would provide the same access as a this Role
+                    roleSession.assertNonImportantRoleMembership(authenticationToken, roleMember.getRoleId());
+                }
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("RoleMembers provides the same match as the one with id " + roleMember.getId() + ". count="+count);
+            }
+        }
+    }
+    
     @Override
     public boolean remove(final AuthenticationToken authenticationToken, final int roleMemberId) throws AuthorizationDeniedException {
         final RoleMember roleMember = roleMemberDataSession.findRoleMember(roleMemberId);
         if (roleMember == null) {
             return false;
         }
+        assertNonImportantRoleMembership(authenticationToken, roleMember);
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
         final Role role = lookupRoleAndCheckAuthorization(authenticationToken, roleMember);
         final boolean removed = roleMemberDataSession.remove(roleMemberId);

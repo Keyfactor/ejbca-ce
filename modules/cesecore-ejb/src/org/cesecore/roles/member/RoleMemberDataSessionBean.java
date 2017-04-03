@@ -192,6 +192,25 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public Set<RoleMember> getRoleMembersMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
+        final Set<RoleMember> ret = new HashSet<>();
+        if (authenticationToken!=null) {
+            final TypedQuery<RoleMemberData> query = getQueryForAuthenticationToken(authenticationToken);
+            for (final RoleMemberData roleMemberData : query.getResultList()) {
+                try {
+                    if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
+                        ret.add(roleMemberData.asValueObject());
+                    }
+                } catch (AuthenticationFailedException e) {
+                    log.debug(e.getMessage(), e);
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     @Deprecated
     public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final TypedQuery<RoleMemberData> query = getQueryForAuthenticationToken(authenticationToken);

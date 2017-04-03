@@ -93,4 +93,7 @@ public interface RoleMemberDataSessionLocal extends RoleMemberDataSession {
     /** @return roleId,tokenMatchType values for legacy priority matching  */
     @Deprecated // Keep for as long as we need to support upgrades to 6.8.0
     Map<Integer, Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+
+    /** @return all role members matching the specified valid AuthenticationToken or an empty list otherwise */
+    Set<RoleMember> getRoleMembersMatchingAuthenticationToken(AuthenticationToken authenticationToken);
 }

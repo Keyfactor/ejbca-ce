@@ -50,6 +50,14 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     private String roleName;
     private String nameSpace;
 
+    /** Copy constructor */
+    public Role(final Role role) {
+        this.roleId = role.roleId;
+        this.nameSpace = role.nameSpace;
+        this.roleName = role.roleName;
+        getAccessRules().putAll(role.getAccessRules());
+    }
+
     public Role(final String nameSpace, final String roleName) {
         this.roleId = ROLE_ID_UNASSIGNED;
         setNameSpace(nameSpace);

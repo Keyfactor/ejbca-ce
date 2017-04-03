@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -49,11 +48,10 @@ public class RoleSessionBeanTest {
     
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final Logger log = Logger.getLogger(RoleSessionBeanTest.class);
 
-    private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            "AuthorizationSessionBeanTest"));
+    private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(RoleSessionBeanTest.class.getSimpleName());
 
     private void cleanUpRole(final String nameSpace, final String roleName) throws AuthorizationDeniedException {
         final Role cleanUpRole = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace, roleName);
@@ -224,8 +222,8 @@ public class RoleSessionBeanTest {
         List<String> accessRules = Arrays.asList(StandardRules.EDITROLES.toString());
         
         //Create tokens representing access rules of created roles
-        AuthenticationToken authToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, authRole.getRoleName(), accessRules, null);
-        AuthenticationToken unAuthToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, unAuthRoleName, null, accessRules);
+        AuthenticationToken authToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, authRole.getRoleName(), accessRules, null);
+        AuthenticationToken unAuthToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(authDN, null, unAuthRoleName, null, accessRules);
         
         authRole = roleSession.getRole(authToken, null, authRoleName);
         unAuthRole = roleSession.getRole(unAuthToken, null, unAuthRoleName);
@@ -239,6 +237,120 @@ public class RoleSessionBeanTest {
         } finally {
             cleanUpRole(null, authRoleName);
             cleanUpRole(null, unAuthRoleName);
+        }
+    }
+
+    /** Verify that an administrator cannot edit a Role that is providing all its access */
+    @Test(expected = AuthorizationDeniedException.class)
+    public void testIsAuthorizedToNotEditOwnRole() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsAuthorizedToNotEditOwnRole";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        final Role role;
+        try {
+            role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+        } catch (AuthorizationDeniedException e) {
+            fail(e.getMessage());
+            return;
+        }
+        try {
+            role.getAccessRules().clear();
+            role.getAccessRules().put(StandardRules.CAACCESS.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(authenticationToken, role);
+            fail("Was able to lower own access.");
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+        }
+    }
+    
+    /** Verify that an administrator cannot remove the Role that is providing all its access */
+    @Test(expected = AuthorizationDeniedException.class)
+    public void testIsAuthorizedToNotDeleteOwnRole() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsAuthorizedToNotDeleteOwnRole";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final Role role;
+        try {
+            role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+        } catch (AuthorizationDeniedException e) {
+            fail(e.getMessage());
+            return;
+        }
+        try {
+            roleSession.deleteRoleIdempotent(authenticationToken, role.getRoleId());
+            fail("Was able to lower own access.");
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+        }
+    }
+    
+    /** Verify that an administrator cannot remove the RoleMember that is providing all its access */
+    @Test(expected = AuthorizationDeniedException.class)
+    public void testIsAuthorizedToNotDeleteOwnRoleMember() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsAuthorizedToNotDeleteOwnRoleMember";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        final Role role;
+        try {
+            role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+        } catch (AuthorizationDeniedException e) {
+            fail(e.getMessage());
+            return;
+        }
+        try {
+            final RoleMember roleMember = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role.getRoleId()).get(0);
+            roleMemberSession.remove(authenticationToken, roleMember.getId());
+            fail("Was able to lower own access.");
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+        }
+    }
+    
+    /** Verify that an administrator can remove the Role that is providing redundant access */
+    public void testIsAuthorizedToDeleteOwnRole() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsAuthorizedToDeleteOwnRole";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        try {
+            final Role role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.getRoleId());
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TESTNAME+"2", Arrays.asList(StandardRules.CAACCESS.resource()), null));
+            final RoleMember roleMember2 = new RoleMember(roleMembers1.get(0));
+            roleMember2.setId(RoleMember.ROLE_MEMBER_ID_UNASSIGNED);
+            roleMember2.setRoleId(role2.getRoleId());
+            roleMemberSession.persist(alwaysAllowAuthenticationToken, roleMember2);
+            try {
+                roleSession.deleteRoleIdempotent(authenticationToken, role1.getRoleId());
+            } catch (AuthorizationDeniedException e) {
+                fail("Unable to delete Role that provides redundant access: " +e.getMessage());
+            }
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+        }
+    }
+    
+    /** Verify that an administrator can remove the Role that is providing redundant access */
+    public void testIsAuthorizedToDeleteOwnRoleMember() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsAuthorizedToDeleteOwnRoleMember";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.CAACCESS.resource()), null);
+        try {
+            final Role role1 = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+            final List<RoleMember> roleMembers1 = roleMemberSession.getRoleMembersByRoleId(alwaysAllowAuthenticationToken, role1.getRoleId());
+            final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TESTNAME+"2", Arrays.asList(StandardRules.CAACCESS.resource()), null));
+            final RoleMember roleMember2 = new RoleMember(roleMembers1.get(0));
+            roleMember2.setId(RoleMember.ROLE_MEMBER_ID_UNASSIGNED);
+            roleMember2.setRoleId(role2.getRoleId());
+            roleMemberSession.persist(alwaysAllowAuthenticationToken, roleMember2);
+            try {
+                roleMemberSession.remove(authenticationToken, roleMembers1.get(0).getId());
+            } catch (AuthorizationDeniedException e) {
+                fail("Unable to delete RoleMember that provides redundant access: " +e.getMessage());
+            } finally {
+                roleSession.deleteRoleIdempotent(authenticationToken, role1.getRoleId());
+            }
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
         }
     }
     
@@ -257,8 +369,8 @@ public class RoleSessionBeanTest {
         List<String> weakDeniedRules = Arrays.asList("/bar/foo");
 
         try {
-            AuthenticationToken strongToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, strongAdminRoleName, strongRules, null);
-            AuthenticationToken weakToken = roleInitSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, weakAdminRoleName, weakRules, weakDeniedRules);
+            AuthenticationToken strongToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, strongAdminRoleName, strongRules, null);
+            AuthenticationToken weakToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(someDN, null, weakAdminRoleName, weakRules, weakDeniedRules);
             Role strongRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, strongAdminRoleName);
             Role weakRole = roleSession.getRole(alwaysAllowAuthenticationToken, null, weakAdminRoleName);
             List<Role> strongAuthorizedRoles = roleSession.getAuthorizedRoles(strongToken);
@@ -274,6 +386,32 @@ public class RoleSessionBeanTest {
         } finally {
             cleanUpRole(null, strongAdminRoleName);
             cleanUpRole(null, weakAdminRoleName);
+        }
+    }
+
+    /** Verify that rename and reassigning to a different namespace works (and leaves no duplication behind) */
+    @Test
+    public void testRename() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testRename";
+        final String roleName1 = TESTNAME + "Role1";
+        final String nameSpace1 = TESTNAME + "NameSpace1";
+        final String roleName2 = TESTNAME + "Role2";
+        final String nameSpace2 = TESTNAME + "NameSpace2";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
+                "CN="+roleName1, nameSpace1, roleName1, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        try {
+            final Role role = roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace1, roleName1);
+            role.setRoleName(roleName2);
+            final Role roleUpdate1 = roleSession.persistRole(alwaysAllowAuthenticationToken, role);
+            assertEquals(role.getRoleId(), roleUpdate1.getRoleId());
+            assertNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace1, roleName1));
+            roleUpdate1.setNameSpace(nameSpace2);
+            final Role roleUpdate2 = roleSession.persistRole(alwaysAllowAuthenticationToken, roleUpdate1);
+            assertEquals(role.getRoleId(), roleUpdate2.getRoleId());
+            assertNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace2, roleName1));
+            assertNotNull(roleSession.getRole(alwaysAllowAuthenticationToken, nameSpace2, roleName2));
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
         }
     }
     
@@ -294,13 +432,13 @@ public class RoleSessionBeanTest {
         final String nameSpace4 = "";
         final String commonRoleName = TESTNAME + "Role";
         final String subjectDn1 = "CN="+nameSpace1;
-        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 subjectDn1, nameSpace1, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace2, nameSpace2, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace3, nameSpace3, commonRoleName, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace4, nameSpace4, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
         try {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken1), Arrays.asList(nameSpace1), null, false);
@@ -335,10 +473,10 @@ public class RoleSessionBeanTest {
             roleSession.persistRole(alwaysAllowAuthenticationToken, role4b);
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1, nameSpace2, nameSpace4), null, true);
         } finally {
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken1);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken2);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken3);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken4);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken1);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken2);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken3);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken4);
             log.trace("<testGetAuthorizedNamespaces");
         }
     }
@@ -364,13 +502,13 @@ public class RoleSessionBeanTest {
         final String nameSpace4b = TESTNAME + " NameSpace 4b";
         final String commonRoleName = TESTNAME + "Role";
         final String subjectDn1 = "CN="+nameSpace1a;
-        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken1 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 subjectDn1, nameSpace1a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken2 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace2a, nameSpace2a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken3 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace3a, nameSpace3a, commonRoleName, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
-        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitSession.createAuthenticationTokenAndAssignToNewRole(
+        final TestX509CertificateAuthenticationToken authenticationToken4 = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole(
                 "CN="+nameSpace4a, nameSpace4a, commonRoleName, Arrays.asList(StandardRules.CAACCESS.resource()), null);
         try {
             reassignRoleToDifferentNameSpace(commonRoleName, nameSpace1a, nameSpace1b);
@@ -423,10 +561,10 @@ public class RoleSessionBeanTest {
             assertNameSpacePresence(roleSession.getAuthorizedNamespaces(authenticationToken4), Arrays.asList(nameSpace1b, nameSpace2b, nameSpace4a),
                     Arrays.asList(nameSpace1a, nameSpace2a), true);
         } finally {
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken1);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken2);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken3);
-            roleInitSession.removeAllAuthenticationTokensRoles(authenticationToken4);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken1);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken2);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken3);
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken4);
             log.trace("<testGetAuthorizedNamespaces");
         }
     }
