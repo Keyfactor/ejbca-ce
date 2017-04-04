@@ -277,7 +277,9 @@ public abstract class StoreServletBase extends HttpServlet {
 		writer.println("<td>");
 		writer.println("<h1>"+getTitle()+"</h1>");
 		writer.println("<p>When searching for certificates you can use iHash, sHash and sKIDHash. iHash is the ASN1 encoded DN of the issuer in a certificate, sHash of the subject and sKIDHash is the subjectKeyIdentifier. If you search with it you get all certificates that has the same issuer, except for the root certificate. You do not find a root certificate if you search with the iHash of the root. It has been assumed that sHash should be used when searching for a root.</p>");
-		writer.println("<p>When searching for CRLs you can use iHash and sKIDHash. iHash is the ASN1 encoded DN of the issuer in a certificate and sKIDHash is the subjectKeyIdentifier.</p>");
+		writer.println("<p>When searching for CRLs you can use iHash and sKIDHash. iHash is the ASN1 encoded DN of the issuer in a certificate and sKIDHash is the subjectKeyIdentifier.");
+        writer.println("<br/>To get the latest delta CRL you can append the parameter 'delta='.");
+        writer.println("<br/>To get a CRL with a specific CRL number you can append the parameter 'crlnumber=&lt;number&gt;'.</p>");
 		writer.println("<hr>");
 		writer.println(info);
 		writer.println("</td>");

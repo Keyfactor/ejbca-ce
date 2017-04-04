@@ -92,22 +92,24 @@ public class CRLCache {
 	/**
      * @param id The ID of the subject key identifier.
      * @param isDelta true if delta CRL
+     * @param crlNumber specific crlNumber of the CRL to be retrieved, when not the latest, or -1 for the latest
      * @return CRL or null if the CRL does not exist in the cache.
      */
-	public byte[] findBySubjectKeyIdentifier(HashID id, boolean isDelta) {
-		return findLatest(certCache.findBySubjectKeyIdentifier(id), isDelta);
+	public byte[] findBySubjectKeyIdentifier(HashID id, boolean isDelta, int crlNumber) {
+		return findCRL(certCache.findBySubjectKeyIdentifier(id), isDelta, crlNumber);
 	}
 
 	/**
      * @param id The ID of the issuer DN.
      * @param isDelta true if delta CRL
+     * @param crlNumber specific crlNumber of the CRL to be retrieved, when not the latest, or -1 for the latest
      * @return CRL or null if the CRL does not exist in the cache.
      */
-	public byte[] findLatestByIssuerDN(HashID id, boolean isDelta) {
-		return findLatest(certCache.findLatestBySubjectDN(id), isDelta);
+	public byte[] findByIssuerDN(HashID id, boolean isDelta, int crlNumber) {
+		return findCRL(certCache.findLatestBySubjectDN(id), isDelta, crlNumber);
 	}
 
-	private byte[] findLatest(X509Certificate caCert, boolean isDelta) {
+	private byte[] findCRL(X509Certificate caCert, boolean isDelta, int crlNumber) {
 		if ( caCert==null ) {
 			if (log.isDebugEnabled()) {
 				log.debug("No CA certificate, returning null.");
@@ -125,16 +127,28 @@ public class CRLCache {
 				}
 				return null;
 			}
-			final Map<Integer, CRLEntity> usedCrls = isDelta ? this.deltaCrls : this.crls;
-			final CRLEntity cachedCRL = usedCrls.get(id.getKey());
-			if ( cachedCRL!=null && !crlInfo.getCreateDate().after(cachedCRL.crlInfo.getCreateDate()) ) {
-				if (log.isDebugEnabled()) {
-					log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
-				}
-				return cachedCRL.encoded;
+            final Map<Integer, CRLEntity> usedCrls = isDelta ? this.deltaCrls : this.crls;
+			// If we have not specified a crlNumber we can try to find the latest CRL in the cache
+			if (crlNumber == -1) {
+			    final CRLEntity cachedCRL = usedCrls.get(id.getKey());
+			    if ( cachedCRL!=null && !crlInfo.getCreateDate().after(cachedCRL.crlInfo.getCreateDate()) ) {
+			        if (log.isDebugEnabled()) {
+			            log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
+			        }
+			        return cachedCRL.encoded;
+			    }
 			}
-			final CRLEntity entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, isDelta) );
-			usedCrls.put(id.getKey(), entry);
+			final CRLEntity entry;
+			if (crlNumber > -1) {
+			    if (log.isDebugEnabled()) {
+			        log.debug("Getting CRL with CRL number "+crlNumber);
+			    }
+			    entry = new CRLEntity( crlInfo, this.crlSession.getCRL(issuerDN, crlNumber) );			    
+			} else {
+			    entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, isDelta) );
+			    // Only cache latest CRLs, these should be the ones accessed regularly, and we don't want to fill the cache with old CRLs
+	            usedCrls.put(id.getKey(), entry);
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
 			}
