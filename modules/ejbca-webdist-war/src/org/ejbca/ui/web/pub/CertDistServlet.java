@@ -112,6 +112,8 @@ public class CertDistServlet extends HttpServlet {
     /* @Deprecated since EJBCA 6.3.0. MOZILLA_PROPERTY can be removed in EJBCA 6.4 or 6.5 */
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
+    private static final String CRLNUMBER_PROPERTY = "crlnumber";
+    
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
     @EJB
@@ -184,12 +186,23 @@ public class CertDistServlet extends HttpServlet {
         }
         if ((command.equalsIgnoreCase(COMMAND_CRL) || command.equalsIgnoreCase(COMMAND_DELTACRL)) && issuerdn != null) {
             try {
+                // Do we have a CRL number parameters?
+                final String crlNumber = req.getParameter(CRLNUMBER_PROPERTY);
                 byte[] crl = null;
-                if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                	crl = crlSession.getLastCRL(issuerdn, false); // CRL
+                if (StringUtils.isNotEmpty(crlNumber)) {
+                    // Using CRLNumber then we don't care if it's delta or full, it's what it is specified by the number
+                    if ( !StringUtils.isNumeric(crlNumber) || (Integer.valueOf(crlNumber) < 0) ) {
+                        log.debug("CRL Number must be a positive number: "+crlNumber);
+                        res.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE, "CRLNumber is not a valid positive numeric value.");
+                    }
+                    crl = crlSession.getCRL(issuerdn, Integer.valueOf(crlNumber));
                 } else {
-                	crl = crlSession.getLastCRL(issuerdn, true); // deltaCRL
-                } 
+                    if (command.equalsIgnoreCase(COMMAND_CRL)) {
+                        crl = crlSession.getLastCRL(issuerdn, false); // CRL
+                    } else {
+                        crl = crlSession.getLastCRL(issuerdn, true); // deltaCRL
+                    } 
+                }
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 // We must remove cache headers for IE
