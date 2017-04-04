@@ -42,6 +42,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
@@ -169,6 +170,9 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     }
     @Override
     protected final void generateCertificate(){
+        if (getEndEntityInformation().getExtendedinformation() == null) {
+            getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
+        }
         byte[] certificateRequest = getEndEntityInformation().getExtendedinformation().getCertificateRequest();
         if (certificateRequest == null) {
             if (getCertificateRequest() == null) {
@@ -210,6 +214,9 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
             raLocaleBean.addMessageError("enroll_no_key_specification");
             log.info("No key specification was provided: "+selectedAlgorithm);
             return;
+        }
+        if (getEndEntityInformation().getExtendedinformation() == null) {
+            getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
         }
         getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmType(keyAlg);
         getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmSubType(keySpec);
