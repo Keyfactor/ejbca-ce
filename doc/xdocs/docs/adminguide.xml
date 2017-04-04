@@ -324,6 +324,16 @@ In the CA configuration, set 'Delta CRL Period' to the amount of time your delta
 Command line interface and CRL Update service will generate delta CRLs if 'Delta CRL Period' is larger than 0.</p>
 </subsection>
 
+<subsection name="Retrieving CRLs">
+<p>EJBCA will store all generated CRLs unless you manually remove them from the database.</p>
+<p>You can retrieve CRLs using the command line interface or Web UIs, either the latest CRL or a CRL with a specific CRL number.</p>
+<ul>
+<li>Command line interface: bin/ejbca.sh ca getcrl --help</li>
+<li>Public Web->Fetch CA CRLs, with additional 'crlnumber=&lt;crl number&gt;' parameter</li>
+<li>RA Web->CA Certificates and CRLs, with additional 'crlnumber=&lt;crl number&gt;' parameter</li>
+</ul>
+</subsection>
+
 </section>
 
 <section name="SCEP">
