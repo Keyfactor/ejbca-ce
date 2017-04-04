@@ -117,7 +117,7 @@
                         <h:panelGroup/>
                     </h:panelGrid>
                     <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}" immediate="true">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
                         <h:commandButton value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
@@ -156,7 +156,7 @@
                         <h:panelGroup/>
                     </h:panelGrid>
                     <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionRenameRoleReset}">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionRenameRoleReset}" immediate="true">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
                         <h:commandButton value="#{web.text.RENAME}" action="#{rolesBean.actionRenameRoleConfirm}">
@@ -174,7 +174,7 @@
                         <h:outputText value="#{rolesBean.roleToDelete.roleName}"/>
                     </h:panelGrid>
                     <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}">
+                        <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionDeleteRoleReset}" immediate="true">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
                         <h:commandButton value="#{web.text.DELETE}" action="#{rolesBean.actionDeleteRoleConfirm}">
