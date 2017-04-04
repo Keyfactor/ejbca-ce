@@ -175,7 +175,9 @@ public final class KeyTools {
                     ECGenParameterSpec bcSpec = new ECGenParameterSpec(keySpec);
                     keygen.initialize(bcSpec, new SecureRandom());                    
                 } else {
-                    log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + keySpec);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + keySpec);
+                    }
                     // This may be a new curve without OID, like curve25519 and we have to do something a bit different
                     X9ECParameters ecP = CustomNamedCurves.getByName(keySpec);
                     if (ecP == null) {
