@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.StringTools;
@@ -32,6 +33,9 @@ import org.ejbca.util.HTMLTools;
 /** 
  * Servlet implementing server side of the CRL Store.
  * For a detailed description see RFC 4387.
+ * Addition to RFC 4387 is the ability to specify delta CRL with the parameter "delta="
+ * Addition to RFC 4387 is the ability to specify download of a specific CRL by crlNumber with the parameter "crlnumber=<number>"
+ * 
  * 
  * @version  $Id$
  */
@@ -57,7 +61,7 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		returnCrl( this.crlCache.findLatestByIssuerDN(HashID.getFromB64(iHash), isDelta(req)), resp, iHash, isDelta(req) );		
+		returnCrl( this.crlCache.findByIssuerDN(HashID.getFromB64(iHash), isDelta(req), getCrlNumber(req, resp)), resp, iHash, isDelta(req) );		
 	}
 
 	@Override
@@ -67,7 +71,7 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
-		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req)), resp, name, isDelta(req) );
+		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req), getCrlNumber(req, resp)), resp, name, isDelta(req) );
 	}
 
 	@Override
@@ -87,6 +91,14 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	private boolean isDelta(HttpServletRequest req) {
 		return req.getParameterMap().get("delta")!=null;
+	}
+
+	private int getCrlNumber(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	    final String crlNumber = req.getParameter("crlnumber");
+        if (StringUtils.isNumeric(crlNumber) && (Integer.valueOf(crlNumber) >= 0) ) {
+            return Integer.valueOf(crlNumber);
+        }
+        return -1;
 	}
 
 	private void returnCrl( byte crl[], HttpServletResponse resp, String name, boolean isDelta ) throws IOException {
