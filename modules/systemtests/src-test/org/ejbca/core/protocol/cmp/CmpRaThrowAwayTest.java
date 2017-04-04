@@ -380,10 +380,17 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         @Override 
         public ASN1Encodable stringToValue(final ASN1ObjectIdentifier oid, final String value) {
             if (value.length() != 0 && value.charAt(0) == '#') {
-                try {
-                    return new ASN1InputStream(Hex.decode(value.substring(1))).readObject();
+                ASN1InputStream inputStream = new ASN1InputStream(Hex.decode(value.substring(1)));
+                try {                    
+                    return inputStream.readObject();
                 } catch (IOException e) {
-                    throw new RuntimeException("Unable to recode value for oid " + oid.getId());
+                    throw new IllegalStateException("Unable to recode value for oid " + oid.getId());
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
                 }
             } else if (oid.equals(BCStyle.EmailAddress) || oid.equals(BCStyle.DC)) {
                 return new DERIA5String(value);

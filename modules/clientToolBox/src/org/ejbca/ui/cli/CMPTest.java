@@ -106,7 +106,7 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 /**
  * Used to stress test the CMP interface.
- * @author primelars
+ * 
  * @version $Id$
  *
  */

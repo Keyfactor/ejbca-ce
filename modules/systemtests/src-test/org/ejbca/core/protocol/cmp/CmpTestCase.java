@@ -117,7 +117,6 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -468,9 +467,10 @@ public abstract class CmpTestCase extends CaTestCase {
         return myPKIMessage;
     }
 
-    protected static PKIMessage genRenewalReq(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, KeyPair keys, boolean raVerifiedPopo, X500Name reqSubjectDN, String reqIssuerDN, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CertificateEncodingException {
-     
+    protected static PKIMessage genRenewalReq(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, KeyPair keys, boolean raVerifiedPopo,
+            X500Name reqSubjectDN, String reqIssuerDN, AlgorithmIdentifier pAlg, DEROctetString senderKID)
+            throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CertificateEncodingException {
+ 
      CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 
      ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
@@ -990,15 +990,14 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
-        assertEquals(header.getSender().getTagNo(), 4);
+        assertEquals(header.getSender().getTagNo(), 4);      
         
-        X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
-        X509Principal expectedDN = new X509Principal(((X509Certificate) cacert).getSubjectDN().getName().toString());
-        assertEquals(expectedDN.getName(), responseDN.getName());
+        X500Name responseDN = new X500Name(header.getSender().getName().toString());
+        X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
+        assertEquals(expectedDN, responseDN);
         
-        responseDN = new X509Principal(header.getRecipient().getName().toString());
-        expectedDN = new X509Principal(userDN);
-        assertEquals(expectedDN.getName(), responseDN.getName());
+        responseDN = new X500Name(header.getRecipient().getName().toString());
+        assertEquals(userDN, responseDN);
 
         PKIBody body = respObject.getBody();
         int tag = body.getType();
@@ -1024,13 +1023,12 @@ public abstract class CmpTestCase extends CaTestCase {
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
         
-        X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
-        X509Principal expectedDN = new X509Principal(issuerDN);
-        assertEquals(expectedDN.getName(), responseDN.getName());
+        X500Name responseDN = new X500Name(header.getSender().getName().toString());
+        X500Name expectedDN = new X500Name(issuerDN);
+        assertEquals(expectedDN, responseDN);
         
-        responseDN = new X509Principal(header.getRecipient().getName().toString());
-        expectedDN = new X509Principal(userDN);
-        assertEquals(expectedDN.getName(), responseDN.getName());
+        responseDN = new X500Name(header.getRecipient().getName().toString());
+        assertEquals(userDN, responseDN);
 
         PKIBody body = respObject.getBody();
         int tag = body.getType();

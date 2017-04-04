@@ -398,24 +398,17 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         try {
             certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
-        } catch (NoSuchEndEntityException e) {
+        } catch (NoSuchEndEntityException | CADoesntExistsException | AuthorizationDeniedException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (EjbcaException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        } catch (CesecoreException e) {
-            throw new IllegalStateException("Error encountered when creating certificate", e);
-        }
+        } 
         assertNotNull("Failed to create a test certificate", certificate);
-
+        
         this.internalCertificateStoreSession.setRevokeStatus(ADMIN, certificate, new Date(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
         assertTrue("Failed to revoke the test certificate", this.certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        KeyPair newKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
