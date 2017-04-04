@@ -171,7 +171,8 @@
                                 <h:panelGrid styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
                                     <h:commandButton action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}"
                                         rendered="#{accessRulesBean.authorizedToEditRole}">
-                                        <f:ajax execute="@form" render="@all"/>
+                                        <f:ajax execute="@form" render="@all"
+                                            onevent="function(data){ejbca.adminweb.onAjaxSuccessScrollTo(data,'messagesBlock');}"/>
                                     </h:commandButton>
                                 </h:panelGrid>
                             </f:facet>
