@@ -479,7 +479,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
-    	Collection<EndEntityInformation> userlist = endEntityManagementSession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(endentityAccessRule),0, endentityAccessRule);
+    	Collection<EndEntityInformation> userlist = endEntityManagementSession.query(administrator, query, informationmemory.getUserDataQueryCAAuthorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(endentityAccessRule),0, endentityAccessRule);
     	usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
     	return usersView.getUsers(index,size);
     }

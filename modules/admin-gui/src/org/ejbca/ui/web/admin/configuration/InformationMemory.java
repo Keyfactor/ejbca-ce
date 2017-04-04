@@ -217,7 +217,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns CA authorization string used in userdata queries.
      */
-    public String getUserDataQueryCAAuthoorizationString() {
+    public String getUserDataQueryCAAuthorizationString() {
         return this.raauthorization.getCAAuthorizationString();
     }
 
