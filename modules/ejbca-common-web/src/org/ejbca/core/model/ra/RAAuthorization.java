@@ -68,20 +68,26 @@ public class RAAuthorization implements Serializable {
      * @return a string of administrators CA privileges that should be used in the where clause of SQL queries.
      */
     public String getCAAuthorizationString() {      
-      if(authcastring==null){
-        authcastring = "";   
-        for(Integer caId : caSession.getAuthorizedCaIds(admin)) {
-          if(authcastring.equals("")) {
-            authcastring = " cAId = " + caId.toString();   
-          } else {    
-            authcastring = authcastring + " OR cAId = " + caId.toString();
-          }
+        if (authcastring==null) {
+            authcastring = "";
+            final List<Integer> authorizedCaIds = caSession.getAuthorizedCaIds(admin);
+            if (authorizedCaIds.isEmpty()) {
+                // Setup a condition that can never be true if there are no authorized CAs
+                authcastring = "(0=1)";
+            } else {
+                for (final Integer caId : caSession.getAuthorizedCaIds(admin)) {
+                    if (authcastring.equals("")) {
+                        authcastring = " cAId = " + caId.toString();   
+                    } else {    
+                        authcastring = authcastring + " OR cAId = " + caId.toString();
+                    }
+                }
+                if (!authcastring.isEmpty()) {
+                    authcastring = "( " + authcastring + " )"; 
+                }
+            }
         }
-        if(!authcastring.equals("")) {
-          authcastring = "( " + authcastring + " )"; 
-        }
-      }
-      return authcastring;
+        return authcastring;
     } 
     
     /**
