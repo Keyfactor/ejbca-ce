@@ -135,7 +135,7 @@ public enum EjbcaEventTypes implements EventType {
     RA_ADDENDENTITY,
     /** Modification of default settings for administrators. */
     RA_DEFAULTADMINPREF,
-    /** Removal of a new end entity profile. */
+    /** Removal of an end entity. */
     RA_DELETEENDENTITY,
     /** Modification of an existing settings for an administrator. */
     RA_EDITADMINPREF,
