@@ -248,7 +248,7 @@ public final class StringTools {
                      break;
                 }
                 if (!isAllowedEscape(str.charAt(index + 1))) {
-                    result.add("Character that may not be ecaped: " + str.charAt(index + 1));
+                    result.add("Character that may not be escaped: " + str.charAt(index + 1));
                     break;
                 }
                 index++; // Skip one extra..
