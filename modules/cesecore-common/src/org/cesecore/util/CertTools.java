@@ -1011,10 +1011,12 @@ public abstract class CertTools {
     /**
      * Gets Serial number of the certificate as a string. For X509 Certificate this means a HEX encoded BigInteger, and for CVC certificate is means
      * the sequence field of the holder reference.
+     * <p>
+     * For X509 certificates, the value is normalized (uppercase without leading zeros), so there's no need to normalize the returned value.
      * 
      * @param cert Certificate
      * 
-     * @return String to be displayed
+     * @return String to be displayed, or used in RoleMember objects
      */
     public static String getSerialNumberAsString(Certificate cert) {
         String ret = null;
