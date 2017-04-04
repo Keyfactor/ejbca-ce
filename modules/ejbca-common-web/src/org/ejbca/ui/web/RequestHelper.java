@@ -30,6 +30,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
@@ -105,6 +106,10 @@ public class RequestHelper {
 	@Deprecated
 	public static final int ENCODED_CERTIFICATE_CHAIN = 4;
 	
+    /** String reported by Firefox when the key generation fails */
+    private static final byte[] HIGHGRADE_STRING = "High Grade".getBytes();
+    private static final byte[] MEDIUMGRADE_STRING = "Medium Grade".getBytes();
+
     /**
      * Creates a new RequestHelper object.
      *
@@ -143,6 +148,13 @@ public class RequestHelper {
     public byte[] nsCertRequest(SignSessionLocal signsession, byte[] reqBytes, String username, String password) throws 
             ObjectNotFoundException, CADoesntExistsException, EjbcaException, AuthorizationDeniedException, CesecoreException,
             CertificateEncodingException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
+        if (reqBytes == null || reqBytes.length == 0) {
+            throw new IllegalStateException("Invalid request sent from browser (null or zero length).");
+        }
+        if (Arrays.equals(reqBytes, HIGHGRADE_STRING) || Arrays.equals(reqBytes, MEDIUMGRADE_STRING)) {
+            throw new IllegalStateException("Key generation failed. If enrolling using a hardware token, please check the token and the token middleware.");
+        }
+
         byte[] buffer = Base64.decode(reqBytes);
 
         if (buffer == null) {
