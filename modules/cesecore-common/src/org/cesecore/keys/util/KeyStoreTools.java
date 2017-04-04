@@ -232,7 +232,9 @@ public class KeyStoreTools {
                 }
                 keyParams = new ECGenParameterSpec(oidOrName);
             } else {
-                log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + ecNamedCurveBc);
+                if (log.isDebugEnabled()) {
+                    log.debug("Curve did not have an OID in BC, trying to pick up Parameter spec: " + ecNamedCurveBc);
+                }
                 // This may be a new curve without OID, like curve25519 and we have to do something a bit different
                 X9ECParameters ecP = CustomNamedCurves.getByName(ecNamedCurveBc);
                 if (ecP == null) {
