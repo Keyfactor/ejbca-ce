@@ -814,9 +814,15 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 accessRules.put(accessRuleItem.getResource(), AccessRuleState.ALLOW.equals(accessRuleItem.getStateEnum()));
             }
         }
+        final int numberOfRulesBeforeSave = accessRules.size();
         try {
             this.role = roleSession.persistRole(getAdmin(), role);
-            super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED");
+            final int numberOfRedundantRules = numberOfRulesBeforeSave-role.getAccessRules().size();
+            if (numberOfRedundantRules==0) {
+                super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED");
+            } else {
+                super.addGlobalMessage(FacesMessage.SEVERITY_INFO, "ACCESSRULES_INFO_SAVED_MIN", numberOfRedundantRules);
+            }
         } catch (RoleExistsException e) {
             throw new IllegalStateException(e);
         } catch (AuthorizationDeniedException e) {

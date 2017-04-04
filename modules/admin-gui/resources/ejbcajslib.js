@@ -341,3 +341,30 @@ function getInsertIntoField(fieldname, input, infovalidchars) {
 	}
 	return false;
 }
+
+/* JS library functions used by EJBCA 6.8.0+ JSF pages */
+(function() {
+    "use strict";
+
+    /** Scroll the element with elementId into view on AJAX requests success. */
+    var onAjaxSuccessScrollTo = function(data, elementId) {
+        if (data.status == "success") {
+        	var y = 0;
+        	if (elementId) {
+            	var element = document.getElementById(elementId);
+            	while (element && !isNaN(element.offsetTop) ) {
+            		y += element.offsetTop - element.scrollTop;
+            		element = element.offsetParent;
+            	}
+        	}
+        	//console.log("Scrolling element '" + elementId + "' into view using coordinates (0, " + y + ").");
+        	window.scroll(0, y);
+        }
+    };
+
+    // Setup name space...
+    window.ejbca = window.ejbca || {};
+    ejbca.adminweb = ejbca.adminweb || {};
+    // ...and expose API functions under this name space.
+    ejbca.adminweb.onAjaxSuccessScrollTo = onAjaxSuccessScrollTo;
+}());
