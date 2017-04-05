@@ -148,8 +148,7 @@ public class RoleInitializationSessionBean implements RoleInitializationSessionR
         } else {
             final List<Role> roles = new ArrayList<>(roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken));
             // Check that we really added the match value to each of these roles, so we don't accidently nuke other roles
-            final X509Certificate certificate = authenticationToken.getCertificate();
-            final String expectedTokenMatchValue = X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.normalizeMatchValue(CertTools.getSerialNumber(certificate).toString(16));
+            final String expectedTokenMatchValue = CertTools.getSerialNumberAsString(authenticationToken.getCertificate());
             final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken("removeAllAuthenticationTokensRoles");
             for (final Role role : new ArrayList<>(roles)) {
                 try {
