@@ -78,6 +78,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_UNIDDATASOURCE          = "uniddatasource";
     
     public static final String PROFILE_USE_KEYID = "KeyId";
+    public static final String PROFILE_DEFAULT = "ProfileDefault";
     
     // This List is used in the command line handling of updating a config value to insure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,

@@ -193,7 +193,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                         
 						
 						final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, 
-						                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+						                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
 						                authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 						ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  username,  authenticated);
 						if(authenticationModule == null) {
@@ -317,7 +317,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         //Check the request's authenticity
         CAInfo cainfo = this.caSession.getCAInfoInternal(caId, null, true);
         final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(cainfo, this.confAlias, admin, caSession, 
-                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                 authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
         ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  null,  authenticated);
         if(authenticationModule == null) {

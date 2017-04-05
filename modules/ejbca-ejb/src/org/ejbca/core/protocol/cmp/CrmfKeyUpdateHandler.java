@@ -145,7 +145,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     // Check PKIMessage authentication
                     String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
                     eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
-                            confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                            confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(eecmodule.getErrorMessage());
@@ -177,7 +177,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 } else { // client mode
                     
                     eecmodule = new EndEntityCertificateAuthenticationModule(admin, null, 
-                            confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                            confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession, 
                             endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                     if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
                         LOG.info(eecmodule.getErrorMessage());

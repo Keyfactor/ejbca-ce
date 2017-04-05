@@ -25,6 +25,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +35,8 @@ import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -50,6 +53,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
@@ -63,6 +68,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
@@ -93,6 +99,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CertificateStoreSession certSession;
     private AuthorizationSession authSession;
     private EndEntityProfileSession eeProfileSession;
+    private CertificateProfileSession certProfileSession;
     private EndEntityAccessSession eeAccessSession;
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private EndEntityManagementSession eeManagementSession;
@@ -109,7 +116,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     public EndEntityCertificateAuthenticationModule( final AuthenticationToken admin, String authparam, String confAlias, 
             CmpConfiguration cmpConfig, boolean authenticated, 
             final CaSession caSession, final CertificateStoreSession certSession, final AuthorizationSession authSession, 
-            final EndEntityProfileSession eeprofSession, final EndEntityAccessSession eeaccessSession, 
+            final EndEntityProfileSession eeprofSession, final CertificateProfileSession cprofSession, final EndEntityAccessSession eeaccessSession, 
             final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession) {
         authenticationparameter = authparam;
         password = null;
@@ -124,6 +131,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         this.certSession = certSession;
         this.authSession = authSession;
         this.eeProfileSession = eeprofSession;
+        this.certProfileSession = cprofSession;
         eeAccessSession = eeaccessSession;
         authenticationProviderSession = authProvSession;
         eeManagementSession = endEntityManagementSession;
@@ -240,6 +248,23 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             this.errorMessage = "Error while reading the certificate in the extraCert field";
             return false;
         }
+
+        // A CMP KeyUpdateRequest is always regarding an end entity that already exists. If that end entity 
+        // does not exist, no point in looking further
+        EndEntityInformation endentity = null;
+        if(msg.getBody().getType() == CmpPKIBodyConstants.KEYUPDATEREQUEST) {
+            try {
+                endentity = getEndEntityFromKeyUpdateRequest(msg);
+            } catch (AuthorizationDeniedException e1) {
+                // note: this should not happen since at this point, this is an AlwaysAllowed token
+                this.errorMessage = "Administrator " + admin.toString() + " is not authorized to retrieve end entity";
+                return false;
+            }
+            if(endentity == null) {
+                this.errorMessage = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+                return false;
+            }
+        }
         
         boolean vendormode = impl.isVendorCertificateMode(msg.getBody().getType(), this.confAlias);
         boolean omitVerifications = cmpConfiguration.getOmitVerificationsInEEC(confAlias);
@@ -296,7 +321,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
 
             // Check that extraCert belong to an admin with sufficient access rights
-            if(!isAuthorizedAdmin(certinfo, msg)){
+            if(!isAuthorizedAdmin(certinfo, msg, endentity)){
                 this.errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
                 return false;
             }
@@ -431,6 +456,62 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return pwdgen.getNewPassword(12, 12);
     }
     
+    private EndEntityInformation getEndEntityFromKeyUpdateRequest(final PKIMessage pkimessage) throws AuthorizationDeniedException {
+        String subjectDN="", issuerDN="";
+        
+        if(cmpConfiguration.getRAMode(confAlias)) {
+            CertReqMessages kur = (CertReqMessages) pkimessage.getBody().getContent();
+            CertReqMsg certmsg;
+            try {
+                certmsg = kur.toCertReqMsgArray()[0];
+            } catch(Exception e) {
+                log.debug("Could not parse the KeyUpdate request. Trying to parse it as novosec generated message.");
+                certmsg = CmpMessageHelper.getNovosecCertReqMsg(kur);
+                log.debug("Succeeded in parsing the novosec generated request.");
+            }
+        
+            X500Name dn = certmsg.getCertReq().getCertTemplate().getSubject();
+            if(dn != null) {
+                subjectDN = dn.toString();
+            }
+            dn = certmsg.getCertReq().getCertTemplate().getIssuer();
+            if(dn != null) {
+                issuerDN = dn.toString();
+            }
+        } else {
+            subjectDN = CertTools.getSubjectDN(extraCert);
+            issuerDN = CertTools.getIssuerDN(extraCert);
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("Recieved a CMP KeyUpdateRequest for an endentity with SubjectDN '" + subjectDN + "' and issuerDN '" + issuerDN + "'");
+        }
+        
+        EndEntityInformation userdata = null;
+        if(StringUtils.isEmpty(issuerDN)) {
+            if(log.isDebugEnabled()) {
+                log.debug("The CMP KeyUpdateRequest did not specify an issuer");
+            }
+            List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectDN(admin, subjectDN);
+            if (userdataList.size() > 0) {
+                userdata = userdataList.get(0);
+            }
+            if (userdataList.size() > 1) {
+                log.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
+            }
+        } else {
+            List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectAndIssuerDN(admin, subjectDN, issuerDN);
+            if (userdataList.size() > 0) {
+                userdata = userdataList.get(0);
+            }
+            if (userdataList.size() > 1) {
+                log.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
+                        + " were found. This may lead to unexpected behavior.");
+            }
+        }
+
+        return userdata;
+    }
+    
     /**
      * Checks if cert belongs to an administrator who is authorized to process the request.
      * 
@@ -439,7 +520,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @param caid
      * @return true if the administrator is authorized to process the request and false otherwise.
      */
-    private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg) {
+    private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final EndEntityInformation endentity) {
     
         X509Certificate x509cert = (X509Certificate) extraCert;
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -449,21 +530,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         AuthenticationToken reqAuthToken = authenticationProviderSession.authenticate(subject);
         
         final int tagnr = msg.getBody().getType();
-        if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) || (tagnr == CmpPKIBodyConstants.KEYUPDATEREQUEST) ) {
+        if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) ) {
         
-            
-            final int caid = getRaCaId((DEROctetString) msg.getHeader().getSenderKID());
-            if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
-                }
-                return false;
-            } else {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to access CA with ID " + caid);
-                }
-            }
-            
             final int eeprofid;
             final String eepname;
             try {
@@ -481,9 +549,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             
             if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_END_ENTITY)) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " was not authorized to create end entities with EndEntityProfile " + eepname);
-                }
+                log.info("Administrator " + reqAuthToken.toString() + " was not authorized to create end entities with EndEntityProfile " + eepname);
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
@@ -492,9 +558,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             
             if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.EDIT_END_ENTITY)) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " was not authorized to edit end entities with EndEntityProfile " + eepname);
-                }
+                log.info("Administrator " + reqAuthToken.toString() + " was not authorized to edit end entities with EndEntityProfile " + eepname);
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
@@ -503,15 +567,89 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             
             if(!authSession.isAuthorizedNoLogging(reqAuthToken, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " is not authorized to create certificates.");
-                }
+                log.info("Administrator " + reqAuthToken.toString() + " is not authorized to create certificates.");
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + reqAuthToken.toString() + " was authorized to create certificates");
                 }
             }
+            
+            final EndEntityProfile eep = eeProfileSession.getEndEntityProfile(eeprofid);
+            final int caid = getRaCaId((DEROctetString) msg.getHeader().getSenderKID(), eep);
+            if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
+                log.info("Administrator " + reqAuthToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to access CA with ID " + caid);
+                }
+            }
+            
+            CertificateProfile cp = getCertificateProfileFromCrmf(eep, (DEROctetString) msg.getHeader().getSenderKID());
+            if(!isCertificateProfileAuthorizedToCA(cp, caid)) {
+                log.info("CertificateProfile is not authorized to CA with ID: " + caid);
+                return false;
+            }
+            
+        
+        } else if( tagnr == CmpPKIBodyConstants.KEYUPDATEREQUEST ) {
+            // Because we do not edit the end entity when we receive a KeyUpdateRequest (the only editing we do is reset the end entity status), 
+            // the CertificateProfile and CA that will be used to issue the new certificate will be the ones already set in the end entity 
+            // regardless of the content of the request or the configuration of the CMP alias.
+        	// It is, however, possible to edit the profiles and CA in the end entity (we just do not do that when receiving a CMPKeyUpdateRequest), 
+        	// So if we change the implementation in CrmfKeyUpdateHandler.java, this check should be updated accordingly
+                        
+            final int eeprofid = endentity.getEndEntityProfileId();
+            final String eepname = eeProfileSession.getEndEntityProfileName(eeprofid);
+            if(eepname == null) {
+                log.error("End Entity Profile with ID " + eeprofid + " was not found");
+                return false;
+            }
+                
+            if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_END_ENTITY)) {
+                log.info("Administrator " + reqAuthToken.toString() + " was not authorized to create end entities with EndEntityProfile " + eepname);
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " was authorized to create end entities with EndEntityProfile " + eepname);
+                }
+            }
+                
+            if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.EDIT_END_ENTITY)) {
+                log.info("Administrator " + reqAuthToken.toString() + " was not authorized to edit end entities with EndEntityProfile " + eepname);
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " was authorized to edit end entities with EndEntityProfile " + eepname);
+                }
+            }
+                
+            if(!authSession.isAuthorizedNoLogging(reqAuthToken, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+                log.info("Administrator " + reqAuthToken.toString() + " is not authorized to create certificates.");
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to create certificates");
+                }
+            }
+                
+            final int caid = endentity.getCAId();
+            if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
+                log.info("Administrator " + reqAuthToken.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Administrator " + reqAuthToken.toString() + " is authorized to access CA with ID " + caid);
+                }
+            }
+               
+            if(!isCertificateProfileAuthorizedToCA(certProfileSession.getCertificateProfile(endentity.getCertificateProfileId()), caid)) {
+                log.info("CertificateProfile " + certProfileSession.getCertificateProfileName(endentity.getCertificateProfileId()) + " is not authorized to CA with ID: " + caid);
+                return false;
+            }
+
+            
         } else if(tagnr == CmpPKIBodyConstants.REVOCATIONREQUEST) {
             final String issuerdn = getIssuerDNFromRevRequest((RevReqContent) msg.getBody().getContent());
             final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
@@ -588,8 +726,17 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @return the ID of CA used for CMP purposes. 
      * @throws EndEntityProfileNotFoundException 
      */
-    private int getRaCaId(final DEROctetString keyId) {
+    private int getRaCaId(final DEROctetString keyId, final EndEntityProfile eep) {
+        
         String caname = this.cmpConfiguration.getRACAName(this.confAlias);
+        if (StringUtils.equals(caname, CmpConfiguration.PROFILE_DEFAULT)) {
+            final int caid = eep.getDefaultCA();
+            if (log.isDebugEnabled()) {
+                log.debug("Using EndEntity profile's default CA with ID: "+caid);
+            }
+            return caid;
+        } 
+        
         if (StringUtils.equals(caname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
             caname = CmpMessageHelper.getStringFromOctets(keyId);
             if (log.isDebugEnabled()) {
@@ -597,6 +744,48 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         } 
         return getCAInfoByName(caname).getCAId();
+    }
+    
+    
+    private CertificateProfile getCertificateProfileFromCrmf(final EndEntityProfile eep, final DEROctetString keyId) {
+        CertificateProfile profile = null;
+        String cpname = this.cmpConfiguration.getRACertProfile(this.confAlias);
+        if (StringUtils.equals(cpname, CmpConfiguration.PROFILE_DEFAULT)) {
+            final int cpid = eep.getDefaultCertificateProfile();
+            profile = certProfileSession.getCertificateProfile(cpid);
+            if(log.isDebugEnabled()) {
+                log.debug("Using EndEntityProfile's default CertificateProfile: " + cpid);
+            }
+        } else if (StringUtils.equals(cpname, CmpConfiguration.PROFILE_USE_KEYID) && (keyId != null)) {
+            cpname = CmpMessageHelper.getStringFromOctets(keyId);
+            profile = certProfileSession.getCertificateProfile(cpname);
+            if(log.isDebugEnabled()) {
+                log.debug("Using CertificateProfile specified as 'KeyId': " + cpname);
+            }
+        }  else {
+            profile = certProfileSession.getCertificateProfile(cpname);
+            if(log.isDebugEnabled()) {
+               log.debug("Using CertificateProfile as specified in the CMP alias: " + cpname);
+            }
+        }
+        return profile;
+    }
+    
+    private boolean isCertificateProfileAuthorizedToCA(final CertificateProfile profile, final int caid) {
+        // Check that CAid is among available CAs
+        boolean caauthorized = false;
+        if(profile != null) {
+            for (final Integer availablecas : profile.getAvailableCAs()) {
+                final int availableca = availablecas.intValue();
+                if (availableca == caid || availableca == CertificateProfile.ANYCA) {
+                    caauthorized = true;
+                    break;
+                }
+            }
+        } else {
+            log.info("CMP CertificateProfile not found");
+        }
+        return caauthorized;
     }
     
     private boolean isExtraCertValid() {
