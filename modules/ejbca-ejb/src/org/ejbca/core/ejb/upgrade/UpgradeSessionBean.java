@@ -89,6 +89,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.AccessRulesMigrator;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.Role;
@@ -149,6 +150,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
+    
+    //Rules removed or migrated in 6.8.0
+public static final String ROLE_PUBLICWEBUSER                   = "/public_web_user";
+    public static final String REGULAR_CABASICFUNCTIONS_OLD     = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
+    public static final String REGULAR_ACTIVATECA_OLD           = REGULAR_CABASICFUNCTIONS_OLD+"/activate_ca";
     
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -1251,6 +1257,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * EJBCA 6.8.0:
      * 
      * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemberData
+     * 2.   Migrates /ca_functionality/basic_functions and /ca_functionality/basic_functions/activate_ca 
+     *      to a single rule: /ca_functionality/activate_ca
+     * 3.   Remove no longer used rules
      * 
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
@@ -1269,6 +1278,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final String roleName = adminGroupData.getRoleName();
             final Collection<AccessRuleData> oldAccessRules = adminGroupData.getAccessRules().values();
             final HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
+            // Migrate deprecated rules.
+            // If Role had access allow or deny to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
+            // allow/deny access to new rule /ca_functionality/activate_ca
+            if (newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) != null && newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) ||
+                newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD)) != null && newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD))) {
+                newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_ALLOW);
+            } else if (newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) != null ||
+                       newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD)) != null) {
+                newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_DENY);
+            }
+            //Remove deprecated rules
+            newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD));
+            newAccessRules.remove(AccessRulesHelper.normalizeResource(ROLE_PUBLICWEBUSER));
+            newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD));
             Role role = new Role(null, roleName, newAccessRules);
             // Keep AdminGroupData.primaryKey as RoleData.roleId so HardTokenIssuerData.adminGroupId still works during upgrade
             // (and use direct DB access since the EJB API wont allow us to assign roleId)

@@ -160,7 +160,6 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         final Map<String,Map<String,String>> ret = new LinkedHashMap<>();
         // Role based access rules
         final Map<String,String> accessRulesRoleBased = new LinkedHashMap<>();
-        accessRulesRoleBased.put(AccessRulesConstants.ROLE_PUBLICWEBUSER, AccessRulesConstants.ROLE_PUBLICWEBUSER);
         accessRulesRoleBased.put(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_ADMINISTRATOR);
         accessRulesRoleBased.put(StandardRules.ROLE_ROOT.resource(), StandardRules.ROLE_ROOT.resource());
         ret.put("ROLEBASEDACCESSRULES", accessRulesRoleBased);

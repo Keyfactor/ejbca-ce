@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.upgrade;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -55,6 +56,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -521,6 +523,50 @@ public class UpgradeSessionBeanTest {
         }
     }
 
+    /**
+     * Verifies the migration and removal of deprecated access rules. Roles with allowed / denied access to 
+     * to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca should be granted
+     * corresponding access in the new rule /ca_functionality/activate_ca.
+     * Old rules should be removed.
+     * @throws AuthorizationDeniedException
+     */
+    @Test
+    public void testUpgradeTo680MigrateRules() throws AuthorizationDeniedException {
+        final String roleName = TESTCLASS + " upgradeTo680MigrateRules";
+        final String roleName2 = TESTCLASS + " upgradeTo680MigrateRules2";
+        final List<AccessRuleData> oldAccessRules = Arrays.asList(
+                new AccessRuleData(roleName, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, UpgradeSessionBean.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true));
+        final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
+                new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName2, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
+        upgradeTestSession.createRole(roleName, oldAccessRules, null);
+        upgradeTestSession.createRole(roleName2, oldAccessRules2, null);
+        int newRoleId = Role.ROLE_ID_UNASSIGNED;
+        int newRoleId2 = Role.ROLE_ID_UNASSIGNED;
+        try {
+            upgradeSession.upgrade(null, "6.7.0", false);
+            final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
+            final Role newRole2 = roleSession.getRole(alwaysAllowtoken, null, roleName2);
+            assertNotNull(newRole);
+            assertNotNull(newRole2);
+            newRoleId = newRole.getRoleId();
+            newRoleId2 = newRole2.getRoleId();
+            // The old rule ROLE_PUBLICWEBUSER should have been removed during the upgrade
+            assertEquals(1, newRole.getAccessRules().size());
+            // /ca_functionality is allowed, /ca_functionality_activateca is denied. Expecting size of 2
+            assertEquals(2, newRole2.getAccessRules().size());
+            // Expect the state of the deprecated rule to be unchanged in the replacing rule
+            assertEquals(Role.STATE_ALLOW, newRole.getAccessRules().get(AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals(Role.STATE_DENY, newRole2.getAccessRules().get(AccessRulesConstants.REGULAR_ACTIVATECA));
+        } finally {
+            upgradeTestSession.deleteRole(roleName);
+            upgradeTestSession.deleteRole(roleName2);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId2);
+        }
+    }
+    
     private void deleteRole(final String nameSpace, final String roleName) {
         try {
             final Role role = roleSession.getRole(alwaysAllowtoken, null, roleName);
