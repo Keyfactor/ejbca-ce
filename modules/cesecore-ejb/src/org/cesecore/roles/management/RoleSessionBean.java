@@ -416,7 +416,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                     }
                 }
                 if (!accessRulesBefore.equals(accessRulesAfter)) {
-                    throw new AuthorizationDeniedException("Granted access of caller might be affected by this change.");
+                    throw new AuthorizationDeniedException("Granted access of the current administrator might be affected by this change.");
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Access granted to '"+authenticationToken+"' would not be affected by not being a member of Role with id " + role.getRoleId() + ".");
