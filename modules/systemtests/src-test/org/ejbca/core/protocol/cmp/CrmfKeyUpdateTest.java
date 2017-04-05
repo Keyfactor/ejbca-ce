@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,8 +27,6 @@ import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,14 +41,10 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
-import org.bouncycastle.asn1.cmp.CertOrEncCert;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
-import org.bouncycastle.asn1.cmp.CertResponse;
-import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
-import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -519,7 +512,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+        String expectedErrMsg = "Recieved a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
@@ -1045,7 +1038,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Cannot find a SubjectDN in the request";
+        final String expectedErrMsg = "Recieved a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -1365,9 +1358,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, userDN, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
-        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1496,64 +1488,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         return user;
 
-    }
-    
-    private static X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
-        //
-        // Parse response message
-        //
-        
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        
-        assertNotNull(respObject);
-
-        // Verify body type
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(8, tag);
-        
-        // Verify the response
-        CertRepMessage c = (CertRepMessage) body.getContent();
-        assertNotNull(c);
-        CertResponse resp = c.getResponse()[0];
-        assertNotNull(resp);
-        assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-        
-        // Verify response status
-        PKIStatusInfo info = resp.getStatus();
-        assertNotNull(info);
-        assertEquals(0, info.getStatus().intValue());
-        
-        // Verify response certificate
-        CertifiedKeyPair kp = resp.getCertifiedKeyPair();
-        assertNotNull(kp);
-        CertOrEncCert cc = kp.getCertOrEncCert();
-        assertNotNull(cc);
-        final CMPCertificate cmpcert = cc.getCertificate();
-        assertNotNull(cmpcert);
-        X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
-        final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
-        assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
-        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
-        
-        // Verify the issuer of cert
-        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
-        final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-        assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
-        
-        Collection<X509Certificate> cacerts = new ArrayList<>();
-        cacerts.add(issuerCert);
-        assertTrue(CertTools.verify(cert, cacerts));
-        cacerts.clear();
-        cacerts.add(respCaCert);
-        assertTrue(CertTools.verify(cert,  cacerts));
-        return cert;
     }
     
     private static X509Certificate getCertFromCredentials(AuthenticationToken authToken) {
