@@ -293,12 +293,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * AccessRulesConstants.REGULAR_CABASICFUNCTIONS is not the best rule to check, but will work as a placeholder until authorization is revamped. 
+     * AccessRulesConstants.REGULAR_ACTIVATECA is not the best rule to check, but will work as a placeholder until authorization is revamped. 
      * 
-     * @return true if admin is authorized to {@link AccessRulesConstants.REGULAR_CABASICFUNCTIONS}
+     * @return true if admin is authorized to {@link AccessRulesConstants.REGULAR_ACTIVATECA}
      */
     public boolean isAuthorizedToBasicFunctions() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
     }
     
     
