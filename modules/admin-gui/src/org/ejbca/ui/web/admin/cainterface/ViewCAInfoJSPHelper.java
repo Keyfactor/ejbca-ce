@@ -53,7 +53,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	public String   activationerrormessage = null;
 	public String   activationerrorreason = null;
 	public String   activationmessage = null;
-    public boolean  authorized = false; 
     public CAInfoView cainfo = null;
     public  int status = 0; 
     public boolean tokenoffline = false;
@@ -72,10 +71,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
         if (!initialized) {
             this.cabean = cabean;                        		
             initialized = true;
-            authorized = false;
-            try {
-                authorized = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_CABASICFUNCTIONS);
-            } catch (AuthorizationDeniedException ade) {}
         }
     }
 

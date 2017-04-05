@@ -53,10 +53,8 @@ public abstract class AccessRulesConstants {
 
     // CA access rules are managed in CESecore, see StandardRules
 
-    public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
-    public static final String REGULAR_CABASICFUNCTIONS                   = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
-    public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";     
+    public static final String REGULAR_ACTIVATECA                         = StandardRules.CAFUNCTIONALITY.resource()+"/activate_ca";
     public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";    
     public static final String REGULAR_APPROVECAACTION                    = StandardRules.CAFUNCTIONALITY.resource()+"/approve_caaction";
     public static final String REGULAR_CREATECRL                          = StandardRules.CREATECRL.resource();    
@@ -100,7 +98,6 @@ public abstract class AccessRulesConstants {
     
     // Standard Regular Access Rules
     public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
-                                                           REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_ACTIVATECA,
                                                            StandardRules.CAEDIT.resource(),
                                                            StandardRules.CARENEW.resource(),
@@ -140,7 +137,7 @@ public abstract class AccessRulesConstants {
                                                            };
                                                        
     // Role Access Rules
-    public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};
+    public static final  String[] ROLEACCESSRULES = {ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};
                                                         
     // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES = 
