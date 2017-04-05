@@ -616,7 +616,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("Crmf request did not return a certificate", cert1);
 
         VerifyPKIMessage verifier = new VerifyPKIMessage(this.caSession.getCAInfo(ADMIN, this.caid), ALIAS, ADMIN, this.caSession,
-                this.eeAccessSession, this.certificateStoreSession, this.authorizationSession, this.endEntityProfileSession, null,
+                this.eeAccessSession, this.certificateStoreSession, this.authorizationSession, this.endEntityProfileSession, this.certProfileSession, null,
                 this.endEntityManagementSession, this.cmpConfiguration);
         ICMPAuthenticationModule authmodule = verifier.getUsedAuthenticationModule(req, null, false);
         assertEquals(CmpConfiguration.AUTHMODULE_HMAC, authmodule.getName());
@@ -964,7 +964,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertNotNull("Crmf request did not return a certificate", cert1);
 
             VerifyPKIMessage verifier = new VerifyPKIMessage(this.caSession.getCAInfo(ADMIN, this.caid), ALIAS, ADMIN, this.caSession,
-                    this.eeAccessSession, this.certificateStoreSession, this.authorizationSession, this.endEntityProfileSession, null,
+                    this.eeAccessSession, this.certificateStoreSession, this.authorizationSession, this.endEntityProfileSession, this.certProfileSession, null,
                     this.endEntityManagementSession, this.cmpConfiguration);
 
             ICMPAuthenticationModule authmodule = verifier.getUsedAuthenticationModule(msg, null, false);

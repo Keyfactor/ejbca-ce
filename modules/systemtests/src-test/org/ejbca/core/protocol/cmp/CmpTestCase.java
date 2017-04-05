@@ -976,6 +976,64 @@ public abstract class CmpTestCase extends CaTestCase {
         
         return cert;
     }
+    
+    protected X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
+        //
+        // Parse response message
+        //
+        
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
+        
+        assertNotNull(respObject);
+
+        // Verify body type
+        PKIBody body = respObject.getBody();
+        int tag = body.getType();
+        assertEquals(8, tag);
+        
+        // Verify the response
+        CertRepMessage c = (CertRepMessage) body.getContent();
+        assertNotNull(c);
+        CertResponse resp = c.getResponse()[0];
+        assertNotNull(resp);
+        assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
+        
+        // Verify response status
+        PKIStatusInfo info = resp.getStatus();
+        assertNotNull(info);
+        assertEquals(0, info.getStatus().intValue());
+        
+        // Verify response certificate
+        CertifiedKeyPair kp = resp.getCertifiedKeyPair();
+        assertNotNull(kp);
+        CertOrEncCert cc = kp.getCertOrEncCert();
+        assertNotNull(cc);
+        final CMPCertificate cmpcert = cc.getCertificate();
+        assertNotNull(cmpcert);
+        X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
+        final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
+        assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
+        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
+        
+        // Verify the issuer of cert
+        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
+        final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+        assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
+        
+        Collection<X509Certificate> cacerts = new ArrayList<>();
+        cacerts.add(issuerCert);
+        assertTrue(CertTools.verify(cert, cacerts));
+        cacerts.clear();
+        cacerts.add(respCaCert);
+        assertTrue(CertTools.verify(cert,  cacerts));
+        return cert;
+    }
 
     protected static void checkCmpPKIConfirmMessage(X500Name userDN, Certificate cacert, byte[] retMsg) throws IOException {
         //

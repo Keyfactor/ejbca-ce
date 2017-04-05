@@ -132,7 +132,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		//Verify the authenticity of the message
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession, 
-		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
+		        authorizationSession, endEntityProfileSession, certificateProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
 	          LOG.info(messageVerifyer.getErrorMessage());
