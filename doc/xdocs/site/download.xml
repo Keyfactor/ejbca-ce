@@ -10,11 +10,11 @@
     <note>
     If you have problems with any of the download links below or need older releases, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA Community 6.5.0.4 is available for  
-    <a href="https://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_5_0/ejbca_ce_6_5_0_4.zip">download</a>.
+    EJBCA Community 6.5.0.5 is available for  
+    <a href="https://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_5_0/ejbca_ee_6_5.0.5.zip">download</a>.
     <br/>
-    SHA1 checksum: bee8c15ee599df528e01c3c8a0fcde24ee0b3eb3<br/>
-    SHA256 checksum: 9c7854e924c029b3fa7dcd9fbbb0dfb16f1f610af74ed90eb45d39e05c5d2480
+    SHA1 checksum: e32e065061ef6666d9b10cc6e24522a1d9c7fafb<br/>
+    SHA256 checksum: 85c09d584896bef01d207b874c54ae2f994d38dd85b40fd10c21f71f7210be8a
     <br/><br/>
     Cert-cvc library 1.4.5 with support for EAC 2.10 Access Control Templates is now available for <a
     href="https://sourceforge.net/projects/ejbca/files/cert-cvc/cert-cvc-1.4.5/cert-cvc-1.4.5.zip">download</a>.
