@@ -534,36 +534,50 @@ public class UpgradeSessionBeanTest {
     public void testUpgradeTo680MigrateRules() throws AuthorizationDeniedException {
         final String roleName = TESTCLASS + " upgradeTo680MigrateRules";
         final String roleName2 = TESTCLASS + " upgradeTo680MigrateRules2";
+        final String roleName3 = TESTCLASS + " upgradeTo680MigrateRules3";
         final List<AccessRuleData> oldAccessRules = Arrays.asList(
                 new AccessRuleData(roleName, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
                 new AccessRuleData(roleName, UpgradeSessionBean.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
                 new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
                 new AccessRuleData(roleName2, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
+        final List<AccessRuleData> oldAcccessRules3 = Arrays.asList(
+                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
         upgradeTestSession.createRole(roleName, oldAccessRules, null);
         upgradeTestSession.createRole(roleName2, oldAccessRules2, null);
+        upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
         int newRoleId = Role.ROLE_ID_UNASSIGNED;
         int newRoleId2 = Role.ROLE_ID_UNASSIGNED;
+        int newRoleId3 = Role.ROLE_ID_UNASSIGNED;
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
             final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
             final Role newRole2 = roleSession.getRole(alwaysAllowtoken, null, roleName2);
+            final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
             assertNotNull(newRole);
             assertNotNull(newRole2);
+            assertNotNull(newRole3);
             newRoleId = newRole.getRoleId();
             newRoleId2 = newRole2.getRoleId();
+            newRoleId3 = newRole3.getRoleId();
             // The old rule ROLE_PUBLICWEBUSER should have been removed during the upgrade
             assertEquals(1, newRole.getAccessRules().size());
-            // /ca_functionality is allowed, /ca_functionality_activateca is denied. Expecting size of 2
+            // /ca_functionality is allowed, /ca_functionality/activate_ca is denied. Expecting size of 2
             assertEquals(2, newRole2.getAccessRules().size());
+            // Old rule remove, new rule added Expect size of 1
+            assertEquals(1, newRole3.getAccessRules().size());
             // Expect the state of the deprecated rule to be unchanged in the replacing rule
-            assertEquals(Role.STATE_ALLOW, newRole.getAccessRules().get(AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals(Role.STATE_DENY, newRole2.getAccessRules().get(AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals(Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals(Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole2.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals(Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
         } finally {
             upgradeTestSession.deleteRole(roleName);
             upgradeTestSession.deleteRole(roleName2);
+            upgradeTestSession.deleteRole(roleName3);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId2);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId3);
         }
     }
     
