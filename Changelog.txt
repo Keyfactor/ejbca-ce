@@ -638,7 +638,7 @@ New Feature
 Task
     [ECA-4868] - Security Issue
 
-EJBCA 6.5.0.5, 2017-03-27
+EJBCA 6.5.0.5, 2017-04-06
 ---
 Bug
  	[ECA-5767] - Soft CA Token key alias set to wrong value in upgrade from 4.0
