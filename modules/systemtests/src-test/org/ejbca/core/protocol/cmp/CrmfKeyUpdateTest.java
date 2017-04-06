@@ -512,7 +512,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        String expectedErrMsg = "Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+        String expectedErrMsg = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
@@ -1038,7 +1038,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+        final String expectedErrMsg = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
