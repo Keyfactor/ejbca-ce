@@ -152,7 +152,8 @@ public class GenerateToken {
     		}
     		rsaKeys = keyData.getKeyPair();
     		if (reusecertificate) {
-    			// TODO: Why is this only done is reusecertificate == true ??
+    			// This is only done if reusecertificate == true because if you don't re-use certificate
+    		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
                 if (log.isDebugEnabled()) {
                     log.debug("Re-using old certificate for user: "+ username);
                 }
