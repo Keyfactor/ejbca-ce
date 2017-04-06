@@ -152,7 +152,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
     
     //Rules removed or migrated in 6.8.0
-public static final String ROLE_PUBLICWEBUSER                   = "/public_web_user";
+    public static final String ROLE_PUBLICWEBUSER                   = "/public_web_user";
     public static final String REGULAR_CABASICFUNCTIONS_OLD     = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
     public static final String REGULAR_ACTIVATECA_OLD           = REGULAR_CABASICFUNCTIONS_OLD+"/activate_ca";
     
@@ -1281,11 +1281,10 @@ public static final String ROLE_PUBLICWEBUSER                   = "/public_web_u
             // Migrate deprecated rules.
             // If Role had access allow or deny to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
             // allow/deny access to new rule /ca_functionality/activate_ca
-            if (newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) != null && newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) ||
-                newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD)) != null && newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD))) {
+            Boolean isAllowedActivateCa = AccessRulesHelper.hasAccessToResource(newAccessRules, REGULAR_ACTIVATECA_OLD);
+            if(isAllowedActivateCa) {
                 newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_ALLOW);
-            } else if (newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD)) != null ||
-                       newAccessRules.get(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD)) != null) {
+            } else {
                 newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_DENY);
             }
             //Remove deprecated rules
