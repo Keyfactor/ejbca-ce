@@ -127,7 +127,9 @@ public class DefaultProfileTest extends CmpTestCase {
     @AfterClass
     public static void afterClass() throws Exception {
         Role role = roleSession.getRole(ADMIN, null, "DefaultProfileTest");
-        roleSession.deleteRoleIdempotent(ADMIN, role.getRoleId());
+        if(role != null) {
+            roleSession.deleteRoleIdempotent(ADMIN, role.getRoleId());    
+        }
     }
     
     public DefaultProfileTest() throws Exception {
