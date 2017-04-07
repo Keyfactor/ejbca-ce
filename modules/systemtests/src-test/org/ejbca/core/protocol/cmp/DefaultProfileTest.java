@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
@@ -80,6 +92,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * System tests for when a CMP alias is set to use specific or 'ProfileDefault' CertificateProfile and CA 
+ * 
+ * @version $Id$
+ */
 public class DefaultProfileTest extends CmpTestCase {
     
     private static final Logger log = Logger.getLogger(AuthenticationModulesTest.class);
@@ -201,6 +218,15 @@ public class DefaultProfileTest extends CmpTestCase {
     }
 
 
+    /**
+     * Tests handling a CRMF request is RA mode and HMAC authentication module in two cases:
+     * 1- The CMP alias configured to use a specific certificate profile. Expected success with the certificate profile in the 
+     *    created endentity is set to that specific certificate profile (which is not the same certificate profile specified as 
+     *    default in the end entity)
+     * 2- The CMP alias configured to use 'ProfileDefault' as certificate profile. Expected success with the certificate profile 
+     *    in the created endentity is set to the certificate profile specified as default in the end entity profile
+     * @throws Exception
+     */
     @Test
     public void test01CrmfHMACCertProfileDefault() throws Exception {
         log.trace(">test01CrmfHMACCertProfileDefault()");
@@ -271,6 +297,13 @@ public class DefaultProfileTest extends CmpTestCase {
 
     
 
+    /**
+     * Tests handling a CRMF request is RA mode and HMAC authentication module in two cases:
+     * 1- The CMP alias configured to use a specific CA. Expected success with the certificate issued by that specific CA (which 
+     *    is not the same as the CA specified as default in the end entity profile) 
+     * 2- The CMP alias configured to use 'ProfileDefault' as CA. Expected success with the certificate issued by the CA specified as default in the end entity profile
+     * @throws Exception
+     */
     @Test
     public void test02CrmfHMACCADefault() throws Exception {
         log.trace(">test02CrmfHMACCADefault()");
@@ -342,7 +375,16 @@ public class DefaultProfileTest extends CmpTestCase {
         log.trace("<test02CrmfHMACCADefault()");
     }
 
-   
+
+    /**
+     * Tests handling a CRMF request is RA mode and EndEntityCertificate authentication module in two cases:
+     * 1- The CMP alias configured to use a specific certificate profile. Expected success with the certificate profile in the 
+     *    created endentity is set to that specific certificate profile (which is not the same certificate profile specified as 
+     *    default in the end entity)
+     * 2- The CMP alias configured to use 'ProfileDefault' as certificate profile. Expected success with the certificate profile 
+     *    in the created endentity is set to the certificate profile specified as default in the end entity profile
+     * @throws Exception
+     */
     @Test
     public void test03CrmfEECCertProfileDefault() throws Exception {
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
@@ -422,7 +464,13 @@ public class DefaultProfileTest extends CmpTestCase {
             removeAuthenticationToken(admToken, admCert, admUsername); // also removes testUsername
         }
     }
-    
+    /**
+     * Tests handling a CRMF request is RA mode and EndEntityCertificate authentication module in two cases:
+     * 1- The CMP alias configured to use a specific CA. Expected success with the certificate issued by that specific CA (which 
+     *    is not the same as the CA specified as default in the end entity profile) 
+     * 2- The CMP alias configured to use 'ProfileDefault' as CA. Expected success with the certificate issued by the CA specified as default in the end entity profile
+     * @throws Exception
+     */
     @Test
     public void test04CrmfEECCAProfileDefault() throws Exception {
         cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
@@ -504,6 +552,10 @@ public class DefaultProfileTest extends CmpTestCase {
         }
     } 
 
+    /**
+     * Tests handling a KeyUpdate request in RA mode in regard to which CA used to issue the new certificate
+     * @throws Exception
+     */
     @Test
     public void test05KeyUpdateDefaultCAAndCertProfile() throws Exception {
         if(log.isTraceEnabled()) {
