@@ -190,7 +190,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     public static void afterClass() throws Exception {
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("NestedMessageContentTest");
         EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        for (final String username : Arrays.asList("cmpTestAdmin", "\\ nestedCMPTest/")) {
+        for (final String username : Arrays.asList("cmpTestAdmin", "nestedCMPTest")) {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.keyCompromise);
             } catch (Exception e){

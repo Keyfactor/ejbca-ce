@@ -316,7 +316,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     }
     
     @After
-    public void tearDown() throws Exception{
+    public void tearDown() throws Exception {
+        super.tearDown();
         CmpConfiguration cmpconf = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         cmpconf.removeAlias(RA1_ALIAS);
         cmpconf.removeAlias(RA2_ALIAS);
