@@ -261,7 +261,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;
             }
             if(endentity == null) {
-                this.errorMessage = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+                this.errorMessage = "Error. Received a CMP KeyUpdateRequest for a non-existing end entity";
                 return false;
             }
         }
@@ -467,7 +467,17 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             } catch(Exception e) {
                 log.debug("Could not parse the KeyUpdate request. Trying to parse it as novosec generated message.");
                 certmsg = CmpMessageHelper.getNovosecCertReqMsg(kur);
-                log.debug("Succeeded in parsing the novosec generated request.");
+                if(certmsg == null) {
+                    log.info("Error. Failed to parse CMP message novosec generated message. " + e.getLocalizedMessage());
+                    if(log.isDebugEnabled()) {
+                        log.debug(e);
+                    }
+                    return null;
+                } else {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Succeeded in parsing the novosec generated request.");
+                    }
+                }
             }
         
             X500Name dn = certmsg.getCertReq().getCertTemplate().getSubject();
@@ -483,7 +493,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             issuerDN = CertTools.getIssuerDN(extraCert);
         }
         if(log.isDebugEnabled()) {
-            log.debug("Recieved a CMP KeyUpdateRequest for an endentity with SubjectDN '" + subjectDN + "' and issuerDN '" + issuerDN + "'");
+            log.debug("Received a CMP KeyUpdateRequest for an endentity with SubjectDN '" + subjectDN + "' and issuerDN '" + issuerDN + "'");
         }
         
         EndEntityInformation userdata = null;
@@ -517,7 +527,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * 
      * @param certInfo
      * @param msg
-     * @param caid
+     * @param endentity Only used when the message received is a KeyUpdateRequest in RA mode
      * @return true if the administrator is authorized to process the request and false otherwise.
      */
     private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final EndEntityInformation endentity) {
@@ -605,15 +615,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if(eepname == null) {
                 log.error("End Entity Profile with ID " + eeprofid + " was not found");
                 return false;
-            }
-                
-            if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_END_ENTITY)) {
-                log.info("Administrator " + reqAuthToken.toString() + " was not authorized to create end entities with EndEntityProfile " + eepname);
-                return false;
-            } else {
-                if(log.isDebugEnabled()) {
-                    log.debug("Administrator " + reqAuthToken.toString() + " was authorized to create end entities with EndEntityProfile " + eepname);
-                }
             }
                 
             if(!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.EDIT_END_ENTITY)) {
