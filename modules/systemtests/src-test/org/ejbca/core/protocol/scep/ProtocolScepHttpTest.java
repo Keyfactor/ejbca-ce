@@ -30,7 +30,6 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +39,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
-import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
@@ -54,8 +52,8 @@ import java.util.Random;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.util.Streams;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -65,7 +63,6 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
@@ -90,6 +87,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -156,12 +154,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-
-import com.gargoylesoftware.htmlunit.SubmitMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests http pages of scep
@@ -297,15 +289,10 @@ public class ProtocolScepHttpTest {
     }
 
     @Test
-    public void test01Access() throws Exception {
-        // Hit scep
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        
+    public void test01Access() throws Exception {        
         // Gives a 400: Bad Request
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 400, resp.getStatusCode());
+        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + '/' + resourceScep);
+        assertEquals("Response code", 400, resp.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -376,20 +363,14 @@ public class ProtocolScepHttpTest {
     @Test
     public void test03OpenScep() throws Exception {
         // send message to server and see what happens
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep), SubmitMethod.GET);
-        ArrayList<NameValuePair> l = new ArrayList<NameValuePair>();
-        l.add(new NameValuePair("operation", "PKIOperation"));
-        l.add(new NameValuePair("message", new String(Base64.encode(openscep))));
-        settings.setRequestParameters(l);
-        WebResponse resp = con.getResponse(settings);
+        String encodedMessage = URLEncoder.encode(new String(Base64.encode(openscep), "UTF-8"), "UTF-8");
+        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + '/' + resourceScep + "?operation=PKIOperation&message=" + encodedMessage);
         // TODO: since our request most certainly uses the wrong CA cert to
         // encrypt the
         // request, it will fail. If we get something back, we came a little bit
         // at least :)
         // We should get a NOT_FOUND error back.
-        assertEquals("Response code", 404, resp.getStatusCode());
+        assertEquals("Response code", 404, resp.getStatusLine().getStatusCode());
     }
 
     @Test
@@ -881,7 +862,7 @@ public class ProtocolScepHttpTest {
         // Verify signature
         assertTrue("CMS should be signed by rollover CA certificate", signedData.verifySignatures(new ScepVerifierProvider(currentCACert.getPublicKey())));        
         final Store<?> certStore = signedData.getCertificates();
-        final List<Certificate> ret = new ArrayList<Certificate>();
+        final List<Certificate> ret = new ArrayList<>();
         for (final Object obj : certStore.getMatches(null)) {
             log.debug("Received an item of type "+obj.getClass().getName()+": "+obj);
             if (obj instanceof X509CertificateHolder) {
@@ -928,14 +909,12 @@ public class ProtocolScepHttpTest {
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN) throws IOException, CMSException,
             IllegalStateException, OperatorCreationException, CertificateException {
         return genScepRequest(makeCrlReq, digestoid, userDN, key1, BouncyCastleProvider.PROVIDER_NAME);
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider) throws InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid, String userDN, KeyPair keyPair, String signatureProvider) throws
             IOException, CMSException, OperatorCreationException, CertificateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyPair, signatureProvider);
@@ -961,8 +940,7 @@ public class ProtocolScepHttpTest {
     }
     
     /** Makes a request to the Rollover CA, signed with the given CA certificate (current or next/rollover). */
-    private byte[] genScepRolloverCARequest(X509Certificate caRolloverCert, String digestoid, String userDN) throws InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException,
+    private byte[] genScepRolloverCARequest(X509Certificate caRolloverCert, String digestoid, String userDN) throws
             IOException, CMSException, OperatorCreationException, CertificateException {
         assertNotNull(keyTestRollover);
         assertNotNull(caRolloverCert);
@@ -1095,8 +1073,7 @@ public class ProtocolScepHttpTest {
 
             if (crlRep) {
                 // We got a reply with a requested CRL
-                @SuppressWarnings("unchecked")
-                final Collection<X509CRLHolder> crls = (Collection<X509CRLHolder>) sd.getCRLs().getMatches(null);
+                final Collection<X509CRLHolder> crls = sd.getCRLs().getMatches(null);
                 assertEquals(crls.size(), 1);
                 final Iterator<X509CRLHolder> it = crls.iterator();
                 // CRL is first (and only)

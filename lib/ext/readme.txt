@@ -12,10 +12,6 @@ velocity-dep-1.4.jar
 Used to run regular JUnit tests (license CPL):
 junit-4.11.jar
 
-Used to run Http/Html specific JUnit tests (license apache like...see doc/licenses/LICENSE_HTMLUNIT):
-htmlunit-1.14.jar
-commons-httpclient-3.1.jar
-
 Dependencies required to run some ExternalRA Tests
 geronimo-osgi-locator-1.1.jar (Apache 2.0)
 slf4j-api-1.7.22.jar (Apache/MIT/BSD/CDDL)

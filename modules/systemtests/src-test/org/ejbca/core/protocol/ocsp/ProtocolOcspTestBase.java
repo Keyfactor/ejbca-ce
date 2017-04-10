@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
@@ -27,22 +26,16 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.CreateException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -57,9 +50,9 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CesecoreException;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -89,11 +82,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  *
@@ -145,11 +133,8 @@ public abstract class ProtocolOcspTestBase {
 
     protected void test01Access() throws Exception { // NOPMD, this is not a test class itself
         // Hit with GET does work since EJBCA 3.8.2
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceOcsp));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
+        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + '/' + resourceOcsp);
+        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
     }
 
     /**
@@ -201,10 +186,11 @@ public abstract class ProtocolOcspTestBase {
         con.setDoOutput(true);
         con.setRequestMethod("POST");
         // POST it, but don't add content type
-        OutputStream os = con.getOutputStream();
-        os.write(req.getEncoded());
-        os.close();
-        assertEquals("Response code", 400, con.getResponseCode());
+        try (OutputStream os = con.getOutputStream()) {
+            os.write(req.getEncoded());
+            os.close();
+            assertEquals("Response code", 400, con.getResponseCode());
+        }
 
     }
 
@@ -433,9 +419,8 @@ public abstract class ProtocolOcspTestBase {
         assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
     }
 
-    protected static void setupTestCertificates(int caId) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException,
-            InvalidAlgorithmParameterException, CreateException, AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException,
+    protected static void setupTestCertificates(int caId) throws IllegalStateException, InvalidAlgorithmParameterException,
+            AuthorizationDeniedException, CustomCertificateSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException, CertificateExtensionException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE

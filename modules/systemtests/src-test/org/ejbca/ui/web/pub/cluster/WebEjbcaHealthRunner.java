@@ -12,10 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.pub.cluster;
 
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
+import org.cesecore.WebTestUtils;
 
 /**
  * Tests the EjbcaHealthCheck (servlet) with load.
@@ -27,6 +26,7 @@ public class WebEjbcaHealthRunner implements Runnable { // NOPMD, this is not a 
 	private static Logger log = Logger.getLogger(WebEjbcaHealthRunner.class);
 
 	public static final int NO_TESTS=100;
+	public static final int TIMEOUT = 31*1000;
 	
     private String httpReqPath; 
 
@@ -34,21 +34,20 @@ public class WebEjbcaHealthRunner implements Runnable { // NOPMD, this is not a 
 		httpReqPath = reqPath;
 	}
 	
+	@Override
 	public void run() {
 		try {
 			long before = System.currentTimeMillis();
-			final WebClient webClient = new WebClient();
-			webClient.setTimeout(31*1000);
 			for (int i = 0; i<NO_TESTS;i++) {
-				WebResponse resp = webClient.getPage(httpReqPath).getWebResponse();
-				int ret = resp.getStatusCode();
+			    HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath, TIMEOUT);
+				int ret = resp.getStatusLine().getStatusCode();
 				if (ret != 200) {
 					throw new Exception("Status code is "+ret);
 				}
 			}
 			long after = System.currentTimeMillis();
 			long diff = after - before;
-			log.info("Time used ("+Thread.currentThread().getName()+"): "+diff);			
+			log.info("Time used ("+Thread.currentThread().getName()+"): "+diff);
 		} catch (Exception e) {
 			log.error("", e);
 		}
