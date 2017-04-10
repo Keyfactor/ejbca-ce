@@ -16,7 +16,7 @@
         <path location="${mod.ejbca-ejb-interface.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path refid="lib.log4j.classpath"/>
-		<path refid="lib.json.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
 	</path>
 	
 	<target name="build" depends="">
