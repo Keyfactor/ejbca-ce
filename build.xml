@@ -480,15 +480,16 @@
                 <include name="commons-*.jar" />
 				<include name="nimbus-jose-jwt-*.jar"/>
 				<include name="json-smart-*.jar"/>
+				                <include name="httpclient-*.jar" />
+                <include name="httpcore-*.jar" />
+                <include name="httpmime-*.jar" />
+                <include name="json-simple-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
                 <include name="ctlog-jdk7-*.jar" />
                 <include name="protobuf-java-*.jar" />
-                <include name="httpclient-*.jar" />
-                <include name="httpcore-*.jar" />
                 <include name="guava-*.jar" />
-                <include name="json-simple-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc.war"/>
