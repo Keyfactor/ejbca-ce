@@ -48,7 +48,7 @@ public interface CertificateCreateSession {
      * user database for authorization of the user.
      *
      * @param admin         Information about the administrator or admin performing the event.
-     * @param userData Supplied user data, containing the issuing CAid, subject DN etc. Must contain the following information
+     * @param endEntityInformation Supplied user data, containing the issuing CAid, subject DN etc. Must contain the following information
      * 						type, username, certificateProfileId. Optionally it contains:
      * 						subjectDN, required if certificateProfile does not allow subject DN override
      * 						caid, if not possible to get it from issuerDN of the request
@@ -76,7 +76,7 @@ public interface CertificateCreateSession {
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * 
      */
-    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, RequestMessage req,
+    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation endEntityInformation, RequestMessage req,
             Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
             IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;

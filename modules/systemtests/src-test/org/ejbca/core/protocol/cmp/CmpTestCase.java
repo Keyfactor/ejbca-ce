@@ -557,13 +557,12 @@ public abstract class CmpTestCase extends CaTestCase {
 
  }
     
-    protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException {
+    protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
 
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
-            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+            throws NoSuchAlgorithmException, InvalidKeyException {
         // Create the PasswordBased protection of the message
         PKIHeaderBuilder head = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
         if(keyId != null) {
@@ -595,26 +594,30 @@ public abstract class CmpTestCase extends CaTestCase {
         for (int i = 0; i < salt.length; i++) {
             basekey[raSecret.length + i] = salt[i];
         }
-        // Construct the base key according to rfc4210, section 5.1.3.1
-        MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), "BC");
-        for (int i = 0; i < iterationCount; i++) {
-            basekey = dig.digest(basekey);
-            dig.reset();
+        try {
+            // Construct the base key according to rfc4210, section 5.1.3.1
+            MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+            for (int i = 0; i < iterationCount; i++) {
+                basekey = dig.digest(basekey);
+                dig.reset();
+            }
+            // For HMAC/SHA1 there is another oid, that is not known in BC, but the
+            // result is the same so...
+            String macOid = macAlg.getAlgorithm().getId();
+            PKIBody body = msg.getBody();
+            byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(header, body);
+            Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
+            SecretKey key = new SecretKeySpec(basekey, macOid);
+            mac.init(key);
+            mac.reset();
+            mac.update(protectedBytes, 0, protectedBytes.length);
+            byte[] out = mac.doFinal();
+            DERBitString bs = new DERBitString(out);
+
+            return new PKIMessage(header, body, bs);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle couldn't be found as a provider.");
         }
-        // For HMAC/SHA1 there is another oid, that is not known in BC, but the
-        // result is the same so...
-        String macOid = macAlg.getAlgorithm().getId();
-        PKIBody body = msg.getBody();
-        byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(header, body);
-        Mac mac = Mac.getInstance(macOid, "BC");
-        SecretKey key = new SecretKeySpec(basekey, macOid);
-        mac.init(key);
-        mac.reset();
-        mac.update(protectedBytes, 0, protectedBytes.length);
-        byte[] out = mac.doFinal();
-        DERBitString bs = new DERBitString(out);
-        
-        return new PKIMessage(header, body, bs);
     }
     
     protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException {
@@ -1277,12 +1280,19 @@ public abstract class CmpTestCase extends CaTestCase {
             WaitingForApprovalException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException, ApprovalException,
-            NoSuchEndEntityException, javax.ejb.ObjectNotFoundException, CustomFieldException {
+            NoSuchEndEntityException, CustomFieldException {
            
         createUser(username, "CN="+username, password, caid);
+        int certificateProfileId;
+        if(certProfile != null) {
+            certificateProfileId = certProfileSession.getCertificateProfileId(certProfile);
+        } else {
+            certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
+        }
+        
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
                 X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,
-                this.certProfileSession.getCertificateProfileId(certProfile), caid);
+                certificateProfileId, caid);
         
         List<Certificate> certCollection = new ArrayList<Certificate>();
         certCollection.add(racert);

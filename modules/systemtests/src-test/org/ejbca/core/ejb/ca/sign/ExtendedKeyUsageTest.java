@@ -173,9 +173,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, EE_PROFILE_NAME);
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, EE_PROFILE_NAME, profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(EE_PROFILE_NAME);
-
+        final int fooEEProfile = endEntityProfileSession.addEndEntityProfile(internalAdmin, EE_PROFILE_NAME, profile);
         createOrEditUser(fooCertProfile, fooEEProfile);
 
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", new PublicKeyWrapper(rsakeys.getPublic()));

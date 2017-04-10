@@ -76,8 +76,10 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private SecurityEventsLoggerSessionLocal auditSession;
     
     @Override
-    public void addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
-        addEndEntityProfile(admin, findFreeEndEntityProfileId(), profilename, profile);
+    public int addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
+        int endEntityProfileId = findFreeEndEntityProfileId();
+        addEndEntityProfile(admin, endEntityProfileId, profilename, profile);
+        return endEntityProfileId;
     }
 
     @Override

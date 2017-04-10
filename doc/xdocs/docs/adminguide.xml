@@ -858,7 +858,7 @@ Although EJBCA still supports CMP over TCP for now, it will not be supported for
             this module in client mode.</li>
         <li>In RA mode, as a parameter, this module expects the name of the CA that that has issued the certificate in the extraCert field. If a parameter is specified, 
             EJBCA will then check if the certificate in extraCert does exist in the database, that it was issued by the right CA (the CA specified as a parameter) and that it 
-            belongs to a registerd administrator in EJBCA with the right authorizations to perform the operations required in the request. If no parameter is specified, 
+            belongs to a registered administrator in EJBCA with the right authorizations to perform the operations required in the request. If no parameter is specified, 
             none of the mentioned checks will be performed, however, Ejbca will expect the CMP request to have been previously authenticated by other ways, for example, 
             by sending the request inside a signed NestedMessageContent</li>
       </ul>
