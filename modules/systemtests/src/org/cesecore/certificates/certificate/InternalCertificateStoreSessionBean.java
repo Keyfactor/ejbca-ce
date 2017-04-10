@@ -117,6 +117,14 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     }
     
     @Override
+    public void removeCertificatesByUsername(final String username) {
+        Collection<CertificateWrapper> certs = certStore.findCertificatesByUsername(username);
+        for (CertificateWrapper certificate : certs) {
+            removeCertificate(certificate.getCertificate());
+        }  
+    }
+    
+    @Override
     public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax,
             long activeExpireDateMin) {
         return certStore.findExpirationInfo(cas, new ArrayList<Integer>(), activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,

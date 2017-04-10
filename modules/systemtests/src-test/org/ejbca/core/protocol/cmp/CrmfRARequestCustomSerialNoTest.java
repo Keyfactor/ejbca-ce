@@ -51,7 +51,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @author tomas
  * @version $Id$
  */
 public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {

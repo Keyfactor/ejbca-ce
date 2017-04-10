@@ -815,12 +815,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private boolean isExtraCertActive(final CertificateInfo certinfo) {
         if (certinfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not active.";
-            if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " Username="+certinfo.getUsername());
+            if (log.isDebugEnabled()) {
+                log.debug(this.errorMessage + " Username=" + certinfo.getUsername());
             }
             return false;
         }
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("The certificate in extraCert is active");
         }
         return true;
@@ -831,7 +831,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // Verify the signature of the client certificate as well, that it is really issued by this CA
         Certificate cacert = cainfo.getCertificateChain().iterator().next();
         try {
-            extraCert.verify(cacert.getPublicKey(), "BC");
+            extraCert.verify(cacert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
         } catch (Exception e) {
             if(log.isDebugEnabled()) {
                 String errmsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";

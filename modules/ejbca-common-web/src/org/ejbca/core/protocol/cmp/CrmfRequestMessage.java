@@ -67,7 +67,6 @@ import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
  * -- raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * -- Self signature, using the key in CertTemplate, or POPOSigningKeyInput (name and public key), option 2 and 3 in RFC4211, section "4.1.  Signature Key POP"
  * 
- * @author tomas
  * @version $Id$
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
@@ -141,10 +140,17 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     public PKIMessage getPKIMessage() {
         if (getMessage() == null) {
+            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(pkimsgbytes));
             try {
-                setMessage(PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(pkimsgbytes)).readObject()));
+                setMessage(PKIMessage.getInstance(inputStream.readObject()));
             } catch (IOException e) {
                 log.error("Error decoding bytes for PKIMessage: ", e);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                   throw new IllegalStateException(e);
+                }
             }
         }
         return getMessage();
@@ -342,7 +348,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         X500Name name = templ.getSubject();
         if(name != null) {
-            name = new X500Name(new CeSecoreNameStyle(), name);
+            name = X500Name.getInstance(new CeSecoreNameStyle(), name);
         }
         if (log.isDebugEnabled()) {
             log.debug("Request X500Name is: " + name);

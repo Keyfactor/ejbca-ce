@@ -66,7 +66,6 @@ import org.junit.Test;
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
- * @author tomas
  * @version $Id$
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {

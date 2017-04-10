@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,7 +27,9 @@ import java.security.Principal;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,7 +69,11 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -91,20 +98,25 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 
 /**
- * This will test the different cmp authentication modules.
+ * This will test will check performing key updates over CMP. 
  * 
  * @version $Id$
  *
@@ -113,7 +125,7 @@ import org.junit.runners.MethodSorters;
 public class CrmfKeyUpdateTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfKeyUpdateTest.class);
-
+        
     private final String username = "certRenewalUser";
     private final X500Name userDN = new X500Name("CN="+this.username+",O=PrimeKey Solutions AB,C=SE");
     private final String issuerDN = "CN=TestCA";
@@ -124,14 +136,21 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private final CA testx509ca;
     private final CmpConfiguration cmpConfiguration;
     private final String cmpAlias = "CrmfKeyUpdateTestCmpConfigAlias";
+
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+    private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+    
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
@@ -182,6 +201,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         } catch(Exception e){/* do nothing */}   
         this.cmpConfiguration.removeAlias(this.cmpAlias);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        internalCertificateStoreSession.removeCertificatesByUsername(username);
     }
 
     
@@ -435,8 +455,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         if(log.isTraceEnabled()) {
             log.trace("<test03UpdateRevokedCert");
         }
-
     }
+    
+   
     
     /**
      * Sends a KeyUpdateRequest concerning a certificate that does not exist in the database. A CMP error message is expected and no certificate renewal.
@@ -512,7 +533,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        String expectedErrMsg = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+        String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
         assertEquals(expectedErrMsg, errMsg);
 
         // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
@@ -754,9 +775,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      */
     @Test
     public void test07RAMode() throws Exception {
-        if(log.isTraceEnabled()) {
-            log.trace("test09RAMode()");
-        }
         
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
@@ -797,12 +815,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to renew the certificate", cert);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
-
-        if(log.isTraceEnabled()) {
-            log.trace("<test09RAMode()");
-        }
     }
 
+
+    
     /**
      * Sends a KeyUpdateRequest in RA mode and the request sender is not an authorized administrator. 
      * A CMP error message is expected and no certificate renewal.
@@ -1038,7 +1054,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Error. Recieved a CMP KeyUpdateRequest for a non-existing end entity";
+        final String expectedErrMsg = "Cannot find a SubjectDN in the request";
         assertEquals(expectedErrMsg, errMsg);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -1204,7 +1220,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "EndEnityCertificate authentication module is not configured. For a KeyUpdate request to be authentication " +
+        final String expectedErrMsg = "EndEntityCertificate authentication module is not configured. For a KeyUpdate request to be authentication " +
         		                        "in RA mode, EndEntityCertificate authentication module has to be set and configured";
         assertEquals(expectedErrMsg, errMsg);
 
@@ -1358,8 +1374,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, userDN, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
+        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1461,11 +1478,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
-        ASN1Primitive pcert = ins.readObject();
-        ins.close();
-        org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
-        CMPCertificate[] res = {new CMPCertificate(c)};
-        return res;
+        try {
+            ASN1Primitive pcert = ins.readObject();
+            org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
+            CMPCertificate[] res = {new CMPCertificate(c)};
+            return res;
+        } finally {
+            ins.close();
+        }
     }
 
     private EndEntityInformation createUser(String userName, String subjectDN, String password) throws AuthorizationDeniedException, EndEntityProfileValidationException, 
@@ -1474,7 +1494,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            //this_endEntityManagementSession.addUser(ADMIN, user, true);
             this.endEntityManagementSession.addUser(ADMIN, userName, password, subjectDN, "rfc822name=" + userName + "@primekey.se", userName + "@primekey.se",
                     true, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                     this.caid);
@@ -1578,5 +1597,217 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             }
         }
         this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        internalCertificateStoreSession.removeCertificate(cert);
     }
+    
+    /**
+     * Since Key Update Requests are parsed slightly differently in client and RA mode, the previous update request is repeated in RA mode.
+     * 
+     * RFC4210 states in ch. 5.3.5:
+     * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateRevokedCertInRaMode() throws Exception {
+        this.cmpConfiguration.setRAMode(this.cmpAlias, true);
+        this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        //------------------ create the user and issue his first certificate -------------
+        createUser(this.username, this.userDN.toString(), "foo123");
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final Certificate certificate;
+        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        assertNotNull("Failed to create a test certificate", certificate);
+        endEntityManagementSession.revokeUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        assertTrue("Failed to revoke the test certificate", certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));      
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        assertNotNull("Failed to generate a CMP renewal request", req);      
+        final String testAdminName = "cmpTestAdmin";
+        createUser(testAdminName, "CN="+testAdminName, "foo123");
+        final KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken admToken = createAdminToken(admkeys, testAdminName, "CN="+testAdminName);
+        Certificate admCert = getCertFromCredentials(admToken);
+        try {
+            CMPCertificate[] extraCert = getCMPCert(admCert);
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(),
+                    BouncyCastleProvider.PROVIDER_NAME);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            //send request and recieve response
+            byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
+            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            PKIMessage respObject = null;
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull("No respose object was received.", respObject);
+            final PKIBody body = respObject.getBody();
+            assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());
+        } finally {
+            removeAuthenticationToken(admToken, admCert, testAdminName);
+        }
+    }
+    
+    /**
+     * Since Key Update Requests are parsed slightly differently in client and RA mode, the previous update request is repeated in RA mode.
+     * 
+     * RFC4210 states in ch. 5.3.5:
+     * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateExpiredCert() throws Exception {
+        //Create a certificate profile that allows validity override
+        final String profileName = "testUpdateExpiredCert";
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowValidityOverride(true);
+        int certificateProfileId = certProfileSession.addCertificateProfile(ADMIN, profileName, certificateProfile);
+        EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(ADMIN, profileName, endEntityProfile);
+        try {
+            this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+            final String password = "foo123";
+            //--------------- create the user and issue its certificate, expired -----------------
+            endEntityManagementSession.addUser(ADMIN, username, password, userDN.toString(), "rfc822name=" + username + "@primekey.se",
+                    username + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    SecConst.TOKEN_SOFT_PEM, 0, this.caid);
+
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), username, password,
+                    new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
+            EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, username);
+            X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(ADMIN, endEntity, expiredReq,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            Certificate certificate = responseMessage.getCertificate();
+            try {
+                CertTools.checkValidity(certificate, new Date(System.currentTimeMillis() + 1000 * 60 * 60));
+                fail("Certificate is not expired, test cannot continue.");
+            } catch (CertificateExpiredException e) {
+                // NOPMD: As it should be
+            }
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            KeyPair newKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg,
+                    new DEROctetString(this.nonce));
+            assertNotNull("Failed to generate a CMP renewal request", req);
+            CMPCertificate[] extraCert = getCMPCert(certificate);
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(),
+                    BouncyCastleProvider.PROVIDER_NAME);
+            assertNotNull(req);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
+            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            PKIMessage respObject = null;
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull(respObject);
+            final PKIBody body = respObject.getBody();
+            assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());
+        } finally {
+            certProfileSession.removeCertificateProfile(ADMIN, profileName);
+            endEntityProfileSession.removeEndEntityProfile(ADMIN, profileName);
+        }
+    }
+    
+    /**
+     * Since Key Update Requests are parsed slightly differently in client and RA mode, the previous update request is repeated in RA mode.
+     * 
+     * RFC4210 states in ch. 5.3.5:
+     * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateExpiredCertInRaMode() throws Exception {
+        final String profileName = "testUpdateExpiredCertInRaMode";
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAllowValidityOverride(true);
+        int certificateProfileId = certProfileSession.addCertificateProfile(ADMIN, profileName, certificateProfile);
+        EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(ADMIN, profileName, endEntityProfile);
+
+        this.cmpConfiguration.setRAMode(this.cmpAlias, true);
+        this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        //------------------ create the user and issue his first certificate -------------
+        final String password = "foo123";
+        //--------------- create the user and issue its certificate, expired -----------------
+        endEntityManagementSession.addUser(ADMIN, username, password, userDN.toString(), "rfc822name=" + username + "@primekey.se",
+                username + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
+                SecConst.TOKEN_SOFT_PEM, 0, this.caid);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), username, password,
+                new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
+        EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, username);
+        X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(ADMIN, endEntity, expiredReq,
+                X509ResponseMessage.class, signSession.fetchCertGenParams());
+        try {
+            CertTools.checkValidity(responseMessage.getCertificate(), new Date(System.currentTimeMillis() + 1000 * 60 * 60));
+            fail("Certificate is not expired, test cannot continue.");
+        } catch (CertificateExpiredException e) {
+            // NOPMD: As it should be
+        }
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        assertNotNull("Failed to generate a CMP renewal request", req);      
+        final String testAdminName = "cmpTestAdmin";
+        createUser(testAdminName, "CN="+testAdminName, "foo123");
+        final KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken admToken = createAdminToken(admkeys, testAdminName, "CN="+testAdminName);
+        Certificate admCert = getCertFromCredentials(admToken);
+        try {
+            CMPCertificate[] extraCert = getCMPCert(admCert);
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(),
+                    BouncyCastleProvider.PROVIDER_NAME);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            //send request and recieve response
+            byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
+            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            PKIMessage respObject = null;
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull("No respose object was received.", respObject);
+            final PKIBody body = respObject.getBody();
+            assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());
+        } finally {
+            removeAuthenticationToken(admToken, admCert, testAdminName);
+            certProfileSession.removeCertificateProfile(ADMIN, profileName);
+            endEntityProfileSession.removeEndEntityProfile(ADMIN, profileName);
+        }
+    }
+    
 }

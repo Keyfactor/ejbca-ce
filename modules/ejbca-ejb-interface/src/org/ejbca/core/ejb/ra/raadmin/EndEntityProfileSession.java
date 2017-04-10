@@ -31,14 +31,18 @@ public interface EndEntityProfileSession {
     static final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
 
     /**
-     * Adds a profile to the database.
+     * Adds a profile to the database. Will automatically set a valid ID. 
+     *
      * 
      * @param admin administrator performing task
      * @param profilename readable profile name
      * @param profile profile to be added
-     * @throws AuthorizationDeniedException 
+     * @return the ID of the end entity profile added. 
+     * @throws AuthorizationDeniedException if admin was not authorized to add end entity profiles
+     * @throws EndEntityProfileExistsException if a profile of the given name already exists
+     * 
      */
-    void addEndEntityProfile(AuthenticationToken admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException,
+    int addEndEntityProfile(AuthenticationToken admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException,
             AuthorizationDeniedException;
 
     /**
