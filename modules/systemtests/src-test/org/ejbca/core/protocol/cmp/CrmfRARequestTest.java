@@ -105,21 +105,21 @@ import org.junit.Test;
  */
 public class CrmfRARequestTest extends CmpTestCase {
 
-    final private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
+    private final static Logger log = Logger.getLogger(CrmfRARequestTest.class);
 
-    final private static String PBEPASSWORD = "password";
-    final private static String ISSUER_DN = "CN=TestCA";
-    final private int caid;
-    final private X509Certificate cacert;
-    final private CA testx509ca;
-    final private CmpConfiguration cmpConfiguration;
-    final static private String cmpAlias = "CrmfRARequestTestCmpConfigAlias";
+    private final static String PBEPASSWORD = "password";
+    private final static String ISSUER_DN = "CN=TestCA";
+    private final int caid;
+    private final X509Certificate cacert;
+    private final CA testx509ca;
+    private final CmpConfiguration cmpConfiguration;
+    private final static String cmpAlias = "CrmfRARequestTestCmpConfigAlias";
 
-    final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    final private CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    final private EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    final private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    final private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws Exception {

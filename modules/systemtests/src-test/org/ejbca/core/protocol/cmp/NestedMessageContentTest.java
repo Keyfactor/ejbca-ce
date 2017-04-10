@@ -78,6 +78,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -156,7 +157,7 @@ public class NestedMessageContentTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(NestedMessageContentTest.class);
     
-    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("NestedMessageContentTest");
+    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("NestedMessageContentTest");
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -308,12 +309,11 @@ public class NestedMessageContentTest extends CmpTestCase {
         AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
         Certificate admCert = getCertFromCredentials(adminToken);
         CMPCertificate[] cmpcert = getCMPCert(admCert);
-        crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(crmfMsg);
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
         int reqID = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        
-        
+              
         //------------------Creating NestedMessageContent
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -326,8 +326,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
         // TransactionId
         myPKIHeader.setTransactionID(new DEROctetString(transid));
-
-        
+      
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add( crmfMsg );
         DERSequence seq = new DERSequence(v);
@@ -339,7 +338,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         assertEquals("RACertPath is suppose to be '" + this.raCertsPath + "', instead it is '" + this.cmpConfiguration.getRACertPath(cmpAlias) + "'.", this.cmpConfiguration.getRACertPath(cmpAlias), this.raCertsPath);
         createRACertificate("raCrmfSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             
             
         assertNotNull("Failed to create myPKIHeader", myPKIHeader);
@@ -534,7 +533,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raSignerTest04", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
+        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
             
             
         assertNotNull("Failed to create myPKIHeader", myPKIHeader);
@@ -727,7 +726,8 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
+    public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException,
+            EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
         
         //------------------- Creating Certificate Request ---------------
@@ -769,7 +769,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         long nbTime = (new Date()).getTime() - 1000000L;
         createRACertificate("raExpiredSignerTest07", "foo123", this.raCertsPath, cmpAlias, raKeys, new Date(nbTime), new Date(), CMPTESTPROFILE, this.caid);
         Thread.sleep(5000);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
+        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
         
             
         assertNotNull("Failed to create myPKIHeader", myPKIHeader);
