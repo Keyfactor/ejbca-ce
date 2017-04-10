@@ -20,6 +20,11 @@ Log4j.jar is from apache, License is Apache.
 The file is used for logging throughout EJBCA.
 Version is 1.2.16.
 
+The following jars are from the Apache Http Components project, using the Apache license:
+httpclient-4.3.6.jar
+httpcore-4.3.3.jar
+httpmime-4.5.3.jar
+
 bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
 These jars are the cryptographic foundation in EJBCA.
 
