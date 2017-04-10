@@ -14,18 +14,17 @@
 package org.ejbca.ui.web.pub;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
@@ -38,11 +37,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests http pages of public webdist
@@ -76,116 +70,55 @@ public class WebdistHttpTest {
     
     @Test
     public void testJspCompile() throws Exception {
-        
+        log.trace(">testJspCompile");
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
         String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
-        String resourceName = "publicweb/webdist/certdist";
-        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dTestCA&level=0";
-
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 400, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
+        assertEquals("Response code", 200, WebTestUtils.sendGetRequest(httpReqPath + "/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dTestCA&level=0").getStatusLine().getStatusCode());
+        assertEquals("Response code", 400, WebTestUtils.sendGetRequest(httpReqPath + "/publicweb/webdist/certdist").getStatusLine().getStatusCode());
+        log.trace("<testJspCompile");
     }
 
     @Test
     public void testPublicWeb() throws Exception {
+        log.trace(">testPublicWeb");
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
         String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
-        String resourceName = "retrieve/ca_crls.jsp";
-        String resourceName1 = "retrieve/ca_certs.jsp";
-        String resourceName2 = "retrieve/latest_cert.jsp";
-        String resourceName3 = "retrieve/list_certs.jsp";
-        String resourceName4 = "retrieve/check_status.jsp";
-        String resourceName5 = "enrol/browser.jsp";
-        String resourceName6 = "enrol/server.jsp";
-        String resourceName7 = "enrol/keystore.jsp";
+        String[] resourceNames = {
+                "retrieve/ca_crls.jsp", "retrieve/ca_certs.jsp", "retrieve/latest_cert.jsp", "retrieve/list_certs.jsp", "retrieve/check_status.jsp",
+                "enrol/browser.jsp", "enrol/server.jsp", "enrol/keystore.jsp"
+        };
 
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName2));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName3));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName4));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName5));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName6));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
-        settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName7));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-
+        for (final String resourceName : resourceNames) {
+            assertEquals("Response code", 200, WebTestUtils.sendGetRequest(httpReqPath + '/' + resourceName).getStatusLine().getStatusCode());
+        }
+        log.trace("<testPublicWeb");
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testPublicWebChainDownload() throws Exception {
-    	
+        log.trace(">testPublicWebChainDownload");
         String httpReqPathPem = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=pem";        
         String httpReqPathJks = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=jks";
 
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPathPem));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-        String ctype = resp.getContentType();
-        assertTrue(StringUtils.startsWith(ctype, "application/octet-stream"));
-        List<NameValuePair> list = resp.getResponseHeaders();
-        Iterator<NameValuePair> iter = list.iterator();
-        boolean found = false;
-        while (iter.hasNext()) {
-        	NameValuePair pair = iter.next();
-        	log.debug(pair.getName() + ": " + pair.getValue());
-        	if (StringUtils.equalsIgnoreCase("Content-disposition", pair.getName())) {
-        		assertEquals("attachment; filename=\"TestCA-chain.pem\"", pair.getValue());
-        		found = true;
-        	}
-        }
-        assertTrue("Unable find TestCA in certificate chain or parsing the response wrong.", found);
+        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPathPem);
+        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
+        assertNotNull("No response body was sent", resp.getEntity());
+        String ctype = resp.getEntity().getContentType().getValue();
+        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
+        Header header = resp.getFirstHeader("Content-disposition");
+        assertNotNull("Missing Content-disposition header.", header);
+        assertEquals("attachment; filename=\"TestCA-chain.pem\"", header.getValue());
 
-        settings = new WebRequestSettings(new URL(httpReqPathJks));
-        resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-        ctype = resp.getContentType();
-        assertTrue(StringUtils.startsWith(ctype, "application/octet-stream"));
-        list = resp.getResponseHeaders();
-        iter = list.iterator();
-        found = false;
-        while (iter.hasNext()) {
-        	NameValuePair pair = (NameValuePair)iter.next();
-        	if (StringUtils.equalsIgnoreCase("Content-disposition", pair.getName())) {
-        		assertEquals("attachment; filename=\"TestCA-chain.jks\"", pair.getValue());
-        		found = true;
-        	}
-        }
-        assertTrue(found);
+        resp = WebTestUtils.sendGetRequest(httpReqPathJks);
+        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
+        assertNotNull("No response body was sent", resp.getEntity());
+        ctype = resp.getEntity().getContentType().getValue();
+        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
+        header = resp.getFirstHeader("Content-disposition");
+        assertNotNull("Missing Content-disposition header.", header);
+        assertEquals("attachment; filename=\"TestCA-chain.jks\"", header.getValue());
+        log.trace("<testPublicWebChainDownload");
     }
 }
