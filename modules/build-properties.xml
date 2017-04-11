@@ -186,6 +186,7 @@
 		<fileset dir="${ejbca.home}/lib/ext">
 			<include name="junit-*.jar"/>
 		</fileset>
+		<path refid="lib.hc.classpath"/>
 	</path>
 	
 	<path id="lib.easymock.classpath">
