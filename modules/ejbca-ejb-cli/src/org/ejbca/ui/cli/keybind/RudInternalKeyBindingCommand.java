@@ -51,9 +51,12 @@ public abstract class RudInternalKeyBindingCommand extends BaseInternalKeyBindin
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             getLogger().info("Operation failed: " + e.getMessage());
             throw new IllegalStateException(e);
+        } catch(Exception e) {
+            getLogger().info("Failure during operation: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
 
