@@ -95,6 +95,12 @@ public enum AuthorizationCache {
         cacheMap.clear();
     }
 
+    public void clearWhenStale(final int updateNumber) {
+        if (setUpdateNumberIfLower(updateNumber)) {
+            cacheMap.clear();
+        }
+    }
+
     /** Full reset should only be invoked by JUnit tests */
     protected void reset() {
         cacheMap.clear();
@@ -204,16 +210,22 @@ public enum AuthorizationCache {
         ret.timeOfLastUse = System.currentTimeMillis();
         return new AuthorizationResult(ret.accessRules, ret.updateNumber);
     }
+    
+    public int getLastUpdateNumber() {
+        return latestUpdateNumber.get();
+    }
 
     /** Non-blocking atomic update of the last known update number. */
-    private void setUpdateNumberIfLower(final int readUpdateNumber) {
+    private boolean setUpdateNumberIfLower(final int readUpdateNumber) {
         int current;
         while ((current = latestUpdateNumber.get()) < readUpdateNumber) {
             if (latestUpdateNumber.compareAndSet(current, readUpdateNumber)) {
                 if (log.isDebugEnabled()) {
                     log.debug("latestUpdateNumber is now " + readUpdateNumber + ".");
                 }
+                return true;
             }
         }
+        return false;
     }
 }
