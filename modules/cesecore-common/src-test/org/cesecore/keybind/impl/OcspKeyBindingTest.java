@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -132,7 +133,8 @@ public class OcspKeyBindingTest {
     private X509Certificate getCertificate(final int keyUsage, final List<Extension> extensions) throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException,
         SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        return CertTools.genSelfCertForPurpose("CN=OcspSinger", 365, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA256WithRSA", false, keyUsage, null, null, "BC", true, extensions);
+        return CertTools.genSelfCertForPurpose("CN=OcspSinger", 365, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA256WithRSA", false,
+                keyUsage, null, null, BouncyCastleProvider.PROVIDER_NAME, true, extensions);
     }
 
     /** @return An extended key usage extension with id_kp_OCSPSigning set. */
