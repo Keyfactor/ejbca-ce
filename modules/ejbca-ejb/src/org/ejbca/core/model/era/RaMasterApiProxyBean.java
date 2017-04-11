@@ -97,8 +97,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private void postConstruct() {
         final List<RaMasterApi> implementations = new ArrayList<>();
         try {
-            // Load peer implementation if available in this version of EJBCA
-            final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+            // Load downstream peer implementation if available in this version of EJBCA
+            final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerDownstreamImpl");
+            implementations.add((RaMasterApi) c.newInstance());
+        } catch (ClassNotFoundException e) {
+            log.debug("RaMasterApi over Peers is not available on this system.");
+        } catch (InstantiationException | IllegalAccessException e) {
+            log.warn("Failed to instantiate RaMasterApi over Peers: " + e.getMessage());
+        }
+        try {
+            // Load upstream peer implementation if available in this version of EJBCA
+            final Class<?> c = Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerUpstreamImpl");
             implementations.add((RaMasterApi) c.newInstance());
         } catch (ClassNotFoundException e) {
             log.debug("RaMasterApi over Peers is not available on this system.");
