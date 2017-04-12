@@ -143,10 +143,6 @@ public class InternalKeyBindingImportCertificateCommandTest {
         if (keyBindingId != null) {
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, keyBindingId);
         }
-        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(TESTCLASS_NAME);
-        if (cryptoTokenId != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-        }
         try {
             endEntityManagementSession.deleteUser(authenticationToken, TESTCLASS_NAME);
         } catch (Exception e) {
