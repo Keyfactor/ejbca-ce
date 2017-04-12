@@ -67,6 +67,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -101,16 +102,20 @@ public class UpgradeSessionBeanTest {
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
+    private GlobalUpgradeConfiguration gucBackup;
     
     @Before
     public void setUp() {
         cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
                 getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        gucBackup = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        log.info("******* " + gucBackup.getUpgradedFromVersion());
     }
     
     @After
     public void tearDown() throws Exception {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, cceConfigBackup);
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
     }
 
     /**
@@ -524,10 +529,14 @@ public class UpgradeSessionBeanTest {
     }
 
     /**
-     * Verifies the migration and removal of deprecated access rules. Roles with allowed / denied access to 
+     * Verifies the migration and removal of access rules. Roles with access to 
      * to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca should be granted
      * corresponding access in the new rule /ca_functionality/activate_ca.
-     * Old rules should be removed.
+     * 
+     * If upgrading from 6.6.0 or later, roles with access to /ra_functionality/view_end_entity should be granted
+     * access to /ca_functionality/view_certificate.
+     * 
+     * Old (deprecated) rules should be removed.
      * @throws AuthorizationDeniedException
      */
     @Test
@@ -535,48 +544,84 @@ public class UpgradeSessionBeanTest {
         final String roleName = TESTCLASS + " upgradeTo680MigrateRules";
         final String roleName2 = TESTCLASS + " upgradeTo680MigrateRules2";
         final String roleName3 = TESTCLASS + " upgradeTo680MigrateRules3";
+        final String roleName4 = TESTCLASS + " upgradeTo680MigrateRules4";
         final List<AccessRuleData> oldAccessRules = Arrays.asList(
                 new AccessRuleData(roleName, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName, UpgradeSessionBean.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true));
+                new AccessRuleData(roleName, UpgradeSessionBean.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
                 new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
                 new AccessRuleData(roleName2, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
         final List<AccessRuleData> oldAcccessRules3 = Arrays.asList(
                 new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
+                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName3, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true));
+        final List<AccessRuleData> oldAccessRules4 = Arrays.asList(
+                new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_DECLINE, true));
         upgradeTestSession.createRole(roleName, oldAccessRules, null);
         upgradeTestSession.createRole(roleName2, oldAccessRules2, null);
         upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
+        upgradeTestSession.createRole(roleName4, oldAccessRules4, null);
         int newRoleId = Role.ROLE_ID_UNASSIGNED;
         int newRoleId2 = Role.ROLE_ID_UNASSIGNED;
         int newRoleId3 = Role.ROLE_ID_UNASSIGNED;
+        int newRoleId4 = Role.ROLE_ID_UNASSIGNED;
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedFromVersion("6.7.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
             final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
             final Role newRole2 = roleSession.getRole(alwaysAllowtoken, null, roleName2);
             final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
-            assertNotNull(newRole);
-            assertNotNull(newRole2);
-            assertNotNull(newRole3);
+            final Role newRole4 = roleSession.getRole(alwaysAllowtoken, null, roleName4);
+            assertNotNull("Unable to retrieve role from databse", newRole);
+            assertNotNull("Unable to retrieve role from databse", newRole2);
+            assertNotNull("Unable to retrieve role from databse", newRole3);
+            assertNotNull("Unable to retrieve role from databse", newRole4);
             newRoleId = newRole.getRoleId();
             newRoleId2 = newRole2.getRoleId();
             newRoleId3 = newRole3.getRoleId();
-            // The old rule ROLE_PUBLICWEBUSER should have been removed during the upgrade
-            assertEquals(1, newRole.getAccessRules().size());
-            // /ca_functionality is allowed, /ca_functionality/activate_ca is denied. Expecting size of 2
-            assertEquals(2, newRole2.getAccessRules().size());
-            // Old rule remove, new rule added Expect size of 1
-            assertEquals(1, newRole3.getAccessRules().size());
+            newRoleId4 = newRole4.getRoleId();
+            // Expect normalization and minimization to do its work
+            assertEquals("Unexpected number of access rules", 1, newRole.getAccessRules().size());
+            assertEquals("Unexpected number of access rules", 2, newRole2.getAccessRules().size());
+            assertEquals("Unexpected number of access rules", 2, newRole3.getAccessRules().size());
+            assertEquals("Unexpected number of access rules", 2, newRole4.getAccessRules().size());
             // Expect the state of the deprecated rule to be unchanged in the replacing rule
-            assertEquals(Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals(Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole2.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
-            assertEquals(Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals("Unexpected access rule state", Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(),  AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole.getAccessRules(),  AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
+            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole2.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_ACTIVATECA));
+            assertEquals("Unexpected access rule state", Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
+            assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole4.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
         } finally {
+            //Clean up
             upgradeTestSession.deleteRole(roleName);
             upgradeTestSession.deleteRole(roleName2);
             upgradeTestSession.deleteRole(roleName3);
+            upgradeTestSession.deleteRole(roleName4);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId2);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId3);
+            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId4);
+        }
+        // Attemp with version < 6.6.0
+        upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
+
+        guc.setUpgradedFromVersion("6.5.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        try {
+            upgradeSession.upgrade(null, "6.7.0", false);
+            final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
+            assertNotNull("Unable to retrieve role from databse", newRole3);
+            newRoleId3 = newRole3.getRoleId();
+            //Since upgrade is performed from version < 6.6.0, rule state should NOT be migrated from REGULAR_VIEWENDENTITY to REGULAR_VIEWCERTIFICATE
+            assertEquals("Unexpected access rule state", Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
+        } finally {
+            upgradeTestSession.deleteRole(roleName3);
             roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId3);
         }
     }
