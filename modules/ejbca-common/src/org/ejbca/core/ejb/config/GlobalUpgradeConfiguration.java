@@ -31,6 +31,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     private static final String POST_UPGRADED_TO_VERSION = "postUpgradedToVersion";
     private static final String EEP_IN_CERTIFICATE_DATA = "endEntityProfileInCertificateData";
     private static final String POST_UPGRADE_STARTED = "postUpgradeStarted";
+    private static final String UPGRADED_FROM        = "upgradedFromVersion";
     
     public String getUpgradedToVersion() {
         return (String) data.get(UPGRADED_TO_VERSION);
@@ -38,7 +39,15 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
     public void setUpgradedToVersion(final String version) {
         data.put(UPGRADED_TO_VERSION, version);
     }
-
+    
+    /** Uncertain for version installed before 6.8.0 */
+    public String getUpgradedFromVersion() {
+        return (String) data.get(UPGRADED_FROM);
+    }
+    public void setUpgradedFromVersion(final String version) {
+        data.put(UPGRADED_FROM, version);
+    }
+    
     public String getPostUpgradedToVersion() {
         return (String) data.get(POST_UPGRADED_TO_VERSION);
     }

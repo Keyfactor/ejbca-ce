@@ -225,6 +225,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private void setLastUpgradedToVersion(final String version) {
         final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        if(guc.getUpgradedFromVersion() == null) {
+            String oldVersion = guc.getUpgradedToVersion();
+            if(oldVersion == null) {
+                guc.setUpgradedFromVersion(version);
+            } else {
+                guc.setUpgradedFromVersion(oldVersion);
+            }
+        }
         guc.setUpgradedToVersion(version);
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, guc);
@@ -233,6 +241,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    private String getUpgradedFromVersion() {
+        return getGlobalUpgradeConfiguration().getUpgradedFromVersion();
+    }
+    
     private void setLastPostUpgradedToVersion(final String version) {
         final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
         guc.setPostUpgradedToVersion(version);
@@ -310,12 +322,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
                 setLastPostUpgradedToVersion("6.8.0");
+            } else {
+                if(getLastUpgradedToVersion() != null) {
+                    setLastUpgradedToVersion(getLastUpgradedToVersion());
+                }
             }
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
         }
     }
-
+    
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean performUpgrade() {
@@ -342,6 +358,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
             if (log.isDebugEnabled()) {
@@ -1273,24 +1290,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Migrate one AdminGroupData at the time
         final AccessRulesMigrator accessRulesMigrator = new AccessRulesMigrator(allResourcesInUseOnThisInstallation);
         final Collection<AdminGroupData> adminGroupDatas = legacyRoleManagementSession.getAllRoles();
+        final boolean isInstalledOn660OrLater = !isLesserThan(getUpgradedFromVersion(), "6.6.0");
         for (final AdminGroupData adminGroupData : adminGroupDatas) {
             // Convert AdminGroupData and linked AccessRuleDatas to RoleData
             final String roleName = adminGroupData.getRoleName();
             final Collection<AccessRuleData> oldAccessRules = adminGroupData.getAccessRules().values();
-            final HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
-            // Migrate deprecated rules.
-            // If Role had access allow or deny to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
-            // allow/deny access to new rule /ca_functionality/activate_ca
-            Boolean isAllowedActivateCa = AccessRulesHelper.hasAccessToResource(newAccessRules, REGULAR_ACTIVATECA_OLD);
-            if(isAllowedActivateCa) {
-                newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_ALLOW);
-            } else {
-                newAccessRules.put(AccessRulesConstants.REGULAR_ACTIVATECA, Role.STATE_DENY);
-            }
-            //Remove deprecated rules
-            newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD));
-            newAccessRules.remove(AccessRulesHelper.normalizeResource(ROLE_PUBLICWEBUSER));
-            newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD));
+            HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
+            //Migrate rules & rule states changed in 6.8.0.
+            newAccessRules = migrate680Rules(newAccessRules, isInstalledOn660OrLater);
             Role role = new Role(null, roleName, newAccessRules);
             // Keep AdminGroupData.primaryKey as RoleData.roleId so HardTokenIssuerData.adminGroupId still works during upgrade
             // (and use direct DB access since the EJB API wont allow us to assign roleId)
@@ -1299,6 +1306,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             if (roleDataSession.getRole(roleId)!=null) {
                 log.info("RoleData '" + role.getRoleName() + "' (" + role.getRoleId() + ") already exists. Will perform merge old role members into this role and overwrite configured access rules.");
             }
+            role.normalizeAccessRules();
+            role.minimizeAccessRules();
             roleDataSession.persistRole(role);
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
@@ -1425,6 +1434,35 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.info("Post upgrade to 6.8.0 complete.");
         return true;
+    }
+    
+    /**
+     * Since EJBCA 6.8.0, some rules are either removed or have a changed scope.
+     * If Role had access to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
+     * grant access to new rule /ca_functionality/activate_ca
+     * 
+     * If upgrading from 6.6.0 or later, grant access to /ca_functionality/view_certificate for roles with access 
+     * to ra_functionality/view_end_entity
+     * @param accessRules HashMap of access rules to migrate
+     * @param isInstalledOn660OrLater if upgrading from 6.6.0 or later
+     * @return HashMap with migrated rule states
+     */
+    private HashMap<String, Boolean> migrate680Rules(HashMap<String, Boolean> newAccessRules, boolean isInstalledOn660OrLater) {
+        Boolean isAllowedActivateCa = AccessRulesHelper.hasAccessToResource(newAccessRules, REGULAR_ACTIVATECA_OLD);
+        Boolean isAllowedViewEndEntity = AccessRulesHelper.hasAccessToResource(newAccessRules, AccessRulesConstants.REGULAR_VIEWENDENTITY);
+        if(isAllowedActivateCa) {
+            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_ACTIVATECA), Role.STATE_ALLOW);
+        } else {
+            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_ACTIVATECA), Role.STATE_DENY);
+        }
+        //Remove deprecated rules
+        newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_CABASICFUNCTIONS_OLD));
+        newAccessRules.remove(AccessRulesHelper.normalizeResource(ROLE_PUBLICWEBUSER));
+        newAccessRules.remove(AccessRulesHelper.normalizeResource(REGULAR_ACTIVATECA_OLD));
+        if(isInstalledOn660OrLater && isAllowedViewEndEntity) {
+            newAccessRules.put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_VIEWCERTIFICATE), Role.STATE_ALLOW);
+        }
+        return newAccessRules;
     }
 
     /** Add the previously global configuration configured approval notification */
