@@ -392,7 +392,14 @@ public class CmpMessageHelper {
         }
         resp.setSender(pkiHeader.getRecipient());
         resp.setRecipient(pkiHeader.getSender());
-        resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));  
+        /* 
+         * Transaction IDs are not always included in requests. From RFC 4210:
+         * For transactions that consist of a single request/response pair, the rules are as follows.
+         * A client MAY populate the transactionID field of the request. (...)
+         */
+        if (pkiHeader.getTransactionID() != null) {
+            resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
+        }
         resp.setFailInfo(failInfo);
         resp.setFailText(failText);
         try {
