@@ -206,7 +206,7 @@ public class RaAccessBean implements Serializable {
     }
     
     public boolean isAuthorizedToSearchCerts() {
-        return isAuthorized(AccessRulesConstants.REGULAR_VIEWENDENTITY); // TODO perhaps a different access rule for certs?
+        return isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
     }
     
     public boolean isAuthorizedToSearchEndEntities() {
