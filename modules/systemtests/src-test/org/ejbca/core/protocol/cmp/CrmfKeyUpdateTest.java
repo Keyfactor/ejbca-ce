@@ -528,7 +528,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+        String expectedErrMsg = "Error. Received a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
@@ -1049,7 +1049,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Cannot find a SubjectDN in the request";
+        final String expectedErrMsg = "Error. Received a CMP KeyUpdateRequest for a non-existing end entity";
         assertEquals(expectedErrMsg, errMsg);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -1369,7 +1369,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, CertTools.getSubjectDN(cacert), pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
