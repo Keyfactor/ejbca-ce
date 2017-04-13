@@ -39,6 +39,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -50,6 +51,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
@@ -238,19 +240,21 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                  * RFC4210 states in ch. 5.3.5:
                  * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
                  */
-                
-                if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_REVOKED) {
-                    String errorMessage = "End entity with username " + endEntityInformation.getUsername() + " with subject DN " + subjectDN + " is revoked, unable to perform key update.";
+                X509Certificate latestCertificate = certStoreSession.findLatestX509CertificateBySubject(endEntityInformation.getDN());
+                if (certStoreSession.getStatus(CertTools.getIssuerDN(latestCertificate), CertTools.getSerialNumber(latestCertificate))
+                        .equals(CertificateStatus.REVOKED)) {
+                    String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN " + subjectDN
+                            + " is revoked. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }
                     return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errorMessage);
                 }
                 try {
-                    certStoreSession.findLatestX509CertificateBySubject(endEntityInformation.getDN()).checkValidity();
+                    latestCertificate.checkValidity();
                 } catch (CertificateExpiredException e) {
-                    String errorMessage = "Certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
-                            + subjectDN + " is expired, unable to perform key update.";
+                    String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
+                            + subjectDN + " is expired. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
                     }

@@ -21,7 +21,6 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.Signature;
@@ -40,7 +39,6 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
@@ -1371,7 +1369,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, CertTools.getSubjectDN(cacert), pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
-        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1406,6 +1403,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("<test14KeyUpdateRequestOK");
         }
     }
+
 
     
     /**
@@ -1471,16 +1469,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     }
 
-    private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
-        ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
-        try {
-            ASN1Primitive pcert = ins.readObject();
-            org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
-            CMPCertificate[] res = {new CMPCertificate(c)};
-            return res;
-        } finally {
-            ins.close();
-        }
+    private static CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException {
+        return new CMPCertificate[] { new CMPCertificate(org.bouncycastle.asn1.x509.Certificate.getInstance(cert.getEncoded())) };
     }
 
     private EndEntityInformation createUser(String userName, String subjectDN, String password) throws AuthorizationDeniedException, EndEntityProfileValidationException, 
@@ -1630,21 +1620,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             CMPCertificate[] extraCert = getCMPCert(admCert);
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(),
                     BouncyCastleProvider.PROVIDER_NAME);
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = req.toASN1Primitive().getEncoded();
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            PKIMessage respObject = null;
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            try {
-                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-            } finally {
-                asn1InputStream.close();
-            }
+            PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
             final PKIBody body = respObject.getBody();
             assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());
@@ -1654,7 +1635,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
     
     /**
-     * Since Key Update Requests are parsed slightly differently in client and RA mode, the previous update request is repeated in RA mode.
+     * Test updating an expired certificate. Should fail:
      * 
      * RFC4210 states in ch. 5.3.5:
      * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
@@ -1702,21 +1683,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(),
                     BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(req);
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = req.toASN1Primitive().getEncoded();
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            PKIMessage respObject = null;
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            try {
-                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-            } finally {
-                asn1InputStream.close();
-            }
+            PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
             final PKIBody body = respObject.getBody();
             assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());
@@ -1727,7 +1699,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
     
     /**
-     * Since Key Update Requests are parsed slightly differently in client and RA mode, the previous update request is repeated in RA mode.
+     * Tests updating an expired certificate, but this time in RA mode. 
      * 
      * RFC4210 states in ch. 5.3.5:
      * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
@@ -1780,21 +1752,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             CMPCertificate[] extraCert = getCMPCert(admCert);
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(),
                     BouncyCastleProvider.PROVIDER_NAME);
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = req.toASN1Primitive().getEncoded();
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
             checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            PKIMessage respObject = null;
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            try {
-                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-            } finally {
-                asn1InputStream.close();
-            }
+            PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
             final PKIBody body = respObject.getBody();
             assertEquals("Response body was of incorrect type.", CmpPKIBodyConstants.ERRORMESSAGE, body.getType());

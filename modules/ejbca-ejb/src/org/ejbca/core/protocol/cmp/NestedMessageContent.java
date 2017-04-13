@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -34,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -103,16 +101,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
 
     public PKIMessage getPKIMessage() {
         if (getMessage() == null) {
-            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(pkimsgbytes));
-            try {
-                try {
-                    setMessage(PKIMessage.getInstance(inputStream.readObject()));
-                } finally {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                log.error("Error decoding bytes for PKIMessage: ", e);
-            }
+            setMessage(PKIMessage.getInstance(pkimsgbytes));
         }
         return getMessage();
     }
@@ -142,7 +131,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                 log.info(errorMessage);
             }
 
-            for( X509Certificate cert: racerts ) {
+            for (X509Certificate cert : racerts) {
                 if(log.isDebugEnabled()) {
                     log.debug("Trying to verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "'");
                 }
