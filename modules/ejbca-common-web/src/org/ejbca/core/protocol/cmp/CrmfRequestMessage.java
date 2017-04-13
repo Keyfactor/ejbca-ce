@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,7 +31,6 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
@@ -140,18 +138,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     public PKIMessage getPKIMessage() {
         if (getMessage() == null) {
-            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(pkimsgbytes));
-            try {
-                setMessage(PKIMessage.getInstance(inputStream.readObject()));
-            } catch (IOException e) {
-                log.error("Error decoding bytes for PKIMessage: ", e);
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                   throw new IllegalStateException(e);
-                }
-            }
+            setMessage(PKIMessage.getInstance(pkimsgbytes));
         }
         return getMessage();
     }
