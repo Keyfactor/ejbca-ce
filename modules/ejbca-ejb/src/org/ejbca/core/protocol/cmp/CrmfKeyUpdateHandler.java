@@ -234,13 +234,13 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 }
             
                 /*
-                 * Check the status of the end entity, not just of that of the extraCertificate.
+                 * Check the status of the certificate sent as extraCertificate
                  * 
                  * RFC4210 states in ch. 5.3.5:
                  * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
                  */
                 if(certStoreSession.isRevoked(CertTools.getIssuerDN(oldCert), CertTools.getSerialNumber(oldCert))) {
-                    String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN " + subjectDN
+                    String errorMessage = "Certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN " + subjectDN
                             + " is revoked. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
@@ -250,7 +250,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 try {
                     oldCert.checkValidity();
                 } catch (CertificateExpiredException e) {
-                    String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
+                    String errorMessage = "Certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
                             + subjectDN + " is expired. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(errorMessage);
