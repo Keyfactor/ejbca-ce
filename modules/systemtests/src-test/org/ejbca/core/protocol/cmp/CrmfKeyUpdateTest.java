@@ -1606,7 +1606,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final Certificate certificate;
         certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
-        endEntityManagementSession.revokeUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        endEntityManagementSession.revokeCert(ADMIN, CertTools.getSerialNumber(certificate), new Date(), CertTools.getIssuerDN(certificate),
+                RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, false);
         assertTrue("Failed to revoke the test certificate", certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));      
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
