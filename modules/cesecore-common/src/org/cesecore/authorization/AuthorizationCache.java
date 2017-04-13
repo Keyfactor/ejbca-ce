@@ -215,7 +215,10 @@ public enum AuthorizationCache {
         return latestUpdateNumber.get();
     }
 
-    /** Non-blocking atomic update of the last known update number. */
+    /** 
+     * Non-blocking atomic update of the last known update number.
+     * @return true if the number was updated, false if it was already set
+     */
     private boolean setUpdateNumberIfLower(final int readUpdateNumber) {
         int current;
         while ((current = latestUpdateNumber.get()) < readUpdateNumber) {
