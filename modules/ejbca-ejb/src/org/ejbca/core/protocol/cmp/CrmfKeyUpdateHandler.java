@@ -39,7 +39,6 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -240,9 +239,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                  * RFC4210 states in ch. 5.3.5:
                  * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
                  */
-                X509Certificate latestCertificate = certStoreSession.findLatestX509CertificateBySubject(endEntityInformation.getDN());
-                if (certStoreSession.getStatus(CertTools.getIssuerDN(latestCertificate), CertTools.getSerialNumber(latestCertificate))
-                        .equals(CertificateStatus.REVOKED)) {
+                if(certStoreSession.isRevoked(CertTools.getIssuerDN(oldCert), CertTools.getSerialNumber(oldCert))) {
                     String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN " + subjectDN
                             + " is revoked. Unable to perform key update.";
                     if (LOG.isDebugEnabled()) {
@@ -251,7 +248,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.BAD_REQUEST, errorMessage);
                 }
                 try {
-                    latestCertificate.checkValidity();
+                    oldCert.checkValidity();
                 } catch (CertificateExpiredException e) {
                     String errorMessage = "Latest issued certificate for end entity with username " + endEntityInformation.getUsername() + " with subject DN "
                             + subjectDN + " is expired. Unable to perform key update.";
