@@ -81,12 +81,12 @@
      noparameter = false;
      try {
     	 ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+	     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
+	     tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
+	     rabean.loadTokenCertificates(tokensn);
      } catch (AuthorizationDeniedException e) {
     	 notauthorized = true;
      }
-     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-     tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
-     rabean.loadTokenCertificates(tokensn);
   }
 
   if( request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null){
@@ -94,11 +94,11 @@
      noparameter = false;
      try {
     	 ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+	     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
+	     rabean.loadCertificates(username);
      } catch (AuthorizationDeniedException e) {
     	 notauthorized = true;
      }
-     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-     rabean.loadCertificates(username);
   }
 
   if( request.getParameter(CERTSERNO_PARAMETER ) != null){     
@@ -115,14 +115,14 @@
   if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
 		 certificateserno = request.getParameter(SERNO_PARAMETER);
 		 caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+		 notauthorized = false;
+	     noparameter = false;
 		 try {
 			 ejbcawebbean.isAuthorized(StandardRules.CAVIEW.resource(), StandardRules.CAACCESS.resource() + caid);
 			 rabean.loadCertificates(new BigInteger(certificateserno,16), caid); 
 		 } catch (AuthorizationDeniedException e) {
 		     notauthorized = true;
 		 }
-		 notauthorized = false;
-	     noparameter = false;
   } else if( request.getParameter(CACERT_PARAMETER ) != null){
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
