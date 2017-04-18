@@ -51,6 +51,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.XmlSerializer;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -617,7 +618,9 @@ public class AuditorManagedBean implements Serializable {
         auditExporter.writeField(AuditLogEntry.FIELD_CUSTOM_ID, auditRecordData.getCustomId());
         auditExporter.writeField(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, auditRecordData.getSearchDetail1());
         auditExporter.writeField(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, auditRecordData.getSearchDetail2());
-        auditExporter.writeField(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, auditRecordData.getAdditionalDetails());
+        final Map<String,Object> additionalDetails = XmlSerializer.decode(auditRecordData.getAdditionalDetails());
+        final String additionalDetailsEncoded = XmlSerializer.encodeWithoutBase64(additionalDetails);
+        auditExporter.writeField(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, additionalDetailsEncoded);
         auditExporter.writeField("rowProtection", auditRecordData.getRowProtection());
         auditExporter.writeEndObject();
     }
