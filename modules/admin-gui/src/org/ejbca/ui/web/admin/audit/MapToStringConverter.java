@@ -29,26 +29,29 @@ public class MapToStringConverter implements Converter {
 		return value;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+    @Override
 	public String getAsString(final FacesContext facesContext, final UIComponent uiComponent, final Object value) {
-		if (value instanceof String) {
-			return (String)value;
-		}
-		final StringBuilder sb = new StringBuilder();
-		@SuppressWarnings("unchecked")
-        final Map<Object,Object> map = (Map<Object, Object>) value;
-		if (map.size() == 1 && map.containsKey("msg")) {
-		    final String ret = (String) map.get("msg");
-		    if (ret != null) {
-		        return ret;
-		    }
-		}
-		for (final Object key : map.keySet()) {
-			if (sb.length()!=0) {
-				sb.append("; ");
-			}
-			sb.append(key).append('=').append(map.get(key));
-		}
-		return sb.toString();
+	    if (value instanceof String) {
+            return (String)value;
+        }
+		return getAsString((Map<String, Object>)value);
 	}
+	
+    public static String getAsString(final Map<String,Object> map) {
+        final StringBuilder sb = new StringBuilder();
+        if (map.size() == 1 && map.containsKey("msg")) {
+            final String ret = (String) map.get("msg");
+            if (ret != null) {
+                return ret;
+            }
+        }
+        for (final Object key : map.keySet()) {
+            if (sb.length()!=0) {
+                sb.append("; ");
+            }
+            sb.append(key).append('=').append(map.get(key));
+        }
+        return sb.toString();
+    }
 }

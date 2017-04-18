@@ -279,7 +279,7 @@ org.cesecore.authorization.control.AuditLogRules
 				<h:outputText value="#{auditor.nameFromColumn['additionalDetails']}"/>
 			</f:facet>
 			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}audit/search.jsf#" styleClass="expandOnClick">
-				<h:outputText value="#{auditLogEntry.mapAdditionalDetails}" title="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
+				<h:outputText value="#{auditLogEntry.mapAdditionalDetails}" title="#{auditor.mapToString(auditLogEntry.mapAdditionalDetails)}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 			</h:outputLink>
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] <= 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 		</h:column>
