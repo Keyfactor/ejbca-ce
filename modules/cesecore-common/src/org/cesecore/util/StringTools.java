@@ -116,6 +116,8 @@ public final class StringTools {
     private static final CharSet stripXSS = new CharSet(new char[]{'<', '>'});
     // Characters that are not allowed in strings that may be used in db queries
     private static final CharSet stripSqlChars = new CharSet(new char[]{ '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
+    // Characters that are not allowed in strings that may be used in db queries, assuming single quote is escaped
+    private static final CharSet stripSqlCharsSingleQuoteEscaped = new CharSet(new char[]{ '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in filenames
     private static final CharSet stripFilenameChars = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', ';', '|', '\"', '<', '>' });
     // Characters that are allowed to escape in strings.
@@ -213,6 +215,18 @@ public final class StringTools {
      */
     public static  Set<String> hasSqlStripChars(final String str) {
     	return hasStripChars(str, stripSqlChars);
+    }
+    
+    /**
+     * Checks if a string contains characters that would be potentially dangerous to use in a non-parameterized SQL query,
+     * assuming the the '-char is properly handled (escaped).
+     * 
+     * @param str the string whose contents would be stripped.
+     * @return the offending characters with descriptions, or an empty set otherwise.
+     * @see #strip
+     */
+    public static  Set<String> hasSqlStripCharsAssumingSingleQuoteEscape(final String str) {
+        return hasStripChars(str, stripSqlCharsSingleQuoteEscaped);
     }
     
     /**
