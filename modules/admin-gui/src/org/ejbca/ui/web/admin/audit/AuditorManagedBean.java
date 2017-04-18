@@ -548,7 +548,8 @@ public class AuditorManagedBean implements Serializable {
 
     public void downloadResults() {
         try {
-            downloadResults(exportToByteArray(), "text/xml", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
+            // text/xml doesn't work since it gets filtered and all non-ASCII bytes get encoded as entities as if they were Latin-1 (ECA-5831)
+            downloadResults(exportToByteArray(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
         } catch (IOException e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
