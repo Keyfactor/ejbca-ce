@@ -47,13 +47,16 @@ public class XmlSerializer {
 		return ret;
 	}
 	
-	public static String encode(final Map<String, Object> input) {
+	private static String encodeInternal(final Map<String, Object> input, final boolean encodeNonPrintableWithBase64) {
 		String ret = null;
 		if (input != null) {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final XMLEncoder encoder = new XMLEncoder(baos);
-			final LinkedHashMap<Object,Object> linkedHashMap = new Base64PutHashMap();
-			linkedHashMap.putAll(input);
+			final LinkedHashMap<Object,Object> linkedHashMap = encodeNonPrintableWithBase64 ? new Base64PutHashMap() : new LinkedHashMap<>();
+			// Copy one by one through the get() method, so the values get transformed if needed
+			for (String key : input.keySet()) {
+                linkedHashMap.put(key, input.get(key));
+            }
 			encoder.writeObject(linkedHashMap);
 			encoder.close();
 			try {
@@ -65,4 +68,18 @@ public class XmlSerializer {
 		}
 		return ret;
 	}
+	
+	/**
+	 * Serializes a map using Java's XMLEncoder. Non ASCII printable characters are Base64 encoded.
+	 */
+	public static String encode(final Map<String, Object> input) {
+        return encodeInternal(input, true);
+    }
+	
+	/**
+     * Serializes a map using Java's XMLEncoder. No Base64 encoding is done of non-printable characters.
+     */
+	public static String encodeWithoutBase64(final Map<String, Object> input) {
+        return encodeInternal(input, false);
+    }
 }
