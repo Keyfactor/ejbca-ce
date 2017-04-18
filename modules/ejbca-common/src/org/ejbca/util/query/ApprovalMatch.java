@@ -10,28 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * LogMatch.java
- *
- * Created on den 28 aug 2002, 23:20
- */
 package org.ejbca.util.query;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
- * A class used by Query class to build a query for ejbca log module. Inherits BasicMatch.  Main
- * function is getQueryString which returns a fragment of SQL statment.
+ * A class used by Query class to build a custom query for EJBCA approval module.
  *
  * @version $Id$
- *
- * @see org.ejbca.util.query.BasicMatch
- * @see org.ejbca.util.query.TimeMatch
- * @see org.ejbca.util.query.ApprovalMatch
  */
 public class ApprovalMatch extends BasicMatch {
-    // Public Constants
 
     private static final long serialVersionUID = -4891299802473333801L;
+
     /** Match with the id column (the primary key), for looking up a particular approval */
     public static final int MATCH_WITH_UNIQUEID                      = 0;
     /** Match with the computed id for the approval, for searching for identical approvals */
@@ -44,82 +35,61 @@ public class ApprovalMatch extends BasicMatch {
     public static final int MATCH_WITH_STATUS                        = 7; 
     public static final int MATCH_WITH_REMAININGAPPROVALS            = 8;
 
-    
+    /** These refer to column names in the database and are used for native SQL querying. */
+    private static final String[] MATCH_WITH_SQLNAMES = {
+        "id", "approvalId", "approvalType", "endEntityProfileId", "cAId", "reqAdminCertIssuerDn", "reqAdminCertSn", "status", "remainingApprovals"
+    };
 
-
-    // Private Constants. These refer to column names in the database and are used for native SQL querying.
-    private static final String[] MATCH_WITH_SQLNAMES = { "id", "approvalId", "approvalType", "endEntityProfileId", "cAId", "reqAdminCertIssuerDn",
-            "reqAdminCertSn", "status", "remainingApprovals" }; // Represents the column names in approvals table.   
-    
-    // Public methods.
+    private int matchwith;
+    private int matchtype;
+    private String matchvalue;
 
     /**
-     * Creates a new instance of LogMatch.
+     * Creates a new instance.
      *
-     * @param matchwith determines which field i logentry table to match with.
+     * @param matchwith determines which field in approval table to match with.
      * @param matchtype determines how to match the field..
      * @param matchvalue the value to match with.
      *
-     * @throws NumberFormatException if matchvalue constains illegal numbervalue when matching
-     *         number field.
+     * @throws NumberFormatException if matchvalue contains illegal numbervalue when matching number field.
      */
-    public ApprovalMatch(int matchwith, int matchtype, String matchvalue)
+    public ApprovalMatch(final int matchwith, final int matchtype, final String matchvalue)
         throws NumberFormatException {
         this.matchwith = matchwith;
         this.matchtype = matchtype;
         this.matchvalue = matchvalue;
-
-        // The row below does not do anthing but check that matchvalue contains
+        // The row below does not do anything but check that matchvalue contains
         // a legal number value when matching number field. See @throws clause.
         if (matchwith != MATCH_WITH_REQUESTADMINCERTISSUERDN &&
-        	matchwith != MATCH_WITH_REQUESTADMINCERTSERIALNUMBER){
+            matchwith != MATCH_WITH_REQUESTADMINCERTSERIALNUMBER){
             Integer.valueOf(matchvalue);
         }
     }
 
-    /**
-     * Returns a SQL statement fragment from the given data.
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public String getQueryString() {
         String returnval = "";
-
+        final String matchvalue = super.escapeSql(this.matchvalue);
         if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-			// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
-			// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
-			String stringChar = "'";
-	        if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
-				stringChar = "";
-	        }
-			returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
+            // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+            // like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
+            String stringChar = "'";
+            if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
+                stringChar = "";
+            }
+            returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue.trim() + stringChar;
         }
-
         if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
             returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
         }
-
         if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
             returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '%" + matchvalue + "%'";
         }
-
         return returnval;
     }
 
-    // getQueryString
-
-    /**
-     * Checks if query data is ok.
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public boolean isLegalQuery() {
-        return !(matchvalue.trim().equals(""));
+        return StringUtils.isNotBlank(matchvalue);
     }
-
-    // Private Methods
-    // Private Fields.
-    private int matchwith;
-    private int matchtype;
-    private String matchvalue;
 }

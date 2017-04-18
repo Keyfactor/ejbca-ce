@@ -10,34 +10,22 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * TimeMatch.java
- *
- * Created on den 20 juli 2002, 23:20
- */
 package org.ejbca.util.query;
 
 import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-
 /**
- * A class used by Query class to build a query for ejbca log or ra modules. Inherits BasicMatch.
- * Main function is getQueryString which returns a fragment of SQL statment.
+ * A class used by Query class to build a query for EJBCA RA modules.
  *
- * @author TomSelleck
  * @version $Id$
- *
- * @see org.ejbca.util.query.BasicMatch
- * @see org.ejbca.util.query.UserMatch
- * @see org.ejbca.util.query.LogMatch
  */
 public class TimeMatch extends BasicMatch {
+
     private static final long serialVersionUID = 555503673432162539L;
     private static final Logger log = Logger.getLogger(TimeMatch.class);
-    // Public Constants
+
 	/** UserMatch Specific Constant */	
     public static final int MATCH_WITH_TIMECREATED = 0;
     /** UserMatch Specific Constant */
@@ -48,18 +36,21 @@ public class TimeMatch extends BasicMatch {
     /** ApprovalMatch Specific Constant */
     public static final int MATCH_WITH_EXPIRETIME = 1;
 
-    // Private Constants.
+    /** Represents the column names in (log,) UserData and ApprovalData tables. */
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "time", "time", "timeCreated", "timeModified","requestDate","expireDate"
-    }; // Represents the column names in log/ra tables.
+        "", "", "timeCreated", "timeModified", "requestDate", "expireDate"
+    };
 
-    // Public methods.
+    private final int matchwith;
+    private final int type;
+    private final Date startdate;
+    private final Date enddate;
 
     /**
-     * Creates a new instance of TimeMatch. Construtor should only be used in ra user queries.
+     * Creates a new instance of TimeMatch. Constructor should only be used in ra user queries.
      *
      * @param type uses Query class constants to determine if it's a log query or ra query.
-     * @param matchwith should be one of MATCH_WITH contants to determine with field to search.
+     * @param matchwith should be one of MATCH_WITH constants to determine with field to search.
      *        Only used in ra user queries.
      * @param startdate gives a startdate for the query, null if not needed.
      * @param enddate gives a enddate for the query, null if not needed.
@@ -72,62 +63,42 @@ public class TimeMatch extends BasicMatch {
     }
 
     /**
-     * Creates a new instance of TimeMatch. Constructor should only be used in log queries.
+     * Creates a new instance of TimeMatch.
      *
      * @param type uses Query class constants to determine if it's a log query or ra query.
      * @param startdate gives a startdate for the query, null if not needed.
      * @param enddate gives a enddate for the query, null if not needed.
      */
     public TimeMatch(int type, Date startdate, Date enddate) {
-        this.type = type;
-        this.matchwith = MATCH_WITH_TIMECREATED;
-        this.startdate = startdate;
-        this.enddate = enddate;
+        this(type, MATCH_WITH_TIMECREATED, startdate, enddate);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public String getQueryString() {
         String returnval = "( ";
-
         if (startdate != null) {
-        	log.debug("Making match with startdate: "+startdate);
+            if (log.isDebugEnabled()) {
+                log.debug("Making match with startdate: "+startdate);
+            }
             returnval += (MATCH_WITH_SQLNAMES[(type * 2) + matchwith] + " >= " +
             startdate.getTime() + " ");
-
             if (enddate != null) {
                 returnval += " AND ";
             }
         }
-
         if (enddate != null) {
-        	log.debug("Making match with enddate: "+enddate);
+            if (log.isDebugEnabled()) {
+                log.debug("Making match with enddate: "+enddate);
+            }
             returnval += (MATCH_WITH_SQLNAMES[(type * 2) + matchwith] + " <= " + enddate.getTime() +
             " ");
         }
-
         returnval += " )";
-
         return returnval;
     }
 
-    // getQueryString
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public boolean isLegalQuery() {
-        return !((startdate == null) && (enddate == null));
+        return startdate != null || enddate != null;
     }
-
-    // Private Fields.
-    final private int matchwith;
-    final private int type;
-    final private Date startdate;
-    final private Date enddate;
 }

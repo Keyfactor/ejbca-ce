@@ -10,27 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * UserMatch.java
- *
- * Created on den 20 juli 2002, 23:20
- */
 package org.ejbca.util.query;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
- * A class used by Query class to build a query for ejbca ra module. Inherits BasicMatch.  Main
- * function is getQueryString which returns a fragment of SQL statment.
+ * A class used by Query class to build a query for EJBCA RA module.
  *
- * @author TomSelleck
  * @version $Id$
- *
- * @see org.ejbca.util.query.BasicMatch
- * @see org.ejbca.util.query.TimeMatch
- * @see org.ejbca.util.query.LogMatch
  */
 public class UserMatch extends BasicMatch {
-    // Public Constants
 
     private static final long serialVersionUID = 5458563135026714888L;
 
@@ -70,13 +59,9 @@ public class UserMatch extends BasicMatch {
     public static final int MATCH_WITH_UPN                 = 208;
     public static final int MATCH_WITH_GUID                = 209;
 
-
-
-    // Private Constants.
-    static final String[] MATCH_WITH_SQLNAMES = {"username", "subjectEmail", "status"
-                                                         , "endEntityProfileId", "certificateProfileId"
-                                                         , "cAId", "tokenType"}; 
-                                                         
+    static final String[] MATCH_WITH_SQLNAMES = {
+        "username", "subjectEmail", "status", "endEntityProfileId", "certificateProfileId", "cAId", "tokenType"
+    };
 
     // Represents the column names in ra userdata table.
     private static final String MATCH_WITH_USERNAMESTRING = "username";
@@ -91,122 +76,83 @@ public class UserMatch extends BasicMatch {
         "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
         "EDIPARTYNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
     };
-    // Public methods.
 
-    /**
-     * Creates a new instance of UserMatch.
-     *
-     * @param matchwith determines which field i userdata table to match with.
-     * @param matchtype determines how to match the field. SubjectDN fields can only be matched
-     *        with 'begins with'.
-     * @param matchvalue the value to match with.
-     *
-     * @throws NumberFormatException if matchvalue contains illegal numbervalue when matching
-     *         number field.
-     */
-    public UserMatch(int matchwith, int matchtype, String matchvalue)
-        throws NumberFormatException {
-        this.matchwith = matchwith;
-        this.matchtype = matchtype;
-        this.matchvalue = matchvalue;
-
-        if ((matchwith >= MATCH_WITH_STATUS) && (matchwith <= MATCH_WITH_CA)) {
-            Integer.valueOf(matchvalue);
-        }
-    }
-
-    /**
-     * Returns a SQL statement fragment from the given data.
-     *
-     * @return sql string
-     */
-    public String getQueryString() {
-        String returnval = "";
-
-        if (isSubjectDNMatch()) {
-        	// Ignore MATCH_TYPE_EQUALS.
-        	returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
-        	MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] + matchvalue + "%'";
-        }else{
-        	if (isSubjectAltNameMatch()){
-        		returnval = MATCH_WITH_SUBJECTALTNAME + " LIKE '%" +
-        		MATCH_WITH_SUBJECTALTNAME_NAMES[matchwith - 200] + matchvalue + "%'";        	
-        	}else {
-        		if(matchwith == MATCH_WITH_DN){
-        			if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        				returnval = MATCH_WITH_SUBJECTDN + " = '" + matchvalue + "'";
-        			}
-
-        			if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        				returnval = MATCH_WITH_SUBJECTDN + " LIKE '" + matchvalue + "%'";
-        			} 
-
-        			if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
-        				returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
-        			} 
-        		}else {
-        			if(matchwith == MATCH_WITH_USERNAME){
-        				if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        					returnval = MATCH_WITH_USERNAMESTRING + " = '" + matchvalue + "'";
-        				}
-
-        				if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        					returnval = MATCH_WITH_USERNAMESTRING + " LIKE '" + matchvalue + "%'";
-        				} 
-
-        				if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
-        					returnval = MATCH_WITH_USERNAMESTRING + " LIKE '%" + matchvalue + "%'";
-        				} 
-        			} else {
-        				if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        					// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
-        					// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
-        					String stringChar = "'";
-        					if ((matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_CA) || (matchwith == MATCH_WITH_CERTIFICATEPROFILE) || (matchwith == MATCH_WITH_ENDENTITYPROFILE) || (matchwith == MATCH_WITH_TOKEN)) {
-        						stringChar = "";
-        					}
-        					returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
-        				}
-
-        				if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        					returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
-        				}
-        			}
-        		}
-        	}
-        }
-        return returnval;
-    }
-
-    // getQueryString
-
-    /**
-     * Checks if query data is ok.
-     *
-     * @return true if query is legal, false otherwise
-     */
-    public boolean isLegalQuery() {
-    	if(matchvalue == null){
-    		return false;
-    	}
-        return !(matchvalue.trim().equals(""));
-    }
-
-    // Private Methods
-    private boolean isSubjectDNMatch() {
-        return this.matchwith >= 100 && this.matchwith < 200;
-    }
-    
-    // Private Methods
-    private boolean isSubjectAltNameMatch() {
-        return this.matchwith >= 200 && this.matchwith < 300;
-    }
-
-    // Private Fields.
     /** For example UserMatch.MATCH_WITH_USERNAME */
     private int matchwith;
     /** For example BasicMatch.MATCH_TYPE_EQUALS */
     private int matchtype;
     /** For example a username */
     private String matchvalue;
+
+    /**
+     * Creates a new instance of UserMatch.
+     *
+     * @param matchwith determines which field i userdata table to match with.
+     * @param matchtype determines how to match the field. SubjectDN fields can only be matched with 'begins with'.
+     * @param matchvalue the value to match with.
+     *
+     * @throws NumberFormatException if matchvalue contains illegal numbervalue when matching number field.
+     */
+    public UserMatch(int matchwith, int matchtype, String matchvalue) throws NumberFormatException {
+        this.matchwith = matchwith;
+        this.matchtype = matchtype;
+        this.matchvalue = matchvalue;
+        if (matchwith >= MATCH_WITH_STATUS && matchwith <= MATCH_WITH_CA) {
+            Integer.valueOf(matchvalue);
+        }
+    }
+
+    @Override
+    public String getQueryString() {
+        String returnval = "";
+        final String matchvalue = super.escapeSql(this.matchvalue);
+        if (isSubjectDNMatch()) {
+            // Ignore MATCH_TYPE_EQUALS.
+            returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
+            MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] + matchvalue + "%'";
+        } else if (isSubjectAltNameMatch()) {
+            returnval = MATCH_WITH_SUBJECTALTNAME + " LIKE '%" + MATCH_WITH_SUBJECTALTNAME_NAMES[matchwith - 200] + matchvalue + "%'";           
+        } else if (matchwith == MATCH_WITH_DN) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                returnval = MATCH_WITH_SUBJECTDN + " = '" + matchvalue.trim() + "'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                returnval = MATCH_WITH_SUBJECTDN + " LIKE '" + matchvalue + "%'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
+            } 
+        } else if (matchwith == MATCH_WITH_USERNAME) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                returnval = MATCH_WITH_USERNAMESTRING + " = '" + matchvalue.trim() + "'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                returnval = MATCH_WITH_USERNAMESTRING + " LIKE '" + matchvalue + "%'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                returnval = MATCH_WITH_USERNAMESTRING + " LIKE '%" + matchvalue + "%'";
+            }
+        } else if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+            // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+            // like "where status='10'" instead of "where status=10", we have to have some special handling here.
+            String stringChar = "'";
+            if (matchwith == MATCH_WITH_STATUS || matchwith == MATCH_WITH_CA || matchwith == MATCH_WITH_CERTIFICATEPROFILE || 
+                    matchwith == MATCH_WITH_ENDENTITYPROFILE || matchwith == MATCH_WITH_TOKEN) {
+                stringChar = "";
+            }
+            returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue.trim() + stringChar;
+        } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+            returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        }
+        return returnval;
+    }
+
+    @Override
+    public boolean isLegalQuery() {
+        return StringUtils.isNotBlank(matchvalue);
+    }
+
+    private boolean isSubjectDNMatch() {
+        return this.matchwith >= 100 && this.matchwith < 200;
+    }
+    
+    private boolean isSubjectAltNameMatch() {
+        return this.matchwith >= 200 && this.matchwith < 300;
+    }
 }

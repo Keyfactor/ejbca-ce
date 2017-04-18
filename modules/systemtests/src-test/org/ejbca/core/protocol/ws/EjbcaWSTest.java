@@ -93,7 +93,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -1043,26 +1042,37 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace("<test36EjbcaWsHelperTimeFormatConversion()");
     }
     
-    /**
-     * Simulate a simple SQL injection by sending the illegal char "'".
-     * 
-     * @throws Exception
-     */
+    /** Simulate a simple SQL injection by sending the to-be-escaped char "'". */
     @Test
     public void test40EvilFind01() throws Exception {
-        log.trace(">testEvilFind01()");
+        log.trace(">test40EvilFind01");
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("A' OR '1=1");
         try {
             List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            fail("SQL injection did not cause an error! " + userdatas.size());
+            assertEquals("SQL injection caused results to be returned!", 0, userdatas.size());
         } catch (IllegalQueryException_Exception e) {
-            // NOPMD, this should be thrown and we ignore it because we fail if
-            // it is not thrown
+            fail("SQL injection did cause an unexpected error: " + e.getMessage());
         }
-        log.trace("<testEvilFind01()");
+        log.trace("<test40EvilFind01");
+    }
+
+    @Test
+    public void test40EvilFind02() throws Exception {
+        log.trace(">test40EvilFind02");
+        UserMatch usermatch = new UserMatch();
+        usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue("A'' OR ''1=1");
+        try {
+            List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertEquals("SQL injection caused results to be returned!", 0, userdatas.size());
+        } catch (IllegalQueryException_Exception e) {
+            fail("SQL injection did cause an unexpected error: " + e.getMessage());
+        }
+        log.trace("<test40EvilFind02");
     }
 
     /**

@@ -44,4 +44,30 @@ public class QueryTest {
         log.trace("<test01TestUserQuery()");
     }
 
+    @Test
+    public void testUserQueryTrim() throws Exception {
+        log.trace(">testUserQueryTrim");
+        final Query query1 = new Query(Query.TYPE_USERQUERY);
+        query1.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, " Common Name ");
+        assertEquals("username = 'Common Name'", query1.getQueryString());
+        final Query query2 = new Query(Query.TYPE_USERQUERY);
+        query2.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "Common Name ");
+        assertEquals("username LIKE 'Common Name %'", query2.getQueryString());
+        log.trace("<testUserQueryTrim");
+    }
+
+    @Test
+    public void testUserQuerySingleQuote() throws Exception {
+        log.trace(">testUserQuerySingleQuote");
+        final Query query1 = new Query(Query.TYPE_USERQUERY);
+        query1.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, " D'Greatest ");
+        assertEquals("username = 'D''Greatest'", query1.getQueryString());
+        final Query query2 = new Query(Query.TYPE_USERQUERY);
+        query2.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "D'Greatest ");
+        assertEquals("username LIKE 'D''Greatest %'", query2.getQueryString());
+        final Query query3 = new Query(Query.TYPE_USERQUERY);
+        query3.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "D''Greatest");
+        assertEquals("username LIKE 'D''''Greatest%'", query3.getQueryString());
+        log.trace("<testUserQuerySingleQuote");
+    }
 }

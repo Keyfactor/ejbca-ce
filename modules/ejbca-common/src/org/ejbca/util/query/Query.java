@@ -10,12 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * Query.java
- *
- * Created on den 23 juli 2002, 01:24
- */
 package org.ejbca.util.query;
 
 import java.io.Serializable;
@@ -27,8 +21,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.util.StringTools;
 
 /**
- * A class used to produce advanced querys from the log and user data tables. It's main function is
- * getQueryString which returns a string which should be placed in the 'WHERE' clause of a SQL
+ * A class used to produce advanced queries from the user data and approval tables.
+ * 
+ * It's main function is getQueryString which returns a string which should be placed in the 'WHERE' clause of a SQL
  * statement.
  *
  * @version $Id$
@@ -38,8 +33,10 @@ public class Query implements Serializable {
     private static final long serialVersionUID = 2020709050743730820L;
  
     private static Logger log = Logger.getLogger(Query.class);
-    // Public Constants.
-    public static final int TYPE_LOGQUERY = 0;
+
+    /** @deprecated Type of query is no longer support and only kept as a reminder not to re-reuse the value 0 */
+    @Deprecated
+    private static final int TYPE_LOGQUERY = 0;
     public static final int TYPE_USERQUERY = 1;
     public static final int TYPE_APPROVALQUERY = 2;
     public static final int CONNECTOR_AND = 0;
@@ -47,27 +44,19 @@ public class Query implements Serializable {
     public static final int CONNECTOR_ANDNOT = 2;
     public static final int CONNECTOR_ORNOT = 3;
 
-
-    // Private Constants.
     static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
 
-    // Private fields.
-    final private List<BasicMatch> matches; // Should only contain BasicMatch objects.
-    final private List<Integer> connectors; // Should only containg CONNECTOR constants.
-    final protected int type;
+    private final List<BasicMatch> matches = new ArrayList<>();
+    private final List<Integer> connectors = new ArrayList<Integer>();
+    protected final int type;
     private boolean hasIllegalSqlChars = false;
     
-    // Public methods.
-
     /**
      * Creates a new instance of Query
      *
-     * @param type is the typ of query to produce. Should be one of the 'TYPE' constants of this
-     *        class.
+     * @param type is the type of query to produce. Should be one of the 'TYPE' constants of this class.
      */
-    public Query(int type) {
-        matches = new ArrayList<BasicMatch>();
-        connectors = new ArrayList<Integer>();
+    public Query(final int type) {
         this.type = type;
     }
 
@@ -124,50 +113,43 @@ public class Query implements Serializable {
     }
 
     /**
-     * Adds a match ot type UserMatch or LogMatch to the query.
+     * Adds a match of type UserMatch or ApprovalMatch to the query.
      *
      * @param matchwith should be one of the the UserMatch.MATCH_WITH or LogMatch.MATCH_WITH
-     *        connstants depending on query type.
+     *        constants depending on query type.
      * @param matchtype should be one of BasicMatch.MATCH_TYPE constants.
      * @param matchvalue should be a string representation to match against.
      *
      * @throws NumberFormatException if there is an illegal character in matchvalue string.
      */
-    public void add(int matchwith, int matchtype, String matchvalue)
-        throws NumberFormatException {
+    public void add(int matchwith, int matchtype, String matchvalue) throws NumberFormatException {
         switch (this.type) {
-        case TYPE_LOGQUERY:
-            matches.add(new LogMatch(matchwith, matchtype, matchvalue));
-            break;
         case TYPE_USERQUERY:
             matches.add(new UserMatch(matchwith, matchtype, matchvalue));
             break;
         case TYPE_APPROVALQUERY:
-        	matches.add(new ApprovalMatch(matchwith, matchtype, matchvalue));
-        	break;
+            matches.add(new ApprovalMatch(matchwith, matchtype, matchvalue));
+            break;
+        case TYPE_LOGQUERY:
+        default:
+            throw new IllegalArgumentException("Query type '"+type+"' is unknown.");
         }
-        if (!StringTools.hasSqlStripChars(matchvalue).isEmpty()) {
-            hasIllegalSqlChars = true;
-        }
+        hasIllegalSqlChars |= !StringTools.hasSqlStripCharsAssumingSingleQuoteEscape(matchvalue).isEmpty();
     }
 
     /**
-     * Adds a match ot type UserMatch or LogMatch and a connector to the query.
+     * Adds a match of type UserMatch or ApprovalMatch and a connector to the query.
      *
-     * @param matchwith should be one of the the UserMatch.MATCH_WITH or LogMatch.MATCH_WITH
-     *        connstants depending on query type.
+     * @param matchwith should be one of the the UserMatch.MATCH_WITH or ApprovalMatch.MATCH_WITH depending on query type.
      * @param matchtype should be one of BasicMatch.MATCH_TYPE constants.
      * @param matchvalue should be a string representation to match against.
      * @param connector should be one of the 'CONNECTOR' constants.
      *
      * @throws NumberFormatException if there is an illegal character in matchvalue string.
      */
-    public void add(int matchwith, int matchtype, String matchvalue, int connector)
-        throws NumberFormatException {
+    public void add(int matchwith, int matchtype, String matchvalue, int connector) throws NumberFormatException {
         add(matchwith,matchtype,matchvalue);
         connectors.add(Integer.valueOf(connector));
-
- 
     }
 
     /**
@@ -189,11 +171,10 @@ public class Query implements Serializable {
     public String getQueryString() {
         String returnval = "";
         for (int i = 0; i < (matches.size() - 1); i++) {
-            returnval += ((BasicMatch) matches.get(i)).getQueryString();
-            returnval += CONNECTOR_SQL_NAMES[((Integer) connectors.get(i)).intValue()];
+            returnval += matches.get(i).getQueryString();
+            returnval += CONNECTOR_SQL_NAMES[connectors.get(i).intValue()];
         }
-        returnval += ((BasicMatch) matches.get(matches.size() - 1)).getQueryString();
-
+        returnval += matches.get(matches.size() - 1).getQueryString();
         return returnval;
     }
 
@@ -205,35 +186,31 @@ public class Query implements Serializable {
      */
     public boolean isLegalQuery() {
         boolean returnval = true;
-        for (BasicMatch match : matches) {
-            returnval = returnval && match.isLegalQuery();
+        for (final BasicMatch match : matches) {
+            returnval &= match.isLegalQuery();
             if (!returnval) {
-                log.error("Query is illegal: " + match.getQueryString());
+                log.info("Query is illegal due to match: " + match.getQueryString());
             }
         }
-
-        returnval = returnval && ((matches.size() - 1) == connectors.size());
-
-        returnval = returnval && (matches.size() > 0);
-
-        return returnval && !hasIllegalSqlChars();
+        returnval &= (matches.size() - 1) == connectors.size();
+        returnval &= matches.size() > 0;
+        returnval &= !hasIllegalSqlChars();
+        return returnval;
     }
 
     /**
-     * Checks if the present query contains illegal SQL string charcters as set by add(String) methods.
-     * The add(String) methods checks against StringTools.hasStripChars.
-     *
-     * @return true if the query is legal, false otherwise
+     * @return true if any of the match values added so far contain illegal SQL string characters.
      * @see org.cesecore.util.StringTools#hasSqlStripChars(String)
+     * @see org.ejbca.util.query.BasicMatch#escapeSql(String)
      */
-    public boolean hasIllegalSqlChars() {
-        log.debug("hasIllegalSqlChars: "+hasIllegalSqlChars);
+    private boolean hasIllegalSqlChars() {
+        if (log.isDebugEnabled()) {
+            log.debug("hasIllegalSqlChars: "+hasIllegalSqlChars);
+        }
         return hasIllegalSqlChars;
     }
 
-    /** 
-     * @return the current query string 
-     */
+    /** @return the current query string */
     @Override
     public String toString() {
         return getQueryString();
