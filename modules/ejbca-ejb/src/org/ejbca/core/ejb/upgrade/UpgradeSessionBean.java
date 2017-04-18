@@ -358,7 +358,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
-        
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
             if (log.isDebugEnabled()) {
