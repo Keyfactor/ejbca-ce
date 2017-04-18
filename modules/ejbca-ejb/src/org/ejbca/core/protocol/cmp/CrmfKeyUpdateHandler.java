@@ -234,7 +234,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 }
             
                 /*
-                 * Check the status of the certificate sent as extraCertificate
+                 * Check the status of the certificate that should be updated.
                  * 
                  * RFC4210 states in ch. 5.3.5:
                  * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
