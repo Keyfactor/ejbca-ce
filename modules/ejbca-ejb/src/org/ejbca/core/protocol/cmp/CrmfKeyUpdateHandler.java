@@ -156,7 +156,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                             LOG.debug("The CMP KeyUpdate request for SubjectDN '" + crmfreq.getSubjectDN() +"' was verified successfully");
                         }
                     }
-                    oldCert = (X509Certificate) eecmodule.getExtraCert();
+                    oldCert = (X509Certificate) certStoreSession.findLatestX509CertificateBySubject(crmfreq.getSubjectDN());
                     
                     CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
                     CertReqMsg certmsg;
