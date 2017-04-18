@@ -240,6 +240,11 @@ public class AuditorManagedBean implements Serializable {
 		}
 		return results;
 	}
+	
+	/** Converts a map with possibly Base64 encoded items to a string */
+	public String mapToString(final Map<String,Object> value) {
+	    return MapToStringConverter.getAsString(value);
+	}
 
 	public void setSortColumn(String sortColumn) {
 		this.sortColumn = sortColumn;
