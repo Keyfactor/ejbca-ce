@@ -1064,7 +1064,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** @return a list of all CAs known to the system */
     public List<SelectItem/*<Integer,String>*/> getAvailableCertificateAuthorities() {
-        final List<Integer> availableCaIds = caSession.getAllCaIds();
+        final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         final List<SelectItem> availableCertificateAuthorities = new ArrayList<SelectItem>(availableCaIds.size());
         for (final Integer availableCaId : availableCaIds) {
