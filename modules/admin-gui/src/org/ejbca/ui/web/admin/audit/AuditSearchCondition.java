@@ -83,8 +83,12 @@ public class AuditSearchCondition {
 	                return option.getLabel();
 	            }
 	        }
-	    }
-		return value;
+	    }	    
+	    if (column.equals(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)) {
+	        return StringEscapeUtils.unescapeXml(value);
+        } else {
+            return value;
+        }   
 	}
 
     public String getValue() {
