@@ -16,6 +16,9 @@ import java.util.List;
 
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.cesecore.audit.AuditLogEntry;
+
 /**
  * 
  * @version $Id$
@@ -65,7 +68,12 @@ public class AuditSearchCondition {
 	}
 
 	public void setValue(String value) {
-		this.value = value;
+	    //The details column is XML-encoded, so escape any sensitive characters
+        if (column.equals(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)) {
+            this.value = StringEscapeUtils.escapeXml(value);
+        } else {
+            this.value = value;
+        }
 	}
 
 	public String getValueLabel() {
