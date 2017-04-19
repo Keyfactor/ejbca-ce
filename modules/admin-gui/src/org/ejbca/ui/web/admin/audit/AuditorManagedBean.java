@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.audit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -366,7 +367,7 @@ public class AuditorManagedBean implements Serializable {
 	    updateCaIdToNameMap();
 		try {
 	        final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
-	        results = AuditorQueryHelper.getResults(authenticationToken, columnNameMap.keySet(), device, getConditions(), sortColumn, sortOrder, startIndex-1, maxResults);
+	        results = getResults(authenticationToken, columnNameMap.keySet(), device, getConditions(), sortColumn, sortOrder, startIndex-1, maxResults);
 		} catch (Exception e) {
 		    if (results!=null) {
 	            results.clear();
@@ -378,6 +379,84 @@ public class AuditorManagedBean implements Serializable {
 		}
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
+	
+    /**
+     * Build and executing audit log queries that are safe from SQL injection.
+     * 
+     * @param token the requesting entity. Will also limit the results to authorized CAs. 
+     * @param validColumns a Set of legal column names
+     * @param device the name of the audit log device
+     * @param conditions the list of conditions to transform into a query
+     * @param sortColumn ORDER BY column
+     * @param sortOrder true=ASC, false=DESC order
+     * @param firstResult first entry from the result set. Index starts with 0.
+     * @param maxResults number of results to return
+     * @return the query result
+     * @throws AuthorizationDeniedException if the administrator is not authorized to perform the requested query
+     */
+    private List<? extends AuditLogEntry> getResults(final AuthenticationToken token, final Set<String> validColumns, final String device,
+            final List<AuditSearchCondition> conditions, final String sortColumn, final boolean sortOrder, final int firstResult, final int maxResults)
+            throws AuthorizationDeniedException {
+        final List<Object> parameters = new ArrayList<Object>();
+        final StringBuilder whereClause = new StringBuilder();
+        final String errorMessage = "This should never happen unless you are intentionally trying to perform an SQL injection attack.";
+        for (int i=0; i<conditions.size(); i++) {
+            final AuditSearchCondition condition = conditions.get(i);
+            if (i>0) {
+                switch (condition.getOperation()) {
+                case AND:
+                    whereClause.append(" AND "); break;
+                case OR:
+                    whereClause.append(" OR "); break;
+                }
+            }
+            // Validate that the column we are adding to the SQL WHERE clause is exactly one of the legal column names
+            if (!validColumns.contains(condition.getColumn())) {
+                throw new IllegalArgumentException(errorMessage);
+            }
+            Object conditionValue = condition.getValue();
+            if (AuditLogEntry.FIELD_TIMESTAMP.equals(condition.getColumn())) {
+                try {
+                    conditionValue = Long.valueOf(ValidityDate.parseAsIso8601(conditionValue.toString()).getTime());
+                } catch (ParseException e) {
+                    log.debug("Admin entered invalid date for audit log search: " + condition.getValue());
+                    continue;
+                }
+            }
+            switch (Condition.valueOf(condition.getCondition())) {
+            case EQUALS:
+                whereClause.append("a.").append(condition.getColumn()).append(" = ?").append(i); break;
+            case NOT_EQUALS:
+                whereClause.append("a.").append(condition.getColumn()).append(" != ?").append(i); break;
+            case CONTAINS:
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                conditionValue = "%" + conditionValue + "%";
+                break;
+            case ENDS_WITH:
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                conditionValue = "%" + conditionValue;
+                break;
+            case STARTS_WITH:
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                conditionValue = conditionValue + "%";
+                break;
+            case GREATER_THAN:
+                whereClause.append("a.").append(condition.getColumn()).append(" > ?").append(i); break;
+            case LESS_THAN:
+                whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i); break;
+            default:
+                throw new IllegalArgumentException(errorMessage);    
+            }
+            // The condition value will be added to the query using JPA's setParameter (safe from SQL injection)
+            parameters.add(conditionValue);
+        }
+        // Validate that the column we are adding to the SQL ORDER clause is exactly one of the legal column names
+        if (!validColumns.contains(sortColumn)) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+        final String orderClause = new StringBuilder("a.").append(sortColumn).append(sortOrder?" ASC":" DESC").toString();
+        return new EjbLocalHelper().getEjbcaAuditorSession().selectAuditLog(token, device, firstResult, maxResults, whereClause.toString(), orderClause, parameters);
+    }
 	
 	public Map<Object, String> getCaIdToName() {
 		return caIdToNameMap;
