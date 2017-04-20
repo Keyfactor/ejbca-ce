@@ -544,16 +544,16 @@ public class UpgradeSessionBeanTest {
         final String roleName3 = TESTCLASS + " upgradeTo680MigrateRules3";
         final String roleName4 = TESTCLASS + " upgradeTo680MigrateRules4";
         final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                new AccessRuleData(roleName, upgradeSession.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName, upgradeSession.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, UpgradeSessionRemote.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, UpgradeSessionRemote.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
                 new AccessRuleData(roleName, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_DECLINE, true),
                 new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
                 new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName2, upgradeSession.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
+                new AccessRuleData(roleName2, UpgradeSessionRemote.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
         final List<AccessRuleData> oldAcccessRules3 = Arrays.asList(
-                new AccessRuleData(roleName3, upgradeSession.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName3, upgradeSession.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName3, UpgradeSessionRemote.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName3, UpgradeSessionRemote.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
                 new AccessRuleData(roleName3, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules4 = Arrays.asList(
                 new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true),
