@@ -130,7 +130,10 @@ public class AuditorManagedBean implements Serializable {
 		for (final Entry<String,String> entry : columnNameMap.entrySet()) {
 			sortColumns.add(new SelectItem(entry.getKey(), entry.getValue()));
 		}
-		columnNameMap.put(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, ejbcaWebBean.getText("ADDITIONAL_DETAILS"));
+		//Commented out due to the fact that searching through the details field is unreliable. If there are any non ascii-characters in the field,
+		// (such as é), it will in its entirety be b64-encoded, which renders it unsearchable, even for ascii characters that may happen to be there
+		// as well. 
+		//columnNameMap.put(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, ejbcaWebBean.getText("ADDITIONAL_DETAILS"));
 		columns.addAll(sortColumns);
 		columns.add(new SelectItem(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, columnNameMap.get(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)));
 		sortOrders.add(new SelectItem(ORDER_ASC, "ASC"));
