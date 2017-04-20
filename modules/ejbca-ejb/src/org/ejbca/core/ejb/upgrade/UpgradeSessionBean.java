@@ -151,11 +151,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
     
-    //Rules removed or migrated in 6.8.0
-    public static final String ROLE_PUBLICWEBUSER                   = "/public_web_user";
-    public static final String REGULAR_CABASICFUNCTIONS_OLD     = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
-    public static final String REGULAR_ACTIVATECA_OLD           = REGULAR_CABASICFUNCTIONS_OLD+"/activate_ca";
-    
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -225,6 +220,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private void setLastUpgradedToVersion(final String version) {
         final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
+        // (From EJBCA 6.8.0) set the oldest known installation ad-hoc if it was previously unset.
         if(guc.getUpgradedFromVersion() == null) {
             String oldVersion = guc.getUpgradedToVersion();
             if(oldVersion == null) {
@@ -323,6 +319,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
                 setLastPostUpgradedToVersion("6.8.0");
             } else {
+                // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
                     setLastUpgradedToVersion(getLastUpgradedToVersion());
                 }
