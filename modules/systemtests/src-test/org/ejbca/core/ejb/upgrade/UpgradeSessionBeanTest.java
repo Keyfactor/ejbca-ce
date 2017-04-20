@@ -500,12 +500,10 @@ public class UpgradeSessionBeanTest {
                 new AccessUserAspectData(roleName, 4712, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "123abcDEF")
                 );
         upgradeTestSession.createRole(roleName, null, oldAccessUserAspectDatas);
-        int newRoleId = Role.ROLE_ID_UNASSIGNED;
         try {
             upgradeSession.upgrade(null, "6.7.0", false);
             // Post upgrade, there should exist a new RoleData object with the given rolename
             final Role newRole = roleSession.getRole(alwaysAllowtoken, null, roleName);
-            newRoleId = newRole.getRoleId();
             final List<RoleMember> newRoleMembers = roleMemberProxySession.findRoleMemberByRoleId(newRole.getRoleId());
             assertEquals("Wrong number of role members", 2, newRoleMembers.size());
             for (final RoleMember newRoleMember : newRoleMembers) {
@@ -522,8 +520,9 @@ public class UpgradeSessionBeanTest {
                 }
             }
         } finally {
+            //Clean up (remove legacy roles and new roles)
             upgradeTestSession.deleteRole(roleName);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
+            deleteRole(null, roleName);
         }
     }
 
@@ -545,16 +544,16 @@ public class UpgradeSessionBeanTest {
         final String roleName3 = TESTCLASS + " upgradeTo680MigrateRules3";
         final String roleName4 = TESTCLASS + " upgradeTo680MigrateRules4";
         final List<AccessRuleData> oldAccessRules = Arrays.asList(
-                new AccessRuleData(roleName, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName, UpgradeSessionBean.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, upgradeSession.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, upgradeSession.ROLE_PUBLICWEBUSER, AccessRuleState.RULE_ACCEPT, true),
                 new AccessRuleData(roleName, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_DECLINE, true),
                 new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules2 = Arrays.asList(
                 new AccessRuleData(roleName2, StandardRules.CAFUNCTIONALITY.resource(), AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName2, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
+                new AccessRuleData(roleName2, upgradeSession.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true));
         final List<AccessRuleData> oldAcccessRules3 = Arrays.asList(
-                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
-                new AccessRuleData(roleName3, UpgradeSessionBean.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName3, upgradeSession.REGULAR_CABASICFUNCTIONS_OLD, AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName3, upgradeSession.REGULAR_ACTIVATECA_OLD, AccessRuleState.RULE_DECLINE, true),
                 new AccessRuleData(roleName3, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true));
         final List<AccessRuleData> oldAccessRules4 = Arrays.asList(
                 new AccessRuleData(roleName4, AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true),
@@ -563,10 +562,6 @@ public class UpgradeSessionBeanTest {
         upgradeTestSession.createRole(roleName2, oldAccessRules2, null);
         upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
         upgradeTestSession.createRole(roleName4, oldAccessRules4, null);
-        int newRoleId = Role.ROLE_ID_UNASSIGNED;
-        int newRoleId2 = Role.ROLE_ID_UNASSIGNED;
-        int newRoleId3 = Role.ROLE_ID_UNASSIGNED;
-        int newRoleId4 = Role.ROLE_ID_UNASSIGNED;
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         guc.setUpgradedFromVersion("6.7.0");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
@@ -580,10 +575,6 @@ public class UpgradeSessionBeanTest {
             assertNotNull("Unable to retrieve role from databse", newRole2);
             assertNotNull("Unable to retrieve role from databse", newRole3);
             assertNotNull("Unable to retrieve role from databse", newRole4);
-            newRoleId = newRole.getRoleId();
-            newRoleId2 = newRole2.getRoleId();
-            newRoleId3 = newRole3.getRoleId();
-            newRoleId4 = newRole4.getRoleId();
             // Expect normalization and minimization to do its work
             assertEquals("Unexpected number of access rules", 1, newRole.getAccessRules().size());
             assertEquals("Unexpected number of access rules", 2, newRole2.getAccessRules().size());
@@ -597,17 +588,17 @@ public class UpgradeSessionBeanTest {
             assertEquals("Unexpected access rule state", Role.STATE_ALLOW, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
             assertEquals("Unexpected access rule state", Role.STATE_DENY,  AccessRulesHelper.hasAccessToResource(newRole4.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
         } finally {
-            //Clean up
+            //Clean up (remove legacy roles and new roles)
             upgradeTestSession.deleteRole(roleName);
             upgradeTestSession.deleteRole(roleName2);
             upgradeTestSession.deleteRole(roleName3);
             upgradeTestSession.deleteRole(roleName4);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId2);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId3);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId4);
+            deleteRole(null, roleName);
+            deleteRole(null, roleName2);
+            deleteRole(null, roleName3);
+            deleteRole(null, roleName4);
         }
-        // Attemp with version < 6.6.0
+        // Attempt with version installed earlier than EJBCA 6.6.0 and upgraded from 6.7.0
         upgradeTestSession.createRole(roleName3, oldAcccessRules3, null);
 
         guc.setUpgradedFromVersion("6.5.0");
@@ -616,12 +607,12 @@ public class UpgradeSessionBeanTest {
             upgradeSession.upgrade(null, "6.7.0", false);
             final Role newRole3 = roleSession.getRole(alwaysAllowtoken, null, roleName3);
             assertNotNull("Unable to retrieve role from databse", newRole3);
-            newRoleId3 = newRole3.getRoleId();
             //Since upgrade is performed from version < 6.6.0, rule state should NOT be migrated from REGULAR_VIEWENDENTITY to REGULAR_VIEWCERTIFICATE
             assertEquals("Unexpected access rule state", Role.STATE_DENY, AccessRulesHelper.hasAccessToResource(newRole3.getAccessRules(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE));
         } finally {
+            //Clean up (remove legacy role and new role)
             upgradeTestSession.deleteRole(roleName3);
-            roleSession.deleteRoleIdempotent(alwaysAllowtoken, newRoleId3);
+            deleteRole(null, roleName3);
         }
     }
     
