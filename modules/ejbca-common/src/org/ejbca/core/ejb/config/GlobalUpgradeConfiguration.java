@@ -40,7 +40,7 @@ public class GlobalUpgradeConfiguration extends ConfigurationBase {
         data.put(UPGRADED_TO_VERSION, version);
     }
     
-    /** Uncertain for version installed before 6.8.0 */
+    /** @return Oldest known installed version of EJBCA. Uncertain for version installed before 6.8.0 */
     public String getUpgradedFromVersion() {
         return (String) data.get(UPGRADED_FROM);
     }
