@@ -12,9 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.Serializable;
-
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A response from the CA to the ACME module on the RA
@@ -26,7 +28,10 @@ public class RaAcmeResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private byte[] certificate;
-    
+
+    private Map result;
+    private int operation = 0;
+
     public byte[] getCertificate() { return certificate; }
     public void setCertificate(final byte[] certificate) { this.certificate = certificate; }
 
@@ -35,4 +40,24 @@ public class RaAcmeResponse implements Serializable {
         return HashCodeBuilder.reflectionHashCode(this);
     }
 
+    /**
+     * Sets the operation, and the result. since the acme method on the RA contains multiple operations we setup the computed
+     * result and operation inside the ACMERESPONSE
+     * @param operation
+     * @param result
+     */
+    public void setOperation(int operation, Map result){
+        this.operation = operation;
+        this.result = result;
+    }
+    /**
+     * This returns an object with information about the response operation and the type of object related to it.
+     * @return
+     */
+    public Map getResult(){
+        HashMap result = new HashMap();
+        result.put("result",this.result);
+        result.put("operation",this.operation);
+        return result;
+    }
 }

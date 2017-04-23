@@ -62,7 +62,10 @@ public final class Base64 {
         return bytes;
 
     }
-    
+
+    public static byte[] decodeURLSafe(String token){
+        return org.apache.commons.codec.binary.Base64.decodeBase64(token.getBytes());
+    }
     public static byte[] decode(final byte[] bytes) {
         return org.bouncycastle.util.encoders.Base64.decode(bytes);
     }
