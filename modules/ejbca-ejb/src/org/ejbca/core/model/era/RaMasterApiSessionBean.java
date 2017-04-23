@@ -12,42 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.RemoveException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.QueryTimeoutException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -62,28 +26,12 @@ import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.ca.*;
+import org.cesecore.certificates.certificate.*;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -124,16 +72,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
-import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.ApprovalDataText;
-import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
-import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.approval.SelfApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.*;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -150,6 +89,20 @@ import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
+
+import javax.ejb.*;
+import javax.persistence.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.*;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -1587,28 +1540,180 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         final RaAcmeResponse response = new RaAcmeResponse();
         switch (request.getType()) {
-        case RaAcmeRequest.TYPE_CERTREQ:
+
+
+        case RaAcmeRequest.TYPE_GETCERT:
+        {
+            log.info(">>>>>>>>>>>>>>>>>>>>RaAcmeRequest.TYPE_GETCERT::Start");
             // TODO this is test code
             try {
                 //final CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
-                
-                final RequestMessage certReq = new PKCS10RequestMessage(request.getCsr());
+
+                final PKCS10RequestMessage certReq = new PKCS10RequestMessage(request.getCsr());
+                certReq.setUsername("acmetestuser");
+                certReq.setPassword("foo123");
+
                 final EndEntityInformation eei = endEntityAccessSession.findUser("acmetestuser");
                 eei.setPassword("foo123");
                 ResponseMessage certResp = signSessionLocal.createCertificate(authenticationToken, certReq, X509ResponseMessage.class, eei);
-                
+
                 response.setCertificate(certResp.getResponseMessage());
             } catch (CryptoTokenOfflineException | CAOfflineException e) {
+                e.printStackTrace();
                 throw new EjbcaException(ErrorCode.CA_OFFLINE, e);
             } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | IllegalKeyException | SignRequestException |
                     SignRequestSignatureException | IllegalNameException | CertificateCreateException | CertificateRevokeException |
                     CertificateSerialNumberException | IllegalValidityException | InvalidAlgorithmException | CertificateExtensionException |
                     CertificateEncodingException | CADoesntExistsException e) {
+                e.printStackTrace();
                 throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
             }
+
+
+            if (response == null)
+                log.info(">>>>>>>>>>>>>>>>>>>>RaAcmeRequest.TYPE_GETCERT::reponse::null");
+            else
+                log.info(">>>>>>>>>>>>>>>>>>>>RaAcmeRequest.TYPE_GETCERT::reponse::not null");
+
+            log.info(">>>>>>>>>>>>>>>>>>>>RaAcmeRequest.TYPE_GETCERT::[" + response.getCertificate() + "]");
+
             return response;
+        }
+        //Nonce Funtionality
+        case RaAcmeRequest.TYPE_GETNONCE:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_GETNONCE,result);
+
+            result.put("data",RaAcmePersistence.getNonce());
+
+            return response;
+        }
+        case RaAcmeRequest.TYPE_ISNONCE:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_ISNONCE,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            result.put("data",RaAcmePersistence.isNonce(uuid));
+
+            return response;
+        }
+
+        //Authorization object
+        case RaAcmeRequest.TYPE_GETAUTHOBJ:{
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_GETAUTHOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            HashMap authObj = new HashMap(RaAcmePersistence.getAuthObj(uuid));
+
+            result.put("data",authObj);
+            result.put("isdata",authObj.isEmpty());
+
+            return response;
+        }
+        case RaAcmeRequest.TYPE_ISAUTHOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_ISAUTHOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            HashMap authObj = new HashMap(RaAcmePersistence.isAuthObj(uuid));
+
+            result.put("data",authObj);
+            result.put("isdata",authObj.isEmpty());
+
+            return response;
+        }
+        case RaAcmeRequest.TYPE_SETAUTHOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_SETAUTHOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+            HashMap authObj = (HashMap) data.get("data");
+
+            result.put("data",(HashMap)RaAcmePersistence.setAuthObj(uuid,authObj));
+            return response;
+        }
+        case RaAcmeRequest.TYPE_REMAUTHOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_REMAUTHOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            result.put("data",(HashMap)RaAcmePersistence.remAuthObj(uuid));
+            return response;
+        }
+
+        //Registration Object functionality
+        case RaAcmeRequest.TYPE_GETREGOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_GETREGOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            HashMap regObj = new HashMap(RaAcmePersistence.getRegObj(uuid));
+
+            result.put("data",regObj);
+            result.put("isdata",regObj.isEmpty());
+
+            return response;
+
+        }
+        case RaAcmeRequest.TYPE_ISREGOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_ISREGOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            HashMap regObj = new HashMap(RaAcmePersistence.getRegObj(uuid));
+
+            result.put("data",regObj);
+            result.put("isdata",regObj.isEmpty());
+
+            return response;
+        }
+        case RaAcmeRequest.TYPE_SETREGOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_SETREGOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+            HashMap regObj = (HashMap) data.get("data");
+
+            result.put("data",(HashMap)RaAcmePersistence.setRegObj(uuid,regObj));
+            return  response;
+        }
+
+        case RaAcmeRequest.TYPE_REMREGOBJ:
+        {
+            HashMap result = new HashMap();
+            response.setOperation(RaAcmeRequest.TYPE_REMREGOBJ,result);
+
+            HashMap data = request.getData();
+            String uuid = String.valueOf(data.get("uuid"));
+
+            result.put("data",(HashMap)RaAcmePersistence.remRegObj(uuid));
+            return response;
+        }
         default:
-            return null;
+            return response;
         }
     }
 
@@ -1628,4 +1733,5 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
+
 }
