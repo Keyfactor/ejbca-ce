@@ -3007,6 +3007,7 @@ isn't specified by the worker.
 <subsubsection name="Run on all Nodes">
 <p>By default services will execute on only one node in a cluster, or one of the pinned nodes. There are some services however that we want to run on all nodes, such as the HSM Keepalive Service.
 Checking 'Run on all nodes' disables the check if the service has been running on another node and thus executes the service on all nodes.</p>
+<note>Careful: This checkbox should normally only be checked for the HSM Keepalive service. Don't check for other services unless you are absolutely sure you know what you are doing.</note>
 </subsubsection>
 </subsection>
 
