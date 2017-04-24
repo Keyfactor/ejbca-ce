@@ -48,6 +48,9 @@ AuthenticationTokens are now loaded dynamically and custom implementations will 
 
 Post upgrade can now be performed from the GUI.
 
+The ability to search for information in the 'Details' column of the audit log has been removed, due to the search not delivering results for 
+rows that contain accented characters. This functionality will be reintroduced when the search always delivers the same results. 
+
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
 
