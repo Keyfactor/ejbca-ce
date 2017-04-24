@@ -153,6 +153,10 @@ public class RaRequestPreview {
         return !subjectAlternativeName.isEmpty();
     }
 
+    public boolean isAnyRequestDataPresent() {
+        return !subjectDn.isEmpty() || !subjectAlternativeName.isEmpty() || !subjectDirectoryAttributes.isEmpty();
+    }
+
     /**
      * @return the issuerDn
      */

@@ -412,6 +412,7 @@
 								value="#{msg.enroll_generate_jks}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks}"
 								rendered="#{enrollMakeNewRequestBean.generateJksButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -419,6 +420,7 @@
 								value="#{msg.enroll_generate_p12}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12}"
 								rendered="#{enrollMakeNewRequestBean.generateP12ButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -426,6 +428,7 @@
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
 								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -433,6 +436,7 @@
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePem}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -440,6 +444,7 @@
 								value="#{msg.enroll_generate_pem_full_chain}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePemFullChain}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -447,6 +452,7 @@
 								value="#{msg.enroll_generate_pkcs7}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePkcs7}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -454,12 +460,14 @@
 								value="#{msg.enroll_generate_der}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificateDer}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
 								action="#{enrollMakeNewRequestBean.confirmRequest}"
 								rendered="#{enrollMakeNewRequestBean.confirmRequestButtonRendered}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
