@@ -100,9 +100,10 @@ public abstract class RaAbstractDn {
     public void update() {
         StringBuilder dn = new StringBuilder();
         for (EndEntityProfile.FieldInstance fieldInstance : fieldInstances) {
-            if (!fieldInstance.getValue().isEmpty()) {
+            final String value = fieldInstance.getValue().trim();
+            if (!value.isEmpty()) {
                 int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
-                String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + fieldInstance.getValue().trim();
+                String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + value;
                 nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
                 if (dn.length() != 0) {
                     dn.append(", ");
