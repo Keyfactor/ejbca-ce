@@ -527,7 +527,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * 
      * @param certInfo
      * @param msg
-     * @param endentity Only used when the message received is a KeyUpdateRequest in RA mode
+     * @param endentity Only used when the message received is a KeyUpdateRequest in RA mode. The administrator is authorized to handle a KeyUpdateRequest in RA mode if 
+     *                  it is authorized to the EndEntityProfile, CertificateProfile and the CA specified in this end entity.
      * @return true if the administrator is authorized to process the request and false otherwise.
      */
     private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final EndEntityInformation endentity) {

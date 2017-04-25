@@ -117,6 +117,11 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             LOG.trace(">handleMessage");
         }
         
+        
+        // NOTE. If we will issue the new certificate using another CertificateProfile and/or CA than the ones specified 
+        // in the end entity (prior to receiving the request), update the authorization check in 
+        // EndEntityCertificateAuthenticationModule.isAuthorizedAdmin() to check authorization to the right CertProfile and CA 
+        
         if(LOG.isDebugEnabled()) {
             LOG.debug("CMP running on RA mode: " + this.cmpConfiguration.getRAMode(this.confAlias));
         }
