@@ -116,7 +116,7 @@
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-156.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.6.jar"/>
-	<classpathentry kind="lib" path="lib/httpmime-4.5-3.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>
