@@ -74,7 +74,9 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
 		setCryptoTokenId(cryptoTokenId);
 		setKeyAlias(keyAlias);
 		setPublicKeyId(publicKeyId);
-		log.debug("Created Key Recoverydata for user " + username);
+		if (log.isDebugEnabled()) {
+		    log.debug("Created Key Recoverydata for user " + username);
+		}
 	}
 
 	public KeyRecoveryData() { }
