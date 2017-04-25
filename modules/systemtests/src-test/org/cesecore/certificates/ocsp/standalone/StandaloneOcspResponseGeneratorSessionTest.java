@@ -797,7 +797,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OCSPReq ocspRequestUnsigned = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp ocspResponseUnsigned = sendRequest(ocspRequestUnsigned);
         assertEquals("We expected a 'Signature Required' status code: ", OCSPResp.SIG_REQUIRED, ocspResponseUnsigned.getStatus());
-        assertNull("We expected the response object to be null when 'Signature Required' is recieved.", ocspResponseUnsigned.getResponseObject());
+        assertNull("We expected the response object to be null when 'Signature Required' is received.", ocspResponseUnsigned.getResponseObject());
     }
 
     /**
