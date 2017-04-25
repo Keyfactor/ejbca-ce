@@ -881,7 +881,7 @@ EJBCA supports two types of response message protection: 'pbe' and 'signature'.
 <subsubsection name="pbe">
 <p>
 This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for 
-the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
+the 'pbe' protection are based on the parameters used in the received HMAC authentication.
 </p>
 </subsubsection>
 <subsubsection name="signature">

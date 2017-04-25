@@ -1023,7 +1023,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (authCertSignRequest != null) {
                     returnval = authCertSignRequest;
                 } else {
-                    // This is expected if we try to generate another CSR from a CA which has not yet recieved a response.
+                    // This is expected if we try to generate another CSR from a CA which has not yet received a response.
                     log.debug("Unable to create authorization signature on CSR. Returning a regular request.");
                     returnval = request;
                 }

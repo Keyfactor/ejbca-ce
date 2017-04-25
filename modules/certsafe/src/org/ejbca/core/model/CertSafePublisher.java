@@ -517,11 +517,11 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         errins.close();
         String response = new String(errB);
         if (log.isTraceEnabled()) {
-            log.trace("Recieved error response: " + response);
+            log.trace("Received error response: " + response);
         }
         response = response.substring(0, response.lastIndexOf("}")+1);
         if (log.isDebugEnabled()) {
-            log.debug("Recieved JSON response: " + response);
+            log.debug("Received JSON response: " + response);
         }
         
         JSONParser parser = new JSONParser();

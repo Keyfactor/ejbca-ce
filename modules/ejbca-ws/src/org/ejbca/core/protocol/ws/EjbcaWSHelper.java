@@ -181,7 +181,7 @@ public class EjbcaWSHelper {
 			final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 
 			if ((certificates == null) || (certificates[0] == null)) {
-				throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
+				throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
 			}
 
 			final X509Certificate cert = certificates[0];

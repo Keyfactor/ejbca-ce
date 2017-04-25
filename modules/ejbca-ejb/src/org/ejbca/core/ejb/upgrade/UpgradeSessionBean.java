@@ -878,7 +878,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, ekuConfig);
         } catch (AuthorizationDeniedException e) {
-            log.error("Recieved an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
+            log.error("Received an AuthorizationDeniedException even though AlwaysAllowLocalAuthenticationToken is used. " + e.getLocalizedMessage());
         }
     }
 
