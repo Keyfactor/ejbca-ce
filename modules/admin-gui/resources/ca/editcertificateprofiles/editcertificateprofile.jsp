@@ -906,6 +906,7 @@
 					<f:selectItem itemLabel="Finnish" itemValue="fi"/>
 					<f:selectItem itemLabel="French" itemValue="fr"/>
 					<f:selectItem itemLabel="German" itemValue="de"/>
+					<f:selectItem itemLabel="Georgian" itemValue="ka"/>
 					<f:selectItem itemLabel="Greek" itemValue="el"/>
 					<f:selectItem itemLabel="Hungarian" itemValue="hu"/>
 					<f:selectItem itemLabel="Irish" itemValue="ga"/>
