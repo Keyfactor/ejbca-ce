@@ -35,3 +35,5 @@ cert-cvc-1.4.6.jar is a library for handling Card Verifiable Certificates, built
 originally developed by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
 
 libidn.jar: version 0.6.9, http://www.gnu.org/software/libidn/, java library is LGPL.
+
+nimbus-jose-jwt-4.36.1.jar, from https://connect2id.com/products/nimbus-jose-jwt/download. Using Apache License. 
