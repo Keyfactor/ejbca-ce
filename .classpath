@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="modules/acme/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/cesecore-p11/src"/>
 	<classpathentry kind="src" path="modules/appserver-ext/src"/>
@@ -109,7 +110,7 @@
 	<classpathentry kind="lib" path="lib/batik/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/batik/xml-apis-ext.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
-	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/><!-- TODO remove -->
+	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-156.jar"/>
@@ -128,6 +129,7 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.4.6.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-4.36.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
