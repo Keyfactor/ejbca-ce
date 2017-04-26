@@ -205,7 +205,7 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
-	<path id="lib.commons-httpclient.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="commons-httpclient-*.jar"/></path> <!-- TODO this is the old 3.x version. it should be removed once the peerconnectors code etc. has been updated -->
+	<path id="lib.commons-httpclient.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="commons-httpclient-*.jar"/></path> <!-- TODO this is the old 3.x version. it should be removed once SigningDailyRollingFileAppender has been updated (ECA-5847), it is the only remaining class that is using the old version -->
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
