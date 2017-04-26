@@ -17,11 +17,8 @@ application server.
 
 Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. See Admin Guide for details.
 
-Sometimes you also need to perform a:
-
-$ ant post-upgrade
-
-In order to clean up after upgrading all nodes in a cluster.
+Sometimes you also need to perform a post-upgrade in order to clean up after upgrading all nodes in a cluster. 
+This is done, in the Admin GUI, by going to the menu option System Configuration -> System Upgrade, which is only visible when a post-upgrade is needed.
 
 Read the RELEASE_NOTES and this document carefully in order to see if any particular changes might effect your upgrade particularly.
 
