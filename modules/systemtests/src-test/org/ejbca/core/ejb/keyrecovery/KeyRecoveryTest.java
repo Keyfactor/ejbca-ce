@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -32,6 +33,7 @@ import java.util.Random;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -75,7 +77,6 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -89,7 +90,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.model.util.GenerateToken;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -110,10 +110,10 @@ public class KeyRecoveryTest extends CaTestCase {
     private static final String TEST_EMAIL = "test@test.se";
 
     private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
+    private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private static final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private static final EndEntityAuthenticationSessionRemote endEntityAuthSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -359,7 +359,7 @@ public class KeyRecoveryTest extends CaTestCase {
             final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(KEYRECOVERY_EEP);
             
             // Create an end entity which is initially using CA 1
-            EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random(),
+            EndEntityInformation eeinfo = new EndEntityInformation(testuser, "CN=TEST_KEYREC_CACHANGE" + new Random().nextLong(),
                     caId1, "", null, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeProfileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     new Date(), new Date(), SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
@@ -371,11 +371,13 @@ public class KeyRecoveryTest extends CaTestCase {
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
             assertNotNull("Could not find test user", testuser);
             eeinfo.setPassword("foo123");
-            final GenerateToken tgen1 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
-            final KeyStore ks1 = tgen1.generateOrKeyRecoverToken(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, false, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            boolean createJKS = false;
+            final byte[] ks1 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId1, "1024", AlgorithmConstants.KEYALGORITHM_RSA, createJKS, false, true, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            KeyStore keystore1 = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            keystore1.load(new ByteArrayInputStream(ks1), "foo123".toCharArray());
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(testuser)).get(0);
             fp1 = CertTools.getFingerprintAsString(usercert);
-            assertNotNull("Could not find user's certificate in keystore", ks1.getCertificateAlias(usercert));
+            assertNotNull("Could not find user's certificate in keystore", keystore1.getCertificateAlias(usercert));
             
             // Now change the CA of the end-entity the CA 2
             eeinfo = eeAccessSession.findUser(internalAdmin, testuser);
@@ -386,12 +388,13 @@ public class KeyRecoveryTest extends CaTestCase {
             
             // Now try to perform key recovery
             assertTrue("markAsRecoverable failed", keyRecoverySession.markAsRecoverable(internalAdmin, usercert, eeProfileId));
-            final GenerateToken tgen2 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
-            final KeyStore ks2 = tgen2.generateOrKeyRecoverToken(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, false, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, createJKS, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
+            KeyStore keystore2 = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            keystore2.load(new ByteArrayInputStream(ks2), "foo123".toCharArray());
             assertFalse("Users should have been unmarked for key recovery", keyRecoverySession.isUserMarked(testuser));
             
             // Certificate should not have changed
-            assertNotNull("Could not find user's certificate in key-recovered keystore", ks2.getCertificateAlias(usercert));
+            assertNotNull("Could not find user's certificate in key-recovered keystore", keystore2.getCertificateAlias(usercert));
         } finally {
             if (usercert != null) {
                 keyRecoverySession.removeKeyRecoveryData(internalAdmin, usercert);
