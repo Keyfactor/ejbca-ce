@@ -31,6 +31,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -79,7 +80,7 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
-	private KeyRecoverySessionLocal keyRecoverySession;
+	private KeyStoreCreateSessionLocal keyStoreCreateSession;
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
@@ -116,8 +117,8 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, endEntityAccessSession, caSession,
-                certificateProfileSession, endEntityProfileSession, keyRecoverySession, signSession, endEntityManagementSession,
+        new RequestInstance(getServletContext(), getServletConfig(), endEntityAccessSession, caSession,
+                certificateProfileSession, endEntityProfileSession, keyStoreCreateSession, signSession, endEntityManagementSession,
                 globalConfigurationSession).doPost(request, response);
     }
 
