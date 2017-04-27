@@ -1840,7 +1840,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public boolean getUseDefaultCAIssuer() {
         //Lazy instantiation in case upgrade for some reason fails
-        if(!data.containsValue(USEDEFAULTCAISSUER)) {
+        if(data.get(USEDEFAULTCAISSUER) == null) {
             data.put(USEDEFAULTCAISSUER, false);
         }
         return ((Boolean) data.get(USEDEFAULTCAISSUER)).booleanValue();
