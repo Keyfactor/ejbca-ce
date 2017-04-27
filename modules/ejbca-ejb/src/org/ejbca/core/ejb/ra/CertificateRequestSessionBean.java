@@ -63,6 +63,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -75,7 +76,6 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
@@ -107,6 +107,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private HardTokenSessionLocal hardTokenSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
+    @EJB
+    private KeyStoreCreateSessionLocal keyStoreCreateSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -324,8 +326,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String password = userdata.getPassword();
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
-            GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
-            KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys,
+            KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

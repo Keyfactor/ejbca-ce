@@ -15,15 +15,18 @@ package org.ejbca.core.model.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -38,9 +41,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.keyrecovery.KeyStoreCreateSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -61,14 +62,11 @@ public class GenerateTokenTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(GenerateTokenTest.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenerateTokenTest"));
-    private static final EndEntityAuthenticationSessionRemote endEntityAuthSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
-    private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
     private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
     private static final String TESTGENERATETOKENCA = "GENERATETOKENTEST_CA";
@@ -117,7 +115,7 @@ public class GenerateTokenTest extends CaTestCase {
             final int caId = caSession.getCAInfo(internalAdmin, TESTGENERATETOKENCA).getCAId();
             final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(GENERATETOKENTEST_EEP);
 
-            EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random(), caId, "", null,
+            EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12,
                     SecConst.NO_HARDTOKENISSUER, null);
@@ -135,14 +133,22 @@ public class GenerateTokenTest extends CaTestCase {
             assertNotNull("Could not find test user", GENERATETOKENTEST_USERNAME);
             eeinfo.setPassword("foo123");
 
-            final GenerateToken tgen1 = new GenerateToken(endEntityAuthSession, eeAccessSession, endEntityManagementSession, caSession,
-                    keyRecoverySession, signSession);
-            //Providing separately algorithm RSA_1024 that is going to be overriden with ECDSA_secp256r1
-            final KeyStore keyStore = tgen1.generateOrKeyRecoverToken(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, false, false, true, false, eeProfileId);
-            
-            Certificate cert = keyStore.getCertificate(keyStore.aliases().nextElement());
-            assertNotNull("Unknown alias " + keyStore.aliases().nextElement(), cert);
+            //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
+            boolean createJKS = false;
+            final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
+                    AlgorithmConstants.KEYALGORITHM_RSA, createJKS, false, true, false, eeProfileId);
+            KeyStore ks = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+            ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
+            Certificate cert = null;
+            Enumeration<String> enumer = ks.aliases();
+            while (enumer.hasMoreElements()) {
+                String alias = enumer.nextElement();
+                //The returned keystore will contain trusted certificate entry as well. We want to check key entry only.
+                if(ks.isKeyEntry(alias)) {
+                    cert = ks.getCertificate(alias);
+                    assertNotNull("Unknown alias " + alias, cert); 
+                }
+            }
             PublicKey publicKey = cert.getPublicKey();
             assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(publicKey));
             assertEquals("prime256v1", AlgorithmTools.getKeySpecification(publicKey));

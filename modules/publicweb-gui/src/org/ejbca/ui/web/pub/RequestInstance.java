@@ -62,9 +62,8 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -73,7 +72,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
@@ -107,11 +105,10 @@ public class RequestInstance {
  
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
-	private EndEntityAuthenticationSessionLocal authenticationSession;
 	private CaSessionLocal caSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
-	private KeyRecoverySessionLocal keyRecoverySession;
+	private KeyStoreCreateSessionLocal keyStoreCreateSession;
 	private SignSessionLocal signSession;
 	private EndEntityManagementSessionLocal endEntityManagementSession;
 	private GlobalConfigurationSession globalConfigurationSession;
@@ -132,16 +129,15 @@ public class RequestInstance {
     @SuppressWarnings("rawtypes")
     private Map params = null;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
-	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
-			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
+	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyStoreCreateSessionLocal keyStoreCreateSession,
+	        SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
-		this.authenticationSession = authenticationSession;
 		this.caSession = caSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.endEntityProfileSession = endEntityProfileSession;
-		this.keyRecoverySession = keyRecoverySession;
+		this.keyStoreCreateSession = keyStoreCreateSession;
 		this.signSession = signSession;
 		this.endEntityManagementSession = endEntityManagementSession;
 		this.endEntityAccessSession = endEntityAccessSession;
@@ -351,14 +347,13 @@ public class RequestInstance {
 
 			// get users Token Type.
 			tokentype = data.getTokenType();
-			GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
 			    // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
 			    // The RA admin should probably have set token type usergenerated instead.
 			    if (hasCSRInRequest()) {
 			        throw new IncomatibleTokenTypeException();
 			    }
-				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {            	  
 					sendOpenVPNToken(ks, username, password, response);
 				} else {
@@ -371,7 +366,7 @@ public class RequestInstance {
                 if (hasCSRInRequest()) {
                     throw new IncomatibleTokenTypeException();
                 }
-				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
@@ -380,7 +375,7 @@ public class RequestInstance {
                 if (hasCSRInRequest()) {
                     throw new IncomatibleTokenTypeException();
                 }
-				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
