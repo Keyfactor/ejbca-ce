@@ -667,7 +667,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         String result = (String) data.get(ENCODED_VALIDITY);
         if (StringUtils.isBlank(result)) {
             result = ValidityDate.getStringBeforeVersion661(getValidity());
-        }
+            setEncodedValidity(result);
+        }     
         return result;
     }
 
@@ -1838,6 +1839,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean getUseDefaultCAIssuer() {
+        //Lazy instantiation in case upgrade for some reason fails
+        if(!data.containsValue(USEDEFAULTCAISSUER)) {
+            data.put(USEDEFAULTCAISSUER, false);
+        }
         return ((Boolean) data.get(USEDEFAULTCAISSUER)).booleanValue();
     }
 
