@@ -4956,6 +4956,20 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 </subsection>
 </section>
 
+<section name="Key Validation">
+<p>ECA-4219 Write documentation and put into right place.</p>
+<p>
+...
+</p>
+<subsection name="Key Validators">
+<p>...:</p>
+<ul>
+<li>...</li>
+<li>...</li>
+</ul>
+</subsection>
+</section>
+
 <section name="LDAP and Publishers">
 <p>
 EJBCA has a modular support for something we call Publishers. A publisher
