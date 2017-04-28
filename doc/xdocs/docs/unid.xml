@@ -104,7 +104,7 @@ You should use these parameters (where differing from default) when issuing keys
 - Extended key usage: 'TLS server'
 </p><p>
 The Common Name (CN) for a TLS server should be the same as the machines fully qualified DNS name used to call the server. 
-For example 'CN=ocsp.primekey.se'.The other DN components you can choose freely.
+For example 'CN=ocsp.primekey.com'.The other DN components you can choose freely.
 </p><p>
 Once the JKS keystore is issued you can configure TLS on the OCSP server in the same way as on the EJBCA server. 
 It is configured in the file JBOSS_HOME/server/default/deploy/jbossweb.sar/server.xml on the CA server.

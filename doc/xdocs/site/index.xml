@@ -23,7 +23,7 @@
 </div>
  <div>  
   <p><strong>EJBCA Enterprise 6.7.0 has now been released.</strong>
- PrimeKey's <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
+ PrimeKey's <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
   <br /><span class="date"> Posted: 2017-03-08</span>
   </p>
  <p><strong>EJBCA Community 6.5.0.5 is now available</strong> Improved auditor role and granular name policy enforcement by the CA. The best open source PKI, supporting Java 8 and new advanced features.
@@ -34,7 +34,7 @@
   <br /><span class="date"> Posted: 2016-05-18</span>
   </p> 
   <p><strong>PKI-in-a-box!</strong> By integrating secure hardware technology with the flexibility, reliability and feature set of EJBCA Enterprise, 
-  the turnkey PKI Appliance features an easy to install PKI-in-a-box, offering predictable costs and increased quality to your PKI solution. Check out the simpler, yet safer, <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/?pk_campaign=org&amp;pk_kwd=box">PrimeKey PKI Appliance</a>.
+  the turnkey PKI Appliance features an easy to install PKI-in-a-box, offering predictable costs and increased quality to your PKI solution. Check out the simpler, yet safer, <a href="https://www.primekey.com/products/hardware/pki-appliance/">PrimeKey PKI Appliance</a>.
   </p>   
   <p>
   </p>
@@ -123,7 +123,7 @@ You can also donate to EJBCA, please see <i><a href="donations.html">Donate to E
 </section>
 
 <section name="Support and development">
-<p>EJBCA Enterprise with commercial support, development, integration and maintenance is available through <a href="https://www.primekey.se/">PrimeKey Solutions</a>. 
+<p>EJBCA Enterprise with commercial support, development, integration and maintenance is available through <a href="https://www.primekey.com/">PrimeKey Solutions</a>. 
 </p>
 </section>
 
