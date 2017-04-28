@@ -1384,7 +1384,7 @@ YourCustomUTF8String ::= UTF8String
 <li>id-etsi-qcs-QcCompliance</li>
 <li>id-qcs-pkixQCSyntax-v2</li>
 <li>id-etsi-qcs-QcSSCD </li>
-<li>id-etsi-qcs-QcPDS = https://www.primekey.se/repository </li>
+<li>id-etsi-qcs-QcPDS = https://www.primekey.com'/repository </li>
 <li>id-etsi-qcs-QcType = 0.4.0.1862.1.6.1 (Electronic Signature)</li>
 <li>SematicsID = 0.4.0.194121.1.2</li>
 </ul>
@@ -1648,13 +1648,13 @@ If Modifiable is unchecked a full, fixed, email address must be provided in the 
 <p>The Krb5 principal name is of the form "principal1/principal2@realm", and should be entered as such in the field.
 Example:
 </p>
-<source>user@PRIMEKEY.SE
+<source>user@PRIMEKEY.COM
 </source>
-<p>for a normal user in the realm PRIMEKEY.SE.
+<p>for a normal user in the realm PRIMEKEY.COM.
 <br/>Or:
 </p>
 <source>
-krbtgt/PRIMEKEY.SE@PRIMEKEY.SE
+krbtgt/PRIMEKEY.SE@PRIMEKEY.COM
 </source>
 <p>for a kdc.
 </p>

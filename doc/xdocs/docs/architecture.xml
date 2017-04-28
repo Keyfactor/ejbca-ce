@@ -35,7 +35,7 @@
   </p>
   <p>There is ample documentation how you <a href="adminguide.html#Hardware%20Security%20Modules%20(HSM)">work with HSMs using EJBCA</a>. 
   <br/>There are several different options for HSMs in the market, 
-  or you can go for a <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a> that comes with a built-in HSM hiding the complexities of managing this.</p>
+  or you can go for a <a href="https://www.primekey.com/products/hardware/pki-appliance/">PKI Appliance</a> that comes with a built-in HSM hiding the complexities of managing this.</p>
   </subsection>
   <subsection name="CA with distributed RAs">
   <p>
@@ -71,7 +71,7 @@
     <p>
     <img src="images/external-ra.png" title="PKI solutions External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with External RA, not allowing incoming connections to the CA." />
     </p>
-    <p>The External RA is available in <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
+    <p>The External RA is available in <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
   </subsection>
   <subsection name="Off-line Root CA and multiple Sub CAs">
   <p>
@@ -124,7 +124,7 @@
     <p>
     <img src="images/clustered-primary-dr-arch.png" title="PKI setup with a primary and a disaster recovery site." alt="EJBCA PKI setup with a primary and a disaster recovery site." />
     </p>
-    <p>Clustering for High Availability and Disaster Recovery can easily be set up using the <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a>, as described in the blog post <a href="http://blog.ejbca.org/2015/04/high-availability-for-pki-in-8-simple.html">High Availability for PKI in 8 Simple Steps</a>.</p>
+    <p>Clustering for High Availability and Disaster Recovery can easily be set up using the <a href="https://www.primekey.com/products/hardware/pki-appliance/">PKI Appliance</a>, as described in the blog post <a href="http://blog.ejbca.org/2015/04/high-availability-for-pki-in-8-simple.html">High Availability for PKI in 8 Simple Steps</a>.</p>
   </subsubsection>
   <subsection name="Audited operations">
   <p>
@@ -152,7 +152,7 @@
   </subsection>
   <subsection name="Software or Appliance, Virtual or Physical">
   <p>Deploying a PKI issuing properly populated certificates, and with the correct security level (using HSMs etc) can be a daunting task if you have not done it before.
-  Using EJBCA you can deploy most of the architectures above using EJBCA as a software, or packaged as a turn key <a href="https://www.primekey.se/technologies/products-overview/pki-appliance/">PKI Appliance</a> from PrimeKey.</p>
+  Using EJBCA you can deploy most of the architectures above using EJBCA as a software, or packaged as a turn key <a href="https://www.primekey.com/products/hardware/pki-appliance/">PKI Appliance</a> from PrimeKey.</p>
   </subsection>
     
   </section>

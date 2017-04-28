@@ -181,7 +181,7 @@ java org.ejbca.ui.cli.ImportMSCACertificates /path/certdump.txt "MS CA v1"
   <subsubsection name="Issue certificates for SmartCard Logon, DCs, EFS etc">
   <ul>
     <li>EJBCA and SmartCard Logon is described <a href="#Microsoft%20smart%20card%20logon">here</a> and <a href="#EJBCA%20with%20GemSAFE%20Toolbox">here</a>.</li>
-    <li>Autoenroll is done with a separate Autoenroll proxy component. Contact <a href="https://www.primekey.se/">PrimeKey</a> for information on this.</li>
+    <li>Autoenroll is done with a separate Autoenroll proxy component. Contact <a href="https://www.primekey.com/">PrimeKey</a> for information on this.</li>
   </ul>
   </subsubsection>
   </subsection>
@@ -190,7 +190,7 @@ java org.ejbca.ui.cli.ImportMSCACertificates /path/certdump.txt "MS CA v1"
   <section name="EJBCA and Apple iOS">
   <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
-<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
+<a href="https://www.primekey.com/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
 </p>
   </section>
     
