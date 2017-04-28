@@ -177,7 +177,7 @@
         <li><div class="menuheader">PKI by PrimeKey</div>
           <p>
           <br>
-                <a href="https://www.primekey.com/technologies/products-overview/signserver-enterprise/" target="signserver">
+                <a href="https://www.primekey.com/products/software/signserver-enterprise/" target="signserver">
                 <img style="border:none; margin-left:20px" src="$relativePath/images/signserver_pki_by_primekey_w120.png" alt="SignServer by PrimeKey">
                 </a>
           </p>
