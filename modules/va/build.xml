@@ -51,6 +51,7 @@
 	
     <target name="clean" description="Clean up this module">
 		<delete dir="${build-status.dir}" />
+		<delete dir="${build-va-publisher.dir}" />
 		<delete dir="${build-test.dir}" />
     	<delete file="${mod.va.war}" />
 		<antcall target="vapublisherclean"/>
