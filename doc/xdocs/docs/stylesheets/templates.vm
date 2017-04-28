@@ -177,12 +177,12 @@
         <li><div class="menuheader">PKI by PrimeKey</div>
           <p>
           <br>
-                <a href="https://www.primekey.se/technologies/products-overview/signserver-enterprise/" target="signserver">
+                <a href="https://www.primekey.com/technologies/products-overview/signserver-enterprise/" target="signserver">
                 <img style="border:none; margin-left:20px" src="$relativePath/images/signserver_pki_by_primekey_w120.png" alt="SignServer by PrimeKey">
                 </a>
           </p>
           <p>
-                <a href="https://www.primekey.se/" target="primekey">
+                <a href="https://www.primekey.com/" target="primekey">
                 <img style="border:none; margin-left:20px" src="$relativePath/images/logo-PrimeKey.png" alt="PKI by PrimeKey">
                 </a>
           </p>

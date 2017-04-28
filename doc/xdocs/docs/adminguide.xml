@@ -467,7 +467,7 @@ EJBCA SCEP, using RA mode, has been sucesfully integrated with Cisco ISE. Config
 <subsubsection name="iPhone/iOS">
 <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
-<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed howto that is available together with a support subscription.
+<a href="https://www.primekey.com/">PrimeKey</a> has created a detailed howto that is available together with a support subscription.
 </p>
 </subsubsection>
 <subsubsection name="OpenScep">
@@ -677,9 +677,9 @@ creating the Scep CA, you can use ROOTCA as template for the new certificate pro
 <li>When enrolling for certificate using SCEP with for example a Cisco PIX it is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'.</li>
 <li>Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.</li>
-<li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.se.</li>
-<li>The end-entity DN must include the DN components CN and unstructuredName, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se". 
-You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=pix.primekey.se,unstructuredName=pix.primekey.se,O=PrimeKey,C=SE".</li>
+<li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.com.</li>
+<li>The end-entity DN must include the DN components CN and unstructuredName, ex "CN=pix.primekey.com, unstructuredName=pix.primekey.com". 
+You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=pix.primekey.com,unstructuredName=pix.primekey.com,O=PrimeKey,C=SE".</li>
 <li>Certificates used for PIX MUST include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip) being the IP-address of the PIX.</li>
 <li>The certificate used on the Cisco PIX MUST have a SubjectAltName field dNSName, matching the DN component unstructuredName. This is needed in order for Cisco VPN clients to connect to the PIX. The DNS Name field is not necessary for the PIX to enroll perfectly with EJBCA, only for the client to be able to connect.</li>
 <li>Certificates used for PIX may also use the SubjectAltName iPAddress matching the DN component unstructuredAddress, but it's not necessary.</li>
@@ -736,8 +736,8 @@ Certificate
   Subject Name:
     C = SE
     O = PrimeKey
-    CN = pix.primekey.se
-    UNSTRUCTURED NAME = pix.primekey.se
+    CN = pix.primekey.com
+    UNSTRUCTURED NAME = pix.primekey.com
     UNSTRUCTURED IP = 10.1.1.1
   Validity Date:
     start date: 14:42:29 GMT Sep 17 2005
@@ -787,7 +787,7 @@ In RA mode, EJBCA supports several CAs and profiles based on the use of configur
 
 <subsection name="CMP and 3GPP/4G/LTE configuration guide">
 <p>
-<a href="https://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
+<a href="https://www.primekey.com/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
 configure EJBCA for 3GPP/4G/LTE networks using CMP. The guide is available together with a support subscription from PrimeKey. 
 </p>
 </subsection>
@@ -1345,7 +1345,7 @@ It is possible to specify more than one vendor CA. The vendor CA names should, i
 
 <subsubsection name="Cryptlib">
 <p>CMP has been tested with <a href="http://www.cryptlib.com/">CryptLib</a>.</p>
-<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="http://download.primekey.se/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
+<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="http://download.primekey.com/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
 </subsubsection>
 <subsubsection name="RSA jCert">
 <p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
@@ -1731,9 +1731,9 @@ openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -u
 </source>
 <p>To issue GET requests for testing the following methodology can be used (replace with your own data):</p>
 <source>
-openssl ocsp -noverify -no_nonce -respout ocsp.resp -reqout ocsp.req -issuer ManagementCA.cacert.pem -cert ejbca-test2.primekey.se -url "http://ejbca-test2.primekey.se:8080/ejbca/publicweb/status/ocsp" -header "HOST" "ejbca-test2.primekey.se" -text
+openssl ocsp -noverify -no_nonce -respout ocsp.resp -reqout ocsp.req -issuer ManagementCA.cacert.pem -cert ejbca-test2.primekey.com -url "http://ejbca-test2.primekey.com:8080/ejbca/publicweb/status/ocsp" -header "HOST" "ejbca-test2.primekey.se" -text
 openssl enc -in ocsp.req -out ocsp.req.b64 -a
-curl --verbose --url http://ejbca-test2.primekey.se:8080/ejbca/publicweb/status/ocsp/MEkwRzBFMEMwQTAJBgUrDgMCGgUABBT1x9iHOmegR7sYp5Fzdo/u3FMBRgQUH1DTnzl9lscAe3WBTUPCWR+xwpQCCDlpiyU2q5Rb
+curl --verbose --url http://ejbca-test2.primekey.com:8080/ejbca/publicweb/status/ocsp/MEkwRzBFMEMwQTAJBgUrDgMCGgUABBT1x9iHOmegR7sYp5Fzdo/u3FMBRgQUH1DTnzl9lscAe3WBTUPCWR+xwpQCCDlpiyU2q5Rb
 </source>
 <p>
 If Firefox is to request and accept OCSP-responses from a CA not in the default trust store it must be configured to trust this CA:
@@ -2242,7 +2242,7 @@ EJBCA supports all of those, including combinations. The following sections desc
 </subsection>
 
 <subsection name="Prerequisites">
-<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.se">PrimeKey</a> for details). Depending on the CT modes you need, there are some extra preparations.</p>
+<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.com">PrimeKey</a> for details). Depending on the CT modes you need, there are some extra preparations.</p>
 
 <subsubsection name="CT in certificates">
 <p>No extra preparations are needed. Just configure the logs and enable CT in the certificate profiles as described in the following sections "Adding CT logs" and "Activating CT".</p>
@@ -2358,7 +2358,7 @@ Information on how to use the Registration Authority (RA) UI is available <a hre
 
 <section name="MS Autoenrollment (Enterprise Edition only)">
 <p>Native Autoenrollment in Active Directory environments is available using a separate Autoenroll proxy component, which is 
-available as an add-on module to <a href="https://www.primekey.se/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
+available as an add-on module to <a href="https://www.primekey.com/technologies/products-overview/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
 <p>This module provides an environment where Active Directory Domain Users and Computers will seamlessly auto enroll for 
 certificates issued by EJBCA.</p>
 <subsection name="Legacy Script based Autoenrollment">
@@ -4184,11 +4184,11 @@ lunash:>partition changePolicy -partition partition1 -policy 22 -value 1
 You don't have to be in the '/usr/LunaSA/bin' directory as the documentation says. We think it is preferable to be in a directory owned by yourself so you don't have to use sudo.
 Example of running in your own directory:
 </p><source>
-$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.se:server.pem .
+$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.com:server.pem .
 </source><p>
 Example of occasions when sudo must be used is registration of server and adding client certificates (root owned files and directories are used and updated):
 </p><source>
-$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.se -c server.pem
+$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.com -c server.pem
 $ sudo /usr/lunasa/bin/vtl createCert -n milton
 </source><p>
 <strong>Step 7:</strong>
@@ -4442,7 +4442,7 @@ If the HSM is peculiar you may have to provide specific attribute parameters as 
 <p>
 At the time of writing, Oracle Java does not have support for SHA256WithRSAandMGF1 (also known as RSASSA-PSS) in the PKCS#11 provider. 
 PrimeKey has made a patch which is waiting for approval in the OpenJDK. 
-You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
+You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.com/">PrimeKey</a>. 
 </p>
 <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
 <p>The patch should work on all HSMs that have support for SHA256WithRSAandMGF1.
@@ -4520,7 +4520,7 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
 </p>
 <p>
 PrimeKey has made a patches for the java issues with ECDSA. These patches are waiting for approval in the OpenJDK 7. 
-You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="https://www.primekey.se/">PrimeKey</a>. 
+You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="https://www.primekey.com/">PrimeKey</a>. 
 </p>
   <subsubsection name="Sun Java PKCS#11 ECC key issue (fixed in recent JDKs)">
   <p>If you are using an very old version of Java/JDK, and the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
@@ -4536,7 +4536,7 @@ You can get a compiled patch together with an installation script for Linux oper
   <p>
   At the time of writing, Oracle Java does not have named curve definitions for the Brainpool curves. 
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
-  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.com/">PrimeKey</a>. 
   </p>
   <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2012">ECA-2012</a>.</p>
   <p>The patch should work on all HSMs that have <i>named curve support</i> for Brainpool. It has been tested on SafeNet Luna SA and Utimaco CryptoServer. SafeNet ProtectServer supports Brainpool but not using named curves, see below for brainpool support on ProtectServer using custom domain parameters.</p>
@@ -4554,7 +4554,7 @@ You can get a compiled patch together with an installation script for Linux oper
   <p>
   At the time of writing, Oracle Java does not have support for SHA224WithECDSA in the PKCS#11 provider. 
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
-  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.se/">PrimeKey</a>. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="https://www.primekey.com/">PrimeKey</a>. 
   </p>
   <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
   <p>The patch should work on all HSMs that have support for SHA224WithECDSA. It has been tested on SafeNet Luna SA and Utimaco CryptoServer.
@@ -5316,7 +5316,7 @@ When configuring Active Directory LDAP, Bind DN for the users are usually,
 cn=user,cn=Users,dc=domain-component1,dc=domain-component2.
 <br></br>
 For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se for the domain
-primekey.se
+primekey.com
 </p><p>
 If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" 
 <br></br>
@@ -5557,7 +5557,7 @@ A guide for configuring OpenLDAP on Solaris can be found at
 <source>
 - sudo apt-get install slapd ldap-utils
 - sudo dpkg-reconfigure slapd
-  Configure slapd with your domain and admin password (primekey.se in this case).
+  Configure slapd with your domain and admin password (primekey.com in this case).
 - sudo /etc/init.d/slapd restart
 - 'ps -ef|grep slap' 
   should show a slapd running
@@ -7059,7 +7059,7 @@ A collection of samples are available in the directory modules/ejbca-ejb/src/org
 <li>Use support forums or mailing list to get help (provide full context, environment, the relevant logs, steps taken and what you are trying to accomplish)</li>
 <li>File a bug report in the issue tracker</li>
 </ul>
-Also note that you can get professional support from <a href="https://www.primekey.se/service-support/support/">PrimeKey</a>.
+Information about professional support can be found <a href="https://www.primekey.com/wp-content/uploads/2017/04/primekey-support.pdf">here</a>
 </p>
 </section>
 

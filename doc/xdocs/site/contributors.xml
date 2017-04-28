@@ -21,8 +21,8 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 
 <!--  email obfuscation tool http://www.seowebsitepromotion.com/obfuscate_email.asp -->
 <ul>
-<li>Tomas Gustavsson, <!-- tomas@primekey.se -->Project founder.</li>
-<li>Philip Vendil, <!-- philip@primekey.se -->Core developer until 2008.</li>
+<li>Tomas Gustavsson, <!-- tomas@primekey.com -->Project founder.</li>
+<li>Philip Vendil, <!-- philip@primekey.com -->Core developer.</li>
 <li>Anna Diruba Christensen, <!-- dilnet@hotmail.com -->First project homepage design, until EJBCA 3.5.</li>
 <li>Nathan Phelps, <!-- nphelps@solarc.com -->Testing, bugfinding and suggestions.</li>
 <li>Leo Tai, <!--hkleo@users.sourceforge.net  -->Oracle database configuration.</li>
@@ -33,7 +33,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Slava Sklarewski, <!-- slava.sklarewski@de.gi-de.com -->Data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, <!-- isbueno@users.sourceforge.net -->Patch for request template path.</li>
 <li>Jean Ye, <!-- zhjeanye@pub.zhuhai.gd.cn -->Support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA. Improved internationalization support. Chinese translation.</li>
-<li>Lars Silven, <!-- lars@primekey.se -->Core developer.</li>
+<li>Lars Silven, <!-- lars@primekey.com -->Core developer</li>
 <li>Gösta Bäckström, <!-- gosta.backstrom@goyada.com -->Initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, <!-- ville.skytta@secgo.com -->AdminCertReqServlet, Various patches, LDAP publisher advice</li>
 <li>Koen Serry, <!-- koen@serry.org -->Many small improvements.</li>
@@ -65,9 +65,9 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Alexander Horvath, <!-- alex@gekom.biz -->Patch to make OCSP compatible with Thunderbird/Firefox.</li>
 <li>Henrik Anreasson, <!-- han@han.pp.se -->Debian package, installer and documentation improvements, lots of testing and suggestions.</li>
 <li>Michael Rieken, <!-- michael.rieken@atosorigin.com -->Updates to german translation.</li>
-<li>Johan Eklund, <!-- johan@primekey.se -->Core developer.</li>
+<li>Johan Eklund, <!-- johan@primekey.com -->Core developer and Senior Architect (2015 - )</li>
 <li>Rolf Staflin, <!-- rolf@piro.se -->New public web for EJBCA 3.5.</li>
-<li>Joakim Bågnert, <!-- joakim@primekey.se -->Core Technician/Developer.</li>
+<li>Joakim Bågnert, <!-- joakim@primekey.com -->Core Technician.</li>
 <li>Munteanu Olimpiu Andrei, <!-- moa3333@gmail.com -->Jasper reports functionality.</li>
 <li>Lee, <!-- coregps@yahoo.com.cn -->updates to chineese translation.</li>
 <li>Yuji, <!-- yistoneriver@users.sourceforge.net -->patch for deadlock problem.</li>
@@ -83,7 +83,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Liam Kian Shin, <!-- kianshin.lim@gemalto.com -->Howto for using GEMSafe with EJBCA.</li>
 <li>Koichi Sugimoto, <!-- ko-sugimoto@users.sf.net -->initial patch for creating certificate request from any CA.</li>
 <li>Keijo Kurkinen, National Swedish Police Board, <!-- keijo.kurkinen@diversify.se -->Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
-<li>Tham Wickenberg, <!-- tham@primekey.se -->Core developer.</li>
+<li>Tham Wickenberg, <!-- tham@primekey.com -->Core developer</li>
 <li>Kelly Hayashi, <!-- kelly@evaltec.com.br -->patch for PKCS12 ExtRA requests not working with approvals.</li>
 <li>Jakob Jenkov, <!-- jakob@jenkov.com -->advice on fair thread locking for ProtectedLog synchronization.</li>
 <li>David Galichet, <!-- david.galichet@linagora.com -->add error code on web services. WS user creation uses profile informations</li>
@@ -97,11 +97,11 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Kevin Dean, <!-- kevin.dean@datadevelopment.com -->sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
 <li>Rafal Parzych, <!-- r.parzych@pwpw.pl -->fix IAIK provider usage with multiple CAs.</li>
 <li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation, proper key sequence incrementation, and other CVC fixes.</li>
-<li>Samuel Liden Borell, <!-- samuel@primekey.se -->Core developer.</li>
-<li>Aveen Ismail, <!-- aveen@primekey.se  -->Core developer.</li>
-<li>Mike Kushner, <!-- mike.kushner@primekey.se -->Core developer.</li>
-<li>Anders Rundgren, <!-- anders@primekey.se -->Core developer.</li>
-<li>Marcus Lundblad, <!-- marcus@primekey.se -->Core developer.</li>
+<li>Samuel Liden Borell, <!-- samuel@primekey.com -->Core developer.</li>
+<li>Aveen Ismail, <!-- aveen@primekey.com  -->Core developer.</li>
+<li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer and Product Owner (2015 - )</li>
+<li>Anders Rundgren, <!-- anders@primekey.com -->Core developer</li>
+<li>Marcus Lundblad, <!-- marcus@primekey.com -->Core developer</li>
 <li>Toru Tanaka, OGIS-RI Co. Ltd.,  Japaneese translation.</li>
 <li>Vlad, Exim Bank, <!-- VStepin@hq.eximb.com -->Fix for IE provider selection in External RA GUI.</li>
 <li>Matthias Knoll, BRZ, <!-- matthias.knoll@brz.gv.at -->Fix for automatic OCSP renewal using ECC.</li>

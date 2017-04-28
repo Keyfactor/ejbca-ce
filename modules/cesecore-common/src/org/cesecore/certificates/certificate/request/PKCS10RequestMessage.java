@@ -239,7 +239,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             return username;
         }
         // Special if the DN contains unstructuredAddress where it becomes: 
-        // CN=pix.primekey.se + unstructuredAddress=pix.primekey.se
+        // CN=pix.primekey.com + unstructuredAddress=pix.primekey.com
         // We only want the CN and not the oid-part.
         // Luckily for us this is handles automatically by BC X500Name class
         X500Name xname = getRequestX500Name();
