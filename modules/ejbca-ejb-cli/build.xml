@@ -41,6 +41,8 @@
     	<copy todir="${build.dir}/conf">
     		<fileset dir="${ejbca.home}/conf" includes="extendedkeyusage.properties"/>
     		<fileset dir="${ejbca.home}/conf" includes="ejbca.properties"/>
+            <!-- Required because it holds 'password.encryption.key', required for 'encryptpwd' CLI command. -->
+            <fileset dir="${ejbca.home}/conf" includes="cesecore.properties"/>
     	</copy>
     	<copy todir="${build.dir}">
     		<fileset dir="${ejbca.home}/src/java" includes="defaultvalues.properties"/>

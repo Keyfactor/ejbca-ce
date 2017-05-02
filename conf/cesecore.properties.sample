@@ -5,11 +5,26 @@
 # Default: false
 #allow.external-dynamic.configuration=false
 
-# ------------ Basic CA configuration ---------------------
+# -------------- NOTE for Upgrades --------------
 # When upgrading, the important options are:
 # - ca.keystorepass
+# - password.encryption.key
 # - ca.cmskeystorepass (in ejbca.properties)
 
+# -------------- General security --------------
+# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. Crypto Token
+#   passwords stored in database).
+# This property should be set before initial EJBCA installation and it should't be changed later, because there could exist
+#   passwords encrypted with the key about to be changed and EJBCA would be unable to decrypt them (note that the current implementation
+#   is capable to try decryption with the default key, i.e. qhrnf.f8743;12%#75, but it won't be able to decrypt passwords encrypted
+#   with a custom key being replaced for another custom key).
+# For setting this property you could use any password you consider safe, but it is strongly recommended that you use a randomly
+#   generated password, e.g. by using `openssl rand -base64 16`.
+# Default: qhrnf.f8743;12%#75
+#password.encryption.key=3YL2QzyiYmM=
+#password.encryption.key=!secret!
+
+# ------------ Basic CA configuration ---------------------
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
 # Note! If changing this value AFTER installation of EJBCA you must do 'ant clean; ant bootstrap' in order to activate changes.

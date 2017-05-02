@@ -9,6 +9,12 @@
 # and customize at will.
 #
 
+# -------------- NOTE for Upgrades --------------
+# When upgrading, the important options are:
+# - ca.keystorepass (in cesecore.properties)
+# - password.encryption.key (in cesecore.properties)
+# - ca.cmskeystorepass
+
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
 #appserver.home=/opt/jboss-as-7.1.1.Final

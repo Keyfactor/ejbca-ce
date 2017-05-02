@@ -78,7 +78,7 @@ public abstract class BaseCryptoTokenCommand extends EjbcaCliUserCommandBase {
         return getAuthenticationToken();
     }
 
-    /** @return a deobfuscated version of the parameter or use input if the parameter equals "null" */
+    /** @return a decrypted version of the parameter or use input if the parameter equals "null" */
     protected char[] getAuthenticationCode(final String commandLineArgument) {
         final char[] authenticationCode;
         if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {         

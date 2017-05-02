@@ -18,7 +18,11 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Implements the password encryption mechanism
@@ -29,6 +33,12 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
 
     private static final Logger log = Logger.getLogger(EncryptPwdCommand.class);
 
+    private static final String ENCRYPT_KEY = "--key";
+
+    {
+        registerParameter(new Parameter(ENCRYPT_KEY, "Input encryption key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.FLAG, "Read a custom encryption keyinstead of using the default value from cesecore.properties is used."));
+    }
     @Override
     public String getMainCommand() {
         return "encryptpwd";
@@ -36,24 +46,35 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "Encrypts a password to avoid accidental reading";
+        return "Encrypts a password";
     }
 
     @Override
     public String getFullHelpText() {
-        return "Encrypts a password to avoid accidental reading. This command takes no parameters, but will instead prompt for the password when run.";
+        return "Encrypts a password. This command takes no parameters, but will instead prompt for the password when run.";
     }
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         try {
-            log.info("Please note that this encryption does not provide absolute security, "
-                    + "it uses a build in key for encryption to keep the password from at least accidentaly beeing known.");
+            final boolean readKey = (parameters.get(ENCRYPT_KEY) != null ? Boolean.TRUE : Boolean.FALSE);
+            log.info("Please note that this encryption does not provide absolute security. "
+                    + "If 'password.encryption.key' property haven't been customized it doesn't provide more security than just preventing accidental viewing.");
+            char[] encryptionKey = null;
+            if (readKey) {
+                log.info("Enter encryption key: ");
+                encryptionKey = System.console().readPassword();
+            }
             log.info("Enter word to encrypt: ");
             String s = String.valueOf(System.console().readPassword());
             CryptoProviderTools.installBCProvider();
-            log.info("Encrypting pwd...");
-            String enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
+            log.info("Encrypting pwd ("+(readKey ? "with custom key" : "with default key")+")");
+            final String enc;
+            if (readKey) {
+                enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);                
+            } else {
+                enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
+            }
             log.info(enc);
         } catch (Exception e) {
             log.error(e.getMessage());
