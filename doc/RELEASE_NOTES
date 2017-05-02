@@ -7,6 +7,9 @@ to be consistent and understandable (for developers).
 Under the condition that you used approvals through the Web service API, and was reading this attribute from this exception, 
 you may experience a break in backwards compatibility. If the above conditions does not apply to you, you can expect the usual full backwards compatibility.
 
+EJBCA 6.7.0.1
+-----------
+This is a patch release for https://jira.primekey.se/browse/ECA-5853
 
 EJBCA 6.7.0
 -----------
