@@ -184,15 +184,13 @@
                             newuser.setClearTextPassword(false);
                         }
                     }
-                    ExtendedInformation ei = newuser.getExtendedInformation();
+                    // Start by filling all old ExtendedInformation from the existing user, if any
+                    // Fields that can be edited are changed below, but we don't want to loose anything
+                    ExtendedInformation ei = userdata.getExtendedInformation();
                     if (ei == null) {
                         ei = new ExtendedInformation();
                     }
                     editendentitybean.setExtendedInformation(ei);
-                    ExtendedInformation userei = userdata.getExtendedInformation();
-                    if (userei != null) {
-                        ei.setRemainingLoginAttempts(userei.getRemainingLoginAttempts());
-                    }
                     value = request.getParameter(RADIO_MAXFAILEDLOGINS);
                     if (RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED.equals(value)) {
                         value = "-1";

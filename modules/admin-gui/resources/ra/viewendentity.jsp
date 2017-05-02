@@ -7,7 +7,7 @@
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
                  org.cesecore.certificates.endentity.ExtendedInformation, org.apache.commons.lang.time.DateUtils, java.util.Locale,
                  org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.crl.RevokedCertInfo,
-                 org.ejbca.core.model.authorization.AccessRulesConstants" %>
+                 org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.util.CertTools" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -468,6 +468,28 @@
       </td>
     </tr>
       <% } %>
+
+    <!-- ---------- CSR -------------------- -->
+    <% if (  viewendentityhelper.userdata.getExtendedInformation() != null
+    	  && viewendentityhelper.userdata.getExtendedInformation().getCertificateRequest() != null
+    	  ) {
+        %>
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("CERTIFICATEREQUESTDATA") %></strong></td>
+	 <td>&nbsp;</td>
+       </tr>
+	  <%{
+		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+		final byte[] csr = viewendentityhelper.userdata.getExtendedInformation().getCertificateRequest();
+		final String csrPem = new String(CertTools.getPEMFromCertificateRequest(csr));
+		%>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CSR") %></td>
+			<td><pre><c:out value="<%= csrPem %>"/></pre></td>
+			</tr> 
+      <% } %>
+    <% } %>
 
 
     <!-- ---------- Actions -------------------- -->
