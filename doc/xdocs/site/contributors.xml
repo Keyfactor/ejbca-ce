@@ -115,6 +115,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Jean-Sébastien Bevilacqua, <!-- realitix@gmail.com -->Patch for not removing end entity profile in legacy script based auto enrollment.</li>
 <li>Markus Kilås,  <!-- markus.kilas@primekey.com -->Core Developer</li>
 <li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer</li>
+<li>Jamie Hablutzel, <!-- hablutzel1@gmail.com -->Ability to modify the built-in password encryption/obfuscation key.</li>
 </ul>
     </section>
   </body>
