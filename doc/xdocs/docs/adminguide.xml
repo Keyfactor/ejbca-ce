@@ -1345,7 +1345,7 @@ It is possible to specify more than one vendor CA. The vendor CA names should, i
 
 <subsubsection name="Cryptlib">
 <p>CMP has been tested with <a href="http://www.cryptlib.com/">CryptLib</a>.</p>
-<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="http://download.primekey.se/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
+<p>An old test program for running CryptLib against EJBCA can be downloaded <a href="https://download.primekey.se/ejbca/tests/ejbcaCryptLibTest.zip">here</a>.</p>
 </subsubsection>
 <subsubsection name="RSA jCert">
 <p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
@@ -3338,14 +3338,14 @@ If this property is not specified then the CA has to be manually activated after
 <br/>
 Manual activation is done in the admin-GUI under 'Basic Functions->View Information', or using the cli 'bin/ejbca.sh ca activateca'.
 </p><p>
-The 'pin' property can use a clear text password or an encrypted (obfuscated) one.
+The 'pin' property can use a clear text password or an encrypted one.
 </p>
 <source>
 pin foo123
 pin 6bc841b2745e2c95e042a68b4777b34c
 </source>
 <p>
-These two properties contains the same password. The obfuscated pin value can be obtained with the command 'bin/ejbca.sh encryptpwd':
+These two properties contains the same password. The encrypted pin value can be obtained with the command 'bin/ejbca.sh encryptpwd':
 </p>
 <source>
 $ bin/ejbca.sh encryptpwd foo123
@@ -3357,10 +3357,10 @@ Encrypting pwd...
 6bc841b2745e2c95e042a68b4777b34c
 </source>
 <p>
-NOTE: This obfuscated is not high security encryption, it is only meant to protect the password for accidental viewing. 
-The obfuscated algortihm uses a built in encryption key in EJBCA. With an encrypted pin you can for example bring up
-the 'Edit CAs' page in the Admin GUI without everyone around immediately seeing your password. If an attacker gets hold
-of the obfuscated value it is easy to decrypt using the source code of EJBCA.
+NOTE: This encrypted password is not high security encryption. If 'password.encryption.key' property haven't been customized
+it won't provide more security than just preventing accidental viewing because an EJBCA built-in encryption key will be used.
+If an attacker gets hold of the encrypted password and the 'password.encryption.key' haven't been customized,
+it is easy for anyone to decrypt the password using the source code of EJBCA.
 </p>
 </subsection>
 

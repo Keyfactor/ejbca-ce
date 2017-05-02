@@ -52,6 +52,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
@@ -451,7 +452,7 @@ public final class StringTools {
     }
     /**
      * Makes a string "hard" to read. Does not provide any real security, but at least lets you hide passwords so that people with no malicious
-     * content don't accidentally stumble upon information they should not have.
+     * intent don't accidentally stumble upon information they should not have.
      * 
      * @param s string to obfuscate
      * @return an obfuscated string, or same as input if null or empty
@@ -530,30 +531,35 @@ public final class StringTools {
         return saltStr.getBytes("UTF-8");
     }
 
-    private static final char[] p = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf").toCharArray();
-    /** number of rounds for password based encryption. 100 is not secure and can easily be broken.
-     * Used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
-     * This method is not supposed to be used for any real encryption, only obfuscation. 
-     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+    /** number of rounds for password based encryption. FIXME 100 is not secure and can easily be broken.
      */
     private static final int iCount = 100;
 
     /**
-     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
-     * This method is not supposed to be used for any real encryption, only obfuscation. 
-     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
+     * Method used for encrypting a string.
+     *
+     * Note that this method does provide limited security (e.g. DBA's won't be able to access encrypted passwords in database)
+     * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
             UnsupportedEncodingException {
+        char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+        return pbeEncryptStringWithSha256Aes192(in, p);
+    }
+
+    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) throws NoSuchAlgorithmException, NoSuchProviderException,
+    NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
+    UnsupportedEncodingException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
-            log.warn("Obfuscation not possible due to weak crypto policy.");
+            log.warn("Encryption not possible due to weak crypto policy.");
             return in;
         }
         final Digest digest = new SHA256Digest();
 
         final PKCS12ParametersGenerator pGen = new PKCS12ParametersGenerator(digest);
+        // TODO evaluate to always generate a new random salt and store it as part of the output to prevent attacks by means of precomputed keys (attack currently possible because of the stable salt and iteration count).
         pGen.init(PBEParametersGenerator.PKCS12PasswordToBytes(p), getSalt(), iCount);
 
         final ParametersWithIV params = (ParametersWithIV) pGen.generateDerivedParameters(192, 128);
@@ -568,17 +574,12 @@ public final class StringTools {
         return new String(hex);
     }
 
-    /**
-     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
-     * This method is not supposed to be used for any real encryption, only obfuscation. 
-     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
-     */
-    public static String pbeDecryptStringWithSha256Aes192(final String in) throws IllegalBlockSizeException, BadPaddingException,
+    public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             UnsupportedEncodingException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
-            log.warn("De-obfuscation not possible due to weak crypto policy.");
+            log.warn("Decryption not possible due to weak crypto policy.");
             return in;
         }
 
@@ -593,23 +594,27 @@ public final class StringTools {
         return new String(dec);
     }
 
-    /**
-     * Method used for "obfuscating" a string, i.e. it will mask it to not be possible to read and remember from the screen.
-     * This method is not supposed to be used for any real encryption, only obfuscation. 
-     * Someone getting hold of the obfuscated text will easily be able to get the clear text.
-     */
     public static String passwordDecryption(final String in, final String sDebug) {
         try {
-            final String tmp = pbeDecryptStringWithSha256Aes192(in);
+            final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             if (log.isDebugEnabled()) {
                 log.debug("Using encrypted " + sDebug);
             }
             return tmp;
         } catch (Throwable t) { // NOPMD: we want to catch everything here
-            if (log.isDebugEnabled()) {
-                log.debug("Using cleartext " + sDebug);
+            try {
+                final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+                log.warn("Using encrypted " + sDebug + " (falling back to default 'password.encryption.key')");
+                return tmp;
+            } catch (Throwable t2) { // NOPMD: we want to catch everything here
+                if (in.matches("[0-9a-fA-F]+") && in.length() % 32 == 0) { // If input is hexadecimal and its length is multiple of 32 (i.e. 16 bytes, AES block size) we assume it is an encrypted password.
+                    log.error("Password decryption failed. 'password.encryption.key' might have been modified more than once.");
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Using cleartext " + sDebug);
+                }
+                return in;
             }
-            return in;
         }
     }
 

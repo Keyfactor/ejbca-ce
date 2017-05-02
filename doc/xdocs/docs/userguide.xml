@@ -93,7 +93,7 @@ for a list of available sub-commands.
 <li>Type: PKCS#11 HSM slot mapping or a Soft PKCS#12 keystore in the database.</li>
 <li>Authentication Code: The PKCS#11 slot PIN or the password that will protect the soft keystore.</li>
 <li>Repeat Authentication Code: Should be the same as the previous field.</li>
-<li>Auto-activation: If the authentication code should be stored (obfuscated) in the database and used to always keep the Crypto Token active.</li>
+<li>Auto-activation: If the authentication code should be stored (encrypted) in the database and used to always keep the Crypto Token active.</li>
 <li>Allow export of private keys: EJBCA will not try to prevent Soft Crypto Token keystore export if this box is checked.</li>
 </ul>
 If you select (as type) to use a PKCS#11 Crypto Token additional fields are displayed (PKCS#11 may require additional configuration of your app server, see Installation pages):

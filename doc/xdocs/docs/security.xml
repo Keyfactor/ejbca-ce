@@ -178,27 +178,26 @@ It is not considered to be a security risk to declare all these passwords
 in clear text. Anyone that can log on to the server with EJBCA can, apart from
 reading these files, also do anything he wants with the CLI of EJBCA. If an unauthorized
 person can use the CLI, then this is a severe security risk. Access to these passwords
-is itself not much of a problem, since they have no use outside of the server
+is itself not much of a problem, since they have no use outside of the server (except for 'password.encryption.key' which
+can be used to decrypt encrypted passwords stored elsewhere, e.g. external database server).
 </p><p>
-It is very important to restrict the access to the server to only a very few trusted individuals.
+It is very important to restrict the access to the server to only a very few trusted individuals and promote separation of duties and the principle of least privilege, e.g. if there is a DBA, that person shouldn't have access to the application server, this way (if 'password.encryption.key' has been customized in application server) DBA won't be able to decrypt passwords stored in the database he has access to.
 </p><p>
-If you anyway want to do something about these passwords the subsections of this section
+If you want to do something about these passwords the subsections of this section
 describes what should be done:
 </p>
 <subsection name="Passwords used by EJBCA taken from property files">
 <p>
 Some of the passwords are used directly by EJBCA code.
 All these passwords may be configured encrypted in the same way as
-<a href="adminguide.html#Auto-activation%20of%20Crypto%20Tokens">PINs used for auto activation could be encrypted</a>.
+<a href="adminguide.html#Auto-activation%20of%20Crypto%20Tokens">PINs used for auto activation could be encrypted</a> (except for 'password.encryption.key' which is itself used for encrypting the other passwords).
 </p>
 <p>
-List of these passwords in ejbca.properites :
+List of these passwords across several configuration files:
+<br/>password.encryption.key
 <br/>ca.tokenpassword
 <br/>ca.keystorepass
-<br/>ca.ocspkeystorepass
 <br/>ca.cmskeystorepass
-</p><p>
-List of these passwords in databaseprotection.properties :
 <br/>databaseprotection.tokenpin
 </p>
 </subsection>

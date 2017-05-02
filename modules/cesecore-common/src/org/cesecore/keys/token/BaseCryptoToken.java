@@ -297,8 +297,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @param properties a Properties bag where to set the auto activation pin, can be null if you only want to create the return string, does not set
      *            a null or empty password
      * @param pin the activation password
-     * @param encrypt if the PIN should be encrypted with a simple built in encryption with only purpose of hiding the password from simple viewing.
-     *            No strong security from this encryption
+     * @param encrypt if the PIN should be encrypted with the configured password encryption key
      * @return A string that can be used to "setProperties" of a CryptoToken or null if pin is null or an empty string, this can safely be ignored if
      *         you don't know what to do with it
      */
