@@ -114,7 +114,7 @@
                                 rendered="#{enrollMakeNewRequestBean.renderNonModifiableTemplatesRendered}"
                                 value="#{enrollMakeNewRequestBean.renderNonModifiableTemplates ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
                                 styleClass="toggleMoreButton" immediate="true">
-                                <f:ajax execute="@this" render="@form"/>
+                                <f:ajax execute="@this" render="@form :requestInfoForm"/>
                             </h:commandButton>
                         </fieldset>
                         <script>ejbca.ra.touchUpDocument(); ejbca.ra.handleAutoFocus();</script>

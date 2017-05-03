@@ -300,7 +300,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (renderNonModifiableTemplates) {
             return true;
         }
-        return !isSelectEndEntityProfileRendered() || !isSelectCertificateProfileRendered() || !isSelectCertificateAuthorityRendered() || !isSelectKeyPairGenerationRendered();
+        return !isSelectEndEntityProfileRendered() || 
+                (!isSelectCertificateProfileRendered() && selectedEndEntityProfile != null) || 
+                (!isSelectCertificateAuthorityRendered() && selectedCertificateProfile != null) || 
+                (!isSelectKeyPairGenerationRendered() && selectedCertificateAuthority != null);
     }
 
     /** @return true if the the selectKeyAlgorithm should be rendered */
@@ -328,9 +331,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     /** @return true if not all fields (e.g. non-modifiable) are rendered by default */
     public boolean isRenderNonModifiableFieldsRendered() {
         if (renderNonModifiableFields) {
-            return true;
-        }
-        if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && getAvailableAlgorithmSelectItems().size()<=1) {
             return true;
         }
         if (getSubjectDn() != null) {
