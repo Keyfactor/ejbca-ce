@@ -93,10 +93,19 @@ function checkallfields(){
     if(!checkfieldforlegalemailcharswithoutatwithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
  
-    if(document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE", true) %>");
-      illegalfields++;
-    }
+	var options = document.editprofile.<%=SELECT_AVAILABLECERTPROFILES%>.selectedOptions;
+	var selInd = document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options.selectedIndex;
+	var existsInAvailable = false;
+	for (i = 0; i < options.length; i++) {
+		if (options[i].value == document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options[selInd].value) {
+			existsInAvailable = true;
+		}
+	}
+	if (!existsInAvailable) {
+	      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE", true) %>");
+	      illegalfields++;
+	}
+
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
       alert("<%=  ejbcawebbean.getText("ADEFAULTHARDTOKENISSUER", true) %>");
