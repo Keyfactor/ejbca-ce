@@ -530,16 +530,19 @@
              profiledata.setUseExtensiondata(CHECKBOX_VALUE.equalsIgnoreCase(request.getParameter(CHECKBOX_USE_EXTENSIONDATA)));
 
              String defaultcertprof =  request.getParameter(SELECT_DEFAULTCERTPROFILE);
-             profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0,defaultcertprof);
-             profiledata.setRequired(EndEntityProfile.DEFAULTCERTPROFILE, 0,true);
-
              String[] values = request.getParameterValues(SELECT_AVAILABLECERTPROFILES);
- 
-             if(defaultcertprof != null){
-               final String availablecertprofiles = ejbcarabean.getAvailableCasString(values, defaultcertprof);
-               profiledata.setValue(EndEntityProfile.AVAILCERTPROFILES, 0,availablecertprofiles);
-               profiledata.setRequired(EndEntityProfile.AVAILCERTPROFILES, 0,true);    
+             // Only set default cert profile value if it is among the available ones, if javascript check
+             // was bypassed, set default to nothing in order to avoid anything bad happening
+             if (ArrayUtils.contains(values, defaultcertprof)) {
+                 profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultcertprof);
+                 profiledata.setRequired(EndEntityProfile.DEFAULTCERTPROFILE, 0,true);
+             } else {
+                 profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "-1");
+                 profiledata.setRequired(EndEntityProfile.DEFAULTCERTPROFILE, 0,true);
              }
+             final String availablecertprofiles = ejbcarabean.getAvailableCertProfiles(defaultcertprof, values);
+             profiledata.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availablecertprofiles);
+             profiledata.setRequired(EndEntityProfile.AVAILCERTPROFILES, 0, true);    
 
              String defaultca =  request.getParameter(SELECT_DEFAULTCA);
              profiledata.setValue(EndEntityProfile.DEFAULTCA, 0,defaultca);
