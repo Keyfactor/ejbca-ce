@@ -1144,6 +1144,13 @@ public class RAInterfaceBean implements Serializable {
         return availabletokentypes;
     }
 
+    /**
+     * Handle the combinations of available cert profiles and default cert profile to get the correct available cert profiles line.
+     * @param availableCasArray an array of CA Ids
+     * @param defaultcertprof the Id of the selected default cert profile
+     * @param values an array of cert profile Ids
+     * @return the ;-seperated list of cert profile Ids
+     */
     public String getAvailableCertProfiles(final String defaultcertprof, final String[] values) {
         String availablecertprofiles =defaultcertprof;
         if (values!= null) {
