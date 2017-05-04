@@ -62,19 +62,17 @@ public class BaseCmpMessageHandler {
 	    this.confAlias = null;
 	}
 
-    protected BaseCmpMessageHandler(final AuthenticationToken admin, String configAlias, EjbBridgeSessionLocal ejbBridgeSession) {
-        this.admin = admin;
+    protected BaseCmpMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, String configAlias, EjbBridgeSessionLocal ejbBridgeSession) {
+        this.admin = authenticationToken;
         this.confAlias = configAlias;
-        this.cmpConfiguration = (CmpConfiguration) ejbBridgeSession.getGlobalConfigurationSession().getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.cmpConfiguration = cmpConfiguration;
         this.ejbBridgeSession = ejbBridgeSession;
         this.caSession = ejbBridgeSession.getCaSession();
         this.endEntityProfileSession = ejbBridgeSession.getEndEntityProfileSession();
         this.certificateProfileSession = ejbBridgeSession.getCertificateProfileSession();
     }
 
-	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. 
-	 * @throws AuthorizationDeniedException 
-	 * @throws CADoesntExistsException */
+	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. */
 	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
 		int ret = 0;
 		final String caName = cmpConfiguration.getRACAName(this.confAlias);

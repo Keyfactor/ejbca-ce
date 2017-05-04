@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -24,24 +25,21 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.configuration.GlobalConfigurationSession;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 
@@ -70,33 +68,16 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
         this.confAlias = null;
     }
     
-    public NestedMessageContent(final PKIMessage pkiMsg, String configAlias, GlobalConfigurationSession globalConfigSession) {
-        this.raSignedMessage = pkiMsg;
+    public NestedMessageContent(final PKIMessage pkiMessage, final CmpConfiguration cmpConfiguration, String configAlias) {
+        this.raSignedMessage = pkiMessage;
         this.confAlias = configAlias;
-        this.cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        setPKIMessageBytes(pkiMsg);
-        init();
-    }
-    
-    private void init() {
-        final PKIHeader header = getPKIMessage().getHeader();
-        ASN1OctetString os = header.getTransactionID();
-        if (os != null) {
-            final byte[] val = os.getOctets();
-            if (val != null) {
-                setTransactionId(new String(Base64.encode(val)));                           
-            }
-        }
-
-        os = header.getSenderNonce();
-        if (os != null) {
-            final byte[] val = os.getOctets();
-            if (val != null) {
-                setSenderNonce(new String(Base64.encode(val)));                         
-            }
-        }
-        setRecipient(header.getRecipient());
-        setSender(header.getSender());
+        this.cmpConfiguration = cmpConfiguration;
+        setPKIMessageBytes(pkiMessage);
+        final PKIHeader pkiHeader = pkiMessage.getHeader();
+        setTransactionId(getBase64FromAsn1OctetString(pkiHeader.getTransactionID()));
+        setSenderNonce(getBase64FromAsn1OctetString(pkiHeader.getSenderNonce()));
+        setRecipient(pkiHeader.getRecipient());
+        setSender(pkiHeader.getSender());
     }
 
     public PKIMessage getPKIMessage() {
@@ -122,31 +103,24 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
          */
         boolean ret = false;
         try {
-            final List<X509Certificate> racerts = getRaCerts();
-            if(log.isDebugEnabled()) {
-                log.debug("Found " + racerts.size() + " certificates in " + this.cmpConfiguration.getRACertPath(this.confAlias));
+            final String raCertsPath = this.cmpConfiguration.getRACertPath(this.confAlias);
+            final List<X509Certificate> racerts = getRaCerts(raCertsPath);
+            if (racerts.isEmpty()) {
+                log.info("No certificate files were found in " + raCertsPath);
             }
-            if(racerts.size() <= 0) {
-                String errorMessage = "No certificate files were found in " + this.cmpConfiguration.getRACertPath(this.confAlias);
-                log.info(errorMessage);
-            }
-
-            for (X509Certificate cert : racerts) {
-                if(log.isDebugEnabled()) {
+            for (final X509Certificate cert : racerts) {
+                if (log.isDebugEnabled()) {
                     log.debug("Trying to verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "'");
                 }
-
                 try {
                     cert.checkValidity();
-                } catch(CertificateExpiredException | CertificateNotYetValidException e) {                  
-                    if(log.isDebugEnabled()) {
-                        log.debug("Certificate with subjectDN '" + CertTools.getSubjectDN(cert) + "' is not valid.");
-                        log.debug(e.getLocalizedMessage());
+                } catch (CertificateExpiredException | CertificateNotYetValidException e) {                  
+                    if (log.isDebugEnabled()) {
+                        log.debug("Certificate with subjectDN '" + CertTools.getSubjectDN(cert) + "' is not valid: " + e.getMessage());
                     }
                     continue;
                 }
-                
-                if(raSignedMessage.getProtection() != null) {
+                if (raSignedMessage.getProtection() != null) {
                     final String algId; 
                     if (raSignedMessage.getHeader().getProtectionAlg() != null) {
                         algId = raSignedMessage.getHeader().getProtectionAlg().getAlgorithm().getId();    
@@ -160,44 +134,21 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     sig.initVerify(cert.getPublicKey());
                     sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                     ret = sig.verify(raSignedMessage.getProtection().getBytes());
-                    if(log.isDebugEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "' returned " + ret);
                     }
                 } else {
                     log.info("No signature was found in NestedMessageContent");
                 }
             }
-
-        } catch (CertificateException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-        } catch (IOException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-        } catch (NoSuchAlgorithmException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-        } catch (NoSuchProviderException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-        } catch (InvalidKeyException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
-            }
-        } catch (SignatureException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(e.getMessage());
             }
         }
-
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Verifying the NestedMessageContent returned " + ret);
         }
-
         return ret;
     }
 
@@ -206,46 +157,38 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
      *  
      * The certificate files should be PEM encoded.
      * 
-     * @return A list of the certificates in cmpConfiguration.getRaCertificatePath(). 
-     * @throws CertificateException
-     * @throws IOException
+     * @return A list of the valid certificates in cmpConfiguration.getRaCertificatePath(). 
      */
-    private List<X509Certificate> getRaCerts() throws CertificateException, IOException {
-            
-        final List<X509Certificate> racerts = new ArrayList<X509Certificate>();
-        final String raCertsPath = this.cmpConfiguration.getRACertPath(this.confAlias);
-        if(log.isDebugEnabled()) {
+    private List<X509Certificate> getRaCerts(final String raCertsPath) {
+        final List<X509Certificate> racerts = new ArrayList<>();
+        if (log.isDebugEnabled()) {
             log.debug("Looking for trusted RA certificate in " + raCertsPath);
         }
-
         final File raCertDirectory = new File(raCertsPath);
         final String[] files = raCertDirectory.list();
-        if(log.isDebugEnabled() && (files != null)) {
-            log.debug("Found " + files.length + " trusted RA certificate in " + raCertsPath);
-        }
-
-        String filepath;
-        if(files != null) {
-            for(String certFile : files) {
-                filepath = raCertsPath + "/" + certFile;
-                if(log.isDebugEnabled()) {
-                    log.debug("Reading certificate from " + filepath);
-                }
-
-                racerts.add((X509Certificate) CertTools.getCertsFromPEM(filepath, X509Certificate.class).iterator().next());
-                if(log.isDebugEnabled()) {
-                    log.debug("Added " + certFile + " to the list of trusted RA certificates");
-                }
-
+        if (files != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Found " + files.length + " trusted RA certificate in " + raCertsPath);
             }
+            for (final String certFile : files) {
+                final String filepath = raCertsPath + "/" + certFile;
+                try {
+                    racerts.add(CertTools.getCertsFromPEM(filepath, X509Certificate.class).iterator().next());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Added " + certFile + " to the list of trusted RA certificates");
+                    }
+                } catch (CertificateParsingException | FileNotFoundException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to add " + certFile + " to the list of trusted RA certificates: " + e.getMessage());
+                    }
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Found " + racerts.size() + " certificates in " + raCertsPath);
         }
         return racerts;
     }
-    
-    
-    
-
-
 
     @Override
     public String getCRLIssuerDN() {

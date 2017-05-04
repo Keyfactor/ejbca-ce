@@ -27,7 +27,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * 
  * @version $Id$
  */
-public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
+public class AlwaysAllowLocalAuthenticationToken extends NestableAuthenticationToken {
 
     private static final long serialVersionUID = -3942437717641924829L;
 
@@ -89,7 +89,7 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
     
     @Override
     protected String generateUniqueId() {
-        return generateUniqueId(super.isCreatedInThisJvm());
+        return generateUniqueId(super.isCreatedInThisJvm()) + ";" + super.generateUniqueId();
     }
 
     @Override

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -46,11 +45,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -61,7 +57,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -128,7 +123,6 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -140,7 +134,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -156,6 +149,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -290,25 +284,24 @@ public abstract class CmpTestCase extends CaTestCase {
             org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(notAfter);
             optionalValidityV.add(new DERTaggedObject(true, 1, na));
         }
-        OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
+        OptionalValidity optionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
 
-        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
+        CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
         if (notBefore != null || notAfter != null) {
-            myCertTemplate.setValidity(myOptionalValidity);
+            certTemplateBuilder.setValidity(optionalValidity);
         }
         if(issuerDN != null) {
-            myCertTemplate.setIssuer(new X500Name(issuerDN));
+            certTemplateBuilder.setIssuer(new X500Name(issuerDN));
         }
         if (userDN != null) {
             // This field can be empty in the spec, and it has happened for real that someone has used empty value here
-            myCertTemplate.setSubject(userDN);
+            certTemplateBuilder.setSubject(userDN);
         }
         SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
-        myCertTemplate.setPublicKey(keyInfo);
+        certTemplateBuilder.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         Extensions exts = extensions;
         if (exts == null) {
-           
             // SubjectAltName
             // Some altNames
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -322,22 +315,20 @@ public abstract class CmpTestCase extends CaTestCase {
             }
 
             // KeyUsage
-            int bcku = 0;
-            bcku = KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.nonRepudiation;
-            KeyUsage ku = new KeyUsage(bcku);
-            extgen.addExtension(Extension.keyUsage, false, new DERBitString(ku));
+            KeyUsage keyUsage = new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment | KeyUsage.nonRepudiation);
+            extgen.addExtension(Extension.keyUsage, false, new DERBitString(keyUsage));
 
             // Make the complete extension package
             exts = extgen.generate();
         }
-        myCertTemplate.setExtensions(exts);
+        certTemplateBuilder.setExtensions(exts);
         if (customCertSerno != null) {
             // Add serialNumber to the certTemplate, it is defined as a MUST NOT be used in RFC4211, but we will use it anyway in order
             // to request a custom certificate serial number (something not standard anyway)
-            myCertTemplate.setSerialNumber(new ASN1Integer(customCertSerno));
+            certTemplateBuilder.setSerialNumber(new ASN1Integer(customCertSerno));
         }
 
-        CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
+        CertRequest certRequest = new CertRequest(4, certTemplateBuilder.build(), null);
 
         // POPO
         /*
@@ -353,59 +344,54 @@ public abstract class CmpTestCase extends CaTestCase {
          * ASN1ObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
          * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
          */
-        ProofOfPossession myProofOfPossession = null;
+        ProofOfPossession proofOfPossession = null;
         if (raVerifiedPopo) {
             // raVerified POPO (meaning there is no POPO)
-            myProofOfPossession = new ProofOfPossession();
+            proofOfPossession = new ProofOfPossession();
         } else {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DEROutputStream mout = new DEROutputStream(baos);
-            mout.writeObject(myCertRequest);
+            mout.writeObject(certRequest);
             mout.close();
             byte[] popoProtectionBytes = baos.toByteArray();            
-            String    sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-            Signature sig;
+            String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
             try {
-                sig = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+                final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+                signature.initSign(keys.getPrivate());
+                signature.update(popoProtectionBytes);
+                DERBitString bs = new DERBitString(signature.sign());
+                POPOSigningKey popoSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
+                proofOfPossession = new ProofOfPossession(popoSigningKey);
             } catch (NoSuchProviderException e) {
                throw new IllegalStateException("BouncyCastle provider not found.", e);
             }
-            sig.initSign(keys.getPrivate());
-            sig.update(popoProtectionBytes);
-            DERBitString bs = new DERBitString(sig.sign());
-            POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
-            myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
         }
 
         AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
         AttributeTypeAndValue[] avs = {av};
 
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, myProofOfPossession, avs);
-        
-        CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
+        CertReqMsg certReqMsg = new CertReqMsg(certRequest, proofOfPossession, avs);
+        CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(senderDN), new GeneralName(new X500Name(
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
                 issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
         
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        myPKIHeader.setProtectionAlg(pAlg);
-        myPKIHeader.setSenderKID(senderKID);
-
-        PKIBody myPKIBody = new PKIBody(0, myCertReqMessages); // initialization request
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        return myPKIMessage;
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setProtectionAlg(pAlg);
+        pkiHeaderBuilder.setSenderKID(senderKID);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_INIT_REQ, certReqMessages);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        return pkiMessage;
     }
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
             boolean crlEntryExtension, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
-        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
-        myCertTemplate.setIssuer(new X500Name(issuerDN));
-        myCertTemplate.setSubject(userDN);
-        myCertTemplate.setSerialNumber(new ASN1Integer(serNo));
+        CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
+        certTemplateBuilder.setIssuer(new X500Name(issuerDN));
+        certTemplateBuilder.setSubject(userDN);
+        certTemplateBuilder.setSerialNumber(new ASN1Integer(serNo));
 
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         CRLReason crlReason;
@@ -419,80 +405,67 @@ public abstract class CmpTestCase extends CaTestCase {
         Extensions exts = extgen.generate();
         
         ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(myCertTemplate.build());
+        v.add(certTemplateBuilder.build());
         v.add(exts);
         ASN1Sequence seq = new DERSequence(v);
-        
-        RevDetails myRevDetails = RevDetails.getInstance(seq); //new RevDetails(myCertTemplate.build(), exts);
-        
-        RevReqContent myRevReqContent = new RevReqContent(myRevDetails);
+        RevDetails revDetails = RevDetails.getInstance(seq);
+        RevReqContent revReqContent = new RevReqContent(revDetails);
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), new GeneralName(new X500Name(
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(userDN), new GeneralName(new X500Name(
                 ((X509Certificate) cacert).getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        myPKIHeader.setProtectionAlg(pAlg);
-        myPKIHeader.setSenderKID(senderKID);
-
-        PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_REVOCATION_REQ, myRevReqContent); // revocation request
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        return myPKIMessage;
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setProtectionAlg(pAlg);
+        pkiHeaderBuilder.setSenderKID(senderKID);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_REVOCATION_REQ, revReqContent);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        return pkiMessage;
     }
 
     protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId) {
-
         String issuerDN = "CN=foobarNoCA";
         if(cacert != null) {
             issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
         }
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(userDN), 
-                                                               new GeneralName(new X500Name(issuerDN)));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-
-        CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(certReqId)));
-        
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(userDN), new GeneralName(new X500Name(issuerDN)));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        CertStatus certStatus = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(certReqId)));
         ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(cs);
-        CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
-        
-        PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_CERT_CONFIRM, cc); // Cert Confirm
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        return myPKIMessage;
+        v.add(certStatus);
+        CertConfirmContent certConfirmContent = CertConfirmContent.getInstance(new DERSequence(v));
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_CERT_CONFIRM, certConfirmContent);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        return pkiMessage;
     }
 
     protected static PKIMessage genRenewalReq(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, KeyPair keys, boolean raVerifiedPopo,
             X500Name reqSubjectDN, String reqIssuerDN, AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException, CertificateEncodingException {
  
-     CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
+     CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
 
      ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
      org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
      org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date());
      optionalValidityV.add(new DERTaggedObject(true, 0, nb));
      optionalValidityV.add(new DERTaggedObject(true, 1, na));
-     OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
-     
-     myCertTemplate.setValidity(myOptionalValidity);
+     OptionalValidity optionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
+     certTemplateBuilder.setValidity(optionalValidity);
      
      if(reqSubjectDN != null) {
-         myCertTemplate.setSubject(reqSubjectDN);
+         certTemplateBuilder.setSubject(reqSubjectDN);
      }
      if(reqIssuerDN != null) {
-         myCertTemplate.setIssuer(new X500Name(reqIssuerDN));
+         certTemplateBuilder.setIssuer(new X500Name(reqIssuerDN));
      }
 
-        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
-        myCertTemplate.setPublicKey(keyInfo);
+     SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
+     certTemplateBuilder.setPublicKey(keyInfo);
 
-     CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
+     CertRequest certRequest = new CertRequest(4, certTemplateBuilder.build(), null);
 
      // POPO
      /*
@@ -508,53 +481,46 @@ public abstract class CmpTestCase extends CaTestCase {
       * ASN1ObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
       * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
       */
-     ProofOfPossession myProofOfPossession = null;
+     ProofOfPossession proofOfPossession = null;
      if (raVerifiedPopo) {
          // raVerified POPO (meaning there is no POPO)
-         myProofOfPossession = new ProofOfPossession();
+         proofOfPossession = new ProofOfPossession();
      } else {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          DEROutputStream mout = new DEROutputStream(baos);
-         mout.writeObject(myCertRequest);
+         mout.writeObject(certRequest);
          mout.close();
          byte[] popoProtectionBytes = baos.toByteArray();
          String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-         Signature sig = Signature.getInstance(sigalg);
-         sig.initSign(keys.getPrivate());
-         sig.update(popoProtectionBytes);
-
-         DERBitString bs = new DERBitString(sig.sign());
-
-         POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
-         myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
+         try {
+             final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+             signature.initSign(keys.getPrivate());
+             signature.update(popoProtectionBytes);
+             DERBitString bs = new DERBitString(signature.sign());
+             POPOSigningKey popoSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
+             proofOfPossession = new ProofOfPossession(popoSigningKey);
+         } catch (NoSuchProviderException e) {
+             throw new IllegalStateException(e);
+         }
      }
 
-     // myCertReqMsg.addRegInfo(new AttributeTypeAndValue(new
-     // ASN1ObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
-     // DERInteger(1122334455)));
+     // certReqMsg.addRegInfo(new AttributeTypeAndValue(new ASN1ObjectIdentifier("1.3.6.2.2.2.2.3.1"), new DERInteger(1122334455)));
      AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
      AttributeTypeAndValue[] avs = {av};
 
-     CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, myProofOfPossession, avs);
-     
-     CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
+     CertReqMsg certReqMsg = new CertReqMsg(certRequest, proofOfPossession, avs);
+     CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
-     PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(
-             2, new GeneralName(userDN),
+     PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(2, new GeneralName(userDN),
              new GeneralName(new JcaX509CertificateHolder((X509Certificate)cacert).getSubject()));
-     myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-     // senderNonce
-     myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-     // TransactionId
-     myPKIHeader.setTransactionID(new DEROctetString(transid));
-     myPKIHeader.setProtectionAlg(pAlg);
-     myPKIHeader.setSenderKID(senderKID);
+     pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+     pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+     pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+     pkiHeaderBuilder.setProtectionAlg(pAlg);
+     pkiHeaderBuilder.setSenderKID(senderKID);
 
-     PKIBody myPKIBody = new PKIBody(PKIBody.TYPE_KEY_UPDATE_REQ, myCertReqMessages); // Key Update Request
-     PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-     
-     return myPKIMessage;
-
+     PKIBody pkiBody = new PKIBody(PKIBody.TYPE_KEY_UPDATE_REQ, certReqMessages);
+     return new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
  }
     
     protected static PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
@@ -682,13 +648,7 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        PKIMessage respObject = null;
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
+        PKIMessage respObject = PKIMessage.getInstance(retMsg);
         assertNotNull(respObject);
 
         // The signer, i.e. the CA, check it's the right CA
@@ -719,7 +679,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
 
         // Check that the signer is the expected CA    
-        assertEquals(header.getSender().getTagNo(), 4);
+        assertEquals(4, header.getSender().getTagNo());
         
         X500Name expissuer = new X500Name(issuerDN);
         X500Name actissuer = new X500Name(header.getSender().getName().toString());     
@@ -728,25 +688,14 @@ public abstract class CmpTestCase extends CaTestCase {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
             DERBitString bs = respObject.getProtection();
-            Signature sig;
             try {
-                sig = Signature.getInstance(expectedSignAlg, "BC");
-                sig.initVerify(cacert);
-                sig.update(protBytes);
-                boolean ret = sig.verify(bs.getBytes());
-                assertTrue(ret);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-                assertTrue(false);
-            } catch (NoSuchProviderException e) {
-                e.printStackTrace();
-                assertTrue(false);
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-                assertTrue(false);
-            } catch (SignatureException e) {
-                e.printStackTrace();
-                assertTrue(false);
+                final Signature signature = Signature.getInstance(expectedSignAlg, BouncyCastleProvider.PROVIDER_NAME);
+                signature.initVerify(cacert);
+                signature.update(protBytes);
+                assertTrue(signature.verify(bs.getBytes()));
+            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+                log.debug(e.getMessage(), e);
+                fail(e.getMessage());
             }
         }
         if (pbe) {
@@ -827,11 +776,7 @@ public abstract class CmpTestCase extends CaTestCase {
                 result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
             }
         }
-        if (StringUtils.isEmpty(result)) {
-            return defaultValue;
-        } else {
-            return result;
-        }
+        return StringUtils.defaultIfEmpty(result, defaultValue);
     }
 
     private static int getProperty(String key, int defaultValue) {
@@ -899,13 +844,12 @@ public abstract class CmpTestCase extends CaTestCase {
                 socket.close();
             }
         } catch (ConnectException e) {
-            assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmptcp.properties and redeploy.",
-                    false);
+            fail("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmptcp.properties and redeploy.");
         } catch (EOFException e) {
-            assertTrue("Response was malformed.", false);
+            fail("Response was malformed.");
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            log.debug(e.getMessage(), e);
+            fail(e.getMessage());
         }
         return null;
     }
@@ -923,294 +867,200 @@ public abstract class CmpTestCase extends CaTestCase {
         assertArrayEquals("Was '"+actual+"' expected '"+expected+"'.", expected.getEncoded(), actual.getEncoded() );
     }
 
-    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] retMsg, int requestId) throws Exception {
-        //
+    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
         // Parse response message
-        //
-        assertTrue(cacert instanceof X509Certificate);
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        assertNotNull(respObject);
-
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
         // Verify body type
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(1, tag);
-        
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
+        assertEquals(PKIBody.TYPE_INIT_REP, tag);
         // Verify the response
-        CertRepMessage c = (CertRepMessage) body.getContent();
-        assertNotNull(c);
-        CertResponse resp = c.getResponse()[0];
-        assertNotNull(resp);
-        assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-        
+        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+        assertNotNull(certRepMessage);
+        final CertResponse certResponse = certRepMessage.getResponse()[0];
+        assertNotNull(certResponse);
+        assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
         // Verify response status
-        PKIStatusInfo info = resp.getStatus();
-        assertNotNull(info);
-        assertEquals(0, info.getStatus().intValue());
-        
+        final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
+        assertNotNull(pkiStatusInfo);
+        assertEquals(ResponseStatus.SUCCESS.getValue(), pkiStatusInfo.getStatus().intValue());
         // Verify response certificate
-        CertifiedKeyPair kp = resp.getCertifiedKeyPair();
-        assertNotNull(kp);
-        CertOrEncCert cc = kp.getCertOrEncCert();
-        assertNotNull(cc);
-        final CMPCertificate cmpcert = cc.getCertificate();
-        assertNotNull(cmpcert);
-        final X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
-        checkDN(userDN, new JcaX509CertificateHolder(cert).getSubject());
-        assertArrayEquals(cert.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
-        
+        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+        assertNotNull(certifiedKeyPair);
+        final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+        assertNotNull(certOrEncCert);
+        final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
+        assertNotNull(cmpCertificate);
+        final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+        checkDN(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
+        assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
         // Verify the issuer of cert
-        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
+        final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
         final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
         assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-
-        Collection<X509Certificate> cacerts = new ArrayList<>();
-        cacerts.add(cacert);
-        assertTrue(CertTools.verify(cert, cacerts));
-        cacerts = new ArrayList<>();
-        cacerts.add(respCaCert);
-        assertTrue(CertTools.verify(cert,  cacerts));
-        
-        return cert;
+        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+        return leafCertificate;
     }
     
-    protected X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] retMsg, int requestId) throws Exception {
-        //
+    protected X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] pkiMessageBytes, int requestId) throws Exception {
         // Parse response message
-        //
-        
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        
-        assertNotNull(respObject);
-
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
         // Verify body type
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(8, tag);
-        
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
+        assertEquals(PKIBody.TYPE_KEY_UPDATE_REP, tag);
         // Verify the response
-        CertRepMessage c = (CertRepMessage) body.getContent();
-        assertNotNull(c);
-        CertResponse resp = c.getResponse()[0];
-        assertNotNull(resp);
-        assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-        
+        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+        assertNotNull(certRepMessage);
+        final CertResponse certResponse = certRepMessage.getResponse()[0];
+        assertNotNull(certResponse);
+        assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
         // Verify response status
-        PKIStatusInfo info = resp.getStatus();
-        assertNotNull(info);
-        assertEquals(0, info.getStatus().intValue());
-        
+        final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
+        assertNotNull(pkiStatusInfo);
+        assertEquals(ResponseStatus.SUCCESS.getValue(), pkiStatusInfo.getStatus().intValue());
         // Verify response certificate
-        CertifiedKeyPair kp = resp.getCertifiedKeyPair();
-        assertNotNull(kp);
-        CertOrEncCert cc = kp.getCertOrEncCert();
-        assertNotNull(cc);
-        final CMPCertificate cmpcert = cc.getCertificate();
-        assertNotNull(cmpcert);
-        X509Certificate cert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), X509Certificate.class);
-        final X500Name name = new X500Name(CertTools.getSubjectDN(cert));
+        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+        assertNotNull(certifiedKeyPair);
+        final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+        assertNotNull(certOrEncCert);
+        final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
+        assertNotNull(cmpCertificate);
+        final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+        final X500Name name = new X500Name(CertTools.getSubjectDN(leafCertificate));
         assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
-        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(issuerCert));
-        
+        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(leafCertificate)), CertTools.getSubjectDN(issuerCert));
         // Verify the issuer of cert
-        CMPCertificate respCmpCaCert = c.getCaPubs()[0];
+        final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
         final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
         assertEquals(CertTools.getFingerprintAsString(issuerCert), CertTools.getFingerprintAsString(respCaCert));
-        
-        Collection<X509Certificate> cacerts = new ArrayList<>();
-        cacerts.add(issuerCert);
-        assertTrue(CertTools.verify(cert, cacerts));
-        cacerts.clear();
-        cacerts.add(respCaCert);
-        assertTrue(CertTools.verify(cert,  cacerts));
-        return cert;
+        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(issuerCert)));
+        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+        return leafCertificate;
     }
 
-    protected static void checkCmpPKIConfirmMessage(X500Name userDN, Certificate cacert, byte[] retMsg) throws IOException {
-        //
-        // Parse response message
-        //
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        assertNotNull(respObject);
-        PKIHeader header = respObject.getHeader();
-        assertEquals(header.getSender().getTagNo(), 4);      
-        
-        X500Name responseDN = new X500Name(header.getSender().getName().toString());
-        X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
-        assertEquals(expectedDN, responseDN);
-        
-        responseDN = new X500Name(header.getRecipient().getName().toString());
-        assertEquals(userDN, responseDN);
-
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(19, tag);
-        PKIConfirmContent n = (PKIConfirmContent) body.getContent();
-        assertNotNull(n);
-        assertEquals(DERNull.INSTANCE, n.toASN1Primitive());
+    protected static void checkCmpPKIConfirmMessage(X500Name userDN, Certificate cacert, byte[] pkiMessageBytes) throws IOException {
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
+        final PKIHeader pkiHeader = pkiMessage.getHeader();
+        assertEquals(pkiHeader.getSender().getTagNo(), 4);      
+        final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
+        final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
+        assertEquals(expectedDN, senderDN);
+        final X500Name recipientDN = new X500Name(pkiHeader.getRecipient().getName().toString());
+        assertEquals(userDN, recipientDN);
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
+        assertEquals(PKIBody.TYPE_CONFIRM, tag);
+        final PKIConfirmContent pkiConfirmContent = (PKIConfirmContent) pkiBody.getContent();
+        assertNotNull(pkiConfirmContent);
+        assertEquals(DERNull.INSTANCE, pkiConfirmContent.toASN1Primitive());
     }
 
-    protected static void checkCmpRevokeConfirmMessage(String issuerDN, X500Name userDN, BigInteger serno, Certificate cacert, byte[] retMsg, boolean success)
+    protected static void checkCmpRevokeConfirmMessage(String issuerDN, X500Name userDN, BigInteger serno, Certificate cacert, byte[] pkiMessageBytes, boolean success)
             throws IOException {
-        //
-        // Parse response message
-        //
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        assertNotNull(respObject);
-        PKIHeader header = respObject.getHeader();
-        assertEquals(header.getSender().getTagNo(), 4);
-        
-        X500Name responseDN = new X500Name(header.getSender().getName().toString());
-        X500Name expectedDN = new X500Name(issuerDN);
-        assertEquals(expectedDN, responseDN);
-        
-        responseDN = new X500Name(header.getRecipient().getName().toString());
-        assertEquals(userDN, responseDN);
-
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(tag, 12);
-        RevRepContent n = (RevRepContent) body.getContent();
-        assertNotNull(n);
-        PKIStatusInfo info = n.getStatus()[0];
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
+        final PKIHeader pkiHeader = pkiMessage.getHeader();
+        assertEquals(pkiHeader.getSender().getTagNo(), 4);
+        final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
+        final X500Name expectedDN = new X500Name(issuerDN);
+        assertEquals(expectedDN, senderDN);
+        final X500Name recipientDN = new X500Name(pkiHeader.getRecipient().getName().toString());
+        assertEquals(userDN, recipientDN);
+        final PKIBody pkiBody = pkiMessage.getBody();
+        int tag = pkiBody.getType();
+        assertEquals(PKIBody.TYPE_REVOCATION_REP, tag);
+        final RevRepContent revRepContent = (RevRepContent) pkiBody.getContent();
+        assertNotNull(revRepContent);
+        final PKIStatusInfo pkiStatusInfo = revRepContent.getStatus()[0];
         if (success) {
-            assertEquals("If the revocation was successful, status should be 0.", 0, info.getStatus().intValue());
+            assertEquals("If the revocation was successful, status should be 0.", ResponseStatus.SUCCESS.getValue(), pkiStatusInfo.getStatus().intValue());
         } else {
-            assertEquals("If the revocation was unsuccessful, status should be 2.", 2, info.getStatus().intValue());
+            assertEquals("If the revocation was unsuccessful, status should be 2.", ResponseStatus.FAILURE.getValue(), pkiStatusInfo.getStatus().intValue());
         }
-
     }
 
     /**
      * 
-     * @param retMsg
+     * @param pkiMessageBytes the encoded response message
      * @param failMsg expected fail message
      * @param tag 1 is answer to initialisation resp, 3 certification resp etc, 23 is error
      * @param err a number from FailInfo
      * @throws IOException
      */
-    protected static void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
-        //
-        // Parse response message
-        //
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
-        assertNotNull(respObject);
-
-        final PKIBody body = respObject.getBody();
-        final int tag = body.getType();
+    protected static void checkCmpFailMessage(byte[] pkiMessageBytes, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
         assertEquals(exptag, tag);
-        final PKIStatusInfo info;
+        final PKIStatusInfo pkiStatusInfo;
+        assertNotNull(pkiBody.getContent());
         if (exptag == CmpPKIBodyConstants.ERRORMESSAGE) {
-            ErrorMsgContent c = (ErrorMsgContent) body.getContent();
-            assertNotNull(c);
-            info = c.getPKIStatusInfo();
-            assertNotNull(info);
-            assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().intValue());
-            int i = info.getFailInfo().intValue();
+            final ErrorMsgContent errorMsgContent = (ErrorMsgContent) pkiBody.getContent();
+            pkiStatusInfo = errorMsgContent.getPKIStatusInfo();
+            assertNotNull(pkiStatusInfo);
+            assertEquals(ResponseStatus.FAILURE.getValue(), pkiStatusInfo.getStatus().intValue());
+            int i = pkiStatusInfo.getFailInfo().intValue();
             assertEquals(err, i);
         } else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
-            RevRepContent rrc = (RevRepContent) body.getContent();
-            assertNotNull(rrc);
-            info = rrc.getStatus()[0];
-            assertNotNull(info);
-            assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().intValue());
-            assertEquals(expectedPKIFailInfo, info.getFailInfo().intValue());
-        } else {
-            CertRepMessage c = null;
-            if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE || exptag == CmpPKIBodyConstants.CERTIFICATIONRESPONSE) {
-                c = (CertRepMessage) body.getContent();
-            }
-            assertNotNull(c);
-            CertResponse resp = c.getResponse()[0];
+            RevRepContent revRepContent = (RevRepContent) pkiBody.getContent();
+            pkiStatusInfo = revRepContent.getStatus()[0];
+            assertNotNull(pkiStatusInfo);
+            assertEquals(ResponseStatus.FAILURE.getValue(), pkiStatusInfo.getStatus().intValue());
+            assertEquals(expectedPKIFailInfo, pkiStatusInfo.getFailInfo().intValue());
+        } else if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE || exptag == CmpPKIBodyConstants.CERTIFICATIONRESPONSE) {
+            CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+            CertResponse resp = certRepMessage.getResponse()[0];
             assertNotNull(resp);
             assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-            info = resp.getStatus();
-            assertNotNull(info);
-            int error = info.getStatus().intValue();
-            assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is
-                                                                    // rejection
-            assertEquals(expectedPKIFailInfo, info.getFailInfo().intValue());
+            pkiStatusInfo = resp.getStatus();
+            assertNotNull(pkiStatusInfo);
+            int error = pkiStatusInfo.getStatus().intValue();
+            assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is rejection
+            assertEquals(expectedPKIFailInfo, pkiStatusInfo.getFailInfo().intValue());
+        } else {
+            pkiStatusInfo = null;
+            fail("Unsuported exptag '"+exptag+"'");
         }
-        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + info.getStatusString().getStringAt(0).getString() + "'.");
-        assertEquals(failMsg, info.getStatusString().getStringAt(0).getString());
+        log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + pkiStatusInfo.getStatusString().getStringAt(0).getString() + "'.");
+        assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAt(0).getString());
     }
 
-    protected static void checkCmpPKIErrorMessage(byte[] retMsg, String sender, X500Name recipient, int errorCode, String errorMsg) throws IOException {
-        //
-        // Parse response message
-        //
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
+    protected static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
+        final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+        assertNotNull(pkiMessage);
+        final PKIHeader pkiHeader = pkiMessage.getHeader();
+        assertEquals(pkiHeader.getSender().getTagNo(), 4);
+        final X500Name senderName = X500Name.getInstance(pkiHeader.getSender().getName());
+        assertEquals("Not the expected sender.", sender, senderName.toString());
+        final X500Name recipientName = X500Name.getInstance(pkiHeader.getRecipient().getName());
+        assertArrayEquals("Not the expected recipient.", recipient.getEncoded(), recipientName.getEncoded());
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
+        assertEquals("Unexpected response PKIBody type", PKIBody.TYPE_ERROR, tag);
+        final ErrorMsgContent errorMsgContent = (ErrorMsgContent) pkiBody.getContent();
+        assertNotNull("Expected present ErrorMsgContent in body content.", errorMsgContent);
+        final PKIStatusInfo pkiStatusInfo = errorMsgContent.getPKIStatusInfo();
+        assertNotNull("Expected present PKIStatusInfo.", pkiStatusInfo);
+        assertEquals("Unexpected status.", 2, pkiStatusInfo.getStatus().intValue());
+        final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
+        if (log.isDebugEnabled() && pkiFreeText!=null) {
+            log.debug("Response error message: " + pkiFreeText.getStringAt(0).getString());
         }
-        assertNotNull(respObject);
-        PKIHeader header = respObject.getHeader();
-        assertEquals(header.getSender().getTagNo(), 4);
-        {
-            final X500Name name = X500Name.getInstance(header.getSender().getName());
-            assertEquals(name.toString(), sender);
-        }
-        {
-            final X500Name name = X500Name.getInstance(header.getRecipient().getName());
-            assertArrayEquals(name.getEncoded(), recipient.getEncoded());
-        }
-
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();
-        assertEquals(tag, 23);
-        ErrorMsgContent n = (ErrorMsgContent) body.getContent();
-        assertNotNull(n);
-        PKIStatusInfo info = n.getPKIStatusInfo();
-        assertNotNull(info);
-        BigInteger i = info.getStatus();
-        assertEquals(i.intValue(), 2);
-        DERBitString b = info.getFailInfo();
-        assertEquals("Return wrong error code.", errorCode, b.intValue());
+        assertEquals("Return wrong error code.", expectedErrorCode, pkiStatusInfo.getFailInfo().intValue());
         if (errorMsg != null) {
-            PKIFreeText freeText = info.getStatusString();
-            DERUTF8String utf = freeText.getStringAt(0);
-            assertEquals(errorMsg, utf.getString());
+            assertEquals(errorMsg, pkiFreeText.getStringAt(0).getString());
         }
     }
 
+    /** @return one of the RevokedCertInfo constants */
     protected int checkRevokeStatus(String issuerDN, BigInteger serno) {
-        int ret = RevokedCertInfo.NOT_REVOKED;
-        CertificateStatus info = this.certificateStoreSession.getStatus(issuerDN, serno);
-        ret = info.revocationReason;
-        return ret;
+        return this.certificateStoreSession.getStatus(issuerDN, serno).revocationReason;
     }
 
     protected static void updatePropertyOnServer(String property, String value) {
@@ -1242,18 +1092,13 @@ public abstract class CmpTestCase extends CaTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException, CustomFieldException {
         // Make USER that we know...
-        boolean userExists = false;
-        final int cpID;
-        final int eepID;
-        final X500Name userDN;
+        int cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
+        int eepID = SecConst.EMPTY_ENDENTITYPROFILE;
+        X500Name userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
         if (useDnOverride) {
             cpID = this.cpDnOverrideId;
             eepID = this.eepDnOverrideId;
             userDN = new X500Name(dn);
-        } else {
-            cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-            eepID = SecConst.EMPTY_ENDENTITYPROFILE;
-            userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
         }
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1261,11 +1106,7 @@ public abstract class CmpTestCase extends CaTestCase {
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN);
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, true);
-        } catch (Exception e) {
-            userExists = true;
-        }
-
-        if (userExists) {
+        } catch (EndEntityExistsException e) {
             log.debug("USER already exists: " + user.getUsername() + ", foo123, " + userDN);
             this.endEntityManagementSession.changeUser(ADMIN, user, true);
             this.endEntityManagementSession.setUserStatus(ADMIN, user.getUsername(), EndEntityConstants.STATUS_NEW);
@@ -1283,37 +1124,22 @@ public abstract class CmpTestCase extends CaTestCase {
             NoSuchEndEntityException, CustomFieldException {
            
         createUser(username, "CN="+username, password, caid);
-        int certificateProfileId;
-        if(certProfile != null) {
-            certificateProfileId = certProfileSession.getCertificateProfileId(certProfile);
-        } else {
-            certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
-        }
+        int certificateProfileId = certProfileSession.getCertificateProfileId(certProfile);
         
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
                 X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,
                 certificateProfileId, caid);
         
-        List<Certificate> certCollection = new ArrayList<Certificate>();
-        certCollection.add(racert);
-        byte[] pemRaCert = CertTools.getPemFromCertificateChain(certCollection);
+        byte[] pemRaCert = CertTools.getPemFromCertificateChain(Arrays.asList(racert));
         
         String filename = raCertsPath + "/" + username + ".pem";
-        FileOutputStream fout = new FileOutputStream(filename);
-        fout.write(pemRaCert);
-        fout.flush();
-        fout.close();        
-        
+        try (final FileOutputStream fos = new FileOutputStream(filename);) {
+            fos.write(pemRaCert);
+            fos.flush();
+        }
         this.endEntityManagementSession.deleteUser(ADMIN, username);
-        
         return racert;
     }
-
-
-
-    //
-    // Private methods
-    //
 
     private static byte[] createTcpMessage(byte[] msg) throws IOException {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -1331,5 +1157,4 @@ public abstract class CmpTestCase extends CaTestCase {
         dos.flush();
         return bao.toByteArray();
     }
-
 }

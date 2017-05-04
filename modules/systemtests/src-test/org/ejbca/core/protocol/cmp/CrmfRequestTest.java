@@ -20,8 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -33,11 +31,10 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -76,6 +73,8 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -87,7 +86,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * This test runs in 'normal' CMP mode
+ * This test runs in CMP client mode.
+ * 
  * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
  * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the 
  * test from Eclipse.
@@ -111,6 +111,7 @@ public class CrmfRequestTest extends CmpTestCase {
     private final static String cmpAlias = "CrmfRequestTestCmpConfigAlias";
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -187,15 +188,12 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(req);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
 
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
-                                                                                // FailInfo.INCORRECT_DATA
+        // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
+        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData);
         log.trace("<test01CrmfHttpUnknowUser");
     }
 
@@ -209,20 +207,17 @@ public class CrmfRequestTest extends CmpTestCase {
         PKIMessage req = genCertReq(ISSUER_DN, USER_DN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
         X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, this.keys.getPrivate(), this.keys.getPublic(), "SHA256WithRSA", false);
-        ArrayList<Certificate> signCertColl = new ArrayList<Certificate>();
+        ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signCert);
         CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
-                                                                                // FailInfo.INCORRECT_DATA
+        // Expect a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
+        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData);
     }
 
     @Test
@@ -238,10 +233,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(req);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -252,11 +244,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send a confirm message to the CA
         String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
-        assertNotNull(confirm);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(confirm);
-        ba = bao.toByteArray();
+        ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -264,15 +252,11 @@ public class CrmfRequestTest extends CmpTestCase {
 
         // Now revoke the bastard!
         PKIMessage rev = genRevReq(ISSUER_DN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
-        assertNotNull(rev);
-        ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-        DEROutputStream outrev = new DEROutputStream(baorev);
-        outrev.writeObject(rev);
-        byte[] barev = baorev.toByteArray();
+        byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 
+        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId, 
                                 PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
         log.trace("<test03CrmfHttpOkUser");
     }
@@ -280,6 +264,8 @@ public class CrmfRequestTest extends CmpTestCase {
     @Test
     public void test04BlueXCrmf() throws Exception {
         log.trace(">test04BlueXCrmf");
+        // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
+        super.createCmpUser("cmptest_test04BlueXCrmf", "CN=Some Common Name", false, this.caid);
         byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
@@ -296,9 +282,10 @@ public class CrmfRequestTest extends CmpTestCase {
         msg[22] = 0;
         msg[56] = 0;
         msg[88] = 0;
-        // Bad request will return HTTP 400 (bad request)
-        byte[] resp = sendCmpHttp(msg, 400, cmpAlias);
-        assertNull(resp);
+        /* Before EJBCA 6.8.0 we responded with HTTP 400, but now we send a PKIFailureInfo.badRequest instead. */
+        byte[] resp = sendCmpHttp(msg, 200, cmpAlias);
+        assertNotNull(resp);
+        checkCmpFailMessage(resp, "Not a valid CMP message.", 23, 123, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
         log.trace("<test05BadBytes");
     }
 
@@ -359,10 +346,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(req);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -373,10 +357,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(rev);        
         rev = protectPKIMessage(rev, false, "foo123", 567);
         assertNotNull(rev);
-        ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-        DEROutputStream outrev = new DEROutputStream(baorev);
-        outrev.writeObject(rev);
-        byte[] barev = baorev.toByteArray();
+        byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
         // Send request and receive response
         resp = sendCmpHttp(barev, 200,cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -391,10 +372,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(req);
         ir = (CertReqMessages) req.getBody().getContent();
         reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(req);
-        ba = bao.toByteArray();
+        ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -405,10 +383,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(rev);
         rev = protectPKIMessage(rev, false, "foo123", 567);
         assertNotNull(rev);
-        baorev = new ByteArrayOutputStream();
-        outrev = new DEROutputStream(baorev);
-        outrev.writeObject(rev);
-        barev = baorev.toByteArray();
+        barev = CmpMessageHelper.pkiMessageToByteArray(rev);
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -461,10 +436,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(req);
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, requestName, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -475,10 +447,7 @@ public class CrmfRequestTest extends CmpTestCase {
             PKIMessage rev = genRevReq(ISSUER_DN, requestName, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
             assertNotNull(rev);
             rev = protectPKIMessage(rev, false, "foo123", 567);
-            ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-            DEROutputStream outrev = new DEROutputStream(baorev);
-            outrev.writeObject(rev);
-            byte[] barev = baorev.toByteArray();
+            byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
             resp = sendCmpHttp(barev, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, requestName, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -509,10 +478,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(req);
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -523,10 +489,7 @@ public class CrmfRequestTest extends CmpTestCase {
             PKIMessage rev = genRevReq(ISSUER_DN, dn, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
             assertNotNull(rev);
             rev = protectPKIMessage(rev, false, "foo123", 567);
-            ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-            DEROutputStream outrev = new DEROutputStream(baorev);
-            outrev.writeObject(rev);
-            byte[] barev = baorev.toByteArray();
+            byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
             resp = sendCmpHttp(barev, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -575,7 +538,6 @@ public class CrmfRequestTest extends CmpTestCase {
             X509Certificate subcaCert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
 
             // --------- Create a user ----------------- //
-            boolean userExists = false;
             final X500Name userDN = new X500Name("C=SE,O=PrimeKey,CN=cmptest");
             EndEntityInformation user = new EndEntityInformation("cmptest", userDN.toString(), subcaID,
                     null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
@@ -586,17 +548,12 @@ public class CrmfRequestTest extends CmpTestCase {
             try {
                 this.endEntityManagementSession.addUser(ADMIN, user, true); 
                 log.debug("created user: cmptest, foo123, " + userDN);
-            } catch (Exception e) {
-                userExists = true;
-            }
-
-            if (userExists) {
+            } catch (EndEntityExistsException e) {
                 log.debug("User cmptest already exists.");
                 this.endEntityManagementSession.changeUser(ADMIN, user, true);
                 this.endEntityManagementSession.setUserStatus(ADMIN, "cmptest", EndEntityConstants.STATUS_NEW);
                 log.debug("Reset status to NEW");
             }
-
 
             assertTrue(this.endEntityManagementSession.existsUser("cmptest"));
             EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -612,10 +569,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(req);
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
+            byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, subcaDN, userDN, subcaCert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -623,13 +577,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(cert);
 
             // ------- Check that the entire certificate chain is in the extraCerts field in the response
-            PKIMessage respMsg = null;
-            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            try {
-                respMsg = PKIMessage.getInstance(asn1InputStream.readObject());
-            } finally {
-                asn1InputStream.close();
-            }
+            PKIMessage respMsg = PKIMessage.getInstance(resp);
             assertNotNull(respMsg);
 
             CMPCertificate[] certChain = respMsg.getExtraCerts();
@@ -652,11 +600,82 @@ public class CrmfRequestTest extends CmpTestCase {
         }
     }
 
-    
-    
-    
-
-
+    /*
+     *     header
+     *         pvno: cmp2000 (2)
+     *         sender: 4
+     *             directoryName: rdnSequence (0)
+     *                 rdnSequence: 0 items
+     *         recipient: 4
+     *             directoryName: rdnSequence (0)
+     *                 rdnSequence: 4 items (id-at-commonName=Test CA 1,id-at-organizationalUnitName=Development,id-at-organizationName=A.E.T. Europe B.V.,id-at-countryName=NL)
+     *                     RDNSequence item: 1 item (id-at-countryName=NL)
+     *                         RelativeDistinguishedName item (id-at-countryName=NL)
+     *                             Id: 2.5.4.6 (id-at-countryName)
+     *                             CountryName: NL
+     *                     RDNSequence item: 1 item (id-at-organizationName=A.E.T. Europe B.V.)
+     *                         RelativeDistinguishedName item (id-at-organizationName=A.E.T. Europe B.V.)
+     *                             Id: 2.5.4.10 (id-at-organizationName)
+     *                             DirectoryString: printableString (1)
+     *                                 printableString: A.E.T. Europe B.V.
+     *                     RDNSequence item: 1 item (id-at-organizationalUnitName=Development)
+     *                         RelativeDistinguishedName item (id-at-organizationalUnitName=Development)
+     *                             Id: 2.5.4.11 (id-at-organizationalUnitName)
+     *                             DirectoryString: printableString (1)
+     *                                 printableString: Development
+     *                     RDNSequence item: 1 item (id-at-commonName=Test CA 1)
+     *                         RelativeDistinguishedName item (id-at-commonName=Test CA 1)
+     *                             Id: 2.5.4.3 (id-at-commonName)
+     *                             DirectoryString: printableString (1)
+     *                                 printableString: Test CA 1
+     *         protectionAlg (PasswordBasedMac)
+     *             Algorithm Id: 1.2.840.113533.7.66.13 (PasswordBasedMac)
+     *             PBMParameter
+     *                 salt: 02bf1fb0e8fb9e4def6e0a76fc66ecd7
+     *                 owf (SHA-1)
+     *                     Algorithm Id: 1.3.14.3.2.26 (SHA-1)
+     *                 iterationCount: 1000
+     *                 mac (HMAC SHA-1)
+     *                     Algorithm Id: 1.3.6.1.5.5.8.1.2 (HMAC SHA-1)
+     *         senderKID: 73736c636c69656e74
+     *         transactionID: a45a41b289df8675bc89ad68b46721ad
+     *         senderNonce: 32cddde790a033709a8616b0f0d23918
+     *     body: ir (0)
+     *         ir: 1 item
+     *             CertReqMsg
+     *                 certReq
+     *                     certReqId: 0
+     *                     certTemplate
+     *                         validity
+     *                             notBefore: generalTime (1)
+     *                                 generalTime: 2006-09-19 16:11:26 (UTC)
+     *                             notAfter: generalTime (1)
+     *                                 generalTime: 2009-06-15 16:11:26 (UTC)
+     *                         subject: 0
+     *                             rdnSequence: 1 item (id-at-commonName=Some Common Name)
+     *                                 RDNSequence item: 1 item (id-at-commonName=Some Common Name)
+     *                                     RelativeDistinguishedName item (id-at-commonName=Some Common Name)
+     *                                         Id: 2.5.4.3 (id-at-commonName)
+     *                                         DirectoryString: uTF8String (4)
+     *                                             uTF8String: Some Common Name
+     *                         publicKey
+     *                             algorithm (rsaEncryption)
+     *                                 Algorithm Id: 1.2.840.113549.1.1.1 (rsaEncryption)
+     *                             Padding: 0
+     *                             subjectPublicKey: 30818a02818100b8181318f817ad2dc020f37a8973ba2cd7...
+     *                         extensions: 1 item
+     *                             Extension
+     *                                 Id: 2.5.29.17 (id-ce-subjectAltName)
+     *                                 GeneralNames: 1 item
+     *                                     GeneralName: otherName (0)
+     *                                         otherName
+     *                                             type-id: 1.3.6.1.4.1.311.20.2.3 (id-ms-user-principal-name)
+     *                                             UTF8String: upn@aeteurope.nl
+     *                 popo: raVerified (0)
+     *                     raVerified
+     *     Padding: 0
+     *     protection: 32fef4a83547af71d5315e4090c777efc648e1e8
+     */
     static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
             + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
             + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"

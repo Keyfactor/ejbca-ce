@@ -13,10 +13,9 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,9 +27,10 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.crypto.Mac;
@@ -41,7 +41,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -63,6 +62,7 @@ import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
@@ -99,6 +99,7 @@ public class CmpMessageHelper {
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
+    public static final int MAX_LEVEL_OF_NESTING = 15;
 
     /** Array that converts our error codes from FailInfo to CMP BITString error codes. FailInfo use plain integer codes, which are
      * the same as positions in the CMP bit string
@@ -125,55 +126,40 @@ public class CmpMessageHelper {
 
     public static PKIHeaderBuilder createPKIHeaderBuilder(GeneralName sender, GeneralName recipient, String senderNonce, String recipientNonce,
             String transactionId) {
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, sender, recipient);
-        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        PKIHeaderBuilder pkiHeader = new PKIHeaderBuilder(PKIHeader.CMP_2000, sender, recipient);
+        pkiHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         if (senderNonce != null) {
-            myPKIHeader.setSenderNonce(new DEROctetString(Base64.decode(senderNonce.getBytes())));
+            pkiHeader.setSenderNonce(new DEROctetString(Base64.decode(senderNonce.getBytes())));
         }
         if (recipientNonce != null) {
-            myPKIHeader.setRecipNonce(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
+            pkiHeader.setRecipNonce(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
         }
         if (transactionId != null) {
-            myPKIHeader.setTransactionID(new DEROctetString(Base64.decode(transactionId.getBytes())));
+            pkiHeader.setTransactionID(new DEROctetString(Base64.decode(transactionId.getBytes())));
         }
-        return myPKIHeader;
+        return pkiHeader;
     }
 
-    public static byte[] signPKIMessage(PKIMessage myPKIMessage, Collection<Certificate> signCertChain, PrivateKey signKey, String digestAlg,
+    public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain, PrivateKey signKey, String digestAlg,
             String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
             CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">signPKIMessage()");
         }
-        CMPCertificate[] extraCerts = new CMPCertificate[signCertChain.size()];
-        Iterator<Certificate> itr = signCertChain.iterator();
-        int i = 0;
-        while (itr.hasNext()) {
-            X509Certificate tmp = (X509Certificate) itr.next();
-            ASN1InputStream asn1InputStream = null;
-            try {
-                try {
-                    asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(tmp.getEncoded()));
-                    CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
-                    extraCerts[i] = signStruct;
-                } finally {
-                    asn1InputStream.close();
-                }
-            } catch (IOException e) {
-                throw new IllegalStateException("Caught unexpected IOException", e);
-            }
-            i++;
+        final List<CMPCertificate> extraCertsList = new ArrayList<>();
+        for (final Certificate certificate : signCertChain) {
+            extraCertsList.add(CMPCertificate.getInstance(((X509Certificate)certificate).getEncoded()));
         }
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, extraCerts, signKey, digestAlg, provider);
+        final CMPCertificate[] extraCerts = extraCertsList.toArray(new CMPCertificate[signCertChain.size()]);
+        final PKIMessage signedPkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, extraCerts, signKey, digestAlg, provider);
         if (LOG.isTraceEnabled()) {
             LOG.trace("<signPKIMessage()");
         }
         // Return response as byte array 
-        return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
-
+        return CmpMessageHelper.pkiMessageToByteArray(signedPkiMessage);
     }
 
-    public static PKIMessage buildCertBasedPKIProtection(PKIMessage pKIMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg,
+    public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg,
             String provider) throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException {
         // Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
         ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(digestAlg, key.getAlgorithm());
@@ -182,7 +168,7 @@ public class CmpMessageHelper {
         }
         // According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
         // For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
-        PKIHeaderBuilder headerBuilder = getHeaderBuilder(pKIMessage.getHeader());
+        PKIHeaderBuilder headerBuilder = getHeaderBuilder(pkiMessage.getHeader());
         AlgorithmIdentifier pAlg = null;
         if ("RSA".equalsIgnoreCase(key.getAlgorithm())) {
             pAlg = new AlgorithmIdentifier(oid, DERNull.INSTANCE);
@@ -199,14 +185,14 @@ public class CmpMessageHelper {
         }
         Signature sig = Signature.getInstance(signatureAlgorithmName, provider);
         sig.initSign(key);
-        sig.update(CmpMessageHelper.getProtectedBytes(head, pKIMessage.getBody()));
-
-        if ((extraCerts != null) && (extraCerts.length > 0)) {
-            pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()), extraCerts);
+        sig.update(CmpMessageHelper.getProtectedBytes(head, pkiMessage.getBody()));
+        final PKIMessage protectedPkiMessage;
+        if (extraCerts != null && extraCerts.length > 0) {
+            protectedPkiMessage = new PKIMessage(head, pkiMessage.getBody(), new DERBitString(sig.sign()), extraCerts);
         } else {
-            pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()));
+            protectedPkiMessage = new PKIMessage(head, pkiMessage.getBody(), new DERBitString(sig.sign()));
         }
-        return pKIMessage;
+        return protectedPkiMessage;
     }
 
     //TODO see if we could do this in a better way
@@ -267,13 +253,7 @@ public class CmpMessageHelper {
         }
         // Create the PasswordBased protection of the message
         PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
-        byte[] keyIdBytes;
-        try {
-            keyIdBytes = keyId.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            keyIdBytes = keyId.getBytes();
-            LOG.info("UTF-8 not available, using platform default encoding for keyIdBytes.");
-        }
+        byte[] keyIdBytes = keyId.getBytes(StandardCharsets.UTF_8);
         head.setSenderKID(new DEROctetString(keyIdBytes));
         // SHA1
         AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlgId));
@@ -308,7 +288,7 @@ public class CmpMessageHelper {
         // Do the mac
         String macOid = macAlg.getAlgorithm().getId();
         byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(pkiHeader, msg.getBody()); //ret.getProtectedBytes();
-        Mac mac = Mac.getInstance(macOid, "BC");
+        Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
         SecretKey key = new SecretKeySpec(basekey, macOid);
         mac.init(key);
         mac.reset();
@@ -323,17 +303,16 @@ public class CmpMessageHelper {
         return CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
     }
 
-    public static byte[] pkiMessageToByteArray(PKIMessage msg) {
-        // Return response as byte array 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DEROutputStream mout = new DEROutputStream(baos);
-        try {
-            mout.writeObject(msg);
-            mout.close();
+    /** @return response as byte array */ 
+    public static byte[] pkiMessageToByteArray(final PKIMessage pkiMessage) {
+        // TODO: Check if this equivalent to PKIMessage.toASN1Primitive().toASN1Object().getEncoded()
+        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+            final DEROutputStream derOutputStream = new DEROutputStream(baos);
+            derOutputStream.writeObject(pkiMessage);
+            return baos.toByteArray();
         } catch (IOException e) {
             throw new IllegalStateException("Caught unexpected IOException.", e);
         }
-        return baos.toByteArray();
     }
 
     /** Creates a 16 bytes random sender nonce
@@ -343,28 +322,18 @@ public class CmpMessageHelper {
     public static byte[] createSenderNonce() {
         // Sendernonce is a random number
         byte[] senderNonce = new byte[16];
-        Random randomSource;
-        randomSource = new Random();
+        Random randomSource = new Random(); // Sufficient with regular Random to prevent replays?
         randomSource.nextBytes(senderNonce);
         return senderNonce;
     }
 
-    /**
-     * creates a very simple error message in response to msg (that's why we switch sender and recipient)
-     * @param msg
-     * @param status
-     * @param failInfo
-     * @param failText
-     * @return IResponseMessage that can be sent to user
-     */
-    public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText) {
-        
-        if (msg != null) {
-            return createUnprotectedErrorMessage(msg.getHeader(), failInfo, failText);
+    /** Creates a very simple error message in response to msg (that's why we switch sender and recipient) */
+    public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage cmpRequestMessage, FailInfo failInfo, String failText) {
+        if (cmpRequestMessage != null) {
+            return createUnprotectedErrorMessage(cmpRequestMessage.getHeader(), failInfo, failText);
         } else {
             return createUnprotectedErrorMessage(failInfo, failText);
         }
-        
     }
     
     /**
@@ -385,7 +354,7 @@ public class CmpMessageHelper {
             LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + failText);
         }
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
-        resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+        resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
         // Sender nonce is optional and might not always be included
         if (pkiHeader.getSenderNonce() != null) {
             resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
@@ -404,19 +373,15 @@ public class CmpMessageHelper {
         resp.setFailText(failText);
         try {
             resp.create();
-        } catch (InvalidKeyException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } catch (NoSuchAlgorithmException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } catch (NoSuchProviderException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
             LOG.error("Exception during CMP processing: ", e);
         } 
         return resp;
     }
 
-    public static ResponseMessage createUnprotectedErrorMessage(FailInfo failInfo, String failText) {
+    public static CmpErrorResponseMessage createUnprotectedErrorMessage(FailInfo failInfo, String failText) {
         CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
-        resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+        resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
         // We didn't even have a request to get these from, so send back some dummy values
         resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
         resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
@@ -424,11 +389,7 @@ public class CmpMessageHelper {
         resp.setFailText(failText);
         try {
             resp.create();
-        } catch (InvalidKeyException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } catch (NoSuchAlgorithmException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } catch (NoSuchProviderException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
             LOG.error("Exception during CMP processing: ", e);
         } 
         return resp;
@@ -442,7 +403,6 @@ public class CmpMessageHelper {
      */
     public static CmpErrorResponseMessage createErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText, int requestId, int requestType,
             CmpPbeVerifyer verifyer, String keyId, String responseProt) {
-        CmpErrorResponseMessage resp = null;
         final CmpErrorResponseMessage cresp = new CmpErrorResponseMessage();
         cresp.setRecipientNonce(msg.getSenderNonce());
         cresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
@@ -463,47 +423,30 @@ public class CmpMessageHelper {
                 cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
             }
         }
-        resp = cresp;
         try {
             // Here we need to create the response message, when coming from SignSession it has already been "created"
-            resp.create();
-        } catch (InvalidKeyException e) {
-            LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        } catch (NoSuchAlgorithmException e) {
-            LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        } catch (NoSuchProviderException e) {
+            cresp.create();
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
             LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
         } 
-        return resp;
+        return cresp;
     }
 
     /**
      * creates a very simple error message in response to msg (that's why we switch sender and recipient)
-     * @param msg
-     * @param status
-     * @param failInfo
-     * @param failText
-     * @return IResponseMessage that can be sent to user
-     * @throws IOException 
      */
-    public static PKIBody createCertRequestRejectBody(PKIStatusInfo info, int requestId, int requestType) {
+    public static PKIBody createCertRequestRejectBody(PKIStatusInfo pkiStatusInfo, int requestId, int requestType) {
         // Create a failure message
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating a cert request rejection message");
             LOG.debug("Creating a CertRepMessage 'rejected'");
         }
-
-        CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), info);
-        CertResponse[] resps = { myCertResponse };
-        CertRepMessage myCertRepMessage = new CertRepMessage(null, resps);
-
+        CertResponse[] certResponses = { new CertResponse(new ASN1Integer(requestId), pkiStatusInfo) };
+        CertRepMessage certRepMessage = new CertRepMessage(null, certResponses);
         int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating response body of type " + respType);
         }
-        PKIBody myPKIBody = new PKIBody(respType, myCertRepMessage);
-
-        return myPKIBody;
+        return new PKIBody(respType, certRepMessage);
     }
 
     /**
@@ -674,25 +617,47 @@ public class CmpMessageHelper {
     public static String getStringFromOctets(final ASN1OctetString octets) {
         String str = null;
         if (octets != null) {
-            try {
-                str = new String(octets.getOctets(), "UTF-8");
-            } catch (UnsupportedEncodingException e2) {
-                str = new String(octets.getOctets());
-                LOG.info("UTF-8 not available, using platform default encoding for keyId.");
-            }
-
-            if (!StringUtils.isAsciiPrintable(str)) {
+            str = new String(octets.getOctets(), StandardCharsets.UTF_8);
+            if (StringUtils.isAsciiPrintable(str)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Found string: " + str);
+                }
+            } else {
                 str = new String(Hex.encode(octets.getOctets()));
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("DEROCtetString content is not asciiPrintable, converting to hex: " + str);
                 }
             }
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found string: " + str);
-            }
         }
         return str;
     }
 
+    /** @return the PKIMessage if the bytes can be interpreted as a valid ASN.1 encoded CMP request message or null otherwise */
+    public static PKIMessage getPkiMessageFromBytes(final byte[] pkiMessageBytes, final boolean sanityCheckMaxLevelOfNesting) {
+        try {
+            if (pkiMessageBytes!=null) {
+                final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
+                if (sanityCheckMaxLevelOfNesting) {
+                    // Also validate nesting, if present
+                    PKIMessage nestedPkiMessage = pkiMessage;
+                    int levelOfNesting = 0;
+                    while (nestedPkiMessage!=null && nestedPkiMessage.getBody().getType()==PKIBody.TYPE_NESTED) {
+                        nestedPkiMessage = PKIMessages.getInstance(pkiMessage.getBody().getContent()).toPKIMessageArray()[0];
+                        if (levelOfNesting++ > MAX_LEVEL_OF_NESTING) {
+                            final String msg = "Rejected CMP request due to unreasonable level of nesting (>"+MAX_LEVEL_OF_NESTING+").";
+                            LOG.info(msg);
+                            throw new IllegalArgumentException(msg);
+                        }
+                    }
+                }
+                return pkiMessage;
+            }
+        } catch (RuntimeException e) {
+            // BC library will throw an IllegalArgumentException if the underlying ASN.1 could not be parsed. 
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(INTRES.getLocalizedMessage("cmp.errornotcmpmessage"), e);
+            }
+        }
+        return null;
+    }
 }

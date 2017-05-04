@@ -80,10 +80,19 @@ public abstract class NestableAuthenticationToken extends LocalJvmOnlyAuthentica
     /** Returns information of the entity this authentication token belongs to. */
     @Override
     public String toString() {
-        if (nestedAuthenticationToken!=null) {
-            return " [via] " + nestedAuthenticationToken.toString();
+        String ret = toStringOverride();
+        if (ret==null) {
+            ret = super.toString();
         }
-        return "";
+        if (nestedAuthenticationToken!=null) {
+            ret += " [via] " + nestedAuthenticationToken.toString();
+        }
+        return ret;
+    }
+
+    /** Override and return anything but null to use this value instead of {@link AuthenticationToken#toString()} */
+    protected String toStringOverride() {
+        return null;
     }
 
     @Override

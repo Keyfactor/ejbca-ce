@@ -10,14 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,9 +25,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -44,12 +41,12 @@ public class CmpServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CmpServlet.class);
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance(); // Internal localization of logs and errors
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private static final String DEFAULT_CMP_ALIAS = "cmp";
     
     @EJB
-    private CmpMessageDispatcherSessionLocal cmpMessageDispatcherLocal;
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     /**
      * Handles HTTP post
@@ -58,17 +55,13 @@ public class CmpServlet extends HttpServlet {
      * @param response java standard arg
      * 
      * @throws IOException input/output error
-     * @throws ServletException if the post could not be handled
      */
+    @SuppressWarnings("resource") // ServletInputStream should be closed by container
     @Override
-    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
-        /* 
-         POST
-         <binary CMP message>
-         */
         try {
             final String alias = getAlias(request.getPathInfo());
             if(alias.length() > 32) {
@@ -90,7 +83,7 @@ public class CmpServlet extends HttpServlet {
                 output.write(buf, 0, n);
             }
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
         }
@@ -106,10 +99,9 @@ public class CmpServlet extends HttpServlet {
      * @param response java standard arg
      * 
      * @throws IOException input/output error
-     * @throws ServletException if the post could not be handled
      */
     @Override
-    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws java.io.IOException, ServletException {
+    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         if (log.isTraceEnabled()) {
             log.trace(">doGet()");
         }
@@ -120,26 +112,22 @@ public class CmpServlet extends HttpServlet {
         }
     }
 
-    private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response, String alias) throws IOException {
+    private void service(final byte[] pkiMessageBytes, final String remoteAddr, final HttpServletResponse response, String alias) throws IOException {
         try {
             log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr, alias));
             final long startTime = System.currentTimeMillis();
-            final ResponseMessage resp;
+            byte[] result = null;
             try {
-                // We must use an administrator with rights to create users
-                final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpServlet", remoteAddr));
-                resp = cmpMessageDispatcherLocal.dispatch(admin, ba, alias);
-            } catch (IOException e) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-                log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
-                return;
+                final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpServlet", remoteAddr));
+                result = raMasterApiProxyBean.cmpDispatch(authenticationToken, pkiMessageBytes, alias);
             } catch (NoSuchAliasException e) {
                 // The CMP alias does not exist
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
                 log.info(e.getMessage(), e);
                 return;
             }
-            if (resp == null) { // If resp is null, it means that the dispatcher failed to process the message.
+            if (result == null) {
+                // If resp is null, it means that the dispatcher failed to process the message.
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
                 return;
             }
@@ -147,30 +135,31 @@ public class CmpServlet extends HttpServlet {
             // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
             ServletUtils.addCacheHeaders(response);
             // Send back CMP response
-            RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);
+            RequestHelper.sendBinaryBytes(result, response, "application/pkixcmp", null);
             final long endTime = System.currentTimeMillis();
             log.info(intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr, Long.valueOf(endTime - startTime)));
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             log.error("Error in CmpServlet:", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
     
-    private String getAlias(String pathInfo) {
+    private String getAlias(final String pathInfo) {
         // PathInfo contains the alias used for CMP configuration. 
         // The CMP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/cmp/*
         // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING 
         // TEXT" and that will be the CMP configuration alias.
-        String alias = null;
-        if (pathInfo!=null && pathInfo.length()>0) {
+        final String alias;
+        if (pathInfo!=null && pathInfo.length()>1) {
             alias = pathInfo.substring(1);
             if (log.isDebugEnabled()) {
                 log.debug("Using CMP configuration alias: " + alias);
             }
-        }
-        if (alias==null || alias.length()<1) {
-            log.info("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
-            return DEFAULT_CMP_ALIAS;
+        } else {
+            alias = DEFAULT_CMP_ALIAS;
+            if (log.isDebugEnabled()) {
+                log.debug("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
+            }
         }
         return alias;
     }

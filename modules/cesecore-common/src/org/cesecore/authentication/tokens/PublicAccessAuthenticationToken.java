@@ -109,7 +109,13 @@ public class PublicAccessAuthenticationToken extends NestableAuthenticationToken
     /** Returns information of the entity this authentication token belongs to. */
     @Override
     public String toString() {
-        return principal.getName() + (credential.isConfidentialTransport() ? " (TRANSPORT_CONFIDENTIAL)" : " (TRANSPORT_PLAIN)") + super.toString();
+        return super.toString();
+    }
+
+    /** Override the default Principal.getName() when doing toString on this object. */
+    @Override
+    protected String toStringOverride() {
+        return principal.getName() + (credential.isConfidentialTransport() ? " (TRANSPORT_CONFIDENTIAL)" : " (TRANSPORT_PLAIN)");
     }
 
     @Override

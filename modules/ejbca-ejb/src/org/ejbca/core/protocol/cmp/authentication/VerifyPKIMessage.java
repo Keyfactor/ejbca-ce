@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -29,68 +28,47 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 
 /**
- * Verifies a CMP message using a suitable authentication module. The authentication modules 
- * are specified in the properties file.
+ * Verifies a CMP message using a suitable authentication module.
+ * 
+ * The authentication modules are specified as properties in the CmpConfiguration.
  * 
  * @version $Id$
- *
  */
 public class VerifyPKIMessage {
     
     private static final Logger log = Logger.getLogger(VerifyPKIMessage.class);
     
-    private CAInfo cainfo;
-    private String errorMessage;
-    private String confAlias;
-    private CmpConfiguration cmpConfiguration;
-    private AuthenticationToken admin;
+    private final CAInfo caInfo;
+    private String errorMessage = null;
+    private final String confAlias;
+    private final CmpConfiguration cmpConfiguration;
+    private final AuthenticationToken authenticationToken;
     
-    private CaSession caSession;
-    private EndEntityAccessSession eeAccessSession;
-    private CertificateStoreSession certificateStoreSession;
-    private AuthorizationSession authorizationSession;
-    private EndEntityProfileSession eeProfileSession;
-    private CertificateProfileSession certProfileSession;
-    private WebAuthenticationProviderSessionLocal authenticationProviderSession;
-    private EndEntityManagementSession eeManagementSession;
-    
+    private final CaSession caSession;
+    private final EndEntityAccessSession endEntityAccessSession;
+    private final CertificateStoreSession certificateStoreSession;
+    private final AuthorizationSession authorizationSession;
+    private final EndEntityProfileSession endEntityProfileSession;
+    private final CertificateProfileSession certificateProfileSession;
+    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private final EndEntityManagementSession endEntityManagementSession;
 
-    public VerifyPKIMessage() {
-        this.cainfo = null;
-        this.errorMessage = null;
-        this.confAlias = null;
-        this.cmpConfiguration = null;
-        this.admin = null;
-        
-        this.caSession = null;
-        this.eeAccessSession = null;
-        this.certificateStoreSession = null;
-        this.authorizationSession = null;
-        this.eeProfileSession = null;
-        this.certProfileSession = null;
-        this.authenticationProviderSession = null;
-        this.eeManagementSession = null;
-    }
-
-    public VerifyPKIMessage(final CAInfo cainfo, final String confAlias, final AuthenticationToken admin, final CaSession casession, final EndEntityAccessSession userSession, 
-            final CertificateStoreSession certSession, final AuthorizationSession authSession, final EndEntityProfileSession eeprofSession, final CertificateProfileSession certProfileSession,  
-            final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession, 
-            final CmpConfiguration cmpConfig) {
-        this.cainfo = cainfo;
-        this.errorMessage = null;
+    public VerifyPKIMessage(final CAInfo cainfo, final String confAlias, final AuthenticationToken admin, final CaSession caSession, final EndEntityAccessSession endEntityAccessSession, 
+            final CertificateStoreSession certificateStoreSession, final AuthorizationSession authorizationSession, final EndEntityProfileSession endEntityProfileSession, final CertificateProfileSession certificateProfileSession,  
+            final WebAuthenticationProviderSessionLocal authenticationProviderSession, final EndEntityManagementSession endEntityManagementSession, 
+            final CmpConfiguration cmpConfiguration) {
+        this.caInfo = cainfo;
         this.confAlias = confAlias;
-        this.admin = admin;
-        
-        this.caSession = casession;
-        this.eeAccessSession = userSession;
-        this.certificateStoreSession = certSession;
-        this.authorizationSession = authSession;
-        this.eeProfileSession = eeprofSession;
-        this.certProfileSession = certProfileSession;
-        this.authenticationProviderSession = authProvSession;
-        this.eeManagementSession = endEntityManagementSession;
-        
-        this.cmpConfiguration = cmpConfig;
+        this.authenticationToken = admin;
+        this.caSession = caSession;
+        this.endEntityAccessSession = endEntityAccessSession;
+        this.certificateStoreSession = certificateStoreSession;
+        this.authorizationSession = authorizationSession;
+        this.endEntityProfileSession = endEntityProfileSession;
+        this.certificateProfileSession = certificateProfileSession;
+        this.authenticationProviderSession = authenticationProviderSession;
+        this.endEntityManagementSession = endEntityManagementSession;
+        this.cmpConfiguration = cmpConfiguration;
     }
     
     /**
@@ -104,88 +82,75 @@ public class VerifyPKIMessage {
     }
     
     /**
-     * Verifies the authenticity of msg
+     * Verifies the authenticity of the PKIMessage
      * 
-     * @param msg PKIMessage to verify
+     * @param pkiMessage PKIMessage to verify
      * @param username that the PKIMessage should match or null
      * @param authenticated if the CMP message has already been authenticated in another way or not
      * @return The authentication module that succeeded in authenticating msg. Null if message authentication failed using all 
      * configured authentication modules.
      */
-    public ICMPAuthenticationModule getUsedAuthenticationModule(final PKIMessage msg, final String username, boolean authenticated) {
-        
+    public ICMPAuthenticationModule getUsedAuthenticationModule(final PKIMessage pkiMessage, final String username, boolean authenticated) {
         final String authModules = this.cmpConfiguration.getAuthenticationModule(this.confAlias);
         final String authparameters = this.cmpConfiguration.getAuthenticationParameters(this.confAlias);
         final String modules[] = authModules.split(";");
         final String params[] = authparameters.split(";");
-        
-        if(modules.length > params.length) {
+        if (modules.length != params.length) {
             log.error("The number of authentication modules does not match the number of authentication parameters. " +
                     modules.length + " modules - " + params.length + " paramters");
-            this.errorMessage = "Configuration error. Please contact the CA administrator";
+            this.errorMessage = "CMP module configuration error.";
             return null;
         }
-        
-        ICMPAuthenticationModule module = null;
-        for(int i=0; i<modules.length; i++) {
-            if(log.isDebugEnabled()) {
-                log.debug("Trying to verify the message using: " + modules[i] );
-                log.debug("Authentication module parameter: " + params[i] ); 
+        boolean raMode = this.cmpConfiguration.getRAMode(this.confAlias);
+        for (int i=0; i<modules.length; i++) {
+            final String moduleName = modules[i].trim();
+            final String moduleParameter = params[i].trim();
+            if (log.isDebugEnabled()) {
+                log.debug("Trying to verify the message using CMP authentication module '" + moduleName + "' with parameter '" + moduleParameter + "'");
             }
-
-            module = getAuthModule(modules[i].trim(), params[i].trim(), msg, authenticated);
-            if(module == null) {
-                continue;
-            }
-            
-            if(module.verifyOrExtract(msg, username)) {
-                log.info("PKIMessage was successfully authenticated using " + module.getName());
-                return module;
-            } else {
-                if(module.getErrorMessage() != null) {
-                    errorMessage = module.getErrorMessage();
+            final ICMPAuthenticationModule module = getAuthModule(raMode, moduleName, moduleParameter, pkiMessage, authenticated);
+            if (module != null) {
+                if (module.verifyOrExtract(pkiMessage, username)) {
+                    log.info("PKIMessage was successfully authenticated using " + module.getName());
+                    return module;
+                } else {
+                    if (module.getErrorMessage() != null) {
+                        errorMessage = module.getErrorMessage();
+                    }
                 }
             }
         }
-        
-        if(this.errorMessage == null) {
+        if (this.errorMessage == null) {
             this.errorMessage = "Failed to authentication PKIMessage using authentication modules: " + authModules;
         }
-        
         return null;
     }
     
-    /**
-     * Returns the authentication module whose name is 'module'
-     * 
-     * @param module
-     * @param parameter
-     * @param pkimsg
-     * @return The authentication module whose name is 'module'. Null if no such module is implemented.
-     */
-    private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg, final boolean authenticated) {
-        
-        if(this.cmpConfiguration.getRAMode(this.confAlias) && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
-            this.errorMessage = "The authentication module '" + module + "' cannot be used in RA mode";
-            log.info(this.errorMessage);
-            return null;
-        }
-        
-        if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
-            return new HMACAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, cainfo, eeAccessSession);
-        } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
-            return new EndEntityCertificateAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, authenticated,
-                            caSession, certificateStoreSession, authorizationSession, eeProfileSession, certProfileSession,
-                            eeAccessSession, authenticationProviderSession, eeManagementSession);
-        } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)){
+    /** @return The requested authentication module or null if no such module is implemented. */
+    private ICMPAuthenticationModule getAuthModule(final boolean raMode, final String module, final String parameter, final PKIMessage pkiMessage, final boolean authenticated) {
+        switch (module) {
+        case CmpConfiguration.AUTHMODULE_HMAC:
+            return new HMACAuthenticationModule(authenticationToken, parameter, confAlias, cmpConfiguration, caInfo, endEntityAccessSession);
+        case CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE:
+            return new EndEntityCertificateAuthenticationModule(authenticationToken, parameter, confAlias, cmpConfiguration, authenticated,
+                    caSession, certificateStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
+                    endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
+        case CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD:
+            if (raMode) {
+                this.errorMessage = "The authentication module '" + module + "' cannot be used in RA mode";
+                break;
+            }
             return new RegTokenPasswordExtractor();
-        } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
+        case CmpConfiguration.AUTHMODULE_DN_PART_PWD:
+            if (raMode) {
+                this.errorMessage = "The authentication module '" + module + "' cannot be used in RA mode";
+                break;
+            }
             return new DnPartPasswordExtractor(parameter);
+        default:
+            this.errorMessage = "Unrecognized authentication module: " + module;
         }
-        
-        this.errorMessage = "Unrecognized authentication module: " + module;
         log.info(this.errorMessage);
         return null;
     }
-
 }
