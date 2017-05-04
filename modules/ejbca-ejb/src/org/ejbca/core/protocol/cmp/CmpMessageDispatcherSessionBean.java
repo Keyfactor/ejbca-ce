@@ -13,28 +13,25 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
+import java.security.cert.CertificateEncodingException;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIMessages;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -74,164 +71,144 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private CryptoTokenSessionLocal cryptoTokenSession;
 	@EJB
 	private GlobalConfigurationSessionLocal globalConfigSession;
-	
-	private CmpConfiguration cmpConfiguration;
-	
-	@PostConstruct
-	public void postConstruct() {
-		CryptoProviderTools.installBCProviderIfNotAvailable();	// Install BouncyCastle provider, if not already available
-		this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-	}
 
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public ResponseMessage dispatch(final AuthenticationToken admin, final byte[] ba, String confAlias) throws IOException, NoSuchAliasException {
-	    // Length limit of this byte array must be handled by calling servlet
-		//ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
-	    final ASN1Primitive derObject = getDERObject(ba);
-		return dispatch(admin, derObject, false, confAlias);
+	public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
+        final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
+            final String msg = intres.getLocalizedMessage("cmp.nosuchalias", cmpConfigurationAlias);
+            log.info(msg);
+            throw new NoSuchAliasException(msg);
+        }
+        final PKIMessage pkiMessage = CmpMessageHelper.getPkiMessageFromBytes(pkiMessageBytes, false);
+        if (pkiMessage == null) {
+            // Log that we handled a bad request and respond to the client
+            final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
+            log.info(msg);
+            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, msg).getResponseMessage();
+        } else {
+            final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessage, cmpConfiguration, cmpConfigurationAlias, /*levelOfNesting=*/0);
+            if (responseMessage!=null) {
+                try {
+                    return responseMessage.getResponseMessage();
+                } catch (CertificateEncodingException e) {
+                    log.warn(e.getMessage());
+                    return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, e.getMessage()).getResponseMessage();
+                }
+            }
+        }
+        return null;
 	}
 
-	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
+	/**
+	 * The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
 	 * 
-	 * @param derObject der encoded CMP message
-	 * @param authenticated
-	 * @param confAlias the cmp alias we want to use for this request
-	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
-	 * @throws NoSuchAliasException if the confAlias does not exist among configured cmp aliases
+	 * @param authenticationToken
+	 * @param pkiMessage DER encoded CMP message
+	 * @param cmpConfigurationAlias the cmp alias we want to use for this request
+     * @param levelOfNesting
+	 * @return ResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated, String confAlias) throws NoSuchAliasException {
-	    
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-
-	    if(!cmpConfiguration.aliasExists(confAlias)) {
-	        final String msg = intres.getLocalizedMessage("cmp.nosuchalias", confAlias);
-	        log.info(msg);
-	        throw new NoSuchAliasException(msg);
+	private ResponseMessage dispatch(final AuthenticationToken authenticationToken, final PKIMessage pkiMessage, final CmpConfiguration cmpConfiguration,
+	        String cmpConfigurationAlias, final int levelOfNesting) {
+	    if (levelOfNesting>CmpMessageHelper.MAX_LEVEL_OF_NESTING) {
+            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
 	    }
-	    
-		final PKIMessage req;
+	    final boolean authenticated = levelOfNesting>0;
 		try {
-			req = PKIMessage.getInstance(derObject);
-			if ( req==null ) {
-				throw new IOException("No CMP message could be parsed from received DER object.");
-			}
-		} catch (IllegalArgumentException e) { 
-            final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
-            log.info(eMsg, e);
-            // Catch this case specifically, for the sake of being future proof. BC library will throw an 
-            // IllegalArgumentException if the underlying ASN.1 could not be parsed. 
-            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
-        } catch (Throwable t) { // NOPMD: catch all to report errors back to client
-			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
-			log.error(eMsg, t);
-			// If we could not read the message, we should return an error BAD_REQUEST
-			return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
-		}
-		try {
-			final PKIBody body = req.getBody();
-			final int tagno = body.getType();
+            final PKIBody pkiBody = pkiMessage.getBody();
+			final int tagno = pkiBody.getType();
 			if (log.isDebugEnabled()) {
-	            final PKIHeader header = req.getHeader();
-				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
-				log.debug("Cmp configuration alias: " + confAlias);
+	            final PKIHeader pkiHeader = pkiMessage.getHeader();
+				log.debug("Received CMP message with pvno="+pkiHeader.getPvno()+", sender="+pkiHeader.getSender().toString()+", recipient="+pkiHeader.getRecipient().toString());
+				log.debug("Cmp configuration alias: " + cmpConfigurationAlias);
 				log.debug("The CMP message is already authenticated: " + authenticated);
-				log.debug("Body is of type: "+tagno);
-				log.debug("Transaction id: "+header.getTransactionID());
-				//log.debug(ASN1Dump.dumpAsString(req));
+				log.debug("Body is of type: " + tagno);
+				log.debug("Transaction id: " + pkiHeader.getTransactionID());
+				if (log.isTraceEnabled()) {
+	                log.trace(ASN1Dump.dumpAsString(pkiMessage));
+				}
 			}
-			
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
 			int unknownMessageType = -1;
 			switch (tagno) {
-			case 0:
-				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, confAlias, ejbBridgeSession, certificateRequestSession);
-				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
+			case PKIBody.TYPE_INIT_REQ:
+				// 0: ir, Initialization Request and 2 (cr, Certification Req) are both certificate requests
+				handler = new CrmfMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, certificateRequestSession);
+				cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias), cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias), cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
 				break;
-			case 2:
-				handler = new CrmfMessageHandler(admin, confAlias, ejbBridgeSession, certificateRequestSession);
-				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
+			case PKIBody.TYPE_CERT_REQ:
+			    // 2:
+				handler = new CrmfMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, certificateRequestSession);
+				cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias), cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias), cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
 				break;
-			case 7:
-			    // Key Update request (kur, Key Update Request)
-			    handler = new CrmfKeyUpdateHandler(admin, confAlias, ejbBridgeSession);
-			    cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
+			case PKIBody.TYPE_KEY_UPDATE_REQ:
+			    // 7: Key Update request (kur, Key Update Request)
+			    handler = new CrmfKeyUpdateHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession);
+			    cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias), cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias), cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
 			    break;
-			case 19:
-				// PKI confirm (pkiconf, Confirmation)
-			case 24:
-				// Certificate confirmation (certConf, Certificate confirm)
-			    handler = new ConfirmationMessageHandler(admin, confAlias, ejbBridgeSession, cryptoTokenSession);
-			    cmpMessage = new GeneralCmpMessage(req);
+			case PKIBody.TYPE_CONFIRM:
+				// 19: PKI confirm (pkiconf, Confirmation)
+			case PKIBody.TYPE_CERT_CONFIRM:
+				// 24: Certificate confirmation (certConf, Certificate confirm)
+			    handler = new ConfirmationMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, cryptoTokenSession);
+			    cmpMessage = new GeneralCmpMessage(pkiMessage);
 				break;
-			case 11:
-				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, confAlias, ejbBridgeSession, cryptoTokenSession);
-				cmpMessage = new GeneralCmpMessage(req);
+			case PKIBody.TYPE_REVOCATION_REQ:
+				// 11: Revocation request (rr, Revocation Request)
+				handler = new RevocationMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, cryptoTokenSession);
+				cmpMessage = new GeneralCmpMessage(pkiMessage);
 				break;
-            case 20:
-                // NestedMessageContent (nested)
-                if(log.isDebugEnabled()) {
+            case PKIBody.TYPE_NESTED:
+                // 20: NestedMessageContent (nested)
+                if (log.isDebugEnabled()) {
                     log.debug("Received a NestedMessageContent");
                 }
-
-                final NestedMessageContent nestedMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
-                if(nestedMessage.verify()) {
-                    if(log.isDebugEnabled()) {
+                final NestedMessageContent nestedMessage = new NestedMessageContent(pkiMessage, cmpConfiguration, cmpConfigurationAlias);
+                if (nestedMessage.verify()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("The NestedMessageContent was verified successfully");
                     }
                     try {
-                        PKIMessages nestesMessages = (PKIMessages) nestedMessage.getPKIMessage().getBody().getContent();
-                        PKIMessage msg = nestesMessages.toPKIMessageArray()[0];
-                        return dispatch(admin, msg.toASN1Primitive(), true, confAlias);
+                        final PKIMessages nestedPkiMessages = PKIMessages.getInstance(pkiMessage.getBody().getContent());
+                        final PKIMessage nestedPkiMessage = nestedPkiMessages.toPKIMessageArray()[0];
+                        return dispatch(authenticationToken, nestedPkiMessage, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
-                        final String errMsg = e.getLocalizedMessage();
+                        final String errMsg = e.getMessage();
                         log.info(errMsg, e);
-                        cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, FailInfo.BAD_REQUEST, errMsg); 
+                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, errMsg); 
                     }
-                } else {
-                    final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
-                    log.info(errMsg);
-                    cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, FailInfo.BAD_REQUEST, errMsg);
                 }
-
+                final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
+                log.info(errMsg);
+                return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, errMsg);
 			default:
 				unknownMessageType = tagno;
 				log.info("Received an unknown message type, tagno="+tagno);
 				break;
 			}
-			if ( handler==null || cmpMessage==null ) {
+			if (handler==null || cmpMessage==null) {
 				if (unknownMessageType > -1) {
 					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
 					log.error(eMsg);
 					return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
 				}
-				throw new Exception("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
+				throw new IllegalStateException("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}
-			final ResponseMessage ret  = handler.handleMessage(cmpMessage, authenticated);
-			if (ret != null) {
-				log.debug("Received a response message of type '"+ret.getClass().getName()+"' from CmpMessageHandler.");
+			final ResponseMessage ret = handler.handleMessage(cmpMessage, authenticated);
+			if (ret == null) {
+                log.error(intres.getLocalizedMessage("cmp.errorresponsenull"));
 			} else {
-				log.error( intres.getLocalizedMessage("cmp.errorresponsenull") );
+			    if (log.isDebugEnabled()) {
+	                log.debug("Received a response message of type '"+ret.getClass().getName()+"' from CmpMessageHandler.");
+			    }
 			}
 			return ret;
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			log.error(intres.getLocalizedMessage("cmp.errorprocess"), e);
 			return null;
 		}
 	}
-	
-    private ASN1Primitive getDERObject(byte[] ba) throws IOException {
-        ASN1InputStream ins = new ASN1InputStream(ba);
-        try {
-            ASN1Primitive obj = ins.readObject();
-            return obj;
-        } finally {
-            ins.close();
-        }
-    }
 }

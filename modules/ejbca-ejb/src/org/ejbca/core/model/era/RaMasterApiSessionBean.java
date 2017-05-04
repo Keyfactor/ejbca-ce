@@ -86,6 +86,8 @@ import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -135,6 +137,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
@@ -1731,4 +1735,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
 
+    @Override
+    public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
+        return cmpMessageDispatcherSession.dispatchRequest(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
+    }
 }

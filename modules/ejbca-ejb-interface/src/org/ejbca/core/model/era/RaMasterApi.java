@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.IOException;
 import java.security.KeyStoreException;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,8 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 
 /**
  * API of available methods on the CA that can be invoked by the RA.
@@ -360,8 +363,7 @@ public interface RaMasterApi {
      */
     boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException;
-    
-    
+
     /**
      * Gets approval profile for specified action.
      * @param authenticationToken auth. token to be checked if it has access to the specified caInfo and certificateProfile
@@ -383,4 +385,18 @@ public interface RaMasterApi {
     void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException;
 
     void checkUserStatus(AuthenticationToken authenticationToken, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException;
+
+    /**
+     * Dispatch CMP request over RaMasterApi.
+     * 
+     * Basic ASN.1 validation is performed at a proxy to increase the protection of a CA slightly.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param pkiMessageBytes the ASN.1 encoded CMP message request bytes
+     * @param cmpConfigurationAlias the requested CA configuration that should handle the request.
+     * @return the CMP response ASN.1 (success or error) message as a byte array or null if no processing could take place
+     * @see CmpMessageDispatcherSessionLocal#dispatchRequest(AuthenticationToken, byte[], String)
+     * @since RA Master API version 1 (EJBCA 6.8.0)
+     */
+    byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
 }

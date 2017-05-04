@@ -16,13 +16,13 @@ package org.ejbca.core.protocol.cmp;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.CRLException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,134 +61,122 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	private String responseProtection = null;
     private CryptoTokenSessionLocal cryptoTokenSession;
     
-    public ConfirmationMessageHandler(AuthenticationToken authenticationToken, String configAlias, EjbBridgeSessionLocal ejbBridgeSession, CryptoTokenSessionLocal cryptoTokenSession) {
-        super(authenticationToken, configAlias, ejbBridgeSession);
+    public ConfirmationMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, final String configAlias,
+    		final EjbBridgeSessionLocal ejbBridgeSession, final CryptoTokenSessionLocal cryptoTokenSession) {
+        super(authenticationToken, cmpConfiguration, configAlias, ejbBridgeSession);
         this.responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
         this.cryptoTokenSession = cryptoTokenSession;
     }
 	
-    public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
+    public ResponseMessage handleMessage(BaseCmpMessage cmpRequestMessage, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
-		int version = msg.getHeader().getPvno().getValue().intValue();
-		ResponseMessage resp = null;
+		int version = cmpRequestMessage.getHeader().getPvno().getValue().intValue();
+		CmpConfirmResponseMessage cresp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
-		if (version > 1) {
-			
+        if (version == PKIHeader.CMP_1999) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Cmp1999 - Not creating a PKI confirm message response");
+            }
+        } else if (version > PKIHeader.CMP_1999) {
 			// Creating the confirm message response
-			
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating a PKI confirm message response, responseProtection="+responseProtection);
 			}
-			CmpConfirmResponseMessage cresp = new CmpConfirmResponseMessage();
-			cresp.setRecipientNonce(msg.getSenderNonce());
+			cresp = new CmpConfirmResponseMessage();
+			cresp.setRecipientNonce(cmpRequestMessage.getSenderNonce());
 			cresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-			cresp.setSender(msg.getRecipient());
-			cresp.setRecipient(msg.getSender());
-			cresp.setTransactionId(msg.getTransactionId());
-
+			cresp.setSender(cmpRequestMessage.getRecipient());
+			cresp.setRecipient(cmpRequestMessage.getSender());
+			cresp.setTransactionId(cmpRequestMessage.getTransactionId());
 			if (StringUtils.equals(responseProtection, "pbe")) {
 			    try {
-                    setPbeParameters(cresp, msg, authenticated);
+                    setPbeParameters(cresp, cmpRequestMessage, authenticated);
                 } catch (InvalidCmpProtectionException e) {
                     throw new IllegalArgumentException(e);
                 }
 			} else if (StringUtils.equals(responseProtection, "signature")) {
-			    signResponse(cresp, msg);
+			    signResponse(cresp, cmpRequestMessage);
 			}
-			resp = cresp;
             try {
-                resp.create();
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | CertificateEncodingException | CRLException e) {
+                cresp.create();
+            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
                 LOG.error("Exception during CMP processing: ", e);
             }						
 		} else {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Cmp1999 - Not creating a PKI confirm message response");
+				LOG.debug("Not Cmp1999 or Cmp2000 or later - Not creating a PKI confirm message response");
 			}
 		}
-		return resp;
+		return cresp;
 	}
 	
-	private void setPbeParameters(final CmpConfirmResponseMessage cresp, final BaseCmpMessage msg, final boolean authenticated) throws InvalidCmpProtectionException {
-        final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
-	    
-        String owfAlg = null;
-        String macAlg = null;
-        int iterationCount = 1024;
+	private void setPbeParameters(final BaseCmpMessage cmpResponseMessage, final BaseCmpMessage cmpRequestMessage, final boolean authenticated) throws InvalidCmpProtectionException {
+        final String keyId = CmpMessageHelper.getStringFromOctets(cmpRequestMessage.getHeader().getSenderKID());
         String sharedSecret = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, confAlias);
         if(StringUtils.equals(sharedSecret, "-")) {
-            X509CAInfo cainfo;
             try {
-                cainfo = (X509CAInfo) getCAInfo(msg.getRecipient().getName().toString());
+                final X509CAInfo cainfo = getCAInfo(cmpRequestMessage.getRecipient().getName().toString());
                 sharedSecret = cainfo.getCmpRaAuthSecret();
             } catch (CADoesntExistsException e) {
                 LOG.error("Exception during CMP response protection: ", e);
             }
         }
         // We don't need to check the shared secret in client mode (= the EndEntiy password) because PBE protection is only supported in RA mode
-        
-        CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
-        owfAlg = verifyer.getOwfOid();
-        macAlg = verifyer.getMacOid();
-        iterationCount = verifyer.getIterationCount();
-        
-        cresp.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
+        CmpPbeVerifyer verifyer = new CmpPbeVerifyer(cmpRequestMessage.getMessage());
+        String owfAlg = verifyer.getOwfOid();
+        String macAlg = verifyer.getMacOid();
+        int iterationCount = verifyer.getIterationCount();
+        cmpResponseMessage.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
 	}
 	
-	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage msg) {
-
-        // Get the CA that should sign the response
-        CAInfo cainfo;
+	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage cmpRequestMessage) {
         try {
-            cainfo = getCAInfo(msg.getRecipient().getName().toString());
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Using CA '" + cainfo.getName() + "' to sign Certificate Confirm message");
+            // Get the CA that should sign the response
+            X509CAInfo caInfo = getCAInfo(cmpRequestMessage.getRecipient().getName().toString());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using CA '" + caInfo.getName() + "' to sign Certificate Confirm message");
             }
-            X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
+            X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
             // We use the actual asn.1 encoding from the cacert subjectDN here. This ensures that the DN is exactly as 
             // encoded in the certificate (which it should be).
             // If we use only the cainfo.getSubjectDN we will get "EJBCA encoding", and this may not be the same if the 
             // CA certificate comes from an external CA that encodes thing differently than EJBCA.
             cresp.setSender(new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded())));
-            
-            try {
-                CAToken catoken = cainfo.getCAToken();
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-                cresp.setSignKeyInfo(cainfo.getCertificateChain(), cryptoToken.getPrivateKey(
-                                                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
-                                                    cryptoToken.getSignProviderName());
-                if(msg.getHeader().getProtectionAlg() != null) {
-                    cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
-                }
-
-            } catch (CryptoTokenOfflineException e) {
-                LOG.error("Exception during CMP response signing: ", e);            
+            final CAToken caToken = caInfo.getCAToken();
+            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+            cresp.setSignKeyInfo(caInfo.getCertificateChain(), cryptoToken.getPrivateKey(
+                    caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
+                    cryptoToken.getSignProviderName());
+            final AlgorithmIdentifier protectionAlgorithm = cmpRequestMessage.getHeader().getProtectionAlg();
+            if (protectionAlgorithm != null) {
+                cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId()));
             }
-        
-        } catch (CADoesntExistsException e1) {
-            LOG.error("Exception during CMP response signing: ", e1);            
+        } catch (CADoesntExistsException | CryptoTokenOfflineException e) {
+            LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
         }
     }
     
-    private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
-        CAInfo cainfo = null;
-        if(cadn == null) {
-            cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+    private X509CAInfo getCAInfo(final String caDn) throws CADoesntExistsException {
+        CAInfo caInfo = null;
+        if (caDn == null) {
+            final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+            caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
         } else {
+            final String caDnNormalized = CertTools.stringToBCDNString(caDn);
             try {
-                cadn = CertTools.stringToBCDNString(cadn);
-                cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-            } catch(CADoesntExistsException e) {
-                LOG.info("Could not find Recipient CA with DN '" + cadn + "'.");
-                cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-                LOG.info("Trying to use CMP DefaultCA instead. DN: '" + cadn + "', ID: " + cadn.hashCode());
-                cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+                caInfo = caSession.getCAInfoInternal(caDnNormalized.hashCode(), null, true);
+            } catch (CADoesntExistsException e) {
+                final String caDnDefault = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+                LOG.info("Could not find Recipient CA with DN '" + caDnNormalized + "'." +
+                        " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
+                caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
             }
         }
-        return cainfo;
+        if (!(caInfo instanceof X509CAInfo)) {
+            throw new CADoesntExistsException("Incorrect CA type.");
+        }
+        return (X509CAInfo) caInfo;
     }
-
 }
