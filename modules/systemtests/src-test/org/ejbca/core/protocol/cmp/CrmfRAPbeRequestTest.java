@@ -35,6 +35,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -415,7 +416,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     @Test
     public void test03CrmfHttpTooManyIterations() throws Exception {
-
+        log.trace(">test03CrmfHttpTooManyIterations");
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
@@ -425,16 +426,14 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         assertNotNull(resp);
         assertTrue(resp.length > 0);
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badRequest, 
-                                                    PKIFailureInfo.incorrectData); // We expect a FailInfo.BAD_MESSAGE_CHECK
+        // We expect a FailInfo.BAD_MESSAGE_CHECK
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", PKIBody.TYPE_ERROR, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+        log.trace("<test03CrmfHttpTooManyIterations");
     }
 
     @Test

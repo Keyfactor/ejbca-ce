@@ -58,7 +58,8 @@ public class CmpPbeVerifyer {
 	 * Constructor for CmpPbeVerifyer
 	 * 
 	 * @param msg the PKIMessage payload from the CMP Message
-	 * @throws InvalidCmpProtectionException if this class is invoked on a message not signed with a password based MAC.
+	 * @throws InvalidCmpProtectionException if this class is invoked on a message not signed with a password based MAC or
+	 *         the iterator count for this verifier was set higher than 10000.
 	 */
 	public CmpPbeVerifyer(final PKIMessage msg) throws InvalidCmpProtectionException {
 		final PKIHeader head = msg.getHeader();
@@ -84,6 +85,10 @@ public class CmpPbeVerifyer {
 			LOG.debug("Owf type is: "+owfOid);
 			LOG.debug("Mac type is: "+macOid);
 		}
+        if (iterationCount > 10000) {
+            LOG.info("Received message with too many iterations in PBE protection: "+iterationCount);
+            throw new InvalidCmpProtectionException("Iteration count can not exceed 10000");
+        }           
 		salt = pp.getSalt().getOctets();
 	}
 	
@@ -91,10 +96,10 @@ public class CmpPbeVerifyer {
 	 * 
 	 * @param raAuthenticationSecret the HMAC PBE password that should be used to verify the CMP message protection
 	 * @return true if the given password was correct
-	 * @throws InvalidKeyException if the iterator count for this verifier was set higher than 10000, or if the key was not compatible with this MAC
+	 * @throws InvalidKeyException if the key was not compatible with this MAC
 	 * @throws NoSuchAlgorithmException if the algorithm for the Owf or the MAC weren't found
 	 */
-	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException {
+	public boolean verify(String raAuthenticationSecret) throws InvalidKeyException, NoSuchAlgorithmException {
 	    if (raAuthenticationSecret == null) {
             throw new IllegalArgumentException("RA authentication secret is null.");
 	    }
@@ -106,10 +111,6 @@ public class CmpPbeVerifyer {
 			LOG.error(errMsg);
 			return ret;
 		} else {
-			if (iterationCount > 10000) {
-				LOG.info("Received message with too many iterations in PBE protection: "+iterationCount);
-				throw new InvalidKeyException("Iteration count can not exceed 10000");
-			}			
 			byte[] raSecret = raAuthenticationSecret.getBytes();
 			byte[] basekey = new byte[raSecret.length + salt.length];
 	        System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
