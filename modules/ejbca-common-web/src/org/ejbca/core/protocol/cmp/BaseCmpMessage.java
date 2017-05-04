@@ -10,31 +10,30 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.cesecore.util.Base64;
 
 /**
+ * Base class for CMP request messages.
  * 
  * @version $Id$
- *
  */
-
 public abstract class BaseCmpMessage implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private transient PKIMessage msg = null;
+	private transient PKIMessage pkiMessage = null;
 	private String b64SenderNonce = null;
 	private String b64RecipientNonce = null;
 	private String b64TransId = null;
@@ -48,6 +47,27 @@ public abstract class BaseCmpMessage implements Serializable {
 	private int pbeIterationCount = 1024;
 	private String pbeKeyId = null;
 	private String pbeKey = null;
+
+	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
+	protected String getBase64FromAsn1OctetString(final ASN1OctetString asn1OctetString) {
+        if (asn1OctetString != null) {
+            final byte[] val = asn1OctetString.getOctets();
+            if (val != null) {
+                return new String(Base64.encode(val));
+            }
+        }
+        return null;
+	}
+	/** @return the byte array representation of the ASN.1 object */
+    private byte[] getByteArrayFromAsn1Encodable(final ASN1Encodable asn1Encodable) throws IllegalStateException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            new ASN1OutputStream(baos).writeObject(asn1Encodable);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return baos.toByteArray();
+    }
 
 	public void setSenderNonce(String b64nonce) {
 		this.b64SenderNonce = b64nonce;
@@ -71,58 +91,32 @@ public abstract class BaseCmpMessage implements Serializable {
 
 	public GeneralName getRecipient() {
 		if (recipient == null && recipientBytes != null) {
-			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(recipientBytes));
-			try {
-				recipient = GeneralName.getInstance(ais.readObject());
-				ais.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+            recipient = GeneralName.getInstance(recipientBytes);
 		}
 		return recipient;
 	}
-	public void setRecipient(GeneralName recipient) {
+	public void setRecipient(final GeneralName recipient) {
 		this.recipient = recipient;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ASN1OutputStream aos = new ASN1OutputStream(baos);
-		try {
-			aos.writeObject(recipient);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		recipientBytes = baos.toByteArray();
+		recipientBytes = getByteArrayFromAsn1Encodable(recipient);
 	}
 	public GeneralName getSender() {
 		if (sender == null && senderBytes != null) {
-			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(senderBytes));
-			try {
-				sender = GeneralName.getInstance(ais.readObject());
-				ais.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+            sender = GeneralName.getInstance(senderBytes);
 		}
 		return sender;
 	}
-	public void setSender(GeneralName sender) {
+	public void setSender(final GeneralName sender) {
 		this.sender = sender;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ASN1OutputStream aos = new ASN1OutputStream(baos);
-		try {
-			aos.writeObject(sender);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		senderBytes = baos.toByteArray();
+		senderBytes = getByteArrayFromAsn1Encodable(sender);
 	}
 	public PKIHeader getHeader() {
-		return msg.getHeader();
+		return pkiMessage.getHeader();
 	}
 	public PKIMessage getMessage() {
-		return msg;
+		return pkiMessage;
 	}
-	public void setMessage(PKIMessage msg) {
-		this.msg = msg;
+	public void setMessage(final PKIMessage pkiMessage) {
+		this.pkiMessage = pkiMessage;
 	}
 	public String getProtectionType() {
 		return protectionType;

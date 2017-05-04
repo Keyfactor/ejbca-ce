@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +57,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
@@ -319,36 +319,31 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), 
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)), 
                     new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
       
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add( crmfMsg );
         DERSequence seq = new DERSequence(v);
-        PKIBody myPKIBody = new PKIBody(20, seq); // NestedMessageContent
-        assertNotNull("Failed to create nested Message PKIBody", myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        assertNotNull("Failed to create nested Message PKIBody", pkiBody);
         
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        assertNotNull("Failed to created nested message PKIMessage", myPKIMessage);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        assertNotNull("Failed to created nested message PKIMessage", pkiMessage);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         assertEquals("RACertPath is suppose to be '" + this.raCertsPath + "', instead it is '" + this.cmpConfiguration.getRACertPath(cmpAlias) + "'.", this.cmpConfiguration.getRACertPath(cmpAlias), this.raCertsPath);
         createRACertificate("raCrmfSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             
             
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiIHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         
@@ -377,42 +372,36 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull(nb);
         assertNotNull(na);
         
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);
-        
         
         // ---------------- Creating the NestedMessageContent ----------------------
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
-                   .getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        //myPKIHeader.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        //pkiHeaderBuilder.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
 
-        PKIBody myPKIBody = new PKIBody(20, crmfMsg); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, crmfMsg);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raSignerVerify", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
+
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
             
-            
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
-            
-        NestedMessageContent nestedMsg = new NestedMessageContent(myPKIMessage, cmpAlias, this.globalConfigurationSession);
+        NestedMessageContent nestedMsg = new NestedMessageContent(pkiMessage, this.cmpConfiguration, cmpAlias);
         boolean verify = nestedMsg.verify();
         assertTrue("NestedMessageVerification failed.", verify);
-        
     }
     
     @Test
@@ -447,7 +436,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
         Certificate admCert = getCertFromCredentials(adminToken);
         CMPCertificate[] cmpcert = getCMPCert(admCert);
-        revMsg = CmpMessageHelper.buildCertBasedPKIProtection(revMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        revMsg = CmpMessageHelper.buildCertBasedPKIProtection(revMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(revMsg);
         
         
@@ -455,32 +444,26 @@ public class NestedMessageContentTest extends CmpTestCase {
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] reqNonce = CmpMessageHelper.createSenderNonce();
         final byte[] reqTransid = CmpMessageHelper.createSenderNonce();
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
-                   .getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(reqNonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(reqTransid));
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(reqNonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(reqTransid));
 
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add( revMsg );
         DERSequence seq = new DERSequence(v);
-        PKIBody myPKIBody = new PKIBody(20, seq); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raRevSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             
-            
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);        
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -493,7 +476,6 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException,
             EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
-        
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
@@ -503,8 +485,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull(nb);
         assertNotNull(na);
         
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfReqMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfReqMsg);
@@ -512,41 +493,33 @@ public class NestedMessageContentTest extends CmpTestCase {
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
         int reqID = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         
-        
         // ---------------- Creating the NestedMessageContent ----------------------
         X500Name reqSubjectDN = new X500Name("CN=bogusSubjectNested");
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), new GeneralName(new X500Name(this.cacert.getSubjectDN()
-                   .getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
 
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add( crmfMsg );
         DERSequence seq = new DERSequence(v);
-        PKIBody myPKIBody = new PKIBody(20, seq); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raSignerTest04", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
             
-            
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -555,7 +528,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertTrue(cert instanceof X509Certificate);
         log.debug("Subject DN of created certificate: "+X500Name.getInstance(((X509Certificate)cert).getSubjectX500Principal().getEncoded()));
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, cmpAlias, this.globalConfigurationSession);
+        NestedMessageContent nestedContent = new NestedMessageContent(pkiMessage, this.cmpConfiguration, cmpAlias);
         boolean ret = nestedContent.verify();
         assertTrue("The message verification failed, yet the a certificate was returned.", ret);
         
@@ -563,8 +536,6 @@ public class NestedMessageContentTest extends CmpTestCase {
 
     @Test
     public void test05CrmfRACertDoesNotExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, Exception {
-
-        
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
@@ -574,13 +545,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull(nb);
         assertNotNull(na);
         
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
-        
-        
         
         // ---------------- Creating the NestedMessageContent ----------------------
         
@@ -588,53 +556,38 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), new GeneralName(new X500Name(this.cacert.getSubjectDN()
-                   .getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // nonce
-        DEROctetString dernonce = new DEROctetString(nonce);
-        myPKIHeader.setSenderNonce(dernonce);
-        myPKIHeader.setRecipNonce(dernonce);
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-
-        PKIBody myPKIBody = new PKIBody(20, crmfMsg); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setRecipNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, crmfMsg);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         // Don't create a certificate, so there is no RA cert authorized on the server side.
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
             
-            
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
 
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
+        PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("Wrong error message", "Could not verify the RA, signature verification on NestedMessageContent failed.", errMsg);
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, cmpAlias, this.globalConfigurationSession);
+        NestedMessageContent nestedContent = new NestedMessageContent(pkiMessage, this.cmpConfiguration, cmpAlias);
         boolean ret = nestedContent.verify();
         assertFalse("The message verification failed, yet the a certificate was returned.", ret);
-        
     }
     
     @Test
@@ -648,78 +601,59 @@ public class NestedMessageContentTest extends CmpTestCase {
         OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionaValidityV));
 
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
-        myCertTemplate.setValidity( myOptionalValidity );
-        myCertTemplate.setIssuer(new X500Name(this.issuerDN));
-        myCertTemplate.setSubject(SUBJECT_DN);
+        CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
+        certTemplateBuilder.setValidity( myOptionalValidity );
+        certTemplateBuilder.setIssuer(new X500Name(this.issuerDN));
+        certTemplateBuilder.setSubject(SUBJECT_DN);
         SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
-        myCertTemplate.setPublicKey(keyInfo);
+        certTemplateBuilder.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
 
         final Extensions exts;
         {
-            // SubjectAltName
+            X509KeyUsage keyUsage = new X509KeyUsage(X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation);
             ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-            DEROutputStream         dOut = new DEROutputStream(bOut);
-            ExtensionsGenerator extgen = new ExtensionsGenerator();
-            // KeyUsage
-            int bcku = 0;
-            bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
-            X509KeyUsage ku = new X509KeyUsage(bcku);
-            bOut = new ByteArrayOutputStream();
-            dOut = new DEROutputStream(bOut);
-            dOut.writeObject(ku);
+            new DEROutputStream(bOut).writeObject(keyUsage);
             byte[] value = bOut.toByteArray();
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
-
             // Make the complete extension package
             exts = extgen.generate();
         }
-        myCertTemplate.setExtensions(exts);
-        CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
-        ProofOfPossession myProofOfPossession = new ProofOfPossession();
+        certTemplateBuilder.setExtensions(exts);
+        CertRequest certRequest = new CertRequest(4, certTemplateBuilder.build(), null);
+        ProofOfPossession proofOfPossession = new ProofOfPossession();
         AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
         AttributeTypeAndValue[] avs = {av};
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, myProofOfPossession, avs);
+        CertReqMsg certReqMsg = new CertReqMsg(certRequest, proofOfPossession, avs);
+        CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
-        CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
-
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(SUBJECT_DN), new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(SUBJECT_DN),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        PKIBody myPKIBody = new PKIBody(20, myCertReqMessages); // nestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, certReqMessages);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raSignerTest06", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, "BC");
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
         
-        assertNotNull("Failed to create PKIHeader", myPKIHeader);
-        assertNotNull("Failed to create PKIBody", myPKIBody);
-        assertNotNull("Failed to create PKIMessage", myPKIMessage);
+        assertNotNull("Failed to create PKIHeader", pkiHeaderBuilder);
+        assertNotNull("Failed to create PKIBody", pkiBody);
+        assertNotNull("Failed to create PKIMessage", pkiMessage);
         
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
 
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
+        PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("unknown object in getInstance: org.bouncycastle.asn1.DERSequence", errMsg);
@@ -729,7 +663,6 @@ public class NestedMessageContentTest extends CmpTestCase {
     public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException,
             EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
-        
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
@@ -739,65 +672,48 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull(nb);
         assertNotNull(na);
         
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
-        
-        
         
         // ---------------- Creating the NestedMessageContent ----------------------
         
         final X500Name reqSubjectDN = new X500Name("CN=bogusSubjectNested");
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), 
-                            new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        myPKIHeader.setRecipNonce(new DEROctetString(nonce));
+        final PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN),
+                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setRecipNonce(new DEROctetString(nonce));
 
-        PKIBody myPKIBody = new PKIBody(20, crmfMsg); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, crmfMsg);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         
         long nbTime = (new Date()).getTime() - 1000000L;
         createRACertificate("raExpiredSignerTest07", "foo123", this.raCertsPath, cmpAlias, raKeys, new Date(nbTime), new Date(), CMPTESTPROFILE, this.caid);
         Thread.sleep(5000);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), null, BouncyCastleProvider.PROVIDER_NAME);
         
-            
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         
-        checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, myPKIMessage.getHeader().getSenderNonce().getOctets(), 
-                            myPKIMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
+        checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, pkiMessage.getHeader().getSenderNonce().getOctets(), 
+                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("Wrong error message", "Could not verify the RA, signature verification on NestedMessageContent failed.", errMsg);
@@ -807,8 +723,6 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test08MissingSignature() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
-
-        
         //------------------- Creating Certificate Request ---------------
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
@@ -817,13 +731,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull(nb);
         assertNotNull(na);
         
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
+        KeyPair keys = KeyTools.genKeys("1024", "RSA");
         PKIMessage crmfMsg = genCertReq(this.issuerDN, SUBJECT_DN, keys, this.cacert, senderNonce, transactionID, false, null, 
                 nb, na, null, null, null);
         assertNotNull("Failed to create crmfMsg.", crmfMsg);        
-        
-        
         
         // ---------------- Creating the NestedMessageContent ----------------------
         
@@ -831,44 +742,32 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(reqSubjectDN), 
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN), 
                 new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        myPKIHeader.setRecipNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        pkiHeaderBuilder.setRecipNonce(new DEROctetString(nonce));
 
-        PKIBody myPKIBody = new PKIBody(20, crmfMsg); // NestedMessageContent
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, crmfMsg);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
             
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         
-        checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, myPKIMessage.getHeader().getSenderNonce().getOctets(), 
-                            myPKIMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        PKIMessage respObject = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-        try {
-            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
+        checkCmpResponseGeneral(resp, this.issuerDN, reqSubjectDN, this.cacert, pkiMessage.getHeader().getSenderNonce().getOctets(), 
+                            pkiMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        PKIMessage respObject = PKIMessage.getInstance(resp);
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
+        assertEquals(PKIBody.TYPE_ERROR, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("Wrong error message", "Could not verify the RA, signature verification on NestedMessageContent failed.", errMsg);
@@ -877,14 +776,10 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     @Test
     public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
-        
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         this.cmpConfiguration.setOmitVerificationsInECC(cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
-
-        
         //-----------------Creating CRMF request
-        //PKIMessage crmfMsg = createEESignedCrmfReq(this.subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
         byte[] transactionID = CmpMessageHelper.createSenderNonce();
         Date nb = new Date((new Date()).getTime() - 31536000000L); // not before a year ago
@@ -905,45 +800,37 @@ public class NestedMessageContentTest extends CmpTestCase {
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
         int reqID = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         
-        
         //------------------Creating NestedMessageContent
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(reqSubjectDN)), 
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)), 
                     new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new ASN1GeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-
+        pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
+        pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
+        pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
         
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add( crmfMsg );
         DERSequence seq = new DERSequence(v);
-        PKIBody myPKIBody = new PKIBody(20, seq); // NestedMessageContent
-        assertNotNull("Failed to create nested Message PKIBody", myPKIBody);
+        PKIBody pkiBody = new PKIBody(PKIBody.TYPE_NESTED, seq);
+        assertNotNull("Failed to create nested Message PKIBody", pkiBody);
         
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        assertNotNull("Failed to created nested message PKIMessage", myPKIMessage);
+        PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
+        assertNotNull("Failed to created nested message PKIMessage", pkiMessage);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raCrmfSigner", "foo123", this.raCertsPath, cmpAlias, raKeys, null, null, CMPTESTPROFILE, this.caid);
-        myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        pkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, null, raKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
             
             
-        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
-        assertNotNull("myPKIBody is null", myPKIBody);
-        assertNotNull("myPKIMessage is null", myPKIMessage);
+        assertNotNull("Failed to create pkiHeader", pkiHeaderBuilder);
+        assertNotNull("pkiBody is null", pkiBody);
+        assertNotNull("pkiMessage is null", pkiMessage);
 
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(myPKIMessage);
-        final byte[] ba = bao.toByteArray();
+        final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(pkiMessage);
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
                         crmfMsg.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -967,7 +854,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     private AuthenticationToken createAdminToken(KeyPair keys, String name, String dn) throws RoleNotFoundException, AuthorizationDeniedException {
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         X500Principal p = new X500Principal(dn);
         principals.add(p);
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
@@ -984,7 +871,6 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     private AuthenticationToken createTokenWithCert(String adminName, AuthenticationSubject subject, KeyPair keys) {
-
         // A small check if we have added a "fail" credential to the subject.
         // If we have we will return null, so we can test authentication failure.
         Set<?> usercredentials = subject.getCredentials();
@@ -997,8 +883,6 @@ public class NestedMessageContentTest extends CmpTestCase {
                 }
             }
         }
-        
-        X509Certificate certificate = null;
         // If there was no certificate input, create a self signed
         String dn = "C=SE,O=Test,CN=Test"; // default
         // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
@@ -1012,22 +896,13 @@ public class NestedMessageContentTest extends CmpTestCase {
                 }
             }
         }
-
         try {
             createUser(adminName, dn, "foo123", this.caid);
-        } catch (AuthorizationDeniedException e1) {
-            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-        } catch (EndEntityProfileValidationException e1) {
-            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-        } catch (WaitingForApprovalException e1) {
-            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-        } catch (EjbcaException e1) {
-            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
-        } catch (Exception e1) {
-            throw new IllegalStateException("Error encountered when creating this.admin user", e1);
+        } catch (AuthorizationDeniedException | EndEntityProfileValidationException | WaitingForApprovalException | EjbcaException |
+                NoSuchEndEntityException | CADoesntExistsException | CertificateSerialNumberException | IllegalNameException | RuntimeException e) {
+            throw new IllegalStateException("Error encountered when creating this.admin user", e);
         }
-
-        
+        X509Certificate certificate = null;
         try {
             certificate = (X509Certificate) this.signSession.createCertificate(this.admin, adminName, "foo123",
                     new PublicKeyWrapper(keys.getPublic()));
@@ -1037,7 +912,6 @@ public class NestedMessageContentTest extends CmpTestCase {
                 | NoSuchEndEntityException | AuthStatusException | AuthLoginException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         }
-
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
         AuthenticationToken result = new TestX509CertificateAuthenticationToken(certificate);
         return result;

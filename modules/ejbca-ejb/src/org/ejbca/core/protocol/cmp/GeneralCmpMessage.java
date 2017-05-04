@@ -25,7 +25,6 @@ import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -50,23 +49,20 @@ public class GeneralCmpMessage extends BaseCmpMessage {
      */
     static final long serialVersionUID = 1000L;
 
-	public GeneralCmpMessage(final PKIMessage msg) {
-		final PKIBody body = msg.getBody();
-		final int tag = body.getType();
-		if (tag == 19) {
-			// this is a PKIConfirmContent
+	public GeneralCmpMessage(final PKIMessage pkiMessage) {
+		final PKIBody pkiBody = pkiMessage.getBody();
+		final int tag = pkiBody.getType();
+		if (tag == PKIBody.TYPE_CONFIRM) {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a PKIConfirm message");
 			}
 			// This is a null message, so there is nothing to get here
 			//DERNull obj = body.getConf();
-		}
-		if (tag == 24) {
-			// this is a CertConfirmContent
+		} else if (tag == PKIBody.TYPE_CERT_CONFIRM) {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a Cert Confirm message");
 			}
-			final CertConfirmContent obj = (CertConfirmContent) body.getContent();
+			final CertConfirmContent obj = (CertConfirmContent) pkiBody.getContent();
 			CertStatus cs;
 			try {
 			    cs = CertStatus.getInstance(obj.toASN1Primitive());
@@ -82,13 +78,12 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 					// TODO: if it is rejected, we should revoke the cert?
 				}
 			}
-		}
-		if (tag == 11) {
+		} else if (tag == PKIBody.TYPE_REVOCATION_REQ) {
 			// this is a RevReqContent,
 			if (log.isDebugEnabled()) {
 				log.debug("Received a RevReqContent");
 			}
-			final RevReqContent rr = (RevReqContent) body.getContent();
+			final RevReqContent rr = (RevReqContent) pkiBody.getContent();
 			RevDetails rd;
 			try {
 			    rd = rr.toRevDetailsArray()[0];
@@ -100,7 +95,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			final CertTemplate ct = rd.getCertDetails();
 			final ASN1Integer serno = ct.getSerialNumber();
 			final X500Name issuer = ct.getIssuer();
-			if ( (serno != null) && (issuer != null) ) {
+			if (serno != null && issuer != null) {
 				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 				log.info(errMsg);
 			} else {
@@ -108,22 +103,11 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 				log.info(errMsg);
 			}
 		}
-		setMessage(msg);
-		final PKIHeader header = msg.getHeader();
-		if (header.getTransactionID() != null) {
-		    final byte[] val = header.getTransactionID().getOctets();
-			if (val != null) {
-				setTransactionId(new String(Base64.encode(val)));							
-			}
-		}
-		if (header.getSenderNonce() != null) {
-		    final byte[] val = header.getSenderNonce().getOctets();
-			if (val != null) {
-				setSenderNonce(new String(Base64.encode(val)));							
-			}
-		}
-		setRecipient(header.getRecipient());
-		setSender(header.getSender());
+		setMessage(pkiMessage);
+		final PKIHeader pkiHeader = pkiMessage.getHeader();
+        setTransactionId(getBase64FromAsn1OctetString(pkiHeader.getTransactionID()));
+        setSenderNonce(getBase64FromAsn1OctetString(pkiHeader.getSenderNonce()));
+		setRecipient(pkiHeader.getRecipient());
+		setSender(pkiHeader.getSender());
 	}
-	
 }

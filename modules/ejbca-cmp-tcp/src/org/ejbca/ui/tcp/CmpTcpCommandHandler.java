@@ -15,13 +15,11 @@ package org.ejbca.ui.tcp;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
@@ -73,20 +71,15 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		LOG.info(INTRES.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
 		long startTime = System.currentTimeMillis();
 		final TcpReceivedMessage cmpTcpMessage = TcpReceivedMessage.getTcpMessage(command);
-		if ( cmpTcpMessage.message==null )  {
+		if (cmpTcpMessage.message == null) {
 			handler.closeConnection();
 		} else {
-			// We must use an administrator with rights to create users
-            final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpTcp", handler.getHostAddress()));
-			final ResponseMessage resp;
+		    final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("CmpTcp", handler.getHostAddress()));
+		    byte[] result = null;
 			try {
-				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message, "tcp");
-			} catch (IOException e) {
-				LOG.error( INTRES.getLocalizedMessage("cmp.errornoasn1"), e );
-				handler.closeConnection();
-				return;
+			    result = getEjb().getRaMasterApiProxyBean().cmpDispatch(authenticationToken, cmpTcpMessage.message, "tcp");
 			} catch (NoSuchAliasException e) {
-                LOG.error(e.getMessage(), e );
+                LOG.error(e.getMessage(), e);
                 handler.closeConnection();
                 return;
             }
@@ -94,18 +87,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 				LOG.debug("Sending back CMP response to client.");
 			}
 			// Send back reply
-			final TcpReturnMessage sendBack;
-			{
-				byte tmp[] = null;
-				try {
-					if (resp!=null) {
-						tmp = resp.getResponseMessage();
-					}
-				} catch (CertificateEncodingException e) {
-					LOG.debug("CertificateEncodingException: " + e.getMessage());
-				}
-				sendBack = TcpReturnMessage.createMessage(tmp, cmpTcpMessage.doClose);
-			}
+			final TcpReturnMessage sendBack = TcpReturnMessage.createMessage(result, cmpTcpMessage.doClose);
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Sending "+sendBack.message.length+" bytes to client");
 			}

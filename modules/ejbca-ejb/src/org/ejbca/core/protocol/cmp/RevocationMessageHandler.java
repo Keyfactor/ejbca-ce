@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.CRLException;
-import java.security.cert.CertificateEncodingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -53,6 +51,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
@@ -77,8 +76,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 	
-	// /** Parameter used to authenticate RA messages if we are using RA mode to create users */
-	//private String raAuthenticationSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
@@ -89,8 +86,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
 	
-    public RevocationMessageHandler(AuthenticationToken authenticationToken, String configAlias, EjbBridgeSessionLocal ejbBridgeSession, final CryptoTokenSessionLocal cryptoTokenSession) {
-        super(authenticationToken, configAlias, ejbBridgeSession);
+    public RevocationMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, final String configAlias,
+    		final EjbBridgeSessionLocal ejbBridgeSession, final CryptoTokenSessionLocal cryptoTokenSession) {
+        super(authenticationToken, cmpConfiguration, configAlias, ejbBridgeSession);
         this.responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
         this.endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
         this.certificateStoreSession = ejbBridgeSession.getCertificateStoreSession();
@@ -122,7 +120,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
         }
 		
-		ResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		// Try to find a HMAC/SHA1 protection key
 		final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
@@ -140,9 +137,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		}
 
 		// If authentication was correct, we will now try to find the certificate to revoke
-		final PKIMessage pkimsg = msg.getMessage();
-		final PKIBody body = pkimsg.getBody();
-		final RevReqContent rr = (RevReqContent) body.getContent();
+		final PKIMessage pkiMessage = msg.getMessage();
+		final PKIBody pkiBody = pkiMessage.getBody();
+		final RevReqContent rr = (RevReqContent) pkiBody.getContent();
 		RevDetails rd;
 		try {
 		    rd = rr.toRevDetailsArray()[0];
@@ -162,9 +159,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		DERBitString reasonbits;
 		try {
 		    reasonbits = new DERBitString(reasonoctets.getEncoded());
-		} catch (IOException e1) {
-		    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e1.getMessage()), e1);
-		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e1.getMessage());
+		} catch (IOException e) {
+		    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		}
 		if (reasonbits != null) {
 		    reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
@@ -200,7 +197,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    }
 		}
 		
-		if ( (serno != null) && (issuer != null) ) {
+		if (serno != null && issuer != null) {
 		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 		    LOG.info(iMsg);
 		    try {
@@ -237,7 +234,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    failText = errMsg; 
 		    LOG.info(failText);
 		}
-
 		
 		if (LOG.isDebugEnabled()) {
 		    LOG.debug("Creating a PKI revocation message response");
@@ -259,7 +255,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    final int iterationCount = 1024;
 		    final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
 		    
-		    if( (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
+		    if (owfAlg != null && macAlg != null && keyId != null && cmpRaAuthSecret != null) {
 		        // Set all protection parameters
 		        if (LOG.isDebugEnabled()) {
 		            LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
@@ -278,26 +274,11 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        LOG.error(e.getLocalizedMessage(), e);
 		    }
 		}
-		resp = rresp;
 		try {
-		    resp.create();
-		} catch (InvalidKeyException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-		    LOG.error(errMsg, e);			
-		} catch (NoSuchAlgorithmException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-		    LOG.error(errMsg, e);			
-		} catch (NoSuchProviderException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-		    LOG.error(errMsg, e);			
-		} catch (CertificateEncodingException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-            LOG.error(errMsg, e);   
-        } catch (CRLException e) {
-            String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-            LOG.error(errMsg, e);   
-        }  						
-		
-		return resp;
+		    rresp.create();
+		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+		    LOG.error(INTRES.getLocalizedMessage("cmp.errorgeneral"), e);
+        }
+		return rresp;
 	}  
 }

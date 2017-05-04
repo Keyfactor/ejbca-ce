@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
@@ -32,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIBody;
@@ -54,7 +54,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
@@ -111,22 +110,20 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     /** preferred digest algorithm to use in replies, if applicable */
     private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
-    public CrmfRequestMessage() {
-
-    }
+    public CrmfRequestMessage() { }
 
     /**
      * 
-     * @param msg PKIMessage
+     * @param pkiMessage PKIMessage
      * @param defaultCA possibility to enforce a certain CA, instead of taking the CA subject DN from the request, if set to null the CA subject DN is taken from the request
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the username should have been pre-set, or that here it is the same as CN.
      */
-    public CrmfRequestMessage(final PKIMessage msg, final String defaultCADN, final boolean allowRaVerifyPopo, final String extractUsernameComponent) {
+    public CrmfRequestMessage(final PKIMessage pkiMessage, final String defaultCADN, final boolean allowRaVerifyPopo, final String extractUsernameComponent) {
         if (log.isTraceEnabled()) {
             log.trace(">CrmfRequestMessage");
         }
-        setPKIMessage(msg);
+        setPKIMessage(pkiMessage);
         this.defaultCADN = defaultCADN;
         this.allowRaVerifyPopo = allowRaVerifyPopo;
         this.extractUsernameComponent = extractUsernameComponent;
@@ -153,36 +150,20 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     private void init() {
-        
-        final PKIBody body = getPKIMessage().getBody();
-        final PKIHeader header = getPKIMessage().getHeader();
-        requestType = body.getType();
-        final CertReqMessages msgs = getCertReqFromTag(body, requestType);
-
+        final PKIBody pkiBody = getPKIMessage().getBody();
+        final PKIHeader pkiHeader = getPKIMessage().getHeader();
+        requestType = pkiBody.getType();
+        final CertReqMessages msgs = getCertReqFromTag(pkiBody, requestType);
         try {
             this.req = msgs.toCertReqMsgArray()[0];
         } catch(Exception e) {
             this.req = CmpMessageHelper.getNovosecCertReqMsg(msgs);
         }
-
         requestId = this.req.getCertReq().getCertReqId().getValue().intValue();
-        
-        ASN1OctetString os = header.getTransactionID();
-        if (os != null) {
-            byte[] val = os.getOctets();
-            if (val != null) {
-                setTransactionId(new String(Base64.encode(val)));
-            }
-        }
-        os = header.getSenderNonce();
-        if (os != null) {
-            byte[] val = os.getOctets();
-            if (val != null) {
-                setSenderNonce(new String(Base64.encode(val)));
-            }
-        }
-        setRecipient(header.getRecipient());
-        setSender(header.getSender());
+        setTransactionId(getBase64FromAsn1OctetString(pkiHeader.getTransactionID()));
+        setSenderNonce(getBase64FromAsn1OctetString(pkiHeader.getSenderNonce()));
+        setRecipient(pkiHeader.getRecipient());
+        setSender(pkiHeader.getSender());
     }
 
     @Override
@@ -200,19 +181,14 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
             final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
             return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
-        } catch (java.security.spec.InvalidKeySpecException e) {
-            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
-            newe.initCause(e);
-            throw newe;
-        } catch (IOException e) {
+        } catch (InvalidKeySpecException | IOException e) {
             final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
             newe.initCause(e);
             throw newe;
         }
     }
 
-    /** force a password, i.e. ignore the password in the request
-     */
+    /** force a password, i.e. ignore the password in the request */
     public void setPassword(final String pwd) {
         this.password = pwd;
     }
@@ -235,8 +211,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return this.password;
     }
 
-    /** force a username, i.e. ignore the DN/username in the request
-     */
+    /** force a username, i.e. ignore the DN/username in the request */
     public void setUsername(final String username) {
         this.username = username;
     }
