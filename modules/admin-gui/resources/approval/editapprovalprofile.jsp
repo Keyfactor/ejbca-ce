@@ -166,13 +166,11 @@
                                         <f:converter converterId="stringConverter"/>
                                         <f:validator validatorId="#{property.validatorType}"/>
                                     </h:inputTextarea>
-						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" 
-						   				style="text-align: right;" >
+						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" size="6">
 					                   <f:converter converterId="javax.faces.Long"/>
 					                   <f:validator validatorId="#{property.validatorType}"/>
 						   			</h:inputText>
-						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" 	
-						   				style="text-align: right;" size="6" >
+						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" size="6" >
 					                   <f:converter converterId="javax.faces.Integer"/>
 					                   <f:validator validatorId="#{property.validatorType}" />
 						   			</h:inputText>
