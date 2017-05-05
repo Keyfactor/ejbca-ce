@@ -81,7 +81,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
             getLogger().info(" No InternalKeyBindings available or you are not authorized to view any.");
         } else {
             getLogger()
-                    .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
+                    .info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, SignatureAlgorithm, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
         }
         final Date now = new Date();
         for (final InternalKeyBinding internalKeyBinding : internalKeyBindings) {
@@ -118,6 +118,7 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
                 sb.append(", \"").append(cryptoTokenName).append("\" (").append(cryptoTokenId).append(')');
                 sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
                 sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
+                sb.append(", ").append(internalKeyBinding.getSignatureAlgorithm());
                 sb.append(", properties={");
                 final Collection<DynamicUiProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties()
                         .values();
