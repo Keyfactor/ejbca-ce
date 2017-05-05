@@ -150,7 +150,7 @@ public interface CaSession {
      * @param admin administrator calling the method
      * @param name human readable name of CA
      * @return CAInfo value object, never null
-     * @throws CADoesntExistsException if CA with caid does not exist
+     * @throws CADoesntExistsException if CA with name does not exist
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
     CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
