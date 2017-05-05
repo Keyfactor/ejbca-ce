@@ -114,7 +114,7 @@ nextCertSignKey fooalias03
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
 
-            getLogger().info("CA '" + caInfo.getName() + "' references crypto token '" + cryptoTokenInfo.getName() + "'");
+            getLogger().info("CA '" + caInfo.getName() + "' references crypto token '" + (cryptoTokenInfo != null ? cryptoTokenInfo.getName() : (cryptoTokenId+" (does not exist)"))+ "'");
             getLogger().info("New crypto token: " + cryptoTokenName);
             getLogger().info("CA token properties: " + caTokenPropertiesFile);
             getLogger().info("");
@@ -129,7 +129,7 @@ nextCertSignKey fooalias03
             }
             final CryptoTokenInfo newCryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), newId);
 
-            getLogger().info((force?"Changing ":"Would change" )+" CA '" + caInfo.getName() + "' that currently references crypto token '" + cryptoTokenInfo.getName() + "' to instead reference '" + newCryptoTokenInfo.getName() + "'.");
+            getLogger().info((force?"Changing ":"Would change" )+" CA '" + caInfo.getName() + "' that currently references crypto token '" + (cryptoTokenInfo != null ? cryptoTokenInfo.getName() : (cryptoTokenId+" (does not exist)")) + "' to instead reference '" + newCryptoTokenInfo.getName() + "'.");
             getLogger().info(" CA token properties that will be updated: " + caTokenProperties);
 
             
