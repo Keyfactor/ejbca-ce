@@ -16,6 +16,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -53,8 +55,7 @@ public class CVCCAInfo extends CAInfo {
                 new ArrayList<Integer>(), // CRL publishers
                 true, // Finish user
                 new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
-                new ArrayList<Integer>(), // Approval settings
-                -1, // ApprovalProfileID
+                new HashMap<ApprovalRequestType, Integer>(),
                 true, // includeInHealthCheck 
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
@@ -74,7 +75,7 @@ public class CVCCAInfo extends CAInfo {
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-			Collection<Integer> approvalSettings, final int approvalProfileID,
+			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
@@ -100,8 +101,7 @@ public class CVCCAInfo extends CAInfo {
 		this.finishuser = finishuser;                     
 		this.certificateprofileid = certificateprofileid;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
-		this.approvalSettings = approvalSettings;
-		this.approvalProfile = approvalProfileID;
+		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;
@@ -119,7 +119,7 @@ public class CVCCAInfo extends CAInfo {
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-			Collection<Integer> approvalSettings, final int approvalProfileID,
+			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
@@ -134,8 +134,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlpublishers = crlpublishers;
 		this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
-		this.approvalSettings = approvalSettings;
-		this.approvalProfile = approvalProfileID;
+		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
 		this.doEnforceUniqueDistinguishedName = _doEnforceUniqueDistinguishedName;

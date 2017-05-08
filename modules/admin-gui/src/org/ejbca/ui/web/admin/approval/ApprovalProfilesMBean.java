@@ -233,7 +233,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         List<String> result = new ArrayList<String>();
         for(Entry<Integer, CertificateProfile> entry : entries) {
             final CertificateProfile certProfile = entry.getValue();
-            if(certProfile.getApprovalProfileID() == approvalProfileId) {
+            if(certProfile.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {
                 result.add(certProfileSession.getCertificateProfileName(entry.getKey()));
             }
         }
@@ -247,7 +247,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         for(int caid : allCas) {
             try {
                 CAInfo cainfo = caSession.getCAInfoInternal(caid);
-                if(cainfo.getApprovalProfile() == approvalProfileId) {
+                if(cainfo.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {
                     result.add(cainfo.getName());
                 }
             } catch (CADoesntExistsException e) {

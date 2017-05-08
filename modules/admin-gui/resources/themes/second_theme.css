@@ -444,6 +444,12 @@ table.edit tr td {
 .editColumn2 {
 	width: 65%;
 }
+
+.editColumnSystem2 {
+	width: 65%;
+	text-align: left;
+}
+
 /* Titles (and Sections) */
 table tr.section td,
 table tr.title td {

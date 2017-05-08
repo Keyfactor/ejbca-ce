@@ -112,9 +112,12 @@ public abstract class CvcCA extends CA implements Serializable {
 		        getEncodedValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
-				getApprovalSettings(), getApprovalProfile(),
+				getApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());
+        //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons
+        info.setApprovalProfile(getApprovalProfile());
+        info.setApprovalSettings(getApprovalSettings());
 		super.setCAInfo(info);
         setCAId(caId);        
 	}

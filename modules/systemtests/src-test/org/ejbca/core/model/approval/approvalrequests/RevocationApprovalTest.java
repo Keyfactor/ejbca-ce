@@ -26,8 +26,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -36,12 +38,17 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -55,6 +62,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -194,7 +202,7 @@ public class RevocationApprovalTest extends CaTestCase {
         cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caname, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
+        approvalCAID = createApprovalCA(internalAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSession, caSession, catoken);
     }
 
     public String getRoleName() {
@@ -247,16 +255,16 @@ public class RevocationApprovalTest extends CaTestCase {
      * 
      * @return the CA's ID.
      */
-    public static int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, int approvalRequirementType, int approvalProfileId,
-            CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, CAToken caToken) throws Exception {
-        ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
-        approvalSettings.add(approvalRequirementType);
+    public static int createApprovalCA(AuthenticationToken internalAdmin, String nameOfCA, ApprovalRequestType approvalRequirementType, int approvalProfileId,
+            CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, CAToken caToken)
+            throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, CADoesntExistsException {
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, 
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
                 CAInfo.SELFSIGNED, null, caToken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
-        cainfo.setApprovalProfile(approvalProfileId);
-        cainfo.setApprovalSettings(approvalSettings);
+        Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+        approvals.put(approvalRequirementType, approvalProfileId);
+        cainfo.setApprovals(approvals);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

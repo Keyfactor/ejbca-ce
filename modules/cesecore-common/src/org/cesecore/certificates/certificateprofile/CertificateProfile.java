@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -34,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -57,7 +59,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 44.0;
+    public static final float LATEST_VERSION = (float) 46.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -182,6 +184,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USESUBJECTALTNAMESUBSET = "usesubjectaltnamesubset";
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
+    /**
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     */
+    @Deprecated
     protected static final String APPROVALSETTINGS = "approvalsettings";
     /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
@@ -189,7 +195,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @Deprecated
     public static final String NUMOFREQAPPROVALS = "numofreqapprovals";
+    /**
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     */
+    @Deprecated
     protected static final String APPROVALPROFILE = "approvalProfile";
+    protected static final String APPROVALS = "approvals";
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
@@ -494,9 +505,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
 
         setUsedCertificateExtensions(new ArrayList<Integer>());
-        List<Integer> emptyList = Collections.emptyList();
-        setApprovalSettings(emptyList);
-        setApprovalProfileID(-1);
+        setApprovals(new HashMap<ApprovalRequestType, Integer>());
         
         // PrivateKeyUsagePeriod extension
         setUsePrivateKeyUsagePeriodNotBefore(false);
@@ -2224,18 +2233,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none
+     * @return a List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none, never null
      * 
-     * Never null
+     * @deprecated since 6.8.0. Use getApprovals() instead;
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public List<Integer> getApprovalSettings() {
-        return (List<Integer>) data.get(APPROVALSETTINGS);
+        List<Integer> approvalSettings = (List<Integer>) data.get(APPROVALSETTINGS);
+        if (approvalSettings != null) {
+            return approvalSettings;
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     /**
      * List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     * 
+     * @deprecated since 6.8.0. Use setApprovals() instead;
      */
+    @Deprecated
     public void setApprovalSettings(List<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
@@ -2268,31 +2286,53 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns the id of the approval profile. ID -1 means  that no approval profile was set
+     * @return the id of the approval profile. ID -1 means  that no approval profile was set
+     * 
+     * @deprecated since 6.8.0. Use getApprovals() instead;
      */
+    @Deprecated
     public int getApprovalProfileID() {
-        return ((Integer) data.get(APPROVALPROFILE)).intValue();
+        Integer approvalProfileId = (Integer) data.get(APPROVALPROFILE);
+        if(approvalProfileId != null) {
+            return approvalProfileId.intValue();
+        } else {
+            return -1;
+        }
     }
 
     /**
-     * The ID of an approval profile
+     * @return the ID of an approval profile
+     * 
+     * @deprecated since 6.8.0. Use setApprovals() instead;
      */
     public void setApprovalProfileID(int approvalProfileID) {
         data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
     }
-
+    
+    public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
+        if(approvals == null) {
+            approvals = new HashMap<>();
+        }
+        data.put(APPROVALS, approvals);
+    }
+    
+    /**
+     * @return a map of approvals, mapped as approval setting (as defined in this class) : approval profile ID. Never returns null.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<ApprovalRequestType, Integer> getApprovals() {
+        return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
+    }
     
 
     /**
      * Returns true if the action requires approvals.
      * 
-     * @param action
-     *            , on of the CAInfo.REQ_APPROVAL_ constants
+     * @param action as definde by the ApprovalRequestType enum
+     * @return true if this profile has an approval profile set for the given action.
      */
-    @SuppressWarnings("unchecked")
-    public boolean isApprovalRequired(int action) {
-        Collection<Integer> approvalSettings = (Collection<Integer>) data.get(APPROVALSETTINGS);
-        return approvalSettings.contains(Integer.valueOf(action));
+    public boolean isApprovalRequired(ApprovalRequestType action) {    
+        return getApprovals().containsKey(action);
     }
 
     /**
@@ -2902,6 +2942,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 } else {
                     data.put(QCETSIPDS, null);
                 }
+            }
+            
+            // v46: Remapping approvals to one profile per approval profile (ECA-5845)
+            if(!data.containsKey(APPROVALS)) {
+                int approvalProfileId = getApprovalProfileID();
+                List<Integer> approvalActions = getApprovalSettings();
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+                if(approvalProfileId != -1) {
+                    for(Integer approvalAction : approvalActions) {
+                        approvals.put(ApprovalRequestType.getFromIntegerValue(approvalAction), approvalProfileId);
+                    }
+                }
+                data.put(APPROVALS, approvals);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

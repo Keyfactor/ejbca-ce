@@ -19,7 +19,9 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -100,8 +102,7 @@ public class X509CAInfo extends CAInfo{
              true, // Finish User
              new ArrayList<ExtendedCAServiceInfo>(), // no extended services
              false, // use default utf8 settings
-             new ArrayList<Integer>(), // Approvals Settings
-             -1, // Approval profile ID (-1 mean no approval profile used)
+             new HashMap<ApprovalRequestType, Integer>(), //approvals
              false, // Use UTF8 subject DN by default
              true, // Use LDAP DN order by default
              false, // Use CRL Distribution Point on CRL
@@ -134,7 +135,7 @@ public class X509CAInfo extends CAInfo{
     		final List<String> certificateAiaDefaultCaIssuerUri,
     		final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
+    		final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
@@ -186,8 +187,7 @@ public class X509CAInfo extends CAInfo{
         this.certificateprofileid = certificateprofileid;
         this.extendedcaserviceinfos = extendedcaserviceinfos; 
         this.useUTF8PolicyText = useUTF8PolicyText;
-        this.approvalSettings = approvalSettings;
-        this.approvalProfile = approvalProfile;
+        setApprovals(approvals);
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;
@@ -216,7 +216,7 @@ public class X509CAInfo extends CAInfo{
     		final List<String> certificateAiaDefaultCaIssuerUri,
     		final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
-    		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int approvalProfile, final boolean usePrintableStringSubjectDN, 
+    		final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, 
     		final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {        
@@ -240,8 +240,7 @@ public class X509CAInfo extends CAInfo{
         this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
         this.useUTF8PolicyText = useUTF8PolicyText;
-        this.approvalSettings = approvalSettings;
-        this.approvalProfile = approvalProfile;
+        setApprovals(approvals);
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
         this.useLdapDNOrder = useLdapDnOrder;
         this.useCrlDistributionPointOnCrl = useCrlDistributionPointOnCrl;

@@ -453,6 +453,10 @@ table.edit tr td {
 .editColumn2 {
 	width: 65%;
 }
+.editColumnSystem2 {
+	width: 65%;
+	text-align: left;
+}
 
 .column-checkbox1 {
 	width: 3%;

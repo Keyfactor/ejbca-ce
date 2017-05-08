@@ -42,7 +42,6 @@ public class CaEditCertificateProfileCommandTest {
     private static final String[] HAPPY_PATH_ARGS1 = { PROFILE_NAME, "CRLDistributionPointURI", "--value", "http://my-crl-distp.com/my.crl" };
     private static final String[] HAPPY_PATH_ARGS2 = { PROFILE_NAME, "caIssuers", "--value", "http://my-ca.issuer.com/ca" };
     private static final String[] HAPPY_PATH_ARGS3 = { PROFILE_NAME, "useOcspNoCheck", "--value", "true" };
-    private static final String[] HAPPY_PATH_ARGS4 = { PROFILE_NAME, "numOfReqApprovals", "--value", "5" };
 
     private static final String[] HAPPY_PATH_GETVALUE_ARGS = { PROFILE_NAME, "-getValue", "caIssuers" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { PROFILE_NAME, "-listFields" };
@@ -77,17 +76,14 @@ public class CaEditCertificateProfileCommandTest {
             assertEquals("Storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile1.getCRLDistributionPointURI());
             assertEquals("Storing cert profile with values failed", "ldap://caissuer.foo.com/ca1.der", profile1.getCaIssuers().get(0));
             assertEquals("Changing cert profile with values failed", false, profile1.getUseOcspNoCheck());
-            assertEquals("Changing cert profile with values failed", 1, profile1.getNumOfReqApprovals());
             command.execute(HAPPY_PATH_ARGS1);
             command.execute(HAPPY_PATH_ARGS2);
             command.execute(HAPPY_PATH_ARGS3);
-            command.execute(HAPPY_PATH_ARGS4);
             // Check that we edited
             CertificateProfile profile2 = profileSession.getCertificateProfile(PROFILE_NAME);
             assertEquals("Changing cert profile with values failed", "http://my-crl-distp.com/my.crl", profile2.getCRLDistributionPointURI());
             assertEquals("Changing cert profile with values failed", "http://my-ca.issuer.com/ca", profile2.getCaIssuers().get(0));
             assertEquals("Changing cert profile with values failed", true, profile2.getUseOcspNoCheck());
-            assertEquals("Changing cert profile with values failed", 5, profile2.getNumOfReqApprovals());
             // Try to get value and list fields without exceptions...
             command.execute(HAPPY_PATH_GETVALUE_ARGS);
             command.execute(HAPPY_PATH_LISTFIELDS_ARGS);

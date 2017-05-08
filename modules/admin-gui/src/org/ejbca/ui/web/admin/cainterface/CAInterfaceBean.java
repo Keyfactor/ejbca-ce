@@ -57,6 +57,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -513,7 +514,7 @@ public class CAInterfaceBean implements Serializable {
             String extendedServiceSignatureKeySpec,
             String keySequenceFormat, String keySequence, int catype, String subjectdn,
             String certificateProfileIdString, String signedByString, String description, String validityString,
-            String approvalSettingValues, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+            Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
             boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
             String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -576,7 +577,7 @@ public class CAInterfaceBean implements Serializable {
             }
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, signedByString,
-                    description, validityString, approvalSettingValues, approvalProfileParam, finishUser,
+                    description, validityString, approvals, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
@@ -606,7 +607,7 @@ public class CAInterfaceBean implements Serializable {
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
 	        String certificateProfileIdString, String signedByString, String description, String validityString,
-	        String approvalSettingValues, String approvalProfileParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
 	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -676,7 +677,7 @@ public class CAInterfaceBean implements Serializable {
         }
 	    try {
 	        CertTools.stringToBcX500Name(subjectdn);
-	    } catch (Exception e) {
+	    } catch (IllegalArgumentException e) {
 	        illegaldnoraltname = true;
 	    }
         int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
@@ -698,15 +699,6 @@ public class CAInterfaceBean implements Serializable {
         }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
-	        // Approvals is generic for all types of CAs
-	        final ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
-	        if (approvalSettingValues != null) {
-	            for (int i=0; i<approvalSettingValues.split(";").length; i++) {
-	                approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
-	            }
-	        }
-            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
-
 	        if (catype == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
 	            if (subjectaltname == null) {
@@ -766,8 +758,7 @@ public class CAInterfaceBean implements Serializable {
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
-	                            approvalsettings,
-	                            approvalProfileID,
+	                            approvals,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
@@ -813,8 +804,7 @@ public class CAInterfaceBean implements Serializable {
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
-	                            approvalsettings,
-	                            approvalProfileID,
+	                            approvals,
 	                            useprintablestringsubjectdn,
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
@@ -853,8 +843,7 @@ public class CAInterfaceBean implements Serializable {
 	                        null, catoken, description, -1, null,
 	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
 	                        finishUser, extendedcaservices,
-	                        approvalsettings,
-	                        approvalProfileID,
+	                        approvals,
 	                        false, // Do not automatically include new CAs in health-check
 	                        isDoEnforceUniquePublicKeys,
 	                        isDoEnforceUniqueDistinguishedName,
@@ -984,8 +973,8 @@ public class CAInterfaceBean implements Serializable {
 	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues,
-	        String approvalProfileParam,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, 
+	        Map<ApprovalRequestType, Integer> approvals,
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String crlAuthorityInformationAccessParam, 
 	        String certificateAiaDefaultCaIssuerUriParam,
@@ -1037,14 +1026,9 @@ public class CAInterfaceBean implements Serializable {
         }
         if (caid != 0  && catype !=0) {
             // First common info for both X509 CAs and CVC CAs
-           CAInfo cainfo = null;
-           final ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
-           if (approvalSettingValues != null) {
-               for (int i=0; i<approvalSettingValues.split(";").length; i++) {
-                   approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
-               }
-           }
-           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
+           CAInfo cainfo = null;           
+           
+
            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
            if (availablePublisherValues != null) {
                for (final String availablePublisherId : availablePublisherValues.split(";")) {
@@ -1072,7 +1056,7 @@ public class CAInterfaceBean implements Serializable {
                         crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
                         defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess, certificateAiaDefaultCaIssuerUri,
                         parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
-                        cadefinedfreshestcrl, finishUser, extendedcaservices, useutf8policytext, approvalsettings, approvalProfileID,
+                        cadefinedfreshestcrl, finishUser, extendedcaservices, useutf8policytext, approvals,
                         useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                         isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
                         useUserStorage, useCertificateStorage, sharedCmpRaSecret, keepExpiredCertsOnCRL);
@@ -1087,8 +1071,7 @@ public class CAInterfaceBean implements Serializable {
                        catoken, description,
                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                        finishUser, extendedcaservices,
-                       approvalsettings,
-                       approvalProfileID,
+                       approvals,
                        includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,

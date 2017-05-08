@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -90,6 +91,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private ListDataModel<String> documentTypeList = null;
     private String documentTypeListNew = "";
     private ListDataModel<PKIDisclosureStatement> pdsListModel = null;
+    private List<ApprovalRequestItem> approvalRequestItems = null;
 
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
@@ -102,6 +104,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         documentTypeList = null;
         documentTypeListNew = "";
         pdsListModel = null;
+        approvalRequestItems = null;
     }
 
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
@@ -211,6 +214,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     }
                     certificateProfile.setQCEtsiPds(pdsCleaned);
                 }
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+                for(ApprovalRequestItem approvalRequestItem : approvalRequestItems) {
+                    approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
+                }
+                certificateProfile.setApprovals(approvals);
+                
                 // Modify the profile
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
@@ -529,49 +538,49 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     
-    public void toggleUseSubjectAlternativeName() throws AuthorizationDeniedException, IOException {
+    public void toggleUseSubjectAlternativeName() throws IOException {
         getCertificateProfile().setUseSubjectAlternativeName(!getCertificateProfile().getUseSubjectAlternativeName());
         // Default store to enabled when extension is first enabled and vice versa
         getCertificateProfile().setStoreSubjectAlternativeName(getCertificateProfile().getUseSubjectAlternativeName());
         redirectToComponent("header_x509v3extensions_names");
     }
     
-    public void toggleUseIssuerAlternativeName() throws AuthorizationDeniedException, IOException {
+    public void toggleUseIssuerAlternativeName() throws IOException {
         getCertificateProfile().setUseIssuerAlternativeName(!getCertificateProfile().getUseIssuerAlternativeName());
         redirectToComponent("header_x509v3extensions_names");
     }
 
-    public void toggleUseNameConstraints() throws AuthorizationDeniedException, IOException {
+    public void toggleUseNameConstraints() throws IOException {
         getCertificateProfile().setUseNameConstraints(!getCertificateProfile().getUseNameConstraints());
         redirectToComponent("header_x509v3extensions_names");
     }
     
-    public void toggleUseCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCRLDistributionPoint() throws IOException {
         getCertificateProfile().setUseCRLDistributionPoint(!getCertificateProfile().getUseCRLDistributionPoint());
         redirectToComponent("header_x509v3extensions_valdata");
     }
     
-    public void toggleUseDefaultCRLDistributionPoint() throws AuthorizationDeniedException, IOException {
+    public void toggleUseDefaultCRLDistributionPoint() throws IOException {
         getCertificateProfile().setUseDefaultCRLDistributionPoint(!getCertificateProfile().getUseDefaultCRLDistributionPoint());
         redirectToComponent("header_x509v3extensions_valdata");
     }
     
-    public void toggleUseCADefinedFreshestCRL() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCADefinedFreshestCRL() throws IOException {
         getCertificateProfile().setUseCADefinedFreshestCRL(!getCertificateProfile().getUseCADefinedFreshestCRL());
         redirectToComponent("header_x509v3extensions_valdata");
     }
     
-    public void toggleUseFreshestCRL() throws AuthorizationDeniedException, IOException {
+    public void toggleUseFreshestCRL() throws IOException {
         getCertificateProfile().setUseFreshestCRL(!getCertificateProfile().getUseFreshestCRL());
         redirectToComponent("header_x509v3extensions_valdata");
     }
     
-    public void toggleUseCertificatePolicies() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCertificatePolicies() throws IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
         redirectToComponent("header_x509v3extensions_usages");
     }
     
-    public ListDataModel<CertificatePolicy> getCertificatePolicies() throws AuthorizationDeniedException {
+    public ListDataModel<CertificatePolicy> getCertificatePolicies() {
         if (certificatePoliciesModel==null) {
             final List<CertificatePolicy> certificatePolicies = getCertificateProfile().getCertificatePolicies();
             if (certificatePolicies!=null) {
@@ -1105,6 +1114,50 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         
         return ret;
     }
+    
+    public static class ApprovalRequestItem {
+        private final ApprovalRequestType requestType; 
+        private int approvalProfileId;
+
+        public ApprovalRequestItem(final ApprovalRequestType requestType, final int approvalProfileId) {
+            this.requestType = requestType;
+            this.approvalProfileId = approvalProfileId;
+        }
+
+        public ApprovalRequestType getRequestType() {
+            return requestType;
+        }
+        
+        public int getApprovalProfileId() {
+            return approvalProfileId;
+        }
+
+        public void setApprovalProfileId(int approvalProfileId) {
+            this.approvalProfileId = approvalProfileId;
+        }
+        
+        public String getDisplayText() {
+            return EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(requestType.getLanguageString());
+        }
+        
+    }
+    
+    public List<ApprovalRequestItem> getApprovalRequestItems() {
+        if (approvalRequestItems == null) {
+            approvalRequestItems = new ArrayList<>();
+            Map<ApprovalRequestType, Integer> approvals = certificateProfile.getApprovals();
+            for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                int approvalProfileId;
+                if (approvals.containsKey(Integer.valueOf(approvalRequestType.getIntegerValue()))) {
+                    approvalProfileId = approvals.get(Integer.valueOf(approvalRequestType.getIntegerValue()));
+                } else {
+                    approvalProfileId = -1;
+                }
+                approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
+            }
+        }
+        return approvalRequestItems;
+    }
 
     public int getAvailableCertificateExtensionsAvailableSize() {
         return Math.max(1, Math.min(6, getAvailableCertificateExtensionsAvailable().size()));
@@ -1149,33 +1202,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     public int getPublisherListAvailableSize() { return Math.max(1, Math.min(5, getPublisherListAvailable().size())); };
-
-    public boolean isApprovalEnabledAddEndEntity() throws AuthorizationDeniedException { return isApprovalEnabled(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY); }
-    public boolean isApprovalEnabledKeyRecover() throws AuthorizationDeniedException { return isApprovalEnabled(CAInfo.REQ_APPROVAL_KEYRECOVER); }
-    public boolean isApprovalEnabledRevocation() throws AuthorizationDeniedException { return isApprovalEnabled(CAInfo.REQ_APPROVAL_REVOCATION); }
-    public boolean isApprovalEnabledActivateCa() throws AuthorizationDeniedException { return isApprovalEnabled(CAInfo.REQ_APPROVAL_ACTIVATECA); }
-    
-    public void setApprovalEnabledAddEndEntity(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, enabled); }
-    public void setApprovalEnabledKeyRecover(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_KEYRECOVER, enabled); }
-    public void setApprovalEnabledRevocation(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_REVOCATION, enabled); }
-    public void setApprovalEnabledActivateCa(final boolean enabled) throws AuthorizationDeniedException { setApprovalEnabled(CAInfo.REQ_APPROVAL_ACTIVATECA, enabled); }
-  
-    private boolean isApprovalEnabled(final int approvalType) throws AuthorizationDeniedException {
-        return getCertificateProfile().getApprovalSettings().contains(Integer.valueOf(approvalType));
-    }
-    
-    private void setApprovalEnabled(final int approvalType, final boolean enabled) throws AuthorizationDeniedException {
-        final List<Integer> approvalSettings = new ArrayList<Integer>(getCertificateProfile().getApprovalSettings());
-        if (enabled) {
-            if (!approvalSettings.contains(Integer.valueOf(approvalType))) {
-                approvalSettings.add(Integer.valueOf(approvalType));
-            }
-        } else {
-            approvalSettings.remove(Integer.valueOf(approvalType));
-        }
-        getCertificateProfile().setApprovalSettings(approvalSettings);
-    }
-
 
     /** Redirect the client browser to the relevant section of certificate profile page */
     private void redirectToComponent(final String componentId) throws IOException {

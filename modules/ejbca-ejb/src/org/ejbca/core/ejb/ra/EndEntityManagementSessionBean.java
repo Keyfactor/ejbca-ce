@@ -59,6 +59,7 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -402,7 +403,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check if approvals is required. (Only do this if store users, otherwise this approval is disabled.)
         if (caInfo.isUseUserStorage()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntity.getCertificateProfileId());
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caInfo, 
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, caInfo, 
                     certProfile);
             if (approvalProfile != null) {
                 AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, caid,
@@ -798,7 +799,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check if approvals is required.
         final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, cainfo, 
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo, 
                 certificateProfile);
         if (approvalProfile != null) {
             final EndEntityInformation orguserdata = userData.toEndEntityInformation();
@@ -1302,7 +1303,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data1.getCertificateProfileId());
-        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, cainfo, 
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo, 
                 certProfile);
         if (approvalProfile != null) {
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
@@ -1535,7 +1536,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo,
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo,
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, caid, data.getEndEntityProfileId(),
@@ -1603,7 +1604,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
-        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, certProfile);
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, certProfile);
         if (approvalProfile != null) {
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, caid, userData.getEndEntityProfileId(),
                     approvalProfile);
@@ -1791,7 +1792,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_REVOCATION, cainfo, 
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, 
                     certProfile);
             if (approvalProfile != null) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, caid,

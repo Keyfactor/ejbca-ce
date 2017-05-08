@@ -38,6 +38,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -940,7 +941,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final int action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException {
+    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {

@@ -44,8 +44,8 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -455,7 +455,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Generate CA with approvals for revocation enabled
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(ADMIN, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            int caID = RevocationApprovalTest.createApprovalCA(ADMIN, caname, CAInfo.REQ_APPROVAL_REVOCATION, approvalProfileId, this.caAdminSession, this.caSession, catoken);
+            int caID = RevocationApprovalTest.createApprovalCA(ADMIN, caname, ApprovalRequestType.REVOCATION, approvalProfileId, this.caAdminSession, this.caSession, catoken);
             // Get CA cert
             cainfo = (X509CAInfo) this.caSession.getCAInfo(ADMIN, caID);
             assertNotNull(cainfo);

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -58,8 +59,7 @@ import org.ejbca.util.DNFieldDescriber;
 import org.ietf.ldap.LDAPDN;
 
 /**
- * Used by enrol/reg*.jsp for self-registration. This bean implements
- * implements listing of certificate types (defined in web.properties),
+ * Used by enrol/reg*.jsp for self-registration. This bean implements implements listing of certificate types (defined in web.properties),
  * listing of modifiable end-entity fields and submission of requests.
  * 
  * @version $Id$
@@ -575,13 +575,13 @@ public class RegisterReqBean {
         final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         if (certProfile != null) {
-            int approvalProfileId = certProfile.getApprovalProfileID();
-            if (approvalProfileId > -1) {
+            Integer approvalProfileId = certProfile.getApprovals().get(ApprovalRequestType.ADDEDITENDENTITY);
+            if (approvalProfileId != null) {
                 return approvalProfileSession.getApprovalProfile(approvalProfileId);
             }
         }
-        int approvalProfileId = cainfo.getApprovalProfile();
-        if (approvalProfileId > -1) {
+        Integer approvalProfileId = cainfo.getApprovals().get(ApprovalRequestType.ADDEDITENDENTITY);
+        if (approvalProfileId != null) {
             return approvalProfileSession.getApprovalProfile(approvalProfileId);
         }
         log.error("Could not find a suitable approval profile for certificate profile "+certProfileId+" or CA "+cainfo.getCAId());

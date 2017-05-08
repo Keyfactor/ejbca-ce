@@ -68,7 +68,8 @@ org.ejbca.core.model.authorization.AccessRulesConstants,
 java.security.cert.CertificateException,
 javax.ejb.EJBException,
 java.security.InvalidParameterException,
-java.security.InvalidAlgorithmParameterException
+java.security.InvalidAlgorithmParameterException,
+org.cesecore.certificates.ca.ApprovalRequestType
 " %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -348,8 +349,15 @@ java.security.InvalidAlgorithmParameterException
                 final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
                 String validityString = requestMap.get(TEXTFIELD_VALIDITY);
-                final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
-                final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
+                
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
+                for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                    String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
+                    if(approvalProfile != null) {
+                        approvals.put(approvalRequestType, Integer.valueOf(approvalProfile));
+                    }
+                }
+                
                 final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
                 final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
                 final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
@@ -398,7 +406,7 @@ java.security.InvalidAlgorithmParameterException
                     illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
                      signkeyspec, keySequenceFormatParam, keySequence,
                		 catype, subjectdn, certificateProfileIdString, signedByString, description, validityString,
-               		 approvalSettingValues, approvalProfileParam, finishUser, isDoEnforceUniquePublicKeys,
+               		 approvals, finishUser, isDoEnforceUniquePublicKeys,
                		 isDoEnforceUniqueDistinguishedName,
                		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
@@ -546,8 +554,6 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
-                final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
-                final String approvalProfileParam = requestMap.get(SELECT_APPROVALPROFILE);
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
                 final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
@@ -581,12 +587,20 @@ java.security.InvalidAlgorithmParameterException
                     subjectdn = cainfo.getSubjectDN();
                     signedByString = String.valueOf(cainfo.getSignedBy());
                 }	
+                
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
+                for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                    String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
+                    if(approvalProfile != null) {
+                        approvals.put(approvalRequestType, Integer.valueOf(approvalProfile));
+                    }
+                }
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, 
-            		approvalProfileParam,
+            		useCertReqHistory, useUserStorage, useCertificateStorage, 
+            		approvals,
             		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
             		authorityInformationAccess,

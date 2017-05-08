@@ -182,7 +182,6 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
         profile = certificateProfileSession.getCertificateProfile("TEST");
         assertEquals("TEST2", profile.getCRLDistributionPointURI());
         profile.setCRLDistributionPointURI(null);
-        profile.setApprovalSettings(null);
         certificateProfileSession.changeCertificateProfile(roleMgmgToken, "TEST", profile);
         profile = certificateProfileSession.getCertificateProfile("TEST");
         assertEquals("", profile.getCRLDistributionPointURI());

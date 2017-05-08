@@ -69,6 +69,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -536,7 +537,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
+            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, ApprovalRequestType.REVOCATION, approvalProfileId, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME)).iterator().next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(adminCert);

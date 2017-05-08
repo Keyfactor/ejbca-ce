@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -51,31 +53,6 @@ public abstract class CAInfo implements Serializable {
      */
     public static final int SPECIALCAIDBORDER = 10;
 
-    /**
-     * Constants indicating approval settings for this CA
-     */
-    public static final int REQ_APPROVAL_ADDEDITENDENTITY = 1;
-
-    /**
-     * Constants indicating approval settings for key recover this CA
-     */
-    public static final int REQ_APPROVAL_KEYRECOVER = 2;
-
-    /**
-     * Constants indicating approval settings for revocations this CA
-     */
-    public static final int REQ_APPROVAL_REVOCATION = 3;
-
-    /**
-     * Constants indicating approval settings for activation of CA tokens
-     */
-    public static final int REQ_APPROVAL_ACTIVATECA = 4;
-
-    public static final int[] AVAILABLE_APPROVALSETTINGS = { REQ_APPROVAL_ADDEDITENDENTITY, REQ_APPROVAL_KEYRECOVER, REQ_APPROVAL_REVOCATION,
-            REQ_APPROVAL_ACTIVATECA };
-    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS = { "APPROVEADDEDITENDENTITY", "APPROVEKEYRECOVER", "APPROVEREVOCATION",
-            "APPROVEACTIVATECA" };
-
     protected String subjectdn;
     protected int caid;
     protected String name;
@@ -109,8 +86,16 @@ public abstract class CAInfo implements Serializable {
     protected boolean keepExpiredCertsOnCRL = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
-    protected Collection<Integer> approvalSettings;
-    protected int approvalProfile;
+    /**
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     */
+    @Deprecated 
+    private Collection<Integer> approvalSettings;
+    /**
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     */
+    @Deprecated 
+    private int approvalProfile;
     
     /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
@@ -118,6 +103,9 @@ public abstract class CAInfo implements Serializable {
      */
     @Deprecated
     protected int numOfReqApprovals;
+    
+    private Map<ApprovalRequestType, Integer> approvals;
+
 
     protected boolean includeInHealthCheck;
     protected boolean doEnforceUniquePublicKeys;
@@ -351,17 +339,38 @@ public abstract class CAInfo implements Serializable {
     public void setExtendedCAServiceInfos(Collection<ExtendedCAServiceInfo> extendedcaserviceinfos) {
         this.extendedcaserviceinfos = extendedcaserviceinfos;
     }
+    
+    /**
+     * 
+     * @return a map of approvals, mapped as approval setting (as defined in this class) : approval profile ID. Never returns null.
+     */
+    public Map<ApprovalRequestType, Integer> getApprovals() {
+        return approvals;
+    }
+
+    public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
+        if(approvals == null) {
+            approvals = new HashMap<>();
+        }
+        this.approvals = approvals;
+    }
 
     /**
      * Returns the ID of an approval profile 
+     * 
+     * @deprecated since 6.8.0. Use getApprovals() instead;
      */
+    @Deprecated
     public int getApprovalProfile() {
         return approvalProfile;
     }
 
     /**
      * Sets the ID of an approval profile.
+     * 
+     * @deprecated since 6.8.0. Use setApprovals() instead;
      */
+    @Deprecated
     public void setApprovalProfile(final int approvalProfileID) {
         this.approvalProfile = approvalProfileID;
     }
@@ -372,7 +381,10 @@ public abstract class CAInfo implements Serializable {
      * action that requires approvals, default none 
      * 
      * Never null
+     * 
+     * @deprecated since 6.8.0. Use getApprovals() instead;
      */
+    @Deprecated
     public Collection<Integer> getApprovalSettings() {
         return approvalSettings;
     }
@@ -380,7 +392,10 @@ public abstract class CAInfo implements Serializable {
     /**
      * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
      * action that requires approvals
+     * 
+     * @deprecated since 6.8.0. Use getApprovals() instead;
      */
+    @Deprecated
     public void setApprovalSettings(Collection<Integer> approvalSettings) {
         this.approvalSettings = approvalSettings;
     }
@@ -390,7 +405,7 @@ public abstract class CAInfo implements Serializable {
      * @param action, on of the CAInfo.REQ_APPROVAL_ constants
      */
     public boolean isApprovalRequired(int action) {
-        return approvalSettings.contains(Integer.valueOf(action));
+        return approvals.containsKey(Integer.valueOf(action));
     }
     
     /**

@@ -43,6 +43,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -512,9 +513,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     } else if(approvalRequest instanceof ViewHardTokenDataApprovalRequest) {
                         //TODO: Handle 100% uptime for hard token requests under ECA-5078
                     }
-                    approvalProfile = approvalProfileSession.getApprovalProfileForAction(approvalRequest.getApprovalRequestType(),
-                            caSession.getCAInfoInternal(approvalRequest.getCAId()),
-                            certificateProfile);
+                    approvalProfile = approvalProfileSession.getApprovalProfileForAction(
+                            ApprovalRequestType.getFromIntegerValue(approvalRequest.getApprovalRequestType()),
+                            caSession.getCAInfoInternal(approvalRequest.getCAId()), certificateProfile);
                 } catch (CADoesntExistsException e) {
                     throw new IllegalStateException("Persisted approval request with ID " + approvalData.getApprovalid()
                             + " was created for CA with ID " + approvalRequest.getCAId() + ", which appears to not exist.");

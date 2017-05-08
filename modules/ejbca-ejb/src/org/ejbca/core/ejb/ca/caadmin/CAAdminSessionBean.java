@@ -80,6 +80,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
@@ -168,7 +169,6 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -2731,10 +2731,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // We set the validity to be what the CA certificate's validity is. Get the number of days the CA certificate is valid
         int validity = (int) ((CertTools.getNotAfter(caSignatureCertificate).getTime() - CertTools.getNotBefore(caSignatureCertificate).getTime()) / (24 * 3600 * 1000));
         String encodedValidity = validity + "d";
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
-        ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
-        
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        List<Integer> crlpublishers = new ArrayList<Integer>();        
         if (caSignatureCertificate instanceof X509Certificate) {
             // Create an X509CA
             // Create and active extended CA Services (CMS).
@@ -2748,7 +2746,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo.setDescription(description);
             cainfo.setCRLPublishers(crlpublishers);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
-            cainfo.setApprovalSettings(approvalsettings);
+            cainfo.setApprovals(new HashMap<ApprovalRequestType, Integer>());
             ca = new X509CA((X509CAInfo) cainfo);
         } else if (caSignatureCertificate.getType().equals("CVC")) {
             // Create a CVC CA
@@ -2760,7 +2758,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo.setDescription(description);
             cainfo.setCRLPublishers(crlpublishers);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
-            cainfo.setApprovalSettings(approvalsettings);
+            cainfo.setApprovals(new HashMap<ApprovalRequestType, Integer>());
             ca = CvcCA.getInstance((CVCCAInfo) cainfo);
         }
         // We must activate the token, in case it does not have the default password
@@ -2772,7 +2770,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new IllegalCryptoTokenException(e);
         }
         ca.setCertificateChain(certificatechain);
-        log.debug("CA-Info: " + catoken.getSignatureAlgorithm() + " " + ca.getCAToken().getEncryptionAlgorithm());
+        if (log.isDebugEnabled()) {
+            log.debug("CA-Info: " + catoken.getSignatureAlgorithm() + " " + ca.getCAToken().getEncryptionAlgorithm());
+        }
         // Publish CA certificates.
         publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
         // activate External CA Services
@@ -2924,7 +2924,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             return;
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-        ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(CAInfo.REQ_APPROVAL_ACTIVATECA, cainfo, certProfile);
+        ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ACTIVATECA, cainfo, certProfile);
         final ActivateCATokenApprovalRequest ar = new ActivateCATokenApprovalRequest(cainfo.getName(), "", admin, caid,
                 ApprovalDataVO.ANY_ENDENTITYPROFILE, approvalProfile, cainfo.getCertificateProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN)) {
