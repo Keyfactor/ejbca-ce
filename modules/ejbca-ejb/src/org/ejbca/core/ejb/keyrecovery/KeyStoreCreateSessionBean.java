@@ -194,7 +194,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             } else if (isNewToken) {
                 // If we generate a new token through an enrollment, we don't want to demand access to edit_end_entity
                 endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
-                        new UsernamePrincipal("Implicit authorazation from new enrollments")), username, null);
+                        new UsernamePrincipal("Implicit authorization from new enrollments")), username, null);
             } else {
                 endEntityManagementSession.setClearTextPassword(administrator, username, null);
             }
