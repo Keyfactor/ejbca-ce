@@ -5,6 +5,10 @@
   </properties>
 <body>
 
+<section name="RA Documentation">
+<p>RA User Guide and more is currently living in a separate documentation tree and can be provided by PrimeKey upon request until it reaches the official documentations.</p>
+</section>
+
 <section name="Two External RA versions">
 <p>
 Since EJBCA 6.6.0 there are two variants of External RA:
