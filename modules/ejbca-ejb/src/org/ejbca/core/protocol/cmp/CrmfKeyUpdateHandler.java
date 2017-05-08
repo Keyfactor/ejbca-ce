@@ -110,7 +110,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * a check is made to insure the the key specified in the request is not the same as the key of the attached 
      * certificate.
      * 
-     * The KeyUpdateRequet is processed only in client mode.
+     * The KeyUpdateRequest is processed only in client mode.
      */
     @Override
     public ResponseMessage handleMessage(final BaseCmpMessage cmpRequestMessage, final boolean authenticated) {
