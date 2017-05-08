@@ -296,7 +296,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return StringUtils.isNotEmpty(getSelectedCertificateAuthority()) && (getAvailableKeyPairGenerations().size()>1 ||
                 (getAvailableKeyPairGenerations().size()==1 && isRenderNonModifiableTemplates()));
     }
-    /** @return true if there are hidden static template options */
+    /** 
+     * Determines whether any non-modifiable (disabled) templates are rendered or exists as hidden.
+     * If the selectable items havn't been selected yet, false is returned to not confuse a hidden item with an
+     * unselected item (hence we check if an item is not rendered AND selected).
+     * Hidden templates occur if there's only one selection or if the option is restricted to the profile.
+     * @return true if there are hidden static template options or if hidden templates are already rendered
+     */
     public boolean isRenderNonModifiableTemplatesRendered() {
         if (renderNonModifiableTemplates) {
             return true;
@@ -329,7 +335,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return isKeyAlgorithmAvailable();
     }
     
-    /** @return true if not all fields (e.g. non-modifiable) are rendered by default */
+    /** 
+     * Checks if each group of fields contains non-modifiable (disabled) values. If a specific fields is empty, the check is skipped
+     * and false is returned to not confuse hidden fields with empty fields.
+     * Hidden fields occur if there's only one selection or if the option is restricted to the profile.
+     * @return true if not all fields (e.g. non-modifiable) are rendered by default or if hidden fields are already rendered.
+     */
     public boolean isRenderNonModifiableFieldsRendered() {
         if (renderNonModifiableFields) {
             return true;
@@ -351,6 +362,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
+    
     private boolean isAllFieldInstancesRendered(final Collection<FieldInstance> fieldInstances) {
         for (final FieldInstance instance : fieldInstances) {
             if (!isFieldInstanceRendered(instance)) {
