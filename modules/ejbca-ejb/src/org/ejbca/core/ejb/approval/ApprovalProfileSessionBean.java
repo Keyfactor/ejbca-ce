@@ -35,6 +35,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
@@ -367,21 +368,21 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile) {
+    public ApprovalProfile getApprovalProfileForAction(final ApprovalRequestType action, final CAInfo cainfo, final CertificateProfile certProfile) {
         if (certProfile != null) {
-            int approvalProfileId = certProfile.getApprovalProfileID();
-            if (approvalProfileId != -1) {
+            Integer approvalProfileId = certProfile.getApprovals().get(action);                 
+            if(approvalProfileId != null) {
                 ApprovalProfile profile = getApprovalProfile(approvalProfileId);        
-                if (certProfile.getApprovalSettings().contains(Integer.valueOf(action)) && profile.isApprovalRequired()) {
+                if (profile.isApprovalRequired()) {
                     return profile;
                 }
             }
         }
-        if (cainfo != null) {
-            int approvalProfileId = cainfo.getApprovalProfile();
-            if (approvalProfileId != -1) {
+        if (cainfo != null) {         
+            Integer approvalProfileId = cainfo.getApprovals().get(action);
+            if(approvalProfileId != null) {
                 ApprovalProfile profile = getApprovalProfile(approvalProfileId);
-                if (cainfo.getApprovalSettings().contains(Integer.valueOf(action)) && profile.isApprovalRequired()) {
+                if (profile.isApprovalRequired()) {
                     return profile;
                 }
             }

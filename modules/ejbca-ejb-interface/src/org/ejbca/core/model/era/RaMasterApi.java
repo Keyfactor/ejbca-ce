@@ -21,6 +21,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -367,13 +368,13 @@ public interface RaMasterApi {
     /**
      * Gets approval profile for specified action.
      * @param authenticationToken auth. token to be checked if it has access to the specified caInfo and certificateProfile
-     * @param action Check CAInfo.AVAILABLE_APPROVALSETTINGS for valid values.
+     * @param action a ApprovalRequestType constant
      * @param caId id of specified CA
      * @param certificateProfileId id of specified certificate profile
      * @return approval profile if it is required for specified caInfo and certificateProfile, null if it is not
      * @throws AuthorizationDeniedException if authentication token is not authorized to specified CA or certificate profile
      */
-    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final int action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
+    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException;
 
     /**
      * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.

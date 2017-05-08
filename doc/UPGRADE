@@ -46,7 +46,7 @@ When performing any upgrade, you should read through the upgrade notices below a
 
 From EJBCA 6.7.x to EJBCA 6.8.0
 -------------------------------
-The role, role members and access rule implementation has changed!
+1. The role, role members and access rule implementation has changed!
 
 All rules are now recursive and during upgrade the existing access rules are converted to grant the same access.
 Note that when new objects are created under a recursive accept rule, access will be automatically granted.
@@ -66,6 +66,9 @@ Post upgrade can now be performed from the GUI.
 
 The ability to search for information in the 'Details' column of the audit log has been removed, due to the search not delivering results for 
 rows that contain accented characters. This functionality will be reintroduced when the search always delivers the same results. 
+
+Approvals have been modified so that CAs and Certificate Profiles can have one approval profile per action type instead of one profile for all 
+actions.
 
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------

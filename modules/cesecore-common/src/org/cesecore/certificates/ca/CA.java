@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -111,6 +112,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String REQUESTCERTCHAIN = "requestcertchain";
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
+    /**
+     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
+     */
+    @Deprecated
     protected static final String APPROVALSETTINGS = "approvalsettings";
     /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
@@ -118,6 +123,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     @Deprecated
     protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
+    /**
+     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
+     */
+    @Deprecated
     protected static final String APPROVALPROFILE = "approvalprofile";
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
@@ -128,6 +137,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
     private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
+    private static final String APPROVALS = "approvals";
 
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
 
@@ -170,10 +180,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
 
-        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
         ArrayList<Integer> extendedservicetypes = new ArrayList<Integer>();
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo next = iter.next();
+        for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
             createExtendedCAService(next);
             if (log.isDebugEnabled()) {
                 log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
@@ -181,8 +189,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             extendedservicetypes.add(next.getType());
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
-        setApprovalSettings(cainfo.getApprovalSettings());
-        setApprovalProfile(cainfo.getApprovalProfile());
+        setApprovals(cainfo.getApprovals());
     }
 
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
@@ -748,8 +755,22 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     /**
-     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
+     * @return A 1:1 mapping between Approval Action:Approval Profile ID
+     */
+    @SuppressWarnings("unchecked")
+    public Map<ApprovalRequestType, Integer> getApprovals() {
+        return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
+    }
+    
+    public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
+        data.put(APPROVALS, approvals);
+    }
+    
+    /**
+     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
      * default none and never null.
+     * 
+     * @deprecated since 6.8.0, see getApprovals()
      */
     @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
@@ -761,13 +782,16 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     * 
+     * @deprecated since 6.8.0, see setApprovals()
      */
+    @Deprecated
     public void setApprovalSettings(Collection<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
 
     /**
-     * Returns the number of different administrators that needs to approve an action, default 1.
+     * @return the number of different administrators that needs to approve an action, default 1.
      * @deprecated since 6.6.0, use the appropriate approval profile instead. 
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
@@ -790,8 +814,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     /**
-     * Returns the id of the approval profile. Defult -1 (= none)
+     * @return the id of the approval profile. Defult -1 (= none)
+     * 
+     * @deprecated since 6.8.0, see getApprovals()
      */
+    @Deprecated
     public int getApprovalProfile() {
         if (data.get(APPROVALPROFILE) == null) {
             return -1;
@@ -801,7 +828,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * The id of the approval profile.
+     * 
+     * @deprecated since 6.8.0, see setApprovals()
      */
+    @Deprecated
     public void setApprovalProfile(final int approvalProfileID) {
         data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
     }
@@ -814,8 +844,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
         data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
-        data.put(APPROVALSETTINGS, cainfo.getApprovalSettings());
-        data.put(APPROVALPROFILE, Integer.valueOf(cainfo.getApprovalProfile()));
+        data.put(APPROVALS, cainfo.getApprovals());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }
