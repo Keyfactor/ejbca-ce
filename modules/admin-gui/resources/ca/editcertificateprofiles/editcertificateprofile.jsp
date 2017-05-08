@@ -1171,6 +1171,30 @@
 
 	</h:panelGrid>
 
+	<%-- Approvals --%>
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+		<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}" style="font-weight: bold;"/>
+		<h:panelGroup id="approvals"/>		
+				
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>	
+		<h:panelGroup id="requestTypeRow">
+			<h:dataTable value="#{certProfileBean.approvalRequestItems}" var="requestItem" headerClass="subheader" columnClasses="editColumnSystem1,editColumnSystem2"
+					 style="text-align: left; width: 100%" rowClasses="Row0,Row1">
+				<h:column>	
+					<h:outputText value="#{requestItem.getDisplayText()}:"/>
+				</h:column>
+				<h:column>	
+				<h:selectOneMenu id="approvalProfile" value="#{requestItem.approvalProfileId}" converter="javax.faces.Integer"
+					disabled="#{certProfilesBean.viewOnly}">
+					<f:selectItems value="#{certProfileBean.availableApprovalProfiles}"/>
+				</h:selectOneMenu>
+				</h:column>
+			</h:dataTable>	
+		</h:panelGroup>
+
+	</h:panelGrid>
 
 	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
@@ -1261,31 +1285,6 @@
 			<f:selectItems value="#{certProfileBean.publisherListAvailable}"/>
 		</h:selectManyListbox>
 		
-		<h:outputLabel for="approvalSettings" value="#{web.text.APPROVALSETTINGS}"/>
-		<h:panelGrid columns="1" id="approvalSettings">
-			<h:panelGrid columns="4">
-				<h:selectBooleanCheckbox id="approvalEnabledAddEndEntity" value="#{certProfileBean.approvalEnabledAddEndEntity}"
-					disabled="#{certProfilesBean.viewOnly}"/>
-				<h:outputLabel for="approvalEnabledAddEndEntity" value="#{web.text.APPROVEADDEDITENDENTITY}"/>
-				<h:selectBooleanCheckbox id="approvalEnabledKeyRecover" value="#{certProfileBean.approvalEnabledKeyRecover}"
-					disabled="#{certProfilesBean.viewOnly}"/>
-				<h:outputLabel for="approvalEnabledKeyRecover" value="#{web.text.APPROVEKEYRECOVER}"/>
-				<h:selectBooleanCheckbox id="approvalEnabledRevocation" value="#{certProfileBean.approvalEnabledRevocation}"
-					disabled="#{certProfilesBean.viewOnly}"/>
-				<h:outputLabel for="approvalEnabledRevocation" value="#{web.text.APPROVEREVOCATION}"/>
-				<h:selectBooleanCheckbox id="approvalEnabledActivateCa" value="#{certProfileBean.approvalEnabledActivateCa}"
-					disabled="#{certProfilesBean.viewOnly}"/>
-				<h:outputLabel for="approvalEnabledActivateCa" value="#{web.text.APPROVEACTIVATECA}"/>
-			</h:panelGrid>			
-			<h:panelGroup>
-				<h:outputLabel for="selectApprovalProfile" value="#{web.text.APPROVALPROFILES} "/>
-				<h:selectOneMenu id="selectApprovalProfile" value="#{certProfileBean.certificateProfile.approvalProfileID}" converter="javax.faces.Integer"
-					disabled="#{certProfilesBean.viewOnly}">
-					<f:selectItems value="#{certProfileBean.availableApprovalProfiles}"/>
-				</h:selectOneMenu>
-			</h:panelGroup>
-			
-		</h:panelGrid>
 		<h:panelGroup rendered="#{certProfileBean.typeEndEntity}">
 			<h:outputLabel for="singleActiveCertificateConstraintSettings" value="#{web.text.SINGLECERTCONSTRAINT}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Single%20Active%20Certificate%20Constraint") %>

@@ -33,7 +33,7 @@ import java.util.Set;
 
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
-import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -155,11 +155,9 @@ public class CertificateProfileTest {
         assertEquals(CertificateProfile.CVC_ACCESS_DG3DG4, prof.getCVCAccessRights());
         final Collection<Integer> ext = prof.getUsedCertificateExtensions();
         assertEquals(0, ext.size());
-        final Collection<Integer> app = prof.getApprovalSettings();
+        final Map<ApprovalRequestType, Integer> app = prof.getApprovals();
         assertEquals(0, app.size());
         assertTrue(prof.isApplicableToAnyCA());
-        assertEquals("Default approval profile not set,", -1, prof.getApprovalProfileID());
-
     }
 
     @Test
@@ -527,12 +525,12 @@ public class CertificateProfileTest {
         policy = l.get(0);
         assertEquals("1.1.1.1", policy.getPolicyID());
         
-        assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
-        ArrayList<Integer> approvals = new ArrayList<Integer>();
-        approvals.add(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY);
-        profile.setApprovalSettings(approvals);
-        assertTrue(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY));
-        assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER));
+        assertFalse(profile.isApprovalRequired(ApprovalRequestType.ADDEDITENDENTITY));
+        Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+        approvals.put(ApprovalRequestType.ADDEDITENDENTITY, 4711);
+        profile.setApprovals(approvals);
+        assertTrue(profile.isApprovalRequired(ApprovalRequestType.ADDEDITENDENTITY));
+        assertFalse(profile.isApprovalRequired(ApprovalRequestType.KEYRECOVER));
         
         assertNull(profile.getQCEtsiType());
         assertNull(profile.getQCEtsiPds());
@@ -743,6 +741,7 @@ public class CertificateProfileTest {
                 new String[]{"secp256r1"}, new int[]{});
     }
 
+    
     private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, 
             final String[] availableEcCurves, final int[] availableBitLengths) {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -760,4 +759,26 @@ public class CertificateProfileTest {
             }
         }
     }    
+    
+    /**
+     * Test that certificate profiles are automatically upgraded to the new approvals format introduced in 6.8.0
+     */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testUpgradeOfApprovals() {
+        CertificateProfile certificateProfile = new CertificateProfile();        
+        final Map<String,Object> data = new HashMap<>();
+        initDataMap(data);
+        data.put(UpgradeableDataHashMap.VERSION, 44.0F);
+        Integer approvalProfile = 4711;
+        data.put(CertificateProfile.APPROVALPROFILE, approvalProfile);
+        data.put(CertificateProfile.APPROVALSETTINGS, Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.ADDEDITENDENTITY.getIntegerValue()));
+        certificateProfile.loadData(data);
+        @SuppressWarnings("unchecked")
+        final Map<String,Object> result = (Map<String, Object>) certificateProfile.saveData();
+        @SuppressWarnings("unchecked")
+        Map<Integer, Integer> approvals = (Map<Integer, Integer>) result.get(CertificateProfile.APPROVALS);
+        assertEquals("Approvals in certificate profile was not upgraded", approvalProfile, approvals.get(ApprovalRequestType.ACTIVATECA));
+        assertEquals("Approvals in certificate profile was not upgraded", approvalProfile, approvals.get(ApprovalRequestType.ADDEDITENDENTITY));
+    }
 }

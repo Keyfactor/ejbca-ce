@@ -1526,6 +1526,36 @@ function toggleCANameChange(){
    <% if (!isexternal) { %>
    <!-- this last part with approvals and finishuser is not user for external CAs -->
 
+	<%-- ---------- Approvals -------------------- --%>
+    <tr id="Row<%=row%2%>" class="section">
+        <td width="50%" align="right">
+        <strong><%= ejbcawebbean.getText("APPROVALSETTINGS") %></strong>
+        </td>
+        <td width="50%">&nbsp;</td>
+    </tr>
+    <% for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) { %>
+    <tr id="Row<%=row%2%>"> 
+    	<td width="50%"  align="right"> <c:out value="<%= ejbcawebbean.getText(approvalRequestType.getLanguageString()) %>"/></td>
+    	<td width="50%">
+    		<select name="<%=SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue()%>" size="1" <%= (hasEditRights ? "" : "disabled") %> >
+         	 <%      		   
+               List<Integer> approvalProfileIds = ejbcawebbean.getInformationMemory().getSortedApprovalProfileIds();
+               for(Integer approvalProfile : approvalProfileIds) { %>
+        	 	<option  value="<%= approvalProfile %>" 
+                <% if(editca) {
+                       Integer usedapprovalprofile = cainfo.getApprovals().get(approvalRequestType);
+                       if(approvalProfile.equals(usedapprovalprofile)) {
+                      		out.write(" selected ");
+                	   }
+                	}
+                 %>>
+             <c:out value="<%= approvalProfileMap.get(approvalProfile) %>"/>                 
+          </option>  
+             <% } %>
+       </select>
+    	</td>
+    </tr>
+     <% } %>
 
     <%-- ---------- Other data -------------------- --%>
 
@@ -1535,43 +1565,6 @@ function toggleCANameChange(){
         </td>
         <td width="50%">&nbsp;</td>
     </tr>
-    <tr id="Row<%=row%2%>"> 
-        <td width="50%"  align="right"><%= ejbcawebbean.getText("APPROVALSETTINGS") %></td>
-        <td width="50%"> 
-            <select name="<%=SELECT_APPROVALSETTINGS%>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
-            <% for (int i=0; i< CAInfo.AVAILABLE_APPROVALSETTINGS.length; i++) {
-            	String itemSelected = "";
-            	if (editca && cainfo.isApprovalRequired(CAInfo.AVAILABLE_APPROVALSETTINGS[i])) {
-            		itemSelected = " selected ";
-            	} %>
-                <option value="<%= CAInfo.AVAILABLE_APPROVALSETTINGS[i] %>" <%= itemSelected %> >
-                    <%= ejbcawebbean.getText(CAInfo.AVAILABLE_APPROVALSETTINGS_TEXTS[i]) %>         
-                </option>
-            <% } %>
-            </select>        
-        </td>
-    </tr>
-    
-   <tr  id="Row<%=row++%2%>"> 
-     <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("APPROVALPROFILE") %> <br />&nbsp;
-     </td>
-     <td width="50%"> 
-       <select name="<%=SELECT_APPROVALPROFILE%>" size="1" <%= (hasEditRights ? "" : "disabled") %> >
-          <%   int usedapprovalprofile = -1;
-               if(editca) usedapprovalprofile = cainfo.getApprovalProfile(); 
-               List<Integer> approvalProfileIds = ejbcawebbean.getInformationMemory().getSortedApprovalProfileIds();
-               for(Integer next : approvalProfileIds) { %>
-          <option  value="<%= next %>" 
-             <%    if(editca && usedapprovalprofile==next)
-                     out.write(" selected ");
-                 %>>
-             <c:out value="<%= approvalProfileMap.get(next) %>"/>                 
-          </option>  
-             <% } %>
-       </select>
-     </td>
-   </tr>
    <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>

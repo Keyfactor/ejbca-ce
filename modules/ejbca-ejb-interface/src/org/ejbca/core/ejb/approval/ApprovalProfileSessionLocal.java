@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
+import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.ejb.profiles.ProfileData;
@@ -66,5 +67,5 @@ public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
      * @param certProfile a certificate profile
      * @return the most appropriate profile for the action, or null if none was found.
      */
-    ApprovalProfile getApprovalProfileForAction(final int action, final CAInfo cainfo, final CertificateProfile certProfile);
+    ApprovalProfile getApprovalProfileForAction(final ApprovalRequestType action, final CAInfo cainfo, final CertificateProfile certProfile);
 }
