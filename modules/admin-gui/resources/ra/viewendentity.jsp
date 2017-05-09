@@ -471,7 +471,7 @@
 
     <!-- ---------- CSR -------------------- -->
     <% if (  viewendentityhelper.userdata.getExtendedInformation() != null
-    	  && viewendentityhelper.userdata.getExtendedInformation().getCertificateRequest() != null
+    	  && (viewendentityhelper.userdata.getExtendedInformation().getCertificateRequest() != null || viewendentityhelper.userdata.getExtendedInformation().getKeyStoreAlgorithmType() != null) 
     	  ) {
         %>
 
@@ -482,13 +482,28 @@
 	  <%{
 		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
 		final byte[] csr = viewendentityhelper.userdata.getExtendedInformation().getCertificateRequest();
-		final String csrPem = new String(CertTools.getPEMFromCertificateRequest(csr));
+		if (csr != null) {
+		    final String csrPem = new String(CertTools.getPEMFromCertificateRequest(csr));
 		%>
 			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
 			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CSR") %></td>
 			<td><pre><c:out value="<%= csrPem %>"/></pre></td>
 			</tr> 
-      <% } %>
+      <% }
+        String ksAlgType = viewendentityhelper.userdata.getExtendedInformation().getKeyStoreAlgorithmType();
+        String ksAlgSubType = viewendentityhelper.userdata.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null but it's ok
+		if (ksAlgType != null) {
+		%>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("REQKSALGTYPE") %></td>
+			<td><c:out value="<%= ksAlgType %>"/></td>
+			</tr> 
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("REQKSALGSUBTYPE") %></td>
+			<td><c:out value="<%= ksAlgSubType %>"/></td>
+			</tr> 
+      <% }
+         } %>
     <% } %>
 
 

@@ -1825,7 +1825,7 @@ function checkUseInBatch(){
 
     <!-- ---------- CSR -------------------- -->
     <% if (  userdata.getExtendedInformation() != null
-    	  && userdata.getExtendedInformation().getCertificateRequest() != null
+    	  && (userdata.getExtendedInformation().getCertificateRequest() != null || userdata.getExtendedInformation().getKeyStoreAlgorithmType() != null) 
     	  ) {
         %>
 
@@ -1836,13 +1836,28 @@ function checkUseInBatch(){
 	  <%{
 		final ExtendedInformation ei = userdata.getExtendedInformation();
 		final byte[] csr = userdata.getExtendedInformation().getCertificateRequest();
-		final String csrPem = new String(CertTools.getPEMFromCertificateRequest(csr));
+		if (csr != null) {
+		    final String csrPem = new String(CertTools.getPEMFromCertificateRequest(csr));
 		%>
 			<tr id="Row<%=(row++)%2%>">
 			<td align="right"><%= ejbcawebbean.getText("CSR") %></td>
 			<td style="text-align: left"><pre><c:out value="<%= csrPem %>"/></pre></td>
 			</tr> 
-      <% } %>
+      <% }
+        String ksAlgType = userdata.getExtendedInformation().getKeyStoreAlgorithmType();
+        String ksAlgSubType = userdata.getExtendedInformation().getKeyStoreAlgorithmSubType(); // can be null but it's ok
+		if (ksAlgType != null) {
+		%>
+			<tr id="Row<%=(row++)%2%>">
+			<td align="right"><%= ejbcawebbean.getText("REQKSALGTYPE") %></td>
+			<td style="text-align: left"><c:out value="<%= ksAlgType %>"/></td>
+			</tr> 
+			<tr id="Row<%=(row++)%2%>">
+			<td align="right"><%= ejbcawebbean.getText("REQKSALGSUBTYPE") %></td>
+			<td style="text-align: left"><c:out value="<%= ksAlgSubType %>"/></td>
+			</tr> 
+      <% }
+         } %>
     <% } %>
 
 
