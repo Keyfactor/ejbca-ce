@@ -20,6 +20,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -36,21 +37,14 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 
@@ -526,71 +520,178 @@ public final class StringTools {
         return new String(b, 0, l);
     }
 
-    private static byte[] getSalt() throws UnsupportedEncodingException {
-        final String saltStr = "1958473059684739584hfurmaqiekcmq";
-        return saltStr.getBytes("UTF-8");
+    private static String getEncryptionVersion() {
+        return "encv1";
+    }
+    
+    /** 
+     * Method takes an encrypted string (by using the methods in this class) and returns the method used to encrypt the string with
+     * @param in indata that is encrypted/obfuscated
+     * @return "legacy" for old data, "encv1" or later to describe a specific version
+     */
+    public static String getEncryptVersionFromString(final String in) {
+        if (in != null && in.contains(":")) {
+            // this is a newer version that has encryption version and parameters in it
+            String[] strs = StringUtils.split(in, ':');
+            if (strs == null || strs.length != 4) {
+                log.warn("Input contains : but is not an encryption string from EJBCA (with 4 fields).");
+            } else {
+                return strs[0];                
+            }
+        } else {
+            try {
+                Hex.decode(in);
+            } catch (DecoderException e) {
+                // it means it was not hex encoded
+                return "none";
+            }
+            
+        }
+        return "legacy";        
+    }
+    
+    private static byte[] getSalt() {
+        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
+        if (legacy) {
+            log.debug("Using legacy password encryption/decryption");
+            return getDefaultSalt();
+        } else {
+            // Generate 32 random bytes
+            final SecureRandom random = new SecureRandom();
+            byte[] bytes = new byte[32];
+            random.nextBytes(bytes);
+            return bytes;
+        }
+    }
+
+    private static byte[] getDefaultSalt() {
+        return "1958473059684739584hfurmaqiekcmq".getBytes(StandardCharsets.UTF_8);
+    }
+    private static int getDefaultCount() {
+        return 100;
     }
 
     /** number of rounds for password based encryption. FIXME 100 is not secure and can easily be broken.
      */
-    private static final int iCount = 100;
+    private static int getCount() {
+        final String str = ConfigurationHolder.getString("password.encryption.count");
+        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
+        if (str != null && !legacy) {
+            return Integer.valueOf(str);
+        } else {
+            return getDefaultCount(); // Old default value before EJBCA 6.8.0
+        }
+    }
 
     /**
      * Method used for encrypting a string.
      *
      * Note that this method does provide limited security (e.g. DBA's won't be able to access encrypted passwords in database)
      * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
+     * @throws InvalidKeySpecException 
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
-            UnsupportedEncodingException {
+            InvalidKeySpecException {
         char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
         return pbeEncryptStringWithSha256Aes192(in, p);
     }
 
+    /**
+     * 
+     * @param in clear text string to encrypt
+     * @param p encryption passphrase
+     * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws NoSuchPaddingException
+     * @throws InvalidKeyException
+     * @throws InvalidAlgorithmParameterException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException
+     * @throws InvalidKeySpecException
+     */
     public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) throws NoSuchAlgorithmException, NoSuchProviderException,
     NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
-    UnsupportedEncodingException {
+    InvalidKeySpecException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
             return in;
         }
-        final Digest digest = new SHA256Digest();
+        final byte[] salt = getSalt();
+        final int count = getCount();
 
-        final PKCS12ParametersGenerator pGen = new PKCS12ParametersGenerator(digest);
-        // TODO evaluate to always generate a new random salt and store it as part of the output to prevent attacks by means of precomputed keys (attack currently possible because of the stable salt and iteration count).
-        pGen.init(PBEParametersGenerator.PKCS12PasswordToBytes(p), getSalt(), iCount);
-
-        final ParametersWithIV params = (ParametersWithIV) pGen.generateDerivedParameters(192, 128);
-        final SecretKeySpec encKey = new SecretKeySpec(((KeyParameter) params.getParameters()).getKey(), "AES");
+        final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final Cipher c;
-        c = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
-        c.init(Cipher.ENCRYPT_MODE, encKey, new IvParameterSpec(params.getIV()));
+        final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
+        c = Cipher.getInstance(algorithm, "BC");
+        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
+        c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
 
-        final byte[] enc = c.doFinal(in.getBytes("UTF-8"));
-
-        final byte[] hex = Hex.encode(enc);
-        return new String(hex);
+        final byte[] enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
+        // Create a return value which is "encryption_version:salt:count:encrypted_data"
+        StringBuilder ret = new StringBuilder(64);
+        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
+        if (legacy) {
+            // In the old legacy system we only return the encrypted data without extra info
+            ret.append(Hex.toHexString(enc));
+        } else {
+            ret.append(getEncryptionVersion()).append(':').append(Hex.toHexString(salt)).append(':').append(count).append(':').append(Hex.toHexString(enc));
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Encrypted data: "+ret.toString());
+        }
+        return ret.toString();
     }
 
+    /**
+     * 
+     * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
+     * @param p decryption passphrase
+     * @return decrypted clear text string
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException
+     * @throws InvalidKeyException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws NoSuchPaddingException
+     */
     public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
-            InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
-            UnsupportedEncodingException {
+            InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Decryption not possible due to weak crypto policy.");
             return in;
         }
-
+        String version = getEncryptionVersion();
+        final byte[] salt;
+        String data = in;
+        int count;
+        if (in != null && in.contains(":")) {
+            // this is a newer version that has encryption version and parameters in it
+            String[] strs = StringUtils.split(in, ':');
+            if (strs == null || strs.length != 4) {
+                log.warn("Input contains : but is not an encryption string from EJBCA (with 4 fields).");
+                return in;                
+            }
+            version = strs[0];
+            salt = Hex.decode(strs[1].getBytes(StandardCharsets.UTF_8));
+            count = Integer.valueOf(strs[2]);
+            data = strs[3];
+        } else {
+            salt = getDefaultSalt();
+            count = getDefaultCount();
+        }
+        // We can do different handling here depending on version, but currently we only have one so.
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
         final Cipher c = Cipher.getInstance(algorithm, "BC");
-        final PBEKeySpec keySpec = new PBEKeySpec(p, getSalt(), iCount);
+        final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
 
         c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
-
-        final byte[] dec = c.doFinal(Hex.decode(in.getBytes("UTF-8")));
+        final byte[] dec = c.doFinal(Hex.decode(data.getBytes(StandardCharsets.UTF_8)));
         return new String(dec);
     }
 

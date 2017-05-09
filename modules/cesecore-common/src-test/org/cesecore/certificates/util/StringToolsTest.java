@@ -357,27 +357,90 @@ public class StringToolsTest {
     
     @Test
     public void testPasswordEncryptionAndObfuscation() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException {
-        String obf = StringTools.obfuscate("foo123");
-        String deobf = StringTools.deobfuscate(obf);
-        assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
+        // First test with legacy encryption
+        ConfigurationHolder.backupConfiguration();
+        ConfigurationHolder.updateConfiguration("password.encryption.uselegacy", "true");
 
-        // Using an encrypted string from older version of EJBCA, using BC 1.52
-        String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
-        assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+        {
+            String obf = StringTools.obfuscate("foo123");
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
 
-        String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
-        pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
-        assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+            // Using an encrypted string from older version of EJBCA, using BC 1.52
+            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
-        pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
-        try {
-            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
-            fail("Decryption should not work with wrong key");
-        } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException|UnsupportedEncodingException e) {
-            // we should end up here typically when encryption fails, but it's not 100% sure
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encryption version should be legacy", "legacy", StringTools.getEncryptVersionFromString(pbe));
+            try {
+                pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
+                fail("Decryption should not work with wrong key");
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+                // we should end up here typically when encryption fails, but it's not 100% sure
+            }
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
         }
-        pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
-        assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
+        // Second test with new encryption
+        ConfigurationHolder.updateConfiguration("password.encryption.uselegacy", "false");
+        {
+            String obf = StringTools.obfuscate("foo123");
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
 
+            // Using an encrypted string from older version of EJBCA, using BC 1.52
+            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
+            try {
+                pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
+                fail("Decryption should not work with wrong key");
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+                // we should end up here typically when encryption fails, but it's not 100% sure
+            }
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
+        }
+
+        // Third test with a different count
+        ConfigurationHolder.updateConfiguration("password.encryption.count", "100000");
+        {
+            String obf = StringTools.obfuscate("foo123");
+            String deobf = StringTools.deobfuscate(obf);
+            assertEquals("Obfuscated/De-obfuscated password does not match", "foo123", deobf);
+
+            // Using an encrypted string from older version of EJBCA, using BC 1.52
+            String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
+            String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+
+            pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
+            try {
+                pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
+                fail("Decryption should not work with wrong key");
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+                // we should end up here typically when encryption fails, but it's not 100% sure
+            }
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
+            assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
+        }
+
+        assertEquals("Encryption version should be none", "none", StringTools.getEncryptVersionFromString("foo123"));
+
+        ConfigurationHolder.restoreConfiguration();
     }
 }

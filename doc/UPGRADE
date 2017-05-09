@@ -70,6 +70,9 @@ rows that contain accented characters. This functionality will be reintroduced w
 Approvals have been modified so that CAs and Certificate Profiles can have one approval profile per action type instead of one profile for all 
 actions.
 
+With EJBCA Software, you now have the ability to configure password encryption with stronger settings, including a random salt and a count. 
+In order to provide 100% uptime, the legacy behavior is used by default but can be turned off using password.encryption.uselegacy in cesecore.properties.
+
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
 
