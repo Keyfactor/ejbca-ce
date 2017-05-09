@@ -37,7 +37,7 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
 
     {
         registerParameter(new Parameter(ENCRYPT_KEY, "Input encryption key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
-                ParameterMode.FLAG, "Read a custom encryption keyinstead of using the default value from cesecore.properties is used."));
+                ParameterMode.FLAG, "Read a custom encryption key instead of using the default value from cesecore.properties."));
     }
     @Override
     public String getMainCommand() {

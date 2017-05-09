@@ -357,10 +357,8 @@ public class StringToolsTest {
     
     @Test
     public void testPasswordEncryptionAndObfuscation() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException {
-        // First test with legacy encryption
+        // First test with legacy encryption, using default pwd
         ConfigurationHolder.backupConfiguration();
-        ConfigurationHolder.updateConfiguration("password.encryption.uselegacy", "true");
-
         {
             String obf = StringTools.obfuscate("foo123");
             String deobf = StringTools.deobfuscate(obf);
@@ -371,11 +369,11 @@ public class StringToolsTest {
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
             String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            assertEquals("Encryption version should be legacy", "legacy", StringTools.getEncryptVersionFromString(pbe));
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
             pbe = StringTools.pbeEncryptStringWithSha256Aes192("customEncryptionKey", "zeG6qE2zV7BddqHc".toCharArray());
-            assertEquals("Encryption version should be legacy", "legacy", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 fail("Decryption should not work with wrong key");
@@ -386,7 +384,7 @@ public class StringToolsTest {
             assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
         }
         // Second test with new encryption
-        ConfigurationHolder.updateConfiguration("password.encryption.uselegacy", "false");
+        ConfigurationHolder.updateConfiguration("password.encryption.key", "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx");
         {
             String obf = StringTools.obfuscate("foo123");
             String deobf = StringTools.deobfuscate(obf);
@@ -394,7 +392,14 @@ public class StringToolsTest {
 
             // Using an encrypted string from older version of EJBCA, using BC 1.52
             String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            // Legacy decryption with default pwd should always work
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
+            try {
+                pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getString("password.encryption.key").toCharArray());
+                fail("Decryption of legacey encrypted string with non default pwd should not work");
+            } catch (BadPaddingException e) {
+                // NOPMD: we expected failure
+            }
 
             String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
@@ -410,6 +415,10 @@ public class StringToolsTest {
             }
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
+
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192("encv1:61ea7d4ce0564370246f219b7ab7533f8066c4d0a58950e45dd1d34497f98e08:100:3a3e10a382d4c504fc4b7900be204bcc"
+                    , "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx".toCharArray());
+            assertEquals("Encrypted/decrypted password (from 6.8.0) does not match", "foo123", pwd);
         }
 
         // Third test with a different count
@@ -421,9 +430,11 @@ public class StringToolsTest {
 
             // Using an encrypted string from older version of EJBCA, using BC 1.52
             String pwd = StringTools.pbeDecryptStringWithSha256Aes192("6bc841b2745e2c95e042a68b4777b34c", ConfigurationHolder.getDefaultValue("password.encryption.key").toCharArray());
+            // Legacy decryption with default pwd should always work
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
             String pbe = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+            log.info(pbe);
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, ConfigurationHolder.getString("password.encryption.key").toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "foo123", pwd);
 
@@ -437,6 +448,14 @@ public class StringToolsTest {
             }
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
             assertEquals("Encrypted/decrypted password does not match", "customEncryptionKey", pwd);
+            
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192("encv1:61ea7d4ce0564370246f219b7ab7533f8066c4d0a58950e45dd1d34497f98e08:100:3a3e10a382d4c504fc4b7900be204bcc"
+                    , "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx".toCharArray());
+            assertEquals("Encrypted/decrypted password (from 6.8.0) with 100 rounds does not match", "foo123", pwd);
+            pwd = StringTools.pbeDecryptStringWithSha256Aes192("encv1:7c11bd9798e9d74293d967266fad9d04e6a19833fd3674b049580efa3153e32d:100000:f9b7f769bb98f7b52eadf6643b598541"
+                    , "1POTQK7ofSGTPsOOXwIo2Z0jfXsADtXx".toCharArray());
+            assertEquals("Encrypted/decrypted password (from 6.8.0) with 100000 rounds does not match", "foo123", pwd);
+
         }
 
         assertEquals("Encryption version should be none", "none", StringTools.getEncryptVersionFromString("foo123"));

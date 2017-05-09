@@ -12,21 +12,24 @@
 # - ca.cmskeystorepass (in ejbca.properties)
 
 # -------------- General security --------------
-# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. Crypto Token
+# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity and Crypto Token
 #   passwords stored in database).
 # This property should be set before initial EJBCA installation and it should't be changed later, because there could exist
 #   passwords encrypted with the key about to be changed and EJBCA would be unable to decrypt them (note that the current implementation
 #   is capable to try decryption with the default key, i.e. qhrnf.f8743;12%#75, but it won't be able to decrypt passwords encrypted
 #   with a custom key being replaced for another custom key).
 # For setting this property you could use any password you consider safe, but it is strongly recommended that you use a randomly
-#   generated password, e.g. by using `openssl rand -base64 16`.
-# Also see password.encryption.uselegacy in the upgrade and compatibility settings
+#   generated password, e.g. by using `openssl rand -base64 24`.
+#
+# When upgrading a 100% up-time cluster all nodes must produce password encryption that is decryptable by old nodes.
+# When all nodes run EJBCA 6.8.0 or higher you can change the password, and count, to increase security when passwords are saved in clear text.
+# (mostly used for batch generation and auto-activation) 
+#
 # Default: qhrnf.f8743;12%#75
-#password.encryption.key=3YL2QzyiYmM=
 #password.encryption.key=!secret!
 
-# Don't change this if you want to be compatible with versions lower than EJBCA 6.8.0
-# To be able to change this you also need to set password.encryption.uselegacy=false 
+# Nr of rounds when creating password based encryption keys (PBE).
+# To be able to change this you also need to set password.encryption.key to something other than the default (with applicable 100% uptime consideration). 
 #password.encryption.count=100
 
 # ------------ Basic CA configuration ---------------------
@@ -295,8 +298,3 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Once all nodes are running > 6.0, set to true to increase efficiency and portability.
 # Default: false
 #ca.keepocspextendedservice=true
-
-# When upgrading a 100% up-time cluster all nodes must produce password encryption that is de-cryptable by old nodes.
-# When all nodes run EJBCA 6.8.0 or higher you can switch this of to increase security of password encryption
-#password.encryption.uselegacy=true
-
