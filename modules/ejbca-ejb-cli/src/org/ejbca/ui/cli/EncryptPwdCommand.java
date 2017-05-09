@@ -57,7 +57,7 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         try {
-            final boolean readKey = (parameters.get(ENCRYPT_KEY) != null ? Boolean.TRUE : Boolean.FALSE);
+            final boolean readKey = parameters.get(ENCRYPT_KEY) != null;
             log.info("Please note that this encryption does not provide absolute security. "
                     + "If 'password.encryption.key' property haven't been customized it doesn't provide more security than just preventing accidental viewing.");
             char[] encryptionKey = null;
