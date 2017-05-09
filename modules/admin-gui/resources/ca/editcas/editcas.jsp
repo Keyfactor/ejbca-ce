@@ -353,7 +353,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
                 Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
                 for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                     String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
-                    if(approvalProfile != null) {
+                    if(approvalProfile != null && !approvalProfile.equals("-1")) {
                         approvals.put(approvalRequestType, Integer.valueOf(approvalProfile));
                     }
                 }

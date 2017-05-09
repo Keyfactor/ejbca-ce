@@ -381,8 +381,8 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         if (cainfo != null) {         
             Integer approvalProfileId = cainfo.getApprovals().get(action);
             if(approvalProfileId != null) {
-                ApprovalProfile profile = getApprovalProfile(approvalProfileId);
-                if (profile.isApprovalRequired()) {
+                ApprovalProfile profile = getApprovalProfile(approvalProfileId);             
+                if (profile != null && profile.isApprovalRequired()) {
                     return profile;
                 }
             }
