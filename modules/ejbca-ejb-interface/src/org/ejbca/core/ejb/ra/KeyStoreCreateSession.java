@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keyrecovery;
+package org.ejbca.core.ejb.ra;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
