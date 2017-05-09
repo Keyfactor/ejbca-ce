@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.keyrecovery;
+package org.ejbca.core.ejb.ra;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,6 +58,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
