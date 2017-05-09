@@ -42,9 +42,9 @@ import javax.crypto.spec.PBEKeySpec;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 
@@ -551,7 +551,7 @@ public final class StringTools {
     }
     
     private static byte[] getSalt() {
-        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
+        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (legacy) {
             log.debug("Using legacy password encryption/decryption");
             return getDefaultSalt();
@@ -567,6 +567,9 @@ public final class StringTools {
     private static byte[] getDefaultSalt() {
         return "1958473059684739584hfurmaqiekcmq".getBytes(StandardCharsets.UTF_8);
     }
+    
+    private static final String defaultP = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
+
     private static int getDefaultCount() {
         return 100;
     }
@@ -575,8 +578,8 @@ public final class StringTools {
      */
     private static int getCount() {
         final String str = ConfigurationHolder.getString("password.encryption.count");
-        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
-        if (str != null && !legacy) {
+        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
+        if (StringUtils.isNumeric(str) && !legacy) {
             return Integer.valueOf(str);
         } else {
             return getDefaultCount(); // Old default value before EJBCA 6.8.0
@@ -602,14 +605,6 @@ public final class StringTools {
      * @param in clear text string to encrypt
      * @param p encryption passphrase
      * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws InvalidAlgorithmParameterException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     * @throws InvalidKeySpecException
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) throws NoSuchAlgorithmException, NoSuchProviderException,
     NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
@@ -625,14 +620,14 @@ public final class StringTools {
         final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final Cipher c;
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
-        c = Cipher.getInstance(algorithm, "BC");
-        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
+        c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
         c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
 
         final byte[] enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
         // Create a return value which is "encryption_version:salt:count:encrypted_data"
         StringBuilder ret = new StringBuilder(64);
-        final Boolean legacy = Boolean.valueOf(ConfigurationHolder.getString("password.encryption.uselegacy"));
+        final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (legacy) {
             // In the old legacy system we only return the encrypted data without extra info
             ret.append(Hex.toHexString(enc));
@@ -650,13 +645,6 @@ public final class StringTools {
      * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
      * @param p decryption passphrase
      * @return decrypted clear text string
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
-     * @throws InvalidKeyException
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws NoSuchPaddingException
      */
     public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
@@ -686,9 +674,9 @@ public final class StringTools {
         }
         // We can do different handling here depending on version, but currently we only have one so.
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
-        final Cipher c = Cipher.getInstance(algorithm, "BC");
+        final Cipher c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
         final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
-        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, "BC");
+        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
 
         c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
         final byte[] dec = c.doFinal(Hex.decode(data.getBytes(StandardCharsets.UTF_8)));

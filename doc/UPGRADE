@@ -71,7 +71,9 @@ Approvals have been modified so that CAs and Certificate Profiles can have one a
 actions.
 
 With EJBCA Software, you now have the ability to configure password encryption with stronger settings, including a random salt and a count. 
-In order to provide 100% uptime, the legacy behavior is used by default but can be turned off using password.encryption.uselegacy in cesecore.properties.
+In order to provide 100% uptime, the legacy behavior is used by default when the default password.encryption.key is configured in cesecore.properties.
+Only change this value when you are sure that all nodes that will store passwords (end entity clear text passwords and crypto token auto activation codes)
+are upgraded and can read the new format.
 
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
