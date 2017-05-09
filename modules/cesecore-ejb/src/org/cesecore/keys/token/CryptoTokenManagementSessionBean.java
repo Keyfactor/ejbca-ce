@@ -58,6 +58,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 
 /**
  * @see CryptoTokenManagementSession
@@ -774,10 +775,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 // NOP
             } else if (oldValue == null && newValue != null) {
                 details.put("autoActivation", "added");
+                details.put("autoActivationPinProtection", StringTools.getEncryptVersionFromString(newValue));
             } else if (oldValue != null && newValue == null) {
                 details.put("autoActivation", "removed");
             } else if (!oldValue.equals(newValue)) {
                 details.put("autoActivation", "pin changed");
+                details.put("autoActivationPinProtection", StringTools.getEncryptVersionFromString(newValue));
             }
         } else {
             if (oldValue == null && newValue == null) {
