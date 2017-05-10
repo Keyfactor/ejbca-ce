@@ -511,7 +511,7 @@ public abstract class CmpTestCase extends CaTestCase {
      CertReqMsg certReqMsg = new CertReqMsg(certRequest, proofOfPossession, avs);
      CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
-     PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(2, new GeneralName(userDN),
+     PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(userDN),
              new GeneralName(new JcaX509CertificateHolder((X509Certificate)cacert).getSubject()));
      pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
      pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
@@ -679,7 +679,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
 
         // Check that the signer is the expected CA    
-        assertEquals(4, header.getSender().getTagNo());
+        assertEquals(PKIBody.TYPE_P10_CERT_REQ, header.getSender().getTagNo());
         
         X500Name expissuer = new X500Name(issuerDN);
         X500Name actissuer = new X500Name(header.getSender().getName().toString());     
@@ -946,7 +946,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
         final PKIHeader pkiHeader = pkiMessage.getHeader();
-        assertEquals(pkiHeader.getSender().getTagNo(), 4);      
+        assertEquals(4, pkiHeader.getSender().getTagNo());
         final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
         final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
         assertEquals(expectedDN, senderDN);
@@ -965,7 +965,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
         final PKIHeader pkiHeader = pkiMessage.getHeader();
-        assertEquals(pkiHeader.getSender().getTagNo(), 4);
+        assertEquals(4, pkiHeader.getSender().getTagNo());
         final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
         final X500Name expectedDN = new X500Name(issuerDN);
         assertEquals(expectedDN, senderDN);
