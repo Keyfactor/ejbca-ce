@@ -129,8 +129,8 @@ certificate.validityoffset=-10m
 #intresources.preferredlanguage=en
 
 # The language used internally if a resource not found in the preferred language.
-# Default: sv
-#intresources.secondarylanguage=sv
+# Default: en
+#intresources.secondarylanguage=en
 
 # ------------ Audit log configuration ---------------------
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you
