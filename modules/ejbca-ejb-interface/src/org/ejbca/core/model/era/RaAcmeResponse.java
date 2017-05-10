@@ -29,7 +29,7 @@ public class RaAcmeResponse implements Serializable {
     
     private byte[] certificate;
 
-    private Map result;
+    private Map<String, Object> result;
     private int operation = 0;
 
     public byte[] getCertificate() { return certificate; }
@@ -46,7 +46,7 @@ public class RaAcmeResponse implements Serializable {
      * @param operation
      * @param result
      */
-    public void setOperation(int operation, Map result){
+    public void setOperation(int operation, Map<String, Object> result){
         this.operation = operation;
         this.result = result;
     }
@@ -54,8 +54,8 @@ public class RaAcmeResponse implements Serializable {
      * This returns an object with information about the response operation and the type of object related to it.
      * @return
      */
-    public Map getResult(){
-        HashMap result = new HashMap();
+    public Map<String, Object> getResult(){
+        HashMap<String, Object> result = new HashMap<>();
         result.put("result",this.result);
         result.put("operation",this.operation);
         return result;

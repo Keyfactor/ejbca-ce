@@ -55,14 +55,14 @@ public class RaAcmeRequest implements Serializable {
     /**
      * This contains all the data requested
      */
-    private HashMap<String,Object> data = new HashMap();
+    private HashMap<String,Object> data = new HashMap<>();
 
     public RaAcmeRequest(final String acmeBaseUrl, final int type) {
         this.acmeBaseUrl = acmeBaseUrl;
         this.type = type;
     }
 
-    public void setData(HashMap data){
+    public void setData(HashMap<String,Object> data){
         this.data = data;
     }
 
@@ -70,7 +70,7 @@ public class RaAcmeRequest implements Serializable {
         data.put(k,v);
     }
 
-    public HashMap getData(){
+    public HashMap<String,Object> getData(){
         return this.data;
     }
 
