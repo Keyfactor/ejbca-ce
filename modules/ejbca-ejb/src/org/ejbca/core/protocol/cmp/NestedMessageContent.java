@@ -157,7 +157,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
      *  
      * The certificate files should be PEM encoded.
      * 
-     * @return A list of the valid certificates in cmpConfiguration.getRaCertificatePath(). 
+     * @return A list of the certificates in cmpConfiguration.getRaCertificatePath() that could be read and parsed. 
      */
     private List<X509Certificate> getRaCerts(final String raCertsPath) {
         final List<X509Certificate> racerts = new ArrayList<>();
