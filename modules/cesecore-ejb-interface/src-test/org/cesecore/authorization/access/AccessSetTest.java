@@ -41,6 +41,7 @@ public final class AccessSetTest {
             "/twelve/" + AccessSet.WILDCARD_SOME, "/twelve/-123456",
             "/thirteen/" + AccessSet.WILDCARD_SOME + "/subres", "/thirteen/98765/subres");
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSimpleAllowed() {
         log.trace(">testSimpleAllowed");
@@ -49,6 +50,7 @@ public final class AccessSetTest {
         log.trace("<testSimpleAllowed");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSimpleDenied() {
         log.trace(">testSimpleDenied");
@@ -57,6 +59,7 @@ public final class AccessSetTest {
         log.trace("<testSimpleDenied");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testNested() {
         log.trace(">testNested");
@@ -69,6 +72,7 @@ public final class AccessSetTest {
         log.trace("<testNested");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRecursive() {
         log.trace(">testRecursive");
@@ -95,6 +99,7 @@ public final class AccessSetTest {
         log.trace("<testSlashRecurisve");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSomeWilcard() {
         log.trace(">testSomeWilcard");
@@ -105,6 +110,7 @@ public final class AccessSetTest {
         log.trace("<testAllWilcard");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testBadResources() {
         log.trace(">testBadResources");
@@ -153,6 +159,7 @@ public final class AccessSetTest {
         return new AccessSet(col);
     }
     
+    @SuppressWarnings("deprecation")
     private AccessSet makeNewAccessSet() {
         final Set<String> allResources = new HashSet<>();
         allResources.add("/a/");
