@@ -48,12 +48,48 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
     private List<Field> fields;
 
     private List<String> usages;
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList<Object> chainList;
+    private javax.swing.JButton closeButton;
+    private javax.swing.JEditorPane fieldValueEditorPane;
+    private javax.swing.JList<Object> fieldsList;
+    private javax.swing.JLabel fingerprintLabel;
+    private javax.swing.JTextArea issuerTextArea;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel notAfterLabel;
+    private javax.swing.JLabel notBeforeLabel;
+    private javax.swing.JLabel serialNumberLabel;
+    private javax.swing.JTextArea subjectTextArea;
+    private javax.swing.JList<Object> usagesList;
+    // End of variables declaration//GEN-END:variables
 
     /** Creates new form ViewStatusFrame. */
     public ViewCertificateFrame(final List<X509Certificate> certificates) {
         this.certificate = certificates.get(0);
         initComponents();
-        chainList.setModel(new AbstractListModel() {
+        chainList.setModel(new AbstractListModel<Object>() {
 
             private static final long serialVersionUID = 5987143912053355378L;
 
@@ -72,7 +108,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
             private static final long serialVersionUID = 2763486282311920269L;
 
             @Override
-            public Component getListCellRendererComponent(final JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+            public Component getListCellRendererComponent(final JList<?> list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
                 if (value instanceof X509Certificate) {
                     final X509Certificate cert = (X509Certificate) value;
                     value = cert.getSubjectDN().getName();
@@ -97,7 +133,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
             private static final long serialVersionUID = -4404969676873042380L;
 
             @Override
-            public Component getListCellRendererComponent(final JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+            public Component getListCellRendererComponent(final JList<?> list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
                 if (value instanceof Field) {
                     value = ((Field) value).getName();
                 }
@@ -178,7 +214,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
             LOG.error("Error getting extended key usage", ex);
         }
 
-        usagesList.setModel(new AbstractListModel() {
+        usagesList.setModel(new AbstractListModel<Object>() {
 
             private static final long serialVersionUID = -2458647139188835032L;
 
@@ -208,7 +244,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        usagesList = new javax.swing.JList();
+        usagesList = new javax.swing.JList<Object>();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -229,10 +265,10 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        chainList = new javax.swing.JList();
+        chainList = new javax.swing.JList<Object>();
         jLabel15 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
-        fieldsList = new javax.swing.JList();
+        fieldsList = new javax.swing.JList<Object>();
         jLabel16 = new javax.swing.JLabel();
         jScrollPane6 = new javax.swing.JScrollPane();
         fieldValueEditorPane = new javax.swing.JEditorPane();
@@ -254,7 +290,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
-        usagesList.setModel(new javax.swing.AbstractListModel() {
+        usagesList.setModel(new javax.swing.AbstractListModel<Object>() {
             private static final long serialVersionUID = -961928708294659333L;
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -409,7 +445,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 
         jScrollPane4.setName("jScrollPane4"); // NOI18N
 
-        chainList.setModel(new javax.swing.AbstractListModel() {
+        chainList.setModel(new javax.swing.AbstractListModel<Object>() {
             private static final long serialVersionUID = -2244979809502234943L;
             String[] strings = { "Signer Certificate", "CSCA Country" };
             public int getSize() { return strings.length; }
@@ -424,7 +460,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 
         jScrollPane5.setName("jScrollPane5"); // NOI18N
 
-        fieldsList.setModel(new javax.swing.AbstractListModel() {
+        fieldsList.setModel(new javax.swing.AbstractListModel<Object>() {
             private static final long serialVersionUID = 5093669154987973184L;
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -557,7 +593,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
             fields.add(new Field("Certificate Signature Value",
                     new String(Hex.encode(certificate.getSignature()))));
             
-            fieldsList.setModel(new AbstractListModel() {
+            fieldsList.setModel(new AbstractListModel<Object>() {
 
                 private static final long serialVersionUID = -2447253762338587451L;
 
@@ -597,41 +633,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 //        });
 //    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList chainList;
-    private javax.swing.JButton closeButton;
-    private javax.swing.JEditorPane fieldValueEditorPane;
-    private javax.swing.JList fieldsList;
-    private javax.swing.JLabel fingerprintLabel;
-    private javax.swing.JTextArea issuerTextArea;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel notAfterLabel;
-    private javax.swing.JLabel notBeforeLabel;
-    private javax.swing.JLabel serialNumberLabel;
-    private javax.swing.JTextArea subjectTextArea;
-    private javax.swing.JList usagesList;
-    // End of variables declaration//GEN-END:variables
+  
 
     private static final class Field {
         private final String name;
