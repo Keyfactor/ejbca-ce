@@ -250,10 +250,12 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test04BlueXCrmf() throws Exception {
         log.trace(">test04BlueXCrmf");
         // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
-        super.createCmpUser("cmptest_test04BlueXCrmf", "CN=Some Common Name", false, this.caid);
+        final String username = "cmptest_test04BlueXCrmf";
+        super.createCmpUser(username, "CN=Some Common Name", false, this.caid);
         byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
+        endEntityManagementSession.deleteUser(ADMIN, username);
         log.trace("<test04BlueXCrmf");
     }
 
