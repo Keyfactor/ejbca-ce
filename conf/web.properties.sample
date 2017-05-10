@@ -101,15 +101,15 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Note: Some available languages are incompletely translated (<50%); before adding them, check completeness with the following command:
 #       modules/admin-gui/resources/languages/language-tool.sh -s
 # When adding languages to this do _NOT_ change the order as this affects the already configured languages for admins, i.e. it's based on index in this list.
-# Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh
-#web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh
+# Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh,vi
+#web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh,vi
 
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: UTF-8
 #web.contentencoding=UTF-8
 
 # The language configuration that should be used internally for logging, exceptions and approval
-# notifications has been moved to ejbca.properties from EJBCA 3.10.
+# notifications has been moved to cesecore.properties from EJBCA 5.
 
 # Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
 # be displayed for the administrators. If false only non-sensitive information is displayed.

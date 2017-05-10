@@ -6020,7 +6020,7 @@ e.g. 'zh' for Chinese, and place it in the 'modules/admin-gui/resources/language
 </li>
 <li>Edit conf/web.properties (create with conf/web.properties.sample as template if you don't have one).
 Change 'web.availablelanguages' and add your language code to the value. i.e.:
-<source>web.availablelanguages=en,bs,de,es,fr,it,ja,pt,sv,uk,zh</source>
+<source>web.availablelanguages=en,bs,de,es,fr,it,ja,pt,sv,uk,zh,vi</source>
 </li>
 <li>You may have to change the default page encoding in 'web.contentencoding' to for example ISO-8859-1
 instead of the default UTF-8.

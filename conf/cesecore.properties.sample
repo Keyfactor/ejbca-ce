@@ -124,7 +124,7 @@ certificate.validityoffset=-10m
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties' and 'intresources.xx.properties'.
-# Should be one of: en, fr, ja, pt, sv.
+# Should be one of: en, fr, ja, pt, sv, vi.
 # Default: en
 #intresources.preferredlanguage=en
 
