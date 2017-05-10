@@ -151,12 +151,12 @@ public class CmpMessageHelper {
             extraCertsList.add(CMPCertificate.getInstance(((X509Certificate)certificate).getEncoded()));
         }
         final CMPCertificate[] extraCerts = extraCertsList.toArray(new CMPCertificate[signCertChain.size()]);
-        final PKIMessage signedPkiMessage = CmpMessageHelper.buildCertBasedPKIProtection(pkiMessage, extraCerts, signKey, digestAlg, provider);
+        final PKIMessage signedPkiMessage = buildCertBasedPKIProtection(pkiMessage, extraCerts, signKey, digestAlg, provider);
         if (LOG.isTraceEnabled()) {
             LOG.trace("<signPKIMessage()");
         }
         // Return response as byte array 
-        return CmpMessageHelper.pkiMessageToByteArray(signedPkiMessage);
+        return pkiMessageToByteArray(signedPkiMessage);
     }
 
     public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg,
@@ -185,7 +185,7 @@ public class CmpMessageHelper {
         }
         Signature sig = Signature.getInstance(signatureAlgorithmName, provider);
         sig.initSign(key);
-        sig.update(CmpMessageHelper.getProtectedBytes(head, pkiMessage.getBody()));
+        sig.update(getProtectedBytes(head, pkiMessage.getBody()));
         final PKIMessage protectedPkiMessage;
         if (extraCerts != null && extraCerts.length > 0) {
             protectedPkiMessage = new PKIMessage(head, pkiMessage.getBody(), new DERBitString(sig.sign()), extraCerts);
@@ -238,7 +238,7 @@ public class CmpMessageHelper {
             throw new IllegalStateException("BouncyCastle provider not installed.", e);
         }
         sig.initVerify(pubKey);
-        sig.update(CmpMessageHelper.getProtectedBytes(pKIMessage));
+        sig.update(getProtectedBytes(pKIMessage));
         boolean result = sig.verify(pKIMessage.getProtection().getBytes());
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verification result: " + result);
@@ -287,7 +287,7 @@ public class CmpMessageHelper {
         PKIHeader pkiHeader = head.build();
         // Do the mac
         String macOid = macAlg.getAlgorithm().getId();
-        byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(pkiHeader, msg.getBody()); //ret.getProtectedBytes();
+        byte[] protectedBytes = getProtectedBytes(pkiHeader, msg.getBody());
         Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
         SecretKey key = new SecretKeySpec(basekey, macOid);
         mac.init(key);
@@ -300,7 +300,7 @@ public class CmpMessageHelper {
             LOG.trace("<protectPKIMessageWithPBE()");
         }
         // Return response as byte array 
-        return CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
+        return pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
     }
 
     /** @return response as byte array */ 
@@ -405,7 +405,7 @@ public class CmpMessageHelper {
             CmpPbeVerifyer verifyer, String keyId, String responseProt) {
         final CmpErrorResponseMessage cresp = new CmpErrorResponseMessage();
         cresp.setRecipientNonce(msg.getSenderNonce());
-        cresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+        cresp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
         cresp.setSender(msg.getRecipient());
         cresp.setRecipient(msg.getSender());
         cresp.setTransactionId(msg.getTransactionId());
