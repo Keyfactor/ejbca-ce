@@ -59,6 +59,9 @@
     	<mkdir dir="${mod.ejbca-ws-ejb.jar.dir}" />
         <jar destfile="${mod.ejbca-ws-ejb.jar}" basedir="${build.dir}">
         	<fileset dir="${this.dir}/resources" includes="**"/>
+        	<!-- Do not include classes that are included in ejbca-ws.jar -->
+        	<exclude name="org/ejbca/core/protocol/ws/common/*.class"/>
+        	<exclude name="org/ejbca/core/protocol/ws/objects/*.class"/>
         </jar>
     </target>
 

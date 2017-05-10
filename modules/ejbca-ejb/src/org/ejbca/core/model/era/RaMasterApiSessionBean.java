@@ -12,6 +12,45 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.ejb.EJB;
+import javax.ejb.RemoveException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.QueryTimeoutException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -26,8 +65,24 @@ import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.ca.*;
-import org.cesecore.certificates.certificate.*;
+import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
@@ -65,15 +120,26 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.*;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
+import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataText;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.SelfApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -83,28 +149,17 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
-
-import javax.ejb.*;
-import javax.persistence.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.*;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -134,6 +189,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
+    private CertificateRequestSessionLocal certificateRequestSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
@@ -141,6 +198,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -1496,6 +1555,87 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
         }
+    }
+    
+    /*
+        Classes that are not available in this module:
+        
+        UserDataVOWS
+        javax.ejb.ObjectNotFoundException [FIXED]
+        javax.ejb.CreateException [FIXED]
+        
+    */
+    @Override
+    public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
+            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, NotFoundException, ApprovalException, EjbcaException,
+            NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException,
+            CertificateException, IOException, EndEntityProfileValidationException, CesecoreException, CertificateExtensionException {
+            // Some of the session beans are only needed for authentication or certation operations, and are passed as null
+            final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);
+            int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
+            if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
+                if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+                    responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7;
+                }
+                else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+                    responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN;
+                }
+                else{
+                    throw new NoSuchAlgorithmException("Bad responseType:" + responseType);
+                }
+            }
+            return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, hardTokenSN, responseTypeInt);
+// TODO should probably handle the exceptions here, and not on the calling side
+//        } catch( CADoesntExistsException t ) {
+//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+//            throw new EjbcaException(t);
+//        } catch( AuthorizationDeniedException t ) {
+//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+//            throw t;
+//        } catch( NotFoundException t ) {
+//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+//            throw t;
+//        } catch (CertificateExtensionException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (InvalidKeyException e) {
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
+//        } catch (IllegalKeyException e) {
+//            // Don't log a bad error for this (user's key length too small)
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
+//        } catch (AuthStatusException e) {
+//            // Don't log a bad error for this (user wrong status)
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
+//        } catch (AuthLoginException e) {
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+//        } catch (SignatureException e) {
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
+//        } catch (SignRequestSignatureException e) {
+//            throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
+//        } catch (InvalidKeySpecException e) {
+//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
+//        } catch (NoSuchAlgorithmException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (NoSuchProviderException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (CertificateException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (CreateException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (IOException e) {
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (CesecoreException e) {
+//            // Will convert the CESecore exception to an EJBCA exception with the same error code
+//            throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
+//        } catch (FinderException e) {
+//            throw new NotFoundException(e.getMessage());
+//        } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
+//            throw EjbcaWSHelper.getInternalException(e, logger);
+//        } catch (EndEntityProfileValidationException e) {
+//           throw new UserDoesntFullfillEndEntityProfile(e);
+//        } finally {
+//            logger.writeln();
+//            logger.flush();
+//        }
     }
 
     @Override
