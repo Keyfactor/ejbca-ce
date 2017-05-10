@@ -409,7 +409,7 @@ public class StringToolsTest {
             assertEquals("Encryption version should be encv1", "encv1", StringTools.getEncryptVersionFromString(pbe));
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
-                fail("Decryption should not work with wrong key");
+                assertFalse("Decryption should not work with wrong key. Decrypted data: "+pwd, "customEncryptionKey".equals(pwd));
             } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
                 // we should end up here typically when encryption fails, but it's not 100% sure
             }
