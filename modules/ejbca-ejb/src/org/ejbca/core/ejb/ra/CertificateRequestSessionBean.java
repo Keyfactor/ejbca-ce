@@ -29,7 +29,6 @@ import java.security.spec.InvalidKeySpecException;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -120,7 +119,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @Override
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN,
             int responseType) throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
-            InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
+            InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, CertificateException,
             EndEntityProfileValidationException, ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException {
         byte[] retval = null;
 

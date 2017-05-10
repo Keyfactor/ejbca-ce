@@ -22,9 +22,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.ejb.CreateException;
-import javax.ejb.ObjectNotFoundException;
-
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -62,7 +59,7 @@ public interface CertificateRequestSession {
 	 */
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
-            SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, EndEntityProfileValidationException,
+            SignatureException, IOException, CertificateException, EndEntityProfileValidationException,
             ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
