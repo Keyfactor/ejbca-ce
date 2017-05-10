@@ -15,6 +15,9 @@ package org.ejbca.core.model;
 
 import static org.junit.Assert.assertEquals;
 
+import org.cesecore.config.ConfigurationHolder;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -26,17 +29,27 @@ public class InternalEjbcaResourcesTest {
 	// Classpath issues, use "src/intresources" when running from within eclipse
 	//private static final String TEST_RESOURCE_PATH = "src/intresources";
 
+	@Before
+	public void before() {
+        ConfigurationHolder.backupConfiguration();
+        ConfigurationHolder.updateConfiguration("intresources.secondarylanguage", "sv");
+	}
+	@After
+	public void after() {
+        ConfigurationHolder.restoreConfiguration();	    
+	}
+	
 	@Test
-    public void testGetLocalizedMessageString() {
-        InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
-        String res = intres.getLocalizedMessage("test.testmsg");
-        assertEquals("Test en-US", res);
-        assertEquals("Test en-US", intres.getLocalizedMessageCs("test.testmsg").toString());
-        // This message will only exist in the secondary language file
-        res = intres.getLocalizedMessage("test.testmsgsv");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
-    }
+	public void testGetLocalizedMessageString() {
+	    InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
+	    String res = intres.getLocalizedMessage("test.testmsg");
+	    assertEquals("Test en-US", res);
+	    assertEquals("Test en-US", intres.getLocalizedMessageCs("test.testmsg").toString());
+	    // This message will only exist in the secondary language file
+	    res = intres.getLocalizedMessage("test.testmsgsv");
+	    assertEquals("Test sv-SE", res);
+	    assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
+	}
 
 	@Test
     public void testNonExistingLocalizedMessageString() {
@@ -67,15 +80,15 @@ public class InternalEjbcaResourcesTest {
     }
 
 	@Test
-    public void testMessageStringWithExtraParameter() {
-        InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
-        String res = intres.getLocalizedMessage("test.testmsgsv");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
-        res = intres.getLocalizedMessage("test.testmsgsv", "foo $bar \\haaaar");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv", "foo $bar \\haaaar").toString());
-    }
+	public void testMessageStringWithExtraParameter() {
+	    InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
+	    String res = intres.getLocalizedMessage("test.testmsgsv");
+	    assertEquals("Test sv-SE", res);
+	    assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
+	    res = intres.getLocalizedMessage("test.testmsgsv", "foo $bar \\haaaar");
+	    assertEquals("Test sv-SE", res);
+	    assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv", "foo $bar \\haaaar").toString());
+	}
     
 	@Test
     public void testCeSecoreMessage() {
