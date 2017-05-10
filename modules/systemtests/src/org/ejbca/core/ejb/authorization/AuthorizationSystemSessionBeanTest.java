@@ -42,6 +42,7 @@ public class AuthorizationSystemSessionBeanTest {
     private RoleInitializationSessionRemote roleInitializationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAccessSets() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException, AuthenticationFailedException {
         log.trace(">testAccessSets");
