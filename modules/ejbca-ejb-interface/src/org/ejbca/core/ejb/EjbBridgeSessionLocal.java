@@ -57,6 +57,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
+import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
@@ -111,6 +112,7 @@ public interface EjbBridgeSessionLocal {
     UpgradeSessionLocal getUpgradeSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	EndEntityManagementSessionLocal getEndEntityManagementSession();
+	EjbcaWSHelperSessionLocal getEjbcaWSHelperSession();
 	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
     CryptoTokenManagementSessionLocal getCryptoTokenManagementSession();
     InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession();
