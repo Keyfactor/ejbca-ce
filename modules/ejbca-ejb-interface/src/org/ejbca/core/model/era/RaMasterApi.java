@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.IOException;
 import java.security.KeyStoreException;
 import java.util.List;
 import java.util.Map;
