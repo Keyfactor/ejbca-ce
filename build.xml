@@ -523,6 +523,7 @@
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
                 <include name="ejbca-entity.jar" />
+                <include name="ejbca-ws.jar" />
                 <include name="cesecore-ejb-interface.jar" />
                 <include name="cesecore-common.jar" />
                 <include name="cesecore-entity.jar" />
