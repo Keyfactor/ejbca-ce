@@ -14,6 +14,9 @@ package org.cesecore.internal;
 
 import static org.junit.Assert.assertEquals;
 
+import org.cesecore.config.ConfigurationHolder;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -26,6 +29,16 @@ public class InternalResourcesTest {
     // Classpath issues, use "src/intresources" when running from within eclipse
     //private static final String TEST_RESOURCE_LOCATION = "src/intresources";
 	
+    @Before
+    public void before() {
+        ConfigurationHolder.backupConfiguration();
+        ConfigurationHolder.updateConfiguration("intresources.secondarylanguage", "sv");
+    }
+    @After
+    public void after() {
+        ConfigurationHolder.restoreConfiguration();     
+    }
+    
     @Test
     public void testGetLocalizedMessageString() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
