@@ -357,7 +357,8 @@ textarea#keyPairForm\:certificateRequest {
   margin: 0 auto 2% auto;
   display: block; }
 
-textarea#enrollWithUsernameForm\:certificateRequest {
+textarea#enrollWithUsernameForm\:certificateRequest,
+textarea#enrollWithRequestIdForm\:certificateRequest {
   width: 98%;
   margin: 0 auto 2% auto;
   display: block; }
@@ -883,7 +884,10 @@ span.approvalStep {
   width: auto; }
 
 #enrollWithRequestIdForm\:enteredRequestId,
-#enrollWithRequestIdForm\:requestSubjectDn {
+#enrollWithRequestIdForm\:requestSubjectDn,
+#enrollWithRequestIdForm\:requestKeyAlgorithm,
+#enrollWithUsernameForm\:enteredUsername, 
+#enrollWithUsernameForm\:requestKeyAlgorithm {
   color: #fff;
   font-style: italic; }
 
@@ -1737,3 +1741,4 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     word-break: break-all; } }
 
 /*# sourceMappingURL=w_e_style.css.map */
+

@@ -81,12 +81,16 @@
 								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 								<h:outputText id="usernameField" value="#{enrollWithUsernameBean.username}" />
 							</h:panelGroup>
+							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.keyAlgorithmPreSet and !enrollWithUsernameBean.renderGenerateCertificate}">
+								<h:outputLabel for="requestKeyAlgorithmField" value="Key Algorithm"/>
+								<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithUsernameBean.preSetKeyAlgorithm}"/>
+							</h:panelGroup>
 					</h:panelGroup>
 
 					<h:panelGroup layout="block" styleClass="internal-frame">
 							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
 							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
-								rendered="#{enrollWithUsernameBean.renderGenerateKeyStorePkcs12 || enrollWithUsernameBean.renderGenerateKeyStorePem || enrollWithUsernameBean.renderGenerateKeyStoreJks}">
+								rendered="#{!enrollWithUsernameBean.keyAlgorithmPreSet}">
 								<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
 								<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{enrollWithUsernameBean.selectedAlgorithm}">
 									<f:selectItems value="#{enrollWithUsernameBean.availableAlgorithmSelectItems}" />
@@ -123,7 +127,7 @@
 									    <h:outputText id="certificateRequestNode" value="#{enrollWithUsernameBean.selectedAlgorithm}"/>
 									</h:panelGroup>
 									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
-									    action="#{enrollWithUsernameBean.uploadCsrChange}">
+									    action="#{enrollWithUsernameBean.uploadCsrChange}" rendered="#{!enrollWithUsernameBean.csrPreSet}">
 									</h:commandButton>
 								    </h:panelGroup>
 							</h:panelGroup>

@@ -12,16 +12,10 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -31,7 +25,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,12 +35,8 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -85,8 +74,6 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     private String paramEnrollmentCode;
     // Cache for certificate profile
     private CertificateProfile certificateProfile;
-    // For generated on server keys
-    private String selectedAlgorithm; 
 
     @PostConstruct
     protected void postConstruct() {
@@ -107,7 +94,6 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     @Override
     public void reset() {
         this.certificateProfile = null;
-        this.selectedAlgorithm = null;
         enrollmentCode = null;        
         super.reset();
     }
@@ -168,81 +154,14 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     public boolean isParamEnrollmentCodeEmpty() {
         return StringUtils.isEmpty(paramEnrollmentCode);
     }
-    @Override
-    protected final void generateCertificate(){
-        if (getEndEntityInformation().getExtendedinformation() == null) {
-            getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
-        }
-        byte[] certificateRequest = getEndEntityInformation().getExtendedinformation().getCertificateRequest();
-        if (certificateRequest == null) {
-            if (getCertificateRequest() == null) {
-                raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", username);
-                log.info("Could not find CSR inside enrollment request for username " + username);
-                return;
-            }
-            try {
-                getEndEntityInformation().getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
-            } catch (IOException e) {
-                raLocaleBean.addMessageError("enroll_invalid_certificate_request");
-                return;
-            }
-        }
-        generateCertificateAfterCheck();
-    }
-
-    @Override
-    protected void generateKeyStore(){
-        if (StringUtils.isEmpty(selectedAlgorithm)) {
-            raLocaleBean.addMessageError("enroll_no_key_algorithm");
-            log.info("No key algorithm was provided.");
-            return;            
-        }
-        final String[] parts = StringUtils.split(selectedAlgorithm, '_');
-        if (parts == null || parts.length < 2) {
-            raLocaleBean.addMessageError("enroll_no_key_algorithm");
-            log.info("No full key algorithm was provided: "+selectedAlgorithm);
-            return;
-        }
-        final String keyAlg = parts[0];
-        if (StringUtils.isEmpty(keyAlg)) {
-            raLocaleBean.addMessageError("enroll_no_key_algorithm");
-            log.info("No key algorithm was provided: "+selectedAlgorithm);
-            return;
-        }
-        final String keySpec = parts[1];
-        if (StringUtils.isEmpty(keySpec)) {
-            raLocaleBean.addMessageError("enroll_no_key_specification");
-            log.info("No key specification was provided: "+selectedAlgorithm);
-            return;
-        }
-        if (getEndEntityInformation().getExtendedinformation() == null) {
-            getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
-        }
-        getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmType(keyAlg);
-        getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmSubType(keySpec);
-        super.generateKeyStore();
-    }
-
-    @Override
-    public boolean isRenderGenerateKeyStoreJks(){
-        return getEndEntityInformation().getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS;
-    }
-    
-    @Override
-    public boolean isRenderGenerateKeyStorePkcs12(){
-        return getEndEntityInformation().getTokenType() == EndEntityConstants.TOKEN_SOFT_P12;
-    }
-    
-    @Override
-    public boolean isRenderGenerateKeyStorePem(){
-        return getEndEntityInformation().getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM;
-    }
 
     private String certificateRequest;
+    
     /** @return true if the the CSR has been uploaded */
     public boolean isUploadCsrDoneRendered() {
-        return selectedAlgorithm!=null;
+        return getSelectedAlgorithm() != null;
     }
+    
     /** @return the current certificateRequest if available */
     public String getCertificateRequest() {
         if (StringUtils.isEmpty(certificateRequest)) {
@@ -256,17 +175,15 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     public void setCertificateRequest(final String certificateRequest) {
         this.certificateRequest = certificateRequest;
     }
+    
     /** Populate the state of modifiable fields with the CSR that was saved during file upload validation */
     public void uploadCsr() {
     }
 
-    public void uploadCsrChange() {
-        selectedAlgorithm = null;
-    }
-
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
+    @Override
     public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        selectedAlgorithm = null;
+        setSelectedAlgorithm(null);
         final String valueStr = value.toString();
         if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
             log.info("CSR uploaded was too large: "+valueStr.length());
@@ -301,7 +218,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
                     log.debug("Ignoring algorithm validation on CSR because we can not find a Certificate Profile for user: "+username);
                 }
             }
-            selectedAlgorithm = keyAlgorithm + " " + keySpecification;// Save for later use
+            setSelectedAlgorithm(keyAlgorithm + " " + keySpecification);
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
@@ -319,117 +236,26 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         return this.certificateProfile;
     }
 
-    
-    /** @return the current availableAlgorithms as determined by state of dependencies */
-    public List<SelectItem> getAvailableAlgorithmSelectItems() {
-        final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-        final CertificateProfile certificateProfile = getCertificateProfile();
-        if (certificateProfile!=null) {
-            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength >= 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-                final Set<String> ecChoices = new HashSet<>();
-                final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
-                if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                    final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-                    for (final String ecNamedCurve : keys) {
-                        if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                            continue;
-                        }
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                            ecChoices.add(ecNamedCurve);
-                        }
-                    }
-                }
-                ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-                ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-                final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-                Collections.sort(ecChoicesList);
-                for (final String ecNamedCurve : ecChoicesList) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                            + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
-                }
-            }
-            for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
-                if (availableKeyAlgorithms.contains(CesecoreConfiguration.getExtraAlgTitle(algName))) {
-                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(Integer.valueOf(bitLength))) {
-                            availableAlgorithmSelectItems.add(new SelectItem(CesecoreConfiguration.getExtraAlgTitle(algName) + "_" + name,
-                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                        } else {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                            }
-                        }
-                    }
-                }
-            }
-            if (availableAlgorithmSelectItems.size() < 1) {
-                availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
-            }
-        }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
-        return availableAlgorithmSelectItems;
-    }
-
     //-----------------------------------------------------------------
     //Getters/setters
-    /**
-     * @return the username
-     */
+    
+    /** @return the username */
     public String getUsername() {
         return username;
     }
 
-    /**
-     * @param username the username to set
-     */
+    /** @param username the username to set */
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getSelectedAlgorithm() {
-        return selectedAlgorithm;
-    }
-
-    public void setSelectedAlgorithm(String selectedAlgorithm) {
-        this.selectedAlgorithm = selectedAlgorithm;
-    }
-
-    /**
-     * @return the enrollment code
-     */
+    /** @return the enrollment code */
     public String getEnrollmentCode() {
         return enrollmentCode;
     }
 
-    /**
-     * @param enrollmentCode the enrollment code to set
-     */
+    /** @param enrollmentCode the enrollment code to set */
     public void setEnrollmentCode(String enrollmentCode) {
         this.enrollmentCode = enrollmentCode;
     }
-    
-    
-
-
 }

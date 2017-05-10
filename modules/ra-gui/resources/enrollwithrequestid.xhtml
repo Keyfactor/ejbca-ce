@@ -65,18 +65,74 @@
 					</h:panelGroup>
 				</h:panelGroup>
 
-				<h:panelGroup layout="block"
-					rendered="#{enrollWithRequestIdBean.finalizeEnrollmentRendered}">
+				<h:panelGroup layout="block" rendered="#{enrollWithRequestIdBean.finalizeEnrollmentRendered}">
 					<h2>
 						<h:outputText
 							value="#{msg.enrollwithrequestid_finalize_enrollment} " />
 					</h2>
+					
+					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup id="enteredRequestId" layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="requestIdField" value="#{msg.enroll_request_id}" />
+							<h:outputText id="requestIdField" value="#{enrollWithRequestIdBean.requestId}" />
+						</h:panelGroup>
+						<h:panelGroup id="requestSubjectDn" layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="subjectDnField" value="Subject"/>
+							<h:outputText id="subjectDnField" styleClass="monospace" value="#{enrollWithRequestIdBean.endEntityInformation.DN};#{enrollWithRequestIdBean.endEntityInformation.subjectAltName}"/>
+						</h:panelGroup>
+						<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithRequestIdBean.keyAlgorithmPreSet and !enrollWithRequestIdBean.renderGenerateCertificate}">
+							<h:outputLabel for="requestKeyAlgorithmField" value="Key Algorithm"/>
+							<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithRequestIdBean.preSetKeyAlgorithm}"/>
+						</h:panelGroup>
+					</h:panelGroup>
+
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
-							<h:panelGroup id="enteredRequestId" layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="requestIdField" value="#{msg.enroll_request_id}" />
-								<h:outputText id="requestIdField" value="#{enrollWithRequestIdBean.requestId}" />
+							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
+							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
+								rendered="#{!enrollWithRequestIdBean.keyAlgorithmPreSet}">
+								<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
+								<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast" value="#{enrollWithRequestIdBean.selectedAlgorithm}">
+									<f:selectItems value="#{enrollWithRequestIdBean.availableAlgorithmSelectItems}" />
+								</h:selectOneMenu>
 							</h:panelGroup>
+							
+							<!-- Render CSR upload if user generated -->
+							<h:panelGroup layout="block"
+								rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
+								<h:panelGroup layout="block" rendered="#{!enrollWithRequestIdBean.uploadCsrDoneRendered}">
+									<h:panelGroup layout="block">
+									    <p id="newFileInputContainer" style="display: inline-block;"></p>
+									    <ui:remove>
+									        <!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
+									    </ui:remove>
+									    <script>
+									        ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainer", function(uploadedText) {
+									            document.getElementById("enrollWithRequestIdForm:certificateRequest").value = uploadedText;
+									            document.getElementById("enrollWithRequestIdForm:uploadCsrButton").click();
+									        });
+									    </script>
+									</h:panelGroup>
+									<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
+										value="#{enrollWithRequestIdBean.certificateRequest}" cols="80" rows="20" validator="#{enrollWithRequestIdBean.validateCsr}"/>
+									<h:message for="certificateRequest" id="certificateRequestMessage" styleClass="showErrorMessage"/>
+									<br/>
+									<h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
+									    action="#{enrollWithRequestIdBean.uploadCsr}">
+									    <f:ajax event="change" execute="@form" render=":globalMessages :enrollWithRequestIdForm certificateRequestMessage @form"/>
+									</h:commandButton>
+								</h:panelGroup>
+							    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithRequestIdBean.uploadCsrDoneRendered}">
+									<h:panelGroup layout="block" styleClass="pure-control-group">
+									    <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
+									    <h:outputText id="certificateRequestNode" value="#{enrollWithRequestIdBean.selectedAlgorithm}"/>
+									</h:panelGroup>
+									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
+									    action="#{enrollWithRequestIdBean.uploadCsrChange}" rendered="#{!enrollWithRequestIdBean.csrPreSet}">
+									</h:commandButton>
+							    </h:panelGroup>
+							</h:panelGroup>
+							
 							<h:panelGroup id="enteredRequestEnrollmentCode" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
 								<h:inputSecret id="enrollmentCode" value="#{enrollWithRequestIdBean.endEntityInformation.password}" autocomplete="off">
@@ -84,10 +140,7 @@
 								</h:inputSecret>
 								<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
-							<h:panelGroup id="requestSubjectDn" layout="block" styleClass="pure-control-group">
-								<h:outputLabel for="subjectDnField" value="Subject"/>
-								<h:outputText id="subjectDnField" styleClass="monospace" value="#{enrollWithRequestIdBean.endEntityInformation.DN};#{enrollWithRequestIdBean.endEntityInformation.subjectAltName}"/>
-							</h:panelGroup>
+
 							<h:panelGroup id="requestIdButtons" layout="block">
 								<h:commandButton id="generatePem"
 									value="#{msg.enroll_generate_pem}"
