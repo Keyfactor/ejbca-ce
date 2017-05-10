@@ -136,9 +136,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case PKIBody.TYPE_INIT_REQ:
 				// 0: ir, Initialization Request and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, certificateRequestSession);
-				cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias), cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias), cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
-				break;
 			case PKIBody.TYPE_CERT_REQ:
 			    // 2:
 				handler = new CrmfMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession, certificateRequestSession);
