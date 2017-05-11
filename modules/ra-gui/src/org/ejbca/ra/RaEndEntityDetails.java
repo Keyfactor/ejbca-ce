@@ -12,18 +12,30 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+
 import org.apache.log4j.Logger;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -161,11 +173,19 @@ public class RaEndEntityDetails {
         }
         return "?";
     }
-
-    public boolean isTokenTypeUserGenerated() {
-        return endEntityInformation.getTokenType()==EndEntityConstants.TOKEN_USERGEN;
-    }
     
+    private String getKeysFromCsr() {
+        try {
+            PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+            final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
+            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
+            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            return keyAlgorithm + " " + keySpecification;
+        } catch (InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+            return null;
+        }
+    }
+
     /** Returns the specified key type for this end entity (e.g. "RSA 2048"), or null if none is specified (e.g. if created from the Admin GUI) */
     public String getKeyType() {
         if (extendedInformation != null && extendedInformation.getKeyStoreAlgorithmType() != null) {
@@ -174,10 +194,62 @@ public class RaEndEntityDetails {
                 keyTypeString += " " + extendedInformation.getKeyStoreAlgorithmSubType();
             }
             return keyTypeString;
+        } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
+            return getKeysFromCsr();
+            
         }
         return null; // null = hidden in UI
     }
 
+    public void downloadCsr() {
+        if (extendedInformation.getCertificateRequest() != null) {
+            byte[] certificateSignRequest = extendedInformation.getCertificateRequest();
+            downloadToken(certificateSignRequest, "application/octet-stream", ".pem");
+        } else {
+            log.info("CSR for end entity " + username + " does not exist");
+        }
+    }
+    
+    private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
+        if (token == null) {
+            return;
+        }
+        //Download the CSR
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+        ec.setResponseContentType(responseContentType);
+        ec.setResponseContentLength(token.length);
+        String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
+        if(fileName == null){
+            fileName = "request_csr"; 
+        }
+
+        final String filename = StringTools.stripFilename(fileName + fileExtension);
+        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+        OutputStream output = null;
+        try {
+            output = ec.getResponseOutputStream();
+            output.write(token);
+            output.flush();
+            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
+        } catch (IOException e) {
+            log.info("Token " + filename + " could not be downloaded", e);
+//            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+    
+    public boolean isTokenTypeUserGenerated() {
+        return endEntityInformation.getTokenType()==EndEntityConstants.TOKEN_USERGEN;
+    }
+    
     public boolean isKeyRecoverable() {
         return endEntityInformation.getKeyRecoverable();
     }
@@ -249,6 +321,9 @@ public class RaEndEntityDetails {
     }
     public boolean isNameConstraintsExcludedEnabled() {
         return getEndEntityProfile().getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0);
+    }
+    public boolean isCsrSet() {
+        return extendedInformation.getCertificateRequest() != null;
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();
