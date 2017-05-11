@@ -679,7 +679,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
 
         // Check that the signer is the expected CA    
-        assertEquals(PKIBody.TYPE_P10_CERT_REQ, header.getSender().getTagNo());
+        assertEquals(4, header.getSender().getTagNo());
         
         X500Name expissuer = new X500Name(issuerDN);
         X500Name actissuer = new X500Name(header.getSender().getName().toString());     
@@ -1124,8 +1124,12 @@ public abstract class CmpTestCase extends CaTestCase {
             NoSuchEndEntityException, CustomFieldException {
            
         createUser(username, "CN="+username, password, caid);
-        int certificateProfileId = certProfileSession.getCertificateProfileId(certProfile);
-        
+        final int certificateProfileId;
+        if (certProfile==null) {
+            certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
+        } else {
+            certificateProfileId = certProfileSession.getCertificateProfileId(certProfile);
+        }
         Certificate racert = this.signSession.createCertificate(ADMIN, username, password, new PublicKeyWrapper(keys.getPublic()),
                 X509KeyUsage.digitalSignature | X509KeyUsage.keyCertSign, notBefore, notAfter,
                 certificateProfileId, caid);
