@@ -136,10 +136,14 @@ public class BasicCertificateExtension extends CertificateExtension implements C
     
     static {
         Encoding[] encodings = Encoding.values();
-        String[] encodingValues = new String[encodings.length];
+        // +1 because we need to add RAW as well in the end
+        String[] encodingValues = new String[encodings.length+1];
         for(int i = 0; i < encodings.length; i++) {
             encodingValues[i] = encodings[i].value;
         }
+        // Add RAW last
+        encodingValues[encodingValues.length-1] = ENCODING_RAW;
+        
         propertiesMap.put(PROPERTY_ENCODING, encodingValues);
         propertiesMap.put(PROPERTY_VALUE, new String[]{});
         propertiesMap.put(PROPERTY_DYNAMIC, CustomCertificateExtension.BOOLEAN);
