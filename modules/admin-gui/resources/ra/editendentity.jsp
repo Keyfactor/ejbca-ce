@@ -185,7 +185,24 @@
                         }
                     }
                     // Start by filling all old ExtendedInformation from the existing user, if any
-                    // Fields that can be edited are changed below, but we don't want to loose anything
+                    // Fields that can be edited are changed below, but we don't want to loose anything else
+                    //
+                    // Fields we handle explicitly (view and edit):
+                    // MAXFAILEDLOGINATTEMPTS
+                    // EXTENSIONDATA
+                    // REMAININGLOGINATTEMPTS
+                    // CUSTOM_REQUESTCOUNTER
+                    // CUSTOM_REVOCATIONREASON
+					// CUSTOM_ENDTIME
+					// CERTIFICATESERIALNUMBER
+					// NAMECONSTRAINTS_PERMITTED
+					// NAMECONSTRAINTS_EXCLUDED
+					// 
+					// In addition we display information about:
+					// RAWSUBJECTDN
+					// KEYSTORE_ALGORITHM_TYPE
+					// KEYSTORE_ALGORITHM_SUBTYPE
+					// CERTIFICATE_REQUEST
                     ExtendedInformation ei = userdata.getExtendedInformation();
                     if (ei == null) {
                         ei = new ExtendedInformation();
@@ -1652,6 +1669,18 @@ function checkUseInBatch(){
                     </td>
             </tr>
     <%	} %> 
+
+    <% if (userdata.getExtendedInformation() != null && userdata.getExtendedInformation().getRawSubjectDn() != null) { %>
+        <tr id="Row<%=(row++)%2%>">
+            <td align="right">
+                <c:out value="<%= ejbcawebbean.getText(\"RAWSUBJECTDN\") %>"/>
+                <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
+                <p class="help"><c:out value="<%= ejbcawebbean.getText(\"RAWSUBJECTDN_HELP\") %>"/></p>
+            </td>
+			<td style="text-align: left"><c:out value="<%= userdata.getExtendedInformation().getRawSubjectDn() %>"/></td>
+            <td>&nbsp;</td>
+        </tr>
+    <%  } %>
 
     <!-- ---------- Other data -------------------- -->
 
