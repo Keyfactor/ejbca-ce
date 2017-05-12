@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -246,6 +247,11 @@ public class RaManageRequestBean implements Serializable {
     }
     public boolean isPropertyReadOnly(String propertyName) {
         return requestInfo.request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
+    }
+    /** @return true if subject DN override by CSR is allowed */
+    public boolean isDnOverride() {
+        CertificateProfile certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
+        return certificateProfile.getAllowDNOverride();
     }
     
     /**
