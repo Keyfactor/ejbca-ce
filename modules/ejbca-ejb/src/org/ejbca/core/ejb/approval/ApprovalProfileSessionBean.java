@@ -373,7 +373,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
             Integer approvalProfileId = certProfile.getApprovals().get(action);                 
             if(approvalProfileId != null) {
                 ApprovalProfile profile = getApprovalProfile(approvalProfileId);        
-                if (profile.isApprovalRequired()) {
+                if (profile != null && profile.isApprovalRequired()) { 
                     return profile;
                 }
             }
