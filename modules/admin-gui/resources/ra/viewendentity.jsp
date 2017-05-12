@@ -374,6 +374,13 @@
        </tr>
       <% } %>
 
+    <% if (viewendentityhelper.userdata.getExtendedInformation() != null && viewendentityhelper.userdata.getExtendedInformation().getRawSubjectDn() != null) { %>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("RAWSUBJECTDN") %></td>
+			<td><c:out value="<%= viewendentityhelper.userdata.getExtendedInformation().getRawSubjectDn() %>"/></td>
+			</tr> 
+    <%  } %>
+
     <!-- ---------- Other data -------------------- -->
 
     <% if (  viewendentityhelper.profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)
