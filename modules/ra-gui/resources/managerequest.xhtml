@@ -83,6 +83,7 @@
                 <h:outputText id="requestType" value="#{raManageRequestBean.request.type}" styleClass="pure-u-lg-2-3 ra-outputText"/>
                  
                 <component:eedetails raEndEntityDetails="#{raManageRequestBean.request.endEntityDetails}" editMode="false" approvalRequestMode="true" rendered="#{raManageRequestBean.request.endEntityDetails != null}"/>
+                <h:outputText id="dnoverride" value="#{msg.view_request_page_note_dnoverride}" rendered="#{raManageRequestBean.dnOverride}"/>
                 
                 <h:outputText styleClass="pure-u-lg-1 pre" value=" "/>
                 

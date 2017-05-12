@@ -27,6 +27,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -116,7 +117,6 @@ public class RaEndEntityDetails {
         } else {
             this.modified = "";
         }
-        
         this.status = endEntity.getStatus();
     }
     public EndEntityInformation getEndEntityInformation() { return endEntityInformation; } 
@@ -174,16 +174,24 @@ public class RaEndEntityDetails {
         return "?";
     }
     
-    private String getKeysFromCsr() {
-        try {
-            PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
-            final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
-            final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
-            return keyAlgorithm + " " + keySpecification;
-        } catch (InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            return null;
+    /**
+     * Extracts subject DN from certificate request and converts the string to cesecore namestyle
+     * @return subject DN from CSR
+     */
+    public String getDnFromCsr() {
+        if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
+            try {
+                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+                // Convert to "correct" display format
+                X500Name subjectDn = CertTools.stringToBcX500Name(pkcs10CertificationRequest.getSubject().toString());
+                return subjectDn.toString();
+            } catch (IOException e) {
+                log.info("Failed to get subject from CSR attached to end entity " + username);
+                return null; 
+            }
         }
+        log.info("No CSR found for end entity with username" + username);
+        return null; 
     }
 
     /** Returns the specified key type for this end entity (e.g. "RSA 2048"), or null if none is specified (e.g. if created from the Admin GUI) */
@@ -200,7 +208,25 @@ public class RaEndEntityDetails {
         }
         return null; // null = hidden in UI
     }
+    
+    private String getKeysFromCsr() {
+        if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
+            try {
+                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+                final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
+                final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
+                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+                return keyAlgorithm + " " + keySpecification;
+            } catch (InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+                log.info("Failed to retrieve key algorithm specified in CSR for end entity with username " + username);
+                return null;
+            }
+        }
+        log.info("No CSR found for end entity with username" + username);
+        return null;
+    }
 
+    /** Download CSR attached to end entity in .pem format */
     public void downloadCsr() {
         if (extendedInformation.getCertificateRequest() != null) {
             byte[] certificateSignRequest = extendedInformation.getCertificateRequest();
@@ -235,7 +261,7 @@ public class RaEndEntityDetails {
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             log.info("Token " + filename + " could not be downloaded", e);
-//            raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
+            callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
@@ -322,6 +348,7 @@ public class RaEndEntityDetails {
     public boolean isNameConstraintsExcludedEnabled() {
         return getEndEntityProfile().getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0);
     }
+    /** @return true if CSR exists in EEI*/
     public boolean isCsrSet() {
         return extendedInformation.getCertificateRequest() != null;
     }
