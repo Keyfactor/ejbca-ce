@@ -96,7 +96,11 @@
             <h:outputText id="keytype" value="#{cc.attrs.raEndEntityDetails.keyType}"
                 rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-
+            <h:outputLabel for="csrdn" value="#{msg.component_eedetails_field_csrdn}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
+			<h:outputText id="csrdn" value="#{cc.attrs.raEndEntityDetails.dnFromCsr}"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
+			
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="email" value="#{msg.component_eedetails_field_email}" rendered="#{cc.attrs.raEndEntityDetails.emailEnabled and not empty cc.attrs.raEndEntityDetails.email}"
