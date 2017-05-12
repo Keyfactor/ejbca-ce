@@ -133,6 +133,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) // authentication failure should not force a rollback
 	@Override
 	public void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
 		try {
@@ -161,6 +162,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
 	}
 	
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) // authentication failure should not force a rollback
 	@Override
 	public void isAuthorizedToHardTokenData(final AuthenticationToken admin, final String username, final boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		try {
@@ -469,6 +471,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 		return DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
 	}
 
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException {
 		HardTokenDataWS retval = new HardTokenDataWS();
@@ -533,6 +536,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 		                         "Error: only SwedishEIDHardToken, EnhancedEIDHardToken, TurkishEIDHardToken supported.");
 	}
 	
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws CADoesntExistsException,
             AuthorizationDeniedException, EndEntityProfileNotFoundException {
@@ -561,6 +565,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 		return retval;
 	}
 	
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public Collection<java.security.cert.Certificate> returnOnlyValidCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs) {
         final ArrayList<java.security.cert.Certificate> retval = new ArrayList<>();
@@ -578,6 +583,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         return retval;
     }
 	
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs,
 	        final boolean validate, final long nowMillis) {
@@ -649,21 +655,21 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
       return returnval;
 	}
 
-  @Override
-  public NameAndId[] convertTreeMapToArray(final TreeMap<String, Integer> mytree) {
-  	NameAndId[] ret = null;
-
-		if ((mytree == null) || (mytree.size() == 0) ) {
-			ret = new NameAndId[0];
-		} else {
-			ret = new NameAndId[mytree.size()];
-			int i = 0;
-			for (String name : mytree.keySet()) {
-				ret[i++] = new NameAndId(name, mytree.get(name));
-			}
-		}
-		return ret;
-	}
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public NameAndId[] convertTreeMapToArray(final TreeMap<String, Integer> mytree) {
+        NameAndId[] ret;
+        if ((mytree == null) || (mytree.size() == 0)) {
+            ret = new NameAndId[0];
+        } else {
+            ret = new NameAndId[mytree.size()];
+            int i = 0;
+            for (String name : mytree.keySet()) {
+                ret[i++] = new NameAndId(name, mytree.get(name));
+            }
+        }
+        return ret;
+    }
 
 	@Override
 	public void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
