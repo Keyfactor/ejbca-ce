@@ -176,7 +176,7 @@ public class RaEndEntityDetails {
     
     /**
      * Extracts subject DN from certificate request and converts the string to cesecore namestyle
-     * @return subject DN from CSR
+     * @return subject DN from CSR or null if CSR is missing / corrupted
      */
     public String getDnFromCsr() {
         if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
@@ -186,11 +186,11 @@ public class RaEndEntityDetails {
                 X500Name subjectDn = CertTools.stringToBcX500Name(pkcs10CertificationRequest.getSubject().toString());
                 return subjectDn.toString();
             } catch (IOException e) {
-                log.info("Failed to get subject from CSR attached to end entity " + username);
+                log.error("Failed retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
                 return null; 
             }
         }
-        log.info("No CSR found for end entity with username" + username);
+        log.info("No CSR found for end entity with username " + username);
         return null; 
     }
 
@@ -208,7 +208,7 @@ public class RaEndEntityDetails {
         }
         return null; // null = hidden in UI
     }
-    
+
     private String getKeysFromCsr() {
         if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
             try {
@@ -217,12 +217,15 @@ public class RaEndEntityDetails {
                 final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
                 return keyAlgorithm + " " + keySpecification;
-            } catch (InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-                log.info("Failed to retrieve key algorithm specified in CSR for end entity with username " + username);
-                return null;
+            } catch (InvalidKeyException e) {
+                log.error("Failed to retrieve public key from CSR attached to end entity " + username + ". Key is either uninitialized or corrupted", e);
+            } catch (IOException e) {
+                log.error("Failed retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
+            } catch (NoSuchAlgorithmException e) {
+                log.error("Unsupported key algorithm attached to CSR for end entity with username " + username, e);
             }
         }
-        log.info("No CSR found for end entity with username" + username);
+        log.info("No CSR found for end entity with username " + username);
         return null;
     }
 
@@ -230,9 +233,9 @@ public class RaEndEntityDetails {
     public void downloadCsr() {
         if (extendedInformation.getCertificateRequest() != null) {
             byte[] certificateSignRequest = extendedInformation.getCertificateRequest();
-            downloadToken(certificateSignRequest, "application/octet-stream", ".pem");
+            downloadToken(certificateSignRequest, "application/octet-stream", ".pkcs10.pem");
         } else {
-            log.info("CSR for end entity " + username + " does not exist");
+            throw new IllegalStateException("Could not find CSR attached to end entity with username " + username + ". CSR is expected to be set at this point");
         }
     }
     
@@ -260,20 +263,21 @@ public class RaEndEntityDetails {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
+            log.error("Token " + filename + " could not be downloaded", e);
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
+                    throw new IllegalStateException("Failed to close outputstream", e);
                 }
             }
         }
     }
     
     public boolean isTokenTypeUserGenerated() {
-        return endEntityInformation.getTokenType()==EndEntityConstants.TOKEN_USERGEN;
+        return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
     }
     
     public boolean isKeyRecoverable() {
