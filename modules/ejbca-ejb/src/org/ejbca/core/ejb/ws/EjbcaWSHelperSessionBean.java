@@ -17,6 +17,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +45,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -69,6 +72,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocatorException;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -112,6 +116,8 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
+    private WebAuthenticationProviderSessionLocal authenticationSession;
+    @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
@@ -132,6 +138,24 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
+    
+    @Override
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException, EjbcaException {
+        final Set<X509Certificate> credentials = new HashSet<>();
+        credentials.add(cert);
+        final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+        final AuthenticationToken admin = authenticationSession.authenticate(subject);
+        if ((admin != null) && (!allowNonAdmins)) {
+            if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+                throw new AuthorizationDeniedException(msg);
+            }
+        } else if (admin == null) {
+            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +CertTools.getSerialNumber(cert)+" and issuerDN '"+CertTools.getIssuerDN(cert)+"'.");
+            throw new AuthorizationDeniedException(msg);
+        }
+        return admin;
+    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) // authentication failure should not force a rollback
 	@Override
