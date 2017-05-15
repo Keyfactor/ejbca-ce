@@ -39,7 +39,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,7 +73,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -329,21 +327,7 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
             }
 
-            final X509Certificate cert = certificates[0];
-            final Set<X509Certificate> credentials = new HashSet<>();
-            credentials.add(certificates[0]);
-            final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-            final AuthenticationToken admin = authenticationSession.authenticate(subject);
-            if ((admin != null) && (!allowNonAdmins)) {
-                if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-                    final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
-                    throw new AuthorizationDeniedException(msg);
-                }
-            } else if (admin == null) {
-                final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +CertTools.getSerialNumber(cert)+" and issuerDN '"+CertTools.getIssuerDN(cert)+"'.");
-                throw new AuthorizationDeniedException(msg);
-            }
-            return admin;
+            return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
         } catch (EJBException e) {
             log.error("EJBCA WebService error, getAdmin: ",e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
