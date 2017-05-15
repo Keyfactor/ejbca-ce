@@ -138,7 +138,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
-    
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException, EjbcaException {
         final Set<X509Certificate> credentials = new HashSet<>();
@@ -157,7 +157,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         return admin;
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) // authentication failure should not force a rollback
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
 	@Override
 	public void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
 		try {
@@ -186,7 +186,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
 	}
 	
-	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW) // authentication failure should not force a rollback
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
 	@Override
 	public void isAuthorizedToHardTokenData(final AuthenticationToken admin, final String username, final boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		try {
