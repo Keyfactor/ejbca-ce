@@ -176,7 +176,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         this.certificateRequest = certificateRequest;
     }
     
-    /** Populate the state of modifiable fields with the CSR that was saved during file upload validation */
+    /** Backing method for upload CSR button (used for uploading pasted CSR) populating fields is handled by AJAX */
     public void uploadCsr() {
     }
 
