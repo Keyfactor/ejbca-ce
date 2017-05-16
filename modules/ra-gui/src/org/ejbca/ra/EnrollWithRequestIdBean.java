@@ -173,7 +173,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isFinalizeEnrollmentRendered() {
-        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW;
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW;
     }
 
     public void generateCertificatePem() {
@@ -456,7 +456,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error("Token " + filename + " could not be downloaded", e);
+            log.info("Token " + filename + " could not be downloaded", e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {

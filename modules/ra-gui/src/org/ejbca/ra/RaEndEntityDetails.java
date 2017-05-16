@@ -186,7 +186,7 @@ public class RaEndEntityDetails {
                 X500Name subjectDn = CertTools.stringToBcX500Name(pkcs10CertificationRequest.getSubject().toString());
                 return subjectDn.toString();
             } catch (IOException e) {
-                log.error("Failed retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
+                log.info("Failed to retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
                 return null; 
             }
         }
@@ -218,11 +218,11 @@ public class RaEndEntityDetails {
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
                 return keyAlgorithm + " " + keySpecification;
             } catch (InvalidKeyException e) {
-                log.error("Failed to retrieve public key from CSR attached to end entity " + username + ". Key is either uninitialized or corrupted", e);
+                log.info("Failed to retrieve public key from CSR attached to end entity " + username + ". Key is either uninitialized or corrupted", e);
             } catch (IOException e) {
-                log.error("Failed retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
+                log.info("Failed retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
             } catch (NoSuchAlgorithmException e) {
-                log.error("Unsupported key algorithm attached to CSR for end entity with username " + username, e);
+                log.info("Unsupported key algorithm attached to CSR for end entity with username " + username, e);
             }
         }
         log.info("No CSR found for end entity with username " + username);
@@ -263,7 +263,7 @@ public class RaEndEntityDetails {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.error("Token " + filename + " could not be downloaded", e);
+            log.info("Token " + filename + " could not be downloaded", e);
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
