@@ -2034,18 +2034,18 @@ You can even install an EJBCA instance from scratch, with a certificate from an 
 Start with deploying EJBCA as usual with 'ant deploy', but instead of running 'ant install' you run:
 </p>
 <source>
-bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem -initauthorization
+bin/ejbca.sh ca importcacert ManagementCA ManagementCA.cacert.pem -initauthorization -superadmincn SuperAdmin
 </source>
 <p>
 This command imports the certificate of the external Administration CA and initializes the authorization system of EJBCA. 
-You need to configure SSL and the truststore of the application server yourself, or if you have a p12/tomcat.jks and
-p12/truststore.jks this can be done for you on JBoss by 'ant deploy-keystore' and 'ant web-configure'.
+You need to configure TLS and the truststore of the application server yourself, or if you have a p12/tomcat.jks and
+p12/truststore.jks this can be done for you on JBoss by 'ant deploy-keystore' and the same way of configuring TLS as described in the install guide.
 </p><p>
 The initial administrator that is set up has DN 'CN=SuperAdmin', but you can change this using the -superadmincn (run 'bin/ejbca.sh ca importcacert' for documentation).
 Also check the 'bin/ejbca.sh admins' command for information how to configure other admins.
 </p>
 <p>
-After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the Admin GUI. No initial CA is created for you.
+After this command is run, and TLS configured correctly, you can log in to EJBCA and create your CAs in the Admin GUI. No initial CA is created for you.
 </p>
 </subsubsection>
 <subsubsection name="Events Log">
