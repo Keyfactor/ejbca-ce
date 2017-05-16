@@ -641,10 +641,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Add end-entity
         try {
             if (raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, /*clearpwd=*/false)) {
-                log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added" );
+                log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added by client " + raAuthenticationBean.getAuthenticationToken());
             } else {
                 raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
-                log.info("Certificate could not be generated for end entity with username " +  endEntityInformation.getUsername());
+                log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to generate certificate for end entity with username " +  endEntityInformation.getUsername());
                 return null;
             }
         } catch (AuthorizationDeniedException e) {
@@ -788,7 +788,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
-            log.error("Token " + fileName + " could not be downloaded", e);
+            log.info("Token " + fileName + " could not be downloaded", e);
         }
     }
     
