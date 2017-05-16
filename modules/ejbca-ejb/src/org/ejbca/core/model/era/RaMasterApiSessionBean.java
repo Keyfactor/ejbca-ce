@@ -312,7 +312,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } catch (AuthorizationDeniedException e) {
             // Should usually not happen
             if (log.isDebugEnabled()) {
-                log.debug("Authorization denied to role with ID " + roleId + ", returning empty list of namespaces");
+                log.debug("Client " + authenticationToken + "was denied authorization to role with ID " + roleId + ", returning empty list of namespaces");
             }
             return new ArrayList<>();
         }
@@ -361,7 +361,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("Persisting a role with ID " + role.getRoleId() + " and name '" + role.getRoleNameFull() + "'");
         }
         return roleSession.persistRole(authenticationToken, role);
-        
     }
     
     @Override
@@ -395,6 +394,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (log.isDebugEnabled()) {
                 log.debug("Can't delete role member with ID " + roleMemberId + " because it does not exist.");
             }
+            log.info("Client " + authenticationToken + " failed to delete role member with ID " + roleMemberId + " because it does not exist.");
             return false;
         }
         // Sanity check that there's no ID collision
@@ -504,7 +504,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 caName = cainfo.getName();
             } catch (AuthorizationDeniedException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Authorization to CA " + advo.getCAId() + " was denied. Returning null instead of the approval with ID " + advo.getId());
+                    log.debug("Administrator " + authenticationToken + " was denied access to CA " + advo.getCAId() + ". Returning null instead of the approval with ID " + advo.getId());
                 }
                 return null;
             } catch (CADoesntExistsException e) {
@@ -559,7 +559,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (log.isDebugEnabled()) {
                 log.debug("Authorization denied to approval request with ID " + id + " for administrator '" + authenticationToken + "'");
             }
-            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
+            throw new AuthorizationDeniedException(authenticationToken + " is not authorized to the Request with ID " + id + " at this point");
         }
         
         if (advo.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL) {
@@ -642,7 +642,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (log.isDebugEnabled()) {
                 log.debug("Authorization denied to approval request ID " + id + " for " + authenticationToken);
             }
-            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + id + " at this point");
+            throw new AuthorizationDeniedException(authenticationToken + " is not authorized to the Request with ID " + id + " at this point");
         }
         
         // Check specifically for approval authorization
@@ -663,7 +663,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (log.isDebugEnabled()) {
                 log.debug("Authorization denied to approval request ID " + requestResponse.getId() + " for " + authenticationToken);
             }
-            throw new AuthorizationDeniedException("You are not authorized to the Request with ID " + requestResponse.getId() + " at this point");
+            throw new AuthorizationDeniedException(authenticationToken + " is not authorized to the Request with ID " + requestResponse.getId() + " at this point");
         }
         
         // Check specifically for approval authorization
@@ -767,7 +767,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         boolean authorizedToAudit = authorizationSession.isAuthorizedNoLogging(authenticationToken, AuditLogRules.VIEW.resource());
         
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions && !authorizedToAudit) {
-            throw new AuthorizationDeniedException("Not authorized to query for approvals: "+authorizedToApproveCAActions+", "+authorizedToApproveRAActions+", "+authorizedToAudit);
+            throw new AuthorizationDeniedException(authenticationToken + " not authorized to query for approvals: "+authorizedToApproveCAActions+", "+authorizedToApproveRAActions+", "+authorizedToAudit);
         }
 
         String endentityauth = null;
@@ -822,7 +822,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 returnval.add(profileid);
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Admin not authorized to end entity profile: " + profileid);
+                    log.debug("Administrator " + authenticationToken + " is not authorized to end entity profile: " + profileid);
                 }
             }
         }
@@ -863,7 +863,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
                 issuerDns.add(issuerDn);
             } catch (CADoesntExistsException e) {
-                log.warn("CA went missing during search operation. " + e.getMessage());
+                log.warn("Could not find CA with id " + caId + " during search operation. " + e.getMessage());
             }
         }
         if (issuerDns.isEmpty()) {
@@ -1317,15 +1317,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         if (authorizedLocalCaIds.isEmpty()) {
-            log.debug("No authorized CAs. Returning empty response in role member search");
+            log.debug("No authorized CAs found for cleint " + authenticationToken + ". Returning empty response in role member search");
             return response;
         }
         if (authorizedLocalRoleIds.isEmpty()) {
-            log.debug("No authorized Roles. Returning empty response in role member search");
+            log.debug("No authorized Roles found for cleint " + authenticationToken + " Returning empty response in role member search");
             return response;
         }
         if (authorizedLocalTokenTypes.isEmpty()) {
-            log.debug("No authorized token types. Returning empty response in role member search");
+            log.debug("No authorized token types found for cleint " + authenticationToken + " Returning empty response in role member search");
             return response;
         }
         
@@ -1447,7 +1447,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void checkSubjectDn(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         KeyToValueHolder<CAInfo> caInfoEntry = getAuthorizedCAInfos(admin).get(endEntity.getCAId());
-        if(caInfoEntry == null){
+        if(caInfoEntry == null) {
+            log.info("No authorized CAs found for " + admin);
             return;
         }
         try {
@@ -1536,7 +1537,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException {
         if(endEntityInformation.getExtendedinformation() == null || endEntityInformation.getExtendedinformation().getCertificateRequest() == null){
-            throw new IllegalArgumentException("CSR MUST be set under endEntityInformation.extendedInformation.certificateRequest");
+            throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
         
         PKCS10RequestMessage req = null;
@@ -1867,10 +1868,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         KeyToValueHolder<CAInfo> caInfoHolder = getAuthorizedCAInfos(authenticationToken).get(caId);
         KeyToValueHolder<CertificateProfile> certificateProfileHolder = getAuthorizedCertificateProfiles(authenticationToken).get(certificateProfileId);
         if(caInfoHolder == null){
-            throw new AuthorizationDeniedException("Could not get approval profile because auth. token doesn't have access to CA with ID = " + caId);
+            throw new AuthorizationDeniedException("Could not get approval profile because " + authenticationToken + " doesn't have access to CA with ID = " + caId);
         }
         if(certificateProfileHolder == null){
-            throw new AuthorizationDeniedException("Could not get approval profile because auth. token doesn't have access to certificate profile with ID = " + certificateProfileId);
+            throw new AuthorizationDeniedException("Could not get approval profile because " + authenticationToken + " doesn't have access to certificate profile with ID = " + certificateProfileId);
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }

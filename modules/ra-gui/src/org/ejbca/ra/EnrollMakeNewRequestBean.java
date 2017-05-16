@@ -649,7 +649,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-            log.info("You are not authorized to execute this operation", e);
+            log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
             return null;
         } catch (WaitingForApprovalException e) {
             requestId = e.getRequestId();
@@ -660,14 +660,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if(errorCode != null){
                 if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
                     raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                    log.info("The username " + endEntityInformation.getUsername() + " already exists");
+                    log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 }else{
                     raLocaleBean.addMessageError(errorCode);
                     log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
                 }
             }else{
                 raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
-                log.info("End entity with username " + endEntityInformation.getUsername() + " could not be added. Contact your administrator or check the logs.", e);
+                log.info("Client " + raAuthenticationBean.getAuthenticationToken() +" failed to add end entity " + endEntityInformation.getUsername() + ". Contact your administrator or check the logs.", e);
             }
             return null;
         }
@@ -682,7 +682,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     ret = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                    log.info("You are not authorized to execute this operation", e);
+                    log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
                 } catch(EjbcaException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
@@ -730,7 +730,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-                    log.info("You are not authorized to execute this operation", e);
+                    log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
                 } catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
@@ -788,7 +788,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
-            log.info("Token " + fileName + " could not be downloaded", e);
+            log.error("Token " + fileName + " could not be downloaded", e);
         }
     }
     
