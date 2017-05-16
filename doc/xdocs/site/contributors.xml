@@ -22,7 +22,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <!--  email obfuscation tool http://www.seowebsitepromotion.com/obfuscate_email.asp -->
 <ul>
 <li>Tomas Gustavsson, <!-- tomas.gustavsson@primekey.com -->Project founder.</li>
-<li>Philip Vendil, Core developer.</li>
+<li>Philip Vendil, Core developer (- 2010).</li>
 <li>Anna Diruba Christensen, <!-- dilnet@hotmail.com -->First project homepage design, until EJBCA 3.5.</li>
 <li>Nathan Phelps, <!-- nphelps@solarc.com -->Testing, bugfinding and suggestions.</li>
 <li>Leo Tai, <!--hkleo@users.sourceforge.net  -->Oracle database configuration.</li>
@@ -83,7 +83,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Liam Kian Shin, <!-- kianshin.lim@gemalto.com -->Howto for using GEMSafe with EJBCA.</li>
 <li>Koichi Sugimoto, <!-- ko-sugimoto@users.sf.net -->initial patch for creating certificate request from any CA.</li>
 <li>Keijo Kurkinen, National Swedish Police Board, <!-- keijo.kurkinen@diversify.se -->Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
-<li>Tham Wickenberg, Core developer</li>
+<li>Tham Wickenberg, Core developer (- 2015)</li>
 <li>Kelly Hayashi, <!-- kelly@evaltec.com.br -->patch for PKCS12 ExtRA requests not working with approvals.</li>
 <li>Jakob Jenkov, <!-- jakob@jenkov.com -->advice on fair thread locking for ProtectedLog synchronization.</li>
 <li>David Galichet, <!-- david.galichet@linagora.com -->add error code on web services. WS user creation uses profile informations</li>
@@ -100,7 +100,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Samuel Liden Borell, <!-- samuel.borell@primekey.com -->Core developer.</li>
 <li>Aveen Ismail, <!-- aveen.ismail@primekey.com  -->Core developer.</li>
 <li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer and Product Owner (2015 - )</li>
-<li>Anders Rundgren, Core developer</li>
+<li>Anders Rundgren, Core developer (- 2014)</li>
 <li>Marcus Lundblad, <!-- marcus.lundblad@primekey.com -->Core developer</li>
 <li>Toru Tanaka, OGIS-RI Co. Ltd.,  Japaneese translation.</li>
 <li>Vlad, Exim Bank, <!-- VStepin@hq.eximb.com -->Fix for IE provider selection in External RA GUI.</li>
@@ -116,6 +116,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Markus Kilås,  <!-- markus.kilas@primekey.com -->Core Developer</li>
 <li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer</li>
 <li>Jamie Hablutzel, <!-- hablutzel1@gmail.com -->Ability to modify the built-in password encryption/obfuscation key.</li>
+<li>Christian Felsing, <!-- pug@felsing.net -->ejbca-setup install script for easier setup</li>
 </ul>
     </section>
   </body>
