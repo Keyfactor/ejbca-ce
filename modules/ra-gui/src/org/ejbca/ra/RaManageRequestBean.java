@@ -210,7 +210,7 @@ public class RaManageRequestBean implements Serializable {
                         }
                     } catch (AuthenticationFailedException e) {
                         //We shouldn't have gotten here in the UI with an invalid token
-                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
+                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token: " + raAuthenticationBean.getAuthenticationToken(), e);
                     }
                 }
             }

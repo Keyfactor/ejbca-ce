@@ -243,7 +243,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     endEntityInformation.getUsername());
         } catch (AuthorizationDeniedException e){
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-            log.info("You are not authorized to execute this operation", e);
+            log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
         } catch (EjbcaException e) {
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
@@ -346,7 +346,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         } catch (AuthorizationDeniedException e){
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-            log.info("You are not authorized to execute this operation", e);
+            log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
         } catch (EjbcaException | IOException e) {
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
@@ -456,13 +456,14 @@ public class EnrollWithRequestIdBean implements Serializable {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
+            log.error("Token " + filename + " could not be downloaded", e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
+                    throw new IllegalStateException("Failed to close outputstream", e);
                 }
             }
         }
