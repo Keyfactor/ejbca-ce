@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -917,4 +918,56 @@ public class IntegratedOcspResponseTest {
         }
     }
     
+    /**
+     * Tests enabling and disabling nonces when expecting a reply from a CA
+     */
+    @Test
+    public void testDisableNonceGlobally() throws Exception {
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        boolean originalNonceEnabledValue = globalOcspConfiguration.getNonceEnabled();
+        //First test with NONCE enabled
+        globalOcspConfiguration.setNonceEnabled(true);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+
+        try {
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            // Create the transaction logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // An OCSP request
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
+            Extension[] extensions = new Extension[1];
+            ASN1OctetString nonce = new DEROctetString("123456789".getBytes());
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
+            gen.setRequestExtensions(new Extensions(extensions));
+            OCSPReq req = gen.build();
+            byte[] responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger).getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
+            OCSPResp response = new OCSPResp(responseBytes);
+            assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            Extension retrievedNonce = basicOcspResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+            assertNotNull("No nonce was received in spite of being globally enabled and in the request", retrievedNonce);
+            assertEquals("Correct nonce was not retrieved", nonce, retrievedNonce.getExtnValue());
+            //First test with NONCE disabled
+            globalOcspConfiguration.setNonceEnabled(false);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger).getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
+            response = new OCSPResp(responseBytes);
+            assertEquals("Response status not zero (ok).", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
+            basicOcspResponse = (BasicOCSPResp) response.getResponseObject();        
+            retrievedNonce = basicOcspResponse.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+            assertNull("Nonce was received in spite of being globally disabled.", retrievedNonce);
+        } finally {
+            globalOcspConfiguration.setNonceEnabled(originalNonceEnabledValue);
+            globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);
+        }
+    }
 }

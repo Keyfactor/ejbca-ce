@@ -1115,8 +1115,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
             long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-            // Add standard response extensions
-            Map<ASN1ObjectIdentifier, Extension> responseExtensions = getStandardResponseExtensions(req);
+            Map<ASN1ObjectIdentifier, Extension> responseExtensions = new HashMap<>();
             // Look for extension OIDs
             final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
             // Look over the status requests
@@ -1407,6 +1406,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
             if (ocspSigningCacheEntry != null) {
+                // Add standard response extensions
+                responseExtensions.putAll(getStandardResponseExtensions(req, ocspSigningCacheEntry));
+                
                 // Add responseExtensions
                 Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
                 // generate the signed response object
@@ -1565,17 +1567,22 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * basicRes.setResponseExtensions(responseExtensions);
      * </code>
      * 
-     * @param req OCSPReq
+     * @param req the OCSP request
+     * @param ocspSigningCacheEntry the OCSP signing cache entry used 
      * @return a HashMap, can be empty but not null
      * @throws IllegalNonceException if Nonce is larger than 32 bytes
      */
-    private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(OCSPReq req) throws IllegalNonceException {
-        HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<ASN1ObjectIdentifier, Extension>();
+    private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(final OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry)
+            throws IllegalNonceException {
+        HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<>();
         if (req.hasExtensions()) {
             // Table of extensions to include in the response
             // OCSP Nonce, if included in the request, the response must include the same according to RFC6960
             Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-            if (null != ext) {
+            //Check the keybinding firsthand if nonce's are enabled, if there is no keybinding (because a CA is replying), check the global value. 
+            boolean nonceEnable = (ocspSigningCacheEntry.getOcspKeyBinding() != null ? ocspSigningCacheEntry.getOcspKeyBinding().isNonceEnabled() :
+                ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
+            if (null != ext && nonceEnable) {
                 ASN1OctetString noncestr = ext.getExtnValue();
                 // Limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
                 // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw

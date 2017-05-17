@@ -163,6 +163,17 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:commandButton action="#{internalKeyBindingMBean.saveDefaultResponder}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
+	<h:form id="enableNonce" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
+		<h3>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
+			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>	
+			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Enabling%20Nonce%20Extension%20On%20CAs") %>		
+			</h3>
+		<h:panelGrid columns="2">
+		<h:selectBooleanCheckbox disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableNonce}"/>
+		<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
+		</h:panelGrid>	
+	</h:form>
 	
 	<h:form id="responderId" rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}">
 		<h3>

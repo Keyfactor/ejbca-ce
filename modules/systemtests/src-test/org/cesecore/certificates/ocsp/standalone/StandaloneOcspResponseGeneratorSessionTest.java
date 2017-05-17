@@ -1280,6 +1280,33 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         }
     }
     
+    /**
+     * Tests enabling and disabling nonces when expecting a reply from an OCSP Keybinding
+     */
+    @Test
+    public void testDisableNonceInKeybinding() throws Exception {
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+        DEROctetString nonce = new DEROctetString("123456789".getBytes());
+        // nonce should be enabled by default. 
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber(), nonce);
+         OCSPResp response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        BasicOCSPResp basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        Extension retrievedNonce = basicOCSPResp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        assertNotNull("No nonce was received in spite of being globally enabled and in the request", retrievedNonce);
+        final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        ocspKeyBinding.setNonceEnabled(false);
+        internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+        response = sendRequest(ocspRequest);
+        basicOCSPResp = (BasicOCSPResp) response.getResponseObject();
+        retrievedNonce = basicOCSPResp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        assertNull("Nonce was received in spite of being globally disabled.", retrievedNonce);
+    }
+    
     // Trusting a certificateSerialNumber of null means any certificate from the CA
     private void addTrustEntry(InternalKeyBinding internalKeyBinding, int caId, BigInteger certificateSerialNumber) {
         final List<InternalKeyBindingTrustEntry> trustList = new ArrayList<InternalKeyBindingTrustEntry>(internalKeyBinding.getTrustedCertificateReferences());
@@ -1298,6 +1325,11 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
     }
     
+    private OCSPReq buildOcspRequest(final X509Certificate ocspAuthenticationCertificate, final PrivateKey ocspAuthenticationPrivateKey,
+            final X509Certificate caCertificate, final BigInteger certificateSerialnumber) throws Exception {
+        return buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationPrivateKey, caCertificate, certificateSerialnumber, new DEROctetString("123456789".getBytes()));
+    }
+    
     /**
      * Build an OCSP request, that will optionally be signed if authentication parameters are specified
      * 
@@ -1309,14 +1341,14 @@ public class StandaloneOcspResponseGeneratorSessionTest {
      * @throws Exception
      */
     private OCSPReq buildOcspRequest(final X509Certificate ocspAuthenticationCertificate, final PrivateKey ocspAuthenticationPrivateKey,
-            final X509Certificate caCertificate, final BigInteger certificateSerialnumber) throws Exception {
+            final X509Certificate caCertificate, final BigInteger certificateSerialnumber, DEROctetString nonce) throws Exception {
         final OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
         if (ocspAuthenticationCertificate != null) {
             // Signed requests are required to have an OCSPRequest.TBSRequest.requestorName
             ocspReqBuilder.setRequestorName(new X500Name(ocspAuthenticationCertificate.getSubjectDN().getName()));
         }
         ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, certificateSerialnumber));
-        ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()))}));
+        ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce)}));
         if (ocspAuthenticationCertificate != null && ocspAuthenticationPrivateKey != null) {
             // Create a signed request
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(

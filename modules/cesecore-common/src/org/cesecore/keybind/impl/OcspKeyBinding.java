@@ -80,6 +80,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
+    public static final String PROPERTY_ENABLE_NONCE = "enableNonce";
     
     {
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
@@ -92,6 +93,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
         addProperty(new DynamicUiProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
         addProperty(new DynamicUiProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_ENABLE_NONCE, Boolean.TRUE));
     }
 
     
@@ -175,6 +177,20 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     /** Set the value in seconds (granularity defined in RFC 5019) */
     public void setMaxAge(long maxAge) {
         setProperty(PROPERTY_MAX_AGE, Long.valueOf(maxAge));
+    }
+    
+    /** @return true if NONCE's are to be used in replies */
+    public boolean isNonceEnabled() {
+        if(getProperty(PROPERTY_ENABLE_NONCE) == null) {
+            setNonceEnabled(true);
+        }
+        return (Boolean) getProperty(PROPERTY_ENABLE_NONCE).getValue();
+    }
+    /** 
+     * @param enabled as true of NONCE's are to be included in replies
+     *  */
+    public void setNonceEnabled(boolean enabled) {
+        setProperty(PROPERTY_ENABLE_NONCE, Boolean.valueOf(enabled));
     }
 
     public static boolean isOcspSigningCertificate(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) {

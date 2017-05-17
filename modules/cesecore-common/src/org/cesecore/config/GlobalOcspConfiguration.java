@@ -29,6 +29,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase {
 
     private static final String DEFAULT_OCSP_RESPONDER_REFERENCE = "defaultOcspResponderReference";
     private static final String OCSP_RESPONDER_ID_TYPE_REFERENCE = "ocspResponderIdType";
+    private static final String DEFAULT_NONCE_ENABLED_REFERENCE = "defaultNonceEnabled";
     
     public String getOcspDefaultResponderReference() {
         return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
@@ -51,6 +52,26 @@ public class GlobalOcspConfiguration extends ConfigurationBase {
     
     public void setOcspResponderIdType(OcspKeyBinding.ResponderIdType ocspResponderIdType) {
         data.put(OCSP_RESPONDER_ID_TYPE_REFERENCE, ocspResponderIdType);
+    }
+    
+    /**
+     * 
+     * @return true if CA's replying to their own OCSP requests should include NONCE's in the replies. 
+     */
+    public boolean getNonceEnabled() {
+        //Lady upgrade
+        if(data.get(DEFAULT_NONCE_ENABLED_REFERENCE) == null) {
+            setNonceEnabled(true);
+        }
+        return (Boolean) data.get(DEFAULT_NONCE_ENABLED_REFERENCE);
+    }
+    
+    /**
+     * 
+     * @param enabled to true if CA's replying to their own OCSP requests should include NONCE's in the replies. 
+     */
+    public void setNonceEnabled(boolean enabled) {
+        data.put(DEFAULT_NONCE_ENABLED_REFERENCE, Boolean.valueOf(enabled));
     }
     
     @Override

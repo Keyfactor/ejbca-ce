@@ -236,6 +236,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private Integer uploadTarget = null;
     private UploadedFile uploadToTargetFile;
     private String defaultResponderTarget;
+    private Boolean nonceEnabled;
     private OcspKeyBinding.ResponderIdType responderIdType;
 
     public String getSelectedInternalKeyBindingType() {
@@ -361,6 +362,19 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
     }
     
+    public void saveNonceEnabled() {
+        GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        if (!nonceEnabled.equals(globalConfiguration.getNonceEnabled())) {
+            globalConfiguration.setNonceEnabled(nonceEnabled);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+    }
+    
     public void saveResponderIdType() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
@@ -372,6 +386,20 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
             }
         }
+    }
+    
+    public boolean getGloballyEnableNonce() {
+        if (this.nonceEnabled == null) {
+            GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            this.nonceEnabled = configuration.getNonceEnabled();          
+        }
+
+        return this.nonceEnabled;
+    }
+    
+    public void setGloballyEnableNonce(boolean nonceEnabled) {
+        this.nonceEnabled = nonceEnabled;
     }
     
     public String getDefaultResponderTarget() {
@@ -766,6 +794,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             trustedCertificates = null;
         }
     }
+    
 
     /** @return true for any InternalKeyBinding where the user is authorized to edit */
     public boolean isSwitchToEditAllowed() {
