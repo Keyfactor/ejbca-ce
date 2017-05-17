@@ -1248,8 +1248,8 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
 
   #contentForm\:showMoreButton,
   #contentForm\:showLessButton {
-    /*showelss-knapp search for certificates*/
-    margin: 0 0 0 0; }
+    /*showless-button search for certificates*/
+    margin: 1% 0 0 0; }
 
   #contentForm > #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(1) {
     /* första wrappern för boxen för "max results"-texten i search for certificates */
@@ -1617,9 +1617,17 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     height: auto; }
 
   @-moz-document url-prefix() {
-    /*För Firefox*/
-    .pure-form select {
-      height: 90%; } }
+    /*For Firefox*/
+      .pure-form select {
+      height: 90%; }
+    
+    #contentForm\:parentCriteriaEepId select,
+	#contentForm\:parentCriteriaCpId select,
+	#contentForm\:parentCriteriaCaId select,
+	#contentForm\:parentCriteriaStatus select {
+      height: 100%;
+	}
+  }
   #contentForm\:currentStep div > label {
     display: inline-block;
     width: 33.3333%; }
