@@ -102,7 +102,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #       modules/admin-gui/resources/languages/language-tool.sh -s
 # When adding languages to this do _NOT_ change the order as this affects the already configured languages for admins, i.e. it's based on index in this list.
 # Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh,vi
-#web.availablelanguages=en,bs,cs,de,es,fr,it,ja,pt,sv,uk,zh,vi
+#web.availablelanguages=en,bs,cs,de,fr,ja,pt,sv,uk,zh,vi
 
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: UTF-8
