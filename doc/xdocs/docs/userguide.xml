@@ -2488,7 +2488,7 @@ to treat it as "unknown".
 </li>
 <li>Non existing is unauthorized:
 If true a certificate that does not exist in the database, but is issued by a CA known to the VA, the VA will respond with an unsigned "Unauthorized"
-message to show that it is unable to process the reply. The advantage to this configuration is that it doesn't require the VA to perform a signature,
+message to show that it is unable to process the request. The advantage to this configuration is that it doesn't require the VA to perform a signature,
 mitigating the risk of DOS attacks by swamping the VA with OCSP requests for unknown serial numbers. 
 </li>
 <li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response, and should be set to a value 
