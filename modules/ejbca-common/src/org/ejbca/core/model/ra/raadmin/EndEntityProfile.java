@@ -1353,7 +1353,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         			//Don't split RFC822NAME addresses. 
         			if(!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) {
                         if (!StringUtils.contains(fieldValue, '@')) {
-                            throw new EndEntityProfileValidationException("Email address must contain an @ character: "+fieldValue);
+                            throw new EndEntityProfileValidationException("Field value DNEMAIL and UPN must contain an @ character: "+fieldValue);
                        }
         			    fieldValue = fieldValue.split("@")[1];
         			}
