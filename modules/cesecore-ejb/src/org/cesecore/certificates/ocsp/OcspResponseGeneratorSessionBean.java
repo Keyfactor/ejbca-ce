@@ -1291,6 +1291,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 transactionLogger.paramPut(TransactionLogger.REV_REASON, CRLReason.certificateHold);
                             }
                             addExtendedRevokedExtension = true;
+                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingUnauthorized(ocspSigningCacheEntry.getOcspKeyBinding())
+                                && OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                            // In order to save on cycles and mitigate the chances of a DOS attack, we'll return a unsigned unauthorized reply. 
+                            ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
+                            if (auditLogger.isEnabled()) {
+                                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+                            }
+                            if (transactionLogger.isEnabled()) {
+                                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
+                            }
+                            //Return early here
+                            return new OcspResponseInformation(ocspResponse, maxAge);
                         } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
@@ -1436,7 +1448,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
             }
-        } catch (SignRequestSignatureException|IllegalNonceException e) {
+        } catch (SignRequestSignatureException | IllegalNonceException e) {
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }

@@ -14,6 +14,7 @@ package org.cesecore.certificates.ocsp.cache;
 
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 
@@ -28,14 +29,22 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
 public enum OcspConfigurationCache {
     INSTANCE;
 
+    private static final Logger log = Logger.getLogger(OcspConfigurationCache.class);
+    
     /* If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-     * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
+     * will be treated as not revoked. Default is to treat is as "unknown".
      */
     private boolean nonExistingIsGood;
     /* If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-     * will be treated as revoked. Default (when value is true) is to treat is as "unknown".
+     * will be treated as revoked. Default is to treat is as "unknown".
      */
     private boolean nonExistingIsRevoked;
+    /* If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+     * be replied to with an unsigned "Unauthorized" reply. Default is to treat is as "unknown".
+     */
+    private boolean nonExistingIsUnauthorized;
+
+    
     /*
      * If this regex is fulfilled the "good" will be return even if {@link #nonExistingIsGood} is false;
      */
@@ -54,8 +63,17 @@ public enum OcspConfigurationCache {
     }
 
     public void reloadConfiguration() {
-        nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
-        nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
+        this.nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+        this.nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
+        this.nonExistingIsUnauthorized = OcspConfiguration.getNonExistingIsUnauthorized();
+        
+        //Write an error to the logs if more than one of the above is true
+        if( (this.nonExistingIsGood && (this.nonExistingIsRevoked || this.nonExistingIsUnauthorized)) 
+                || (this.nonExistingIsRevoked && this.nonExistingIsUnauthorized)) {
+            log.error("Error: More than one of ocsp.nonexistingisgood, ocsp.nonexistingisrevoked and ocsp.nonexistingisunauthorized has"
+                    + " been set to true at the same time.");
+        }
+        
         {
             final String value = OcspConfiguration.getNonExistingIsGoodOverideRegex();
             nonExistingIsGoodOverideRegex = value != null ? Pattern.compile(value) : null;
@@ -70,6 +88,16 @@ public enum OcspConfigurationCache {
         }
     }
 
+    public boolean isNonExistingUnauthorized(OcspKeyBinding ocspKeyBinding) {
+     // First we read the global default
+        boolean nonExistingIsUnauthorized = this.nonExistingIsUnauthorized;
+        // If we have an OcspKeyBinding for this request we use it to override the default
+        if (ocspKeyBinding != null) {
+            nonExistingIsUnauthorized = ocspKeyBinding.getNonExistingUnauthorized();
+        }
+        return nonExistingIsUnauthorized;
+    }
+    
     public boolean isNonExistingGood(StringBuffer url, OcspKeyBinding ocspKeyBinding) {
         // First we read the global default
         boolean nonExistingIsGood = this.nonExistingIsGood;

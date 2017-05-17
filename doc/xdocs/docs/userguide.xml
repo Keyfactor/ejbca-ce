@@ -2473,20 +2473,23 @@ Implementation specific properties:
 </p>
 <ul>
 <li>Non existing is good:
-If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+If true a certificate that does not exist in the database, but is issued by a CA known to the VA, it
 will be treated as not revoked. Default (when both this value and value of "Non existing is revoked" are false) is 
 to treat it as "unknown". Since the OCSP responders database normally contains all issued certificate
 this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
 Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
 all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database.
-If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok" 
 </li>
 <li>Non existing is revoked:
-If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+If true a certificate that does not exist in the database, but is issued by a CA known to the VA, it
 will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970. 
 Default (when this value and value of "Non existing is good" are false) is 
 to treat it as "unknown".
-If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
+</li>
+<li>Non existing is unauthorized:
+If true a certificate that does not exist in the database, but is issued by a CA known to the VA, the VA will respond with an unsigned "Unauthorized"
+message to show that it is unable to process the reply. The advantage to this configuration is that it doesn't require the VA to perform a signature,
+mitigating the risk of DOS attacks by swamping the VA with OCSP requests for unknown serial numbers. 
 </li>
 <li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response, and should be set to a value 
 lesser than or equal to the response validity. A value of 0 means no caching.</li>

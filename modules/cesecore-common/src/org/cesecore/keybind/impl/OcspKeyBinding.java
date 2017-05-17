@@ -73,6 +73,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
     public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
     public static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
+    public static final String PROPERTY_NON_EXISTING_UNAUTHORIZED = "nonexistingisunauthorized";
     public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
     public static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
     public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
@@ -83,6 +84,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     {
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
+        addProperty(new DynamicUiProperty<Boolean>(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.FALSE));
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
         addProperty(new DynamicUiProperty<Boolean>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
         addProperty(new DynamicUiProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
@@ -124,6 +126,15 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     public void setNonExistingRevoked(boolean nonExistingRevoked) {
         setProperty(PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(nonExistingRevoked));
+    }
+    public boolean getNonExistingUnauthorized() {
+        if(getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED) == null) {
+            setNonExistingUnauthorized(false);
+        }
+        return (Boolean) getProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED).getValue();
+    }
+    public void setNonExistingUnauthorized(boolean nonExistingUnauthorized) {
+        setProperty(PROPERTY_NON_EXISTING_UNAUTHORIZED, Boolean.valueOf(nonExistingUnauthorized));
     }
     public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();

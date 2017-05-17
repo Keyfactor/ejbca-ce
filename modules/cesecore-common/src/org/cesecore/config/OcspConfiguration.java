@@ -44,11 +44,12 @@ public class OcspConfiguration {
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
     public static final String REKEYING_WSURL = "ocsp.rekeying.wsurl";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
-    public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
-    public static final String NONE_EXISTING_IS_GOOD_URI = NONE_EXISTING_IS_GOOD+".uri.";
-    public static final String NONE_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
-    public static final String NONE_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
-    public static final String NONE_EXISTING_IS_REVOKED_URI = NONE_EXISTING_IS_REVOKED+".uri.";
+    public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
+    public static final String NON_EXISTING_IS_GOOD_URI = NON_EXISTING_IS_GOOD+".uri.";
+    public static final String NON_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
+    public static final String NON_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
+    public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
+    public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
     public static final String REKEYING_TRIGGERING_HOSTS =  "ocsp.rekeying.trigging.hosts";
     public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
@@ -218,18 +219,28 @@ public class OcspConfiguration {
     }
 
     /**
-     * If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked.
+     * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked.
      */
     public static boolean getNonExistingIsGood() {
-        String value = ConfigurationHolder.getString(NONE_EXISTING_IS_GOOD);
+        String value = ConfigurationHolder.getString(NON_EXISTING_IS_GOOD);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
     
     /**
-     * If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as revoked.
+     * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as revoked.
      */
     public static boolean getNonExistingIsRevoked() {
-        String value = ConfigurationHolder.getString(NONE_EXISTING_IS_REVOKED);
+        String value = ConfigurationHolder.getString(NON_EXISTING_IS_REVOKED);
+        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+    }
+    
+    /**
+     * 
+     * @return true if a certificate that does not exist in the database, but is issued by a CA the responder handles will be responded to with an
+     * unsigned "Unauthorized" response. 
+     */
+    public static boolean getNonExistingIsUnauthorized() {
+        String value = ConfigurationHolder.getString(NON_EXISTING_IS_UNAUTHORIZED);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 
@@ -262,7 +273,7 @@ public class OcspConfiguration {
      * @return the regex
      */
     public static String getNonExistingIsGoodOverideRegex() {
-    	return getRegex(NONE_EXISTING_IS_GOOD_URI);
+    	return getRegex(NON_EXISTING_IS_GOOD_URI);
     }
 
     /**
@@ -271,7 +282,7 @@ public class OcspConfiguration {
      * @return the regex
      */
     public static String getNonExistingIsBadOverideRegex() {
-    	return getRegex(NONE_EXISTING_IS_BAD_URI);
+    	return getRegex(NON_EXISTING_IS_BAD_URI);
     }
     
     /**
@@ -280,7 +291,7 @@ public class OcspConfiguration {
      * @return the regex
      */
     public static String getNonExistingIsRevokedOverideRegex() {
-        return getRegex(NONE_EXISTING_IS_REVOKED_URI);
+        return getRegex(NON_EXISTING_IS_REVOKED_URI);
     }
 
     /**

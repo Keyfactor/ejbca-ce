@@ -56,12 +56,24 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles
 # will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
 # this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
+#
 # Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
 # all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database. 
 # If both 'ocsp.nonexistingisgood' and 'ocsp.nonexistingisrevoked' are set to 'true', the responder will answer "ok".
 #
+# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
+#
 # Default: false
 #ocsp.nonexistingisgood=false
+
+# Setting this value to true will cause CAs to respond with an unsigned "Unauthorized" response for unknown serial numbers. 
+#
+# Setting this value to true is not compatible with ocsp.nonexistingisgood or ocsp.nonexistingisrevoked
+#
+# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
+#
+# Default: false
+#ocsp.nonexistingisunauthorized=false
 
 # The value of 'ocsp.nonexistingisgood=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
 # The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
@@ -79,6 +91,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970 (compliant with RFC6960). 
 # Default (when this value and value of "Non existing is good" are false) is to treat it as "unknown".
 # If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
+#
+# Note that for standard OCSP responders this value is set in the keybinding, so this configuration value acts as a default for CAs. 
 #
 # Default: false
 #ocsp.nonexistingisrevoked=false

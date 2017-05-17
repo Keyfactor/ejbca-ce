@@ -340,8 +340,8 @@ public class IntegratedOcspResponseTest {
      */
     @Test
     public void testNonExistingIsRevoked() throws Exception {
-        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
+        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED);
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
         try {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
@@ -397,8 +397,8 @@ public class IntegratedOcspResponseTest {
             assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
             
             // Set ocsp.nonexistingisgood=true, veryify that answer comes out okay.
-            String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD);
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
+            String originalNoneExistingIsGood = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD);
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
             try {
                 responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
                         auditLogger, transactionLogger).getOcspResponse();
@@ -416,14 +416,50 @@ public class IntegratedOcspResponseTest {
                         .getSerialNumber());
                 assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
             } finally {
-                cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_GOOD, originalNoneExistingIsGood);
+                cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_GOOD, originalNoneExistingIsGood);
             }
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NONE_EXISTING_IS_REVOKED, originalValue);
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, originalValue);
         }
 
     }
 
+    /**
+     * Tests with non-existing as unauthorized, using the default configuration value.
+     */
+    @Test
+    public void testNonExistingIsUnauthorizedConfiguration() throws Exception {
+        String originalValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED);
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, "true");
+        try {
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            // An OCSP request
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+            Extension[] extensions = new Extension[1];
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            gen.setRequestExtensions(new Extensions(extensions));
+            OCSPReq req = gen.build();
+            // Now remove the certificate
+            internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            // Create the transaction logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            byte[] responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"), auditLogger, transactionLogger)
+                    .getOcspResponse();
+            assertNotNull("OCSP responder replied null", responseBytes);
+            OCSPResp response = new OCSPResp(responseBytes);
+            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertNull("Response should not have contained a response object.", response.getResponseObject());             
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_UNAUTHORIZED, originalValue);
+        }
+
+    }
 
     @Test
     public void testGetOcspResponseWithOcspCertificate() throws Exception {
