@@ -894,11 +894,11 @@ Content-Type: text/html; charset=iso-8859-1
         final String good2 = "Beautiful";
         {
             final Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "true");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
@@ -909,7 +909,7 @@ Content-Type: text/html; charset=iso-8859-1
         this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
         {
             final Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD, "false");
             this.helper.alterConfig(map);
         }
         this.helper.setURLEnding("");
@@ -981,13 +981,13 @@ Content-Type: text/html; charset=iso-8859-1
         final String revoked2 = "Denied";
         {
             final Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED_URI+'1', ".*"+revoked1+"$");
-            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED_URI+'2', ".*"+revoked2+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED_URI+'1', ".*"+revoked1+"$");
+            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED_URI+'2', ".*"+revoked2+"$");
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
@@ -1002,7 +1002,7 @@ Content-Type: text/html; charset=iso-8859-1
         this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
         {
             final Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "false");
+            map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "false");
             this.helper.alterConfig(map);
         }
         this.helper.setURLEnding("");
@@ -1036,7 +1036,7 @@ Content-Type: text/html; charset=iso-8859-1
         assertNull("Wrong extension sent with reply", responseExtension);
         
         final Map<String,String> map = new HashMap<String, String>();
-        map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
+        map.put(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
         this.helper.alterConfig(map);
         
         gen = new OCSPReqBuilder();
