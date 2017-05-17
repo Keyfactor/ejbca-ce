@@ -344,19 +344,16 @@ public class IntegratedOcspResponseTest {
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.NON_EXISTING_IS_REVOKED, "true");
         try {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-
+        BigInteger randomSerialNumber = new BigInteger("9");
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, randomSerialNumber));
         Extension[] extensions = new Extension[1];
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));
 
         OCSPReq req = gen.build();
 
-        // Now remove the certificate
-        internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
-        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -374,7 +371,7 @@ public class IntegratedOcspResponseTest {
             SingleResp[] singleResponses = basicOcspResponse.getResponses();
 
             assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-            assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
                     .getSerialNumber());
 
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, new StringBuffer("http://foo.com"),
@@ -389,7 +386,7 @@ public class IntegratedOcspResponseTest {
             singleResponses = basicOcspResponse.getResponses();
 
             assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-            assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+            assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
                     .getSerialNumber());
 
             // Assert that status is revoked
@@ -412,7 +409,7 @@ public class IntegratedOcspResponseTest {
                 singleResponses = basicOcspResponse.getResponses();
 
                 assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
-                assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
+                assertEquals("Response cert did not match up with request cert", randomSerialNumber, singleResponses[0].getCertID()
                         .getSerialNumber());
                 assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
             } finally {
@@ -435,14 +432,12 @@ public class IntegratedOcspResponseTest {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             // An OCSP request
             OCSPReqBuilder gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+            //Add a "random" serial number
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, new BigInteger("9")));
             Extension[] extensions = new Extension[1];
             extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
             gen.setRequestExtensions(new Extensions(extensions));
             OCSPReq req = gen.build();
-            // Now remove the certificate
-            internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
-            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
             // Create the transaction logger for this transaction.
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
