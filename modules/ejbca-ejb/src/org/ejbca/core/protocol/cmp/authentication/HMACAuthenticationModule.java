@@ -228,6 +228,9 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 final String eepassword = endEntityInformation.getPassword();
                 if (StringUtils.isEmpty(eepassword)) {
                     this.errorMessage = "No clear text password for user '" + endEntityInformation.getUsername() + "', not possible to check authentication.";
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(this.errorMessage);
+                    }
                     return false;
                 }
                 if (performPbeVerification(eepassword, "cmp.errorauthmessage", endEntityInformation.getUsername())) {
