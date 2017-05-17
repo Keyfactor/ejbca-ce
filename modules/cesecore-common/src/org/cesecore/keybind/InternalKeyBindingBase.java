@@ -53,7 +53,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private final Map<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new HashMap<>();
+    private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
     
     protected void addProperty(DynamicUiProperty<? extends Serializable> property) {
         propertyTemplates.put(property.getName(), property);
@@ -61,7 +61,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     
     @Override
     public Map<String, DynamicUiProperty<? extends Serializable>> getCopyOfProperties() {
-        final Map<String, DynamicUiProperty<? extends Serializable>> ret = new HashMap<String, DynamicUiProperty<? extends Serializable>>();
+        final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> ret = new LinkedHashMap<>();
         for (String key : propertyTemplates.keySet()) {
             DynamicUiProperty<? extends Serializable> current = propertyTemplates.get(key);
             final DynamicUiProperty<? extends Serializable> clone = current.clone();
