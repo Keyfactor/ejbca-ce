@@ -1301,6 +1301,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             if (transactionLogger.isEnabled()) {
                                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
                             }
+                            log.info(intres.getLocalizedMessage("ocsp.errorfindcert", certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                             //Return early here
                             return new OcspResponseInformation(ocspResponse, maxAge);
                         } else {
