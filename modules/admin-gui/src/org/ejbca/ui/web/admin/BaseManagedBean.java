@@ -121,7 +121,7 @@ public abstract class BaseManagedBean implements Serializable {
 	    Collections.sort(selectItems, new Comparator<SelectItem>() {
             @Override
             public int compare(final SelectItem item1, final SelectItem item2) {
-                return item1.getLabel().compareTo(item2.getLabel());
+                return item1.getLabel().compareToIgnoreCase(item2.getLabel());
             }
 	    });
 	}

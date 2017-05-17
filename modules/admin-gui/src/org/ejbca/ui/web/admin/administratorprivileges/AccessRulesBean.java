@@ -164,7 +164,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         @Override
         public int compareTo(final AccessRuleItem other) {
             // Sort by resource name (with IDs replaced by names)
-            return getResourceName().compareTo(other.getResourceName());
+            return getResourceName().compareToIgnoreCase(other.getResourceName());
         }
     }
 
