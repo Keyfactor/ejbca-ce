@@ -113,7 +113,7 @@ public class PKCS11Utils {
                 if ( ((Boolean)oResult).booleanValue() ) {
                     log.debug(String.format("CKA_MODIFIABLE attribute set to false for key '%s'.", key));
                 } else {
-                    log.debug(String.format("CKA_MODIFIABLE attribute not changed for key '%s'.", key));
+                    log.debug(String.format("CKA_MODIFIABLE attribute not changed for key '%s'. It was already set to false, or could not be changed", key));
                 }
             }
         } catch (ReflectiveOperationException e) {
