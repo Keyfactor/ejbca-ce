@@ -2501,6 +2501,8 @@ Keyhash (SHA-1 digest of the public key of the signing certificate used for resp
 <li>Include signing certificate in response: When true, the signing certificate will be included in the response.</li>
 <li>Include certificate chain in response: When true, the entire certificate chain, except for the root CA certificate, will be included in the response 
 (note that this is only applicable if 'Include signing certificate in response' is true).</li>
+<li>Enable nonce in response: When true, if the OCSP request contains a nonce, the response will contain a nonce as well. If false, a nonce will never be 
+in the response, even if one is included in the request.</li>
 </ul>
 <p>
 See the section <a href="installation-ocsp.html#OCSP Installation">OCSP installation</a>

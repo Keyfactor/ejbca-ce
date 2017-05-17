@@ -44,7 +44,6 @@ public enum OcspConfigurationCache {
      */
     private boolean nonExistingIsUnauthorized;
 
-    
     /*
      * If this regex is fulfilled the "good" will be return even if {@link #nonExistingIsGood} is false;
      */
