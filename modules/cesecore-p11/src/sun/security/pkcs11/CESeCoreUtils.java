@@ -40,7 +40,7 @@ public class CESeCoreUtils {
      * Sets the CKA_MODIFIABLE attribute of a key object to false.
      * @param providerName The registered name of the provider. If the provider is not an instance of {@link SunPKCS11} then nothing will be done.
      * @param key The key object. If the object is not an instance of {@link P11Key} then nothing will be done.
-     * @return true if {@link SunPKCS11} provider and {@link P11Key} key.
+     * @return true if {@link SunPKCS11} provider and {@link P11Key} key and CKA_MODIFIABLE is not already modified and was actually modified.
      * @throws PKCS11Exception
      */
     public static boolean makeKeyUnmodifiable(final String providerName, final Key key) throws PKCS11Exception {
@@ -49,7 +49,7 @@ public class CESeCoreUtils {
             return false;
         }
         if ( isModifiable(d) ) {
-            setUnModifiable(d);
+            return setUnModifiable(d); // Returns false if the value could not be modified
         }
         return true;
     }
@@ -129,15 +129,16 @@ public class CESeCoreUtils {
         d.p11.C_GetAttributeValue(d.sessionID, d.keyID, attrs);
         return attrs[0].getBoolean();
     }
-    private static void setUnModifiable(final KeyData d) throws PKCS11Exception {
+    private static boolean setUnModifiable(final KeyData d) throws PKCS11Exception {
         final CK_ATTRIBUTE attrs[] = { new CK_ATTRIBUTE(CKA_MODIFIABLE, FALSE) };
         try {
             d.p11.C_SetAttributeValue(d.sessionID, d.keyID, attrs);
         } catch (PKCS11Exception e) {
             if ( e.getErrorCode()==CKR_ATTRIBUTE_READ_ONLY ) {
-                return;// Unfortunate not possible to set attribute with p11
+                return false;// Unfortunate not possible to set attribute with p11
             }
             throw e;
         }
+        return true;
     }
 }
