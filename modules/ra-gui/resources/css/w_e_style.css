@@ -1211,7 +1211,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
 */
 @media (min-width: 48em) {
   #detailsForm > span.pure-u-1:nth-of-type(2) {
-    width: 90%;
+    width: 100%;
     margin: 0; }
     #detailsForm > span.pure-u-1:nth-of-type(2) > label {
       width: 30.8%; }
