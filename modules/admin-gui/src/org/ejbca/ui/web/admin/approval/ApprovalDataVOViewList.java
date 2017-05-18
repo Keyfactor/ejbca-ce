@@ -58,7 +58,7 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
      */
     protected void sort(final String column, final boolean ascending) {
         Comparator<ApprovalDataVOView> comparator = new Comparator<ApprovalDataVOView>() {
-            public int compare(ApprovalDataVOView c1, ApprovalDataVOView c2) {
+            public int compare(ApprovalDataVOView c2, ApprovalDataVOView c1) {
                 if (column == null || column.equals("requestDate")) {
                     return ascending ? c1.getApproveActionDataVO().getRequestDate().compareTo(c2.getApproveActionDataVO().getRequestDate()) : c2
                             .getApproveActionDataVO().getRequestDate().compareTo(c1.getApproveActionDataVO().getRequestDate());
