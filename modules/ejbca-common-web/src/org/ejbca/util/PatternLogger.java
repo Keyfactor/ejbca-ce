@@ -39,7 +39,7 @@ import org.bouncycastle.util.encoders.Hex;
  */
 public class PatternLogger implements IPatternLogger {
 
-	final private Map<String,String> valuepairs = new HashMap<String,String>();
+	final private Map<String,String> valuepairs = new HashMap<>();
     final private StringWriter sw = new StringWriter();
     final private PrintWriter pw = new PrintWriter(this.sw);
 	final private Matcher m;
@@ -102,6 +102,7 @@ public class PatternLogger implements IPatternLogger {
 	/**
 	 * @see IPatternLogger#paramPut(String, byte[])
 	 */
+	@Override
 	public void paramPut(String key, byte[] value){
 		paramPut(key, new String (Hex.encode(value)));
 	}
@@ -109,6 +110,7 @@ public class PatternLogger implements IPatternLogger {
 	/**
 	 * @see IPatternLogger#paramPut(String, String)
 	 */
+	@Override
 	public void paramPut(String key, String value){
 		//logger.debug("paramput: "+ key+ ";" +value +";" +valuepairs.toString());
 		if(value == null){
@@ -124,6 +126,7 @@ public class PatternLogger implements IPatternLogger {
 	/**
 	 * @see IPatternLogger#paramPut(String, Integer)
 	 */
+	@Override
 	public void paramPut(String key, Integer value){
 		if(value == null){
 			this.valuepairs.put(key, "");
@@ -135,6 +138,7 @@ public class PatternLogger implements IPatternLogger {
 	/**
 	 * @see IPatternLogger#writeln()
 	 */
+	@Override
 	public void writeln() {
 		this.pw.println(interpolate());
 	}
@@ -142,6 +146,7 @@ public class PatternLogger implements IPatternLogger {
     /**
      * @see org.ejbca.util.IPatternLogger#flush()
      */
+	@Override
     public void flush() {
         this.pw.flush();
         String output = this.sw.toString();

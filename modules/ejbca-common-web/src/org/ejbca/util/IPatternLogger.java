@@ -13,6 +13,7 @@
 
 package org.ejbca.util;
 
+
 /**
  * 
  * @version $Id$
@@ -34,7 +35,7 @@ public interface IPatternLogger {
 	 * patternLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 	 * </pre> 
 	 * This means that this variable can be used to measure any time you want to measure in your code.
-	 * @see org.ejbca.util.PatternLogger.flush()
+	 * @see org.ejbca.util.PatternLogger#flush()
 	 */
     public static final String PROCESS_TIME = "PROCESS_TIME";	
 
@@ -44,29 +45,29 @@ public interface IPatternLogger {
 	 * @param key
 	 * @param value
 	 */
-	public void paramPut(String key, byte[] value);
+	void paramPut(String key, byte[] value);
 
 	/**
 	 * method that makes sure that a "" is inserted instead of null
 	 * @param key
 	 * @param value
 	 */
-	public void paramPut(String key, String value);
+	void paramPut(String key, String value);
 
 	/**
 	 * method that makes sure that a "" is inserted instead of null
 	 * @param key
 	 * @param value
 	 */
-	public void paramPut(String key, Integer value);
+	void paramPut(String key, Integer value);
 	
 	/**
 	 * Method used for creating a log row of all added values
 	 */
-	public void writeln();
+	void writeln();
 	
     /**
      * Writes all the rows created by writeln() to the Logger
      */
-    public void flush();
+    void flush();
 }
