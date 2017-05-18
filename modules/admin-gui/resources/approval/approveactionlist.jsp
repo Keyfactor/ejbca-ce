@@ -84,30 +84,22 @@ function viewcert(link){
 						sortAscending="#{listApproveActionManagedBean.ascending}"
 						preserveDataModel="false" rows="#{web.entriesPerPage}"
 						width="100%">
-						<t:column defaultSorted="true">
+						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="requestDate">
-									<f:facet name="ascending">
-										<h:graphicImage url="#{web.image['uparrow.gif']}" />
-									</f:facet>
-									<f:facet name="descending">
-										<h:graphicImage url="#{web.image['downarrow.gif']}" />
-									</f:facet>
+										<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestDate}"/>
+										<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestDate}"/>
 									<h:outputText value="#{web.text.REQUESTDATE}" />
 								</t:commandSortHeader>
 							</f:facet>
 							<h:outputText value="#{approveActionDataVOView.requestDate}" />
-						</t:column>
+						</h:column>
 
-						<t:column>
+						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="approveActionName">
-									<f:facet name="ascending">
-										<h:graphicImage url="#{web.image['uparrow.gif']}" />
-									</f:facet>
-									<f:facet name="descending">
-										<h:graphicImage url="#{web.image['downarrow.gif']}" />
-									</f:facet>
+									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByApproveActionName}"/>
+									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByApproveActionName}"/>
 									<h:outputText value="#{web.text.APPROVEACTIONNAME}" />
 								</t:commandSortHeader>
 							</f:facet>
@@ -116,17 +108,13 @@ function viewcert(link){
 								<h:outputText
 									value="#{approveActionDataVOView.approveActionName}" />
 							</h:commandLink>
-						</t:column>
+						</h:column>
 
-						<t:column>
+						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="requestUsername">
-									<f:facet name="ascending">
-										<h:graphicImage url="#{web.image['uparrow.gif']}" />
-									</f:facet>
-									<f:facet name="descending">
-										<h:graphicImage url="#{web.image['downarrow.gif']}" />
-									</f:facet>
+									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestUsername}"/>
+									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestUsername}"/>
 									<h:outputText value="#{web.text.REQUESTINGADMIN}" />
 								</t:commandSortHeader>
 							</f:facet>
@@ -138,18 +126,14 @@ function viewcert(link){
 							</h:commandLink>
 							<h:outputText value="#{approveActionDataVOView.requestAdminName}"
 								rendered="#{!approveActionDataVOView.showViewRequestorCertLink}" />
-						</t:column>
+						</h:column>
 
 						<t:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="status">
 									<h:outputText value="#{web.text.STATUS}" />
-									<f:facet name="ascending">
-										<h:graphicImage url="#{web.image['uparrow.gif']}" />
-									</f:facet>
-									<f:facet name="descending">
-										<h:graphicImage url="#{web.image['downarrow.gif']}" />
-									</f:facet>
+									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByStatus}"/>
+									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByStatus}"/>
 								</t:commandSortHeader>
 							</f:facet>
 							<h:outputText value="#{approveActionDataVOView.status}" />
