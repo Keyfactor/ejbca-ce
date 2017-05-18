@@ -149,6 +149,7 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
@@ -428,6 +429,44 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test03_8DontStoreFullCert() throws Exception {
         certificateRequestDontStoreFullCert();
+    }
+    
+    @Test
+    public void test03_9CertificateRequestBadParameters() throws Exception {
+        final UserDataVOWS userDataVOWS = new UserDataVOWS();
+        userDataVOWS.setCaName("EjbcaWSTest_NonexistentCA");
+        userDataVOWS.setEndEntityProfileName("EjbcaWSTest_NonexistentEEProfile");
+        userDataVOWS.setEndEntityProfileName("EjbcaWSTest_NonexistentCertProfile");
+        
+        try {
+            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Should have failed because CA is missing");
+        } catch (EjbcaException_Exception e) {
+            assertEquals(e.getFaultInfo().getErrorCode().getInternalErrorCode(), ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
+        }
+        userDataVOWS.setCaName(CA1);
+        userDataVOWS.setEndEntityProfileName(WS_EEPROF_EI);
+        try {
+            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Should have failed because no certificate profile is set");
+        } catch (EjbcaException_Exception e) {
+            assertEquals(e.getFaultInfo().getErrorCode().getInternalErrorCode(), ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
+        }
+        userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
+        try {
+            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Expected empty username to be rejected according to profile settings.");
+        } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
+            // NOPMD expected
+        }
+        userDataVOWS.setUsername("EjbcaWSTestBadUser"); // should never be successfully created, so no cleanup is needed
+        userDataVOWS.setSubjectDN("CN=EjbcaWSTestBadUser");
+        try {
+            ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, "xx");
+            fail("Should have failed because of invalid RESPONSETYPE value.");
+        } catch (EjbcaException_Exception e) {
+            assertEquals(e.getFaultInfo().getErrorCode().getInternalErrorCode(), ErrorCode.INTERNAL_ERROR.getInternalErrorCode());
+        }
     }
 
     @Test
