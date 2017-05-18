@@ -129,6 +129,27 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 		return null;		
 	}
 	
+	/** @return true if approval data is sorted by request date*/
+	public boolean isSortedByRequestDate() {
+	    //ApprovalDataVOViewList.sort treats null (initial value on page load) as requestDate
+	    return getSort() == null || getSort().equals("requestDate");
+	}
+
+   /** @return true if approval data is sorted by approve action name*/
+	public boolean isSortedByApproveActionName() {
+	    return getSort() != null && getSort().equals("approveActionName");
+	}
+	
+    /** @return true if approval data is sorted by requesting administrator*/
+	public boolean isSortedByRequestUsername() {
+	    return getSort() != null && getSort().equals("requestUsername");
+	}
+	
+    /** @return true if approval data is sorted by request status*/	
+	public boolean isSortedByStatus() {
+	    return getSort() != null && getSort().equals("status");
+	}
+	
 	/**
 	 * Help method to list.
 	 */
