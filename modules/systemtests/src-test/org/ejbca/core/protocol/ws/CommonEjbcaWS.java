@@ -269,10 +269,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String CA2_WSTESTUSER1 = "CA2_WSTESTUSER1";
     protected static final String CA1_WSTESTUSER1CVCRSA = "TstCVCRSA";
     protected static final String CA2_WSTESTUSER1CVCEC = "TstCVCEC";
-    private static final String CA1 = "CA1";
-    private static final String CA2 = "CA2";
-    private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
-    private static final String WS_CERTPROF_EI = "WS_CERTPROF_EI";
+    protected static final String CA1 = "CA1";
+    protected static final String CA2 = "CA2";
+    protected static final String WS_EEPROF_EI = "WS_EEPROF_EI";
+    protected static final String WS_CERTPROF_EI = "WS_CERTPROF_EI";
 
     private static final String WSTESTPROFILE = "WSTESTPROFILE";
 
@@ -1119,7 +1119,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             // Request a certificate via the WS API
             final CertificateResponse certificateResponse;
             try {
+                long startTime = System.nanoTime();
                 certificateResponse = ejbcaraws.certificateRequest(userDataVOWS, pkcs10AsBase64, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                log.info("certificateRequest call took " + (System.nanoTime() - startTime) + " ns");
             } catch (EjbcaException_Exception e) {
                 final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
                 log.info(errorCode.getInternalErrorCode(), e);
