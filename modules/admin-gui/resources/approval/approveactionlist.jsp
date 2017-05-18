@@ -75,7 +75,7 @@ function viewcert(link){
 
 				<h:panelGroup id="body">
 					<t:dataTable id="data" styleClass="Table"
-						headerClass="standardTable_Header"
+						headerClass="listHeader"
 						footerClass="standardTable_Header"
 						rowClasses="#{listApproveActionManagedBean.rowClasses}"
 						var="approveActionDataVOView"
