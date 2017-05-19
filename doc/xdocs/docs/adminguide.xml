@@ -4480,14 +4480,25 @@ be written once to the log to notify about this.
 </p><p>
 The reason to set CKA_MODIFIABLE to FALSE is that it should not be possible
 to set CKA_DERIVE to TRUE. If CKA_DERIVE is true it might be possible to extract
-the private key from some HSMs.
-</p><p>
-Some HSMs refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
-this behavior is OK). To check use:
+the private key from some HSMs, although most vendors have now patched this by not allowing weak key derivation schemes.
 </p>
-<p><source>
-$EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test
-</source></p>
+<note>
+We find that it is not consistent/stable to set CKA_MODIFIABLE=true and that the behavior is HSM vendor dependent.
+<br/>Using the above method to change CKA_MODIFIABLE to false may render your keys unsuable, which may not show up directly, but only after a
+PKCS#11 session restart (=EJBCA/JBoss restart).
+</note>
+<p>
+Some HSMs (for example SoftHSM2)refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
+this behavior is OK). 
+<br/>
+Some HSMs (Utimaco P11R2) render they keys unusable by not writing (or removing, we're not sure) CKA_ID and other needed attrbiutes.
+</p>
+<p>In summary you need to test this very carefully if you want to try it. A good way to test is to use clientToolBox with a generate-test cycle:
+</p>
+<source>
+$EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate (to generate a new key)
+$EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test (to test, in a new PKCS#11 session if it is usable)
+</source>
 </subsection>
 
 
