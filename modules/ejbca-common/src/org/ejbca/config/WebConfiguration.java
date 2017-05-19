@@ -29,6 +29,7 @@ public class WebConfiguration {
 	
 	public static final String CONFIG_HTTPSSERVERHOSTNAME  = "httpsserver.hostname";
 	public static final String CONFIG_HTTPSERVERPUBHTTP    = "httpserver.pubhttp";
+    public static final String CONFIG_HTTPSERVERPUBHTTPS   = "httpserver.pubhttps";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
 	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
