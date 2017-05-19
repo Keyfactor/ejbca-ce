@@ -4483,7 +4483,7 @@ to set CKA_DERIVE to TRUE. If CKA_DERIVE is true it might be possible to extract
 the private key from some HSMs, although most vendors have now patched this by not allowing weak key derivation schemes.
 </p>
 <note>
-We find that it is not consistent/stable to set CKA_MODIFIABLE=true and that the behavior is HSM vendor dependent.
+We find that it is not really consistent/stable to set CKA_MODIFIABLE=true and that the behavior is HSM vendor dependent.
 <br/>Using the above method to change CKA_MODIFIABLE to false may render your keys unsuable, which may not show up directly, but only after a
 PKCS#11 session restart (=EJBCA/JBoss restart).
 </note>
@@ -4491,7 +4491,7 @@ PKCS#11 session restart (=EJBCA/JBoss restart).
 Some HSMs (for example SoftHSM2)refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
 this behavior is OK). 
 <br/>
-Some HSMs (Utimaco P11R2) render they keys unusable by not writing (or removing, we're not sure) CKA_ID and other needed attrbiutes.
+On some HSMs keys are rendered unusable if the jar is avalable both in jre/lib/ext and in clientToolBox/ext...by not writing (or removing, we're not sure) CKA_ID and other needed attributes.
 </p>
 <p>In summary you need to test this very carefully if you want to try it. A good way to test is to use clientToolBox with a generate-test cycle:
 </p>
