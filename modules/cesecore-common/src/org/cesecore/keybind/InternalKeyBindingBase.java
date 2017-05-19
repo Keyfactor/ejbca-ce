@@ -17,7 +17,6 @@ import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private final HashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new HashMap<>();
+    private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
     
     protected void addProperty(DynamicUiProperty<? extends Serializable> property) {
         propertyTemplates.put(property.getName(), property);
@@ -61,7 +60,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     
     @Override
     public Map<String, DynamicUiProperty<? extends Serializable>> getCopyOfProperties() {
-        final HashMap<String, DynamicUiProperty<? extends Serializable>> ret = new HashMap<>();
+        final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> ret = new LinkedHashMap<>();
         for (String key : propertyTemplates.keySet()) {
             DynamicUiProperty<? extends Serializable> current = propertyTemplates.get(key);
             final DynamicUiProperty<? extends Serializable> clone = current.clone();
