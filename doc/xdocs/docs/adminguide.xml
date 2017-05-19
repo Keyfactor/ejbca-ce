@@ -4468,30 +4468,29 @@ JAVA_OPTS="-Djava.ext.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/ext:$EJBCA_
 <p>
 But be sure to keep '$JAVA_HOME/jre/lib/ext' in the classpath.
 </p><p>
-You also got to set 'pkcs11.makeKeyUnmodifiableAfterGeneration=true' in
+To enable the feature in EJBCA you have to set 'pkcs11.makeKeyUnmodifiableAfterGeneration=true' in
 $EJBCA_HOME/conf/cesecore.properties
 </p><p>
-If you use '$EJBCA_HOME/dist/ejbcaClientToolBox.sh' you don't have to bother.
+If you use '$EJBCA_HOME/dist/ejbcaClientToolBox.sh' you don't have to bother with the java.ext.dirs setting.
 The script is taking care of it.
 </p><p>
-Everything will work without this jar in the classpath but if not in classpath
+Everything will work without this jar in the classpath but if it is not in classpath
 the CKA_MODIFIABLE will be TRUE for every key that is generated. A warning will
 be written once to the log to notify about this.
 </p><p>
 The reason to set CKA_MODIFIABLE to FALSE is that it should not be possible
 to set CKA_DERIVE to TRUE. If CKA_DERIVE is true it might be possible to extract
-the private key from some HSMs, although most vendors have now patched this by not allowing weak key derivation schemes.
+the private key from some HSMs (CVE-2015-5464), although most vendors have now patched this by not allowing weak key derivation schemes.
 </p>
 <note>
-We find that it is not really consistent/stable to set CKA_MODIFIABLE=true and that the behavior is HSM vendor dependent.
-<br/>Using the above method to change CKA_MODIFIABLE to false may render your keys unsuable, which may not show up directly, but only after a
-PKCS#11 session restart (=EJBCA/JBoss restart).
+We find that it is not really consistent to be able set CKA_MODIFIABLE=true and that the behavior is HSM vendor dependent.
+<br/>Using the above method to change CKA_MODIFIABLE to false may not give the bahavior you want, so thorough testing is needed.
 </note>
 <p>
-Some HSMs (for example SoftHSM2)refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
+Some HSMs (for example SoftHSM2) refuses to set CKA_MODIFIABLE to FALSE (the PKCS#11 standard says that
 this behavior is OK). 
 <br/>
-On some HSMs keys are rendered unusable if the jar is avalable both in jre/lib/ext and in clientToolBox/ext...by not writing (or removing, we're not sure) CKA_ID and other needed attributes.
+On some HSMs other behavior may arise.
 </p>
 <p>In summary you need to test this very carefully if you want to try it. A good way to test is to use clientToolBox with a generate-test cycle:
 </p>
@@ -4499,6 +4498,7 @@ On some HSMs keys are rendered unusable if the jar is avalable both in jre/lib/e
 $EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate (to generate a new key)
 $EJBCA_HOME/dist/ejbcaClientToolBox.sh PKCS11HSMKeyTool test (to test, in a new PKCS#11 session if it is usable)
 </source>
+<p>If you also generate keys through the Admin GUI, you should test this, including restarting JBoss between generation and usage.</p>
 </subsection>
 
 
