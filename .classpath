@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="modules/acme/src"/>
+	<classpathentry kind="src" path="modules/acme/src-test"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/cesecore-p11/src"/>
 	<classpathentry kind="src" path="modules/appserver-ext/src"/>
@@ -143,5 +144,6 @@
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="lib/json-smart-1.3.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
