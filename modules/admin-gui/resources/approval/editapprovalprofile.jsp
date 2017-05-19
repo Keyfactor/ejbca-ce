@@ -127,8 +127,10 @@
 								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}">
 								<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" />
 								<h:panelGroup>
-									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif" disabled="#{step.previousStep == null or approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepUp}"/>
-									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif" disabled="#{step.nextStep == null or approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepDown}"/>
+									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif" 
+										rendered="#{step.previousStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepUp}"/>
+									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif" 
+										rendered="#{step.nextStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepDown}"/>
 								</h:panelGroup>
 							</h:panelGrid>
 														
