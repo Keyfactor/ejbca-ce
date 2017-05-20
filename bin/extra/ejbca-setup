@@ -92,8 +92,8 @@ init_mysql() {
   mysql_user=$(grep database.username ejbca-custom/conf/database.properties | awk -F= '{ print $2 }' | grep -v '^$')
   mysql_pass=$(grep database.password ejbca-custom/conf/database.properties | awk -F= '{ print $2 }' | grep -v '^$')
   mysql_host=$(grep database.url ejbca-custom/conf/database.properties | awk -F/ '{print $3}' | awk -F: '{print $1}' | grep -v '^$')
-  echo 'drop database ejbca;' | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} ejbca
- echo 'create database ejbca default character set = utf8 default collate = utf8_general_ci;' | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} || exit 1
+  echo "drop database ${database_name};" | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} ${database_name}
+  echo "create database ${database_name} default character set = utf8 default collate = utf8_general_ci;" | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} || exit 1
 }
 
 
