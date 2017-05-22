@@ -305,11 +305,8 @@ public class CmpMessageHelper {
 
     /** @return response as byte array */ 
     public static byte[] pkiMessageToByteArray(final PKIMessage pkiMessage) {
-        // TODO: Check if this equivalent to PKIMessage.toASN1Primitive().toASN1Object().getEncoded()
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
-            final DEROutputStream derOutputStream = new DEROutputStream(baos);
-            derOutputStream.writeObject(pkiMessage);
-            return baos.toByteArray();
+        try {
+            return pkiMessage.getEncoded();
         } catch (IOException e) {
             throw new IllegalStateException("Caught unexpected IOException.", e);
         }
