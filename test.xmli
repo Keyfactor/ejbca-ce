@@ -12,6 +12,7 @@
     	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
     	<antcall target="optionaltestvapublisher" inheritrefs="true"/>
+    	<antcall target="optionaltestacme" inheritrefs="true"/>
     	<antcall target="createreport"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -57,6 +58,8 @@
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}"><ant antfile="build.xml" dir="modules/peerconnector" target="test" /></target>
     <condition property="vapublisher.exists"><available file="modules/va/publisher" /></condition>
     <target name="optionaltestvapublisher" if="${vapublisher.exists}"><ant antfile="build.xml" dir="modules/va" target="test" /></target>
+    <condition property="acme.exists"><available file="modules/acme"/></condition>
+    <target name="optionaltestacme" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test"/></target>
     <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
     <target name="optionaltestcmpproxy" if="${cmpproxy.exists}"><ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" /></target>
 
