@@ -171,7 +171,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			</h3>
 		<h:panelGrid columns="2">
 		<h:selectBooleanCheckbox disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableNonce}"/>
-		<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
+		<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
 		</h:panelGrid>	
 	</h:form>
 	
