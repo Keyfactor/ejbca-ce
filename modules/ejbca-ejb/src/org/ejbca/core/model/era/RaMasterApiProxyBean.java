@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -135,6 +136,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return false;
     }
 
+    @Override
+    public boolean isBackendAvailable(Class<? extends RaMasterApi> apiType) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()  && apiType.isInstance(raMasterApi) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     // Added in Master RA API version 1
     @Override
     public int getApiVersion() {
@@ -995,14 +1006,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
+    public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion()>=1) {
                 try {
-                    final byte[] result = raMasterApi.cmpDispatch(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
-                    if (result != null) {
+                    byte[] result;
+                    try {
+                        result = raMasterApi.cmpDispatch(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
                         return result;
-                    }
+                    } catch (NoSuchAliasException e) {
+                        //We might not have an alias in the current RaMasterApi, so let's try another. 
+                    }                    
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

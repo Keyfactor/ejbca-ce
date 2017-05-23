@@ -238,7 +238,7 @@ public abstract class CmpTestCase extends CaTestCase {
         this.certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
     }
 
-    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+    public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
@@ -640,8 +640,8 @@ public abstract class CmpTestCase extends CaTestCase {
             return respBytes;
     }
 
-    protected static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+            boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -726,23 +726,27 @@ public abstract class CmpTestCase extends CaTestCase {
                 basekey[raSecret.length + i] = salt[i];
             }
             // Construct the base key according to rfc4210, section 5.1.3.1
-            MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-            for (int i = 0; i < iterationCount; i++) {
-                basekey = dig.digest(basekey);
-                dig.reset();
+            try {
+                MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                for (int i = 0; i < iterationCount; i++) {
+                    basekey = dig.digest(basekey);
+                    dig.reset();
+                }
+                // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
+                String macOid = macAlg.getAlgorithm().getId();
+                Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
+                SecretKey key = new SecretKeySpec(basekey, macOid);
+                mac.init(key);
+                mac.reset();
+                mac.update(protectedBytes, 0, protectedBytes.length);
+                byte[] out = mac.doFinal();
+                // My out should now be the same as the protection bits
+                byte[] pb = protection.getBytes();
+                boolean ret = Arrays.equals(out, pb);
+                assertTrue(ret);
+            } catch (NoSuchProviderException e) {
+                throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
             }
-            // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
-            String macOid = macAlg.getAlgorithm().getId();
-            Mac mac = Mac.getInstance(macOid, BouncyCastleProvider.PROVIDER_NAME);
-            SecretKey key = new SecretKeySpec(basekey, macOid);
-            mac.init(key);
-            mac.reset();
-            mac.update(protectedBytes, 0, protectedBytes.length);
-            byte[] out = mac.doFinal();
-            // My out should now be the same as the protection bits
-            byte[] pb = protection.getBytes();
-            boolean ret = Arrays.equals(out, pb);
-            assertTrue(ret);
         }
 
         // --SenderNonce
@@ -1031,7 +1035,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAt(0).getString());
     }
 
-    protected static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
+    public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
         final PKIHeader pkiHeader = pkiMessage.getHeader();
@@ -1039,7 +1043,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final X500Name senderName = X500Name.getInstance(pkiHeader.getSender().getName());
         assertEquals("Not the expected sender.", sender, senderName.toString());
         final X500Name recipientName = X500Name.getInstance(pkiHeader.getRecipient().getName());
-        assertArrayEquals("Not the expected recipient.", recipient.getEncoded(), recipientName.getEncoded());
+        assertEquals("Not the expected recipient.", recipient, recipientName);
         final PKIBody pkiBody = pkiMessage.getBody();
         final int tag = pkiBody.getType();
         assertEquals("Unexpected response PKIBody type", PKIBody.TYPE_ERROR, tag);

@@ -59,6 +59,7 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -120,4 +121,5 @@ public interface EjbBridgeSessionLocal {
     PublishingCrlSessionLocal getPublishingCrlSession();
     ImportCrlSessionLocal getImportCrlSession();
     RaMasterApiProxyBeanLocal getRaMasterApiProxyBean();
+    RaMasterApiSessionLocal getRaMasterApiSession();
 }

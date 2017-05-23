@@ -65,6 +65,7 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
@@ -172,7 +173,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
     @Override public ImportCrlSessionLocal getImportCrlSession() { return getEjbLocal().getImportCrlSession(); }
-    
+    @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
 
     /** 
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
@@ -196,4 +197,6 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
             return null; // this is the common case, since statedump is an internal tool and is not included with EJBCA
         }
     }
+
+
 }

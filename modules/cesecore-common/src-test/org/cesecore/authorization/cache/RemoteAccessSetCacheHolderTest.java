@@ -34,6 +34,7 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 public final class RemoteAccessSetCacheHolderTest {
 
     private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolderTest.class);

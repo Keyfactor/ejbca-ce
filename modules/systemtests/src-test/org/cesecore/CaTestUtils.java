@@ -325,7 +325,7 @@ public abstract class CaTestUtils {
     }
     
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws CertificateParsingException,
-    CryptoTokenOfflineException, OperatorCreationException, IOException {
+    CryptoTokenOfflineException, OperatorCreationException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
     }
 

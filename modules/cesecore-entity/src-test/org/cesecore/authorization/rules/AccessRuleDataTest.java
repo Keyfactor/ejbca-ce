@@ -25,6 +25,7 @@ import org.junit.Test;
  */
 public class AccessRuleDataTest {
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSetState() {
         AccessRuleData accessRule = new AccessRuleData(AccessRuleData.generatePrimaryKey("Ape", "Monkey"), "Monkey", AccessRuleState.RULE_NOTUSED, false);
@@ -38,6 +39,7 @@ public class AccessRuleDataTest {
         assertEquals(AccessTreeState.STATE_DECLINE, accessRule.getTreeState());
     }
     
+    @SuppressWarnings("deprecation")
     @Test
     public void testGeneratePrimaryKey() {
         final String roleName = "monkey";
