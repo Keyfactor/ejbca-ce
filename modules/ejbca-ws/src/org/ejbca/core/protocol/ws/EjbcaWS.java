@@ -1213,6 +1213,7 @@ public class EjbcaWS implements IEjbcaWS {
         log.trace("<rolloverCACert");
     } // rolloverCACert
 
+    // XXX this method should be modified
     @Override
 	public CertificateResponse pkcs10Request(final String username, final String password, final String pkcs10, final String hardTokenSN, final String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, CesecoreException {
@@ -2747,9 +2748,9 @@ public class EjbcaWS implements IEjbcaWS {
 
     @SuppressWarnings("deprecation")
     @Override
-	public CertificateResponse certificateRequest(final UserDataVOWS userdata, final String requestData, final int requestType, final String hardTokenSN, final String responseType)
-	throws AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
-	ApprovalException, WaitingForApprovalException, EjbcaException {
+    public CertificateResponse certificateRequest(final UserDataVOWS userdata, final String requestData, final int requestType, final String hardTokenSN, final String responseType)
+	        throws AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
+	        ApprovalException, WaitingForApprovalException, EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	    	if (log.isDebugEnabled()) {
@@ -2761,46 +2762,37 @@ public class EjbcaWS implements IEjbcaWS {
             enrichUserDataWithRawSubjectDn(userdata);
 	        return new CertificateResponse(responseType, raMasterApiProxyBean.createCertificateWS(admin, userdata, requestData, requestType,
 	                hardTokenSN, responseType));
-        } catch( CADoesntExistsException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw new EjbcaException(t);
-        } catch( AuthorizationDeniedException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw t;
-        } catch( NotFoundException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw t;
-		} catch (CertificateExtensionException e) {
-            throw getInternalException(e, logger);
-        } catch (InvalidKeyException e) {
-            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
-		} catch (IllegalKeyException e) {
-			// Don't log a bad error for this (user's key length too small)
-            throw getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
-		} catch (AuthStatusException e) {
-			// Don't log a bad error for this (user wrong status)
-            throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
-		} catch (AuthLoginException e) {
-            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (SignatureException e) {
-            throw getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
-		} catch (SignRequestSignatureException e) {
-            throw getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
-		} catch (InvalidKeySpecException e) {
-            throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
-		} catch (NoSuchAlgorithmException e) {
-            throw getInternalException(e, logger);
-		} catch (NoSuchProviderException e) {
-            throw getInternalException(e, logger);
-		} catch (CertificateException e) {
-            throw getInternalException(e, logger);
-		} catch (IOException e) {
-            throw getInternalException(e, logger);
-		} catch (CesecoreException e) {
-			// Will convert the CESecore exception to an EJBCA exception with the same error code
-			throw getEjbcaException(e, null, e.getErrorCode(), null);
-        } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
-            throw getInternalException(e, logger);
+	    } catch( AuthorizationDeniedException t ) {
+	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+	        throw t;
+	    } catch( NotFoundException t ) {
+	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+	        throw t;
+	    } catch (CADoesntExistsException e) {
+	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+	        throw new EjbcaException(e.getErrorCode(), e);
+	    } catch (EjbcaException e) {
+	        Level loglevel = Level.DEBUG;
+	        if (e.getErrorCode() != null) {
+    	        final String err = e.getErrorCode().getInternalErrorCode();
+    	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.getErrorCode().toString());
+    	        // Don't log at ERROR log level for the following cases (for example):
+                //   - user's key length too small (ILLEGAL_KEY)
+                //   - wrong user status (USER_WRONG_STATUS)
+                //   - other EjbcaExceptions and CESeCoreExceptions
+    	        if (ErrorCode.INTERNAL_ERROR.getInternalErrorCode().equals(err) ||
+    	                ErrorCode.SIGNATURE_ERROR.getInternalErrorCode().equals(err) ||
+    	                ErrorCode.INVALID_KEY.getInternalErrorCode().equals(err) ||
+    	                ErrorCode.LOGIN_ERROR.getInternalErrorCode().equals(err) ||
+    	                ErrorCode.INVALID_KEY_SPEC.getInternalErrorCode().equals(err)) {
+    	            loglevel = Level.ERROR;
+    	        }
+	        }
+	        log.log(loglevel, "EJBCA WebService error", e);
+	        throw e;
+        } catch (RuntimeException e) {	// EJBException, ClassCastException, ... (if related to the RA connection, or if not caught by the RA)
+            log.error("EJBCA WebService error", e);
+            throw new EjbcaException(e);
         } catch (EndEntityProfileValidationException e) {
            throw new UserDoesntFullfillEndEntityProfile(e);
         } finally {
