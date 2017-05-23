@@ -1558,19 +1558,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
     
-    /*
-        Classes that are not available in this module:
-        
-        UserDataVOWS
-        javax.ejb.ObjectNotFoundException [FIXED]
-        javax.ejb.CreateException [FIXED]
-        
-    */
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
-            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, NotFoundException, ApprovalException, EjbcaException,
-            NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException,
-            CertificateException, IOException, EndEntityProfileValidationException, CesecoreException, CertificateExtensionException {
+            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
+            EndEntityProfileValidationException {
+        try {
             // Some of the session beans are only needed for authentication or certation operations, and are passed as null
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);
             int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
@@ -1586,57 +1578,44 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
             }
             return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, hardTokenSN, responseTypeInt);
-// TODO should probably handle the exceptions here, and not on the calling side
-//        } catch( CADoesntExistsException t ) {
-//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-//            throw new EjbcaException(t);
-//        } catch( AuthorizationDeniedException t ) {
-//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-//            throw t;
-//        } catch( NotFoundException t ) {
-//            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-//            throw t;
-//        } catch (CertificateExtensionException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (InvalidKeyException e) {
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
-//        } catch (IllegalKeyException e) {
-//            // Don't log a bad error for this (user's key length too small)
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
-//        } catch (AuthStatusException e) {
-//            // Don't log a bad error for this (user wrong status)
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
-//        } catch (AuthLoginException e) {
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-//        } catch (SignatureException e) {
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
-//        } catch (SignRequestSignatureException e) {
-//            throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, null, Level.ERROR);
-//        } catch (InvalidKeySpecException e) {
-//            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
-//        } catch (NoSuchAlgorithmException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (NoSuchProviderException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (CertificateException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (CreateException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (IOException e) {
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (CesecoreException e) {
-//            // Will convert the CESecore exception to an EJBCA exception with the same error code
-//            throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
-//        } catch (FinderException e) {
-//            throw new NotFoundException(e.getMessage());
-//        } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
-//            throw EjbcaWSHelper.getInternalException(e, logger);
-//        } catch (EndEntityProfileValidationException e) {
-//           throw new UserDoesntFullfillEndEntityProfile(e);
-//        } finally {
-//            logger.writeln();
-//            logger.flush();
-//        }
+        } catch (NotFoundException e) {
+            log.debug("EJBCA WebService error", e);
+            throw e; // NFE extends EjbcaException
+        } catch (CertificateExtensionException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        } catch (InvalidKeyException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
+        } catch (IllegalKeyException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
+        } catch (AuthStatusException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
+        } catch (AuthLoginException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
+        } catch (SignatureException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
+        } catch (SignRequestSignatureException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INVALID_KEY_SPEC, e.getMessage());
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException e) {
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA WebService error", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), e);
+        } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
+            log.debug("EJBCA WebService error", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     @Override
