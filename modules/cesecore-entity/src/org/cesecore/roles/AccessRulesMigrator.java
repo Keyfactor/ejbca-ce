@@ -29,6 +29,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
  * 
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 public class AccessRulesMigrator {
 
     private static final Logger log = Logger.getLogger(AccessRulesMigrator.class);

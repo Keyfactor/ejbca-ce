@@ -206,12 +206,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
-						LOG.info(errMsg);
-						
+						LOG.info(errMsg);						
 		                // If we didn't find the entity return error message
 		                final String failText = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
 		                LOG.info(failText);
-		                resp = signSession.createRequestFailedResponse(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, FailInfo.INCORRECT_DATA, failText);
+                        resp = signSession.createRequestFailedResponse(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class,
+                                FailInfo.INCORRECT_DATA, failText);
 					}
 				}
 			} else {
@@ -222,11 +222,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			if (resp == null) {
                 final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
                 LOG.error(errMsg);
-                throw new RuntimeException(errMsg);
+                throw new IllegalStateException(errMsg);
 			}
 		} catch (AuthorizationDeniedException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-			LOG.info(errMsg, e);			
+			LOG.info(errMsg, e);	
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
 		} catch (CADoesntExistsException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it	

@@ -21,5 +21,11 @@ import javax.ejb.Local;
  */
 @Local
 public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
-
+    
+    /**
+     * 
+     * @param apiType the implementation of RaMasterApi to check for 
+     * @return returns true if an API of a certain type is available
+     */
+    boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
 }

@@ -31,7 +31,8 @@ public abstract class ResponseMessageUtils {
 
     private static final Logger log = Logger.getLogger(ResponseMessageUtils.class);
     
-    public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider){
+    public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req,
+            Collection<Certificate> certs, PrivateKey signPriv, String provider) {
         CertificateResponseMessage ret = null;
         // Create the response message and set all required fields
         try {
