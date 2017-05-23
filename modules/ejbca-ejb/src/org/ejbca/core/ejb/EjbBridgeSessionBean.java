@@ -62,6 +62,7 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -124,6 +125,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 	@EJB PublishingCrlSessionLocal publishingCrlSessionLocal;
 	@EJB ImportCrlSessionLocal importCrlSessionLocal;
+	@EJB RaMasterApiSessionLocal raMasterApiSessionLocal;
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
@@ -170,4 +172,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSessionLocal; }
     @Override public ImportCrlSessionLocal getImportCrlSession() { return importCrlSessionLocal; }
+    @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return raMasterApiSessionLocal; }
 }

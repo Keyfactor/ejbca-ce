@@ -117,7 +117,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	    }
 	    final boolean authenticated = levelOfNesting>0;
 		try {
-            final PKIBody pkiBody = pkiMessage.getBody();
+             final PKIBody pkiBody = pkiMessage.getBody();
 			final int tagno = pkiBody.getType();
 			if (log.isDebugEnabled()) {
 	            final PKIHeader pkiHeader = pkiMessage.getHeader();
