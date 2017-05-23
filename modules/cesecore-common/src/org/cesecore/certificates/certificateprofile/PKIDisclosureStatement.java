@@ -27,6 +27,8 @@ public final class PKIDisclosureStatement implements Serializable, Cloneable {
     private String url;
     private String language;
     
+    public PKIDisclosureStatement() {};
+    
     public PKIDisclosureStatement(final String url, final String language) {
         this.url = url;
         this.language = language;
