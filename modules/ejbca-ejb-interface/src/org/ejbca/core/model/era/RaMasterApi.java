@@ -24,6 +24,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.roles.Role;
@@ -371,6 +372,17 @@ public interface RaMasterApi {
      */
     EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
 
+    /**
+     * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
+     * @param authenticationToken Authentication token.
+     * @param username User name of end entity.
+     * @return Certificate chain, with the leaf certificate first.
+     * @throws AuthorizationDeniedException If not authorized to the end entity of the user
+     * @throws EjbcaException On internal errors, such as badly encoded certificate.
+     */
+    List<CertificateWrapper> getLastCertChain(AuthenticationToken authenticationToken, String username)
+            throws AuthorizationDeniedException, EjbcaException;
+    
     /**
      * Request status change of a certificate (revoke or reactivate).
      * Requires authorization to CA, EEP for the certificate and '/ra_functionality/revoke_end_entity'.
