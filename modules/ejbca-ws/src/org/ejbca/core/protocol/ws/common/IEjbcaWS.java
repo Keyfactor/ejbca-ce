@@ -169,6 +169,8 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 * 
+	 * If the user is not found on the local system, then the query will be forwarded to upstream peer systems (if any).
+	 * 
 	 * @param username a unique username 
 	 * @return a collection of X509Certificates or null if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc, or if user does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -1137,6 +1139,8 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * When the requestType is PUBLICKEY the requestData should be an 
 	 * SubjectPublicKeyInfo structure either base64 encoded or in PEM format.
+	 * 
+	 * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).
 	 * 
 	 * @param userData the user
 	 * @param requestData the PKCS10/CRMF/SPKAC/PUBLICKEY request in base64

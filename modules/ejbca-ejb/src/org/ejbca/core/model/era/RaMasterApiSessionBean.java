@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
@@ -82,6 +83,7 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -108,6 +110,7 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -129,6 +132,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -171,6 +175,7 @@ import org.ejbca.util.query.IllegalQueryException;
 public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     private static final Logger log = Logger.getLogger(RaMasterApiSessionBean.class);
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
@@ -1616,6 +1621,67 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA WebService error", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
+    }
+    
+    @Override
+    public List<CertificateWrapper> getLastCertChain(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException, EjbcaException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getLastCertChain: "+username);
+        }
+        final List<CertificateWrapper> retval = new ArrayList<>();
+        if (endEntityAccessSession.findUser(authenticationToken, username) != null) { // checks authorization on CA and profiles and view_end_entity
+            Collection<CertificateWrapper> certs = certificateStoreSession.findCertificatesByUsername(username);
+            if (certs.size() > 0) {
+                // The latest certificate will be first
+                CertificateWrapper firstcert = certs.iterator().next();
+                Certificate lastcert;
+                if (firstcert != null) {
+                    retval.add(firstcert);
+                    lastcert = firstcert.getCertificate();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumberAsString(lastcert));
+                    }
+                    // If we added a certificate, we will also append the CA certificate chain
+                    boolean selfSigned = false;
+                    int iteration = 0; // to control so we don't enter an infinite loop. Max chain length is 10
+                    while (!selfSigned && iteration < 10) {
+                        iteration++;
+                        final String issuerDN = CertTools.getIssuerDN(lastcert); 
+                        final Collection<Certificate> cacerts = certificateStoreSession.findCertificatesBySubject(issuerDN);
+                        if (cacerts == null || cacerts.size() == 0) {                         
+                            log.info("No certificate found for CA with subjectDN: "+issuerDN);
+                            break;
+                        }
+                        for (final Certificate cert : cacerts) {
+                            try {
+                                lastcert.verify(cert.getPublicKey());
+                                // this was the right certificate
+                                retval.add(EJBTools.wrap(cert));
+                                // To determine if we have found the last certificate or not
+                                selfSigned = CertTools.isSelfSigned(cert);
+                                // Find the next certificate in the chain now
+                                lastcert = cert;
+                                break; // Break of iteration over this CAs certs
+                            } catch (Exception e) {
+                                log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: "+issuerDN+", serno: "+CertTools.getSerialNumberAsString(cert));
+                            }
+                        }                           
+                    }
+                    
+                } else {
+                    log.debug("Found no certificate (in non null list??) for user "+username);
+                }
+            } else {
+                log.debug("Found no certificate for user "+username);
+            }
+        } else {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.debug(msg);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getLastCertChain: "+username);
+        }
+        return retval;
     }
 
     @Override
