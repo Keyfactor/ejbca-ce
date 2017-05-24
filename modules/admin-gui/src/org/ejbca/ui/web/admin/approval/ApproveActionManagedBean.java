@@ -228,7 +228,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     public String saveState(ActionEvent event) {
-        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
         ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
         ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
         for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
@@ -442,7 +442,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             return false;
         }
         
-        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
         if(approvalDataVO.getApprovalRequest().isEditedByMe(getAdmin())) {
             return false;
         }
@@ -466,7 +466,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * @return true if the current admin has access to approve any partitions at all
      */
     public boolean canApproveAnyPartitions() {
-        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(getAdmin(), approvalDataVOView.getApprovalId());
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
         //Check that there are are partitions to approve, and that the request didn't originate from the current admin. 
         return !partitionsAuthorizedToApprove.isEmpty() && (approvalDataVO != null ? !approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin()) : true);
     }

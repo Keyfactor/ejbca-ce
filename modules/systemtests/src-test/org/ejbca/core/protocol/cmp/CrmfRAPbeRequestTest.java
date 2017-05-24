@@ -605,7 +605,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                 approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
-                approvalData = approvalSession.findApprovalDataVO(admin, approvalID).iterator().next();
+                approvalData = approvalSession.findApprovalDataVO(approvalID).iterator().next();
                 assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuer, serialNumber);
                 assertEquals(status.revocationReason, reason);

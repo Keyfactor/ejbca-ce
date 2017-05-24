@@ -82,6 +82,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.CertificateRequestMessage;
 import org.bouncycastle.cert.crmf.CertificateRequestMessageBuilder;
@@ -1195,7 +1196,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 final ErrorCode errorCode = e.getFaultInfo().getErrorCode();
                 log.info(errorCode.getInternalErrorCode(), e);
                 fail("Certificate request failed with error code " + errorCode);
-                throw new Error("JUnit test should have bailed out before this happens.");
+                throw new IllegalStateException("JUnit test should have bailed out before this happens.");
             }
             // Verify that the response is of the right type and that a certificate was issued correctly
             assertNotNull(certificateResponse);
@@ -2039,7 +2040,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
         assertTrue(cmsSignedData != null);
 
-        Store certStore = cmsSignedData.getCertificates();
+        @SuppressWarnings("unchecked")
+        Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
         assertTrue(certStore.getMatches(null).size() == 1);
 
     }

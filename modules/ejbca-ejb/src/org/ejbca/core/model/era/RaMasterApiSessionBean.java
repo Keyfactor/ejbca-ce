@@ -435,8 +435,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     /** @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class) 
      * @return ApprovalDataVO or null if not found
      */
-    private ApprovalDataVO getApprovalDataByRequestHash(final AuthenticationToken authenticationToken, final int approvalId) {
-        final List<ApprovalDataVO> approvalDataVOs = approvalSession.findApprovalDataVO(authenticationToken, approvalId);
+    private ApprovalDataVO getApprovalDataByRequestHash(final int approvalId) {
+        final List<ApprovalDataVO> approvalDataVOs = approvalSession.findApprovalDataVO(approvalId);
         return approvalDataVOs.isEmpty() ? null : approvalDataVOs.get(0);
     }
     
@@ -491,7 +491,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public RaApprovalRequestInfo getApprovalRequestByRequestHash(final AuthenticationToken authenticationToken, final int approvalId) {
-        final ApprovalDataVO advo = getApprovalDataByRequestHash(authenticationToken, approvalId);
+        final ApprovalDataVO advo = getApprovalDataByRequestHash(approvalId);
         if (advo == null) {
             return null;
         }
@@ -625,7 +625,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         
         final int newCalculatedHash = approvalRequest.generateApprovalId();
-        final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(authenticationToken, newCalculatedHash);
+        final Collection<ApprovalDataVO> advosNew = approvalSession.findApprovalDataVO(newCalculatedHash);
         if (advosNew.isEmpty()) {
             throw new IllegalStateException("Approval with calculated hash (approvalId) " + newCalculatedHash + " could not be found");
         }
