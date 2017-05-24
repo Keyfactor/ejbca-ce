@@ -1379,7 +1379,7 @@ YourCustomUTF8String ::= UTF8String
 <li>Custom QC-statement OID - your OID as defined above, you must define this OID yourself.</li>
 <li>Custom QC-statement Text - the describing text as defined above.</li>
 </ul>
-<p>A typical eIDAS QC Statement (EN 319 412-5 )may consist of:</p>
+<p>A typical eIDAS QC Statement (EN 319 412-5) may consist of:</p>
 <ul>
 <li>id-etsi-qcs-QcCompliance</li>
 <li>id-qcs-pkixQCSyntax-v2</li>
