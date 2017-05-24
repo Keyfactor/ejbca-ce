@@ -43,66 +43,72 @@ public interface ApprovalSession {
      */
      int addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
-    /**
-     * Method that goes through exists approvals in database to see if there
-     * exists any approved action.
-     * 
-     * If goes through all approval requests with the given Id and checks their
-     * status, if any have status approved it returns STATUS_APPROVED.
-     * 
-     * This method should be used by action requiring the requesting
-     * administrator to poll to see if it have been approved and only have one
-     * step, otherwise use the method with the step parameter.
-     * 
-     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APPROVED) 
-     * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
-     * @throws ApprovalException
-     *             if approvalId does not exist
-     * @throws ApprovalRequestExpiredException
-     *             Throws this exception one time if one of the approvals have
-     *             expired, once notified it wont throw it anymore. But If the
-     *             request is multiple steps and user have already performed
-     *             that step, the Exception will always be thrown.
-     * @see ApprovalDataVO
-     */
-     int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+     /**
+      * Checks if the approval request by the given identifier is approved or not. 
+      * 
+      * 
+      * This method should be used by action requiring the requesting administrator to poll to see if it have been approved and only have one
+      * step, otherwise use the method with the step parameter.
+      * 
+      * If the return value is:
+      * 0    the request is approved (ApprovalDataVO.STATUS_APROVED) 
+      * >0   the request requires so many more approvals left 
+      * <0   the request has any other status 
+      * 
+      * @param approvalId the approval ID of the request
+      * @param the given step 
+      * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) 
+      * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
+      * @throws ApprovalException if approvalId does not exist
+      * @throws ApprovalRequestExpiredException thrown one time if one or more of the approvals has expired, once notified it wont throw it anymore. 
+      * But If the request is multiple steps and user have already performed that step, the exception will always be thrown.
+      */
+     int isApproved(int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
-     * Method that goes through exists approvals in database to see if there
-     * exists any approved. This is the default method for simple single step
-     * approvals.
+     * Checks if the approval request by the given identifier is approved or not. 
      * 
-     * If goes through all approvalrequests with the given Id and checks their
-     * status, if any have status approved it returns STATUS_APPROVED.
      * 
-     * This method should be used by action requiring the requesting
-     * administrator to poll to see if it have been approved and only have one
+     * This method should be used by action requiring the requesting administrator to poll to see if it have been approved and only have one
      * step, otherwise use the method with the step parameter.
      * 
-     * @param admin
-     * @param approvalId
+     * If the return value is:
+     * 0    the request is approved (ApprovalDataVO.STATUS_APROVED) 
+     * >0   the request requires so many more approvals left 
+     * <0   the request has any other status 
+     * 
+     * @param admin an authentication token
+     * @param approval the ID of the request
      * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) 
      * if approved otherwise the ApprovalDataVO.STATUS constants returned indicating the status.
-     * @throws ApprovalException
-     *             if approvalId does not exist
-     * @throws ApprovalRequestExpiredException
-     *             Throws this exception one time if one of the approvals have
-     *             expired, once notified it wont throw it anymore. But If the
-     *             request is multiple steps and user have already performed
-     *             that step, the Exception will always be thrown.
+     * @throws ApprovalException if approvalId does not exist
+     * @throws ApprovalRequestExpiredException thrown one time if one or more of the approvals has expired, once notified it wont throw it anymore. 
+     * But If the request is multiple steps and user have already performed that step, the exception will always be thrown.
      */
-    int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
+    int isApproved(int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
+    
+    
+    /**
+     * Gives the remaining number of approvals for a given approval request
+     * 
+     * @param requestId the request ID of the approval
+     * @return the remaining number of approvals for this request
+     * @throws ApprovalException if an approval request with the given ID was not found. 
+     */
+    int getRemainingNumberOfApprovals(int requestId) throws ApprovalException;
 
     /**
      * Method that marks a certain step of a a non-executable approval as done.
      * When the last step is performed the approval is marked as EXPRIED.
      * 
-     * @param admin
      * @param approvalId
      * @param step in approval to mark
      * @throws ApprovalException if approvalId does not exist,
+     * 
+     * @deprecated Used for the old hard token era steps. 
      */
-    void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+    @Deprecated
+    void markAsStepDone(int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method used to remove an approval from database.
@@ -126,16 +132,15 @@ public interface ApprovalSession {
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      */
-    ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId);
+    ApprovalDataVO findNonExpiredApprovalRequest(int approvalId);
 
     /**
      * Method that takes an approvalId and returns all approval requests for this.
      * 
-     * @param admin
      * @param approvalId
      * @return and list of ApprovalDataVO, empty if no approvals exists.
      */
-    List<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
+    List<ApprovalDataVO> findApprovalDataVO(int approvalId);
 
 
 }

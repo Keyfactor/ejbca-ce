@@ -401,7 +401,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * @throws ApprovalException
      */
     private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, AuthenticationToken admin) throws ApprovalException {
-        Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
+        Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
             for (ApprovalDataVO approvalDataVO : collection) {
                 approvalSession.removeApprovalRequest(admin, approvalDataVO.getId());
@@ -415,7 +415,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", 
                 true, reqadmin, null, 1, 0, 0, approvalProfile);
 
-        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();
@@ -488,7 +488,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, 
                 reqadmin, null, 0, 0, approvalProfile);
 
-        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();
@@ -498,7 +498,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 
                 0, approvalProfile);
 
-        result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        result = approvalSession.findApprovalDataVO(ar.generateApprovalId());
         iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();

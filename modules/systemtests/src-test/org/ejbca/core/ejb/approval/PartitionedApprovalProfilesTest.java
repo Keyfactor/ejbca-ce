@@ -224,7 +224,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 singleStepPartitionProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {
-            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             assertEquals(1, resultList.size());
             ApprovalDataVO unexecutedApproval = resultList.get(0);
             assertEquals("Approval should not be executed yet.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, unexecutedApproval.getStatus());
@@ -238,7 +238,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 //NOPMD: Expected result.
             }
             assertEquals("Approval should not have been executed with an incorrect sequence.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0).getStatus());
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
             
             //Another attempt. Right step/approval, but the wrong admin
             Approval wrongAdmin = new Approval("wrongAdmin", executionStep.getStepIdentifier(), singlePartition.getPartitionIdentifier());
@@ -249,16 +249,15 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 //NOPMD: Expected result.
             }
             assertEquals("Approval should not have been executed with an incorrect sequence.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(admin2, executableRequest.generateApprovalId()).get(0).getStatus());
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
             
             
             Approval correctApproval = new Approval("correctApproval", executionStep.getStepIdentifier(), singlePartition.getPartitionIdentifier());
             approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), correctApproval);
-            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0);
+            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0);
             assertEquals("Approval should have been executed.", ApprovalDataVO.STATUS_EXECUTED, executedResult.getStatus());
         } finally {
-            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(alwaysAllowAuthenticationToken,
-                    executableRequest.generateApprovalId());
+            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             for (ApprovalDataVO approvalDataVO : approvalsToDelete) {
                 approvalSessionRemote.removeApprovalRequest(admin1, approvalDataVO.getId());
             }
@@ -312,7 +311,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 doubleSequencenProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {
-            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             assertEquals(1, resultList.size());
             ApprovalDataVO unexecutedApproval = resultList.get(0);
             assertEquals("Approval should not be executed yet.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, unexecutedApproval.getStatus());
@@ -324,18 +323,17 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 //NOPMD: Expected:
             }
             assertEquals("Approval should not have been executed with an incorrect sequence.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0).getStatus());
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
             Approval firstStepApproval = new Approval("firstStepApproval", firstStep.getStepIdentifier(), firstStepPartition.getPartitionIdentifier());
             approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), firstStepApproval);
             assertEquals("Approval should not have been executed after only one approval.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0).getStatus());
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
             
             approvalExecutionSessionRemote.approve(admin2, executableRequest.generateApprovalId(), secondStepApproval);
-            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0);
+            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0);
             assertEquals("Approval should have been executed.", ApprovalDataVO.STATUS_EXECUTED, executedResult.getStatus());
         } finally {
-            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(alwaysAllowAuthenticationToken,
-                    executableRequest.generateApprovalId());
+            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             for (ApprovalDataVO approvalDataVO : approvalsToDelete) {
                 approvalSessionRemote.removeApprovalRequest(admin1, approvalDataVO.getId());
             }
@@ -381,21 +379,20 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 doubleSequencenProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {
-            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId());
+            List<ApprovalDataVO> resultList = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             assertEquals(1, resultList.size());
             ApprovalDataVO unexecutedApproval = resultList.get(0);
             assertEquals("Approval should not be executed yet.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, unexecutedApproval.getStatus());
             Approval secondPartitionApproval = new Approval("secondPartitionApproval", step.getStepIdentifier(), secondPartition.getPartitionIdentifier());
             approvalExecutionSessionRemote.approve(admin2, executableRequest.generateApprovalId(), secondPartitionApproval);
             assertEquals("Approval should not be executed yet.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                    approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0).getStatus());
+                    approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0).getStatus());
             Approval firstPartitionApproval = new Approval("firstPartitionApproval", step.getStepIdentifier(), firstPartition.getPartitionIdentifier());
             approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), firstPartitionApproval);
-            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(admin1, executableRequest.generateApprovalId()).get(0);
+            ApprovalDataVO executedResult = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId()).get(0);
             assertEquals("Approval should have been executed.", ApprovalDataVO.STATUS_EXECUTED, executedResult.getStatus());
         } finally {
-            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(alwaysAllowAuthenticationToken,
-                    executableRequest.generateApprovalId());
+            List<ApprovalDataVO> approvalsToDelete = approvalSessionRemote.findApprovalDataVO(executableRequest.generateApprovalId());
             for (ApprovalDataVO approvalDataVO : approvalsToDelete) {
                 approvalSessionRemote.removeApprovalRequest(admin1, approvalDataVO.getId());
             }

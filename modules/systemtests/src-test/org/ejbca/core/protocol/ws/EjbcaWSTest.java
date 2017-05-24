@@ -584,8 +584,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             Set<Principal> principals = new HashSet<>();
             principals.add(adminCert.getSubjectX500Principal());
             AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
-            //AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
-            //Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 X509Certificate cert = createUserAndCert(username, caID);
                 String issuerdn = cert.getIssuerDN().toString();
@@ -600,7 +598,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (ApprovalException_Exception e1) {
-                }
+                }                
+                
                 RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
                 assertNotNull(revokestatus);
                 assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);

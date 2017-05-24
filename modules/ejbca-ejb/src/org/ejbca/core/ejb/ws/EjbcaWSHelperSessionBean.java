@@ -140,7 +140,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException, EjbcaException {
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
         final Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(cert);
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);

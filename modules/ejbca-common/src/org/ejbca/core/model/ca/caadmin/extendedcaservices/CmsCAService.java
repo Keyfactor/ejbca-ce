@@ -279,7 +279,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
                 for (Certificate certificate : certificatechain) {
                     x509CertChain.add((X509Certificate) certificate);
                 }
-                gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(x509CertChain)));
+                gen1.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(x509CertChain)));
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privKey.getAlgorithm());

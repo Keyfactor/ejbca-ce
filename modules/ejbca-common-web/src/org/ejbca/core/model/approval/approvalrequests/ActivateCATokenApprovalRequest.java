@@ -40,7 +40,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
  * 
  * @version $Id$
  */
-@Deprecated // TODO: We should replace this by adding new better requests while allowing existing persisted to work
 public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;

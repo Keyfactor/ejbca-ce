@@ -318,21 +318,16 @@ public class EjbcaWS implements IEjbcaWS {
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
      */
-    private AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
-        try {
-            final MessageContext msgContext = wsContext.getMessageContext();
-            final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-            final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+    private AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException {
+        final MessageContext msgContext = wsContext.getMessageContext();
+        final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+        final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 
-            if ((certificates == null) || (certificates[0] == null)) {
-                throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
-            }
-
-            return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
-        } catch (EJBException e) {
-            log.error("EJBCA WebService error, getAdmin: ",e);
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        if ((certificates == null) || (certificates[0] == null)) {
+            throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
         }
+        return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
+
     }
     
     /**
@@ -350,11 +345,7 @@ public class EjbcaWS implements IEjbcaWS {
             if (log.isDebugEnabled()) {
                 log.debug("Not an admin: ", e);
             }
-        } catch (EjbcaException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Not an admin: ", e);
-            }
-        }
+        } 
         return retval;
     }
     
@@ -1819,11 +1810,11 @@ public class EjbcaWS implements IEjbcaWS {
 		        int status = ApprovalDataVO.STATUS_REJECTED;
 		        int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
 		        try{
-		            status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
+		            status = approvalSession.isApproved(ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 		            approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
 		            isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
 		            if(status == ApprovalDataVO.STATUS_APPROVED){
-		                ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
+		                ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(ar.generateApprovalId());
 		                String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
 		                userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
 		            } else if (status == ApprovalDataVO.STATUS_REJECTED) {
@@ -2100,7 +2091,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if (ar!= null) {
 			    // TODO: Don't really understand what this does, but it marks this generate option as "partly done" somehow
 			    // after a call to genTokenCertificates this affect a follow up call to getHardTokenData
-				approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
+				approvalSession.markAsStepDone(ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 			}
         } catch (NoSuchEndEntityException e) {
             throw getInternalException(e, logger);
@@ -2130,13 +2121,14 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
 
+    @SuppressWarnings("deprecation")
     @Override
     public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
             throws CADoesntExistsException, AuthorizationDeniedException, HardTokenDoesntExistsException, NotFoundException,
             ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException, EjbcaException {
 		HardTokenDataWS retval = null;
 		AuthenticationToken admin = getAdmin(true);
-		ApprovalRequest ar = null;
+		ApprovalRequest approvalRequest = null;
 		boolean isApprovedStep0 = false;
 		boolean isRejectedStep0 = false;
 
@@ -2178,11 +2170,11 @@ public class EjbcaWS implements IEjbcaWS {
                     }
                     int caid = userData.getCAId();
                     caSession.verifyExistenceOfCA(caid);
-                    ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),
+                    approvalRequest = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),
                             admin,null,caid,userData.getEndEntityProfileId(), approvalProfile);
                     int status = ApprovalDataVO.STATUS_REJECTED;
                     try {
-                        status = approvalSession.isApproved(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
+                        status = approvalSession.isApproved(approvalRequest.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
                         isApprovedStep0 =  status == ApprovalDataVO.STATUS_APPROVED;
 
                         if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED
@@ -2191,16 +2183,16 @@ public class EjbcaWS implements IEjbcaWS {
                             throw new ApprovalException("");
                         }
                         if (log.isDebugEnabled()) {
-                            log.debug("A GenerateTokenApprovalRequest exists for "+userData.getUsername()+", "+ar.generateApprovalId()+", we can not get the data yet.");
+                            log.debug("A GenerateTokenApprovalRequest exists for "+userData.getUsername()+", "+approvalRequest.generateApprovalId()+", we can not get the data yet.");
                         }
                     } catch(ApprovalException e2) {
                         if (log.isDebugEnabled()) {
                             log.debug("A GenerateTokenApprovalRequest does not exist, looking for a View getHardTokenData request: "+e2.getMessage());
                         }
-                        ar = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true, admin, null, 0,
+                        approvalRequest = new ViewHardTokenDataApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, true, admin, null, 0,
                                 userData.getCAId(), userData.getEndEntityProfileId(), approvalProfile);
                         try{
-                            status = approvalSession.isApproved(admin, ar.generateApprovalId());
+                            status = approvalSession.isApproved(approvalRequest.generateApprovalId());
                             isApprovedStep0 = status == ApprovalDataVO.STATUS_APPROVED;
                             isRejectedStep0 =  status == ApprovalDataVO.STATUS_REJECTED;
                             if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED 
@@ -2213,7 +2205,7 @@ public class EjbcaWS implements IEjbcaWS {
                             genNewRequest = true;
                         }
                         if (log.isDebugEnabled()) {
-                            log.debug("Will generate a ViewHardTokenDataApprovalRequest for "+userData.getUsername()+", "+ar.generateApprovalId());
+                            log.debug("Will generate a ViewHardTokenDataApprovalRequest for "+userData.getUsername()+", "+approvalRequest.generateApprovalId());
                         }
                         if (genNewRequest) {
                             if (log.isDebugEnabled()) {
@@ -2221,7 +2213,7 @@ public class EjbcaWS implements IEjbcaWS {
                             }
                             //  Add approval Request
                             try{
-                                final int requestId = approvalSession.addApprovalRequest(admin, ar);
+                                final int requestId = approvalSession.addApprovalRequest(admin, approvalRequest);
                                 throw new WaitingForApprovalException("Adding approval request to view hard token data with ID " + requestId, requestId);
                             }catch(ApprovalException e4){
                                 throw getEjbcaException(e4, logger, ErrorCode.APPROVAL_ALREADY_EXISTS, null);
@@ -2236,12 +2228,12 @@ public class EjbcaWS implements IEjbcaWS {
                 }
             }
 
-            if(ar != null && isRejectedStep0){
-                throw new ApprovalRequestExecutionException("The approval for approvalID (hash) " + ar.generateApprovalId() + " have been rejected.");
+            if(approvalRequest != null && isRejectedStep0){
+                throw new ApprovalRequestExecutionException("The approval for approvalID (hash) " + approvalRequest.generateApprovalId() + " have been rejected.");
             }
 
-            if(ar != null && ! isApprovedStep0){
-                final int requestId = approvalSession.getIdFromApprovalId(ar.generateApprovalId());
+            if(approvalRequest != null && ! isApprovedStep0){
+                final int requestId = approvalSession.getIdFromApprovalId(approvalRequest.generateApprovalId());
                 throw new WaitingForApprovalException("The approval for ID " + requestId + " has not yet been approved", requestId);
             }
 
@@ -2253,9 +2245,9 @@ public class EjbcaWS implements IEjbcaWS {
 
             retval = ejbcaWSHelperSession.convertHardTokenToWS(hardTokenData, certs, viewPUKData);		
 
-            if(ar != null){
+            if(approvalRequest != null){
                 try {
-                    approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
+                    approvalSession.markAsStepDone(approvalRequest.generateApprovalId(), GenerateTokenApprovalRequest.STEP_0_VIEWHARDTOKENDATA);
                 } catch (ApprovalException e) {
                     throw getEjbcaException(e, logger, ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, null);
                 }
@@ -2448,9 +2440,8 @@ public class EjbcaWS implements IEjbcaWS {
 	public int isApproved(int approvalId) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-            final AuthenticationToken admin = getAdmin(true);
-            logAdminName(admin,logger);
-			return approvalSession.isApproved(admin, approvalId);
+            logAdminName(getAdmin(true),logger);
+			return approvalSession.isApproved(approvalId);
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -2460,6 +2451,18 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
+    
+    @Override
+    public int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException {
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        try {
+            logAdminName(getAdmin(true), logger);
+            return approvalSession.getRemainingNumberOfApprovals(requestId);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    }
 
     @Override
 	public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,

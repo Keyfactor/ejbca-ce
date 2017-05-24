@@ -38,13 +38,12 @@ public interface ApprovalSessionLocal extends ApprovalSession {
     /**
      * Send all work-flow related approval notifications given the last added Approval to the approvalsPerformed.
      * 
-     * @param authenticationToken the current administrator that triggered the approval action
      * @param approvalRequest the approval request
      * @param approvalProfile the profile determining the approval work flow
      * @param approvalsPerformed a list of completed approvals so far with the current approval last
      * @param expired should be set to true if the notification is due to expiration of the approval request
      */
-    void sendApprovalNotifications(AuthenticationToken authenticationToken, ApprovalRequest approvalRequest, ApprovalProfile approvalProfile,
+    void sendApprovalNotifications(ApprovalRequest approvalRequest, ApprovalProfile approvalProfile,
             List<Approval> approvalsPerformed, boolean expired);
 
 	/**
