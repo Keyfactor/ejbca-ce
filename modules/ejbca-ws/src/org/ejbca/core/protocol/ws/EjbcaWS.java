@@ -92,6 +92,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -492,55 +493,15 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			if (endEntityAccessSession.findUser(admin, username) != null) { // checks authorization on CA and profiles and view_end_entity
-				Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-				if (certs.size() > 0) {
-					// The latest certificate will be first
-					java.security.cert.Certificate lastcert = certs.iterator().next();
-					if (lastcert != null) {
-						log.debug("Found certificate for user with subjectDN: "+CertTools.getSubjectDN(lastcert)+" and serialNo: "+CertTools.getSerialNumberAsString(lastcert)); 
-						retval.add(new Certificate(lastcert));
-						// If we added a certificate, we will also append the CA certificate chain
-						boolean selfSigned = false;
-						int bar = 0; // to control so we don't enter an infinite loop. Max chain length is 10
-						while ( (!selfSigned) && (bar < 10) ) {
-							bar++;
-							String issuerDN = CertTools.getIssuerDN(lastcert); 
-							Collection<java.security.cert.Certificate> cacerts = certificateStoreSession.findCertificatesBySubject(issuerDN);
-							if ( (cacerts == null) || (cacerts.size() == 0) ) { 						
-								log.info("No certificate found for CA with subjectDN: "+issuerDN);
-								break;
-							}
-							for (final java.security.cert.Certificate cert : cacerts) {
-								try {
-									lastcert.verify(cert.getPublicKey());
-									// this was the right certificate
-									retval.add(new Certificate(cert));
-									// To determine if we have found the last certificate or not
-									selfSigned = CertTools.isSelfSigned(cert);
-									// Find the next certificate in the chain now
-									lastcert = cert;
-									break; // Break of iteration over this CAs certs
-								} catch (Exception e) {
-									log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: "+issuerDN+", serno: "+CertTools.getSerialNumberAsString(cert));
-								}
-							}							
-						}
-						
-					} else {
-						log.debug("Found no certificate (in non null list??) for user "+username);
-					}
-				} else {
-					log.debug("Found no certificate for user "+username);
-				}
-			} else {
-				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
-				log.debug(msg);
-			}
-		} catch (CertificateEncodingException e) {
-            throw getInternalException(e, logger);
-        } catch (RuntimeException e) {	// EJBException ...
-            throw getInternalException(e, logger);
+		    for (final CertificateWrapper wrapper : raMasterApiProxyBean.getLastCertChain(admin, username)) {
+		        retval.add(new Certificate(wrapper.getCertificate()));
+		    }
+		} catch (EjbcaException e) {
+		    logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+		    throw e;
+        } catch (CertificateEncodingException | RuntimeException e) {	// EJBException ...
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw new EjbcaException(e);
         } finally {
             logger.writeln();
             logger.flush();
