@@ -114,8 +114,8 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-156.jar" sourcepath="/Users/mikek/Sources/BouncyCastle 1.56 Source/bcprov-jdk15on-156/src.zip"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-156.jar" sourcepath="/Users/mikek/Sources/BouncyCastle 1.56 Source/bcpkix-jdk15on-156/src.zip"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-156.jar" />
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-156.jar" />
 	<classpathentry kind="lib" path="lib/httpclient-4.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.6.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.5.3.jar"/>
