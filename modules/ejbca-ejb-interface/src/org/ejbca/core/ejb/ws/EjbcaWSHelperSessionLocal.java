@@ -65,7 +65,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
      */
-    AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException, EjbcaException;
+    AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException;
     
     /**
      * Method that converts profile names etc to corresponding ID's

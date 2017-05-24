@@ -440,7 +440,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                     ApprovalDataVO approvalData = queryResults.get(0);
                     Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                     approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
-                    approvalData = approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
+                    approvalData = approvalSession.findApprovalDataVO(approvalID).iterator().next();
                     Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
                     Assert.assertEquals(status.revocationReason, reason);

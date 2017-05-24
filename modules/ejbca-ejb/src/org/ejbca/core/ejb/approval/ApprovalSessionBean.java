@@ -35,6 +35,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -141,7 +142,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     	}
         int approvalId = approvalRequest.generateApprovalId();
         Integer requestId = 0;
-        ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
+        ApprovalDataVO data = findNonExpiredApprovalRequest(approvalId);
         if (data != null) {
             String msg = intres.getLocalizedMessage("approval.alreadyexists", approvalId);
             log.info(msg);
@@ -154,7 +155,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
                 final ApprovalProfile approvalProfile = approvalRequest.getApprovalProfile();
-                sendApprovalNotifications(admin, approvalRequest, approvalProfile, approvalData.getApprovals(), false);
+                sendApprovalNotifications(approvalRequest, approvalProfile, approvalData.getApprovals(), false);
                 String msg = intres.getLocalizedMessage("approval.addedwaiting", requestId);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -219,6 +220,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     /** Updates the ApprovalData from the given approval request, and initializes the list of approvals to an empty list. */
+    @SuppressWarnings("deprecation")
     private void updateApprovalData(final ApprovalData approvalData, final ApprovalRequest approvalRequest) {
         approvalData.setApprovalid(approvalRequest.generateApprovalId());
         approvalData.setApprovaltype(approvalRequest.getApprovalType());
@@ -267,7 +269,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
+    public int isApproved(int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">isApproved, approvalId: " + approvalId);
         }
@@ -296,12 +298,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
-        return isApproved(admin, approvalId, 0);
+    public int isApproved(int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
+        return isApproved(approvalId, 0);
     }
 
     @Override
-    public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
+    public void markAsStepDone(int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">markAsStepDone, approvalId: " + approvalId + ", step " + step);
         }
@@ -320,15 +322,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ApprovalData> findWaitingForApprovalApprovalDataLocal() {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.status="+ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-        @SuppressWarnings("unchecked")
+        final TypedQuery<ApprovalData> query = entityManager
+                .createQuery("SELECT a FROM ApprovalData a WHERE a.status=" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, ApprovalData.class);
         List<ApprovalData> result = query.getResultList();
         return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId) {
+    public ApprovalDataVO findNonExpiredApprovalRequest(int approvalId) {
         ApprovalDataVO retval = null;
         ApprovalData data = findNonExpiredApprovalDataLocal(approvalId);
         if (data != null) {
@@ -357,7 +359,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId) {
+    public List<ApprovalDataVO> findApprovalDataVO(int approvalId) {
         if (log.isTraceEnabled()) {
             log.trace(">findApprovalDataVO: hash="+approvalId);
         }
@@ -449,7 +451,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return ret;
     }
     
-    @SuppressWarnings("deprecation")
     private List<ApprovalDataVO> queryInternal(final String query, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString, final String orderByString) {
         log.trace(">queryInternal()");
@@ -536,7 +537,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void sendApprovalNotifications(final AuthenticationToken authenticationToken, final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
+    public void sendApprovalNotifications(final ApprovalRequest approvalRequest, final ApprovalProfile approvalProfile,
             final List<Approval> approvalsPerformed, final boolean expired) {
         try {
             // When adding a new approval request the list of performed approvals is empty
@@ -731,6 +732,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * 
      * @throws ApprovalRequestExpiredException if the step have already been executed
      */
+    @SuppressWarnings("deprecation")
     private void markStepAsDone(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {
         final ApprovalRequest ar = approvalData.getApprovalRequest();
         if (!ar.isExecutable() && approvalData.getStatus() == ApprovalDataVO.STATUS_APPROVED) {
@@ -749,10 +751,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     /**
      * Method used by the requestadmin to check if an approval request have been approved
-     * 
-     * @return the number of approvals left if still waiting for approval, 0 (ApprovalDataVO.STATUS_APROVED) if approved otherwise the ApprovalDataVO.STATUS constants indicating the status.
+     * @param step the number of the step to check. 
+     * @return 0 (ApprovalDataVO.STATUS_APROVED) if approved, the number of approvals left if still waiting for approval, otherwise the ApprovalDataVO.STATUS constants indicating the status.
      * @throws ApprovalRequestExpiredException if the request or approval have expired, the status will be EXPIREDANDNOTIFIED in this case.
      */
+    @SuppressWarnings("deprecation")
     private int isApproved(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {
         if (approvalData.getApprovalRequest().isStepDone(step)) {
             return ApprovalDataVO.STATUS_EXPIRED;
@@ -871,17 +874,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
     private List<ApprovalData> findByApprovalId(final int approvalid) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId");
+        final TypedQuery<ApprovalData> query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId",
+                ApprovalData.class);
         query.setParameter("approvalId", approvalid);
         return query.getResultList();
     }
     
     /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
     private List<ApprovalData> findByApprovalIdNonExpired(final int approvalid) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
+        final TypedQuery<ApprovalData> query = entityManager.createQuery(
+                "SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>" + ApprovalDataVO.STATUS_EXPIRED + ")",
+                ApprovalData.class);
         query.setParameter("approvalId", approvalid);
         return query.getResultList();
     }
@@ -921,5 +925,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.warn("There is more than one approval request with approval ID " + approvalId);
         }
         return ads.get(0).getId();
+    }
+
+    @Override
+    public int getRemainingNumberOfApprovals(int requestId) throws ApprovalException {
+        ApprovalData approvalData = findById(requestId);
+        if(approvalData == null) {
+            throw new ApprovalException("Approval with ID " + requestId + " not found.");
+        }
+        return approvalData.getApprovalRequest().getApprovalProfile().getRemainingApprovals(approvalData.getApprovals());
     }
 }

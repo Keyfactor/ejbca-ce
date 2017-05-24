@@ -1038,6 +1038,24 @@ public interface EjbcaWS {
 
     /**
      * 
+     * @param arg0
+     * @return
+     *     returns int
+     * @throws ApprovalException_Exception
+     * @throws AuthorizationDeniedException_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getRemainingNumberOfApprovals", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetRemainingNumberOfApprovals")
+    @ResponseWrapper(localName = "getRemainingNumberOfApprovalsResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetRemainingNumberOfApprovalsResponse")
+    public int getRemainingNumberOfApprovals(
+        @WebParam(name = "arg0", targetNamespace = "")
+        int arg0)
+        throws ApprovalException_Exception, AuthorizationDeniedException_Exception
+    ;
+    
+    /**
+     * 
      * @param arg1
      * @param arg0
      * @return

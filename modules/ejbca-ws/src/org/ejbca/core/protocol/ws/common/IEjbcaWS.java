@@ -887,6 +887,16 @@ public interface IEjbcaWS {
 			EjbcaException, ApprovalRequestExpiredException;
 	
 	/**
+	 * 
+	 * @param requestId the ID of an approval reques
+	 * @return the number of remaining approvals required
+	 * @throws ApprovalException if a request of the given ID didn't exist
+	 * @throws AuthorizationDeniedException if the current requester wasn't authorized. 
+	 * 
+	 */
+	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException;
+	
+	/**
 	 * Generates a Custom Log event in the database.
 	 * 
 	 * Authorization requirements: <pre>
