@@ -52,6 +52,11 @@ public class IdNameHashMap<T extends Serializable> implements Serializable{
 		return idMap.get(id);
 	}
 	
+    public T getValue(int id){
+        final KeyToValueHolder<T> keyToValueHolder = idMap.get(id);
+        return keyToValueHolder==null ? null : keyToValueHolder.getValue();
+    }
+    
 	public KeyToValueHolder<T> get(String name){
 		return nameMap.get(name);
 	}
