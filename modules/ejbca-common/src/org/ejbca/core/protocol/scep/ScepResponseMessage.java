@@ -273,7 +273,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 // Create the signed CMS message to be contained inside the envelope
                 // this message does not contain any message, and no signerInfo
                 CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-                gen.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(certList)));
+                gen.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(certList)));
                 if(crl != null) {
                     gen.addCRL(new JcaX509CRLHolder((X509CRL) crl));
                 }

@@ -56,7 +56,6 @@ public class CmpServlet extends HttpServlet {
      * 
      * @throws IOException input/output error
      */
-    @SuppressWarnings("resource") // ServletInputStream should be closed by container
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         if (log.isTraceEnabled()) {

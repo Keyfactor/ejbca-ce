@@ -184,7 +184,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             if (!authorizedToCA(admin, data.getCaId())) {
                 continue;
             }
-            returnval.add(data.toEndEntityInformation());
+            returnval.add(convertUserDataToEndEntityInformation(admin, data, null));
+                    
         }
         if (log.isTraceEnabled()) {
             log.trace("<findUserByEmail(" + email + ")");

@@ -226,7 +226,7 @@ public class ScepRequestGenerator {
         // Add our signer info and sign the message
         ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
         certList.add(senderCertificate);
-        gen1.addCertificates(new CollectionStore(CertTools.convertToX509CertificateHolder(certList)));
+        gen1.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(certList)));
        
         String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestOid, signatureKey.getAlgorithm());
         try {
