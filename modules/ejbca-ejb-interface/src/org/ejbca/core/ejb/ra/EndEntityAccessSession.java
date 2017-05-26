@@ -45,12 +45,16 @@ public interface EndEntityAccessSession {
     /**
      * Find users by their subject DN.
      * @return A list of all EndEntityInformations matching the given DN, or an empty list
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
      List<EndEntityInformation> findUserBySubjectDN(AuthenticationToken admin, String subjectdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a users by subject email.
      * @return List of all matching EndEntityInformation, never null
+     * 
+     * @throws AuthorizationDeniedException if the admin was not authorized to the end entity profile or issuing CA
      */
      List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException;
     
