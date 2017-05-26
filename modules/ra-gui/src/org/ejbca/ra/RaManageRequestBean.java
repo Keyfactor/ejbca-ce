@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -249,7 +250,12 @@ public class RaManageRequestBean implements Serializable {
         return requestInfo.request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
     }
     /** @return true if subject DN override by CSR is allowed */
-    public boolean isDnOverride() {
+    public boolean isDnOverrideRendered() {
+        // In case of another request type than user generated enrollment, we do not want to show warning.
+        if (!requestInfo.getType().equals(raLocaleBean.getMessage("manage_requests_type_add_end_entity")) || 
+            requestInfo.getEndEntityInformation().getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
+            return false;
+        }
         CertificateProfile certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
         return certificateProfile.getAllowDNOverride();
     }
