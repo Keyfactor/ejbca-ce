@@ -103,6 +103,26 @@ public class SecureXMLDecoderTest {
         log.trace(">testMultipleObjects");
     }
     
+    private static enum MockEnum {
+        FOO;
+    }
+    
+    /**
+     * Tests encoding and decoding an enum 
+     */
+    @Test
+    public void testEnum() throws IOException {        
+        final Map<Object,Object> root = new LinkedHashMap<>();
+        root.put("testEnum", MockEnum.FOO);
+        // Encode
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final XMLEncoder encoder = new XMLEncoder(baos);
+        encoder.writeObject(root);
+        encoder.close();      
+        // Try to decode it and compare
+        decodeCompare(baos.toByteArray());
+    }
+    
     /**
      * Encodes a complex value with the standard XMLEncoder and tries to decode it again.
      * @throws UnsupportedEncodingException 

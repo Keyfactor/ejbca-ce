@@ -268,6 +268,22 @@ public class SecureXMLDecoder implements AutoCloseable {
                 // Default values (the argument to the constructor) aren't preserved during serialization by XMLEncoder
                 value = parseMap(new Properties());
                 break;
+            case "java.lang.Enum":
+                parser.getName();
+                String enumType = readString();
+                parser.nextTag();
+                parser.getName();
+                String instance = readString();
+                try {
+                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                    Enum<?> enumValue = Enum.valueOf((Class<? extends Enum>) Class.forName(enumType), instance);
+                    value = enumValue;
+                } catch (ClassNotFoundException e) {
+                    throw new IOException(errorMessage("Instantation of enum type \"" + enumType + "\" not supported or not allowed."));
+                }
+                method = null;
+                parser.nextTag();
+                break;
             default:
                 /*
                  * We need to add support for plain Java objects that don't need special treatment. In EJBCA we need at least
