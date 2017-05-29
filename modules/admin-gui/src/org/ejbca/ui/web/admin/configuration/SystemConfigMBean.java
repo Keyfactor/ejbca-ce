@@ -271,7 +271,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private ListDataModel<CTLogInfo> ctLogs = null;
     private String currentCTLogURL = null;
     private String editedCTLogURL;
-    private int currentCTLogTimeout;
+    private int currentCTLogTimeout = 5000;
     private int editedCTLogTimeout;
     private UploadedFile currentCTLogPublicKeyFile = null;
     private UploadedFile editedCTLogPublicKeyFile;
@@ -777,7 +777,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         final int timeout = getCurrentCTLogTimeout();
-        if (timeout < 0) {
+        if (timeout <= 0) {
             addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return;
         }
@@ -936,7 +936,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         editedCTLogURL = CTLogInfo.fixUrl(editedCTLogURL);
         
         final int timeout = getEditedCTLogTimeout();
-        if (timeout < 0) {
+        if (timeout <= 0) {
             addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return "";
         }

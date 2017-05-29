@@ -2295,7 +2295,8 @@ The following parameters have to be configured in a log:</p>
 <li>Log URL : The log URL, e.g. <code>http://something/</code>, for example <code>https://ct.googleapis.com/testtube/</code>.</li>
 <li>Public Key : The log's public key, in PEM or DER format. Usually this is an Elliptic Curve key.</li>
 <li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate
-issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.</li>
+issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.
+Note that zero is not a valid value for the timeout.</li>
 </ul>
 
 <p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
