@@ -35,12 +35,12 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -912,14 +912,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
-            EndEntityProfileValidationException, CADoesntExistsException {
+            EndEntityProfileValidationException {
         AuthorizationDeniedException authorizationDeniedException = null;
-        CADoesntExistsException caDoesntExistException = null;
+        EjbcaException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     return raMasterApi.createCertificateWS(authenticationToken, userdata, requestData, requestType, hardTokenSN, responseType);
-                } catch (CADoesntExistsException e) {
+                } catch (EjbcaException e) {
+                    // Only catch "CA doesn't exist" case here
+                    if (e.getErrorCode() != null && !ErrorCode.CA_NOT_EXISTS.getInternalErrorCode().equals(e.getErrorCode().getInternalErrorCode())) {
+                        throw e;
+                    }
                     if (caDoesntExistException == null) {
                         caDoesntExistException = e;
                     }
