@@ -69,7 +69,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
@@ -302,7 +301,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             // Get the CA to use for the authentication
             CAInfo cainfo = getCAInfoByName(authenticationparameter);
-            if(cainfo == null)  return false;
+            if(cainfo == null) {
+                return false;
+            }
             
             // Check that extraCert is in the Database
             CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
@@ -726,7 +727,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * Return the ID of the CA that is used for CMP purposes. 
      * @param keyId
      * @return the ID of CA used for CMP purposes. 
-     * @throws EndEntityProfileNotFoundException 
      */
     private int getRaCaId(final DEROctetString keyId, final EndEntityProfile eep) {
         

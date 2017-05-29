@@ -21,12 +21,20 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
@@ -55,6 +63,7 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -65,21 +74,30 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -102,6 +120,9 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
@@ -122,9 +143,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfKeyUpdateTest.class);
         
-    private final String username = "certRenewalUser";
-    private final X500Name userDN = new X500Name("CN="+this.username+",O=PrimeKey Solutions AB,C=SE");
-    private final String issuerDN = "CN=TestCA";
+    private static final String RENEWAL_USERNAME = "certRenewalUser";
+    private static final X500Name RENEWAL_USER_DN = new X500Name("CN="+RENEWAL_USERNAME+",O=PrimeKey Solutions AB,C=SE");
+    private static final String TEST_CA_NAME = "TestCA";
+    private static final String TEST_CA_DN = "CN="+TEST_CA_NAME;
     private final byte[] nonce = CmpMessageHelper.createSenderNonce();
     private final byte[] transid = CmpMessageHelper.createSenderNonce();
     private final int caid;
@@ -155,10 +177,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
 
     public CrmfKeyUpdateTest() throws Exception {
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        
-        final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        this.testx509ca = CaTestUtils.createTestX509CA(this.issuerDN, null, false, keyusage);
+        this.cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);        
+        this.testx509ca = CaTestUtils.createTestX509CA(TEST_CA_DN, null, false,
+                X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         this.caid = this.testx509ca.getCAId();
         this.cacert = (X509Certificate) this.testx509ca.getCACertificate();
     }
@@ -167,14 +188,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.caSession.addCA(ADMIN, this.testx509ca);
+        caSession.addCA(ADMIN, testx509ca);
         // Initialize config in here
         EjbcaConfigurationHolder.instance();    
         this.cmpConfiguration.addAlias(this.cmpAlias);
         this.cmpConfiguration.setRAEEProfile(this.cmpAlias, String.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         this.cmpConfiguration.setRACertProfile(this.cmpAlias, "ENDUSER");
-        this.cmpConfiguration.setRACAName(this.cmpAlias, "TestCA");
-        this.cmpConfiguration.setCMPDefaultCA(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setRACAName(this.cmpAlias, TEST_CA_NAME);
+        this.cmpConfiguration.setCMPDefaultCA(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setRAMode(this.cmpAlias, false);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, "RegTokenPwd;HMAC");
         this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "-;-");
@@ -188,13 +209,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);      
         try {
-            this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, this.username, ReasonFlags.unused);
+            this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, RENEWAL_USERNAME, ReasonFlags.unused);
             this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, "fakeuser", ReasonFlags.unused);
 
         } catch(Exception e){/* do nothing */}   
         this.cmpConfiguration.removeAlias(this.cmpAlias);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-        internalCertificateStoreSession.removeCertificatesByUsername(username);
+        internalCertificateStoreSession.removeCertificatesByUsername(RENEWAL_USERNAME);
     }
 
     
@@ -232,11 +253,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+            certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -250,7 +271,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         assertNotNull("Failed to create a test certificate", certificate);
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -263,8 +284,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(keys.getPublic()));
         if(log.isTraceEnabled()) {
@@ -308,11 +329,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+            certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -327,7 +348,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
@@ -340,7 +361,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -355,7 +376,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: " + this.username + ".";
+        final String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: " + RENEWAL_USERNAME + ".";
         assertEquals(expectedErrMsg, errMsg);
 
         if(log.isTraceEnabled()) {
@@ -399,11 +420,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+            certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (NoSuchEndEntityException | CADoesntExistsException | AuthorizationDeniedException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } 
@@ -414,7 +435,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         KeyPair newKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
@@ -427,7 +448,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -498,7 +519,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         
         // Sending a request with a certificate that neither it nor the issuer CA is in the database
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(fakeCert);
@@ -511,7 +532,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -558,7 +579,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         respObject = null;
         asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -620,14 +641,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
@@ -640,7 +661,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -699,15 +720,15 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
         
         KeyPair newkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, newkeys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, newkeys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -729,8 +750,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(newkeys.getPublic()));
         assertFalse("The new certificate's keys are the same as the old certificate's keys.", cert.getPublicKey().equals(keys.getPublic()));
@@ -747,7 +768,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
      * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
@@ -767,59 +787,123 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test07RAMode() throws Exception {
-        
+    public void test07RAMode() throws Exception {        
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
-
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg,
+                new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         final CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
-        int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        
+        int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();    
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
         final KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
         CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-
-        assertNotNull(req);
-        
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
-
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+    }
+    
+    /**
+     * Performs a CMP request in RA mode where the requesting admin isn't issued by the same CA. Should fail due to missing authorization. 
+     * @throws OperatorCreationException 
+     */
+    @Test
+    public void testRAModeForAdminFromDifferentCa() throws AuthorizationDeniedException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException,
+            EndEntityProfileValidationException, WaitingForApprovalException, InvalidAlgorithmParameterException, IllegalKeyException,
+            CertificateCreateException, CertificateRevokeException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, InvalidKeyException,
+            CertificateEncodingException, NoSuchAlgorithmException, SignatureException, RoleNotFoundException, NoSuchProviderException,
+            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, RemoveException, CAExistsException, OperatorCreationException {
+        final String cmpAdminUsername = "cmpTestAdmin";
+        final String cmpAdminDn = "CN=" + cmpAdminUsername +",C=SE";
+        final String cmpAdminPassword = "foo123";
+        final String differentCaDn = "CN=testRAModeForAdminFromDifferentCa";
+        
+        this.cmpConfiguration.setRAMode(this.cmpAlias, true);
+        this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
+        this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
+        this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+        //------------------ create the user and issue his first certificate -------------
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final Certificate certificate;
+        certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        assertNotNull("Failed to create a test certificate", certificate);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg,
+                new DEROctetString("CMPTESTPROFILE".getBytes()));
+        assertNotNull("Failed to generate a CMP renewal request", req);
+        //Create a second CA to issue the admin certificate
+        CA differentX509ca = CaTestUtils.createTestX509CA(differentCaDn, null, false,
+                X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        caSession.addCA(ADMIN, differentX509ca);
+        //Create the admin user 
+        createUser(cmpAdminUsername, cmpAdminDn, cmpAdminPassword, differentX509ca.getCAId());
+        final KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken admToken = createAdminToken(admkeys, cmpAdminUsername, cmpAdminDn);
+        Certificate admCert = getCertFromCredentials(admToken);
+        try {
+            CMPCertificate[] extraCert = getCMPCert(admCert);
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(),
+                    BouncyCastleProvider.PROVIDER_NAME);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            //send request and recieve response
+            byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
+            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            PKIMessage respObject = null;
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            try {
+                respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            } finally {
+                asn1InputStream.close();
+            }
+            assertNotNull(respObject);
+            final PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String expectedErrMsg = "The End Entity certificate attached to the PKIMessage is issued by the wrong CA";
+            assertEquals(expectedErrMsg, errMsg);
+        } finally {
+            removeTestCA(differentX509ca.getCAId());
+            removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+        }
     }
 
 
     
     /**
-     * Sends a KeyUpdateRequest in RA mode and the request sender is not an authorized administrator. 
+     * Sends a KeyUpdateRequest in RA mode and the request sender is not a known end entity
      * A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
      * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
@@ -840,38 +924,32 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test08RAModeNonAdmin() throws Exception {
+    public void test08RAModeUnknownAdmin() throws Exception {
         if(log.isTraceEnabled()) {
-            log.trace("test10RAModeNonAdmin()");
+            log.trace("test08RAModeUnknownAdmin()");
         }
-        
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
-
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
-        assertNotNull("Failed to generate a CMP renewal request", req);
-        
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg,
+                new DEROctetString("CMPTESTPROFILE".getBytes()));
+        assertNotNull("Failed to generate a CMP renewal request", req);        
         CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
-        assertNotNull(req);
-
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         try {
@@ -880,16 +958,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             asn1InputStream.close();
         }
         assertNotNull(respObject);
-
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "'" + this.userDN + "' is not an authorized administrator.";
+        final String expectedErrMsg = "'" + RENEWAL_USER_DN + "' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
-
         if(log.isTraceEnabled()) {
-            log.trace("<test10RAModeNonAdmin()");
+            log.trace("<test08RAModeUnknownAdmin()");
         }
 
     }
@@ -901,7 +977,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
      * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
@@ -928,18 +1003,18 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -958,8 +1033,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -977,7 +1052,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
      * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
@@ -1005,17 +1079,17 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
@@ -1032,7 +1106,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1065,7 +1139,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to "HMAC;DnPartPwd;EndEntityCertificate"
      * - Pre-configuration: Sets the cmp.authenticationparameters to "-;OU;TestCA"
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
@@ -1098,13 +1171,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1123,8 +1196,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -1175,13 +1248,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        final Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, null, pAlg, null);
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, null, pAlg, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
         
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
@@ -1198,7 +1271,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1260,18 +1333,18 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         this.cmpConfiguration.setRAMode(this.cmpAlias, false);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final Certificate certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        final Certificate certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         
@@ -1289,7 +1362,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
         try {
@@ -1342,17 +1415,17 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.cmpConfiguration.setKurAllowSameKey(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+            certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -1367,7 +1440,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, CertTools.getSubjectDN(cacert), pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, CertTools.getSubjectDN(cacert), pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate[] extraCert = getCMPCert(certificate);
@@ -1380,7 +1453,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1425,11 +1498,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         
         //--------------- create the user and issue his first certificate -----------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         final Certificate certificate;
         try {
-            certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+            certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         } catch (NoSuchEndEntityException e) {
             throw new IllegalStateException("Error encountered when creating certificate", e);
         } catch (CADoesntExistsException e) {
@@ -1444,7 +1517,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(X9ObjectIdentifiers.ecdsa_with_SHA256);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, null, null, pAlg, new DEROctetString(this.nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1458,8 +1531,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-        checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
-        X509Certificate cert = checkKurCertRepMessage(this.userDN, this.cacert, resp, reqId);
+        checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        X509Certificate cert = checkKurCertRepMessage(RENEWAL_USER_DN, this.cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         assertTrue("The new certificate's keys are incorrect.", cert.getPublicKey().equals(keys.getPublic()));
         
@@ -1473,27 +1546,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return new CMPCertificate[] { new CMPCertificate(org.bouncycastle.asn1.x509.Certificate.getInstance(cert.getEncoded())) };
     }
 
-    private EndEntityInformation createUser(String userName, String subjectDN, String password) throws AuthorizationDeniedException, EndEntityProfileValidationException, 
-                WaitingForApprovalException, EjbcaException, Exception {
-        EndEntityInformation user = new EndEntityInformation(userName, subjectDN, this.caid, null, userName+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
-        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-        user.setPassword(password);
-        try {
-            this.endEntityManagementSession.addUser(ADMIN, userName, password, subjectDN, "rfc822name=" + userName + "@primekey.se", userName + "@primekey.se",
-                    true, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
-                    this.caid);
-            log.debug("created user: " + userName);
-        } catch (Exception e) {
-            log.debug("User " + userName + " already exists. Setting the user status to NEW");
-            this.endEntityManagementSession.changeUser(ADMIN, user, true);
-            this.endEntityManagementSession.setUserStatus(ADMIN, userName, EndEntityConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-
-        return user;
-
+    private EndEntityInformation createUser(String userName, String subjectDN, String password)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
+            ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+        return createUser(userName, subjectDN, password, this.caid);
     }
-    
+
     private static X509Certificate getCertFromCredentials(AuthenticationToken authToken) {
         Set<?> inputcreds = authToken.getCredentials();
         if (inputcreds != null) {
@@ -1554,7 +1612,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             }
         }
         try {
-            createUser(adminName, dn, "foo123");
+            if (!endEntityManagementSession.existsUser(adminName)) {
+                createUser(adminName, dn, "foo123");
+            }
         } catch (Exception e) {
             throw new IllegalStateException("Error encountered when creating admin user", e);
         }
@@ -1581,7 +1641,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
                 }
             }
         }
-        this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         internalCertificateStoreSession.removeCertificate(cert);
     }
     
@@ -1597,20 +1657,20 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     public void testUpdateRevokedCertInRaMode() throws Exception {
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         //------------------ create the user and issue his first certificate -------------
-        createUser(this.username, this.userDN.toString(), "foo123");
+        createUser(RENEWAL_USERNAME, RENEWAL_USER_DN.toString(), "foo123");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final Certificate certificate;
-        certificate = this.signSession.createCertificate(ADMIN, this.username, "foo123", new PublicKeyWrapper(keys.getPublic()));
+        certificate = this.signSession.createCertificate(ADMIN, RENEWAL_USERNAME, "foo123", new PublicKeyWrapper(keys.getPublic()));
         assertNotNull("Failed to create a test certificate", certificate);
         endEntityManagementSession.revokeCert(ADMIN, CertTools.getSerialNumber(certificate), new Date(), CertTools.getIssuerDN(certificate),
                 RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, false);
         assertTrue("Failed to revoke the test certificate", certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));      
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);      
         final String testAdminName = "cmpTestAdmin";
         createUser(testAdminName, "CN="+testAdminName, "foo123");
@@ -1624,7 +1684,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             byte[] ba = req.toASN1Primitive().getEncoded();
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
@@ -1641,7 +1701,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * RFC4210 states in ch. 5.3.5:
      * "[...] This message is intended to be used to request updates to existing (non-revoked and non-expired) certificates [...]" 
      * 
-     * @throws Exception
      */
     @Test
     public void testUpdateExpiredCert() throws Exception {
@@ -1658,14 +1717,14 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
             final String password = "foo123";
             //--------------- create the user and issue its certificate, expired -----------------
-            endEntityManagementSession.addUser(ADMIN, username, password, userDN.toString(), "rfc822name=" + username + "@primekey.se",
-                    username + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
+            endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
+                    RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, this.caid);
 
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), username, password,
+            SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,
                     new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
-            EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, username);
+            EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, RENEWAL_USERNAME);
             X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(ADMIN, endEntity, expiredReq,
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             Certificate certificate = responseMessage.getCertificate();
@@ -1677,7 +1736,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             }
             AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
             KeyPair newKeyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg,
+            PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, newKeyPair, false, null, null, pAlg,
                     new DEROctetString(this.nonce));
             assertNotNull("Failed to generate a CMP renewal request", req);
             CMPCertificate[] extraCert = getCMPCert(certificate);
@@ -1687,7 +1746,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             byte[] ba = req.toASN1Primitive().getEncoded();
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
@@ -1719,20 +1778,20 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         this.cmpConfiguration.setRAMode(this.cmpAlias, true);
         this.cmpConfiguration.setAuthenticationModule(this.cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, "TestCA");
+        this.cmpConfiguration.setAuthenticationParameters(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setKurAllowAutomaticUpdate(this.cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
         //------------------ create the user and issue his first certificate -------------
         final String password = "foo123";
         //--------------- create the user and issue its certificate, expired -----------------
-        endEntityManagementSession.addUser(ADMIN, username, password, userDN.toString(), "rfc822name=" + username + "@primekey.se",
-                username + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
+        endEntityManagementSession.addUser(ADMIN, RENEWAL_USERNAME, password, RENEWAL_USER_DN.toString(), "rfc822name=" + RENEWAL_USERNAME + "@primekey.se",
+                RENEWAL_USERNAME + "@primekey.se", true, endEntityProfileId, certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.TOKEN_SOFT_PEM, 0, this.caid);
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), username, password,
+        SimpleRequestMessage expiredReq = new SimpleRequestMessage(keys.getPublic(), RENEWAL_USERNAME, password,
                 new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
-        EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, username);
+        EndEntityInformation endEntity = endEntityAccessSession.findUser(ADMIN, RENEWAL_USERNAME);
         X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(ADMIN, endEntity, expiredReq,
                 X509ResponseMessage.class, signSession.fetchCertGenParams());
         try {
@@ -1742,7 +1801,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             // NOPMD: As it should be
         }
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(this.userDN, this.cacert, this.nonce, this.transid, keys, false, this.userDN, this.issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, keys, false, RENEWAL_USER_DN, TEST_CA_DN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);      
         final String testAdminName = "cmpTestAdmin";
         createUser(testAdminName, "CN="+testAdminName, "foo123");
@@ -1756,7 +1815,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             byte[] ba = req.toASN1Primitive().getEncoded();
             //send request and recieve response
             byte[] resp = sendCmpHttp(ba, 200, this.cmpAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, this.userDN, this.cacert, this.nonce, this.transid, false, null,
+            checkCmpResponseGeneral(resp, TEST_CA_DN, RENEWAL_USER_DN, this.cacert, this.nonce, this.transid, false, null,
                     PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull("No respose object was received.", respObject);
