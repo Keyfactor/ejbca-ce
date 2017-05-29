@@ -2732,9 +2732,6 @@ public class EjbcaWS implements IEjbcaWS {
 	    } catch( NotFoundException t ) {
 	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
 	        throw t;
-	    } catch (CADoesntExistsException e) {
-	        logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-	        throw new EjbcaException(e.getErrorCode(), e);
 	    } catch (EjbcaException e) {
 	        Level loglevel = Level.DEBUG;
 	        if (e.getErrorCode() != null) {
