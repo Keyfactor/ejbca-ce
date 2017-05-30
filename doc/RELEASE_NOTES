@@ -1,11 +1,15 @@
 EJBCA 6.8.0
 -----------
 
-API compatibility note: In EJBCA 2.6.0, during rework of Approvals the exception, used in the Web service API, WaitingForApprovalException was changed. 
-In 6.8.0 we have changed the corresponding Web service API class. The change was that the attribute approvalId was changed to requestId 
-to be consistent and understandable (for developers).
-Under the condition that you used approvals through the Web service API, and was reading this attribute from this exception, 
-you may experience a break in backwards compatibility. If the above conditions does not apply to you, you can expect the usual full backwards compatibility.
+
+
+Approvals have been modified so that CAs and Certificate Profiles can have one approval profile per action type instead of one profile for all 
+actions.
+
+With EJBCA Software, you now have the ability to configure password encryption with stronger settings, including a random salt and a count. 
+In order to provide 100% uptime, the legacy behavior is used by default when the default password.encryption.key is configured in cesecore.properties.
+Only change this value when you are sure that all nodes that will store passwords (end entity clear text passwords and crypto token auto activation codes)
+are upgraded and can read the new format.
 
 EJBCA 6.7.0.1
 -----------
