@@ -994,31 +994,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return ret;
     }
     
-    @Override
-    public RaAcmeResponse makeAcmeRequest(AuthenticationToken authenticationToken, RaAcmeRequest request) throws AuthorizationDeniedException, EjbcaException {
-        AuthorizationDeniedException authorizationDeniedException = null;
-        for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable()) {
-                try {
-                    final RaAcmeResponse resp = raMasterApi.makeAcmeRequest(authenticationToken, request);
-                    if (resp != null) {
-                        return resp;
-                    }
-                } catch (AuthorizationDeniedException e) {
-                    if (authorizationDeniedException == null) {
-                        authorizationDeniedException = e;
-                    }
-                    // Just try next implementation
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        if (authorizationDeniedException != null) {
-            throw authorizationDeniedException;
-        }
-        return null;
-    }
+
 
     @Override
     public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException {
