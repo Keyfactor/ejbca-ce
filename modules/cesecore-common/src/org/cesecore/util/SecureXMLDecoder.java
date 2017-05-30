@@ -36,9 +36,11 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
+
 
 /**
  * <p>Implements a subset of XMLDecoder in a secure way, without allowing arbitrary classes to be loaded or methods to be invoked.
@@ -61,7 +63,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * @version $Id$
  */
 public class SecureXMLDecoder implements AutoCloseable {
-
     private final InputStream is;
     private final XmlPullParser parser;
     private boolean seenHeader = false;
@@ -255,6 +256,9 @@ public class SecureXMLDecoder implements AutoCloseable {
             case "org.cesecore.certificates.certificateprofile.CertificatePolicy":
             case "org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy":
                 value = parseObject(new CertificatePolicy());
+                break;
+            case "org.cesecore.certificates.certificateprofile.PKIDisclosureStatement":
+                value = parseObject(new PKIDisclosureStatement());
                 break;
             case "java.util.Collections":
                 value = parseSpecialCollection(method);
