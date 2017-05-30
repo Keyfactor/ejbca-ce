@@ -1713,6 +1713,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public RaAcmeResponse makeAcmeRequest(final AuthenticationToken authenticationToken, final RaAcmeRequest request) throws AuthorizationDeniedException, EjbcaException {
+        throw new UnsupportedOperationException("ACME is not supported in this version of EJBCA");
+        /* 6.8.0: Implementation has been commented out until further notice. 
+         * 
         if (StringUtils.isEmpty(request.getAcmeBaseUrl())) {
             throw new IllegalArgumentException("ACME base URL must be set");
         }
@@ -1901,7 +1904,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         default:
             return response;
-        }
+        }*/
     }
 
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
