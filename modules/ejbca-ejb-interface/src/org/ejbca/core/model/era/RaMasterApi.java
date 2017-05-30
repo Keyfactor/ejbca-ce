@@ -352,17 +352,6 @@ public interface RaMasterApi {
             EndEntityProfileValidationException;
     
     /**
-     * Makes a request as part of the ACME protocol. The purpose of the ACME protocol is to allow for automatic
-     * certificate issuance and revocation. It consists of multiple steps, where the final step is typically
-     * either an issuance or a revocation. Called by the ACME module only.
-     * 
-     * @param authenticationToken authentication token
-     * @param response Response information. The type field is mandatory and decides the type of request (i.e. the step in the process). 
-     * @return A response object. Fields that are not related to the request will be null.
-     */
-    RaAcmeResponse makeAcmeRequest(AuthenticationToken authenticationToken, RaAcmeRequest request) throws AuthorizationDeniedException, EjbcaException;
-    
-    /**
      * Finds end entity by its username.
      * @param authenticationToken authentication token
      * @param username username of the end entity
