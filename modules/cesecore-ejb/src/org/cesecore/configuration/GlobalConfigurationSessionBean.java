@@ -209,10 +209,15 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         return entityManager.find(GlobalConfigurationData.class, configurationId);
     }
     
+    @Override
+    public boolean registerNonServiceLoadedConfigurationCache(final ConfigurationCache configurationCache) {
+        return GlobalConfigurationCacheHolder.INSTANCE.caches.putIfAbsent(configurationCache.getConfigId(), configurationCache) == null;
+    }
+    
     private static enum GlobalConfigurationCacheHolder {
         INSTANCE;
         
-        private final Map<String, ConfigurationCache> caches = new ConcurrentHashMap<String, ConfigurationCache>();
+        private final ConcurrentHashMap<String, ConfigurationCache> caches = new ConcurrentHashMap<String, ConfigurationCache>();
         
         private GlobalConfigurationCacheHolder() {
             ServiceLoader<? extends ConfigurationCache> serviceLoader = ServiceLoader.load(ConfigurationCache.class);
