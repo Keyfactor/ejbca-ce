@@ -1014,7 +1014,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) {
+    public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
+        NoSuchAliasException caughtException = null;
+        
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion()>=1) {
                 try {
@@ -1023,13 +1025,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         result = raMasterApi.cmpDispatch(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
                         return result;
                     } catch (NoSuchAliasException e) {
-                        //We might not have an alias in the current RaMasterApi, so let's try another. 
+                        //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
+                        //later though.
+                        caughtException = e;
                     }                    
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return null;
+        // either throw an exception or return null
+        if (caughtException != null) {
+            throw caughtException;
+        } else {
+            return null;
+        }
     }
 }
