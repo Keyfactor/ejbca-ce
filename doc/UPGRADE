@@ -52,15 +52,16 @@ place, or will take place in the post-upgrade step. Note that complete descripti
 
 1. Post-upgrade can now be performed in the Admin GUI
 2. The role, role member and access rule implementations have changed
+3. Approval Profiles can now be set per action in CA and Certificate Profile
 
 Besides this, branches and custom implementations based on EJBCA code need to take the following changes into account:
 
-3. AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
+4. AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
 
 Lastly, the following behavioral changes should be taken into account:
 
-4. The ability to search for information in the 'Details' column of the audit log has been removed
-5. WebService API has changed for approvals 
+5. The ability to search for information in the 'Details' column of the audit log has been removed
+6. WebService API has changed for approvals 
 
 Complete descriptions of changes:
 
@@ -87,17 +88,21 @@ rules (usually this means "Equals case sensitive").
 For the new implementation, two new tables have been introduced: RoleData and RoleMemberData. The tables AdminGroupData, AdminEntityData and
 AccessRulesData will no longer be updated with new data, but are retained for upgrade and 100% uptime reasons. 
 
-3. AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
+3. Approval Profiles can now be set per action in CA and Certificate Profile
+
+CAs and Certificate Profiles will automatically be upgraded, using the same profiles for the same actions as before. 
+
+4. AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
 
 Authentication token implementations now implement the AuthenticationTokenMetaData marker interface, which is used to load them dynamically using 
 service manifests. 
 
-4. The ability to search for information in the 'Details' column of the audit log has been removed.
+5. The ability to search for information in the 'Details' column of the audit log has been removed.
 
 This is due to the fact that search was not delivering results for rows that contain accented characters, which gave inconsistent behavior. 
 This functionality will be reintroduced when the search always delivers the same results. 
 
-5. WebService API has changed for approvals 
+6. WebService API has changed for approvals 
 
 During the rework of Approvals in EJBCA 6.7.0, the exception class WaitingForApprovalException was changed, where the attribute approvalId was changed 
 to the more usable requestId. Since this value was of little use for webservice calls we judged that there was little harm in changing it, but any 3rd 
