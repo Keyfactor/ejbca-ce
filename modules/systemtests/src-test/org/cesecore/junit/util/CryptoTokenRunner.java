@@ -43,7 +43,7 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
-    protected final String SUBJECT_DN = "SN=1234, CN=" + getSimpleName();
+    protected final String SUBJECT_DN_BASE = "SN=1234, CN=" + getSimpleName();
 
     
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
