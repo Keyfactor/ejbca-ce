@@ -544,6 +544,7 @@
                 <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
         		<include name="va-publisher.jar" />
+				<include name="acme-common.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">

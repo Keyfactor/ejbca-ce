@@ -28,12 +28,4 @@ public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSess
     
     /** @return all registered configuration IDs. */
     Set<String> getIds();
-
-    /**
-     * Programmatic registration of ConfigurationCache types.
-     * Useful for modules that don't provide a common base library accessible to all modules.
-     * 
-     * @return true if the provided configuration cache type was registered successfully
-     */
-    boolean registerNonServiceLoadedConfigurationCache(ConfigurationCache configurationCache);
 }
