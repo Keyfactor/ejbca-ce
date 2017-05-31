@@ -40,6 +40,8 @@ import org.junit.runners.model.InitializationError;
  */
 public class PKCS12TestRunner extends CryptoTokenRunner {
 
+    private final String SUBJECT_DN = SUBJECT_DN_BASE + "P12";
+    
     private static final String ALIAS = "signKeyAlias";
     
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
