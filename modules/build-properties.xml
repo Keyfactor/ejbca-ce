@@ -70,6 +70,7 @@
     <property name="mod.peerconnector-publ.lib" location="${mod.dist.path}/peerconnector-publ.jar" />
     <property name="mod.acme.path" location="${mod.path}/acme" />
     <property name="mod.acme.war" location="${mod.dist.path}/acme.war" />
+    <property name="mod.acme-common.jar" location="${mod.dist.path}/acme-common.jar" />
     <property name="mod.admin-gui.path" location="${mod.path}/admin-gui" />
     <property name="mod.admin-gui.war" location="${mod.dist.path}/adminweb.war" />
     <property name="mod.cmp-war.path" location="${mod.path}/ejbca-cmp-war" />
