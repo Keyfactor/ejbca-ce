@@ -52,8 +52,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
  */
 public class PKCS11TestRunner extends CryptoTokenRunner {
 
-    private final String SUBJECT_DN = SUBJECT_DN_BASE + "P11";
-
     
     private static final String DEFAULT_TOKEN_PIN = "userpin1";
     private static final String ALIAS = "signKeyAlias åäöÅÄÖnâćŋA©Ba";
@@ -145,6 +143,11 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     public Integer createCryptoToken() throws Exception {
         cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
         return cryptoTokenId;
-    };
+    }
+
+    @Override
+    public String getNamingSuffix() {
+        return "P11";
+    }
 
 }
