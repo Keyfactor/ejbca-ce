@@ -39,8 +39,6 @@ import org.junit.runners.model.InitializationError;
  *
  */
 public class PKCS12TestRunner extends CryptoTokenRunner {
-
-    private final String SUBJECT_DN = SUBJECT_DN_BASE + "P12";
     
     private static final String ALIAS = "signKeyAlias";
     
@@ -103,6 +101,11 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     public Integer createCryptoToken() throws Exception {
         cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, super.getName());
         return cryptoTokenId;
+    }
+    
+    @Override
+    public String getNamingSuffix() {
+        return "P12";
     }
 
 

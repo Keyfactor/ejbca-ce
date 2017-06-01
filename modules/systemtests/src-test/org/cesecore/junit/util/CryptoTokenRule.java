@@ -55,4 +55,8 @@ public class CryptoTokenRule extends ExternalResource {
     public static void setCallback(final CryptoTokenRunner callback) {
         CryptoTokenRule.callback = callback;
     }
+    
+    public String getNamingSuffix() {
+        return callback.getNamingSuffix();
+    }
 }

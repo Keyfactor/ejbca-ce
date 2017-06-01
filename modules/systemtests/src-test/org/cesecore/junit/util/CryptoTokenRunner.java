@@ -43,7 +43,7 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
-    protected final String SUBJECT_DN_BASE = "SN=1234, CN=" + getSimpleName();
+    protected final String SUBJECT_DN = "SN=1234, CN=" + getSimpleName() + getNamingSuffix();
 
     
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -64,6 +64,8 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
     public abstract X509CA createX509Ca() throws Exception;
 
     public abstract void tearDownCa(CA ca);
+    
+    public abstract String getNamingSuffix();
     
     public void tearDownAllCas() {
         List<CA> defensiveCopy = new ArrayList<CA>(casToRemove.values());
