@@ -307,7 +307,7 @@ function viewcert(link){
 	 </h:panelGroup>
     <h:panelGroup style="padding: 5px 10px" layout="block">
     	<h:commandButton id="buttonSave" value="#{web.text.APPROVAL_SAVE_STATE}" actionListener="#{approvalActionManagedBean.saveState}"
-    	rendered="#{approvalActionManagedBean.currentStepOrdinal > -1}" disabled="#{!approvalActionManagedBean.canApproveAnyPartitions()}"/>
+    	rendered="#{approvalActionManagedBean.currentStepOrdinal > -1 and approvalActionManagedBean.approvable}" disabled="#{!approvalActionManagedBean.canApproveAnyPartitions()}"/>
     	<h:commandButton id="buttonCancel" value="#{web.text.CANCEL}" onclick="self.close()"/>
     </h:panelGroup>
  </h:form>
