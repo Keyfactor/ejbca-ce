@@ -784,18 +784,18 @@
 	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default)">
 		<antcall target="clean" />
 
-	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
-	<scriptdef name="convertdot" language="javascript">
-	    <![CDATA[
-          ver = project.getProperty("app.version.number");
-		  // We have to "cast" ver to a javascript string to avoid errors in JDK about "is ambiguous"
-		  relstring = (ver+"").replace(/\./g,'_');
-	      //self.log(ver);
-	      //self.log(relstring);
-		  project.setProperty("ejbca.zipversion", relstring);
-          str = project.getProperty("ejbca.zipversion");
-	    ]]>
-    </scriptdef>
+		<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
+		<scriptdef name="convertdot" language="javascript">
+		    <![CDATA[
+	          ver = project.getProperty("app.version.number");
+			  // We have to "cast" ver to a javascript string to avoid errors in JDK about "is ambiguous"
+			  relstring = (ver+"").replace(/\./g,'_');
+		      //self.log(ver);
+		      //self.log(relstring);
+			  project.setProperty("ejbca.zipversion", relstring);
+	          str = project.getProperty("ejbca.zipversion");
+		    ]]>
+	    </scriptdef>
 		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
 		<antcall target="update-edition" />
 		<convertdot/> <!-- convert dots to underscores in version string -->
@@ -823,6 +823,8 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
+		    	<!-- Exclude ACME for 6.8.0 -->
+		    	<exclude name="modules/acme/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
