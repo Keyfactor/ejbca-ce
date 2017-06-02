@@ -57,6 +57,7 @@ public class ProfileData extends ProtectedData implements Serializable {
      */
     public ProfileData(int id, Profile profile) {
         setId(id);
+        profile.setProfileId(id); // ID in the data map should be same as in database column
         setProfileName(profile.getProfileName());
         setProfileType(profile.getProfileType());
         setDataMap(profile.getDataMap());
