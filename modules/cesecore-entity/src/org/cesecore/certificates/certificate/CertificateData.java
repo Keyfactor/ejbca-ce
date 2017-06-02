@@ -143,7 +143,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 setSubjectAltName(CertTools.getSubjectAlternativeName(certificate));
             }
             if (log.isDebugEnabled()) {
-                log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp);
+                log.debug("Creating CertificateData, subjectDN=" + getSubjectDnNeverNull() + ", subjectAltName=" + getSubjectAltNameNeverNull() + ", issuer=" + getIssuerDN() + ", fingerprint=" + fp+", storeSubjectAltName="+storeSubjectAltName);
             }
             setSerialNumber(CertTools.getSerialNumber(certificate).toString());
 
