@@ -108,6 +108,8 @@ During the rework of Approvals in EJBCA 6.7.0, the exception class WaitingForApp
 to the more usable requestId. Since this value was of little use for webservice calls we judged that there was little harm in changing it, but any 3rd 
 party implementations of the WS API should be aware of this change.    
 
+NOTE: There is now a possibility to store subject alternative names in CertificateData, and search for certificates based on that. 
+This feature is disabled by default and you need to enable it with 'Search enabled' for 'Subject Alternative Name' in old Certificate Profiles.  
 
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
