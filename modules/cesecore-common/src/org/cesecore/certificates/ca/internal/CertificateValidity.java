@@ -127,7 +127,7 @@ public class CertificateValidity {
 			log.debug("Certificate profile use validty offset: "+certProfile.getUseCertificateValidityOffset());
 			log.debug("Certificate profile validty offset: "+certProfile.getCertificateValidityOffset());
 			log.debug("Certificate profile use expiration restrictions for weekdays: "+certProfile.getUseExpirationRestrictionForWeekdays());
-			log.debug("Certificate profile expiration restrictions weekdays: "+certProfile.getExpirationRestrictionWeekdays());
+			log.debug("Certificate profile expiration restrictions weekdays: "+Arrays.toString(certProfile.getExpirationRestrictionWeekdays()));
 			log.debug("Certificate profile expiration restrictions for weekdays before: "+certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
 		}
 		if ( TOO_LATE_EXPIRE_DATE==null ) {
