@@ -587,12 +587,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Trouble during back end envocation: " + e.getMessage());
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
                     }
                     // Just try next implementation
                 } catch (RaMasterBackendUnavailableException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Timeout during back end envocation.", e);
+                        log.debug("Timeout during back end invocation.", e);
                     }
                     // If the back end timed out due to a too heavy search we want to allow the client to retry with more fine grained criteria
                     ret.setMightHaveMoreResults(true);
@@ -644,12 +644,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     ret.merge(raMasterApi.searchForEndEntities(authenticationToken, raEndEntitySearchRequest));
                 } catch (UnsupportedOperationException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Trouble during back end envocation: " + e.getMessage());
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
                     }
                     // Just try next implementation
                 } catch (RaMasterBackendUnavailableException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Timeout during back end envocation.", e);
+                        log.debug("Timeout during back end invocation.", e);
                     }
                     // If the back end timed out due to a too heavy search we want to allow the client to retry with more fine grained criteria
                     ret.setMightHaveMoreResults(true);
