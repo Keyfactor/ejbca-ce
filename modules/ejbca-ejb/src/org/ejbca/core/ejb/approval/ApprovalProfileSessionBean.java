@@ -81,7 +81,6 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         String name = profile.getProfileName();
         if (isFreeApprovalProfileId(id)) {
             if (findByApprovalProfileName(name).isEmpty()) {
-                profile.setProfileId(id);
                 entityManager.persist(new ProfileData(Integer.valueOf(id), profile));
                 approvalProfileCache.forceCacheExpiration();
                 final String msg = INTRES.getLocalizedMessage("approval.profile.store.add", name);
