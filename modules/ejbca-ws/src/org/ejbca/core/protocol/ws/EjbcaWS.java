@@ -868,10 +868,10 @@ public class EjbcaWS implements IEjbcaWS {
 									// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
 									verifiedOuter = true; 
 									try {
-                                        if (ejbcaWSHelperSession.checkValidityAndSetUserPassword(admin, cert, username, password)) {
-                                        	// If we managed to verify the certificate we will break out of the loop									
-                                        	break;
-                                        }
+									    // Check certificate validity and set end entity status/password.
+									    // This will throw one of several exceptions if the certificate is invalid 
+                                        ejbcaWSHelperSession.checkValidityAndSetUserPassword(admin, cert, username, password);
+                                    	break;						
                                     } catch (EndEntityProfileValidationException e) {
                                         throw new UserDoesntFullfillEndEntityProfile(e);
                                     }
@@ -935,12 +935,9 @@ public class EjbcaWS implements IEjbcaWS {
 						                verifiedOuter = true; 
 						                // Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
 						                try {
-                                            if (!ejbcaWSHelperSession.checkValidityAndSetUserPassword(admin, cert, username, password)) {
-                                                // If the CA certificate was not valid, we are not happy									
-                                                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
-                                                log.info(msg);
-                                                throw new AuthorizationDeniedException(msg);
-                                            }
+						                    // Check certificate validity and set end entity status/password.
+                                            // This will throw one of several exceptions if the certificate is invalid
+                                            ejbcaWSHelperSession.checkValidityAndSetUserPassword(admin, cert, username, password);
                                         } catch (EndEntityProfileValidationException e) {
                                             throw new UserDoesntFullfillEndEntityProfile(e);
                                         }							

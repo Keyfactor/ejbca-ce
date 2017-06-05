@@ -71,7 +71,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -138,6 +137,13 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
+    
+    private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED,UserDataVOWS.TOKEN_TYPE_P12,
+                                              UserDataVOWS.TOKEN_TYPE_JKS,UserDataVOWS.TOKEN_TYPE_PEM };
+    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN,
+            SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
+    
+    
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
@@ -160,30 +166,24 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
 	@Override
 	public void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
-		try {
-			if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
-		        throw new AuthorizationDeniedException(msg);
-			}
-			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
-			if (userdata == null){
-			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
-				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
-			}
-			if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY, null);
-		        throw new AuthorizationDeniedException(msg);
-			}
-			if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid )){
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
-		        throw new AuthorizationDeniedException(msg);
-			}
-
-		} catch (EJBException e) {
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
+		if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
+	        throw new AuthorizationDeniedException(msg);
 		}
-
+		EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
+		if (userdata == null){
+		    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+			String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
+			throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
+		}
+		if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY, null);
+	        throw new AuthorizationDeniedException(msg);
+		}
+		if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid )){
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
+	        throw new AuthorizationDeniedException(msg);
+		}
 	}
 	
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
@@ -447,12 +447,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         final String username = endEntityInformation.getUsername();
 		// No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
 		// trying to add/edit the user
-		final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();
-		if (caname == null) {
-			final String message = "Error CA id " + endEntityInformation.getCAId() + " does not exist. User: "+username;
-			log.error(message);
-			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
-		}		
+		final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();	
 
 		final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(endEntityInformation.getEndEntityProfileId());
 		if (endentityprofilename == null){
@@ -630,20 +625,15 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 				if (authorized.booleanValue()) {
 					retval.add(new Certificate(next));
 				}
-			} catch (CertificateExpiredException e) {		// Drop invalid cert
-			} catch (CertificateNotYetValidException e) {   // Drop invalid cert
-			} catch (CertificateEncodingException e) {		// Drop invalid cert
+			} catch (CertificateExpiredException | CertificateNotYetValidException e) {
+			    // Drop invalid cert
+			} catch (CertificateEncodingException e) { 
+			    // Drop invalid cert
 				log.error("A defect certificate was detected.");
 			} 
 		}
 		return retval;
 	}
-	
-	
-	private final String[] softtokennames = {UserDataVOWS.TOKEN_TYPE_USERGENERATED,UserDataVOWS.TOKEN_TYPE_P12,
-			                                 UserDataVOWS.TOKEN_TYPE_JKS,UserDataVOWS.TOKEN_TYPE_PEM};
-	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
-			SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM};
 	
 	private int getTokenId(AuthenticationToken admin, String tokenname) {
       int returnval = 0;
@@ -702,16 +692,15 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 			endEntityManagementSession.setUserStatus(admin, username, status);	
 			log.debug("Reset user password to null and status to "+status);
 		} catch (Exception e) {
-			// Catch all because this reset method will be called from withing other catch clauses
+			// Catch all because this reset method will be called from within other catch clauses
 			log.error(e);
 		}
 	}
 
 	@Override
-	public boolean checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
-            throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
+	public void checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
+            throws CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
             AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException {
-		boolean ret = false;
 		try {
 			// Check validity of the certificate after verifying the signature
 			CertTools.checkValidity(cert, new Date());
@@ -722,7 +711,6 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 			endEntityManagementSession.setPassword(admin, username, password);
 			endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
 			// If we managed to verify the certificate we will break out of the loop									
-			ret = true;															
 		} catch (CertificateNotYetValidException e) {
 			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
 			if (log.isDebugEnabled()) {
@@ -735,7 +723,6 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             }
 			throw e;
 		}
-		return ret;
 	}
 
 	@Override

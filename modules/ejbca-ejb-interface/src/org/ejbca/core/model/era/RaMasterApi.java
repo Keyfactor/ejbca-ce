@@ -325,7 +325,7 @@ public interface RaMasterApi {
      * @param authenticationToken authentication token
      * @param endEntity end entity information. CertificateRequest (CSR) must be set under extendedInformation of the endEntityInformation. 
      * @param certificateRequest CSR as PKCS10CertificateRequst object
-     * @return certificate binary data
+     * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      */
@@ -340,7 +340,7 @@ public interface RaMasterApi {
      * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
-     * @return certificate binary data
+     * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null. 
      * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
      * @throws ApprovalException if the request requires approval
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
@@ -356,7 +356,6 @@ public interface RaMasterApi {
      * @param authenticationToken authentication token
      * @param username username of the end entity
      * @return end entity as EndEntityInformation
-     * @throws AuthorizationDeniedException
      */
     EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
 
@@ -364,7 +363,7 @@ public interface RaMasterApi {
      * Gets the certificate chain for the most recently created certificate for the end entity with the given user name.
      * @param authenticationToken Authentication token.
      * @param username User name of end entity.
-     * @return Certificate chain, with the leaf certificate first.
+     * @return Certificate chain, with the leaf certificate first. If the users does not exist, it returns an empty list.
      * @throws AuthorizationDeniedException If not authorized to the end entity of the user
      * @throws EjbcaException On internal errors, such as badly encoded certificate.
      */

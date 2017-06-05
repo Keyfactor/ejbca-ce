@@ -92,7 +92,6 @@ public interface IEjbcaWS {
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
-	 * @throws IllegalQueryException 
 	 */
     void editUser(UserDataVOWS userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             EjbcaException, ApprovalException, WaitingForApprovalException;
@@ -113,7 +112,6 @@ public interface IEjbcaWS {
 	 * @throws IllegalQueryException if query isn't valid
 	 * @throws EjbcaException 
 	 * @throws EndEntityProfileNotFoundException 
-	 * @throws CesecoreException 
 	 */
 	List<UserDataVOWS> findUser(UserMatch usermatch)
 			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
@@ -172,11 +170,12 @@ public interface IEjbcaWS {
 	 * If the user is not found on the local system, then the query will be forwarded to upstream peer systems (if any).
 	 * 
 	 * @param username a unique username 
-	 * @return a collection of X509Certificates or null if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc, or if user does not exist
+	 * @return a collection of X509Certificates or an empty list if no certificates could be found with user certificate in pos 0, SubCA in 1, RootCA in 2 etc, or if user does not exist.
+	 *         Prior to EJBCA 6.8.0, the documentation incorrectly stated that this method could return null when it actually returns an empty list.
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws EjbcaException 
+	 * @throws EjbcaException on internal errors, such as badly encoded certificate.
 	 */
-	List<Certificate> getLastCertChain(String username) 
+	List<Certificate> getLastCertChain(String username)
 	throws AuthorizationDeniedException, EjbcaException;
 	
 	/**
@@ -1130,7 +1129,6 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
-	 * @throws IllegalQueryException 
 	 * @see #editUser(UserDataVOWS)
 	 */
 	KeyStore softTokenRequest(UserDataVOWS userData, String hardTokenSN, String keyspec, String keyalg)
@@ -1169,7 +1167,6 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
-	 * @throws IllegalQueryException 
 	 * @see #editUser(UserDataVOWS)
 	 */
 	CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
