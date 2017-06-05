@@ -33,7 +33,6 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -72,9 +71,8 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @param admin
      * @param usermatch a usermatch containing names of profiles
      * @return a query containing id's of profiles.
-     * @throws NumberFormatException
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
+     * @throws AuthorizationDeniedException if searching by a CA which the admin is not authorized to.
+     * @throws CADoesntExistsException if searching for a non-existent CA.
      * @throws EndEntityProfileNotFoundException if usermatch was for and end entity profile, and that profile didn't exist
      */
     Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws CADoesntExistsException,
@@ -90,15 +88,36 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      */
     List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, Collection<java.security.cert.Certificate> certs, boolean validate, long nowMillis);
 
-    boolean checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
-            throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
+    /**
+     * Verifies that the given certificate has a correct signature and is currently valid, and
+     * if so, sets the end entity status to NEW and sets its password. Used from {@link org.ejbca.core.protocol.ws.EjbcaWS#cvcRequest EjbcaWS.cvcRequest} during renewals.
+     * @param admin authentication token
+     * @param cert certificate to check validity and signature of.
+     * @param username username of end entity to update.
+     * @param password new password to set for end entity.
+     * @throws CertificateNotYetValidException if the certificate is not yet valid
+     * @throws CertificateExpiredException if the certificate has expired
+     * @throws EndEntityProfileValidationException if the password does not satisfy the requirements in the end entity profile
+     * @throws NoSuchEndEntityException if there's no end entity with the given username
+     * @throws AuthorizationDeniedException if not authorized to the given end entity
+     * @throws ApprovalException if an approval error occurred while setting end entity status 
+     * @throws WaitingForApprovalException if approval is required for setting the end entity status
+     */
+    void checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
+            throws CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
             AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException;
 
+    /**
+     * Resets the password and restores the status for the given end entity.
+     * Used for restoring the end entity status if a certificate request operation failed.
+     * All exceptions are swallowed and error-logged, since this method is intended to be called from catch blocks.
+     * @param admin authentication token.
+     * @param username username of end entity
+     * @param status original end entity status to restore
+     */
     void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status);
     
     /**
-     * @throws CryptoTokenAuthenticationFailedException 
-     * @throws CryptoTokenOfflineException 
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
      */
     byte[] caRenewCertRequest(AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
