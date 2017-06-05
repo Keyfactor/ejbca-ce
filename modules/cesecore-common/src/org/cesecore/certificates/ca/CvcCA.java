@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
@@ -49,7 +50,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
-	public static final float LATEST_VERSION = 4;
+	public static final float LATEST_VERSION = 5;
 
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
 	public void init(CVCCAInfo cainfo) {
@@ -187,6 +188,18 @@ public abstract class CvcCA extends CA implements Serializable {
             if(null == data.get(ENCODED_VALIDITY) && null != data.get(VALIDITY)) {
                 setEncodedValidity(getEncodedValidity());
             }
+            
+            // v5,  Remapping approvals to one profile per approval profile (ECA-5845)
+            if(getApprovals() == null) {
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+                int approvalProfile = getApprovalProfile();
+                if (approvalProfile != -1) {
+                    for (int approvalSetting : getApprovalSettings()) {
+                        approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfile);
+                    }
+                }
+                setApprovals(approvals);
+            }   
             
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}  

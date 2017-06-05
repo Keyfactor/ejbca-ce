@@ -64,7 +64,6 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -1396,28 +1395,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 roleMemberDataSession.persistRoleMember(new RoleMember(accessUserAspect.getPrimaryKey(), tokenType,
                         tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
-        }
-        log.debug("migrateDatabase680: Converting CAs from using one approval profile for all approval types to use 1:1");
-        try {
-            for (int caId : caSession.getAllCaIds()) {
-                CA ca = caSession.getCAForEdit(authenticationToken, caId);
-                //If approvals map is null, then this CA is in an unupgraded state.
-                if(ca.getApprovals() == null) {
-                    Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
-                    int approvalProfile = ca.getApprovalProfile();
-                    if (approvalProfile != -1) {
-                        for (int approvalSetting : ca.getApprovalSettings()) {
-                            approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfile);
-                        }
-                    }
-                    ca.setApprovals(approvals);
-                    caSession.editCA(authenticationToken, ca, true);
-                }             
-            }
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Always allow token was denied access.", e);
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("CA doesn't exist in spite of just being retrieved", e);
         }
         
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
