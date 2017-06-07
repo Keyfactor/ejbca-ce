@@ -1148,11 +1148,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             Map<ApprovalRequestType, Integer> approvals = certificateProfile.getApprovals();
             for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId;
-                if (approvals.containsKey(Integer.valueOf(approvalRequestType.getIntegerValue()))) {
-                    approvalProfileId = approvals.get(Integer.valueOf(approvalRequestType.getIntegerValue()));
-                } else {
-                    approvalProfileId = -1;
-                }
+                if (approvals.containsKey(approvalRequestType)) { 
+                    approvalProfileId = approvals.get(approvalRequestType); 
+                } else { 
+                    approvalProfileId = -1; 
+                } 
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
         }
