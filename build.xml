@@ -516,7 +516,8 @@
                 <include name="peerconnector.war" />
                 <include name="peerconnector-ejb.jar" />
                 <include name="ra-gui.war" />
-				<include name="acme.war" />
+                <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
+				<include name="${in-test-mode-include}acme.war" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -544,7 +545,8 @@
                 <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
         		<include name="va-publisher.jar" />
-				<include name="acme-common.jar" />
+                <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
+				<include name="${in-test-mode-include}acme-common.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
