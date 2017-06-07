@@ -759,12 +759,12 @@ public class X509CA extends CA implements Serializable {
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
                         certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
-                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
+                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException("Error withing creating or removing link certificate.", e);
+                throw new IllegalStateException("Error withing creating or removing link certificate.", e);
             }
         }
         updateLatestLinkCertificate(ret);
@@ -1008,14 +1008,13 @@ public class X509CA extends CA implements Serializable {
                 log.debug("Using subject DN also as issuer DN, because it is a root CA");
             }
             if(linkCertificate && caNameChange){
-                Collection<Certificate> renewedCertificateChain = getRenewedCertificateChain();
+                ArrayList<Certificate> renewedCertificateChain = getRenewedCertificateChain();
                 if(renewedCertificateChain == null || renewedCertificateChain.isEmpty()){
                     //"Should not happen" error
                     log.error("CA name change is in process but renewed (old) certificates chain is empty");
                     throw new CertificateCreateException("CA name change is in process but renewed (old) certificates chain is empty");
                 }
-                Iterator<Certificate> iterator = renewedCertificateChain.iterator();
-                issuerDNName = X500Name.getInstance(((X509Certificate)iterator.next()).getSubjectX500Principal().getEncoded());
+                issuerDNName = X500Name.getInstance(((X509Certificate)renewedCertificateChain.get(renewedCertificateChain.size()-1)).getSubjectX500Principal().getEncoded());
             }else{
                 issuerDNName = subjectDNName;
             }
