@@ -231,6 +231,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
         ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
         ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
+        String javaScriptText = "window.close();"; 
         for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
             ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
             Integer partitionId = approvalPartitionGuiObject.getPartitionId();
@@ -266,12 +267,17 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     }
                 } catch (ApprovalRequestExpiredException e) {
                     addErrorMessage("APPROVALREQUESTEXPIRED");
+                    // Prevent window closing to display error message first
+                    javaScriptText = "";
                 } catch (ApprovalRequestExecutionException e) {
                     addErrorMessage("ERROREXECUTINGREQUEST");
+                    javaScriptText = "";
                 } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
                     addErrorMessage("AUTHORIZATIONDENIED");
+                    javaScriptText = "";
                 } catch (ApprovalException e) {
                     addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+                    javaScriptText = "";
                 } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
                     addErrorMessage(e.getMessage());
                 }
@@ -280,8 +286,6 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
         //Hack for closing the window after saving
         FacesContext facesContext = FacesContext.getCurrentInstance(); 
-        //Yeah. I know. 
-        String javaScriptText = "window.close();"; 
         //Add the Javascript to the rendered page's header for immediate execution 
         AddResource addResource = AddResourceFactory.getInstance(facesContext); 
         //Think of a better solution and you're free to implement it.
@@ -441,8 +445,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if(!partitionsAuthorizedToApprove.contains(partition.getPartitionId())) {
             return false;
         }
-        
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
+        if (approvalDataVO == null) {
+            return false;
+        }
         if(approvalDataVO.getApprovalRequest().isEditedByMe(getAdmin())) {
             return false;
         }
