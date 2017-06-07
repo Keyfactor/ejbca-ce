@@ -700,11 +700,11 @@ public class UpgradeSessionBeanTest {
             upgradeSession.upgrade(null, "6.7.0", false);
             //Verify that the CA without approval set merely returns an empty map
             CertificateProfile upgradedNoApprovals = certificateProfileSession.getCertificateProfile(noApprovalsName);
-            assertTrue("CA without approvals was upgraded to have approvals", upgradedNoApprovals.getApprovals().isEmpty());
+            assertTrue("Certificate Profile without approvals was upgraded to have approvals", upgradedNoApprovals.getApprovals().isEmpty());
 
             CertificateProfile upgradedWithApprovals = certificateProfileSession.getCertificateProfile(withApprovalsName);
             Map<ApprovalRequestType, Integer> approvals = upgradedWithApprovals.getApprovals();
-            assertEquals("CA with approvals for two actions did not get any approvals set.", 2, approvals.size());
+            assertEquals("Certificate Profile  with approvals for two actions did not get any approvals set.", 2, approvals.size());
             assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.ACTIVATECA));
             assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(requireTwoApprovalsId), approvals.get(ApprovalRequestType.KEYRECOVER));
         } finally {
