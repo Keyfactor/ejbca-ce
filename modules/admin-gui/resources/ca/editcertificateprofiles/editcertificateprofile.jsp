@@ -230,7 +230,7 @@
 
 	    <!-- Which extension can be overridden and not -->
 		<h:panelGroup>
-			<h:outputLabel for="overridableextensionlist" value="#{web.text.OVERRIDABLEOIDSEXTENSIONLIST}"/>
+			<h:outputLabel for="overridableextensionlistgroup" value="#{web.text.OVERRIDABLEOIDSEXTENSIONLIST}"/>
 		</h:panelGroup>
 		<h:panelGroup id="overridableextensionlistgroup">
 			<h:inputText id="textfieldcustomoverridableextension" size="25" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.overridableExtensionOIDs}"
