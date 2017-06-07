@@ -59,7 +59,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 46.0;
+    public static final float LATEST_VERSION = (float) 45.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -2942,19 +2942,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 } else {
                     data.put(QCETSIPDS, null);
                 }
-            }
-            
-            // v46: Remapping approvals to one profile per approval profile (ECA-5845)
-            if(!data.containsKey(APPROVALS)) {
-                int approvalProfileId = getApprovalProfileID();
-                List<Integer> approvalActions = getApprovalSettings();
-                Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
-                if(approvalProfileId != -1) {
-                    for(Integer approvalAction : approvalActions) {
-                        approvals.put(ApprovalRequestType.getFromIntegerValue(approvalAction), approvalProfileId);
-                    }
-                }
-                data.put(APPROVALS, approvals);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));
