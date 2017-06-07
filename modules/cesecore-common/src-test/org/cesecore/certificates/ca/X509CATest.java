@@ -21,7 +21,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -40,9 +39,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -111,7 +108,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -137,54 +133,6 @@ public class X509CATest {
 	public X509CATest() {
 		CryptoProviderTools.installBCProvider();
 	}
-	
-    /**
-     * Test upgrading CAs and Certificat Profiles to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
-     * profile for all actions. Expected behavior is that the upgraded CA/CP should have a map containing all actions mapped to the same (previously)
-     * set profile, and any entities
-     * 
-     */
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testUpgradeToApprovals() throws Exception {
-        Field dataField = UpgradeableDataHashMap.class.getDeclaredField("data");
-        dataField.setAccessible(true);
-      
-        //This CA should not be assigned an approval profile on account of lacking any actions
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        X509CA noActionsCa = createTestCA(cryptoToken, "CN=NoActions");
-        noActionsCa.setApprovals(null);
-        noActionsCa.setApprovalProfile(-1);
-        noActionsCa.setApprovalSettings(new ArrayList<Integer>());
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<Object, Object> noActionsCaData = (LinkedHashMap<Object, Object>) dataField.get(noActionsCa);
-        noActionsCaData.put(UpgradeableDataHashMap.VERSION, 22.0f);
-        dataField.set(noActionsCa, noActionsCaData);
-        
-        //Verify that the CA without approval set merely returns an empty map
-        noActionsCa.upgrade();
-        assertTrue("CA without approvals was upgraded to have approvals", noActionsCa.getApprovals().isEmpty());
-
-        //This CA should be assigned a profile, and a couple of actions.      
-        int approvalProfileId = 1;
-        X509CA caWithApprovalsSet = createTestCA(cryptoToken, "CN=caWithApprovalsSet");
-        caWithApprovalsSet.setApprovals(null);
-        caWithApprovalsSet.setApprovalProfile(approvalProfileId);
-        List<Integer> approvalSettings = new ArrayList<>(Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.KEYRECOVER.getIntegerValue()));
-        caWithApprovalsSet.setApprovalSettings(approvalSettings);
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<Object, Object> caWithApprovalsSetData = (LinkedHashMap<Object, Object>) dataField.get(caWithApprovalsSet);
-        caWithApprovalsSetData.put(UpgradeableDataHashMap.VERSION, 22.0f);
-        dataField.set(caWithApprovalsSet, caWithApprovalsSetData);
-        caWithApprovalsSet.upgrade();
-        Map<ApprovalRequestType, Integer> approvals = caWithApprovalsSet.getApprovals();
-        assertEquals("CA with approvals for two actions did not get any approvals set.", 2, approvals.size());
-        assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(approvalProfileId),
-                approvals.get(ApprovalRequestType.ACTIVATECA));
-        assertEquals("Approval profile was not set for action during upgrade.", Integer.valueOf(approvalProfileId),
-                approvals.get(ApprovalRequestType.KEYRECOVER));
-    }
-	
 	
 	@Test
 	public void testX509CABasicOperationsRSA() throws Exception {

@@ -759,26 +759,5 @@ public class CertificateProfileTest {
             }
         }
     }    
-    
-    /**
-     * Test that certificate profiles are automatically upgraded to the new approvals format introduced in 6.8.0
-     */
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testUpgradeOfApprovals() {
-        CertificateProfile certificateProfile = new CertificateProfile();        
-        final Map<String,Object> data = new HashMap<>();
-        initDataMap(data);
-        data.put(UpgradeableDataHashMap.VERSION, 44.0F);
-        Integer approvalProfile = 4711;
-        data.put(CertificateProfile.APPROVALPROFILE, approvalProfile);
-        data.put(CertificateProfile.APPROVALSETTINGS, Arrays.asList(ApprovalRequestType.ACTIVATECA.getIntegerValue(), ApprovalRequestType.ADDEDITENDENTITY.getIntegerValue()));
-        certificateProfile.loadData(data);
-        @SuppressWarnings("unchecked")
-        final Map<String,Object> result = (Map<String, Object>) certificateProfile.saveData();
-        @SuppressWarnings("unchecked")
-        Map<Integer, Integer> approvals = (Map<Integer, Integer>) result.get(CertificateProfile.APPROVALS);
-        assertEquals("Approvals in certificate profile was not upgraded", approvalProfile, approvals.get(ApprovalRequestType.ACTIVATECA));
-        assertEquals("Approvals in certificate profile was not upgraded", approvalProfile, approvals.get(ApprovalRequestType.ADDEDITENDENTITY));
-    }
+  
 }
