@@ -41,7 +41,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SimpleTimeZone;
 
@@ -168,7 +167,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 23;
+    public static final float LATEST_VERSION = 22;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -1825,19 +1824,7 @@ public class X509CA extends CA implements Serializable {
             // v22, 'encodedValidity' is derived by the former long value!
             if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
                 setEncodedValidity(getEncodedValidity());
-            }
-            
-            // v23,  Remapping approvals to one profile per approval profile (ECA-5845)
-            if(getApprovals() == null) {
-                Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
-                int approvalProfile = getApprovalProfile();
-                if (approvalProfile != -1) {
-                    for (int approvalSetting : getApprovalSettings()) {
-                        approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfile);
-                    }
-                }
-                setApprovals(approvals);
-            }             
+            }            
         }
     }
 
