@@ -326,7 +326,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         prunedValues.add(dynamicRadioButton);
                     }
                 }
-                if(radioButtonProperty.getDefaultValue().equals(radioButton)) {
+                if(radioButtonProperty.getDefaultValue().equals(radioButton) && !prunedValues.isEmpty()) {
                     radioButtonProperty.setDefaultValue(prunedValues.get(0));
                 }        
                 radioButtonProperty.setPossibleValues(prunedValues);
