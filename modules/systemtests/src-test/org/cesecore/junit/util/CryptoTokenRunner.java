@@ -22,10 +22,15 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.junit.Test;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.notification.RunNotifier;
@@ -35,6 +40,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
+
 /**
  * Base class for crypto token variations of the test runner. 
  * 
@@ -43,9 +49,6 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
-    protected final String SUBJECT_DN = "SN=1234, CN=" + getSimpleName() + getNamingSuffix();
-
-    
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
@@ -60,12 +63,6 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         CryptoTokenRule.setCallback(this);
     }
-
-    public abstract X509CA createX509Ca() throws Exception;
-
-    public abstract void tearDownCa(CA ca);
-    
-    public abstract String getNamingSuffix();
     
     public void tearDownAllCas() {
         List<CA> defensiveCopy = new ArrayList<CA>(casToRemove.values());
@@ -74,7 +71,24 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    public abstract Integer createCryptoToken() throws Exception;
+    @Override
+    protected List<FrameworkMethod> computeTestMethods() {
+        final List<FrameworkMethod> allMethods = getTestClass().getAnnotatedMethods(Test.class);
+        if (allMethods == null || allMethods.size() == 0) {
+            return allMethods;
+        }
+        final List<FrameworkMethod> filteredMethods = new ArrayList<FrameworkMethod>(allMethods.size());
+        for (final FrameworkMethod method : allMethods) {
+            final RunOnly runOnly = method.getAnnotation(RunOnly.class);
+            if (runOnly != null && getSubtype().equalsIgnoreCase(runOnly.implementation())) {
+                filteredMethods.add(method);
+            } else {
+                // Default behavior is to always run
+                filteredMethods.add(method);
+            }
+        }
+        return filteredMethods;
+    }
 
     public void teardownCryptoToken() {
         try {
@@ -99,6 +113,11 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    
+    protected String getSubjectDn() {
+        return "SN=1234, CN=" + getSimpleName() + getSubtype();
+    }
+    
     protected String getSimpleName() {
         return getTestClass().getJavaClass().getSimpleName();
     }
@@ -114,7 +133,26 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
     protected String testName(final FrameworkMethod method) {
         return String.format("%s [%s]", method.getName(), getSubtype());
     }
+    
+    public abstract X509CA createX509Ca() throws Exception;
 
+    public abstract void tearDownCa(CA ca);
+
+    /**
+     * @return a string differentiatior for the class inheriting this baseclass, mostly used for naming reasons. 
+     */
     public abstract String getSubtype();
+    
+    /**
+     * Will create a crypto token, as defined by the implementing subclass. 
+     * 
+     * @return the crypto token ID, never null.
+     * @throws NoSuchSlotException if the defined slot could not be found
+     * @throws CryptoTokenNameInUseException if a crypto token with the predefined name already exists
+     * @throws CryptoTokenAuthenticationFailedException if the crypto token could not be authenticated against
+     * @throws CryptoTokenOfflineException if the crypto token could not be activated
+     */
+    public abstract Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException, NoSuchSlotException;
 
 }

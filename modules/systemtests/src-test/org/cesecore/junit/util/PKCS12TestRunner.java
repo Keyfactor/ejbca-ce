@@ -27,8 +27,12 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -59,7 +63,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
 
     @Override
     public X509CA createX509Ca() throws Exception {
-        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, SUBJECT_DN);
+        X509CA x509ca = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(alwaysAllowToken, getSubjectDn());
         int cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, ALIAS, "1024");      
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
@@ -87,26 +91,25 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
                 //NOPMD Ignore
             }
         }
-        internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN);
+        internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
         casToRemove.remove(ca.getCAId());
     }
     
 
     @Override
     public String getSubtype() {       
-        return "PKCS#12";
+        return "pkcs12";
     }
 
     @Override
-    public Integer createCryptoToken() throws Exception {
-        cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, super.getName());
+    public Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+             NoSuchSlotException {
+        try {
+            cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowToken, super.getName());
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Always Allow token was denied access.", e);
+        }
         return cryptoTokenId;
     }
-    
-    @Override
-    public String getNamingSuffix() {
-        return "P12";
-    }
-
 
 }

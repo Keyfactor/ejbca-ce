@@ -39,9 +39,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -73,7 +76,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
     }
 
     public X509CA createX509Ca() throws Exception {
-        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(SUBJECT_DN, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
+        X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(getSubjectDn(), SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
                 true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         CAToken caToken = x509ca.getCAToken();
         caToken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, ALIAS);
@@ -127,7 +130,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
                     // NOPMD Ignore
                 }
             }
-            internalCertificateStoreSession.removeCertificatesBySubject(SUBJECT_DN);
+            internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
@@ -136,18 +139,18 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
 
     @Override
     public String getSubtype() {
-        return "PKCS#11";
+        return "pkcs11";
     }
 
     @Override
-    public Integer createCryptoToken() throws Exception {
-        cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
+    public Integer createCryptoToken() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+            NoSuchSlotException {
+        try {
+            cryptoTokenId = CryptoTokenTestUtils.createPKCS11Token(alwaysAllowToken, super.getName(), true);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Always Allow token was denied access.", e);
+        }
         return cryptoTokenId;
-    }
-
-    @Override
-    public String getNamingSuffix() {
-        return "P11";
     }
 
 }

@@ -57,6 +57,6 @@ public class CryptoTokenRule extends ExternalResource {
     }
     
     public String getNamingSuffix() {
-        return callback.getNamingSuffix();
+        return callback.getSubtype();
     }
 }
