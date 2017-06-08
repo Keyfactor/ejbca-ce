@@ -80,8 +80,10 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         final List<FrameworkMethod> filteredMethods = new ArrayList<FrameworkMethod>(allMethods.size());
         for (final FrameworkMethod method : allMethods) {
             final RunOnly runOnly = method.getAnnotation(RunOnly.class);
-            if (runOnly != null && getSubtype().equalsIgnoreCase(runOnly.implementation())) {
-                filteredMethods.add(method);
+            if (runOnly != null) {
+                if (getSubtype().equalsIgnoreCase(runOnly.implementation())) {
+                    filteredMethods.add(method);
+                }
             } else {
                 // Default behavior is to always run
                 filteredMethods.add(method);
