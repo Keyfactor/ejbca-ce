@@ -2321,6 +2321,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     @SuppressWarnings("unchecked")
     public Map<ApprovalRequestType, Integer> getApprovals() {
+        if (data.get(APPROVALS) == null) {
+            Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+            int approvalProfileId = getApprovalProfileID();
+            if(approvalProfileId != -1) {
+                for(int approvalSetting : getApprovalSettings()) {
+                    approvals.put(ApprovalRequestType.getFromIntegerValue(approvalSetting), approvalProfileId);
+                }
+            }
+            setApprovals(approvals);
+        }
         return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
     }
     
