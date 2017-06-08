@@ -13,11 +13,6 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
@@ -42,6 +37,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests the Name Change CA Renewal {@link CAAdminSession.renewCANewSubjectDn}
@@ -110,44 +107,64 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
     public void testRenewNewSubjectDNNewKeys() throws Exception {
         log.trace(">testRenewNewSubjectDNNewKeys()");
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
-        X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
-        byte[] orgkey = orgcert.getPublicKey().getEncoded();
+        X509Certificate caCertificateBeforeRenewal1 = (X509Certificate) info.getCertificateChain().iterator().next();
 
+        //Renewal 1
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
                 /*createLinkCertificates=*/true, newSubjectDN);
-        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
-        assertTrue("CA Info NameChanged field is not true after CA name-change renewal with same keys", newinfo2.getNameChanged());
-        X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
+        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
+        assertTrue("CA Info NameChanged field is not true after CA name-change renewal with same keys", newinfo.getNameChanged());
+        X509Certificate caCertificateAfterRenewal1 = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertFalse("Serial number hasn't changed for CA certificate after CA name-change renewal with new keys",
-                orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
+                caCertificateBeforeRenewal1.getSerialNumber().equals(caCertificateAfterRenewal1.getSerialNumber()));
         assertFalse("Subject DN hasn't changed for CA certificate after CA name-change renewal with new keys",
-                CertTools.getSubjectDN(orgcert).equals(CertTools.getSubjectDN(newcertnewkeys)));
+                CertTools.getSubjectDN(caCertificateBeforeRenewal1).equals(CertTools.getSubjectDN(caCertificateAfterRenewal1)));
         assertFalse("Issuer DN hasn't changed for CA certificate after CA name-change renewal with new keys",
-                CertTools.getIssuerDN(orgcert).equals(CertTools.getIssuerDN(newcertnewkeys)));
+                CertTools.getIssuerDN(caCertificateBeforeRenewal1).equals(CertTools.getIssuerDN(caCertificateAfterRenewal1)));
         assertFalse("AKI DN hasn't changed for CA certificate after CA name-change renewal with new keys",
-                Arrays.equals(CertTools.getAuthorityKeyId(newcertnewkeys), CertTools.getAuthorityKeyId(orgcert)));
+                Arrays.equals(CertTools.getAuthorityKeyId(caCertificateAfterRenewal1), CertTools.getAuthorityKeyId(caCertificateBeforeRenewal1)));
         assertFalse("SKI DN hasn't changed for CA certificate after CA name-change renewal with new keys",
-                Arrays.equals(CertTools.getSubjectKeyId(newcertnewkeys), CertTools.getSubjectKeyId(orgcert)));
-        byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
-        assertFalse("Public Key hasn't changed for CA certificate after CA name-change renewal with new keys", Arrays.equals(orgkey, newkey));
+                Arrays.equals(CertTools.getSubjectKeyId(caCertificateAfterRenewal1), CertTools.getSubjectKeyId(caCertificateBeforeRenewal1)));
+        assertFalse("Public Key hasn't changed for CA certificate after CA name-change renewal with new keys", Arrays.equals(caCertificateBeforeRenewal1.getPublicKey().getEncoded(), caCertificateAfterRenewal1.getPublicKey().getEncoded()));
 
         //Link certificate checks
-        byte[] latestLinkCertificateRaw = caAdminSession.getLatestLinkCertificate(newinfo2.getCAId());
-        assertTrue("There is no available link certificate after CA name-change renewal with new keys", latestLinkCertificateRaw != null);
+        byte[] linkCertificateAfterRenewal1Bytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
+        assertTrue("There is no available link certificate after CA name-change renewal with new keys", linkCertificateAfterRenewal1Bytes != null);
         @SuppressWarnings("deprecation")
-        X509Certificate latestLinkCertificate = (X509Certificate) CertTools.getCertfromByteArray(latestLinkCertificateRaw);
+        X509Certificate linkCertificateAfterRenewal1 = (X509Certificate) CertTools.getCertfromByteArray(linkCertificateAfterRenewal1Bytes);
         assertFalse("Issuer DN and Subject DN are equal of CA link certificate after CA name-change renewal with new keys",
-                CertTools.getIssuerDN(latestLinkCertificate).equals(CertTools.getSubjectDN(latestLinkCertificate)));
-        assertTrue("Issuer DN of CA link certificate is not equal to Subject DN of old CA certificate after CA name-change renewal with new keys",
-                CertTools.getIssuerDN(latestLinkCertificate).equals(CertTools.getSubjectDN(orgcert)));
-        assertTrue("Subject DN of CA link certificate is not equal to Subject DN of new CA certificate after CA name-change renewal with new keys",
-                CertTools.getSubjectDN(latestLinkCertificate).equals(CertTools.getSubjectDN(newcertnewkeys)));
+                CertTools.getIssuerDN(linkCertificateAfterRenewal1).equals(CertTools.getSubjectDN(linkCertificateAfterRenewal1)));
+        assertEquals("Issuer DN of CA link certificate is not equal to Subject DN of old CA certificate after CA name-change renewal with new keys",
+                CertTools.getSubjectDN(caCertificateBeforeRenewal1), CertTools.getIssuerDN(linkCertificateAfterRenewal1));
+        assertEquals("Subject DN of CA link certificate is not equal to Subject DN of new CA certificate after CA name-change renewal with new keys",
+                CertTools.getSubjectDN(caCertificateAfterRenewal1), CertTools.getSubjectDN(linkCertificateAfterRenewal1));
         assertTrue("AKI of CA link certificate is not equal to SKI of old CA certificate after CA name-change renewal with new keys",
-                Arrays.equals(CertTools.getAuthorityKeyId(latestLinkCertificate), CertTools.getSubjectKeyId(orgcert)));
+                Arrays.equals(CertTools.getAuthorityKeyId(linkCertificateAfterRenewal1), CertTools.getSubjectKeyId(caCertificateBeforeRenewal1)));
         assertTrue("SKI of CA link certificate is not equal to SKI of new CA certificate after CA name-change renewal with new keys",
-                Arrays.equals(CertTools.getSubjectKeyId(latestLinkCertificate), CertTools.getSubjectKeyId(newcertnewkeys)));
+                Arrays.equals(CertTools.getSubjectKeyId(linkCertificateAfterRenewal1), CertTools.getSubjectKeyId(caCertificateAfterRenewal1)));
         assertTrue("Link certificate doesn't have Name Change extension after CA name-change renewal with new keys",
-                latestLinkCertificate.getExtensionValue(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover.getId()) != null);
+                linkCertificateAfterRenewal1.getExtensionValue(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover.getId()) != null);
+
+        //Renewal 2: Renew CA with name change again and check that the link certificate has been signed with previous CA (and not with the first one)
+        caAdminSession.renewCANewSubjectDn(internalAdmin, newinfo.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
+                /*createLinkCertificates=*/true, newSubjectDN2);
+        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName2);
+        X509Certificate caCertificateAfterRenewal2 = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
+        X509Certificate linkCertificateAfterRenewal2 = (X509Certificate) CertTools.getCertfromByteArray(caAdminSession.getLatestLinkCertificate(newinfo2.getCAId()));
+
+        assertFalse("Issuer DN and Subject DN are equal of CA link certificate after CA name-change renewal with new keys",
+                CertTools.getIssuerDN(linkCertificateAfterRenewal2).equals(CertTools.getSubjectDN(linkCertificateAfterRenewal2)));
+        assertEquals("Issuer DN of CA link certificate is not equal to Subject DN of old CA certificate after CA name-change renewal with new keys",
+                CertTools.getSubjectDN(caCertificateAfterRenewal1), CertTools.getIssuerDN(linkCertificateAfterRenewal2));
+        assertEquals("Subject DN of CA link certificate is not equal to Subject DN of new CA certificate after CA name-change renewal with new keys",
+                CertTools.getSubjectDN(caCertificateAfterRenewal2), CertTools.getSubjectDN(linkCertificateAfterRenewal2));
+        assertTrue("AKI of CA link certificate is not equal to SKI of old CA certificate after CA name-change renewal with new keys",
+                Arrays.equals(CertTools.getAuthorityKeyId(linkCertificateAfterRenewal2), CertTools.getSubjectKeyId(caCertificateAfterRenewal1)));
+        assertTrue("SKI of CA link certificate is not equal to SKI of new CA certificate after CA name-change renewal with new keys",
+                Arrays.equals(CertTools.getSubjectKeyId(linkCertificateAfterRenewal2), CertTools.getSubjectKeyId(caCertificateAfterRenewal2)));
+        assertTrue("Link certificate doesn't have Name Change extension after CA name-change renewal with new keys",
+                linkCertificateAfterRenewal1.getExtensionValue(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover.getId()) != null);
+
         log.trace("<testRenewNewSubjectDNNewKeys()");
     }
     
@@ -193,6 +210,7 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
                 Arrays.equals(CertTools.getSubjectKeyId(latestLinkCertificate), CertTools.getSubjectKeyId(newcertsamekeys)));
         assertTrue("Link certificate doesn't have Name Change extension after CA name-change renewal with same keys",
                 latestLinkCertificate.getExtensionValue(ICAOObjectIdentifiers.id_icao_extensions_namechangekeyrollover.getId()) != null);
+
         log.trace("<testRenewNewSubjectDNSameKeys()");
     }
     
