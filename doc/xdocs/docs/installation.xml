@@ -546,7 +546,10 @@ data-source add --name=ejbcads --driver-name="org.mariadb.jdbc.Driver" --connect
 <source>
 data-source add --name=unidds --jta=false --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/unid" --jndi-name="java:/UnidDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="uniduser" --password="unidpass" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
 </source>
-<p>(note that 'select 1' must be different for DB2 and Oracle)</p>
+<p>(note that 'select 1' must be different for DB2 and Oracle)
+<br/>
+(note that for JBoss EAP 6 you need to add --enabled=true to the commands above, or else the datasource will not be enabled)
+</p>
 </subsubsection>
 
 <subsubsection name="JBoss 7 and EAP 6 logging">
