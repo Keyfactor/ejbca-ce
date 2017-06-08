@@ -171,6 +171,7 @@ function checkfieldforlegalemailcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegalemailcharswithoutat(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
+  text = text.trim();
   re = /[^\u0041-\u005a\u0061-\u007a\u00a1-\ud7ff\ue000-\uffff_0-9\.\-\']/g;
   if(re.exec(text)){
     alert(alerttext);
