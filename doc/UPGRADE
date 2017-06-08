@@ -92,6 +92,8 @@ AccessRulesData will no longer be updated with new data, but are retained for up
 
 CAs and Certificate Profiles will automatically be upgraded, using the same profiles for the same actions as before. 
 
+Be aware that exported certificate profiles from 6.6 and 6.7 can be imported, but not from prior versions. 
+
 4. AuthenticationTokens are now loaded dynamically and custom implementations will need modification.
 
 Authentication token implementations now implement the AuthenticationTokenMetaData marker interface, which is used to load them dynamically using 
