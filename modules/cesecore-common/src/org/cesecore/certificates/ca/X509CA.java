@@ -764,7 +764,7 @@ public class X509CA extends CA implements Serializable {
             } catch (CryptoTokenOfflineException e) {
                 throw e;
             } catch (Exception e) {
-                throw new IllegalStateException("Error withing creating or removing link certificate.", e);
+                throw new IllegalStateException("Error with creating or removing link certificate.", e);
             }
         }
         updateLatestLinkCertificate(ret);
