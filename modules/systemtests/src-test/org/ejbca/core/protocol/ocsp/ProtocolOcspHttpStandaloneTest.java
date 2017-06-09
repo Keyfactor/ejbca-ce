@@ -329,7 +329,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         super.test15MultipleGetRequests();
     }
 
-    /** Verify the headers of a successful GET request with untilNextUpdate and maxAge. */
+    /** Verify the RFC5019 headers of a successful GET request with untilNextUpdate and maxAge. */
     @Test
     public void test17VerifyHttpGetHeaders() throws Exception {
         final String oldConfigurationValue1 = configurationSession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
@@ -340,7 +340,11 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         try {
-            testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate.getSerialNumber());
+            testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
+            // Test with expires/nextUpdate after ocsp signing certificate expire date (value is set in seconds)
+            long expires = (ocspSigningCertificate.getNotAfter().getTime() - System.currentTimeMillis() + 10000) / 1000; 
+            configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, String.valueOf(expires));
+            testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
         } finally {
             configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, oldConfigurationValue1);
             configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, oldConfigurationValue2);
@@ -354,14 +358,15 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         final long oldValue2 = OcspTestUtils.setOcspKeyBindingMaxAge(authenticationToken, internalKeyBindingId, 30L);
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate.getSerialNumber());
+            testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
         } finally {
             OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, oldValue1);
             OcspTestUtils.setOcspKeyBindingMaxAge(authenticationToken, internalKeyBindingId, oldValue2);
         }
     }
 
-    private void testVerifyHttpGetHeaders(X509Certificate caCertificate, BigInteger serialNumber) throws Exception {
+    private void testVerifyHttpGetHeaders(X509Certificate caCertificate, X509Certificate ocspSigningCertificate) throws Exception {
+        BigInteger serialNumber = ocspSigningCertificate.getSerialNumber();
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, serialNumber));
@@ -402,6 +407,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         long expires = con.getExpiration();
         assertTrue("Expires is before response was sent", expires >= date);
         assertTrue("RFC 5019 6.2: No 'Expires' HTTP header present as it SHOULD.", expires != 0);
+        // Expires should always be lower than ocsp signing certificate notAfter
+        assertTrue("Expires is after signing certificate notAfter: "+expires+", "+ocspSigningCertificate.getNotAfter().getTime(), expires <= ocspSigningCertificate.getNotAfter().getTime());
         String cacheControl = con.getHeaderField("Cache-Control");
         assertNotNull("RFC 5019 6.2: No 'Cache-Control' HTTP header present as it SHOULD.", cacheControl);
         assertTrue("RFC 5019 6.2: No 'public' HTTP header Cache-Control present as it SHOULD.", cacheControl.contains("public"));
@@ -434,7 +441,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
                 .getTime());
     }
 
-    /** Verify the headers of a successful GET request with untilNextUpdate and maxAge. */
+    /** Verify the response of a successful GET request with untilNextUpdate and maxAge. */
     @Test
     public void test18NextUpdateThisUpdate() throws Exception {
         final String oldConfigurationValue1 = configurationSession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);

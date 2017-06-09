@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -46,14 +47,16 @@ public class OcspResponseInformation implements Serializable {
     private Long nextUpdate = null;
     private Long thisUpdate = null;
     private String responseHeader = null;
+    private X509Certificate signerCert = null;
 
-    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge) throws OCSPException {
+    public OcspResponseInformation(OCSPResp ocspResponse, long maxAge, X509Certificate signerCert) throws OCSPException {
         try {
             this.ocspResponse = ocspResponse.getEncoded();
         } catch (IOException e) {
             throw new IllegalStateException("Unexpected IOException caught when encoding ocsp response.", e);
         }
         this.maxAge = maxAge;
+        this.signerCert = signerCert;
         /*
          * This may seem like a somewhat odd place to perform the below operations (instead of in the end servlet which demanded 
          * this object), but BouncyCastle (up to 1.47) is  a bit shy about making their classes serializable. This means that 
@@ -106,6 +109,9 @@ public class OcspResponseInformation implements Serializable {
         return ocspResponse;
     }
 
+    /**
+     * @return duration in milliseconds how long the reponse should be cacheable
+     */
     public long getMaxAge() {
         return maxAge;
     }
@@ -114,10 +120,16 @@ public class OcspResponseInformation implements Serializable {
         return addCacheHeaders;
     }
 
+    /**
+     * @return Date.getTime() long value for nextUpdate time
+     */
     public long getNextUpdate() {
         return nextUpdate;
     }
 
+    /**
+     * @return Date.getTime() long value for thisUpdate time
+     */
     public long getThisUpdate() {
         return thisUpdate;
     }
@@ -130,4 +142,9 @@ public class OcspResponseInformation implements Serializable {
     public boolean isExplicitNoCache() {
         return explicitNoCache;
     }
+
+    public X509Certificate getSignerCert() {
+        return signerCert;
+    }
+
 }
