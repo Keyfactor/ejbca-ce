@@ -42,7 +42,7 @@ You can run the following commands to import a Management CA certificate and add
 </p>
 <source>
 bin/ejbca.sh ca importcacert ManagementCA /home/user/adminca1.pem
-bin/ejbca.sh roles addadmin "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
+bin/ejbca.sh roles addmember "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
 </source>
 <note>
 If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database
