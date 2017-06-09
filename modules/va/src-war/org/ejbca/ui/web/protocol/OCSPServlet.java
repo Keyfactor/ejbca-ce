@@ -251,7 +251,7 @@ public class OCSPServlet extends HttpServlet {
                     log.debug(errMsg, e);
                 }
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE), null);
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
                     transactionLogger.writeln();
@@ -272,7 +272,7 @@ public class OCSPServlet extends HttpServlet {
                     log.debug(errMsg, e);
                 }
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE), null);
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
                     transactionLogger.writeln();
@@ -320,7 +320,13 @@ public class OCSPServlet extends HttpServlet {
         }
         final long now = System.currentTimeMillis();
         final long thisUpdate = ocspResponseInformation.getThisUpdate();
-        final long nextUpdate = ocspResponseInformation.getNextUpdate();
+        long nextUpdate = ocspResponseInformation.getNextUpdate();
+        // Max-age and nextUpdate will be truncated if they point longer than the OCSP signer certificate is valid
+        // If we shrink nextUpdate, max-age will be automatically shrunk
+        X509Certificate signerCert = ocspResponseInformation.getSignerCert();
+        if (signerCert != null && signerCert.getNotAfter().getTime() < nextUpdate) {
+            nextUpdate = signerCert.getNotAfter().getTime();
+        }
         // RFC 5019 6.2: Date: The date and time at which the OCSP server generated the HTTP response.
         // On JBoss AS the "Date"-header is cached for 1 second, so this value will be overwritten and off by up to a second 
         response.setDateHeader("Date", now);

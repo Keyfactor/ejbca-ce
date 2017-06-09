@@ -1088,6 +1088,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         OCSPReq req;
         long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
+        X509Certificate signerCert = null;
         try {
             req = translateRequestFromByteArray(request, remoteAddress, transactionLogger);
             // Get the certificate status requests that are inside this OCSP req
@@ -1302,7 +1303,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             log.info(intres.getLocalizedMessage("ocsp.errorfindcert", certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                             //Return early here
-                            return new OcspResponseInformation(ocspResponse, maxAge);
+                            return new OcspResponseInformation(ocspResponse, maxAge, null);
                         } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
@@ -1413,6 +1414,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry, producedAt);
+                signerCert = ocspSigningCacheEntry.getSigningCertificate();
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.SUCCESSFUL, basicresp);
                 if (auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
@@ -1528,7 +1530,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.flush();
             }
         }
-        return new OcspResponseInformation(ocspResponse, maxAge);
+        return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
     
     private boolean checkAddArchiveCuttoff(String caCertificateSubjectDn, CertificateID certId) {
@@ -1681,7 +1683,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         BasicOCSPRespBuilder basicRes = new BasicOCSPRespBuilder(ocspSigningCacheEntry.getRespId());
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
-                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.getExtensions());
+                Date nextUpdate = item.getNextUpdate();
+                // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
+                if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
+                    nextUpdate = signerCert.getNotAfter();
+                }
+                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.getExtensions());
             }
         }
         if (exts != null) {
