@@ -849,15 +849,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException {
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
-        // Check authorization
-        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), cainfo.getName());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(caid), null, null, details);
-            throw new AuthorizationDeniedException(msg);
-        }
         
         // In uninitialized CAs, the Subject DN might change, and then
         // we need to update the CA ID as well.
