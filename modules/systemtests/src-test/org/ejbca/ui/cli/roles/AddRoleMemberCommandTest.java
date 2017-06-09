@@ -40,9 +40,9 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class AddAdminCommandTest {
+public class AddRoleMemberCommandTest {
 
-    private static final String TESTCLASS_NAME = AddAdminCommandTest.class.getSimpleName();
+    private static final String TESTCLASS_NAME = AddRoleMemberCommandTest.class.getSimpleName();
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASS_NAME);
 
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
@@ -50,7 +50,7 @@ public class AddAdminCommandTest {
 
     private static X509CA x509ca = null;
 
-    private final AddAdminCommand command = new AddAdminCommand();
+    private final AddRoleMemberCommand command = new AddRoleMemberCommand();
     private int roleId = Role.ROLE_ID_UNASSIGNED;
 
     @BeforeClass
@@ -81,7 +81,7 @@ public class AddAdminCommandTest {
     }
 
     @Test
-    public void testAddAdminCommandLegacy() throws AuthorizationDeniedException {
+    public void testAddRoleMemberCommandLegacy() throws AuthorizationDeniedException {
         final String matchValue = TESTCLASS_NAME + " Legacy";
         String[] args = new String[] { TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
                 AccessMatchType.TYPE_EQUALCASEINS.toString(), matchValue };
@@ -96,7 +96,7 @@ public class AddAdminCommandTest {
     }
 
     @Test
-    public void testAddAdminCommand() throws AuthorizationDeniedException {
+    public void testAddRoleMemberCommand() throws AuthorizationDeniedException {
         final String matchValue = TESTCLASS_NAME;
         String[] args = new String[] { TESTCLASS_NAME, "--caname", x509ca.getName(), "--with", X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
                 "--value", matchValue };
