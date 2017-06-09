@@ -255,13 +255,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             throws CADoesntExistsException, AuthorizationDeniedException {
         // Check if we are authorized to edit CA and authorization to specific CA
         if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
-            if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource())) {
+            if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
                 throw new AuthorizationDeniedException(msg);
             }
         } else {
             // We only need to check usage authorization if we change CryptoToken reference (and not to 0 which means "removed").
-            if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
+            if (!authorizationSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
                 throw new AuthorizationDeniedException(msg);
             }
