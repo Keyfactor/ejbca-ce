@@ -40,13 +40,13 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Adds an admin
+ * Adds an role member
  * 
  * @version $Id$
  */
-public class AddAdminCommand extends BaseRolesCommand {
+public class AddRoleMemberCommand extends BaseRolesCommand {
 
-    private static final Logger log = Logger.getLogger(AddAdminCommand.class);
+    private static final Logger log = Logger.getLogger(AddRoleMemberCommand.class);
 
     private static final String ROLE_NAME_KEY = "--role";
     private static final String CA_NAME_KEY = "--caname";
@@ -72,7 +72,7 @@ public class AddAdminCommand extends BaseRolesCommand {
 
     @Override
     public String getMainCommand() {
-        return "addadmin";
+        return "addrolemember";
     }
 
     @Override
@@ -138,7 +138,7 @@ public class AddAdminCommand extends BaseRolesCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Adds an administrator";
+        return "Adds a member to a role.";
     }
 
     @Override
