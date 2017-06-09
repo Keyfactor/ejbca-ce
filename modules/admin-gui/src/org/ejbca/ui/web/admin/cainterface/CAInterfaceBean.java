@@ -92,6 +92,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
@@ -531,6 +532,12 @@ public class CAInterfaceBean implements Serializable {
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
+        // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
+        // selectable items for Crypto Token when creating a CA.
+        if (cryptoTokenIdString.isEmpty()) {
+            log.info("No selected crypto token. Administrator " + authenticationToken + " check administrator access rules for crypto tokens");
+            throw new CryptoTokenAuthenticationFailedException("Crypto token authentication failed for administrator " + authenticationToken);
+        }
         int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
         try {
             if (cryptoTokenId==0) {
