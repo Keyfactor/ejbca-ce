@@ -373,7 +373,7 @@ public final class StringTools {
       return m2.matches();
     }
 
-    /** @return true if this looks like fully qualified domain name (without the trailing dot) */
+    /** @return true if this looks like fully qualified domain name (without the trailing dot). Wildcards are not accepted. */
     public static boolean isFullQualifiedDomainName(String value) {
         // Will not capture last dot if present
         return Pattern.matches("(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]\\.)+[a-zA-Z]{2,63}$)", value);
