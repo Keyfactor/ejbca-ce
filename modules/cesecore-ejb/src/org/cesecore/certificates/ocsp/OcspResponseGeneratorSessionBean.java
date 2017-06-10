@@ -1685,7 +1685,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             for (OCSPResponseItem item : responses) {
                 Date nextUpdate = item.getNextUpdate();
                 // Adjust nextUpdate so that it can never exceed the OCSP responder signing certificate validity
-                if (signerCert != null && signerCert.getNotAfter().before(nextUpdate)) {
+                if (signerCert != null && nextUpdate != null && signerCert.getNotAfter().before(nextUpdate)) {
                     nextUpdate = signerCert.getNotAfter();
                 }
                 basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.getExtensions());
