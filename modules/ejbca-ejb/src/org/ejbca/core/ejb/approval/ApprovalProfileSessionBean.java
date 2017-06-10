@@ -374,7 +374,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 ApprovalProfile profile = getApprovalProfile(approvalProfileId);        
                 if (profile != null && profile.isApprovalRequired()) { 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Approval required from Certificate Profile, approval profile name:"+profile.getProfileName());
+                        LOG.debug("Approval required from Certificate Profile, approval profile name: "+profile.getProfileName());
                     }
                     return profile;
                 }
@@ -386,7 +386,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                 ApprovalProfile profile = getApprovalProfile(approvalProfileId);             
                 if (profile != null && profile.isApprovalRequired()) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Approval required from CA "+cainfo.getName()+", approval profile name:"+profile.getProfileName());
+                        LOG.debug("Approval required from CA "+cainfo.getName()+", approval profile name: "+profile.getProfileName());
                     }
                     return profile;
                 }
