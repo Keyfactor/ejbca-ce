@@ -221,6 +221,28 @@ public class StringToolsTest {
         assertNotNull(oct);
         assertEquals(0, oct.length);
     }
+    
+    @Test
+    public void testFullQualifiedDomainName() {
+        assertTrue(StringTools.isFullQualifiedDomainName("a.b.cc"));
+        assertTrue(StringTools.isFullQualifiedDomainName("b.cc"));
+        assertFalse(StringTools.isFullQualifiedDomainName("cc"));
+        assertFalse(StringTools.isFullQualifiedDomainName("cc."));
+        assertFalse(StringTools.isFullQualifiedDomainName("b.cc."));
+        assertFalse(StringTools.isFullQualifiedDomainName("a.b.cc."));
+        assertFalse(StringTools.isFullQualifiedDomainName("*.b.cc"));
+        assertFalse(StringTools.isFullQualifiedDomainName("*.b.cc."));
+        assertFalse(StringTools.isFullQualifiedDomainName("c"));
+        assertFalse(StringTools.isFullQualifiedDomainName("c."));
+        assertFalse(StringTools.isFullQualifiedDomainName("b.c"));
+        assertFalse(StringTools.isFullQualifiedDomainName("b.c."));
+        assertFalse(StringTools.isFullQualifiedDomainName("a.b.c"));
+        assertFalse(StringTools.isFullQualifiedDomainName("a.b.c."));
+        assertFalse(StringTools.isFullQualifiedDomainName("*.b.c"));
+        assertFalse(StringTools.isFullQualifiedDomainName("*.b.c."));
+        assertFalse(StringTools.isFullQualifiedDomainName("*.c"));
+        assertTrue(StringTools.isFullQualifiedDomainName("a.b.c.d.e.g.h.i.j.k.ll"));
+    }
 
     @Test
     public void testHasSqlStripChars() throws Exception {
