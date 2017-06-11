@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
@@ -40,7 +41,7 @@ public enum CommandLibrary {
     private static final String TAB = "    ";
     private static final String DELIMITER = "--------------------------------\n";
 
-    private static final Logger log = Logger.getLogger(CommandLibrary.class);
+    private final Logger log = Logger.getLogger(CommandLibrary.class);
 
     private Branch root;
 
@@ -49,15 +50,21 @@ public enum CommandLibrary {
             if (root == null) {
                 root = new Branch("");
                 ServiceLoader<? extends CliCommandPlugin> serviceLoader = ServiceLoader.load(CliCommandPlugin.class);
-                for (Iterator<? extends CliCommandPlugin> iterator = serviceLoader.iterator(); iterator.hasNext();) {
-                    CliCommandPlugin command = iterator.next();
-                    root.addChild(command, command.getCommandPath());
-                    if (!command.getCommandPathAliases().isEmpty()) {
-                        Iterator<String[]> aliasIterator = command.getCommandPathAliases().iterator();
-                        while (aliasIterator.hasNext()) {
-                            root.addChild(command, true, aliasIterator.next());
+                try {
+                    for (Iterator<? extends CliCommandPlugin> iterator = serviceLoader.iterator(); iterator.hasNext();) {
+                        CliCommandPlugin command = iterator.next();
+                        root.addChild(command, command.getCommandPath());
+                        if (!command.getCommandPathAliases().isEmpty()) {
+                            Iterator<String[]> aliasIterator = command.getCommandPathAliases().iterator();
+                            while (aliasIterator.hasNext()) {
+                                root.addChild(command, true, aliasIterator.next());
+                            }
                         }
                     }
+                } catch (ServiceConfigurationError e) {
+                    log.error("Error: CLI could not contact EJBCA instance. Either your application server is not up and running,"
+                            + " EJBCA has nott been deployed succesfully, or some firewall rule is blocking the CLI from the application server.");
+                    System.exit(1);
                 }
             }
         }
@@ -241,7 +248,7 @@ public enum CommandLibrary {
                 }
             }
             stringBuffer.append("\nType a command and \"--help\" for more information.\n");
-            log.info(stringBuffer.toString());
+            INSTANCE.log.info(stringBuffer.toString());
         }
 
         private final String tab(int indentation) {
@@ -256,7 +263,7 @@ public enum CommandLibrary {
             if (parameters.length == 0) {
                 //We only got to a branch
                 if (isAlternate) {
-                    log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                    INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
                             + " Please start using the updated path as soon as possible.\n");
                 }
                 printManPage();
@@ -265,11 +272,11 @@ public enum CommandLibrary {
                 String key = parameters[0].toLowerCase(Locale.ENGLISH);
                 if (commands.containsKey(key) || alternateCommands.containsKey(key)) {
                     if (isAlternate) {
-                        log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                        INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
                                 + " Please start using the updated path as soon as possible.\n");
                     }
                     if(alternateCommands.containsKey(key)) {
-                        log.warn("WARNING: The command \"" + key + "\" used is an unlisted alternate command and may be deprecated, and may cease to exist at any point."
+                        INSTANCE.log.warn("WARNING: The command \"" + key + "\" used is an unlisted alternate command and may be deprecated, and may cease to exist at any point."
                                 + " Please start using the updated command \"" + alternateCommands.get(key).getMainCommand() + "\" as soon as possible.\n");
                         return alternateCommands.get(key).execute(Arrays.copyOfRange(parameters, 1, parameters.length));
                     } else {
@@ -277,7 +284,7 @@ public enum CommandLibrary {
                     }
                 } else if (!subBranches.containsKey(key)) {
                     if (isAlternate) {
-                        log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
+                        INSTANCE.log.warn("WARNING: The path used is an unlisted alternate path and may be deprecated, and may cease to exist at any point."
                                 + " Please start using the updated path as soon as possible.\n");
                     }
                     printManPage();
