@@ -525,13 +525,6 @@ public class CertificateProfileTest {
         policy = l.get(0);
         assertEquals("1.1.1.1", policy.getPolicyID());
         
-        assertFalse(profile.isApprovalRequired(ApprovalRequestType.ADDEDITENDENTITY));
-        Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
-        approvals.put(ApprovalRequestType.ADDEDITENDENTITY, 4711);
-        profile.setApprovals(approvals);
-        assertTrue(profile.isApprovalRequired(ApprovalRequestType.ADDEDITENDENTITY));
-        assertFalse(profile.isApprovalRequired(ApprovalRequestType.KEYRECOVER));
-        
         assertNull(profile.getQCEtsiType());
         assertNull(profile.getQCEtsiPds());
         // Setting an empty list causes it to be changed into null

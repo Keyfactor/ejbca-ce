@@ -399,14 +399,6 @@ public abstract class CAInfo implements Serializable {
     public void setApprovalSettings(Collection<Integer> approvalSettings) {
         this.approvalSettings = approvalSettings;
     }
-
-    /**
-     * Returns true if the action requires approvals.
-     * @param action, on of the CAInfo.REQ_APPROVAL_ constants
-     */
-    public boolean isApprovalRequired(int action) {
-        return approvals.containsKey(Integer.valueOf(action));
-    }
     
     /**
      * @return true if the UserData used to issue a certificate should be kept in the database.
