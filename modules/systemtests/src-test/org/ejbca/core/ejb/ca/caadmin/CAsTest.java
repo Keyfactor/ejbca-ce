@@ -1123,7 +1123,7 @@ public class CAsTest extends CaTestCase {
 
         try {
             caAdminSession.editCA(unpriviledgedUser, caInfoTest);
-            assertTrue("Was able to edit CA as unprivileged user.", false);
+            fail("Was able to edit CA as unprivileged user.");
         } catch (AuthorizationDeniedException e) {
             // Expected
         }
