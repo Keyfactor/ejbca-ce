@@ -62,6 +62,7 @@ Lastly, the following behavioral changes should be taken into account:
 
 5. The ability to search for information in the 'Details' column of the audit log has been removed
 6. WebService API has changed for approvals 
+7. The CLI command 'role addadmin' has been renamed 'role addrolemember'
 
 Complete descriptions of changes:
 
@@ -112,6 +113,10 @@ party implementations of the WS API should be aware of this change.
 
 NOTE: There is now a possibility to store subject alternative names in CertificateData, and search for certificates based on that. 
 This feature is disabled by default and you need to enable it with 'Search enabled' for 'Subject Alternative Name' in old Certificate Profiles.  
+
+7. The CLI command 'role addadmin' has been renamed 'role addrolemember'
+
+Besides this, the command is identical to previous versions. 
 
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
