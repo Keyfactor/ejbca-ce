@@ -2333,17 +2333,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
     }
-    
-
-    /**
-     * Returns true if the action requires approvals.
-     * 
-     * @param action as definde by the ApprovalRequestType enum
-     * @return true if this profile has an approval profile set for the given action.
-     */
-    public boolean isApprovalRequired(ApprovalRequestType action) {    
-        return getApprovals().containsKey(action);
-    }
 
     /**
      * @return If the PrivateKeyUsagePeriod extension should be used and with the notBefore component.
