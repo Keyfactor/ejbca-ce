@@ -903,14 +903,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
             }
             // Log Action was done by caSession
-        } catch (Exception fe) {
+        } catch (AuthorizationDeniedException e) {
             String msg = intres.getLocalizedMessage("caadmin.erroreditca", cainfo.getName());
-            log.error(msg, fe);
+            log.error(msg, e);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
                     null, null, details);
-            throw new EJBException(fe);
+            throw e;
+        } catch (CADoesntExistsException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
