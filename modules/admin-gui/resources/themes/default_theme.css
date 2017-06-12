@@ -453,6 +453,20 @@ table.edit tr td {
 .editColumn2 {
 	width: 65%;
 }
+.editColumn1-Approval-profile {
+	width: 17%;
+	text-align: right;
+}
+.editColumn2-Approval-profile {
+	width: 65%
+}
+.editColumn1-Approval-steps {
+	width: 20%;
+	text-align: right;
+}
+.editColumn2-Approval-steps {
+	width: 45%
+}
 .editColumnSystem2 {
 	width: 65%;
 	text-align: left;
