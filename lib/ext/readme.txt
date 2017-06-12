@@ -20,4 +20,4 @@ Only used to get rid of warnings when running some CLIs
 slf4j-log4j12-1.7.22,jar (Apache/MIT/BSD/CDDL)
 
 httpclient (here) is only used SigningDailyRollingFileAppender and is from the Apache Http Components project, using the Apache license:
-commone-httpclient-3.1.jar
+commons-httpclient-3.1.jar
