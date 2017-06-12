@@ -61,7 +61,7 @@
 	</div>
 	
 	<h:form id="approvalProfilesForm" >
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1-Approval-profile,editColumn2-Approval-profile">	
 			
 			<h:panelGroup>
 				&nbsp;
@@ -136,7 +136,7 @@
 														
 						</f:facet>	
 						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
-							columnClasses="editColumn1,editColumn2" style="width: 100%" footerClass="tableFooter" 
+							columnClasses="editColumn1-Approval-steps,editColumn2-Approval-steps" style="width: 100%" footerClass="tableFooter" 
 							rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">							
 							<h:column>
 								<f:facet name="header">
@@ -239,7 +239,7 @@
                                             action="#{approvalProfileMBean.removeUserNotification(partition.partitionId)}"/>
                                     </h:panelGroup>
 				    			</f:facet>			
-				    			<h:panelGroup layout="block" style="text-align: left;">	
+				    			<h:panelGroup layout="block" style="text-align: right;">	
 									<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE}" action="#{approvalProfileMBean.removeField(partition.partitionId, partition.propertyName)}"
 										rendered="#{!approvalProfileMBean.isPropertyPredefined(partition.partitionId, partition.propertyName)}" disabled="#{approvalProfilesMBean.viewOnly}"/>
 								</h:panelGroup>
