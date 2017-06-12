@@ -537,7 +537,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         this.certificatechain = new ArrayList<Certificate>(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
     }
-    
+
+    /**
+     * @return the list of renewed CA certificates in order from the oldest as first to the newest as the last one
+     */
     public ArrayList<Certificate> getRenewedCertificateChain() {
         if (renewedcertificatechain == null) {
             @SuppressWarnings("unchecked")
@@ -565,6 +568,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return renewedcertificatechain;
     }
 
+    /**
+     * Make sure to respect the order of renewed CA certificates in the collection: from the oldest as first to the newest as the last one
+     * @param certificatechain collection of the renewed CA certificates to be stored
+     */
     public void setRenewedCertificateChain(Collection<Certificate> certificatechain) {
         ArrayList<String> storechain = new ArrayList<String>();
         for (Certificate cert : certificatechain) {
