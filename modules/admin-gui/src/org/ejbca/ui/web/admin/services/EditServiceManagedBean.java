@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin.services;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -368,6 +370,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
             // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
             availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next) + " (" + next + ")"));
         }
+        Collections.sort(availablePublisherNames, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem first, SelectItem second) {
+                return first.getLabel().compareToIgnoreCase(second.getLabel());
+            }
+        });
 		return availablePublisherNames;		
 	}
 	
