@@ -535,7 +535,7 @@ public class CAInterfaceBean implements Serializable {
         // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
         // selectable items for Crypto Token when creating a CA.
         if (cryptoTokenIdString.isEmpty()) {
-            log.info("No selected crypto token. Administrator " + authenticationToken + " check administrator access rules for crypto tokens");
+            log.info("No selected crypto token. Check crypto token access rules for administrator " + authenticationToken);
             throw new CryptoTokenAuthenticationFailedException("Crypto token authentication failed for administrator " + authenticationToken);
         }
         int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
