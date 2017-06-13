@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,6 +50,8 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenTestRunner.class);
+    
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
@@ -80,7 +83,9 @@ public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
         final List<FrameworkMethod> filteredMethods = new ArrayList<FrameworkMethod>(allMethods.size());
         for (final FrameworkMethod method : allMethods) {
             final RunOnly runOnly = method.getAnnotation(RunOnly.class);
+           
             if (runOnly != null) {
+                log.info("Found test method with RunOnly implementation: " + method.getName() + ", subtype is " + getSubtype() + ", expecting " + runOnly.implementation());
                 if (getSubtype().equalsIgnoreCase(runOnly.implementation())) {
                     filteredMethods.add(method);
                 }
