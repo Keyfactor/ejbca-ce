@@ -18,4 +18,6 @@ encoding//modules/ra-gui/resources/WEB-INF/classes/Messages_ar.properties=UTF-8
 encoding//modules/ra-gui/resources/WEB-INF/classes/Messages_en.properties=UTF-8
 encoding//modules/ra-gui/resources/WEB-INF/classes/Messages_sv.properties=UTF-8
 encoding//src/intresources/intresources.fr.properties=ISO-8859-1
+encoding//src/intresources/ejbcaresources.vi.properties=UTF-8
+encoding//src/intresources/intresources.vi.properties=UTF-8
 encoding/<project>=UTF-8
