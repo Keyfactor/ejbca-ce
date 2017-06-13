@@ -104,8 +104,6 @@
 #if ($root.getChild("body").getChildren("section").size() > 0)
  #set ($sections = $root.getChild("body").getChildren("section"))
  <div id="minitoc-area">
-    <NOBR><h1 class="title"><font color="#e3e3e8">EJBCA support, development and maintenance 
-      by </font><a href="https://www.primekey.com/" target="primekey"><img style="border:none;" src="$relativePath/images/logo-PrimeKey-RGB-72ppi.png" width="110" height="21" align="absmiddle"></a></h1></NOBR>
  <ul class="minitoc">
  #foreach ( $section in $sections )
    <li><a href="#$escape.getText($section.getAttributeValue("name"))">$section.getAttributeValue("name")</a></li>
