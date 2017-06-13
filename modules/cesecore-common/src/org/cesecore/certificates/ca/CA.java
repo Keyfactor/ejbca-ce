@@ -12,30 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -46,13 +22,7 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
-import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.*;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -70,6 +40,16 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.*;
+import java.util.*;
 
 /**
  * CA is a base class that should be inherited by all CA types
@@ -541,7 +521,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * @return the list of renewed CA certificates in order from the oldest as first to the newest as the last one
      */
-    public ArrayList<Certificate> getRenewedCertificateChain() {
+    public List<Certificate> getRenewedCertificateChain() {
         if (renewedcertificatechain == null) {
             @SuppressWarnings("unchecked")
             Collection<String> storechain = (Collection<String>) data.get(RENEWEDCERTIFICATECHAIN);
@@ -549,7 +529,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 return null;
             }
             Iterator<String> iter = storechain.iterator();
-            this.renewedcertificatechain = new ArrayList<Certificate>();
+            renewedcertificatechain = new ArrayList<Certificate>();
             while (iter.hasNext()) {
                 String b64Cert = iter.next();
                 try {
@@ -559,7 +539,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                         log.debug("Cert subjectDN: " + CertTools.getSubjectDN(cert));
                         log.debug("Cert issuerDN: " + CertTools.getIssuerDN(cert));
                     }
-                    this.renewedcertificatechain.add(cert);
+                    renewedcertificatechain.add(cert);
                 } catch (CertificateParsingException e) {
                     throw new IllegalStateException("Some certificates from renewed certificate chain could not be parsed", e);
                 }
@@ -572,7 +552,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * Make sure to respect the order of renewed CA certificates in the collection: from the oldest as first to the newest as the last one
      * @param certificatechain collection of the renewed CA certificates to be stored
      */
-    public void setRenewedCertificateChain(Collection<Certificate> certificatechain) {
+    public void setRenewedCertificateChain(final List<Certificate> certificatechain) {
         ArrayList<String> storechain = new ArrayList<String>();
         for (Certificate cert : certificatechain) {
             try {
@@ -584,9 +564,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         data.put(RENEWEDCERTIFICATECHAIN, storechain);
 
-        this.renewedcertificatechain = new ArrayList<Certificate>();
-        this.renewedcertificatechain.addAll(certificatechain);
-        this.cainfo.setRenewedCertificateChain(certificatechain);
+        renewedcertificatechain = new ArrayList<Certificate>();
+        renewedcertificatechain.addAll(certificatechain);
+        cainfo.setRenewedCertificateChain(certificatechain);
     }
 
     public void setRolloverCertificateChain(Collection<Certificate> certificatechain) {

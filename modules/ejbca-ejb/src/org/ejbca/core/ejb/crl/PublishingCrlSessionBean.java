@@ -12,28 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventStatus;
@@ -45,14 +23,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.*;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -68,6 +39,16 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.*;
 
 /**
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
@@ -661,7 +642,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         if (ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()) {
             if (lastBaseCrlInfo == null) {
                 Certificate lastRenewedCACertificate = null;
-                ArrayList<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
+                List<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
                 if(renewedCertificateChain == null){
                     throw new IllegalStateException("Was not able to retrieve renewed certificate chain for CA = " + ca.getName() + ". Could not proceed with generating and storing CRL");
                 }
