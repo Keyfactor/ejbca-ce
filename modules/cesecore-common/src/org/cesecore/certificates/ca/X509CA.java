@@ -1008,7 +1008,7 @@ public class X509CA extends CA implements Serializable {
                 log.debug("Using subject DN also as issuer DN, because it is a root CA");
             }
             if(linkCertificate && caNameChange){
-                ArrayList<Certificate> renewedCertificateChain = getRenewedCertificateChain();
+                List<Certificate> renewedCertificateChain = getRenewedCertificateChain();
                 if(renewedCertificateChain == null || renewedCertificateChain.isEmpty()){
                     //"Should not happen" error
                     log.error("CA name change is in process but renewed (old) certificates chain is empty");
