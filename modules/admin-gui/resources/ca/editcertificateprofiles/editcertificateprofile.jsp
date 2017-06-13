@@ -829,7 +829,7 @@
 			<h:outputLabel for="checkqcetsiqcompliance" value="#{web.text.USE}"/>
 		</h:panelGroup>
 
-		<h:outputLabel for="checkqcetsisignaturedevicegroup" value="#{web.text.EXT_ETSI_QCS_SSCD}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
+		<h:outputLabel for="checkqcetsisignaturedevicegroup" value="#{web.text.EXT_ETSI_QCS_QSCD}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:panelGroup id="checkqcetsisignaturedevicegroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
 			<h:selectBooleanCheckbox id="checkqcetsisignaturedevice" value="#{certProfileBean.certificateProfile.useQCEtsiSignatureDevice}" disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="checkqcetsisignaturedevice" value="#{web.text.USE}"/>
