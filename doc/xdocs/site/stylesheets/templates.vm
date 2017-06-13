@@ -174,18 +174,19 @@
         </li>
       #end
       
-        <li><div class="menuheader">PKI by PrimeKey</div>
-          <p>
-          <br>
-                <a href="https://www.primekey.com/products/software/signserver-enterprise/" target="signserver">
-                <img style="border:none; margin-left:20px" src="$relativePath/images/signserver_pki_by_primekey_w120.png" alt="SignServer by PrimeKey">
-                </a>
-          </p>
-          <p>
-                <a href="https://www.primekey.com/" target="primekey">
-                <img style="border:none; margin-left:20px" src="$relativePath/images/logo-PrimeKey.png" alt="PKI by PrimeKey">
-                </a>
-          </p>
+        <li><div class="menuheader">PrimeKey PKI References</div>
+          <ul>
+	      	<li>
+	        	<a href="https://www.primekey.com/products/software/signserver-enterprise/" target="signserver">
+	            	SignServer
+	            </a>
+          	  </li>
+          	<li>
+            	<a href="https://www.primekey.com/" target="primekey">
+            		PrimeKey Main Site
+            	</a>
+            </li>
+          </ul>
         </li>
 
       </ul>
@@ -207,7 +208,7 @@
     #end
   #end
         <link type="text/css" href="$relativePath/page.css" rel="stylesheet">
-        <link rel="shortcut icon" href="./images/pk-favIcon.png">
+        <link rel="shortcut icon" href="./images/favicon.png">
   #set ($authors = $root.getChild("properties").getChildren("author"))
   #foreach ( $au in $authors )
     #metaauthor ( $au.getText() $au.getAttributeValue("email") )
@@ -221,7 +222,7 @@
       	<tr>
       	
       	<td>
-	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/ejbca_pki_by_primekey_logo.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
+	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/banner_ejbca-public.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
       	</td>
       	<td style="text-align:right">
     	  	<div class="searchcaption">
