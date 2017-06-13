@@ -138,7 +138,7 @@
 						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
 							columnClasses="editColumn1-Approval-steps,editColumn2-Approval-steps" style="width: 100%" footerClass="tableFooter" 
 							rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">							
-							<h:column>
+							<h:column footerClass="tableFooter-approval-step">
 								<f:facet name="header">
 									<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}" 
 										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
@@ -146,14 +146,9 @@
 								<h:outputText value="#{partition.propertyNameLocalized}:"/>
 								
 								<f:facet name="footer">
-									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
-										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
-										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
-											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
-										</h:selectOneMenu>	
-										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
-									</h:panelGroup>											
+										<h:outputLabel value="#{web.text.LABEL}:" rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}"/>
 								</f:facet>	
+								
 							</h:column>
 							<h:column>
 																							
@@ -216,7 +211,15 @@
 											action="#{approvalProfileMBean.addRowToRadioButton(partition.partitionId, radioButtonLabel.value)}"/>	
 									</h:panelGroup>								
 								</h:panelGroup>
-																			
+								<f:facet name="footer">
+									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
+										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
+										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
+											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
+										</h:selectOneMenu>	
+										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
+									</h:panelGroup>											
+								</f:facet>	
 							</h:column>
 							<h:column>
 								<f:facet name="header">
