@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -308,13 +310,35 @@ public class InformationMemory implements Serializable {
         }
         return publisheridtonamemap;
     }
+    
+    /**
+     * Method returning the all available publishers id to name.
+     * 
+     * @return the publisheridtonamemap (HashMap) sorted by value
+     */
+    public Map<Integer, String> getPublisherIdToNameMapByValue() {
+        if (publisheridtonamemap == null) {
+            publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
+        }
+        List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
+        Collections.sort(publisherIdToNameMapList, new Comparator<Map.Entry<Integer, String>>() {
+            public int compare(Map.Entry<Integer, String> o1, Map.Entry<Integer, String> o2) {
+                return (o1.getValue()).compareToIgnoreCase(o2.getValue());
+            }
+        });
+        Map<Integer, String> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<Integer, String> entry : publisherIdToNameMapList) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
 
     /**
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
     public TreeMap<String, Integer> getAuthorizedPublisherNames() {
         if (publishernames == null) {
-            publishernames = new TreeMap<String, Integer>();
+            publishernames = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
             Map<Integer, String> idtonamemap = getPublisherIdToNameMap();
             for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
                 publishernames.put(idtonamemap.get(id), id);

@@ -8,7 +8,7 @@
   
   Map<String,Integer> casigners = info.getActiveCANames();
 
-  Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
+  Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMapByValue();
   
   Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
