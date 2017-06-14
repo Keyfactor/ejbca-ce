@@ -27,23 +27,21 @@ import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.jce.X509Principal;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
 /**
  * Changes the DN in an IRequestMessage
- * @author primelars
  * @version $Id$
  *
  */
-class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
+public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 
     private static final long serialVersionUID = -4884813822503768798L;
 
-     final private ICrmfRequestMessage original;
-	transient private X509Principal dn;
+    private final ICrmfRequestMessage original;
+	private transient X500Name dn;
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		stream.defaultWriteObject();
@@ -52,11 +50,11 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		stream.defaultReadObject();
 		final byte b[] = (byte[])stream.readObject();
-		this.dn = new X509Principal(b);
+		this.dn = X500Name.getInstance(b);
 	}
 	RequestMessageSubjectDnAdapter(RequestMessage req, X500Name _dn) {
 		this.original = (ICrmfRequestMessage)req;
-		this.dn = new X509Principal(_dn);
+		this.dn = _dn;
 	}
 	@Override
 	public String getUsername() {
@@ -84,7 +82,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	}
 	@Override
 	public X500Name getRequestX500Name() {
-	    return X500Name.getInstance(this.dn.getEncoded());
+	    return this.dn;
 	}
 	@Override
 	public String getRequestAltNames() {

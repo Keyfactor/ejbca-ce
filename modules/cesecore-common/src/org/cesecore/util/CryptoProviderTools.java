@@ -146,7 +146,7 @@ public final class CryptoProviderTools {
         final Provider p = Security.getProvider(SYSTEM_SECURITY_PROVIDER);
         if (p == null) {
         	log.debug("SUN security provider does not exist, using BC as system default provider.");
-        	SYSTEM_SECURITY_PROVIDER = "BC";
+        	SYSTEM_SECURITY_PROVIDER = BouncyCastleProvider.PROVIDER_NAME;
         }
         
     }
