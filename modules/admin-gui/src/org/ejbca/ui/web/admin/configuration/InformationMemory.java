@@ -67,7 +67,6 @@ public class InformationMemory implements Serializable {
     private PublisherSessionLocal publisherSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private ApprovalProfileSessionLocal approvalProfileSession;
-
     // Memory variables.
     private RAAuthorization raauthorization = null;
     private CAAuthorization caauthorization = null;
@@ -338,12 +337,22 @@ public class InformationMemory implements Serializable {
      */
     public TreeMap<String, Integer> getAuthorizedPublisherNames() {
         if (publishernames == null) {
-            publishernames = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
+            publishernames = new TreeMap<String, Integer>(new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    int result = o1.compareToIgnoreCase(o2);
+                    if (result == 0) {
+                        result = o1.compareTo(o2);
+                    }
+                    return result;
+                }
+            });
+            
             Map<Integer, String> idtonamemap = getPublisherIdToNameMap();
             for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
                 publishernames.put(idtonamemap.get(id), id);
             }
         }
+        
         return publishernames;
     }
 
