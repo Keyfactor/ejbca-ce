@@ -34,6 +34,10 @@
 		<!-- Change this to 'debug-console' for full debug info -->
 		<appender-ref ref="console"/>
 	</category>
+		<category name="org.ejbca.config" additivity="false">
+		<priority value="OFF"/>
+		<appender-ref ref="console"/>
+	</category>
 
 	<root> 
 		<!-- Set basic limit for console -->
