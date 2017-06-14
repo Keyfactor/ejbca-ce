@@ -961,11 +961,11 @@ table#config tr td:first-child {
 			white-space: normal;
 			color: #606060;		/* Keep it, for old web browsers */
 			color: rgba(0,0,0,.6);
-			padding: 5px 2px;
+			padding: 5px 10px;
 		}
 		
 .tableFooter-approval-step {
-			text-align: right;
+			text-align: left;
 		}
 
 /* --- Table: List/Actions */

@@ -144,9 +144,16 @@
 										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
 								</f:facet>
 								<h:outputText value="#{partition.propertyNameLocalized}:"/>
-								
+
 								<f:facet name="footer">
-										<h:outputLabel value="#{web.text.LABEL}:" rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}"/>
+									<h:panelGrid columns="1" rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
+										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
+											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
+										</h:selectOneMenu>	
+										<h:outputLabel value="#{web.text.LABEL}:"/>
+										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
+										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
+									</h:panelGrid>											
 								</f:facet>	
 								
 							</h:column>
@@ -211,15 +218,6 @@
 											action="#{approvalProfileMBean.addRowToRadioButton(partition.partitionId, radioButtonLabel.value)}"/>	
 									</h:panelGroup>								
 								</h:panelGroup>
-								<f:facet name="footer">
-									<h:panelGroup rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
-										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
-										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
-											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
-										</h:selectOneMenu>	
-										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
-									</h:panelGroup>											
-								</f:facet>	
 							</h:column>
 							<h:column>
 								<f:facet name="header">
