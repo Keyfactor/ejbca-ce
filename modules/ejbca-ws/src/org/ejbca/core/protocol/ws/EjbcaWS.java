@@ -66,7 +66,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.jce.X509Principal;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -1686,7 +1685,7 @@ public class EjbcaWS implements IEjbcaWS {
 			final AuthenticationToken tmp = getAdmin(true);
 			// We know client certificate is needed, so no other authentication tokens can exist
 			X509Certificate admincert = ((X509CertificateAuthenticationToken)tmp).getCertificate();
-			admin = new AlwaysAllowLocalAuthenticationToken(new X509Principal(admincert.getSubjectDN().getName()));
+			admin = new AlwaysAllowLocalAuthenticationToken(admincert.getSubjectDN().getName());
 		}else{
 			admin = getAdmin();
 		}
