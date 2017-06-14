@@ -22,7 +22,6 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -108,8 +107,7 @@ public class HashID {
      */
     public static HashID getFromDNString(String sDN) {
 		// Note that the DN string has to be encoded to an ASN1 with the BC lib. BC endcoding is EJBCA standard.
-		return getFromDN( new X500Principal(new X509Principal(CertTools
-                .isDNReversed(sDN) ? CertTools.reverseDN(sDN) : sDN).getEncoded()) );
+        return getFromDN(new X500Principal((CertTools.isDNReversed(sDN) ? CertTools.reverseDN(sDN) : sDN)));
 	}
 	/**
 	 * @param s The hash base64 encoded. See RFC4387
