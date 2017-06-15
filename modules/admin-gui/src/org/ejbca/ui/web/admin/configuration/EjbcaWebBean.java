@@ -740,16 +740,7 @@ public class EjbcaWebBean implements Serializable {
 
     /** @return authorized CA Ids sorted by CA name alphabetically*/
     public Collection<Integer> getAuthorizedCAIdsByName() {
-        List<Integer> authCAIds = this.informationmemory.getAuthorizedCAIds();
-        Map<Integer, String> CAIdNameMap = informationmemory.getCAIdToNameMap();
-        
-        Collections.sort(authCAIds, new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {               
-                return CAIdNameMap.get(o1).compareToIgnoreCase(CAIdNameMap.get(o2));
-            }
-        });
-        
-        return authCAIds;
+        return this.informationmemory.getAuthorizedCAIdsByName();
     }
 
     
