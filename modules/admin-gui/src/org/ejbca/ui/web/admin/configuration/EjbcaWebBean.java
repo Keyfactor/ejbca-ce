@@ -29,12 +29,15 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -735,6 +738,21 @@ public class EjbcaWebBean implements Serializable {
         return this.informationmemory.getAuthorizedCAIds();
     }
 
+    /** @return authorized CA Ids sorted by CA name alphabetically*/
+    public Collection<Integer> getAuthorizedCAIdsByName() {
+        List<Integer> authCAIds = this.informationmemory.getAuthorizedCAIds();
+        Map<Integer, String> CAIdNameMap = informationmemory.getCAIdToNameMap();
+        
+        Collections.sort(authCAIds, new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {               
+                return CAIdNameMap.get(o1).compareToIgnoreCase(CAIdNameMap.get(o2));
+            }
+        });
+        
+        return authCAIds;
+    }
+
+    
     public boolean isAuthorizedToAllCAs() {
         return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
     }
