@@ -235,6 +235,18 @@ public class InformationMemory implements Serializable {
     public List<Integer> getAuthorizedCAIds() {
         return caauthorization.getAuthorizedCAIds();
     }
+    
+    /** @return Collection of Integer containing authorized CA Ids sorted by CA name alphabetically*/
+    public List<Integer> getAuthorizedCAIdsByName() {
+        List<Integer> authCAIds = getAuthorizedCAIds();
+        Collections.sort(authCAIds, new Comparator<Integer>() {
+            public int compare(Integer o1, Integer o2) {               
+                return getCAIdToNameMap().get(o1).compareToIgnoreCase(getCAIdToNameMap().get(o2));
+            }
+        });
+        
+        return authCAIds;
+    }
 
     /**
      * Returns the system configuration (GlobalConfiguration).
