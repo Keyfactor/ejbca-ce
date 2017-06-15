@@ -664,8 +664,12 @@ public class EjbcaWebBean implements Serializable {
     /**
      * Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to a more user friendly "yyyy-MM-dd HH:mm:ssZZ". If it is a relative date we
      * return it as it was. If we fail to parse the stored date we return an error-string followed by the stored value.
+     * If the passed in value is empty, we return an empty string
      */
     public String getISO8601FromImpliedUTCOrRelative(final String dateString) {
+        if (StringUtils.isEmpty(dateString)) {
+            return "";
+        }
         if (!isRelativeDateTime(dateString)) {
             try {
                 return getISO8601FromImpliedUTC(dateString);
