@@ -22,6 +22,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.Suite;
+import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 /**
@@ -39,7 +40,6 @@ public class CryptoTokenTestRunner extends Suite {
     /**
      * 
      * @return a list of test runners. By default will only return a runner that returns soft tokens, but will include a runner for PKCS#11 tokens as well, if available. 
-     * @throws Exception 
      */
     private static List<Runner> getRunners(Class<?> klass) {
         List<Runner> runners = new ArrayList<Runner>();
@@ -47,9 +47,14 @@ public class CryptoTokenTestRunner extends Suite {
             if (CryptoTokenTestUtils.getHSMLibrary() != null) {
                 runners.add(new PKCS11TestRunner(klass));
             }
-            runners.add(new PKCS12TestRunner(klass));
+            
         } catch (Exception e) {
             //NOPMD: This is in all likelihood benign. 
+        }
+        try {
+            runners.add(new PKCS12TestRunner(klass));
+        } catch (NoSuchMethodException | SecurityException | InitializationError e) {
+            throw new IllegalStateException(e);
         }
         return runners;
     }
