@@ -501,7 +501,7 @@ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ..
 </subsubsection>
 <subsubsection name="Simple Scep Client (sscep)">
 <p>
-<a href="http://www.klake.org/~jt/sscep/">Simple Scep Client</a>.
+<a href="https://github.com/certnanny/sscep">Simple SCEP Client</a>.
 You should only use CN in the users DN (same as for PIX below).
 </p>
 </subsubsection>
