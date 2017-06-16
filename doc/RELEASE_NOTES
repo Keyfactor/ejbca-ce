@@ -2,7 +2,7 @@ EJBCA 6.8.0
 -----------
 
 Just in time for the Swedish summer (all three days of it), we here at PrimeKey Solutions are very proud to release EJBCA 6.8.0, with a bunch of new
-features that we sincerely hope you'll enjoy.
+features that we sincerely hope you'll enjoy. All in all, 187 issues that have been fixed for this release.
 
 First and foremost, we've made some changes to Roles and Access Rules (see the UPGRADE document for technical details). Among these changes and 
 improvements, we'd like to highlight the following:
@@ -35,7 +35,7 @@ nodes that will store passwords (end entity clear text passwords and crypto toke
 EJBCA 6.7.0.1
 -----------
 This is a patch release for https://jira.primekey.se/browse/ECA-5853, where upgrade to 6.7.0 from certain versions of EJBCA failed due to an 
-NullPointerException in Certificate Profiles. 
+NullPointerException in Certificate PrRofiles. 
 
 EJBCA 6.7.0
 -----------

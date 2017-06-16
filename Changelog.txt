@@ -1,3 +1,212 @@
+EJBCA 6.8.0, 2017-06-19
+---
+
+Technical Requirement
+    [ECA-4793] - RA configuration should be retrieved from the CA
+
+Bug
+    [ECA-4550] - Space in email field results in misleading error message
+    [ECA-5287] - Stack overflow on peer RA if the rule /ra_master_invoke_api is not accepted
+    [ECA-5311] - RA Enrollment does not work if the request was added in the AdminGui
+    [ECA-5364] - CSR in End Entity extendedInformation is removed when request is edited in admin GUI
+    [ECA-5380] - Approve Actions search does not work with certain Status options is approval is expired
+    [ECA-5453] - DN value with only spaces causes exception in the RA enrollment page
+    [ECA-5458] - Extra access rules are required for creating certificates through the RA
+    [ECA-5480] - Remove prioritization arrows in View page for Approval Steps
+    [ECA-5483] - Buttons positions under Approval Steps are not positioned properly
+    [ECA-5485] - Approve Actions table items are not aligned properly
+    [ECA-5604] - /ca_functionality/view_certificate is seemingly unused
+    [ECA-5623] - When editing end entities timeModified and timeCreated are logged incorrectly
+    [ECA-5628] - Command description for RevokeCertificateCommand breaks formatting.
+    [ECA-5694] - Disable prioritizing arrows in Approval Profiles view-only
+    [ECA-5707] - Error sending approval profile notifications using MS-SQL
+    [ECA-5712] - 'Use UTF-8 in policy notice text'  is disabled using the External CA
+    [ECA-5722] - Searching for certificates by serial number does not work in the RA 
+    [ECA-5731] - GUI: Cosmetic bug in CA edit page
+    [ECA-5735] - WaitingForApprovalException changed in core but not WS
+    [ECA-5743] - Enable fresh install with new authorization system
+    [ECA-5748] - AccessRulePlugin needs to be able to provide resource name
+    [ECA-5758] - End Entity Profiles allows for creating hidden EEPs based on case
+    [ECA-5762] - EJBCA Installation Instructions, missing reload when adding email service
+    [ECA-5767] - Soft CA Token key alias set to wrong value in upgrade from 4.0
+    [ECA-5772] - Subscribe cache to local authorizations system updates
+    [ECA-5776] - RoleMemberData.tokenMatchValue is not allowed to be empty on Oracle
+    [ECA-5778] - Crypto Tokens page considers an apostrophe invalid in character names
+    [ECA-5784] - Legacy script based autoenrolment should not remove end entity profile
+    [ECA-5791] - Incorrect syntax in generated SQL query when searching for approval requests
+    [ECA-5794] - Denying access rule /ca/ (recursive for all CAs) allows listing of end entities from multiple CAs
+    [ECA-5801] - CMP: RA CA not found when using ProfileDefault EndEntityCertificate authentication module
+    [ECA-5803] - CMP key update request updates revoked certificates
+    [ECA-5807] - Attempting to add hard token issuer with insufficient access displays NumberFormatException
+    [ECA-5808] - Documentation regression: Error in installation instruction
+    [ECA-5812] - Internal key bindings allows listing of CAs not authorized to role
+    [ECA-5815] - Can't close role add/rename/delete dialogs if there's an error
+    [ECA-5822] - Importing a certificate in the CLI to a keybinding with the wrong keys causes a stacktrace
+    [ECA-5823] - CMP error handling causes a NullPointerException if message header lacks transaction ID
+    [ECA-5824] - Simplified AdminGUI authorization for request processing configuration fails to set all rules
+    [ECA-5829] - Advanced Search End Entities page in CA UI doesn't parse apostrophes 
+    [ECA-5830] - Details column in Audit log shows only encoded base64 if text contains accent characters (ë, è, ê, etc) 
+    [ECA-5831] - Non-ASCII characters in audit log export are incorrectly encoded as XML entities
+    [ECA-5834] - Search for on audit log using 'contains' on 'Details' column can't parse apostrophes 
+    [ECA-5850] - Timing sensitive CT unit tests can fail if they run first
+    [ECA-5853] - Upgrade to 6.7.0 fails due to Use Default CA Issue value
+    [ECA-5854] - Fix dead links in documentation
+    [ECA-5859] - Change crypto token CLI command does not work if old crypto token does not exist
+    [ECA-5861] - Regression: EjbcaConfigurationHolder produces unwanted garbage output in CLI
+    [ECA-5871] - End Entity Profiles are sorted case sensitive in Access Rules Page. 
+    [ECA-5872] - Viewing EE in RA-gui displays approval request ID incorrectly
+    [ECA-5874] - Custom certificate extension in GUI is missing RAW encoding option
+    [ECA-5887] - CESeCoreUtils.makeKeyUnmodifiable reports success even if HSM does not allow to change CKA_MODIFIABLE
+    [ECA-5888] - Better error message handing requests with dnEmail or UPN without @
+    [ECA-5890] -  InternalKeybinding properties render in the wrong order
+    [ECA-5892] - PDS URL + location inside a QCstatement is not persisted when exporting the certificate profile
+    [ECA-5893] - Regression: Certificate profiles cannot be imported
+    [ECA-5895] - RA Manage request review causes NPE for revocation request
+    [ECA-5898] - Wrong default timeout for CT Logs
+    [ECA-5906] - 'Save state' in executed 'Approve Action' leads to NullPointerException
+    [ECA-5910] - Cloning an approval profile puts the old ID in the data of the new profile 
+    [ECA-5911] - Approve request to add already existing End Entity causes NullPointerException
+    [ECA-5916] - CA Name Change link certificate shows wrong Issuer DN
+    [ECA-5918] - error in console log when editing certificate profiles
+    [ECA-5922] - Statedump: Internal key binding properties are not imported
+    [ECA-5923] - Create CA as CA Administrator gives Error message: For input string: ""
+    [ECA-5924] - Access to all CA's required to edit CA
+    [ECA-5925] - Exception removing last radio button on approval profile
+    [ECA-5930] - Old ExternalRA needs Base64GetHashMap as acceptable class for serialization
+    [ECA-5934] - Debug log always, falsely, claims cadata can not be fetched
+    [ECA-5938] - Unable to save end entity profiles without specified date when custom validity is enabled
+    [ECA-5939] - Available CAs in End Entity profile not sorted properly
+    [ECA-5940] - Perform proper validation of CMP Vendor mode client certificates
+
+
+
+New Feature
+    [ECA-4222] - Support the EFF ACME (REST) protocol
+    [ECA-4779] - Support Windows Autoenrollment through a proxied RA
+    [ECA-5019] - Rolling upgrades of CA and RA servers should be possible
+    [ECA-5174] - Add GUI and WS support for ID on SIM subjectAltName
+    [ECA-5337] - WS method to import/update external CA certificates
+    [ECA-5617] - Create the new RoleMemberData object and associated session bean. 
+    [ECA-5618] - Upgrade Roles/Rules according to the new design. 
+    [ECA-5625] - Ability to do post-upgrade from GUI
+    [ECA-5629] - Create the new RoleData object and associated session bean. 
+    [ECA-5630] - Create a basic page in the RA UI for Roles Management
+    [ECA-5631] - Create an RA page for Roles Management
+    [ECA-5632] - Create an RA page for Roles Members Management
+    [ECA-5633] - Create an RA page for editing Role and Access Rules Management
+    [ECA-5634] - Upgrade Role Members according to the new design. 
+    [ECA-5635] - Use new Role and RoleMember instead of AdminGroupData and AdminEntityData
+    [ECA-5648] - Use value object RoleMember instead of RoleMemberData in API
+    [ECA-5653] - Add tokenIssuerId column to RoleMemberData
+    [ECA-5669] - Cache authorizations for the exact same client
+    [ECA-5676] - Always delete all Role's RoleMembers when deleted
+    [ECA-5714] - Add human readable description to Role Members
+    [ECA-5734] - Add P11Spy as known P11 implementation to web.properties
+    [ECA-5737] - Provide conversion from Role's accessRules to AccessSet
+    [ECA-5742] - Create system tests for for RoleMemberSessionBean
+    [ECA-5751] - Handle HardTokenIssuerData.adminGroupId during upgrade
+    [ECA-5755] - Write system tests for role namespaces
+    [ECA-5773] - Create documentation for all and any rules used in EJBCA
+    [ECA-5796] - Experimental support for Curve25519 (ECDSA with Curve25519 curve)
+    [ECA-5800] - Document all Audit Log Events
+    [ECA-5817] - RaMasterApi with outgoing upstream connection from RA
+    [ECA-5825] - System test RA over outgoing peer connections
+    [ECA-5842] - Ability to modify the built-in password encryption/obfuscation key
+    [ECA-5843] - Add Georgian as a language to QC Statements extension
+    [ECA-5846] - Implement CMP proxying on the RA 
+    [ECA-5857] - Ability to download CSR from Approve requests and view end entity in RA
+    [ECA-5867] - Add Vietnamese language files
+    [ECA-5880] - Create "Unknown is unauthorized" mode for OCSP responses
+    [ECA-5886] - Disable the nonce extension for individual OCSP responders. 
+    [ECA-5891] - Add Utimaco P11 R2 to default P11 libraries
+    [ECA-5894] - Add a WS method for getting the number of approval remaining for a certain request.
+
+Story
+    [ECA-4790] - KaRA should be well documented
+    [ECA-5170] - Public RA user must be able to finalize legacy enrollment with username and enrollment code
+
+Task
+    [ECA-5010] - Remove EJBCA wiki
+    [ECA-5775] - Clear RA cache on the cache reload event
+    [ECA-5878] - Add contributed ejbca-setup script downloading and installing full EJBCA Community
+    [ECA-5897] - Revert changes that were made to EJBCA trunk during original ACME implementation
+
+Improvement
+    [ECA-3164] - Use implicit match type for admins
+    [ECA-3363] - Auto register AccessMatchValues by using ServiceLoader for AuthenticationTokens
+    [ECA-3607] - Modify CLI to fail gracefully in case appserver is not running
+    [ECA-4097] - When editing EE profiles, if the default Cert profile i chosen as default but not among the allowed, it is added
+    [ECA-4530] - Prohibit admin from lowering own access
+    [ECA-4844] - Approval requests sorting should be shown with an icon
+    [ECA-5444] - Correct size of drop down boxes in RA search pages
+    [ECA-5544] - Improve RA log messages
+    [ECA-5545] - RA enrollment: Show/hide details button is shown when it's not needed
+    [ECA-5581] - Rename the "View More" link to something more obvious on approval page
+    [ECA-5584] - Log info on key used for database-protection
+    [ECA-5607] - Preparations for optimized lookup of preferred match value
+    [ECA-5614] - Treat authorization as a union of all grants by role memberships instead of based on DN order
+    [ECA-5620] - Implement new access control logic based on the new Role and RoleMember representations
+    [ECA-5621] - Add a namespace check to RoleSessionBean
+    [ECA-5637] - Upgrade commons-httpclient and move from lib/ext to lib
+    [ECA-5652] - Adapt the existing access rules page to the new access rule system
+    [ECA-5654] - Increase size of tokenMatchValue column in RoleMemberData
+    [ECA-5655] - Adapt the current AdminGUI Roles page to work with the MPKI generation roles 
+    [ECA-5684] - Set secure flag on Public Web session cookie
+    [ECA-5685] - Corrected DatabaseSchemaTest fails on Oracle with ORA-24816 
+    [ECA-5693] - Change 'Cancel' button to 'Back' in Approval Profiles in View mode
+    [ECA-5695] - Clean up old access control not needed for upgrade
+    [ECA-5701] - Handle P11 providers that are broken for EC when figuring out supported curves
+    [ECA-5715] - CMP - Do not enforce clear-text-password with EndEntityCertificate
+    [ECA-5723] - Replace 'Logged in <Username>' to 'Logged in as <Username>'
+    [ECA-5724] - Number(Short) and Number(Long) fields are printing numbers from right side
+    [ECA-5736] - Open 'RA Web' in a new tab
+    [ECA-5757] - Improving advanced access rule page usability
+    [ECA-5760] - Propagate authentication failures when checking authorization
+    [ECA-5761] - Show namespace in Role Members page
+    [ECA-5766] - System Configuration autoenrollment doc link should point to proper information
+    [ECA-5768] - Use new authorization system in the RA if available
+    [ECA-5774] - Audit log RoleMember changes
+    [ECA-5779] - Make RoleDataSession.persistRole idempotent
+    [ECA-5782] - Have LegalCharsValidator report what characters that break validation
+    [ECA-5789] - Finalize post-upgrade proceedure for 6.8.0
+    [ECA-5790] - Add org.apache.tomcat.util.http.Parameters.MAX_COUNT to standard JBoss 7 configuration
+    [ECA-5797] - Avoid authorization cache update when authorization never really changed
+    [ECA-5806] - Clean up unused and redundant access rules related to public_web_user/, basic_functions/ and secureaudit/auditor/
+    [ECA-5810] - Upgrade EJBCA/CESeCore to BC 1.56
+    [ECA-5813] - Improve error message on browser enrollment key generation failure
+    [ECA-5814] - Add possibility to get any CRL using Public and RA Web
+    [ECA-5818] - Clean up Roles produced during system tests
+    [ECA-5821] - Make note in doc/UPGRADE that upgrades directly from EJBCA 4 are possible
+    [ECA-5826] - Fix deprecations in PeerConnectorPool after upgrade of HttpComponents
+    [ECA-5832] - Decode B64 encoding in Audit Log XML export
+    [ECA-5836] - Remove AuditorQueryHelper 
+    [ECA-5838] - Remove possibility to search in details column of Audit Logs
+    [ECA-5845] - Split approval profiles up for different types of requests
+    [ECA-5852] - Replace EJBCA logo with the new edition
+    [ECA-5855] - Replace references to primekey.se to primekey.com 
+    [ECA-5858] - Improve/correct audit log entries for Crypto Token, id->ID
+    [ECA-5860] - Add signature algorithm to keybind list CLI command output
+    [ECA-5868] - Change default intresources.secondarylanguage to english
+    [ECA-5873] - Re-implement EFF ACME protocol support
+    [ECA-5885] - Optimized lookup of preferred match value (e.g. serial number) for looking up access rules
+    [ECA-5899] - Add a CMP Key Update Request test to verify that admins can't request certificates from the wrong CA.
+    [ECA-5902] - Adjust OCSP max-age and next update (in response and RFC5019 headers) to OCSP signing certificate expire date, if expire is before configured values
+    [ECA-5920] - Changes all references from Role "Administrators" to "Role Member"
+    [ECA-5929] - Publishers are not sorted alphabetically in select menus
+    [ECA-5933] - GUI: New eIDAS word for SSCD
+
+Sub-task
+    [ECA-5745] - Use new authorization system in Admin GUI
+    [ECA-5750] - Use new authorization system for approvals
+    [ECA-5754] - Adapt statedump to new Roles and RoleMembers
+    [ECA-5780] - Remove legacy authorization system code used from Admin GUI
+    [ECA-5781] - Remove no longer needed use of ComplexAccessControlSession
+    [ECA-5783] - Remove no longer needed use of AccessControlSession
+    [ECA-5786] - Remove no longer needed use of RoleManagementSession and related classes
+    [ECA-5787] - Consolidate legacy authorization code needed for upgrade
+    [ECA-5788] - Remove AccessTree and related classes
+
+
 EJBCA 6.7.0.1, 2017-04-27
 ---
 Bug
