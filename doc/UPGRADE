@@ -123,7 +123,8 @@ Besides this, the command is identical to previous versions.
 8. In the CMP protocol, more stringent chain validation of certificate in the extraCerts fields (used in 3GPP Vendor mode and RA mode) have been 
    introduced.
 
-If you have been using CMP clients which have previously slipped by sending incomplete or bad chains in this field, they may now be rejected.
+If you have been using CMP clients which have previously slipped by sending incomplete or bad chains in this field, they may now be rejected. 
+This could for example happen if your vendor of eNodeB's use a vendor CA that issues invalid certificates according to the RFC5280 standard. 
 
 From EJBCA 6.6.1 to EJBCA 6.7.0
 -------------------------------
