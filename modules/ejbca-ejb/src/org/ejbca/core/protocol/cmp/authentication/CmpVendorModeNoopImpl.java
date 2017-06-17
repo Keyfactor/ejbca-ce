@@ -13,9 +13,11 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.CmpConfiguration;
 
@@ -36,8 +38,8 @@ public class CmpVendorModeNoopImpl implements CmpVendorMode {
     }
 
     @Override
-    public boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert) {
-        return false;
+    public CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts) {
+        return null;
     }
     
     @Override
