@@ -3877,9 +3877,9 @@ public abstract class CertTools {
      * Method to create certificate path and to check it's validity from a list of certificates. The list of certificates should only contain one root
      * certificate.
      * 
-     * @param certlistin List of certificates to create certificate chain from.
+     * @param certlistin List of certificates (X.509, CVC, or other supported) to create certificate chain from.
      * @param now Date to use when checking if the CAs chain is valid.
-     * @return the certificatepath with the root CA at the end
+     * @return the certificate path with the root CA at the end
      * @throws CertPathValidatorException if the certificate chain can not be constructed
      * @throws InvalidAlgorithmParameterException
      * @throws NoSuchProviderException
@@ -3891,6 +3891,16 @@ public abstract class CertTools {
         final List<Certificate> returnval = new ArrayList<Certificate>();
 
         Collection<Certificate> certlist = orderCertificateChain(certlistin);
+        // Verify that the chain contains a Root CA certificate
+        Certificate rootca = null;
+        for(Certificate crt : certlist) {
+            if (CertTools.isSelfSigned(crt)) {
+                rootca = crt;
+            }
+        }
+        if (rootca == null) {
+            throw new CertPathValidatorException("No root CA certificate found in certificate list");
+        }
 
         // set certificate chain
         Certificate rootcert = null;
@@ -3951,13 +3961,13 @@ public abstract class CertTools {
     } // createCertChain
 
     /**
-     * Method ordering a list of certificate into a certificate path with the root CA at the end. Does not check validity or verification of any kind,
+     * Method ordering a list of certificate (X.509, CVC, or other supported type) into a certificate path with the root CA at the end. Does not check validity or verification of any kind,
      * just ordering by issuerdn.
      * 
-     * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs).
-     * @return Collection with certificatechain.
+     * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs), must contain a full chain.
+     * @return List with certificatechain, Root CA last.
      */
-    private static Collection<Certificate> orderCertificateChain(Collection<?> certlist) throws CertPathValidatorException {
+    private static List<Certificate> orderCertificateChain(Collection<?> certlist) throws CertPathValidatorException {
         ArrayList<Certificate> returnval = new ArrayList<Certificate>();
         Certificate rootca = null;
         HashMap<String, Certificate> cacertmap = new HashMap<String, Certificate>();
@@ -4014,6 +4024,46 @@ public abstract class CertTools {
 
         return returnval;
     } // orderCertificateChain
+
+    /**
+     * Method ordering a list of X509 certificate into a certificate path with the root CA, or topmost Sub CA at the end. Does not check validity or verification of any kind,
+     * just ordering by issuerdn/keyId.
+     * 
+     * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs).
+     * @return List with certificatechain with leaf certificate first, and root CA, or last sub CA, in the end, does not have to contain a Root CA is input does not.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<X509Certificate> orderX509CertificateChain(Collection<X509Certificate> certlist) throws CertPathValidatorException {
+        ArrayList<Certificate> pathlist = new ArrayList<Certificate>();
+        for(Object possibleCertificate : certlist) {
+            Certificate cert = null;
+            try {
+                cert = (Certificate) possibleCertificate;
+            } catch (ClassCastException e) {
+                // This was not a certificate, is it byte encoded?
+                byte[] certBytes = (byte[]) possibleCertificate;
+                try {
+                    cert = CertTools.getCertfromByteArray(certBytes);
+                } catch (CertificateParsingException e1) {
+                    throw new CertPathValidatorException(e1);
+                }
+            }
+            if (cert != null) {
+                pathlist.add(cert);
+            }
+        }
+        CertPath cp;
+        try {
+            cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(pathlist);
+        } catch (CertificateException e) {
+            // Wasn't a certificate after all?
+            throw new CertPathValidatorException(e);
+        } catch (NoSuchProviderException e) {
+            // This is really bad
+            throw new RuntimeException(e);
+        }
+        return (List<X509Certificate>)cp.getCertificates();
+    } // orderX509CertificateChain
 
     /**
      * @return true if the chains are nonempty, contain the same certificates in the same order

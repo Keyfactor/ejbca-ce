@@ -13,9 +13,11 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.CmpConfiguration;
 
@@ -35,10 +37,10 @@ public interface CmpVendorMode {
     /** Checks if the certificate is issued by a configured Vendor CA, and that it can be verified using that Vendor CA certificate
      * @param admin administrator making the call, must have access to get CAInfo for the Vendor CA
      * @param confAlias the CMP alias in use
-     * @param extraCert certificate from extraCert field of CMP request 
-     * @return true if issued, and verified by a Vendor CA in the specified CMP alias, false otherwise.
+     * @param extraCerts certificates from the extraCert field of the CMP request 
+     * @return CAInfo if the Vendor CA, in the specified CMP alias, that issues the extraCert, null if no issuing Vendor CA was found.
      */
-    boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert);
+    CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts);
     
     /**
      * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.

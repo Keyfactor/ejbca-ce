@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -525,6 +526,78 @@ public class CertToolsTest {
     		+"j9IMQxmMP6ad8gDdMAoGA1UdFAQDAgEDMA0GA1UdGwEB/wQDAgECMA0GCSqGSIb3"
     		+"DQEBCwUAA0EAP8CIPLll5m/wmhcLL5SXlb+aYrPGsUlBFNBKYKO0iV1QjBHeDMp5"
     		+"z70nU3g2tIfiEX4IKNFyzFvn5m6e8m0JQQ==").getBytes());
+
+    static byte[] chainRootCA = Base64.decode( ("MIIFIzCCAwugAwIBAgIIDZIKPU4lBGQwDQYJKoZIhvcNAQELBQAwHzEQMA4GA1UE" +
+            "AwwHM0dQUENBMjELMAkGA1UEBhMCU0UwHhcNMTcwNjE0MjIyODU0WhcNMzcwNjA5" +
+            "MjIyODU0WjAfMRAwDgYDVQQDDAczR1BQQ0EyMQswCQYDVQQGEwJTRTCCAiIwDQYJ" +
+            "KoZIhvcNAQEBBQADggIPADCCAgoCggIBAK4TMjlaF5KzT+AcIjjFOYusNsghhmew" +
+            "SnoH/SOCmCucZ/8mMFlMc/BwRNLIiWt1nJOyoiHTqtzKl8F0SF5/suBQoKvBLsc5" +
+            "jFHgz6gRWqBYNlE3yvkgKr/7vIosEcgX7MVTKsD6+G5FrD7vqluCOSGLZ9S4wP9P" +
+            "VycgXBlZUS1X9uxaymgJhLWr9R7VRJ4uB0r5RFyY5t9GQ0JiuDxkWZ2TXLFZpxGi" +
+            "DH/tO0S3G82fN/expdSVYiWHUbEzFe5kDqaSky/MRWiJ6gMlQEec8UwEAfPBuOPX" +
+            "LjQxuoCktG9oBaqkGxEyUdsEcsZyg2eCbfKDXzXoQ23wGal6Ij6Wrx7OY0SIOZ1J" +
+            "rN4Hgrl7NDl0102a/agvhh83asWry3lNl5YaD2qdlis/kA/6n6jIe5Vk2XlwwpSk" +
+            "jafZAkDMjIMBIcEIqDxpViGdHX69rLW8z1k535+zk/Y2pdFiyHiAxebe7KZ2bJyT" +
+            "Haiboi3o1DmnY4hXYSCxap0IN+XBmwch3n/l+zQQfqiQ8i3z9QaoCOedUWGngVAF" +
+            "HK2Cs0lrb0bZeCR0eWtafIVuYu/zFIevkhzBumQxg1kYO6OZSfIzfvMUBC8RSzMQ" +
+            "B5WUl2UJVe7Vzwmy91fueIPg1RKyf6tdhfvFWIKuT1p0KAMo1ViE34yBCYJEekeb" +
+            "09UnKlFX2vvpAgMBAAGjYzBhMA8GA1UdEwEB/wQFMAMBAf8wHwYDVR0jBBgwFoAU" +
+            "GKnJ8nXKgOeSVZ5RKAiURZ0LPEUwHQYDVR0OBBYEFBipyfJ1yoDnklWeUSgIlEWd" +
+            "CzxFMA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAgEAJEen5M10vA/r" +
+            "rZl0vASo1godPFRPt0N6CFFM/XL+u2FEM6DkeOyu0J7v9nAy8JfsoKFHSmMPX55W" +
+            "7IQkEA0otceT/0qcQOnta5+5q5+frkiCfEbvVknuQrNjlUbKn+EPfQtd+ecpTjKU" +
+            "8/FoxEbHXKLxyMPgK1BH4iTVjis9DRNoTH829escKmtmVtj5CYUmPYnRiKaTdF2T" +
+            "wwq+kxNtW6ccoVUTKpYsrwSQW6BN9lsebxA40zwms5JNx/aINRvFb/khTN4Z9tV3" +
+            "Fnwa7em5UZwtRZQp9g5X8d0S58ICxQI9FOc/VK5o8Iy4wdfvgi0I569oruTCTuQv" +
+            "gqqfeVwij3JVerDnEWzj1iz22vcGzKk5j1wJnIAT4Yj9P+mLMBBRWe/ke6d8bEPT" +
+            "hjvDEwkTZ4YAsD8giLXZnyCqB0O6RqhG3tb39iqKaEo0GDLsF2qlVQy0VvxjWLpN" +
+            "qBRsLTu5TPH3fauyo9M0QwWNAHv6/dRTgF0fkJ2dgc3KF4abmH0+H926+hkuXmlU" +
+            "F+jjyc6IaL7VpBbUAk+qoP70k/jzGc1Gd1f1koE1pKht0X0ZNZGiZiPF2IYri8SN" +
+            "8vM0NtE0uolskMTrDe8VRz/0t3m2DXTi7CmixVTrTNZhflHYvxRb4yfgaNZFbd+L" +
+            "ubcUqhe3yYmNuweQi5vXRKznjnRTL7s=").getBytes() );
+
+    static byte[] chainSubCA = Base64.decode( ("MIIEJjCCAg6gAwIBAgIIHpPgIA6dEIcwDQYJKoZIhvcNAQELBQAwHzEQMA4GA1UE" +
+            "AwwHM0dQUENBMjELMAkGA1UEBhMCU0UwHhcNMTcwNjE0MjIyOTMxWhcNMzYwNjA5" +
+            "MjIyOTMxWjAiMRMwEQYDVQQDDAozR1BQU1VCQ0EyMQswCQYDVQQGEwJTRTCCASIw" +
+            "DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKCOJBpTjU2uUHFRC6kAYoKLOBIE" +
+            "x0x+qXzQYAyKeFeqbuTlNheZSPO3xqDXlTBB+CejV2MKfpIrELAr40ECrx2aUOqj" +
+            "El1QQagD9z3frVYLG3xBAtHWMyJjfIaPg5Ld+z6ljJFOoTkEFZhVp9njjeDL/DC0" +
+            "a8guhTfjT2DWBdCYiF9+RejrbBlBR0QW9qVS4r7sk/U18KWeS9hsPhJJaI5i/mRa" +
+            "l1eEVcQFWVMmsMKk643uxSEknJoHrvrK2kn/J9L33PrWTztCB/lAFi5PTZaFmqSq" +
+            "6+NsEXj1ru+6lR+uX9vvxciakelwEv4HmE+Ujku4PPWTpBZlRP6OBOXUnJMCAwEA" +
+            "AaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAfBgNVHSMEGDAWgBQYqcnydcqA55JVnlEo" +
+            "CJRFnQs8RTAdBgNVHQ4EFgQUioUuaOpLowYD5+e0o0LgnPUFmqswDgYDVR0PAQH/" +
+            "BAQDAgGGMA0GCSqGSIb3DQEBCwUAA4ICAQCTMRx+QaNPn0pOh4XB5lqBoryUXbqH" +
+            "l25WcQMtPSX82q7Lt+EFTjUXyNJQvpHhvsSrNMrS2PZkegaOn65hw+rky5b5FO7x" +
+            "+NZDpCxkTULqRnpTmN0YGLw9mFFz0i1O/Bmg2OmdlDjO6j+fp233BeUO0sRKmuE9" +
+            "cvhAqhsxnYLuZqU0Bkb0DxgIK7J9SDFghKFB9ms1QLo+/pw4poN0AOgEeJ45mzJF" +
+            "pA20OZUAxgAtaH5EHpjzBAzf2FPuBNkhLGnCOIxRGSnHsKwDHXWxZah2T64n25uB" +
+            "nlo6L4tqg2RxeWm7uaimu7tf7eNL4qC/VW6rAGQHQelZJBgBTu/j5PhfHO1YpoDS" +
+            "/zZIDU05TCKXLlJOZq+GbVR359O6ol8j7tHos6Z+Iug9gPUwxmMDNA41FSz5ZiNF" +
+            "JQh3hzh2BPQNfDIbv3/vFMRRyu5HGTXV/sKObI/cPLeegsFWSqlzOkLa+PU6frMS" +
+            "S32C2zkry2tMkIVuJjYv8o9n90mGUlNAkD+/3PfhEgmYIsua06osuoi+F8Q/fFEH" +
+            "ZMsczaWz7nE/ibitZ1IGrpqvJRupRKhvLmH2iBGroZHlVrIBmP14EZ/wQXEmvaPx" +
+            "JZ9RM9SFGZsTUS5ZCoJP67HazjfKGycKBVVyB2NkWVnPhunQRN3EI3h/fKNbSg0o" +
+            "O/i54l/6VggwBg==").getBytes() );
+
+    static byte[] chainUser = Base64.decode( ("MIIDWjCCAkKgAwIBAgIIMWDq/ezmwr4wDQYJKoZIhvcNAQELBQAwIjETMBEGA1UE" +
+            "AwwKM0dQUFNVQkNBMjELMAkGA1UEBhMCU0UwHhcNMTcwNjE2MTE0OTE5WhcNMzIw" +
+            "NjEyMTE0OTE5WjBBMRswGQYKCZImiZPyLGQBAQwLdWlkdXNlcm5hbWUxFTATBgNV" +
+            "BAMMDDNncHB0ZXN0dXNlcjELMAkGA1UEBhMCU0UwggEiMA0GCSqGSIb3DQEBAQUA" +
+            "A4IBDwAwggEKAoIBAQDJjMHWJri8VwP/1fs/W5kOQ/672qZu5mEVKmPxX5sVIJKE" +
+            "HddJaQ1ZxvfxXiiMReJ4a8oOg8VZaP3vA2bn4IkA7fGgJfDG0kYhgmwnL5nGfTTd" +
+            "HN5fH3mSyrD7LTh1hwOopgipw2xZzU6DI+n8MF2eZUpWxbmQFTJGHdtm7u9YrhMO" +
+            "hHxgDBWs2cPDvGQMGGYdAdHmaWJcDDb7WWWvmFarsPk9NL/29XjV/n8tgCE7Rnst" +
+            "xR0QeQ4537twdFTJBAhpwsohxKW3kvYe1EP3Fe1x5+TPXDCiUSRonlfSA+J62Ciy" +
+            "dWZMrU5NcLVlolznuDbC7kt/EFskiUXOq44I4D9NAgMBAAGjdTBzMAwGA1UdEwEB" +
+            "/wQCMAAwHwYDVR0jBBgwFoAUioUuaOpLowYD5+e0o0LgnPUFmqswEwYDVR0lBAww" +
+            "CgYIKwYBBQUHAwIwHQYDVR0OBBYEFOL4g1io11Levn8yyJRce+x8+rFYMA4GA1Ud" +
+            "DwEB/wQEAwIF4DANBgkqhkiG9w0BAQsFAAOCAQEAkqKBgenaxO58KaNJo/xYJr7I" +
+            "M0P6MMK3DmjrHkOH76nruHWKI4rZZJuOVw+2djjAfChWiH+SfGUcRmEML/NRn0tQ" +
+            "nth3AE522Kn1bF7nbM2P22aWDkaOEVXA1BnhFY8D4/TKUipMYuK9V8ttXxYrrkXU" +
+            "3rxzQ/qjMUxZhl/Emlb/B6mOml+nDC2gXTCFeg6u0Nn/JpUfkErM+E/LlqOqQs3a" +
+            "S9/8DHADVZaSC8+G1P1iDJVeHnJ9UHYlxWBsXoo1dOyMqSPMv1b90afYUlWN1gSj" +
+            "ecSvxm0H1m1PvttZNdEJTDB63Iug5FwvoBbn3RUphhpaawBYFzmK7XHfEAchJw==").getBytes() );
 
     @Before
     public void setUp() throws Exception {
@@ -2275,6 +2348,60 @@ public class CertToolsTest {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = DERIA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/CPS", str.getString());
+    }
+    
+    @Test
+    public void testOrderCertChain() throws CertificateParsingException, CertPathValidatorException {
+        X509Certificate root = CertTools.getCertfromByteArray(chainRootCA, X509Certificate.class);
+        X509Certificate sub = CertTools.getCertfromByteArray(chainSubCA, X509Certificate.class);
+        X509Certificate ee = CertTools.getCertfromByteArray(chainUser, X509Certificate.class);
+        // Try different orders...and see that we get the right things back
+        List<X509Certificate> order1 = new ArrayList<X509Certificate>();
+        order1.add(ee);
+        order1.add(sub);
+        order1.add(root);
+        List<X509Certificate> list = CertTools.orderX509CertificateChain(order1);
+        assertEquals("List should be of size 3", 3, list.size());
+        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
+        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
+        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
+
+        List<X509Certificate> order2 = new ArrayList<X509Certificate>();
+        order2.add(sub);
+        order2.add(root);
+        order2.add(ee);
+        list = CertTools.orderX509CertificateChain(order2);
+        assertEquals("List should be of size 3", 3, list.size());
+        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
+        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
+        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
+        
+        List<X509Certificate> order3 = new ArrayList<X509Certificate>();
+        order3.add(sub);
+        order3.add(ee);
+        order3.add(root);
+        list = CertTools.orderX509CertificateChain(order3);
+        assertEquals("List should be of size 3", 3, list.size());
+        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
+        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
+        assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
+        
+        // Skip root, should order anyway up to sub
+        List<X509Certificate> order4 = new ArrayList<X509Certificate>();
+        order4.add(sub);
+        order4.add(ee);
+        list = CertTools.orderX509CertificateChain(order4);
+        assertEquals("List should be of size 2", 2, list.size());
+        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
+        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
+
+        List<X509Certificate> order5 = new ArrayList<X509Certificate>();
+        order5.add(ee);
+        order5.add(sub);
+        list = CertTools.orderX509CertificateChain(order5);
+        assertEquals("List should be of size 2", 2, list.size());
+        assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
+        assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
     }
     
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
