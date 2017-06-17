@@ -13,18 +13,27 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +48,8 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -185,15 +196,21 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     /**
-     * Get the certificate that was attached to the CMP request in it's extreCert filed.
+     * Get the certificate that was attached to the CMP request in it's extraCert filed.
      * 
-     * @return The certificate that was attached to the CMP request in it's extreCert filed 
+     * @return The certificate that was attached to the CMP request in it's extraCert filed 
      */
     public Certificate getExtraCert() {
         return extraCert;
     }
 
-    private Certificate getExtraCert(final PKIMessage msg) {
+    /**
+     * Get the end entity certificate that was attached to the CMP request in it's extreCert filed.
+     * If the extraCerts field contains multiple certificates, these are ordered in a CertPath and the leaf certificate is returned. 
+     * 
+     * @return The end entity certificate that was attached to the CMP request in it's extraCert field, or null
+     */
+    private List<X509Certificate> getExtraCerts(final PKIMessage msg) {
         final CMPCertificate[] extraCerts = msg.getExtraCerts();
         if ((extraCerts == null) || (extraCerts.length == 0)) {
             if(log.isDebugEnabled()) {
@@ -206,24 +223,30 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         }
         
-        //Read the extraCert
-        CMPCertificate cmpcert = extraCerts[0];
-        Certificate excert = null;
         try {
-            excert = CertTools.getCertfromByteArray(cmpcert.getEncoded(), Certificate.class);
-            if(log.isDebugEnabled()) {
-                log.debug("Obtaning the certificate from extraCert field was done successfully");
+            //Read the extraCerts. Convert to an array of normal X509Certificates so we can later use a regular CertPath validator
+            List<X509Certificate> certlist = new ArrayList<X509Certificate>();
+            // Create CertPath
+            final JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
+            for (int i = 0; i < extraCerts.length; i++) {
+                certlist.add(jcaX509CertificateConverter.getCertificate(new X509CertificateHolder(extraCerts[i].getX509v3PKCert())));
+            }
+            if (!certlist.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Obtaning the certificate(s) from extraCert field was done successfully.");
+                }
+                return certlist;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Obtaning the certificate from extraCert field failed, the result was null.");
+                }            	
             }
         } catch (CertificateException e) {
             if(log.isDebugEnabled()) {
                 log.debug(e.getLocalizedMessage(), e);
             }
-        } catch (IOException e) {
-            if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage(), e);
-            }
         }
-        return excert;
+        return null;
     }
     
     @Override
@@ -242,7 +265,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         // Read the extraCert and store it in a local variable
-        extraCert = getExtraCert(msg);
+        List<X509Certificate> extraCertPath = getExtraCerts(msg);
+        extraCert = (extraCertPath != null ? extraCertPath.get(0) : null);
         if(extraCert == null) {
             this.errorMessage = "Error while reading the certificate in the extraCert field";
             return false;
@@ -313,7 +337,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             
             // More extraCert verifications
-            if(!isExtraCertIssuedByCA(cainfo) || !isExtraCertValid() || !isExtraCertActive(certinfo)) {
+            if(!isExtraCertValidAndIssuedByCA(extraCertPath, cainfo) || !isExtraCertActive(certinfo)) {
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
@@ -333,7 +357,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if(vendormode) {
 
                 // Check that extraCert is issued  by a configured VendorCA
-                if(!impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCert)) {
+                final CAInfo cainfo = impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCertPath);
+                if (cainfo == null) {
                     this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs: " + cmpConfiguration.getVendorCA(confAlias);
                     return false;
                 }
@@ -341,15 +366,18 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 // Extract the username from extraCert to use for  further authentication
                 String subjectDN = CertTools.getSubjectDN(extraCert);
                 extraCertUsername = CertTools.getPartFromDN(subjectDN, this.cmpConfiguration.getExtractUsernameComponent(this.confAlias));
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Username ("+extraCertUsername+") was extracted from the '" + this.cmpConfiguration.getExtractUsernameComponent(this.confAlias) + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
                 }
                 
+                // More extraCert verifications
+                if (!isExtraCertValidAndIssuedByCA(extraCertPath, cainfo)) {
+                    return false;
+                }
             } else {
                 
                 // Get the CA to use for the authentication
                 CAInfo cainfo = getCAInfoByIssuer(CertTools.getIssuerDN(extraCert));
-
                 // Check that extraCert is in the Database
                 CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
                 if(certinfo == null) {
@@ -358,7 +386,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
                 
                 // More extraCert verifications
-                if(!isExtraCertIssuedByCA(cainfo) || !isExtraCertValid() || !isExtraCertActive(certinfo)) {
+                if(!isExtraCertValidAndIssuedByCA(extraCertPath, cainfo) || !isExtraCertActive(certinfo)) {
                     return false;
                 }
                 
@@ -789,28 +817,75 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         return caauthorized;
     }
-    
-    private boolean isExtraCertValid() {
-        X509Certificate cert = (X509Certificate) extraCert;
-        try {
-            cert.checkValidity();
-            if(log.isDebugEnabled()) {
-                log.debug("The certificate in extraCert is valid");
-            }
-        } catch (CertificateExpiredException e) {
-            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field in not valid.";
-            if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " SubjectDN=" + CertTools.getSubjectDN(cert) + " - " + e.getLocalizedMessage());
-            }
-            return false;
-        } catch (CertificateNotYetValidException e) {
-            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field in not valid.";
-            if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " SubjectDN=" + CertTools.getSubjectDN(cert) + " - " + e.getLocalizedMessage());
-            }
-            return false;
+
+    /** Checks that the extracerts is a valid certificate path, that verifies up to the TrustAnchor being the Root CA certificate 
+     * of the supplied CA.
+     * @param extracerts certificates from the extraCerts field from the CMP Message
+     * @param cainfo The CA we want to verify extraCerts with, can be a root CA or a sub CA, in which case the sub CA's root CA is used as trust anchor
+     * @return true if extracert(s) verifies up to the trust anchor, false otherwise
+     */
+    private boolean isExtraCertValidAndIssuedByCA(List<X509Certificate> extracerts, CAInfo cainfo) {
+        if (extracerts == null || extracerts.isEmpty()) {
+            throw new IllegalArgumentException("extracerts must contain a certificate.");
         }
-        return true;
+        Certificate endentitycert = null;
+        try {
+            // What we got in extraCerts can be different things
+            // - An end entity certificate only, signed by a SubCA or a RootCA
+            // -- We need to find both SubCA and RootCA here, should be in cainfo?
+            // - An end entity certificate and a SubCA certificate
+            // -- We need to find the RootCA certificate only, should be in cainfo?
+            // - An end entity certificate a SubCA certificate and a RootCA certificate
+            // -- We need to remove the CA certificates that are not part of cainfo
+            ArrayList<Certificate> certlist = new ArrayList<>();
+            // Create CertPath
+            certlist.addAll(extracerts);
+            // Move CA certificates into cert path, except root certificate which is the trust anchor
+            X509Certificate rootcert = null;
+            Collection<Certificate> trustedCertificates = cainfo.getCertificateChain();
+            final Iterator<Certificate> itr = trustedCertificates.iterator();
+            while (itr.hasNext()) {
+                // Trust anchor is last, so if this is the last element, don't add it
+                Certificate crt = itr.next();
+                if (itr.hasNext()) {
+                    certlist.add(crt);
+                } else {
+                    rootcert = (X509Certificate)crt;
+                }
+            }            
+            CertPath cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);
+            // The end entity cert is the first one in the CertPath according to javadoc
+            // - "By convention, X.509 CertPaths (consisting of X509Certificates), are ordered starting with the target 
+            //    certificate and ending with a certificate issued by the trust anchor. 
+            //    That is, the issuer of one certificate is the subject of the following one."
+            endentitycert = cp.getCertificates().get(0);
+            TrustAnchor anchor = new TrustAnchor(rootcert, null);
+            PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
+            params.setRevocationEnabled(false);
+            CertPathValidator cpv = CertPathValidator.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+            PKIXCertPathValidatorResult result = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate verify result: " + result.toString());
+            }
+            // No CertPathValidatorException thrown means it passed
+            return true;
+        } catch (CertPathValidatorException e) {
+            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid "+" - "+e.getMessage();
+            if(log.isDebugEnabled()) {
+                log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
+            }
+        } catch (CertificateException e) {
+            log.warn("CertificateException", e);
+        } catch (NoSuchProviderException e) {
+            // Serious error, bail out
+            log.error("NoSuchProviderException", e);
+            throw new RuntimeException(e);
+        } catch (InvalidAlgorithmParameterException e) {
+            log.info("InvalidAlgorithmParameterException", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.info("NoSuchAlgorithmException", e);
+        }
+        return false;
     }
 
     private boolean isExtraCertActive(final CertificateInfo certinfo) {
@@ -823,23 +898,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         if (log.isDebugEnabled()) {
             log.debug("The certificate in extraCert is active");
-        }
-        return true;
-    }
-    
-    private boolean isExtraCertIssuedByCA(CAInfo cainfo) {
-        //Check that the extraCert is given by the right CA
-        // Verify the signature of the client certificate as well, that it is really issued by this CA
-        Certificate cacert = cainfo.getCertificateChain().iterator().next();
-        try {
-            extraCert.verify(cacert.getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
-        } catch (Exception e) {
-            if(log.isDebugEnabled()) {
-                String errmsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
-                log.debug(errmsg + " - " + e.getLocalizedMessage());
-            }
-            this.errorMessage = "The End Entity certificate attached to the PKIMessage is issued by the wrong CA";
-            return false;
         }
         return true;
     }
