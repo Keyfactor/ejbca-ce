@@ -879,7 +879,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } catch (NoSuchProviderException e) {
             // Serious error, bail out
             log.error("NoSuchProviderException", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         } catch (InvalidAlgorithmParameterException e) {
             log.info("InvalidAlgorithmParameterException", e);
         } catch (NoSuchAlgorithmException e) {
