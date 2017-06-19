@@ -79,7 +79,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
     	<h:inputSecret id="currentCryptoTokenSecret1" value="#{cryptoTokenMBean.currentCryptoToken.secret1}" size="20" autocomplete="off" title="#{web.text.CRYPTOTOKEN_PIN}"/>
 			<h:panelGroup styleClass="help">
-				<h:outputText value="#{web.text.CRYPTOTOKEN_PIN_NOTICE}"/>
+				<h:outputText value="#{web.text.CRYPTOTOKEN_PIN_NOTICE}" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"/>
 			</h:panelGroup>    	
 		</h:panelGroup>    	
 		<h:outputLabel for="currentCryptoTokenSecret2" value="#{web.text.CRYPTOTOKEN_PIN_REPEAT}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
