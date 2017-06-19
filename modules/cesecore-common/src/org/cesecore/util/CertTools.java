@@ -4027,40 +4027,22 @@ public abstract class CertTools {
 
     /**
      * Method ordering a list of X509 certificate into a certificate path with the root CA, or topmost Sub CA at the end. Does not check validity or verification of any kind,
-     * just ordering by issuerdn/keyId.
+     * just ordering by issuerdn/keyId. This is mostly a wrapper around CertPath.generateCertPath, but we do regression test this ordering.
      * 
      * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs).
-     * @return List with certificatechain with leaf certificate first, and root CA, or last sub CA, in the end, does not have to contain a Root CA is input does not.
+     * @return List with certificate chain with leaf certificate first, and root CA, or last sub CA, in the end, does not have to contain a Root CA is input does not.
      */
     @SuppressWarnings("unchecked")
-    public static List<X509Certificate> orderX509CertificateChain(Collection<X509Certificate> certlist) throws CertPathValidatorException {
-        ArrayList<Certificate> pathlist = new ArrayList<Certificate>();
-        for(Object possibleCertificate : certlist) {
-            Certificate cert = null;
-            try {
-                cert = (Certificate) possibleCertificate;
-            } catch (ClassCastException e) {
-                // This was not a certificate, is it byte encoded?
-                byte[] certBytes = (byte[]) possibleCertificate;
-                try {
-                    cert = CertTools.getCertfromByteArray(certBytes);
-                } catch (CertificateParsingException e1) {
-                    throw new CertPathValidatorException(e1);
-                }
-            }
-            if (cert != null) {
-                pathlist.add(cert);
-            }
-        }
+    public static List<X509Certificate> orderX509CertificateChain(List<X509Certificate> certlist) throws CertPathValidatorException {
         CertPath cp;
         try {
-            cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(pathlist);
+            cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);
         } catch (CertificateException e) {
             // Wasn't a certificate after all?
             throw new CertPathValidatorException(e);
         } catch (NoSuchProviderException e) {
             // This is really bad
-            throw new RuntimeException(e);
+            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
         return (List<X509Certificate>)cp.getCertificates();
     } // orderX509CertificateChain
