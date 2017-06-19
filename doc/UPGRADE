@@ -63,7 +63,7 @@ Lastly, the following behavioral changes should be taken into account:
 5. The ability to search for information in the 'Details' column of the audit log has been removed
 6. WebService API has changed for approvals 
 7. The CLI command 'role addadmin' has been renamed 'role addrolemember'
-8. In the CMP protocol, more stringen chain validation of certificate in the extraCerts fields (used in 3GPP Vendor mode and RA mode) has been 
+8. In the CMP protocol, more stringent chain validation of certificate in the extraCerts fields (used in 3GPP Vendor mode and RA mode) has been 
    introduced.
    
 Complete descriptions of changes:
