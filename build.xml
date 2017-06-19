@@ -728,7 +728,7 @@
     <!-- ======================================================================= -->
     <!-- Configure the web access for application servers.                       -->
     <!-- ======================================================================= -->
-    <target name="web-configure" depends="deprecated:check,inputKeystorePassword" description="Set-up the web confiugration for the application server (including changes related to setting-up SSL keystore/truststore).">
+    <target name="web-configure" depends="deprecated:check,inputKeystorePassword" description="Set-up the web configuration for the application server (including changes related to setting-up SSL keystore/truststore).">
       <fail message="You cannot run the web configuration target since it has been explicitly disabled in the web.properties file.">
         <condition>
           <istrue value="${web.noconfigure}" />
