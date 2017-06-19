@@ -3,7 +3,7 @@ EJBCA 6.8.0, 2017-06-19
 
 Technical Requirement
     [ECA-4793] - RA configuration should be retrieved from the CA
-
+    
 Bug
     [ECA-4550] - Space in email field results in misleading error message
     [ECA-5287] - Stack overflow on peer RA if the rule /ra_master_invoke_api is not accepted
@@ -50,7 +50,6 @@ Bug
     [ECA-5834] - Search for on audit log using 'contains' on 'Details' column can't parse apostrophes 
     [ECA-5850] - Timing sensitive CT unit tests can fail if they run first
     [ECA-5853] - Upgrade to 6.7.0 fails due to Use Default CA Issue value
-    [ECA-5854] - Fix dead links in documentation
     [ECA-5859] - Change crypto token CLI command does not work if old crypto token does not exist
     [ECA-5861] - Regression: EjbcaConfigurationHolder produces unwanted garbage output in CLI
     [ECA-5871] - End Entity Profiles are sorted case sensitive in Access Rules Page. 
@@ -76,7 +75,7 @@ Bug
     [ECA-5934] - Debug log always, falsely, claims cadata can not be fetched
     [ECA-5938] - Unable to save end entity profiles without specified date when custom validity is enabled
     [ECA-5939] - Available CAs in End Entity profile not sorted properly
-    [ECA-5940] - Perform proper validation of CMP Vendor mode client certificates
+    [ECA-5940] - Perform more stringent validation of CMP Vendor and RA mode extraCert certificates
 
 
 
@@ -188,12 +187,14 @@ Improvement
     [ECA-5860] - Add signature algorithm to keybind list CLI command output
     [ECA-5868] - Change default intresources.secondarylanguage to english
     [ECA-5873] - Re-implement EFF ACME protocol support
-    [ECA-5885] - Optimized lookup of preferred match value (e.g. serial number) for looking up access rules
     [ECA-5899] - Add a CMP Key Update Request test to verify that admins can't request certificates from the wrong CA.
     [ECA-5902] - Adjust OCSP max-age and next update (in response and RFC5019 headers) to OCSP signing certificate expire date, if expire is before configured values
+    [ECA-5914] - CMP: Handle several certs in extraCerts field
+    [ECA-5915] - CMP: Not all SubCAs need to be imported in Vendor mode
     [ECA-5920] - Changes all references from Role "Administrators" to "Role Member"
     [ECA-5929] - Publishers are not sorted alphabetically in select menus
     [ECA-5933] - GUI: New eIDAS word for SSCD
+    [ECA-5942] - CryptoTokenManager: Make clear that the "Authentication Code" is not being *set* or *defined* here
 
 Sub-task
     [ECA-5745] - Use new authorization system in Admin GUI
