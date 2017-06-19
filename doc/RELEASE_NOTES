@@ -2,7 +2,7 @@ EJBCA 6.8.0
 -----------
 
 Just in time for the Swedish summer (all three days of it), we here at PrimeKey Solutions are very proud to release EJBCA 6.8.0, with a bunch of new
-features that we sincerely hope you'll enjoy. All in all, 187 issues that have been fixed for this release.
+features that we sincerely hope you'll enjoy. All in all, 190 issues that have been fixed for this release.
 
 First and foremost, we've made some changes to Roles and Access Rules (see the UPGRADE document for technical details). Among these changes and 
 improvements, we'd like to highlight the following:
