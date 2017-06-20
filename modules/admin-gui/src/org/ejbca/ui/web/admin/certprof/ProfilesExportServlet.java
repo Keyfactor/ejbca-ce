@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -47,6 +48,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.keys.validation.BaseKeyValidator;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -80,6 +83,8 @@ public class ProfilesExportServlet extends HttpServlet {
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -141,37 +146,37 @@ public class ProfilesExportServlet extends HttpServlet {
                    
             totalprofiles = certprofids.size();
             log.info("Exporting non-fixed certificate profiles");
-                for (int profileid : certprofids) {
-                    if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
-                        log.error("Couldn't find certificate profile '" + profileid + "' in database.");
-                    } else if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
-                        if(log.isDebugEnabled()) {
-                            log.debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
-                        }
+            for (int profileid : certprofids) {
+                if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
+                    log.error("Couldn't find certificate profile '" + profileid + "' in database.");
+                } else if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Skipping export fixed certificate profile with id '" + profileid + "'.");
+                    }
+                } else {
+                    String profilename = certificateProfileSession.getCertificateProfileName(profileid);
+                    CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileid);
+                    if (profile == null) {
+                        missingprofiles++;
+                        log.error("Couldn't find certificate profile '" + profilename + "'-" + profileid + " in database.");
                     } else {
-                        String profilename = certificateProfileSession.getCertificateProfileName(profileid);
-                        CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileid);
-                        if (profile == null) {
-                            missingprofiles++;
-                            log.error("Couldn't find certificate profile '" + profilename + "'-" + profileid + " in database.");
-                        } else {
-                            String profilenameEncoded;
-                            try {
-                                profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
-                            } catch (UnsupportedEncodingException e) {
-                                throw new IllegalStateException("UTF-8 was not a known encoding", e);
-                            }
-                            
-                            byte[] ba = getProfileBytes(profile);
-                            String filename = "certprofile_" + profilenameEncoded + "-" + profileid + ".xml";
-                            ZipEntry ze = new ZipEntry(filename);
-                            zos.putNextEntry(ze);
-                            zos.write(ba);
-                            zos.closeEntry();
-                            exportedprofiles++;
+                        String profilenameEncoded;
+                        try {
+                            profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            throw new IllegalStateException("UTF-8 was not a known encoding", e);
                         }
+
+                        byte[] ba = getProfileBytes(profile);
+                        String filename = "certprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                        ZipEntry ze = new ZipEntry(filename);
+                        zos.putNextEntry(ze);
+                        zos.write(ba);
+                        zos.closeEntry();
+                        exportedprofiles++;
                     }
                 }
+            }
             
         } else if(StringUtils.equalsIgnoreCase(type, "eep")) {
             
@@ -212,14 +217,40 @@ public class ProfilesExportServlet extends HttpServlet {
                     }
                 }
             }
+        } else if (StringUtils.equalsIgnoreCase(type, "kv")) {
+            zipfilename = "keyvalidators.zip";
+
+            final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
+            totalprofiles = map.size();
+            log.info("Exporting key validators.");
+            BaseKeyValidator keyValidator;
+            String profilenameEncoded;
+            byte[] ba;
+            String filename;
+            ZipEntry ze;
+            for (Integer id : map.keySet()) {
+                keyValidator = keyValidatorSession.getKeyValidator(id);
+                try {
+                    profilenameEncoded = URLEncoder.encode(keyValidator.getName(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new IllegalStateException("UTF-8 was not a known encoding", e);
+                }
+                ba = getProfileBytes(keyValidator);
+                filename = "keyvalidator_" + profilenameEncoded + "-" + id + ".xml";
+                ze = new ZipEntry(filename);
+                zos.putNextEntry(ze);
+                zos.write(ba);
+                zos.closeEntry();
+                exportedprofiles++;
+            }
         }
         zos.close();
-        
-        byte[] zipfile = zbaos.toByteArray();
+
+        final byte[] zipfile = zbaos.toByteArray();
         zbaos.close();
-        
-        log.info("Found " + totalprofiles + " profiles. " + exportedprofiles + " profiles were exported to " + zipfilename + 
-                " and " + missingprofiles + " were not found in the database.");
+
+        log.info("Found " + totalprofiles + " profiles. " + exportedprofiles + " profiles were exported to " + zipfilename + " and " + missingprofiles
+                + " were not found in the database.");
 
         response.setContentType("application/octet-stream");
         response.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(zipfilename) + "\"");
@@ -228,7 +259,7 @@ public class ProfilesExportServlet extends HttpServlet {
 
         log.trace("<doGet()");
     } // doGet
-    
+
     private byte[] getProfileBytes(UpgradeableDataHashMap profile) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLEncoder encoder = new XMLEncoder(baos);

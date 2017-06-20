@@ -28,6 +28,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.PublicKeyBlacklistSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -98,6 +100,8 @@ public interface EjbBridgeSessionLocal {
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
 	HardTokenSessionLocal getHardTokenSession();
 	KeyRecoverySessionLocal getKeyRecoverySession();
+	PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession();
+	KeyValidatorSessionLocal getKeyValidatorSession();
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
 	AdminPreferenceSessionLocal getRaAdminSession();

@@ -4,12 +4,10 @@
 
 <%               
   TreeMap<String,Integer> rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
-  TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();    
-  
+  TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();      
   Map<String,Integer> casigners = info.getActiveCANames();
-
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMapByValue();
-  
+  Map<Integer,String> keyValidatorIdToNameMap = ejbcawebbean.getInformationMemory().getKeyValidatorIdToNameMap();
   Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
@@ -1424,6 +1422,28 @@ function toggleCANameChange(){
                      out.write(" selected ");
                  %>>
              <c:out value="<%= publisheridtonamemap.get(next) %>"/>                 
+          </option>  
+             <% } %>
+       </select>
+     </td>
+   </tr>
+   
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%" align="right"> 
+       <%= ejbcawebbean.getText("KEYVALIDATORS") %> <br />&nbsp;
+     </td>
+     <td width="50%"> 
+       <select name="<%= SELECT_AVAILABLEKEYVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
+          <% Collection usedKeyValidators = null;
+               if(editca) usedKeyValidators = cainfo.getKeyValidators(); 
+               iter = keyValidatorIdToNameMap.keySet().iterator(); 
+               while(iter.hasNext()){
+                 Integer next = (Integer) iter.next(); %>
+          <option  value="<%= next %>" 
+             <%    if(editca && usedKeyValidators.contains(next))
+                     out.write(" selected ");
+                 %>>
+             <c:out value="<%= keyValidatorIdToNameMap.get(next) %>"/>                 
           </option>  
              <% } %>
        </select>

@@ -71,7 +71,7 @@
 	<target name="build-common" description="Build the ejbca-common JAR" depends="compile-common">
 		<dirname file="${mod.ejbca-common.lib}" property="mod.ejbca-common.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common.lib.dir}" />
-		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.configuration.ConfigurationCache;org.ejbca.core.model.approval.profile.ApprovalProfile" file="${build-common.dir}" classpath="manifest.classpath"/>
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.configuration.ConfigurationCache;org.ejbca.core.model.approval.profile.ApprovalProfile;org.cesecore.keys.validation.ICustomKeyValidator" file="${build-common.dir}" classpath="manifest.classpath"/>
 		<!-- Since the base classes reading properties is in ejbca-common, we also store defaultvalues.properties here so it can be used stand-alone -->
 		<jar destfile="${mod.ejbca-common.lib}">
 			<manifest>

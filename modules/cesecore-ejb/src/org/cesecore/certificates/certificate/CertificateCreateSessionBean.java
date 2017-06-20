@@ -91,6 +91,8 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.KeyValidationException;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -115,6 +117,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -340,6 +344,24 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         details.put("publickey", new String(Base64.encode(pk.getEncoded(), false)));
         logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(),
                 String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+        
+        // Retrieve the certificate profile this user should have, checking for authorization to the profile
+        final int certProfileId = endEntityInformation.getCertificateProfileId();
+        final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
+        try {
+            final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
+            keyValidatorSession.validatePublicKey(ca, endEntityInformation, certProfile, notBefore, notAfter,
+                    publicKeyToValidate);
+            // ECA-4219 Bypass certificate profile settings for key size and strength.
+            // Change return type to int and derive state.
+            certGenParams.setSkipCertificateProfileSettings(true);
+        }
+        catch(KeyValidationException e) {
+            throw new CertificateCreateException( e);
+        }
+        catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
+        }
 
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
@@ -353,9 +375,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             final Certificate cacert = ca.getCACertificate();
             final String caSubjectDN = CertTools.getSubjectDN(cacert);       
-            // Retrieve the certificate profile this user should have, checking for authorization to the profile
-            final int certProfileId = endEntityInformation.getCertificateProfileId();
-            final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
+            
             assertSubjectEnforcements(ca.getCAInfo(), endEntityInformation);
             assertSubjectKeyIdEnforcements(ca.getCAInfo(), endEntityInformation, pk);
     
@@ -467,8 +487,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             int revreason = RevokedCertInfo.NOT_REVOKED;
             ExtendedInformation ei = endEntityInformation.getExtendedinformation();
             if (ei != null) {
-            	revreason = ei.getIssuanceRevocationReason();
-            	if (revreason != RevokedCertInfo.NOT_REVOKED) {
+                revreason = ei.getIssuanceRevocationReason();
+                if (revreason != RevokedCertInfo.NOT_REVOKED) {
                     // If we don't store the certificate in the database, we wont support revocation/reactivation so issuing revoked certificates would be
                     // really strange.
                     if (ca.isUseCertificateStorage() && certProfile.getUseCertificateStorage()) {
@@ -476,7 +496,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     } else {
                         log.warn("CA configured to revoke issued certificates directly, but not to store issued the certificates. Revocation will be ignored. Please verify your configuration.");
                     }
-            	}
+                }
             }
             if (log.isDebugEnabled()) {
                 log.debug("Generated certificate with SerialNumber '" + serialNo + "' for user '" + endEntityInformation.getUsername() + "', with revocation reason="
@@ -630,7 +650,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
         }
         //boolean multipleCheckOk = false;
-       
+        
         // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
         // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
         // See ECA-3309
@@ -734,8 +754,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         return sb.toString();
     }
 
-	@Override
+    @Override
     public boolean isUniqueCertificateSerialNumberIndex() {
-    	return certificateStoreSession.isUniqueCertificateSerialNumberIndex();
+        return certificateStoreSession.isUniqueCertificateSerialNumberIndex();
     }
 }

@@ -4150,16 +4150,17 @@ public abstract class CertTools {
      *      DERSet attributes = new DERSet(v);
      *      }
      * 
-     * @param signatureAlgorithm
-     * @param subject   The request's subjectDN
-     * @param publickey the public key for the certificate requesting signing
-     * @param attributes    A set of attributes, for example, extensions, challenge password, etc.
-     * @param privateKey the private key used to generate the certificate
-     * @param provider
+     * @param signatureAlgorithm the signature algorithm to sign the CSR.
+     * @param subject the request's subject DN.
+     * @param publickey the public key of the CSR.
+     * @param attributes a set of attributes, for example, extensions, challenge password, etc.
+     * @param privateKey the private key used to sign the CSR.
+     * @param provider the JCA/JCE provider to use.
      * @return a PKCS10CertificateRequest based on the input parameters.
      * 
      * @throws OperatorCreationException if an error occurred while creating the signing key
      */
+    // Should sign with. other private as well!
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey,
             ASN1Set attributes, PrivateKey privateKey, String provider) throws OperatorCreationException {
 
@@ -4386,5 +4387,27 @@ public abstract class CertTools {
             }
         }
     }
-
+    
+    /**
+     * Creates a public key fingerprint with the given digest algorithm. 
+     * 
+     * @param publicKey the public key.
+     * @param algorithm the digest algorithm (i.e. MD-5, SHA-1, SHA-256, etc.)
+     * @return the public key fingerprint or null.
+     */
+    public static final String createPublicKeyFingerprint(final PublicKey publicKey, final String algorithm) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance(algorithm);
+            digest.reset();
+            digest.update(publicKey.getEncoded());
+            final String result = Hex.toHexString(digest.digest());
+            if (log.isDebugEnabled()) {
+                log.debug("Fingerprint " + result + " created for public key \n" + Base64.encode(publicKey.getEncoded()));
+            }
+            return result;
+        } catch (NoSuchAlgorithmException e) {
+            log.warn("Could not create fingerprint for public key ", e);
+            return null;
+        }
+    }
 }

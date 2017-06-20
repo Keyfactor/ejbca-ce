@@ -103,6 +103,13 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
+import org.cesecore.keys.validation.KeyValidationFailedActions;
+import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
+import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
+import org.cesecore.keys.validation.KeyValidatorSessionTest;
+import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -156,6 +163,7 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -193,6 +201,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final KeyValidatorProxySessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
@@ -375,8 +384,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test03_1GeneratePkcs10() throws Exception {
-        generatePkcs10();
+    public void test03_1GeneratePkcs10WithBlacklistedKey() throws Exception {
+        generatePkcs10(true);
     }
 
     @Test
@@ -471,7 +480,66 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test04GeneratePkcs12() throws Exception {
+        // A: Generate P12 before key validation. 
         generatePkcs12();
+        // B: add RSA key validator with min. key size of 2048 bits -> P12 generation should fail.
+        generatePkcs12WithFailedKeyValidation();
+    }
+    
+    private void generatePkcs12WithFailedKeyValidation() throws Exception {
+        final UserMatch usermatch = new UserMatch();
+        usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue(CA1_WSTESTUSER1);
+        List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+        assertNotNull(userdatas);
+        assertEquals(1, userdatas.size());
+        final String oldTokenType = userdatas.get(0).getTokenType();
+        final String oldSubjectDn = userdatas.get(0).getSubjectDN();
+        final String oldPassword = userdatas.get(0).getPassword();
+        userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+        userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
+        userdatas.get(0).setSubjectDN(getDN(CA1_WSTESTUSER1));
+        userdatas.get(0).setPassword(PASSWORD);
+        ejbcaraws.editUser(userdatas.get(0));
+
+        final Integer certificateProfileId = certificateProfileSession.getCertificateProfileId(userdatas.get(0).getCertificateProfileName());
+        final String keyValidatorName = "WSPKCS12-RsaKeyValidatorTest";
+        final RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorSessionTest.createKeyValidator(RsaKeyValidator.KEY_VALIDATOR_TYPE, "WSPKCS12-RsaKeyValidator", keyValidatorName, null, -1, null, -1, KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileId);
+        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
+        keyValidator.setBitLengths(RsaKeyValidator.getAvailableBitLengths(2048));
+        try {
+            keyValidatorSession.removeKeyValidator(intAdmin, keyValidatorName);
+        } catch (KeyValidatorDoesntExistsException e) {
+            // NOOP
+        } catch (CouldNotRemoveKeyValidatorException e) {
+            assertTrue("Remove key validator references from CA first: " + keyValidatorName, false);
+        }
+        keyValidatorSession.addKeyValidator(intAdmin, keyValidatorName, keyValidator);
+        
+        // Add key validator to CA.
+        final CAInfo caInfo = caSession.getCAInfo(intAdmin, CA1);
+        final Collection<Integer> keyValidatorIds = new ArrayList<Integer>();
+        keyValidatorIds.add(keyValidatorSession.getKeyValidatorId(keyValidatorName));
+        caInfo.setKeyValidators(keyValidatorIds);
+        caSession.editCA(intAdmin, caInfo);
+        
+        try {
+            ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, userdatas.get(0).getPassword(), null, "1024", AlgorithmConstants.KEYALGORITHM_RSA); // generatePkcs12();
+            fail("With a RSA key validator and a minimum key size of 2048 bits, the generation of P12 file with a 1024 bit RSA key should fail with an EjbcaException_Exception wrapping a KeyValidationException");
+        } catch(Exception e) {
+            Assert.assertTrue( "EjbcaException_Exception expected: " + e.getClass().getName(), e instanceof EjbcaException_Exception);
+            Assert.assertTrue( "EjbcaException_Exception with failed key validation must have message: " + e.getMessage(), (e.getMessage().startsWith("org.cesecore.keys.validation.KeyValidationException: Key validator WSPKCS12-RsaKeyValidatorTest could not validate sufficient key quality")));            
+        }
+        
+        // Clean up.
+        caInfo.setKeyValidators(new ArrayList<Integer>());
+        caSession.editCA(intAdmin, caInfo);
+        userdatas.get(0).setTokenType(oldTokenType);
+        userdatas.get(0).setSubjectDN(oldSubjectDn);
+        userdatas.get(0).setPassword(oldPassword);
+        ejbcaraws.editUser(userdatas.get(0));
+        keyValidatorSession.removeKeyValidator(intAdmin, keyValidatorName);
     }
 
     @Test
@@ -1503,6 +1571,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test72CreateCA() throws Exception {
+        // ECA-4219 Test: WS call create CA with key validator.
         log.trace(">test72CreateCA()");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());

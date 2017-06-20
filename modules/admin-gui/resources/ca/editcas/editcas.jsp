@@ -2,49 +2,40 @@
 <%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="
+<%@page errorPage="/errorpage.jsp" import="java.io.*,
+java.security.cert.Certificate,
+java.security.cert.CertificateException,
+java.security.InvalidParameterException,
+java.security.InvalidAlgorithmParameterException,
 java.text.ParseException,
 java.util.*,
 java.util.Map.Entry,
-java.io.*,
-java.security.cert.Certificate,
+javax.ejb.EJBException,
+org.bouncycastle.asn1.x500.X500Name,
 org.apache.commons.fileupload.*,
-org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
-org.ejbca.config.GlobalConfiguration,
 org.cesecore.authorization.control.StandardRules,
 org.cesecore.util.FileTools,
 org.cesecore.util.CertTools,
 org.cesecore.CesecoreException,
 org.cesecore.authorization.AuthorizationDeniedException,
-org.ejbca.ui.web.RequestHelper,
-org.ejbca.ui.web.admin.cainterface.CAInterfaceBean,
+org.cesecore.certificates.ca.ApprovalRequestType,
 org.cesecore.certificates.ca.CAInfo,
 org.cesecore.certificates.ca.X509CAInfo,
 org.cesecore.certificates.ca.CVCCAInfo,
 org.cesecore.certificates.ca.catoken.CAToken,
 org.cesecore.certificates.ca.CAConstants,
-org.ejbca.core.model.SecConst,
 org.cesecore.certificates.ca.catoken.CATokenConstants,
 org.cesecore.certificates.ca.catoken.CAToken,
-org.ejbca.ui.web.admin.cainterface.CADataHandler,
-org.ejbca.ui.web.RevokedInfoView,
-org.ejbca.ui.web.admin.configuration.InformationMemory,
-org.bouncycastle.asn1.x500.X500Name,
-org.ejbca.core.EjbcaException,
 org.cesecore.certificates.certificate.IllegalKeyException,
 org.cesecore.certificates.certificate.request.PKCS10RequestMessage,
 org.cesecore.certificates.certificate.request.RequestMessage,
 org.cesecore.certificates.certificate.request.RequestMessageUtils,
 org.cesecore.certificates.certificate.request.CVCRequestMessage,
+org.cesecore.certificates.certificateprofile.CertificateProfile,
+org.cesecore.certificates.certificateprofile.CertificatePolicy,
 org.cesecore.certificates.ca.CAExistsException,
 org.cesecore.certificates.ca.CADoesntExistsException,
-org.cesecore.keys.token.CryptoTokenOfflineException,
-org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
-org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo,
-org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo,
-org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo,
 org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo,
-org.cesecore.keys.token.AvailableCryptoToken,
 org.cesecore.certificates.ca.catoken.CATokenConstants,
 org.cesecore.certificates.util.DNFieldExtractor,
 org.cesecore.certificates.util.DnComponents,
@@ -53,23 +44,31 @@ org.cesecore.keys.token.BaseCryptoToken,
 org.cesecore.keys.token.NullCryptoToken,
 org.cesecore.keys.token.SoftCryptoToken,
 org.cesecore.keys.token.PKCS11CryptoToken,
-org.cesecore.certificates.certificateprofile.CertificateProfile,
-org.cesecore.certificates.certificateprofile.CertificatePolicy,
-org.ejbca.ui.web.admin.cainterface.CAInfoView,
+org.cesecore.keys.token.AvailableCryptoToken,
+org.cesecore.keys.token.CryptoTokenOfflineException,
+org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
 org.bouncycastle.jce.exception.ExtCertPathValidatorException,
 org.cesecore.util.SimpleTime,
 org.cesecore.util.ValidityDate,
-org.ejbca.ui.web.ParameterException,
 org.cesecore.util.StringTools,
 org.cesecore.certificates.util.AlgorithmConstants,
 org.cesecore.certificates.util.AlgorithmTools,
 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint,
+org.ejbca.config.GlobalConfiguration,
+org.ejbca.core.EjbcaException,
 org.ejbca.core.model.authorization.AccessRulesConstants,
-java.security.cert.CertificateException,
-javax.ejb.EJBException,
-java.security.InvalidParameterException,
-java.security.InvalidAlgorithmParameterException,
-org.cesecore.certificates.ca.ApprovalRequestType
+org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo,
+org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo,
+org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo,
+org.ejbca.core.model.SecConst,
+org.ejbca.ui.web.admin.cainterface.CADataHandler,
+org.ejbca.ui.web.RequestHelper,
+org.ejbca.ui.web.RevokedInfoView,
+org.ejbca.ui.web.admin.cainterface.CAInfoView,
+org.ejbca.ui.web.admin.configuration.InformationMemory,
+org.ejbca.ui.web.admin.cainterface.CAInterfaceBean,
+org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
+org.ejbca.ui.web.ParameterException
 " %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -197,6 +196,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
   static final String SELECT_KEYSIZE                              = "selectsize";
   static final String SELECT_KEY_SEQUENCE_FORMAT                  = "selectkeysequenceformat";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
+  static final String SELECT_AVAILABLEKEYVALIDATORS               = "selectavailablekeyvalidators";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
@@ -375,6 +375,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
                 final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
                 final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEKEYVALIDATORS);
                 final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
                 final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
                 final boolean keepexpiredoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_KEEPEXPIREDONCRL));
@@ -410,7 +411,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
                		 isDoEnforceUniqueDistinguishedName,
                		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-               		 crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues,
+               		 crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues,
                		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
                		 authorityInformationAccess, 
                		 certificateAiaDefaultCaIssuerUri,
@@ -422,7 +423,11 @@ org.cesecore.certificates.ca.ApprovalRequestType
                		 keyAliasHardTokenEncryptKey, keyAliasKeyEncryptKey, keyAliasKeyTestKey,
                		 fileBuffer);
                 } catch (CAExistsException caee) {
-                    caexists = true; 
+                    caexists = true;
+                    Throwable t = caee.getCause();
+                    if (null != t && t instanceof IllegalKeyException) {
+                    	errormessage = t.getMessage();
+                    }
                 } catch (CryptoTokenAuthenticationFailedException catfe) {
                     catokenauthfailed = true;
                     errormessage = catfe.getMessage();
@@ -555,6 +560,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEKEYVALIDATORS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
                 final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
                 final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
@@ -601,7 +607,7 @@ org.cesecore.certificates.ca.ApprovalRequestType
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
             		useCertReqHistory, useUserStorage, useCertificateStorage, 
             		approvals,
-            		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
+            		availablePublisherValues, availableKeyValidatorValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
             		authorityInformationAccess,
             		certificateAiaDefaultCaIssuerUri,

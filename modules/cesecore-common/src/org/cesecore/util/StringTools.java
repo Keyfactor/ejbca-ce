@@ -23,9 +23,14 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -941,5 +946,49 @@ public final class StringTools {
             }
         }
         return false;
+    }
+//    /** Method that parses a date by format strings. 
+//     * @param dateString the date string.
+//     * @param formatStrings the format strings. 
+//     * @return the date if it as possible to parse it, otherwise null. */
+//    public static final Date tryParseDate(final String dateString, final List <String> formatStrings) {
+//        Date result = null;
+//        for (String formatString : formatStrings) {
+//            try {
+//                return new SimpleDateFormat(formatString).parse( dateString);
+//            } catch(ParseException e) {
+//                // NOOP
+//                if (log.isTraceEnabled()) {
+//                    log.trace("Coild not parse date " + dateString + " with format " + formatString);
+//                }
+//            }
+//        }
+//        return result;
+//    }
+    
+    /**
+     * Transforms a string of ids into a list of integer.
+     * @param ids the id string
+     * @param listSeparator the list separator.
+     * @return a list of Integer.
+     */
+    public static final List<Integer> idStringToListOfInteger(final String ids, final String listSeparator) {
+        final ArrayList<Integer> result = new ArrayList<Integer>();
+        if (ids != null) {
+            for (final String id : ids.split(listSeparator)) {
+                result.add(Integer.valueOf(id));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Checks a string for legal chars (not containing "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g").
+     * @param value the string value
+     * @return true if the string only contains legal characters.
+     */
+    public static boolean checkFieldForLegalChars(final String value) {
+        final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
+        return Pattern.matches(blackList, value);
     }
 }
