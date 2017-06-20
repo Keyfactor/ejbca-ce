@@ -83,6 +83,7 @@ import com.thoughtworks.xstream.XStream;
  * @version $Id$
  *
  */
+@SuppressWarnings("deprecation")
 public class DatabaseCliCommandTest {
 
     private static final String PERSISTENCE_UNIT = "foo";

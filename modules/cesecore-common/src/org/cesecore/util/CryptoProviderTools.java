@@ -77,17 +77,17 @@ public final class CryptoProviderTools {
     }
     
     public static synchronized void installBCProviderIfNotAvailable() {
-    	if (Security.getProvider("BC") == null) {
+    	if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
     		installBCProvider();
     	}
     }
 
     public static synchronized void removeBCProvider() {
-        Security.removeProvider("BC");  
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);  
         // Also remove the CVC provider
         Security.removeProvider("CVC");
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     public static synchronized void installBCProvider() {
     	
         // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider
@@ -140,7 +140,6 @@ public final class CryptoProviderTools {
         // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
         // We must be backwards compatible
         X509Name.DefaultSymbols.put(X509Name.SN, "SN");
-        
         // We hard specify the system security provider in a few cases (see SYSTEM_SECURITY_PROVIDER). 
         // If the SUN provider does not exist, we will always use BC.
         final Provider p = Security.getProvider(SYSTEM_SECURITY_PROVIDER);
