@@ -99,6 +99,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
@@ -147,6 +148,7 @@ public class CAInterfaceBean implements Serializable {
 
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
+	private static final String LIST_SEPARATOR = ";";
 	
     public static final int CATOKENTYPE_P12          = 1;
     public static final int CATOKENTYPE_HSM          = 2;
@@ -165,6 +167,8 @@ public class CAInterfaceBean implements Serializable {
     private PublishingCrlSessionLocal publishingCrlSession;
     private PublisherQueueSessionLocal publisherqueuesession;
     private PublisherSessionLocal publishersession;
+    private KeyValidatorSessionLocal keyValidatorSession;
+    
     private SignSession signsession; 
    
     private CADataHandler cadatahandler;
@@ -197,6 +201,7 @@ public class CAInterfaceBean implements Serializable {
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
           publishersession = ejbLocalHelper.getPublisherSession();               
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
+          keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
           publishingCrlSession = ejbLocalHelper.getPublishingCrlSession();
           informationmemory = ejbcawebbean.getInformationMemory();
@@ -353,6 +358,10 @@ public class CAInterfaceBean implements Serializable {
 
     public HashMap<Integer, String> getAvailablePublishers() {
       return publishersession.getPublisherIdToNameMap();
+    }
+    
+    public Map<Integer, String> getAvailableKeyValidators() {
+        return keyValidatorSession.getKeyValidatorIdToNameMap();
     }
     
     public int getPublisherQueueLength(int publisherId) {
@@ -520,7 +529,7 @@ public class CAInterfaceBean implements Serializable {
             boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
             String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
-            String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
+            String availablePublisherValues, String availableKeyValidatorValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
             String authorityInformationAccessString,
             String certificateAiaDefaultCaIssuerUriString,
@@ -588,7 +597,7 @@ public class CAInterfaceBean implements Serializable {
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
-                    crlOverlapTime, deltacrlperiod, availablePublisherValues, usecrlnumber, crlnumbercritical,
+                    crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues, usecrlnumber, crlnumbercritical,
                     defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
                     authorityInformationAccessString,
                     certificateAiaDefaultCaIssuerUriString,
@@ -619,7 +628,7 @@ public class CAInterfaceBean implements Serializable {
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
 	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
-            String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
+            String availablePublisherValues, String availableKeyValidatorValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
             String authorityInformationAccessString,
             String certificateAiaDefaultCaIssuerUriString,
@@ -702,10 +711,13 @@ public class CAInterfaceBean implements Serializable {
             if(!StringUtils.isEmpty(errorMessage)) {
                 throw new ParameterException(errorMessage);
             }
-
         }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
+	        // Approvals is generic for all types of CAs
+//	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
+//            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
+
 	        if (catype == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
 	            if (subjectaltname == null) {
@@ -717,20 +729,16 @@ public class CAInterfaceBean implements Serializable {
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(policyid);
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
-
-	            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
-	            if (availablePublisherValues != null) {
-	                for (final String availablePublisherId : availablePublisherValues.split(";")) {
-	                    crlpublishers.add(Integer.valueOf(availablePublisherId));
-	                }
-	            }
+	            final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
+	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
+	            
 	            List<String> authorityInformationAccess = new ArrayList<String>();
 	            if (StringUtils.isNotBlank(authorityInformationAccessString)) {
-	            	authorityInformationAccess = new ArrayList<String>( Arrays.asList(authorityInformationAccessString.split(";")));	
+	            	authorityInformationAccess = new ArrayList<String>( Arrays.asList(authorityInformationAccessString.split(LIST_SEPARATOR)));	
 	            }
 	            List<String> certificateAiaDefaultCaIssuerUri = new ArrayList<String>();
 	            if (StringUtils.isNotBlank(certificateAiaDefaultCaIssuerUriString)) {
-	                certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriString.split(";")));
+	                certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriString.split(LIST_SEPARATOR)));
 	            }
 	            String cadefinedfreshestcrl = "";
 	            if (caDefinedFreshestCrlString != null) {
@@ -751,7 +759,7 @@ public class CAInterfaceBean implements Serializable {
 	                            certprofileid, validityString, 
 	                            null, catype, signedby,
 	                            null, catoken, description, -1, null,
-	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
 	                            useauthoritykeyidentifier, 
 	                            authoritykeyidentifiercritical,
 	                            usecrlnumber, 
@@ -797,7 +805,7 @@ public class CAInterfaceBean implements Serializable {
 	                            certprofileid, validityString,
 	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
 	                            null, catoken, description, -1, null, 
-	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, 
 	                            useauthoritykeyidentifier, 
 	                            authoritykeyidentifiercritical,
 	                            usecrlnumber, 
@@ -836,7 +844,8 @@ public class CAInterfaceBean implements Serializable {
 	            crlIssueInterval = 0;
 	            crlOverlapTime = 0;
 	            deltacrlperiod = 0;
-	            List<Integer> crlpublishers = new ArrayList<Integer>(); 
+	            final List<Integer> crlpublishers = new ArrayList<Integer>(); 
+	            final List<Integer> keyValidators = new ArrayList<Integer>(); 
 	            if(crlperiod != 0 && !illegaldnoraltname){
 	                // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -848,7 +857,7 @@ public class CAInterfaceBean implements Serializable {
 	                        certprofileid, validityString, 
 	                        null, catype, signedby,
 	                        null, catoken, description, -1, null,
-	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
 	                        finishUser, extendedcaservices,
 	                        approvals,
 	                        false, // Do not automatically include new CAs in health-check
@@ -982,7 +991,8 @@ public class CAInterfaceBean implements Serializable {
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, 
 	        Map<ApprovalRequestType, Integer> approvals,
-	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
+	        String availablePublisherValues, String availableKeyValidatorValues,
+	        boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String crlAuthorityInformationAccessParam, 
 	        String certificateAiaDefaultCaIssuerUriParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
@@ -1033,24 +1043,21 @@ public class CAInterfaceBean implements Serializable {
         }
         if (caid != 0  && catype !=0) {
             // First common info for both X509 CAs and CVC CAs
-           CAInfo cainfo = null;           
+           CAInfo cainfo = null;
+//           final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
+//           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
+           final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
+           final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
            
-
-           final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
-           if (availablePublisherValues != null) {
-               for (final String availablePublisherId : availablePublisherValues.split(";")) {
-                   crlpublishers.add(Integer.valueOf(availablePublisherId));
-               }
-           }
            // Info specific for X509 CA
            if (catype == CAInfo.CATYPE_X509) {
                List<String> authorityInformationAccess = new ArrayList<String>();
                if (StringUtils.isNotEmpty(crlAuthorityInformationAccessParam)) {
-                   authorityInformationAccess = new ArrayList<String>( Arrays.asList(crlAuthorityInformationAccessParam.split(";")));
+                   authorityInformationAccess = new ArrayList<String>( Arrays.asList(crlAuthorityInformationAccessParam.split(LIST_SEPARATOR)));
                }
                List<String> certificateAiaDefaultCaIssuerUri = new ArrayList<String>();
                if (StringUtils.isNotEmpty(certificateAiaDefaultCaIssuerUriParam)) {
-                   certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriParam.split(";")));
+                   certificateAiaDefaultCaIssuerUri = new ArrayList<String>( Arrays.asList(certificateAiaDefaultCaIssuerUriParam.split(LIST_SEPARATOR)));
                }
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
                // Create extended CA Service updatedata.
@@ -1060,7 +1067,7 @@ public class CAInterfaceBean implements Serializable {
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
                 cainfo = new X509CAInfo(caid, validityString, catoken, description, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod,
-                        crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
+                        crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
                         defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess, certificateAiaDefaultCaIssuerUri,
                         parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
                         cadefinedfreshestcrl, finishUser, extendedcaservices, useutf8policytext, approvals,
@@ -1076,7 +1083,7 @@ public class CAInterfaceBean implements Serializable {
                // Create the CAInfo to be used for either generating the whole CA or making a request
                cainfo = new CVCCAInfo(caid, validityString, 
                        catoken, description,
-                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
                        finishUser, extendedcaservices,
                        approvals,
                        includeInHealthCheck,

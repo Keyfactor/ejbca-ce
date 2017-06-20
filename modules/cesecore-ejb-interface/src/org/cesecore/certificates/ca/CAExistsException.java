@@ -41,4 +41,9 @@ public class CAExistsException extends CesecoreException {
     public CAExistsException(String msg) {
         super(ErrorCode.CA_ALREADY_EXISTS, msg);
     }
+
+
+    public CAExistsException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

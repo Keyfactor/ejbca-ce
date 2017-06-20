@@ -315,6 +315,11 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             log.debug("Public key is provided " + debugPublicKeySource);
             log.debug("Request is provided " + debugRequestMessageSource);
         }
+        
+        // ECA-4219 Bypass certificate profile settings for key size and strength.
+//        if (!certGenParams.isSkipCertificateProfileSettings()) {
+//            certProfile.verifyKey(publicKey);
+//        }
         certProfile.verifyKey(publicKey);
         
 		// Get the fields for the Holder Reference fields

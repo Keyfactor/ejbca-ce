@@ -108,6 +108,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME = "crlOverlapTime";
     protected static final String CRLPUBLISHERS = "crlpublishers";
+    protected static final String KEYVALIDATORS = "keyvalidators";
     private static final String FINISHUSER = "finishuser";
     protected static final String REQUESTCERTCHAIN = "requestcertchain";
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
@@ -171,6 +172,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setCRLPublishers(cainfo.getCRLPublishers());
+        setKeyValidators(cainfo.getKeyValidators());
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
@@ -387,6 +389,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLPUBLISHERS, crlpublishers);
     }
 
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getKeyValidators() {
+        return ((Collection<Integer>) data.get(KEYVALIDATORS));
+    }
+
+    public void setKeyValidators(Collection<Integer> keyValidators) {
+        data.put(KEYVALIDATORS, keyValidators);
+    }
+    
     public boolean getKeepExpiredCertsOnCRL() {
         if(data.containsKey(KEEPEXPIREDCERTSONCRL)) {
             return ((Boolean)data.get(KEEPEXPIREDCERTSONCRL)).booleanValue();   
@@ -851,6 +862,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
         data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
+        data.put(KEYVALIDATORS, cainfo.getKeyValidators());
         data.put(APPROVALS, cainfo.getApprovals());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
@@ -952,7 +964,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         } else {
             notAfter = null;
         }
-        return generateCertificate(cryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, cceConfig);
+        return generateCertificate(cryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, null, cceConfig);
     }
 
     /**

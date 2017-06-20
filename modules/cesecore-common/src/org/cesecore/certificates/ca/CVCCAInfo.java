@@ -53,6 +53,7 @@ public class CVCCAInfo extends CAInfo {
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRL overlap time
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // Delta CRL period
                 new ArrayList<Integer>(), // CRL publishers
+                new ArrayList<Integer>(), // Key validators
                 true, // Finish user
                 new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
                 new HashMap<ApprovalRequestType, Integer>(),
@@ -74,7 +75,8 @@ public class CVCCAInfo extends CAInfo {
 			String encodedValidity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
-			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+			Collection<Integer> crlpublishers, Collection<Integer> keyValidators, 
+			boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
@@ -98,6 +100,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlOverlapTime = crlOverlapTime;
 		this.deltacrlperiod = deltacrlperiod;
 		this.crlpublishers = crlpublishers;
+		this.keyValidators = keyValidators;
 		this.finishuser = finishuser;                     
 		this.certificateprofileid = certificateprofileid;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
@@ -117,7 +120,7 @@ public class CVCCAInfo extends CAInfo {
 	 */
 	public CVCCAInfo(int caid, String encodedValidity, CAToken catoken, String description,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
-			Collection<Integer> crlpublishers,
+			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
@@ -132,6 +135,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlOverlapTime = crlOverlapTime;
 		this.deltacrlperiod = deltacrlperiod;
 		this.crlpublishers = crlpublishers;
+		this.keyValidators = keyValidators;
 		this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
 		setApprovals(approvals);

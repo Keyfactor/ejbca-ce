@@ -167,7 +167,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 22;
+    public static final float LATEST_VERSION = 23;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -255,7 +255,7 @@ public class X509CA extends CA implements Serializable {
         final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getEncodedValidity(),
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
-                getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
+                getDeltaCRLPeriod(), getCRLPublishers(), getKeyValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
                 getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), 
                 getAuthorityInformationAccess(), 
                 getCertificateAiaDefaultCaIssuerUri(),
@@ -764,7 +764,7 @@ public class X509CA extends CA implements Serializable {
             } catch (CryptoTokenOfflineException e) {
                 throw e;
             } catch (Exception e) {
-                throw new IllegalStateException("Error with creating or removing link certificate.", e);
+                throw new IllegalStateException("Error withing creating or removing link certificate.", e);
             }
         }
         updateLatestLinkCertificate(ret);
@@ -879,8 +879,13 @@ public class X509CA extends CA implements Serializable {
             log.debug("Public key is provided " + debugPublicKeySource);
             log.debug("Request is provided " + debugRequestMessageSource);
         }
+        
+        // ECA-4219 Bypass certificate profile settings for key size and strength.
+//        if (!certGenParams.isSkipCertificateProfileSettings()) {
+//            certProfile.verifyKey(publicKey);
+//        }
         certProfile.verifyKey(publicKey);
-
+        
         final String sigAlg;
         if (certProfile.getSignatureAlgorithm() == null) {
             sigAlg = getCAToken().getSignatureAlgorithm();
@@ -1823,6 +1828,10 @@ public class X509CA extends CA implements Serializable {
             // v22, 'encodedValidity' is derived by the former long value!
             if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
                 setEncodedValidity(getEncodedValidity());
+            }            
+            // v23 'keyValidators' new empty list.
+            if (null == data.get(KEYVALIDATORS)) {
+                setKeyValidators(new ArrayList<Integer>());
             }            
         }
     }

@@ -52,6 +52,8 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.ca.keys.validation.PublicKeyBlacklistData</class>
+        <class>org.ejbca.core.ejb.ca.keys.validation.KeyValidatorData</class>
         <class>org.ejbca.peerconnector.PeerData</class>
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
@@ -98,7 +100,9 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
-        <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>        
+        <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.ca.keys.validation.PublicKeyBlacklistData</class>
+        <class>org.ejbca.core.ejb.ca.keys.validation.KeyValidatorData</class>
         <class>org.ejbca.peerconnector.PeerData</class>
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>

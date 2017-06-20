@@ -1,0 +1,37 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:component="http://java.sun.com/jsf/composite/component"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     version: $Id: editBlacklistKeyValidator.xhtml 25334 2017-04-01 16:22:09Z anjakobs $
+     -->
+</ui:remove>
+<h:outputLabel for="keyvalidator_settings" value="#{web.text.BLACKLISTKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
+<h:panelGroup id="keyvalidator_settings"></h:panelGroup>
+<h:outputLabel for="keyGeneratorSources" value="#{web.text.BLACKLISTKEYVALIDATORSOURCES}" />
+<h:selectManyListbox id="keyGeneratorSources" value="#{keyValidatorBean.keyValidator.keyGeneratorSources}" validator="#{keyValidatorBean.validateKeyGenerationSource}" size="5" required="true" disabled="#{keyValidatorsBean.viewOnly}">
+	<f:selectItems value="#{keyValidatorBean.availableKeyGeneratorSources}" />
+</h:selectManyListbox>
+<h:outputLabel for="keyAlgorithms" value="#{web.text.BLACKLISTKEYVALIDATORKEYALGORITHMS}"/>
+<h:selectManyListbox id="keyAlgorithms" value="#{keyValidatorBean.keyValidator.keyAlgorithms}" size="3" required="true" disabled="#{keyValidatorsBean.viewOnly}">
+	<f:selectItems value="#{keyValidatorBean.availableKeyAlgorithms}"/>
+</h:selectManyListbox>
+</html>

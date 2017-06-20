@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -35,6 +34,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileDoesNotExistException;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -148,16 +148,11 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public void setApprovalProfileName(String approvalProfileName) {
         approvalProfileName = approvalProfileName.trim();
-        if (checkFieldForLegalChars(approvalProfileName)) {
+        if (StringTools.checkFieldForLegalChars(approvalProfileName)) {
             addErrorMessage("ONLYCHARACTERS");
         } else {
             this.approvalProfileName = approvalProfileName;
         }
-    }
-    
-    private boolean checkFieldForLegalChars(final String fieldValue) {
-        final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
-        return Pattern.matches(blackList, fieldValue);
     }
     
     public String actionView() {

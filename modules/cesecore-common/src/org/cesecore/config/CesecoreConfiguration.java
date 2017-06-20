@@ -191,6 +191,20 @@ public final class CesecoreConfiguration {
         return getLongValue("ocspconfigurationcache.cachetime", 30000, "milliseconds to cache OCSP settings");
     }
     
+    /**
+     * Parameter to specify if retrieving PublicKeyBlacklist objects from PublicKeyBlacklistSession should be cached, and in that case for how long.
+     */
+    public static long getCachePublicKeyBlacklistTime() {
+        return getLongValue("publickeyblacklist.cachetime", 30000L, "milliseconds to cache public key blacklist entries");
+    }
+    
+    /**
+     * Parameter to specify if retrieving KeyValidator objects from KeyValidatorSession should be cached, and in that case for how long.
+     */
+    public static long getCacheKeyValidatorTime() {
+        return getLongValue("keyvalidator.cachetime", 30000L, "milliseconds to cache key validators");
+    }
+    
     /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */
     public static long getCacheAuthorizationTime() {
         return getLongValue("authorization.cachetime", 30000L, "milliseconds to cache authorization");

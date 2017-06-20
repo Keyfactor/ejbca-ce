@@ -111,7 +111,7 @@ public abstract class CvcCA extends CA implements Serializable {
 		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
 		        getEncodedValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
-				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
+				getCRLPublishers(), getKeyValidators(), getFinishUser(), externalcaserviceinfos, 
 				getApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());

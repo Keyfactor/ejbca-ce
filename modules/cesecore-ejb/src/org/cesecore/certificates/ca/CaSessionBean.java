@@ -240,6 +240,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public boolean existsCa(final String name) {
         return CAData.findByName(entityManager, name) != null;
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException {
+        try {
+            for (final Integer caId : getAllCaIds()) {
+                for (final Integer id : getCAInfoInternal(caId).getKeyValidators()) {
+                    if (id.intValue() == keyValidatorId) {
+                        // We have found a match. No point in looking for more.
+                        return true;
+                    }
+                }
+            }
+        } catch (CADoesntExistsException e) {
+            throw new RuntimeException("Available CA is no longer available!");
+        }
+        return false;
+    }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
 	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
