@@ -71,6 +71,9 @@ public final class SecConst {
 
     public static final int EMPTY_ENDENTITYPROFILE = 1;
 
+    // ECA-419 Check This!
+    public static final int EMPTY_KEYVALIDATOR = 1;
+    
     /** Used in end entity profiles and service workers 
      * This is duplicated in CAConstants */
     public static final int ALLCAS = 1;

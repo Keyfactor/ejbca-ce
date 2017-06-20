@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.util.Set;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -52,5 +54,23 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      */
     void renewAndRevokeCmsCertificate(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
             CAOfflineException, CertificateRevokeException;
-
+    
+//    /**
+//     * Checks if at least one CA references a key validator.
+//     * @param keyValidatorId
+//     * @return true if there are no references.
+//     * 
+//     * @throws AuthorizationDeniedException if not authorized.
+//     */
+//    boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
+//    
+    /** 
+     * This method returns a set containing IDs of all authorized key validators. This set will be the sum of the following:
+     * 
+     * * Unassigned key validators
+     * * Key validators assigned to CAs that the administrator has access to.
+     * 
+     * @return a Set of IDs of authorized key validators. 
+     */
+    Set<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin);
 }

@@ -25,6 +25,7 @@ drop table PeerData cascade constraints;
 drop table ProfileData cascade constraints;
 drop table PublisherData cascade constraints;
 drop table PublisherQueueData cascade constraints;
+drop table KeyValidatorData cascade constraints;
 drop table RoleData cascade constraints;
 drop table RoleMemberData cascade constraints;
 drop table ServiceData cascade constraints;

@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -67,6 +68,7 @@ public class InformationMemory implements Serializable {
     private PublisherSessionLocal publisherSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private ApprovalProfileSessionLocal approvalProfileSession;
+    private KeyValidatorSessionLocal keyValidatorSession;
     // Memory variables.
     private RAAuthorization raauthorization = null;
     private CAAuthorization caauthorization = null;
@@ -75,8 +77,10 @@ public class InformationMemory implements Serializable {
     private Map<Integer, String> caidtonamemap = null;
     private Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     private Map<Integer, String> publisheridtonamemap = null;
-
+    private Map<Integer, String> keyValidatorIdToNameMap = null;
+    
     private TreeMap<String, Integer> publishernames = null;
+    private TreeMap<String, Integer> keyvalidatornames = null;
 
     private GlobalConfiguration globalConfiguration = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfiguration = null;
@@ -98,6 +102,7 @@ public class InformationMemory implements Serializable {
         this.caSession = ejbcaWebBean.getEjb().getCaSession();
         this.endEntityProfileSession = ejbcaWebBean.getEjb().getEndEntityProfileSession();
         this.publisherSession = ejbcaWebBean.getEjb().getPublisherSession();
+        this.keyValidatorSession = ejbcaWebBean.getEjb().getKeyValidatorSession();
         this.certificateProfileSession = ejbcaWebBean.getEjb().getCertificateProfileSession();
         this.approvalProfileSession = ejbcaWebBean.getEjb().getApprovalProfileSession();
         final AuthorizationSessionLocal authorizationSession = ejbcaWebBean.getEjb().getAuthorizationSession();
@@ -367,6 +372,34 @@ public class InformationMemory implements Serializable {
         
         return publishernames;
     }
+    
+    /**
+     * Method returning the all available key validators id to name.
+     * 
+     * @return a map containing the key validators id name mapping.
+     */
+    public Map<Integer, String> getKeyValidatorIdToNameMap() {
+        if (keyValidatorIdToNameMap == null) {
+            keyValidatorIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
+        }
+        return keyValidatorIdToNameMap;
+    }
+    
+    /**
+     * Returns all authorized key validators names as a TreeMap of name (String) -> id (Integer).
+     */
+    public TreeMap<String, Integer> getAuthorizedKeyValidatorNames() {
+        if (keyvalidatornames == null) {
+            keyvalidatornames = new TreeMap<String, Integer>();
+            final Map<Integer, String> map = getKeyValidatorIdToNameMap();
+            for(Integer id : caAdminSession.getAuthorizedKeyValidatorIds(administrator)) {
+                if (null != map.get(id)) { // Otherwise NPE when key validators are deleted and references remain in CA. 
+                    keyvalidatornames.put(map.get(id), id);
+                }
+            }
+        }
+        return keyvalidatornames;
+    }
 
     /**
      * Method that calculates the available CAs to an end entity. Used in add/edit end entity pages. It calculates a set of available CAs as an
@@ -490,6 +523,14 @@ public class InformationMemory implements Serializable {
     public void publishersEdited() {
         publisheridtonamemap = null;
         publishernames = null;
+    }
+    
+    /**
+     * Method that should be called every time a key validator has been edited.
+     */
+    public void keyValidatorsEdited() {
+        keyValidatorIdToNameMap = null;
+        keyvalidatornames = null;
     }
 
     /**

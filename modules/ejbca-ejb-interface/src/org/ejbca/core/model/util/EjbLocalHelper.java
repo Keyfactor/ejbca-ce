@@ -33,6 +33,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.PublicKeyBlacklistSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -152,7 +154,9 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return getEjbLocal().getHardTokenBatchJobSession(); }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return getEjbLocal().getHardTokenSession(); }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
-	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return getEjbLocal().getEndEntityManagementSession(); }
+	@Override public KeyValidatorSessionLocal getKeyValidatorSession() { return getEjbLocal().getKeyValidatorSession(); }
+	@Override public PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession() { return getEjbLocal().getPublicKeyBlacklistSession(); }
+    @Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return getEjbLocal().getEndEntityManagementSession(); }
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return getEjbLocal().getRaAdminSession(); }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
 	@Override public PublisherSessionLocal getPublisherSession() { return getEjbLocal().getPublisherSession(); }

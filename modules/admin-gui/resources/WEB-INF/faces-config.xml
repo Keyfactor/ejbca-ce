@@ -77,6 +77,20 @@
     	</managed-property>
   </managed-bean>
   <managed-bean>
+    	<managed-bean-name>keyValidatorsBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.KeyValidatorsBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>keyValidatorBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.KeyValidatorBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    	<managed-property>
+    	    <property-name>keyValidatorsBean</property-name>
+    	    <value>#{keyValidatorsBean}</value>
+    	</managed-property>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -199,6 +213,40 @@
     <navigation-case>
       <from-outcome>done</from-outcome>
       <to-view-id>/ca/editcertificateprofiles/editcertificateprofiles.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+    <from-view-id>/ca/editkeyvalidators/editkeyvalidators.xhtml</from-view-id>
+    <navigation-case>
+      <from-action>#{keyValidatorsBean.actionEdit}</from-action>
+      <from-outcome>edit</from-outcome>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidator.xhtml</to-view-id>
+      <redirect include-view-params="true"></redirect>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>view</from-outcome>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidator.xhtml</to-view-id>
+      <redirect include-view-params="true"></redirect>
+    </navigation-case>
+    <navigation-case>
+      <from-action>#{keyValidatorsBean.#{keyValidatorsBean.actionRenameConfirm}}</from-action>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidators.xhtml</to-view-id>
+    </navigation-case>
+    <navigation-case>
+      <from-action>#{keyValidatorsBean.#{keyValidatorsBean.actionDeleteConfirm}}</from-action>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidators.xhtml</to-view-id>
+    </navigation-case>
+    <navigation-case>
+      <from-action>#{keyValidatorsBean.#{keyValidatorsBean.actionAddFromTemplateConfirm}}</from-action>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidators.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+    <from-view-id>/ca/editkeyvalidators/editkeyvalidator.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>done</from-outcome>
+      <to-view-id>/ca/editkeyvalidators/editkeyvalidators.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
   

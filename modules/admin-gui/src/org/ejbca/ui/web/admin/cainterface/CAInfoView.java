@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
@@ -59,14 +60,14 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int CRLOVERLAPTIME          = 12;
    public static final int DELTACRLPERIOD          = 13;
    public static final int CRLPUBLISHERS           = 14;
+   public static final int KEYVALIDATORS           = 15;
    
-   private static final int SECTION_SERVICE        = 15;
+   private static final int SECTION_SERVICE        = 16;
    
-   public static final int OCSP                    = 16;
+   public static final int OCSP                    = 17;
   
-    
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
+    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD, PUBLISHERS, KEYVALIDATORS
     * It must also have CADATA in position n° 4 (CA data) 
     * It must also have CRLSPECIFICDATA in position n° 9 (CRL Specific Data) 
     * It must also have SERVICES in position n° 15 (Services), if exists 
@@ -75,7 +76,7 @@ public class CAInfoView implements Serializable, Cloneable {
        "CADATA",               /* CA data */
        "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION",
        "CRLSPECIFICDATA",      /* CRL Specific Data */
-       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS",
+       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS","KEYVALIDATORS",
        "SERVICES",             /* Services */
        "OCSPSERVICE"};
 
@@ -90,7 +91,7 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
    
    private CAInfo          cainfo   = null;
    
-    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, Map<Integer, String> publishersidtonamemap){
+    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, Map<Integer, String> publishersidtonamemap, Map<Integer, String> keyValidatorsIdToNameMap) {
       this.cainfo = cainfo;  
         
       if (cainfo instanceof X509CAInfo) {
@@ -105,9 +106,20 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
         } else {
         	cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
         }
-        
         while(publisherIds.hasNext()) {
 			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(publisherIds.next());
+        }
+        
+        cainfodata[KEYVALIDATORS] = StringUtils.EMPTY;
+        
+        final Iterator<Integer> keyValidatorIds = ((X509CAInfo) cainfo).getKeyValidators().iterator();
+        if(keyValidatorIds.hasNext()) {
+            cainfodata[KEYVALIDATORS] = keyValidatorsIdToNameMap.get(keyValidatorIds.next()); 
+        } else {
+            cainfodata[KEYVALIDATORS] = ejbcawebbean.getText("NONE");
+        }
+        while(keyValidatorIds.hasNext()) {
+            cainfodata[KEYVALIDATORS] = cainfodata[KEYVALIDATORS] + ", " + (String) keyValidatorsIdToNameMap.get(keyValidatorIds.next());
         }
         
 		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row

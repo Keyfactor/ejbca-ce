@@ -56,8 +56,8 @@ java.security.cert.X509Certificate
 	    <!-- ---------- Data ---------- -->
 
         <% for(int i=0; i < viewcainfohelper.cainfo.getCAInfoData().length; i++){ %>
-         <tr id="Row<%=(row++)%2%>"<% if(i==0){ %> class="title"<% } %><% if(i==4||i==9||i==15){ %> class="section"<% } %>>
-		   <td align="right" width="<%=columnwidth%>"><% if(i==0||i==1||i==4||i==9||i==15){ %><strong><% } %><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %><% if(i==0||i==1||i==4||i==9||i==15){ %></strong><% } %></td>
+         <tr id="Row<%=(row++)%2%>"<% if(i==0){ %> class="title"<% } %><% if(i==4||i==9||i==16){ %> class="section"<% } %>>
+		   <td align="right" width="<%=columnwidth%>"><% if(i==0||i==1||i==4||i==9||i==16){ %><strong><% } %><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %><% if(i==0||i==1||i==4||i==9||i==15){ %></strong><% } %></td>
 		        <td><% if(i==0||i==1){ %><strong><% } %><% 
 		        String datatext = viewcainfohelper.cainfo.getCAInfoData()[i];
 		        if (datatext == null) {

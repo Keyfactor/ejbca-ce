@@ -1,0 +1,50 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:component="http://java.sun.com/jsf/composite/component"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     version: $Id: editCustomKeyValidator.xhtml 25334 2017-03-01 16:22:09Z anjakobs $
+     -->
+</ui:remove>
+<h:outputLabel for="keyvalidator_settings" value="#{web.text.CUSTOMKEYVALIDATORSETTINGS}" style="font-weight: bold;" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}"/>
+<h:panelGroup id="keyvalidator_settings" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}" />
+<c:if test="#{keyValidatorBean.keyValidator.customUiRenderingSupported and keyValidatorBean.keyValidator.customUiPropertyList != null}">
+	<c:forEach var="property" items="#{keyValidatorBean.keyValidator.customUiPropertyList}">
+		<h:outputLabel for="#{property.name}" value="#{property.name}" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}"/>
+		<c:if test="#{property.type == 0}">
+			<h:inputText id="#{property.name}" value="#{property.value}" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}" disabled="#{keyValidatorsBean.viewOnly}"/>
+		</c:if>
+		<c:if test="#{property.type == 1}">
+			<h:selectOneMenu id="#{property.name}" value="#{property.value}" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}" disabled="#{keyValidatorsBean.viewOnly}">
+				<f:selectItems value="#{property.optionMap}" />
+			</h:selectOneMenu>
+		</c:if>
+		<c:if test="#{property.type == 2}">
+			<h:selectBooleanCheckbox id="#{property.name}" value="#{property.value}" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}" disabled="#{keyValidatorsBean.viewOnly}"/>
+		</c:if>
+		<c:if test="#{property.type == 3}">
+			<h:outputText id="#{property.name}" value="#{property.value}" rendered="#{keyValidatorBean.keyValidator.customUiRenderingSupported}" disabled="#{keyValidatorsBean.viewOnly}"/>
+		</c:if>
+	</c:forEach>
+</c:if>
+<h:outputLabel for="no_keyvalidator_settings" value="#{web.text.NOCUSTOMPROPERTYUISUPPORT}" style="font-weight: bold;" rendered="#{!keyValidatorBean.keyValidator.customUiRenderingSupported}"/>
+<h:panelGroup id="no_keyvalidator_settings" rendered="#{!keyValidatorBean.keyValidator.customUiRenderingSupported}" />
+</html>

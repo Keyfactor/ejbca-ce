@@ -95,6 +95,20 @@ public enum EventTypes implements EventType {
     CRYPTOTOKEN_GEN_EXTRACT_KEYPAIR,
     /** Modification of the Crypto Token's auto-activation PIN. For soft key stores, this also implies changes of the protection of the key material. */
     CRYPTOTOKEN_UPDATEPIN,
+    /** Modification of an existing public key blacklist. */
+    PUBLICKEYBLACKLIST_CHANGE,
+    /** Creation of a new public key blacklist. */
+    PUBLICKEYBLACKLIST_CREATION,
+    /** Removal of an existing public key blacklist. */
+    PUBLICKEYBLACKLIST_REMOVAL,
+    /** Modification of an existing key validator. */
+    KEYVALIDATOR_CHANGE,
+    /** Creation of a new key validator. */
+    KEYVALIDATOR_CREATION,
+    /** Removal of an existing key validator. */
+    KEYVALIDATOR_REMOVAL,
+    /** Name change of an existing key validator. */
+    KEYVALIDATOR_RENAME,
     /** Removal of persisted audit log records. */
     LOG_DELETE,
     /** Export of audit log records. */

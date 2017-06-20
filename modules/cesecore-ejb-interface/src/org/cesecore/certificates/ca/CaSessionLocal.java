@@ -216,5 +216,13 @@ public interface CaSessionLocal extends CaSession {
      * @return the CA Id
      */
     int mergeCa(CA ca);
-
+    
+    /**
+     * Checks if at least one CA references a key validator.
+     * @param keyValidatorId
+     * @return true if there are no references.
+     * 
+     * @throws AuthorizationDeniedException if not authorized.
+     */
+    boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
 }

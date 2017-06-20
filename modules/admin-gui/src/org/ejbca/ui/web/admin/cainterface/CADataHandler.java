@@ -269,7 +269,7 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfo(administrator, name);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
@@ -278,20 +278,20 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfoInternal(-1, name, true);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
   
   public CAInfoView getCAInfoNoAuth(final int caid) throws CADoesntExistsException {
       final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-      return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
+      return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
     }
   
 
   public CAInfoView getCAInfo(final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
     final CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-    return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
+    return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
   }
 
   /**

@@ -218,7 +218,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         try {
-            generatePkcs10();
+            generatePkcs10(false);
             fail("should not have been allowed to generate PKCS#10");
         } catch (AuthorizationDeniedException_Exception e) {
             // NOPMD: this is what we want

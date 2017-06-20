@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:component="http://java.sun.com/jsf/composite/component"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+    <ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     version: $Id: editkeyvalidators.xhtml 25334 2017-02-24 16:22:09Z anjakobs $
+     -->
+    </ui:remove>
+    <f:view>
+    <ui:composition template="/WEB-INF/include/template.xhtml">
+        <ui:define name="content">
+            <h1><h:outputText value="#{web.text.MANAGEKEYVALIDATORS}"/></h1>
+            <!--div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div-->
+        		<h:form id="editkeyvalidators" >
+					<h:panelGroup rendered="#{!keyValidatorsBean.operationInProgress}">
+					<h3><h:outputText value="#{web.text.LISTOFKEYVALIDATORS}"/></h3>
+					<h:outputText value="#{keyValidatorsBean.resetKeyValidatorsTrigger}"/>
+					<h:dataTable value="#{keyValidatorsBean.availableKeyValidators}" var="keyValidator" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+						<h:column headerClass="gridColumn1">
+							<f:facet name="header"><h:outputText value="#{web.text.KEYVALIDATORNAME}" title="#{keyValidator.id}"/></f:facet>
+							<h:outputText value="#{keyValidator.name}"/>
+							<f:facet name="footer">
+					  			<h:inputText value="#{keyValidatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							</f:facet>
+						</h:column>
+						<h:column headerClass="gridColumn2">
+							<f:facet name="header"><h:outputText value="#{web.text.KEYVALIDATORACTION}"/></f:facet>	
+							<h:commandButton value="#{web.text.VIEWKEYVALIDATOR}" action="#{keyValidatorsBean.actionView}" disabled="#{!keyValidatorsBean.authorizedToView}" />
+							<h:commandButton value="#{web.text.EDITKEYVALIDATOR}" action="#{keyValidatorsBean.actionEdit}" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							<h:commandButton value="#{web.text.DELETEKEYVALIDATOR}" action="#{keyValidatorsBean.actionDelete}" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							<h:commandButton value="#{web.text.RENAME}" action="#{keyValidatorsBean.actionRename}" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							<h:commandButton value="#{web.text.USEKEYVALIDATORASTEMPLATE}" action="#{keyValidatorsBean.actionAddFromTemplate}" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							<f:facet name="footer" >
+								<h:commandButton value="#{web.text.ADD}" action="#{keyValidatorsBean.actionAdd}" disabled="#{!keyValidatorsBean.authorizedToView or !keyValidatorsBean.authorizedToEdit}"/>
+							</f:facet>
+						</h:column>
+					</h:dataTable>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{keyValidatorsBean.addFromTemplateInProgress}">
+					<h3><h:outputText value="#{web.text.USEKEYVALIDATORASTEMPLATE}"/></h3>
+					<h:panelGrid columns="2">
+						<h:outputLabel for="addFromTemplateKeyValidatorOld" value="#{web.text.USEKEYVALIDATORASTEMPLATE_FROM}:"/>
+						<h:outputText id="addFromTemplateKeyValidatorOld" value="#{keyValidatorsBean.selectedKeyValidatorName}"/>
+						<h:outputLabel for="addFromTemplateKeyValidatorNew" value="#{web.text.USEKEYVALIDATORASTEMPLATE_NEWNAME}:"/>
+		  				<h:inputText id="addFromTemplateKeyValidatorNew" value="#{keyValidatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+		  				<h:panelGroup/>
+						<h:panelGroup>
+							<h:commandButton value="#{web.text.USEKEYVALIDATORASTEMPLATE_CONFIRM}" action="#{keyValidatorsBean.actionAddFromTemplateConfirm}"/>
+							<h:commandButton value="#{web.text.CANCEL}" action="#{keyValidatorsBean.actionCancel}"/>
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{keyValidatorsBean.renameInProgress}">
+					<h3><h:outputText value="#{web.text.RENAME}"/></h3>
+					<h:panelGrid columns="2">
+						<h:outputLabel for="renameKeyValidatorOld" value="#{web.text.RENAME_CURRENTNAME}:"/>
+						<h:outputText id="renameKeyValidatorOld" value="#{keyValidatorsBean.selectedKeyValidatorName}"/>
+						<h:outputLabel for="renameKeyValidatorNew" value="#{web.text.RENAME_NEWNAME}:"/>
+		  				<h:inputText id="renameKeyValidatorNew" value="#{keyValidatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+		  				<h:panelGroup/>
+						<h:panelGroup>
+							<h:commandButton value="#{web.text.RENAME_CONFIRM}" action="#{keyValidatorsBean.actionRenameConfirm}"/>
+							<h:commandButton value="#{web.text.CANCEL}" action="#{keyValidatorsBean.actionCancel}"/>
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{keyValidatorsBean.deleteInProgress}">
+					<h3><h:outputText value="#{web.text.DELETEKEYVALIDATOR}"/></h3>
+					<h:panelGrid columns="2">
+						<h:outputLabel for="deleteKeyValidatorName" value="#{web.text.KEYVALIDATORNAME}:"/>
+						<h:outputText id="deleteKeyValidatorName" value="#{keyValidatorsBean.selectedKeyValidatorName}"/>
+		  				<h:panelGroup/>
+						<h:panelGroup>
+							<h:commandButton value="#{web.text.DELETEKEYVALIDATOR_CONFIRM}" action="#{keyValidatorsBean.actionDeleteConfirm}"/>
+							<h:commandButton value="#{web.text.CANCEL}" action="#{keyValidatorsBean.actionCancel}"/>
+						</h:panelGroup>
+					</h:panelGrid>
+				</h:panelGroup>
+        	</h:form>
+        	<h:panelGroup rendered="#{not keyValidatorsBean.operationInProgress}" >
+			<h3>
+				<h:outputText value="#{web.text.IMPORT}/" rendered="#{keyValidatorsBean.authorizedToEdit}"/>
+				<h:outputText value="#{web.text.EXPORT}"/>
+			</h3>
+			<h:form id="uploadKeyValidator" enctype="multipart/form-data">
+				<h:panelGrid columns="3">
+					<h:outputLabel for="keyValidatorUploadInput" value="#{web.text.IMPORTPROFILESFROM}:" rendered="#{keyValidatorsBean.authorizedToEdit}"/>
+					<t:inputFileUpload id="keyValidatorUploadInput" value="#{keyValidatorsBean.uploadFile}" size="20" rendered="#{keyValidatorsBean.authorizedToEdit}"/>
+					<h:commandButton action="#{keyValidatorsBean.actionImportKeyValidators}" value="#{web.text.IMPORT}" rendered="#{keyValidatorsBean.authorizedToEdit}"/>
+				</h:panelGrid>
+				<h:panelGrid columns="1">
+					<h:outputLink value="/ejbca/adminweb/profilesexport?profileType=kv">
+						<h:outputText value="#{web.text.EXPORT}..."/>
+					</h:outputLink>
+				</h:panelGrid>
+			</h:form>
+			</h:panelGroup>
+        </ui:define>
+    </ui:composition>
+    </f:view>
+</html>

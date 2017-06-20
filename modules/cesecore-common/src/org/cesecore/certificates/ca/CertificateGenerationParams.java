@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/  
+ *************************************************************************/
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
@@ -40,17 +40,18 @@ import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 public final class CertificateGenerationParams implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
-    private LinkedHashMap<Integer,CTLogInfo> configuredCTLogs;
+
+    private LinkedHashMap<Integer, CTLogInfo> configuredCTLogs;
     private CTAuditLogCallback ctAuditLogCallback;
+    private boolean skipCertificateProfileSettings = false;
     
     /**
      * Set the CT logs from the system configuration.
      */
-    public void setConfiguredCTLogs(LinkedHashMap<Integer,CTLogInfo> configuredCTLogs) {
+    public void setConfiguredCTLogs(LinkedHashMap<Integer, CTLogInfo> configuredCTLogs) {
         this.configuredCTLogs = configuredCTLogs;
     }
-    
+
     /**
      * Set the a callback to be called after CT log submission.
      * This method is called automatically from CertificateCreateSession when generating a certificate.
@@ -58,16 +59,22 @@ public final class CertificateGenerationParams implements Serializable {
     public void setCTAuditLogCallback(CTAuditLogCallback ctAuditLogCallback) {
         this.ctAuditLogCallback = ctAuditLogCallback;
     }
-    
-    
+
     /* Package internal methods are called from X509CA */
-    
-    LinkedHashMap<Integer,CTLogInfo> getConfiguredCTLogs() {
+
+    LinkedHashMap<Integer, CTLogInfo> getConfiguredCTLogs() {
         return configuredCTLogs;
     }
-    
+
     CTAuditLogCallback getCTAuditLogCallback() {
         return ctAuditLogCallback;
     }
-    
+
+    public boolean isSkipCertificateProfileSettings() {
+        return skipCertificateProfileSettings;
+    }
+
+    public void setSkipCertificateProfileSettings(boolean skipCertificateProfileSettings) {
+        this.skipCertificateProfileSettings = skipCertificateProfileSettings;
+    }
 }

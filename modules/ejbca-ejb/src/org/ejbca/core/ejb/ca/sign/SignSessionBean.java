@@ -406,6 +406,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // See if we need some key material to decrypt request
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
             decryptAndVerify(cryptoToken, req, ca);
+            
             if (ca.isUseUserStorage() && req.getUsername() == null) {
                 String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);

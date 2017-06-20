@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -45,6 +44,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -438,16 +438,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void setCertProfileName(String certProfileName) {
         certProfileName = certProfileName.trim();
-        if (checkFieldForLegalChars(certProfileName)) {
+        if (StringTools.checkFieldForLegalChars(certProfileName)) {
             addErrorMessage("ONLYCHARACTERS");
         } else {
             this.certProfileName = certProfileName;
         }
-    }
-
-    private boolean checkFieldForLegalChars(final String fieldValue) {
-        final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
-        return Pattern.matches(blackList, fieldValue);
     }
 
     //----------------------------------------------

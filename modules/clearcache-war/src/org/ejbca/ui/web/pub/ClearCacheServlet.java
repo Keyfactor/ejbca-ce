@@ -41,6 +41,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
@@ -82,7 +83,8 @@ public class ClearCacheServlet extends HttpServlet {
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private PublisherSessionLocal publisherSession;
-
+    @EJB
+    private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 	
@@ -151,6 +153,10 @@ public class ClearCacheServlet extends HttpServlet {
                 publisherSession.flushPublisherCache();
                 if(log.isDebugEnabled()) {
                     log.debug("Publisher cache cleared");
+                }
+                keyValidatorSession.flushKeyValidatorCache();
+                if(log.isDebugEnabled()) {
+                    log.debug("Key Validator cache cleared");
                 }
                 internalKeyBindingDataSession.flushCache();
                 if(log.isDebugEnabled()) {

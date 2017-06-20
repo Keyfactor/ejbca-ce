@@ -31,6 +31,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.PublicKeyBlacklistSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -104,6 +106,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @EJB InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
+	@EJB KeyValidatorSessionLocal keyValidatorSession;
+	@EJB PublicKeyBlacklistSessionLocal publicKeyBlacklistSession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB AdminPreferenceSessionLocal raSession;
@@ -150,6 +154,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession() { return internalKeyBindingDataSession; }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
+	@Override public PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession() { return publicKeyBlacklistSession; }
+	@Override public KeyValidatorSessionLocal getKeyValidatorSession() { return keyValidatorSession; }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return raSession; }

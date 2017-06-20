@@ -88,6 +88,7 @@ public class X509CAInfo extends CAInfo{
              10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
              10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
              new ArrayList<Integer>(),
+             new ArrayList<Integer>(),
              true, // Authority Key Identifier
              false, // Authority Key Identifier Critical
              true, // CRL Number
@@ -128,7 +129,7 @@ public class X509CAInfo extends CAInfo{
     		final int catype, final int signedby, final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
-    		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
+    		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,  
     		final String defaultocspservicelocator, 
     		final List<String> authorityInformationAccess, 
@@ -174,6 +175,7 @@ public class X509CAInfo extends CAInfo{
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
+        this.keyValidators = keyValidators;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
@@ -210,7 +212,7 @@ public class X509CAInfo extends CAInfo{
     /** Constructor that should be used when updating CA data. */
     public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
-    		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
+    		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
     		final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess, 
     		final List<String> certificateAiaDefaultCaIssuerUri,
@@ -229,6 +231,7 @@ public class X509CAInfo extends CAInfo{
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
+        this.keyValidators = keyValidators;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;

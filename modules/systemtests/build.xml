@@ -189,6 +189,9 @@
 		<copy todir="${build.test.dir}/org/ejbca/core/protocol/ws" enablemultiplemappings="true">
 		    <fileset dir="${resources.dir}" includes="**/*" />
 		</copy>
+		<copy todir="${build.test.dir}/resources" enablemultiplemappings="true">
+			<fileset dir="${resources.dir}" includes="**/*" />
+		</copy>
 	</target>
 
 	<target name="assert-notinproduction">

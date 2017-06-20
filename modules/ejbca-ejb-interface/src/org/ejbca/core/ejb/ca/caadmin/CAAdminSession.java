@@ -583,7 +583,7 @@ public interface CAAdminSession {
      * @return a Set of IDs of authorized publishers. 
      */
     Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
-
+    
     /**
      * Method used to create a new CA.
      * 
