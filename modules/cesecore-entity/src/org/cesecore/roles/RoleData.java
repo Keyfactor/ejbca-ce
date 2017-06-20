@@ -182,4 +182,38 @@ public class RoleData extends ProtectedData implements Serializable {
     public String toString() {
         return roleName;
     }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        result = prime * result + ((nameSpaceColumn == null) ? 0 : nameSpaceColumn.hashCode());
+        result = prime * result + ((roleName == null) ? 0 : roleName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RoleData other = (RoleData) obj;
+        if (id != other.id)
+            return false;
+        if (nameSpaceColumn == null) {
+            if (other.nameSpaceColumn != null)
+                return false;
+        } else if (!nameSpaceColumn.equals(other.nameSpaceColumn))
+            return false;
+        if (roleName == null) {
+            if (other.roleName != null)
+                return false;
+        } else if (!roleName.equals(other.roleName))
+            return false;
+        return true;
+    }
 }
