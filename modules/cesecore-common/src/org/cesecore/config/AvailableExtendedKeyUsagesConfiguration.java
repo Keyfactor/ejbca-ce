@@ -153,6 +153,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
     }
     
     public Map<String, String> getAllEKUOidsAndNames() {
+        @SuppressWarnings("unchecked")
         Map<String, String> ret = (Map<String, String>) saveData();
         ret.remove("version");
         return ret;

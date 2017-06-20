@@ -77,6 +77,7 @@ import org.junit.runners.MethodSorters;
  * 
  * @version $Id$
  */
+@SuppressWarnings("deprecation")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DatabaseSchemaTest {
 

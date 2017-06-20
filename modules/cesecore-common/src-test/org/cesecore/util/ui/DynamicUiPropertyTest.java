@@ -18,7 +18,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.cesecore.roles.AdminGroupData;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.RoleData;
 import org.junit.Test;
 
 /**
@@ -29,14 +30,13 @@ public class DynamicUiPropertyTest {
 
     @Test
     public void testEncodingAndDecodingOfComplexType() throws PropertyValidationException {
-        AdminGroupData anybody = new AdminGroupData(-1, "anybody");
-        DynamicUiProperty<AdminGroupData> roleProperty = new DynamicUiProperty<AdminGroupData>("test",
-                anybody, new HashSet<AdminGroupData>(Arrays.asList(anybody)));
+        RoleData anybody = new RoleData(new Role(null, "anybody"));
+        DynamicUiProperty<RoleData> roleProperty = new DynamicUiProperty<RoleData>("test",
+                anybody, new HashSet<RoleData>(Arrays.asList(anybody)));
         roleProperty.setHasMultipleValues(true);
-        List<String> encodedValues = roleProperty.getEncodedValues();
-       
-        DynamicUiProperty<AdminGroupData> rolePropertyCopy = new DynamicUiProperty<AdminGroupData>("test",
-                anybody, new HashSet<AdminGroupData>());
+        List<String> encodedValues = roleProperty.getEncodedValues();  
+        DynamicUiProperty<RoleData> rolePropertyCopy = new DynamicUiProperty<RoleData>("test",
+                anybody, new HashSet<RoleData>());
         rolePropertyCopy.setHasMultipleValues(true);
         rolePropertyCopy.setEncodedValues(encodedValues);
         assertTrue("RoleData object didn't survive encodement/decodement", rolePropertyCopy.getValues().contains(anybody));
