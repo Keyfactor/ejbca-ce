@@ -1073,6 +1073,7 @@ public class ProtocolScepHttpTest {
 
             if (crlRep) {
                 // We got a reply with a requested CRL
+                @SuppressWarnings("unchecked")
                 final Collection<X509CRLHolder> crls = sd.getCRLs().getMatches(null);
                 assertEquals(crls.size(), 1);
                 final Iterator<X509CRLHolder> it = crls.iterator();

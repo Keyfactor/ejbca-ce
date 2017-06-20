@@ -423,6 +423,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             }
             dataWS.setEndTime(endTime);
             // Fill custom data in extended information
+            @SuppressWarnings("unchecked")
             final HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
             if (data != null) {
                 final List<ExtendedInformationWS> extendedInfo = new ArrayList<>();

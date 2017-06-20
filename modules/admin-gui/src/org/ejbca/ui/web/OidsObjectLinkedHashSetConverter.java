@@ -59,6 +59,7 @@ public class OidsObjectLinkedHashSetConverter implements Converter {
         if (value instanceof LinkedHashSet<?>) {
             final StringBuffer result = new StringBuffer();
 
+            @SuppressWarnings("unchecked")
             final LinkedHashSet<String> lhs = (LinkedHashSet<String>) value;
             final List<?> list = new ArrayList<String>(lhs);
 
