@@ -46,6 +46,9 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(GlobalConfigurationData.class);
 
+	/** Unique ID defined by respective configuration object, such as 
+	 * @link GlobalCesecoreConfiguration#CESECORE_CONFIGURATION_ID 
+	 */
 	private String configurationId;
 	private byte[] data;
 	private int rowVersion = 0;
