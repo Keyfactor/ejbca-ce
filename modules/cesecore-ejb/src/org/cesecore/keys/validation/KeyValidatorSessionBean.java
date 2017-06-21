@@ -386,6 +386,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 // and we don't want to do instanceof, so we take the hit
                 // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
                 // should better be implemented as a full in memory cache with a state so we know if it's loaded or not, with background updates
+                // TODO: the BlacklistKeyValidator can make a local EJB helper lookup instead, this combined with a background loaded cache should be higly efficient
                 blacklistSession.getPublicKeyBlacklistEntryId(CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM));
                 // carry on after filling the blacklist cache...
             }
