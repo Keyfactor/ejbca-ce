@@ -27,12 +27,12 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  *
  * @version $Id: PublicKeyBlacklist.java 22117 2017-04-01 12:12:00Z anjakobs $
  */
-public class PublicKeyBlacklist extends UpgradeableDataHashMap implements Serializable, Cloneable {
+public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -315759758359854900L;
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(PublicKeyBlacklist.class);
+    private static final Logger log = Logger.getLogger(PublicKeyBlacklistEntry.class);
 
     //    /** List separator. */
     //    private static final String LIST_SEPARATOR = ";";
@@ -58,16 +58,9 @@ public class PublicKeyBlacklist extends UpgradeableDataHashMap implements Serial
     /**
      * Creates a new instance.
      */
-    public PublicKeyBlacklist() {
+    public PublicKeyBlacklistEntry() {
         init();
     }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        // TODO Auto-generated method stub
-        return super.clone();
-    }
-
 
     /**
      * Initializes uninitialized data fields.
@@ -76,16 +69,13 @@ public class PublicKeyBlacklist extends UpgradeableDataHashMap implements Serial
         if (null == data.get(VERSION)) {
             data.put(VERSION, new Float(LATEST_VERSION));
         }
-//        if (null == data.get(SOURCE)) {
-//            setSource(KeyGeneratorSources.UNKNOWN.getSource());
-//        }
     }
 
     /**
      * Gets the key public key blacklist id.
      * @return
      */
-    public int getPublicKeyBlacklistId() {
+    public int getID() {
         return id;
     }
 
@@ -93,40 +83,9 @@ public class PublicKeyBlacklist extends UpgradeableDataHashMap implements Serial
      * Sets the key public key blacklist id.
      * @param id
      */
-    public void setPublicKeyBlacklistId(int id) {
+    public void setID(int id) {
         this.id = id;
-    }
-   
-//    /**
-//     * Gets the key generator source index, see {@link KeyGeneratorSources}.
-//     */
-//    public Integer getSource() {
-//        return (Integer) data.get(SOURCE);
-//    }
-//
-//    /**
-//     * Sets the key generator source index, see {@link KeyGeneratorSources}.
-//     * @param source the source index.
-//     */
-//    public void setSource(Integer source) {
-//        data.put(SOURCE, source);
-//    }
-
-//    /**
-//     * Gets the key specification.
-//     * @return key specification string.
-//     */
-//    public String getKeySpec() {
-//        return (String) data.get(KEYSPEC);
-//    }
-//
-//    /**
-//     * Sets the key specification.
-//     * @param keySpec the key specification string.
-//     */
-//    public void setClasspath(String keySpec) {
-//        data.put(KEYSPEC, keySpec);
-//    }
+    }   
 
     /**
      * Gets the key spec, see for instance {@link AlgorithmConstants#KEYALGORITHM_RSA}.

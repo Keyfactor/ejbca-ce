@@ -21,16 +21,16 @@ import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
 
 /**
- * Public key blacklist (see {@link PublicKeyBlacklist}) and name to id lookup cache. 
+ * Public key blacklist entry (see {@link PublicKeyBlacklistEntry}) and name to id lookup cache. 
  * Configured through CesecoreConfiguration.getCachePublicKeyBlacklistTime().
  * 
  * @version $Id: PublicKeyBlacklistCache.java 25671 2017-04-01 14:29:38Z anjakobs $
  */
-public enum PublicKeyBlacklistCache implements CommonCache<PublicKeyBlacklist> {
+public enum PublicKeyBlacklistEntryCache implements CommonCache<PublicKeyBlacklistEntry> {
 
     INSTANCE;
 
-    private final CommonCache<PublicKeyBlacklist> cache = new CommonCacheBase<PublicKeyBlacklist>() {
+    private final CommonCache<PublicKeyBlacklistEntry> cache = new CommonCacheBase<PublicKeyBlacklistEntry>() {
         @Override
         protected long getCacheTime() {
             return Math.max(CesecoreConfiguration.getCachePublicKeyBlacklistTime(), 0);
@@ -44,7 +44,15 @@ public enum PublicKeyBlacklistCache implements CommonCache<PublicKeyBlacklist> {
     };
 
     @Override
-    public PublicKeyBlacklist getEntry(final int id) {
+    public PublicKeyBlacklistEntry getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return cache.getEntry(id);
+    }
+
+    @Override
+    public PublicKeyBlacklistEntry getEntry(final int id) {
         return cache.getEntry(id);
     }
 
@@ -53,8 +61,14 @@ public enum PublicKeyBlacklistCache implements CommonCache<PublicKeyBlacklist> {
         return cache.shouldCheckForUpdates(id);
     }
 
+    /**
+     * @param id entry ID
+     * @param digest Data.getProtectString(0).hashCode()
+     * @param name the fingerprint of the entry object
+     * @param object black list entry
+     */
     @Override
-    public void updateWith(int id, int digest, String name, PublicKeyBlacklist object) {
+    public void updateWith(int id, int digest, String name, PublicKeyBlacklistEntry object) {
         cache.updateWith(id, digest, name, object);
     }
 

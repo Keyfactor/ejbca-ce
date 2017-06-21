@@ -44,6 +44,14 @@ public enum RoleCache implements CommonCache<Role> {
     };
 
     @Override
+    public Role getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return cache.getEntry(id);
+    }
+
+    @Override
     public Role getEntry(final int id) {
         return cache.getEntry(id);
     }

@@ -42,6 +42,14 @@ public enum CryptoTokenCache implements CommonCache<CryptoToken> {
     };
 
     @Override
+    public CryptoToken getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return cryptoTokenCache.getEntry(id);
+    }
+
+    @Override
     public CryptoToken getEntry(final int cryptoTokenId) {
         return cryptoTokenCache.getEntry(cryptoTokenId);
     }

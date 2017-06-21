@@ -35,7 +35,7 @@ import org.cesecore.util.CertTools;
  * 
  * @version $Id: BlacklistKeyValidator.java 25263 2017-03-01 12:12:00Z anjakobs $
  */
-public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator implements PublicKeyBlacklistConsumer {
+public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator {
 
     private static final long serialVersionUID = 215729318959311916L;
 
@@ -60,9 +60,6 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator implements 
 
     protected static final String KEY_ALGORITHMS = "keyAlgorithms";
 
-    /** Reference to the session bean in EJBCA packages. */
-    protected PublicKeyBlacklistProducer blacklistProducer;
-
     /**
      * Creates a new instance.
      */
@@ -76,16 +73,6 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator implements 
      */
     public PublicKeyBlacklistKeyValidator(final BaseKeyValidator keyValidator) {
         super(keyValidator);
-    }
-
-    @Override
-    public void setBlacklistProducer(PublicKeyBlacklistProducer producer) {
-        blacklistProducer = producer;
-    }
-
-    @Override
-    public PublicKeyBlacklistProducer getBlacklistProducer() {
-        return blacklistProducer;
     }
 
     @Override
@@ -226,7 +213,8 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator implements 
         }
         final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, DIGEST_ALGORITHM);
         log.info("Matching public key with fingerprint " + fingerprint + " with public key blacklist.");
-        final PublicKeyBlacklist entry = blacklistProducer.findByFingerprint(fingerprint);
+        Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
+        final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
         boolean keyGeneratorSourceMatched = false;
         boolean keySpecMatched = false;
 
@@ -241,7 +229,7 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator implements 
             }
         }
         if (keyGeneratorSourceMatched && keySpecMatched) {
-            final String message = "Public key with id " + entry.getPublicKeyBlacklistId() + " and fingerprint " + fingerprint
+            final String message = "Public key with id " + entry.getID() + " and fingerprint " + fingerprint
                     + " found in public key blacklist.";
             if (log.isDebugEnabled()) {
                 log.debug(message);

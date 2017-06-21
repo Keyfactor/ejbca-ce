@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Assert;
@@ -80,12 +81,6 @@ public class PublicKeyBlacklistKeyValidatorTest {
                 PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE, "publickey-blacklist-validation-test-1", "Description", null, -1, null, -1, -1,
                 new Integer[] {});
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
-        keyValidator.setBlacklistProducer(new PublicKeyBlacklistProducer() {
-            @Override
-            public PublicKeyBlacklist findByFingerprint(String fingerprint) {
-                return null;
-            }
-        });
         boolean result = keyValidator.validate(publicKey);
         log.trace("Key validation error messages: " + keyValidator.getMessages());
         Assert.assertTrue("Key valildation should have been successful.", result && keyValidator.getMessages().size() == 0);
@@ -98,14 +93,14 @@ public class PublicKeyBlacklistKeyValidatorTest {
         algorithms.add("-1");
         keyValidator.setKeyGeneratorSources(keyGeneratorSources);
         keyValidator.setKeyAlgorithms(algorithms);
-        keyValidator.setBlacklistProducer(new PublicKeyBlacklistProducer() {
-            @Override
-            public PublicKeyBlacklist findByFingerprint(String fingerprint) {
-                final PublicKeyBlacklist result = new PublicKeyBlacklist();
-                result.setFingerprint(fingerprint);
-                return result;
-            }
-        });
+        {
+            // Manual update of cache entry
+            final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+            final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+            entry.setFingerprint(fingerprint);
+            PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);
+            PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), fingerprint, entry);
+        }
         result = keyValidator.validate(publicKey);
         log.trace("Key validation error messages: " + keyValidator.getMessages());
         Assert.assertTrue("Key valildation should have failed because of public key fingerprint match.",
@@ -116,15 +111,6 @@ public class PublicKeyBlacklistKeyValidatorTest {
         algorithms = new ArrayList<String>();
         algorithms.add("DSA");
         keyValidator.setKeyAlgorithms(algorithms);
-        keyValidator.setBlacklistProducer(new PublicKeyBlacklistProducer() {
-            @Override
-            public PublicKeyBlacklist findByFingerprint(String fingerprint) {
-                final PublicKeyBlacklist result = new PublicKeyBlacklist();
-                result.setFingerprint(fingerprint);
-                result.setKeyspec("RSA2048");
-                return result;
-            }
-        });
         result = keyValidator.validate(publicKey);
         log.trace("Key validation error messages: " + keyValidator.getMessages());
         Assert.assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",

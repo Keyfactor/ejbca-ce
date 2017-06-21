@@ -50,7 +50,7 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
     private static final Logger log = Logger.getLogger(PublicKeyBlacklistData.class);
 
     /** Domain object reference. */
-    private PublicKeyBlacklist publicKeyBlacklist = null;
+    private PublicKeyBlacklistEntry publicKeyBlacklist = null;
 
     // data fields.
     private int id;
@@ -74,11 +74,11 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
      * @param fingerprint the unique fingerprint.
      * @param entry the public key blacklist domain object.
      */
-    public PublicKeyBlacklistData(PublicKeyBlacklist entry) {
+    public PublicKeyBlacklistData(PublicKeyBlacklistEntry entry) {
         if (log.isDebugEnabled()) {
             log.debug("Creating PublicKeyBlacklistData '" + fingerprint + "' (" + id + ")");
         }
-        setId(entry.getPublicKeyBlacklistId());
+        setId(entry.getID());
         setSource(entry.getSource());
         setKeyspec(entry.getKeyspec());
         setFingerprint(entry.getFingerprint());
@@ -167,7 +167,7 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
      * Method that gets the cached public key blacklist, if any.
      */
     @Transient
-    public PublicKeyBlacklist getCachedPublicKeyBlacklist() {
+    public PublicKeyBlacklistEntry getCachedPublicKeyBlacklistEntry() {
         return publicKeyBlacklist;
     }
 
@@ -175,7 +175,7 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
      * Method that saves the public key blacklist data to database.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setPublicKeyBlacklist(PublicKeyBlacklist entry) {
+    public void setPublicKeyBlacklist(PublicKeyBlacklistEntry entry) {
         // We must base64 encode string for UTF safety
         final HashMap base64Map = new Base64PutHashMap();
         base64Map.putAll((HashMap) entry.saveData());

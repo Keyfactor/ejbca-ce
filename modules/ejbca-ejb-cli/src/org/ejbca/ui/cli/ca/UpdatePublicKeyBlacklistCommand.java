@@ -29,7 +29,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.cesecore.keys.validation.KeyGeneratorSources;
-import org.cesecore.keys.validation.PublicKeyBlacklist;
+import org.cesecore.keys.validation.PublicKeyBlacklistEntry;
 import org.cesecore.keys.validation.PublicKeyBlacklistDoesntExistsException;
 import org.cesecore.keys.validation.PublicKeyBlacklistExistsException;
 import org.cesecore.keys.validation.PublicKeyBlacklistKeyValidator;
@@ -295,7 +295,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         log.trace(">addPublicKeyToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
-        final PublicKeyBlacklist entry = new PublicKeyBlacklist();
+        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint);
         entry.setPublicKey(publicKey);
         entry.setKeyspec(AlgorithmTools.getKeySpecification(publicKey));
@@ -335,7 +335,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     public int addPublicKeyFingerprintToBlacklist(final String fingerprint, final String keySpecification, final Integer keyGeneratorSource) throws Exception {
         log.trace(">addPublicKeyFingerprintToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final PublicKeyBlacklist entry = new PublicKeyBlacklist();
+        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint);
         entry.setPublicKey(null);
         entry.setKeyspec(keySpecification);
@@ -354,12 +354,12 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    private int addToBlacklist(final PublicKeyBlacklist entry) throws Exception {
+    private int addToBlacklist(final PublicKeyBlacklistEntry entry) throws Exception {
         log.trace(">addToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
         try {
-            blacklistSession.addPublicKeyBlacklist(getAuthenticationToken(), entry);
+            blacklistSession.addPublicKeyBlacklistEntry(getAuthenticationToken(), entry);
             result = STATUS_OK;
         } catch (PublicKeyBlacklistExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
@@ -390,7 +390,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
         try {
-            blacklistSession.removePublicKeyBlacklist(getAuthenticationToken(), fingerprint);
+            blacklistSession.removePublicKeyBlacklistEntry(getAuthenticationToken(), fingerprint);
             result = STATUS_OK;
         } catch (PublicKeyBlacklistDoesntExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
