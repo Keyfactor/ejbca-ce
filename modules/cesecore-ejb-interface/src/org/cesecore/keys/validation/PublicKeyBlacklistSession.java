@@ -26,39 +26,40 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 public interface PublicKeyBlacklistSession {
 
     /**
-     * Adds a public key blacklist to the database.
+     * Adds a public key blacklist entry to the database.
      * 
      * @param admin AuthenticationToken of administrator
-     * @param entry the public key blacklist to add
+     * @param entry the public key blacklist entry to add
      * @return the public key blacklist ID as added
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
      * @throws PublicKeyBlacklistExistsException if public key blacklist already exists.
      */
-    int addPublicKeyBlacklist(AuthenticationToken admin, PublicKeyBlacklist entry)
+    int addPublicKeyBlacklistEntry(AuthenticationToken admin, PublicKeyBlacklistEntry entry)
             throws AuthorizationDeniedException, PublicKeyBlacklistExistsException;
     
-    /** Removes the public key blacklist data equal if its referenced or not.
+    /** Removes the public key blacklist entry.
      * 
      * @param admin AuthenticationToken of administrator.
-     * @param fingerprint the fingerprint of the public key blacklist to remove.
+     * @param fingerprint the fingerprint of the public key blacklist entry to remove.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
      * @throws PublicKeyBlacklistDoesntExistsException if the public key blacklist does not exist.
      * @throws CouldNotRemovePublicKeyBlacklistException if the public key blacklist could not be removed from datastore.
      */
-    void removePublicKeyBlacklist(AuthenticationToken admin, String fingerprint)
+    void removePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint)
             throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException, CouldNotRemovePublicKeyBlacklistException;
 
     /**
-     * Retrieves a Map of all public key blacklist id and fingerprint. 
+     * Retrieves a Map of all public key blacklist entry ids and fingerprints. 
      * @return the map. 
      */
-    Map<Integer, String> getPublicKeyBlacklistIdToFingerprintMap();
+    Map<Integer, String> getPublicKeyBlacklistEntryIdToFingerprintMap();
     
     /**
-     * Gets a public key blacklist by cache or database.
-     * @return a PublicKeyBlacklist or null if a public key blacklist with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
+     * Gets a public key blacklist entry by cache or database.
+     * @param a public key fingerprint, CertTools.createPublicKeyFingerprint
+     * @return a PublicKeyBlacklistEntry or null if a public key blacklist entry with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
      */
-    PublicKeyBlacklist getPublicKeyBlacklist(String fingerprint);
+    PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(String fingerprint);
 }

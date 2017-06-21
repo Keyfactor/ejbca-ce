@@ -23,12 +23,21 @@ import java.util.Map;
 public interface CommonCache<T> {
 
     /** @return cached Object or null if none is present. */
+    T getEntry(Integer id);
+
+    /** @return cached Object or null if none is present. */
     T getEntry(int id);
 
     /** @return true when the cache for this object has expired or the token is non-existing. */
     boolean shouldCheckForUpdates(int id);
 
-    /** Update the cache with the current version read from the database. */
+    /** Update the cache with the current version read from the database. 
+     *
+     * @param id id of the object, typically database id
+     * @param digest, typically getProtectString(0).hashCode() of the object;
+     * @name String name of the object, typically database name
+     * @object the object to cache
+     */
     void updateWith(int id, int digest, String name, T object);
 
     /** Remove the specified entry from the cache and mapping if it exists. */
