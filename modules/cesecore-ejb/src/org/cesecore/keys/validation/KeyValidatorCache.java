@@ -43,6 +43,14 @@ public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
     };
 
     @Override
+    public BaseKeyValidator getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return cache.getEntry(id);
+    }
+
+    @Override
     public BaseKeyValidator getEntry(final int id) {
         return cache.getEntry(id);
     }

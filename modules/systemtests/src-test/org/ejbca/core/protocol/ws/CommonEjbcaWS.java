@@ -145,7 +145,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyGeneratorSources;
-import org.cesecore.keys.validation.PublicKeyBlacklist;
+import org.cesecore.keys.validation.PublicKeyBlacklistEntry;
 import org.cesecore.keys.validation.PublicKeyBlacklistKeyValidator;
 import org.cesecore.keys.validation.PublicKeyBlacklistSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -778,18 +778,18 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         
         // Blacklist public key.
         if (blacklistKey) {
-            final PublicKeyBlacklist entry = new PublicKeyBlacklist();
+            final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setKeyspec("RSA2048");
             entry.setSource(KeyGeneratorSources.UNKNOWN.getSource());
             // ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0
 //            entry.setPublicKey(publicKey);
             entry.setFingerprint(publicKeyFingerprint);
             try {
-                publicKeyBlacklistSession.removePublicKeyBlacklist(intAdmin, publicKeyFingerprint);
+                publicKeyBlacklistSession.removePublicKeyBlacklistEntry(intAdmin, publicKeyFingerprint);
             } catch(Exception e) {
                 // NOOP
             }
-            publicKeyBlacklistSession.addPublicKeyBlacklist(intAdmin, entry);
+            publicKeyBlacklistSession.addPublicKeyBlacklistEntry(intAdmin, entry);
         }
         
         // Submit the request
@@ -838,7 +838,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         
         // Remove blacklisted public key.
         if (blacklistKey) {
-            publicKeyBlacklistSession.removePublicKeyBlacklist(intAdmin, publicKeyFingerprint);
+            publicKeyBlacklistSession.removePublicKeyBlacklistEntry(intAdmin, publicKeyFingerprint);
         }
     }
 

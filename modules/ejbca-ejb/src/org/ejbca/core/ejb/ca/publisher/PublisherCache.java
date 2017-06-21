@@ -41,6 +41,14 @@ public enum PublisherCache implements CommonCache<BasePublisher> {
     };
 
     @Override
+    public BasePublisher getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return cache.getEntry(id);
+    }
+
+    @Override
     public BasePublisher getEntry(final int id) {
         return cache.getEntry(id);
     }

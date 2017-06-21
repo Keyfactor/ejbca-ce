@@ -42,6 +42,14 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     };
 
     @Override
+    public InternalKeyBinding getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return internalKeyBindingCache.getEntry(id);
+    }
+
+    @Override
     public InternalKeyBinding getEntry(final int signerId) {
         return internalKeyBindingCache.getEntry(signerId);
     }

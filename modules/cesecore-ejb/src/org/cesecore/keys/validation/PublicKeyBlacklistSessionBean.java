@@ -46,7 +46,7 @@ import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.ProfileID;
 
 /**
- * Handles management of public key blacklists.
+ * Handles management of public key blacklist entries.
  * 
  * @version $Id: PublicKeyBlacklistSessionBean.java 24997 2017-04-01 12:12:00Z anjakobs $
  */
@@ -73,22 +73,22 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     private CaSessionLocal caSession;
 
     @Override
-    public PublicKeyBlacklist getPublicKeyBlacklist(int id) {
-        return getPublicKeyBlacklistInternal(id, null, true);
+    public PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(int id) {
+        return getPublicKeyBlacklistEntryInternal(id, null, true);
     }
 
     @Override
-    public PublicKeyBlacklist getPublicKeyBlacklist(String fingerprint) {
-        return getPublicKeyBlacklistInternal(-1, fingerprint, true);
+    public PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(String fingerprint) {
+        return getPublicKeyBlacklistEntryInternal(-1, fingerprint, true);
     }
 
     @Override
-    public String getPublicKeyBlacklistFingerprint(int id) {
+    public String getPublicKeyBlacklistEntryFingerprint(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getPublicKeyBlacklistFingerprint(id: " + id + ")");
         }
         // Get public key blacklist to ensure it is in the cache, or read.
-        final PublicKeyBlacklist entity = getPublicKeyBlacklistInternal(id, null, true);
+        final PublicKeyBlacklistEntry entity = getPublicKeyBlacklistEntryInternal(id, null, true);
         final String result = (entity != null) ? entity.getFingerprint() : null;
         if (log.isTraceEnabled()) {
             log.trace("<getPublicKeyBlacklistFingerprint(): " + result);
@@ -97,12 +97,12 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     @Override
-    public void addPublicKeyBlacklist(AuthenticationToken admin, int id, PublicKeyBlacklist entry)
+    public void addPublicKeyBlacklistEntry(AuthenticationToken admin, int id, PublicKeyBlacklistEntry entry)
             throws AuthorizationDeniedException, PublicKeyBlacklistExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublicKeyBlacklist(fingerprint: " + entry.getFingerprint() + ", id: " + id + ")");
         }
-        addPublicKeyBlacklistInternal(admin, id, entry);
+        addPublicKeyBlacklistEntryInternal(admin, id, entry);
         final String message = intres.getLocalizedMessage("publickeyblacklist.addedpublickeyblacklist", entry.getFingerprint());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", message);
@@ -114,7 +114,7 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     @Override
-    public void changePublicKeyBlacklist(AuthenticationToken admin, String fingerprint, PublicKeyBlacklist entry)
+    public void changePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint, PublicKeyBlacklistEntry entry)
             throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">changePublicKeyBlacklist(fingerprint: " + fingerprint + ")");
@@ -126,7 +126,7 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
             final Map<Object, Object> diff = getPublicKeyBlacklist(data).diff(entry);
             data.setPublicKeyBlacklist(entry);
             // Since loading a PublicKeyBlacklist is quite complex, we simple purge the cache here.
-            PublicKeyBlacklistCache.INSTANCE.removeEntry(data.getId());
+            PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
             message = intres.getLocalizedMessage("publickeyblacklist.changedpublickeyblacklist", fingerprint);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
@@ -145,7 +145,7 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     @Override
-    public void removePublicKeyBlacklist(AuthenticationToken admin, String fingerprint)
+    public void removePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint)
             throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException, CouldNotRemovePublicKeyBlacklistException {
         if (log.isTraceEnabled()) {
             log.trace(">removePublicKeyBlacklist(fingerprint: " + fingerprint + ")");
@@ -162,7 +162,7 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
             } else {
                 entityManager.remove(data);
                 // Purge the cache here.
-                PublicKeyBlacklistCache.INSTANCE.removeEntry(data.getId());
+                PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
                 message = intres.getLocalizedMessage("publickeyblacklist.removedpublickeyblacklist", fingerprint);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", message);
@@ -179,71 +179,29 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     @Override
-    public void flushPublicKeyBlacklistCache() {
-        PublicKeyBlacklistCache.INSTANCE.flush();
+    public void flushPublicKeyBlacklistEntryCache() {
+        PublicKeyBlacklistEntryCache.INSTANCE.flush();
         if (log.isDebugEnabled()) {
-            log.debug("Flushed PublicKeyBlacklist cache.");
+            log.debug("Flushed PublicKeyBlacklistEntry cache.");
         }
     }
 
     @Override
-    public int addPublicKeyBlacklist(AuthenticationToken admin, PublicKeyBlacklist entry)
+    public int addPublicKeyBlacklistEntry(AuthenticationToken admin, PublicKeyBlacklistEntry entry)
             throws AuthorizationDeniedException, PublicKeyBlacklistExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublicKeyBlacklist(fingerprint: " + entry.getFingerprint() + ")");
         }
         final int id = findFreePublicKeyBlacklistId();
-        addPublicKeyBlacklist(admin, id, entry);
+        addPublicKeyBlacklistEntry(admin, id, entry);
         if (log.isTraceEnabled()) {
             log.trace("<addPublicKeyBlacklist()");
         }
         return id;
     }
 
-    //    @Override
-    //    public Map<Integer, PublicKeyBlacklist> getAllPublicKeyBlacklists() {
-    //        final List<PublicKeyBlacklistData> keyValidators = PublicKeyBlacklistData.findAll(entityManager);
-    //        final Map<Integer, PublicKeyBlacklist> result = new HashMap<Integer, PublicKeyBlacklist>();
-    //        PublicKeyBlacklist keyValidator;
-    //        for (PublicKeyBlacklistData data : keyValidators) {
-    //            keyValidator = getPublicKeyBlacklist(data);
-    //            if (keyValidator != null) {
-    //                result.put(data.getId(), keyValidator);
-    //            } else {
-    //                if (log.isDebugEnabled()) {
-    //                    log.debug("Public key blacklist with fingerprint " + data.getFingerprint() + " could not be created.");
-    //                }
-    //            }
-    //        }
-    //        if (log.isDebugEnabled()) {
-    //            log.debug("Public key blacklist found in datastore: " + result);
-    //        }
-    //        return result;
-    //    }
-
-    //    @Override
-    //    public Map<Integer, BaseKeyValidator> getKeyValidatorsById(Collection<Integer> ids) {
-    //        final List<KeyValidatorData> keyValidators = KeyValidatorData.findAllById(entityManager, ids);
-    //        final Map<Integer, BaseKeyValidator> result = new HashMap<Integer, BaseKeyValidator>();
-    //        BaseKeyValidator keyValidator;
-    //        for (KeyValidatorData data : keyValidators) {
-    //            keyValidator = getPublicKeyBlacklist(data);
-    //            if (keyValidator != null) {
-    //                result.put(data.getId(), keyValidator);
-    //            } else {
-    //                if (log.isDebugEnabled()) {
-    //                    log.debug("public key blacklist with name " + data.getName() + " could not be created.");
-    //                }
-    //            }
-    //        }
-    //        if (log.isDebugEnabled()) {
-    //            log.debug("public key blacklists found in datastore: " + result);
-    //        }
-    //        return result;
-    //    }
-
     @Override
-    public Map<Integer, String> getPublicKeyBlacklistIdToFingerprintMap() {
+    public Map<Integer, String> getPublicKeyBlacklistEntryIdToFingerprintMap() {
         final HashMap<Integer, String> result = new HashMap<Integer, String>();
         for (PublicKeyBlacklistData data : PublicKeyBlacklistData.findAll(entityManager)) {
             if (log.isDebugEnabled()) {
@@ -255,22 +213,22 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     @Override
-    public int getPublicKeyBlacklistId(String fingerprint) {
+    public int getPublicKeyBlacklistEntryId(String fingerprint) {
         // Get object to ensure it is in the cache, or read.
-        final PublicKeyBlacklist entry = getPublicKeyBlacklistInternal(-1, fingerprint, true);
+        final PublicKeyBlacklistEntry entry = getPublicKeyBlacklistEntryInternal(-1, fingerprint, true);
         int result = 0;
         if (null != entry) {
-            result = entry.getPublicKeyBlacklistId();
+            result = entry.getID();
         }
         return result;
     }
 
-    /** Adds a public key blacklist or throws an exception. */
-    private void addPublicKeyBlacklistInternal(AuthenticationToken admin, int id, PublicKeyBlacklist publicKeyBlacklist) throws AuthorizationDeniedException, PublicKeyBlacklistExistsException {
+    /** Adds a public key blacklist or throws an exception. Will not update the cache, it will be read into the cache on next try to read. */
+    private void addPublicKeyBlacklistEntryInternal(AuthenticationToken admin, int id, PublicKeyBlacklistEntry publicKeyBlacklist) throws AuthorizationDeniedException, PublicKeyBlacklistExistsException {
         assertIsAuthorizedToEditPublicKeyBlacklists(admin);
         if (PublicKeyBlacklistData.findByFingerprint(entityManager, publicKeyBlacklist.getFingerprint()) == null
                 && PublicKeyBlacklistData.findById(entityManager, Integer.valueOf(id)) == null) {
-            publicKeyBlacklist.setPublicKeyBlacklistId(Integer.valueOf(id));
+            publicKeyBlacklist.setID(Integer.valueOf(id));
             final PublicKeyBlacklistData entity = new PublicKeyBlacklistData(publicKeyBlacklist);
             entityManager.persist(entity);
         } else {
@@ -281,25 +239,25 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     /** Gets a public key blacklist by cache or database, can return null. */
-    private PublicKeyBlacklist getPublicKeyBlacklistInternal(int id, final String fingerprint, boolean fromCache) {
+    private PublicKeyBlacklistEntry getPublicKeyBlacklistEntryInternal(int id, final String fingerprint, boolean fromCache) {
         if (log.isTraceEnabled()) {
             log.trace(">getPublicKeyBlacklistInternal: " + id + ", " + fingerprint);
         }
         Integer idValue = Integer.valueOf(id);
         if (id == -1) {
-            idValue = PublicKeyBlacklistCache.INSTANCE.getNameToIdMap().get(fingerprint);
+            idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         }
-        PublicKeyBlacklist result = null;
+        PublicKeyBlacklistEntry result = null;
         // If we should read from cache, and we have an id to use in the cache, and the cache does not need to be updated
-        if (fromCache && idValue != null && !PublicKeyBlacklistCache.INSTANCE.shouldCheckForUpdates(idValue)) {
+        if (fromCache && idValue != null && !PublicKeyBlacklistEntryCache.INSTANCE.shouldCheckForUpdates(idValue)) {
             // Get from cache (or null)
-            result = PublicKeyBlacklistCache.INSTANCE.getEntry(idValue);
+            result = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
         }
 
         // if we selected to not read from cache, or if the cache did not contain this entry
         if (result == null) {
             if (log.isDebugEnabled()) {
-                log.debug("PublicKeyBlacklist with ID " + idValue + " and/or fingerpint '" + fingerprint + "' will be checked for updates.");
+                log.debug("PublicKeyBlacklistEntry with ID " + idValue + " and/or fingerpint '" + fingerprint + "' will be checked for updates.");
             }
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
             final PublicKeyBlacklistData data;
@@ -313,11 +271,11 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
                 final int digest = data.getProtectString(0).hashCode();
                 // The cache compares the database data with what is in the cache
                 // If database is different from cache, replace it in the cache
-                PublicKeyBlacklistCache.INSTANCE.updateWith(data.getId(), digest, data.getFingerprint(), result);
+                PublicKeyBlacklistEntryCache.INSTANCE.updateWith(data.getId(), digest, data.getFingerprint(), result);
             } else {
                 // Ensure that it is removed from cache if it exists
                 if (idValue != null) {
-                    PublicKeyBlacklistCache.INSTANCE.removeEntry(idValue);
+                    PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(idValue);
                 }
             }
         }
@@ -328,15 +286,15 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
     }
 
     /** Gets the concrete public key blacklist by the base objects data, and updates it if necessary. */
-    private PublicKeyBlacklist getPublicKeyBlacklist(PublicKeyBlacklistData data) {
-        PublicKeyBlacklist result = data.getCachedPublicKeyBlacklist();
+    private PublicKeyBlacklistEntry getPublicKeyBlacklist(PublicKeyBlacklistData data) {
+        PublicKeyBlacklistEntry result = data.getCachedPublicKeyBlacklistEntry();
         if (result == null) {
             XMLDecoder decoder;
             try {
                 decoder = new XMLDecoder(new ByteArrayInputStream(data.getData().getBytes("UTF8")));
             } catch (UnsupportedEncodingException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Could not decode public key blacklist with name " + data.getFingerprint() + " because " + e.getMessage());
+                    log.debug("Could not decode public key blacklist entry with name " + data.getFingerprint() + " because " + e.getMessage());
                 }
                 throw new EJBException(e);
             }
@@ -344,8 +302,8 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
             decoder.close();
             // Handle Base64 encoded string values.
             final HashMap<?, ?> base64Map = new Base64GetHashMap(map);
-            result = new PublicKeyBlacklist();
-            result.setPublicKeyBlacklistId(data.getId());
+            result = new PublicKeyBlacklistEntry();
+            result.setID(data.getId());
             result.setSource(data.getSource());
             result.setKeyspec(data.getKeyspec());
             result.setFingerprint(data.getFingerprint());

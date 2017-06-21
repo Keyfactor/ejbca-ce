@@ -41,6 +41,14 @@ public enum CaCache implements CommonCache<CA> {
     };
 
     @Override
+    public CA getEntry(final Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return caCache.getEntry(id);
+    }
+
+    @Override
     public CA getEntry(final int caId) {
         return caCache.getEntry(caId);
     }
