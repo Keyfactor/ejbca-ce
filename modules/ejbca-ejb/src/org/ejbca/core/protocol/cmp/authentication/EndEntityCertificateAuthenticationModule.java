@@ -233,12 +233,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             if (!certlist.isEmpty()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Obtaning the certificate(s) from extraCert field was done successfully.");
+                    log.debug("Obtaining the certificate(s) from extraCert field was done successfully.");
                 }
                 return certlist;
             } else {
                 if(log.isDebugEnabled()) {
-                    log.debug("Obtaning the certificate from extraCert field failed, the result was null.");
+                    log.debug("Obtaining the certificate from extraCert field failed, the result was null.");
                 }            	
             }
         } catch (CertificateException e) {
