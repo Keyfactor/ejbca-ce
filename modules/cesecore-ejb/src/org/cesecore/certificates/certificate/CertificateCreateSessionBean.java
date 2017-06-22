@@ -352,9 +352,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
             keyValidatorSession.validatePublicKey(ca, endEntityInformation, certProfile, notBefore, notAfter,
                     publicKeyToValidate);
-            // ECA-4219 Bypass certificate profile settings for key size and strength.
-            // Change return type to int and derive state.
-            certGenParams.setSkipCertificateProfileSettings(true);
         }
         catch(KeyValidationException e) {
             throw new CertificateCreateException( e);

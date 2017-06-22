@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.model.ca.validation;
 
 import java.io.Serializable;
 import java.security.PublicKey;
@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.keys.validation.KeyGeneratorSources;
 
 /**
  * Domain class representing a public key blacklist entry.
@@ -33,6 +34,10 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(PublicKeyBlacklistEntry.class);
+
+    /** Public key fingerprint digest algorithm. */
+    public static final String DIGEST_ALGORITHM = "SHA-256";
+
 
     //    /** List separator. */
     //    private static final String LIST_SEPARATOR = ";";

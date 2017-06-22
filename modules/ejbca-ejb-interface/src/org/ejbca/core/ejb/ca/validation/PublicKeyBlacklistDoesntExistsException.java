@@ -11,29 +11,29 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.ejb.ca.validation;
 
 /**
- * An exception thrown when someone tries to store a public key blacklist entry that already exists.
+ * An exception thrown when someone tries to access a public key blacklist entry that doesn't exits.
  *
- * @version $Id: PublicKeyBlacklistExistsException.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id: PublicKeyBlacklistDoesntExistsException.java 22117 2017-04-01 12:12:00Z anjakobs $
  */
-public class PublicKeyBlacklistExistsException extends Exception {
+public class PublicKeyBlacklistDoesntExistsException extends Exception {
 
-    private static final long serialVersionUID = 215999965395318151L;
+    private static final long serialVersionUID = 412202146316881114L;
 
     /**
      * Creates a new instance.
      */
-    public PublicKeyBlacklistExistsException() {
-        super();
+    public PublicKeyBlacklistDoesntExistsException() {
+        super( "Public key blacklist does not exist in datastore.");
     }
 
     /**
      * Creates a new instance with the specified detail message.
      * @param message the detail message.
      */
-    public PublicKeyBlacklistExistsException(final String message) {
+    public PublicKeyBlacklistDoesntExistsException(final String message) {
         super(message);
     }
 }

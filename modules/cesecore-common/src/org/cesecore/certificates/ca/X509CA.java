@@ -880,10 +880,6 @@ public class X509CA extends CA implements Serializable {
             log.debug("Request is provided " + debugRequestMessageSource);
         }
         
-        // ECA-4219 Bypass certificate profile settings for key size and strength.
-//        if (!certGenParams.isSkipCertificateProfileSettings()) {
-//            certProfile.verifyKey(publicKey);
-//        }
         certProfile.verifyKey(publicKey);
         
         final String sigAlg;
