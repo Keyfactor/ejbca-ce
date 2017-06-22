@@ -14,7 +14,7 @@
 /**
  * Static helper key validator tests.
  * 
- * @version $Id: KeyValidatorTestUtil.java 25500 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 package org.cesecore.keys.validation;
 

@@ -18,7 +18,7 @@ import java.util.Properties;
 /**
  * All Custom key validators must implement this interface.
  * 
- * @version $Id: ICustomKeyValidator.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 
 public interface ICustomKeyValidator extends IKeyValidator {

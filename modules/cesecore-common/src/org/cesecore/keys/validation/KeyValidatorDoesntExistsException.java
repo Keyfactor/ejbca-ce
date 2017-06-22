@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * An exception thrown when someone tries to access a key validator that doesn't exits.
  *
- * @version $Id: KeyValidatorDoesntExistsException.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidatorDoesntExistsException extends Exception {
 

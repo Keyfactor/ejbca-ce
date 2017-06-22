@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * An exception thrown when someone tries validate a key with a wrong key algorithm (i.e. try to validate an ECC key with an RSA key validator).
  *
- * @version $Id: KeyValidatorWrongKeyAlgorithmException.java 22117 2017-05-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidationIllegalKeyAlgorithmException extends KeyValidationException {
 

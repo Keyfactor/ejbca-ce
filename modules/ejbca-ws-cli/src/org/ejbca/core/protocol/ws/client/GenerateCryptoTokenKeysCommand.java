@@ -22,7 +22,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Adds an administrator to an existing Administrator role
  *
- * @version $Id: CaCertRequestCommand.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  */
 public class GenerateCryptoTokenKeysCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

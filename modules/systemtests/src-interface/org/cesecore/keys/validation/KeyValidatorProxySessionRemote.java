@@ -29,7 +29,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
- * @version $Id: KeyValidatorProxySessionRemote.java 25500 2017-04-01 21:10:53Z anjakobs $
+ * @version $Id$
  *
  */
 @Remote

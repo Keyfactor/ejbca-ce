@@ -37,7 +37,7 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Representation of a key validator.
  * 
- * @version $Id: KeyValidatorData.java 25263 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 @Entity
 @Table(name = "KeyValidatorData")

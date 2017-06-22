@@ -23,7 +23,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Updates an external X.509 CA or CVC CA with the given name.
  *
- * @version $Id: UpdateCaCertCommand.java 22553 2017-02-17 13:00:00Z anjakobs $
+ * @version $Id$
  */
 public class UpdateCaCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 

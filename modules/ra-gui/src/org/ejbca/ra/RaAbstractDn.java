@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  * for the DN fields of the specified end entity profile. It is
  * extended by Subject DN, SubjectAlternateName and Subject Directory Attributes
  * 
- * @version $Id: RaAbstractDn.java 23866 2016-07-11 16:11:45Z jeklund $
+ * @version $Id$
  *
  */
 public abstract class RaAbstractDn {

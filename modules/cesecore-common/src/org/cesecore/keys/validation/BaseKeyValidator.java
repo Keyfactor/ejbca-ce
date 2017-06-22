@@ -32,7 +32,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  * of key validator in the system.
  *  
  *
- * @version $Id: BaseKeyValidator.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements Serializable, Cloneable, IKeyValidator {
 

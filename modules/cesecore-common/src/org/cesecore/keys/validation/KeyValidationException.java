@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * An exception thrown when key validation fails for some reason and the certificate issuance has to be aborted.
  *
- * @version $Id: KeyValidationException.java 22117 2017-05-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidationException extends Exception {
 

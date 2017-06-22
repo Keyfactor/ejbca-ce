@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @version $Id: RemoveRoleCommandTest.java 18481 2014-02-10 16:08:27Z mikekushner $
+ * @version $Id$
  */
 public class RemoveRoleCommandTest {
 

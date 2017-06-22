@@ -22,7 +22,7 @@ import org.cesecore.util.ui.MultiLineString;
 /**
  * When using dynamic properties, JSF can't handle String conversions for some strange reason. This converter takes care of that. 
  * 
- * @version $Id: StringConverter.java 24062 2016-07-29 14:47:11Z aveen4711 $
+ * @version $Id$
  *
  */
 @FacesConverter("stringConverter")

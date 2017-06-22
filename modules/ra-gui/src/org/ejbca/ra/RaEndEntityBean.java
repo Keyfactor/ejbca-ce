@@ -38,7 +38,7 @@ import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 /**
  * Backing bean for certificate details view.
  *  
- * @version $Id: RaViewCertBean.java 23584 2016-05-31 14:36:29Z jeklund $
+ * @version $Id$
  */
 @ManagedBean
 @ViewScoped

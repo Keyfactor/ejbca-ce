@@ -29,7 +29,7 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyStoreTools;
 
 /**
- * @version $Id: KeyStoreToolsFactory.java 22062 2015-10-20 14:36:16Z primelars $
+ * @version $Id$
  */
 public class KeyStoreToolsFactory {
     private static final Logger log = Logger.getLogger(KeyStoreToolsFactory.class);

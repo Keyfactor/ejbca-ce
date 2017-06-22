@@ -31,7 +31,7 @@ import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
 /**
  * Creates new CA
  *
- * @version $Id: CaCertRequestCommand.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  */
 public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

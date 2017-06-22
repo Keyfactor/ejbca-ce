@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Test the key validator cache behavior.
  * 
- * @version $Id: KeyValidatorCacheTest.java 21142 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidatorCacheTest {
 
