@@ -28,7 +28,7 @@
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
 <li><a href="docs/userguide.html#End%20Entities">Admin registration</a> and <a href="docs/adminguide.html#Self%20Registration">self-registration</a> work-flows out of the box. Supports virtually any work-flow with <a href="docs/adminguide.html#Customizing%20EJBCA">plug-ins</a> and integration.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
-<li>Easy to use RA web UI for self registration and issuance by administrators.</li>
+<li>Easy to use <a href="docs/kara.html">RA web UI</a> for self registration and issuance by administrators.</li>
 <li>Legacy browser enrollment with Firefox.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
@@ -126,6 +126,7 @@
 <li>Validation tool for conformance checking of certificates and OCSP responders.</li>
 <li>EAC PKI (EAC 1.11 and 2.10) for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
+<li>Support for Native <a href="https://www.primekey.com/products/software/ejbca-enterprise/#additionals">Autoenrollment in Windows environment</a> with add-on autoenrollment proxy module.</li>
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
 <li><a href="docs/adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a> to add an additional network layer, with message check, between the CA and CMP clients.</li>
 <li>Command line CMP client in Java useful for scripting, testing and prototyping.</li>
@@ -134,13 +135,13 @@
 <li><a href="docs/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">Certificate Transparency</a>, RFC6962.</li>
 <li><a href="docs/adminguide.html#Cert%20Safe%20publisher%20for%20a%20HTTPS%20server%20(Enterprise%20only)">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/userguide.html#Managing EJBCA Peer Systems">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
+<li>Proxy CMP and Windows Autoenrollment through the <a href="docs/kara.html">RA</a> (using Peers) to avoid direct communication with the CA.</li>
 <li>Direct Validation Authority (OCSP responder) updates from CA to VA. Ideal for low latency revocation and white listing.</li>
 <li><a href="docs/externalra.html">External RA</a> with a polling model for RA to CA communication, for high security environments. Ability to run the RA web UI in polling mode.</li>
 <li>Create Crypto Tokens and CAs, generate keys and add and remove administrators through the Web Service API.</li>
 <li>EV Certificate specific DN components as defined in CABForum guidelines (jurisdictionLocality, State and Country).</li>
 <li>eIDAS specific fields as defined in ETSI EN 319 412 (organizationIdentifier).</li>
 <li>Additional algorithms using HSMs through PKCS#11, <a href="docs/adminguide.html#Using%20SHA256WithRSAandMGF1%20(RSASSA-PSS)">RSASSA-PSS (SHA256WithRSAAndMGF1)</a>. Available through patches for Java.</li>
-<li>Support for Native MS Autoenrollment in Windows environment with add-on autoenrollment proxy module.</li>
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 <li>Penetration tested with improved security.</li>
 </ul>
