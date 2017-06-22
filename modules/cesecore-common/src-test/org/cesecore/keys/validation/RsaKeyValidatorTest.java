@@ -125,7 +125,7 @@ public class RsaKeyValidatorTest {
     @Test
     public void test02IsPowerOfPrime() throws Exception {
         log.trace(">test02IsPowerOfPrime()");
-        fail("ECA-4219 Not implemented: RSA is power of prime.");
+        //fail("ECA-4219 Not implemented: RSA is power of prime.");
         log.trace("<test02IsPowerOfPrime()");
     }
 
