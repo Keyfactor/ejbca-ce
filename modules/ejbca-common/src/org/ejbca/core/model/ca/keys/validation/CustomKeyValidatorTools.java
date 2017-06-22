@@ -23,7 +23,7 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 /**
  * Static helper class for custom UI properties.
  * 
- * @version $Id: CustomKeyValidatorTools.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class CustomKeyValidatorTools {
 

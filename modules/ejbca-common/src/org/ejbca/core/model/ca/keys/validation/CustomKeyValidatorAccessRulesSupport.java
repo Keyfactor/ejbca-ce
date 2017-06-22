@@ -18,7 +18,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 /**
  * A key validator that implements this interface contains additional access rules.
  * 
- * @version $Id: CustomKeyValidatorAccessRulesSupport.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public interface CustomKeyValidatorAccessRulesSupport {
 

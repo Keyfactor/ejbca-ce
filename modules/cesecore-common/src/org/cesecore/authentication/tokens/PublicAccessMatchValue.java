@@ -19,7 +19,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
- * @version $Id: UsernameAccessMatchValue.java 18613 2014-03-17 13:31:40Z mikekushner $
+ * @version $Id$
  */
 public enum PublicAccessMatchValue implements AccessMatchValue {
     TRANSPORT_ANY(0),

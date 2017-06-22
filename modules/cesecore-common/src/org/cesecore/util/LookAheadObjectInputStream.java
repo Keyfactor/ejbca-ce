@@ -33,7 +33,7 @@ import java.util.Set;
  * 
  * @see LookAheadObjectInputStreamTest for more examples
  * 
- * @version $Id: LookAheadObjectInputStream.java 22806 2016-02-19 18:58:27Z marko $
+ * @version $Id$
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 

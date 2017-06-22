@@ -18,7 +18,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  * Thrown to signify that a slot was not found. Differs from {@link CryptoTokenOfflineException} by virtue of
  * the latter being thrown when a slot exists, but for some reason is unavailable.
  * 
- * @version $Id: NoSuchSlotException.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  *
  */
 public class PKCS11LibraryFileNotFoundException extends Exception {

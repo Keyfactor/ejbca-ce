@@ -35,7 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 
 /**
- * @version $Id: KeyValidatorProxySessionBean.java 25500 2017-04-01 21:10:53Z anjakobs $
+ * @version $Id$
  *
  */
 

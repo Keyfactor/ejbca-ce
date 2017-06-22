@@ -30,7 +30,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Finds a certificates in the database
  *
- * @version $Id: FindCertsCommand.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  */
 public class GetExpiredCertificatesCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

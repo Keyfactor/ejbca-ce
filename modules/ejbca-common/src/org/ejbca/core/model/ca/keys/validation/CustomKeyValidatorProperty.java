@@ -21,7 +21,7 @@ import java.util.TreeMap;
  * 
  * All properties are interpreted as String values.
  * 
- * @version $Id: CustomKeyValidatorProperty.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class CustomKeyValidatorProperty {
 

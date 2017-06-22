@@ -46,7 +46,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the Name Change CA Renewal {@link CAAdminSession.renewCANewSubjectDn}
  * 
- * @version $Id: RenewCANewSubjectDNTest.java 22638 2016-01-22 21:55:34Z marko $
+ * @version $Id$
  */
 public class RenewCANewSubjectDNTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RenewCANewSubjectDNTest.class);

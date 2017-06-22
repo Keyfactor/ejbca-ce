@@ -24,7 +24,7 @@ package org.ejbca.ui.cli.infrastructure.parameter.enums;
  *      PASSWORD
  *          Like INPUT, but the input is never echoed on the screen. 
  * 
- * @version $Id: ParameterMode.java 17791 2013-10-10 21:01:33Z samuellb $
+ * @version $Id$
  *
  */
 public enum ParameterMode {

@@ -26,7 +26,7 @@ import org.cesecore.keys.validation.KeyGeneratorSources;
  * Domain class representing a public key blacklist entry.
  *  
  *
- * @version $Id: PublicKeyBlacklist.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

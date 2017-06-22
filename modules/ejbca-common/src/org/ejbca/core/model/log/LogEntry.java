@@ -26,7 +26,7 @@ import java.util.Date;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java 19901 2014-09-30 14:29:38Z anatom $
+ * @version $Id$
  */
 public class LogEntry implements Serializable {
 

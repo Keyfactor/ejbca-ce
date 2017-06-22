@@ -26,7 +26,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 /**
  * Class for handling parameters in commands
  * 
- * @version $Id: ParameterHandler.java 17791 2013-10-10 21:01:33Z samuellb $
+ * @version $Id$
  *
  */
 public class ParameterHandler {

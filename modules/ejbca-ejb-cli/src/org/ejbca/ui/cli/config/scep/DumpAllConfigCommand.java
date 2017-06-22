@@ -22,7 +22,7 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
- * @version $Id: DumpAllConfigCommand.java 18666 2014-03-24 13:37:16Z mikekushner $
+ * @version $Id$
  *
  */
 public class DumpAllConfigCommand extends BaseScepConfigCommand {

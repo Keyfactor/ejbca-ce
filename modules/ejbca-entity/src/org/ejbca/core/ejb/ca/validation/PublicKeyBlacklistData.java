@@ -39,7 +39,7 @@ import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 /**
  * Representation of a public key blacklist entry.
  * 
- * @version $Id: PublicKeyBlacklistData.java 25263 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 @Entity
 @Table(name = "PublicKeyBlacklistData")

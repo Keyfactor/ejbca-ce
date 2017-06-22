@@ -31,7 +31,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 /**
  * Local interface for key validator operations.
  * 
- * @version $Id: KeyValidatorSessionLocal.java 22019 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 @Local
 public interface KeyValidatorSessionLocal extends KeyValidatorSession {

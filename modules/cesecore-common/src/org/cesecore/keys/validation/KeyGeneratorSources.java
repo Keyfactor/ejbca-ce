@@ -21,7 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 /**
  * An enum domain class representing all key generator sources like openSSL, openSSH, openVPN, etc.
  *
- * @version $Id: KeyGeneratorSources.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public enum KeyGeneratorSources {
 

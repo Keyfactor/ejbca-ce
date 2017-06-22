@@ -59,7 +59,7 @@ import org.cesecore.util.CertTools;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
  * 
- * @version $Id: ScepRequestGenerator.java 20960 2015-03-23 15:10:52Z mikekushner $
+ * @version $Id$
  */
 public class ScepRequestGenerator {
     private static Logger log = Logger.getLogger(ScepRequestGenerator.class);

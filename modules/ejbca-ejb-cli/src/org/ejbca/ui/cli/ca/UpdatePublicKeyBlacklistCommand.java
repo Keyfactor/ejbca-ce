@@ -48,7 +48,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 /**
  * Imports certificate files to the database for a given CA
  *
- * @version $Id: CaImportPublicKeyBlacklistCommand.java 24940 2017-04-01 09:43:55Z anjakobs $
+ * @version $Id$
  */
 public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
 

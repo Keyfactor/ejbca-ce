@@ -23,7 +23,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Imports an external CA certificate for X.509 CAs or CVC CAs and creates the CA in EJBCA with the given name.
  *
- * @version $Id: ImportCaCertCommand.java 22553 2017-02-17 12:06:00Z anjakobs $
+ * @version $Id$
  */
 public class ImportCaCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 

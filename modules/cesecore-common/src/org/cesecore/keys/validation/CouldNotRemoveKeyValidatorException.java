@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * An exception thrown when someone tries to delete a KeyValidator which is referenced by other objects (i.e. CAs).
  *
- * @version $Id: CouldNotRemoveKeyValidatorException.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class CouldNotRemoveKeyValidatorException extends Exception {
 

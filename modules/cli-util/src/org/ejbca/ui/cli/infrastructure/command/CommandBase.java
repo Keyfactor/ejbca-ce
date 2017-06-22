@@ -30,7 +30,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler;
 /**
  * Base class for all commands
  * 
- * @version $Id: CommandBase.java 17791 2013-10-10 21:01:33Z samuellb $
+ * @version $Id$
  *
  */
 public abstract class CommandBase implements CliCommandPlugin {

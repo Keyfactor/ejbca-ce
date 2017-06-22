@@ -23,7 +23,7 @@ import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 /**
  * Interface for public key blacklist operations.
  *
- * @version $Id: PublicKeyBlacklistSession.java 21703 2017-04-01 12:00:00Z anjakobs $
+ * @version $Id$
  */
 public interface PublicKeyBlacklistSession {
 

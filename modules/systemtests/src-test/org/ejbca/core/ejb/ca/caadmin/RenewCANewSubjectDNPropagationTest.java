@@ -51,7 +51,7 @@ import org.junit.Test;
  * Tests all kind of propagation (Rules, End Entity and Certificate profiles,...) 
  * occurred after the Name Change CA Renewal {@link CAAdminSession.renewCANewSubjectDn}
  * 
- * @version $Id: RenewCANewSubjectDNPropagationTest.java 22638 2016-01-22 21:55:34Z marko $
+ * @version $Id$
  */
 public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
 

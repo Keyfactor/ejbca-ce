@@ -21,7 +21,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
  * 
- * @version $Id: RaCertificatePreview.java 23738 2016-06-28 14:22:39Z marko $
+ * @version $Id$
  */
 public class RaRequestPreview {
     

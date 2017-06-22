@@ -27,7 +27,7 @@ import org.junit.Test;
 /** Tests SecurityFilterInputStream class that can be used to prevent java heap-overflow during
  * reading from input stream
  * 
- * @version $Id: SecurityFilterInputStreamTest.java 22806 2016-02-19 18:58:27Z marko $
+ * @version $Id$
  */
 public class SecurityFilterInputStreamTest {
 

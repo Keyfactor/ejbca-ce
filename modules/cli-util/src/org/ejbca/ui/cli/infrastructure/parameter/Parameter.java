@@ -19,7 +19,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 /**
  * Wrapper class for a command parameter
  * 
- * @version $Id: Parameter.java 17528 2013-08-27 13:31:03Z mikekushner $
+ * @version $Id$
  *
  */
 public class Parameter {

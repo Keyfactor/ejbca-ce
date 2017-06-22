@@ -26,7 +26,7 @@ import org.cesecore.keys.validation.KeyValidationException;
  * to store and retrieve custom key validator configurations to database.
  * 
  *
- * @version $Id: AbstractCustomKeyValidator.java 25281 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public abstract class AbstractCustomKeyValidator extends BaseKeyValidator {
 

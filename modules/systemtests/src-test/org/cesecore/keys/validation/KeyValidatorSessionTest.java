@@ -69,7 +69,7 @@ import org.junit.Test;
 /**
  * Tests Key validator session.
  * 
- * @version $Id: KeyValidatorSessionTest.java 25500 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidatorSessionTest {
 

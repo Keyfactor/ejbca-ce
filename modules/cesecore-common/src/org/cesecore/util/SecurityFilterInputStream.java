@@ -24,7 +24,7 @@ import java.io.InputStream;
  * 
  * @see SecurityFilterInputStreamTest for more examples
  * 
- * @version $Id: SecurityFilterInputStream.java 22806 2016-02-19 18:58:27Z marko $
+ * @version $Id$
  */
 public class SecurityFilterInputStream extends FilterInputStream{
 

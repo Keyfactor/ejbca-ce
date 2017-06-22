@@ -35,7 +35,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 /**
  * See getDescription().
  * 
- * @version $Id: InternalKeyBindingImportCertificateCommand.java 18666 2014-03-24 13:37:16Z mikekushner $
+ * @version $Id$
  */
 public class InternalKeyBindingExportCertificateCommand extends RudInternalKeyBindingCommand {
 

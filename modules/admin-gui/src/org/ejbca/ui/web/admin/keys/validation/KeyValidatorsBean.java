@@ -49,7 +49,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Managed bean for key edit validators page (editkeyvalidators.xhtml).
  *
- * @version $Id: KeyValidatorsBean.java 25263 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidatorsBean extends BaseManagedBean {
 

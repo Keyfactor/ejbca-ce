@@ -23,7 +23,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * @version $Id: AddAliasCommand.java 18666 2014-03-24 13:37:16Z mikekushner $
+ * @version $Id$
  *
  */
 public class AddAliasCommand extends BaseScepConfigCommand {

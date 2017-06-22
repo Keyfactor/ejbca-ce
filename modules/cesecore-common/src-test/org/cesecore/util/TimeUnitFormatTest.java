@@ -25,7 +25,7 @@ import org.junit.Test;
 /** 
  * Test of the TimeUnitFormat class.
  *  
- * @version $Id: TimeUnitFormatTest.java 22133 2016-10-01 10:20:32Z anjakobs $
+ * @version $Id$
  */
 public class TimeUnitFormatTest {
 
