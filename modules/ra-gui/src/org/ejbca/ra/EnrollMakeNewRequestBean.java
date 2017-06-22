@@ -585,16 +585,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
         endEntityInformation.setExtendedinformation(new ExtendedInformation());//TODO don't know anything about it...
         endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
-        endEntityInformation.setKeyRecoverable(false); //TODO not sure...
-        endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
-        // sendnotification must be set after setType, because it adds to the type
-        endEntityInformation.setSendNotification(getEndEntityProfile().getValue(EndEntityProfile.SENDNOTIFICATION, 0).equals(EndEntityProfile.TRUE)
-                && !endEntityInformation.getSendNotification());
+        // sendnotification, keyrecoverable and print must be set after setType, because it adds to the type
+        endEntityInformation.setSendNotification(isDefaultInProfile(EndEntityProfile.SENDNOTIFICATION) && !endEntityInformation.getSendNotification());
+        endEntityInformation.setKeyRecoverable(isDefaultInProfile(EndEntityProfile.KEYRECOVERABLE) && !endEntityInformation.getKeyRecoverable());
+        endEntityInformation.setPrintUserData(false); // TODO not sure...
         endEntityInformation.setTokenType(tokenType);
 
         // Fill end-entity information (Username and Password)
@@ -763,6 +762,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             endEntityInformation.setUsername("");
         }
+    }
+    
+    /** Returns true if the default value of the given field is true in the end entity profile */
+    private boolean isDefaultInProfile(final String field) {
+        return EndEntityProfile.TRUE.equals(getEndEntityProfile().getValue(field, 0));
     }
     
     /** Send a file to the client if token parameter is not set to null */
