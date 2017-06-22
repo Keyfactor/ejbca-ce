@@ -32,7 +32,8 @@ public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
     private final CommonCache<BaseKeyValidator> cache = new CommonCacheBase<BaseKeyValidator>() {
         @Override
         protected long getCacheTime() {
-            return Math.max( CesecoreConfiguration.getCacheKeyValidatorTime(), 0);
+            long time = Math.max( CesecoreConfiguration.getCacheKeyValidatorTime(), -1);
+            return time;
         };
 
         @Override
