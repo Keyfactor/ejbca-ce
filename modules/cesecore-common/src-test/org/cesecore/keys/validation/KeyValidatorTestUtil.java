@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistKeyValidator;
+
 public final class KeyValidatorTestUtil {
 
     /**

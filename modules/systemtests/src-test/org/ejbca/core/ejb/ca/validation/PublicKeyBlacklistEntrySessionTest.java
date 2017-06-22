@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.ejb.ca.validation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,14 +26,16 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests Key validator session.
+ * Tests Public Key Blacklist session.
  * 
- * @version $Id: KeyValidatorSessionTest.java 25500 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 public class PublicKeyBlacklistEntrySessionTest {
 

@@ -58,7 +58,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
 
 /**
@@ -87,8 +86,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
-    @EJB
-    private PublicKeyBlacklistSessionLocal blacklistSession;
 
     @Override
     public BaseKeyValidator getKeyValidator(int id) {
@@ -380,16 +377,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug("Certificate 'notAfter' " + certificateValidity.getNotAfter());
             }
             final Map<Integer, BaseKeyValidator> map = getKeyValidatorsById(ca.getKeyValidators());
-            if (!map.isEmpty()) {
-                // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded
-                // this call is made here, even if the Validator does not use blacklists, but Validator can not call an EJB so easily.
-                // and we don't want to do instanceof, so we take the hit
-                // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
-                // should better be implemented as a full in memory cache with a state so we know if it's loaded or not, with background updates
-                // TODO: the BlacklistKeyValidator can make a local EJB helper lookup instead, this combined with a background loaded cache should be higly efficient
-                blacklistSession.getPublicKeyBlacklistEntryId(CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM));
-                // carry on after filling the blacklist cache...
-            }
             final List<Integer> ids = new ArrayList<Integer>(map.keySet());
             BaseKeyValidator keyValidator;
             String name = null;
