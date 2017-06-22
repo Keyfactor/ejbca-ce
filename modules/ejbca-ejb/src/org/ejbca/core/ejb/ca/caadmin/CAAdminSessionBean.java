@@ -667,28 +667,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new EJBException(e);
             }
         }
-
-        final Certificate caCertificate = ca.getCACertificate();
-        // ECA-4219 Re-Factor: With update of external CSCA certificate, the CA's ID changes and it's created first without CA certificate chain (and stored with it in a second step), so it's null here!
-        // Result is that the key validator date conditions cannot be applied!
-        if (null != caCertificate) {
-        try {
-            final EndEntityInformation endEntity = new EndEntityInformation();
-            endEntity.setCertificateProfileId(cainfo.getCertificateProfileId());
-            final Date notBefore = ((X509Certificate) caCertificate).getNotBefore();
-            final Date notAfter = ((X509Certificate) caCertificate).getNotAfter();
-            final PublicKey caPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-            keyValidatorSession.validatePublicKey(ca, endEntity, certprofile, notBefore, notAfter, caPublicKey);
-        } catch (Exception e) {
-            String message = "Could not perform public key validation for CA: " + e.getMessage();
-            if (log.isDebugEnabled()) {
-                log.debug(message, e);
-            }
-            // Re-factor: Exceptions because of failed key validation are wrapped into the CAExistsException.
-            throw new CAExistsException(message, (Throwable) e);
-        }
-        }
-
         if (log.isTraceEnabled()) {
             log.trace("<createCA: " + cainfo.getName());
         }
