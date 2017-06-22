@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.ejb.ca.validation;
 
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
@@ -42,8 +42,12 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.ProfileID;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntryCache;
 
 /**
  * Handles management of public key blacklist entries.

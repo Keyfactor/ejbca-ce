@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.ejb.ca.validation;
 
 import javax.ejb.Remote;
 

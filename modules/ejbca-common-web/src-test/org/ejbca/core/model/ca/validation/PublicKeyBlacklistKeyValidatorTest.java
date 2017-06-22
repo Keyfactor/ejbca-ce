@@ -16,7 +16,7 @@
  * 
  * @version $Id: RsaKeyValidatorTest.java 25263 2017-03-01 12:12:00Z anjakobs $
  */
-package org.cesecore.keys.validation;
+package org.ejbca.core.model.ca.validation;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -28,8 +28,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.validation.KeyValidatorTestUtil;
+import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -80,6 +83,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) KeyValidatorTestUtil.createKeyValidator(
                 PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE, "publickey-blacklist-validation-test-1", "Description", null, -1, null, -1, -1,
                 new Integer[] {});
+        keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         boolean result = keyValidator.validate(publicKey);
         log.trace("Key validation error messages: " + keyValidator.getMessages());
@@ -95,7 +99,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         keyValidator.setKeyAlgorithms(algorithms);
         {
             // Manual update of cache entry
-            final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+            final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
             final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint(fingerprint);
             PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);

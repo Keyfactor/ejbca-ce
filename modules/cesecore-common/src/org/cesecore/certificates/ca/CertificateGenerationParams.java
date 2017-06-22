@@ -43,7 +43,6 @@ public final class CertificateGenerationParams implements Serializable {
 
     private LinkedHashMap<Integer, CTLogInfo> configuredCTLogs;
     private CTAuditLogCallback ctAuditLogCallback;
-    private boolean skipCertificateProfileSettings = false;
     
     /**
      * Set the CT logs from the system configuration.
@@ -70,11 +69,4 @@ public final class CertificateGenerationParams implements Serializable {
         return ctAuditLogCallback;
     }
 
-    public boolean isSkipCertificateProfileSettings() {
-        return skipCertificateProfileSettings;
-    }
-
-    public void setSkipCertificateProfileSettings(boolean skipCertificateProfileSettings) {
-        this.skipCertificateProfileSettings = skipCertificateProfileSettings;
-    }
 }

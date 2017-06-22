@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.ejb.ca.validation;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -34,6 +34,7 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 
 /**
  * Representation of a public key blacklist entry.

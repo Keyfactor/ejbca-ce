@@ -34,15 +34,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyGeneratorSources;
-import org.cesecore.keys.validation.PublicKeyBlacklistEntry;
-import org.cesecore.keys.validation.PublicKeyBlacklistDoesntExistsException;
-import org.cesecore.keys.validation.PublicKeyBlacklistKeyValidator;
-import org.cesecore.keys.validation.PublicKeyBlacklistSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -125,7 +124,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             try {
                 asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
                 publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
-                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
                 keySpecifications.put(fingerprint, AlgorithmTools.getKeySpecification(publicKey));
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
@@ -151,7 +150,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             try {
                 asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
                 publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
-                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
                 keySpecifications.put(fingerprint, AlgorithmTools.getKeySpecification(publicKey));
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
@@ -289,7 +288,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
             publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
             log.trace("Loaded public key " + publicKey);
-            fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+            fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
             try {
                 publicKeyBlacklistSession.removePublicKeyBlacklistEntry(authenticationToken, fingerprint);
             } catch (PublicKeyBlacklistDoesntExistsException e) {

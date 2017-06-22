@@ -29,16 +29,15 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.cesecore.keys.validation.KeyGeneratorSources;
-import org.cesecore.keys.validation.PublicKeyBlacklistEntry;
-import org.cesecore.keys.validation.PublicKeyBlacklistDoesntExistsException;
-import org.cesecore.keys.validation.PublicKeyBlacklistExistsException;
-import org.cesecore.keys.validation.PublicKeyBlacklistKeyValidator;
-import org.cesecore.keys.validation.PublicKeyBlacklistSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistExistsException;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -73,7 +72,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                 "Command to execute. Use " + COMMAND_ADD + " or " + COMMAND_REMOVE + "."));
         registerParameter(new Parameter(UPDATE_MODE_KEY, "Update mode", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Set to fingerprint if the files in --dir shall be treated as CSV files, containing on public key fingerprint per line with "
-                        + PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM
+                        + PublicKeyBlacklistEntry.DIGEST_ALGORITHM
                         + " hash and optional additional information (key specification or key generation sources separated by comma: I.e.: fingerprint,keyspec,keygensource"));
         registerParameter(new Parameter(KEY_SPECIFICATIONS_KEY, "Key specifications", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
@@ -273,7 +272,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         result.append("\n\n" + getCommandDescription() + "\n\n");
         result.append(
                 "Every file in the target directory is parsed and must contain one PEM formatted RSA or ECC public key.\n\nIf --mode fingerpint is chosen only the public key fingerprints with "
-                        + PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM
+                        + PublicKeyBlacklistEntry.DIGEST_ALGORITHM
                         + " hash are used to add or remove blacklist entries, and every file is treated as CSV file with one public key fingerprint per line."
                         + "\n\n");
         return result.toString();
@@ -294,7 +293,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     public int addPublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
         log.trace(">addPublicKeyToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint);
         entry.setPublicKey(publicKey);
@@ -316,7 +315,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     public int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
         log.trace(">removePublicKeyFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
         log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
         result = removeFromBlacklist(fingerprint);
         log.trace("<removePublicKeyFromBlacklist()");

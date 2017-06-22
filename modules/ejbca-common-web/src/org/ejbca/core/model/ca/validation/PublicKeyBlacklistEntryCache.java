@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.model.ca.validation;
 
 import java.util.List;
 import java.util.Map;

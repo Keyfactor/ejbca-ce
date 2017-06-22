@@ -59,6 +59,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistKeyValidator;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Assert;

@@ -145,9 +145,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyGeneratorSources;
-import org.cesecore.keys.validation.PublicKeyBlacklistEntry;
-import org.cesecore.keys.validation.PublicKeyBlacklistKeyValidator;
-import org.cesecore.keys.validation.PublicKeyBlacklistSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -170,6 +167,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -182,6 +180,7 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -773,7 +772,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         final PublicKey publicKey = keyPair.getPublic();
-        final String publicKeyFingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistKeyValidator.DIGEST_ALGORITHM);
+        final String publicKeyFingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
         PKCS10CertificationRequest pkcs10 = getP10Request(keyPair);
         
         // Blacklist public key.

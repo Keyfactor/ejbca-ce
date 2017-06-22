@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.keys.validation;
+package org.ejbca.core.model.ca.validation;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -24,7 +24,10 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.BaseKeyValidator;
+import org.cesecore.keys.validation.KeyValidationException;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Public key blacklist key validator using the Bouncy Castle BCRSAPublicKey implementation 
@@ -38,9 +41,6 @@ import org.cesecore.util.CertTools;
 public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator {
 
     private static final long serialVersionUID = 215729318959311916L;
-
-    /** Public key fingerprint digest algorithm. */
-    public static final String DIGEST_ALGORITHM = "SHA-256";
 
     /** List separator. */
     private static final String LIST_SEPARATOR = ";";
@@ -59,20 +59,15 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator {
     protected static final String KEY_GENERATOR_SOURCES = "keyGeneratorSources";
 
     protected static final String KEY_ALGORITHMS = "keyAlgorithms";
-
+    
+    /** field used for JUnit testing, avoiding lookups so we can control the cache */
+    private boolean useOnlyCache = false;
+    
     /**
      * Creates a new instance.
      */
     public PublicKeyBlacklistKeyValidator() {
         init();
-    }
-
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     * @param keyValidator the base key validator to load.
-     */
-    public PublicKeyBlacklistKeyValidator(final BaseKeyValidator keyValidator) {
-        super(keyValidator);
     }
 
     @Override
@@ -211,8 +206,16 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator {
             log.debug("Validating public key with algorithm " + keyAlgorithm + ", length " + keyLength + ", format " + publicKey.getFormat()
                     + ", implementation " + publicKey.getClass().getName() + " against public key blacklist.");
         }
-        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, DIGEST_ALGORITHM);
+        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
         log.info("Matching public key with fingerprint " + fingerprint + " with public key blacklist.");
+        if (!useOnlyCache) {
+            // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded
+            // this call is made here, even if the Validator does not use blacklists, but Validator can not call an EJB so easily.
+            // and we don't want to do instanceof, so we take the hit
+            // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
+            // should better be implemented as a full in memory cache with a state so we know if it's loaded or not, with background updates. See ECA-5951
+            new EjbLocalHelper().getPublicKeyBlacklistSession().getPublicKeyBlacklistEntryId(CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM));
+        }
         Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
         boolean keyGeneratorSourceMatched = false;
@@ -267,4 +270,9 @@ public class PublicKeyBlacklistKeyValidator extends BaseKeyValidator {
         }
         return keySpec;
     }
+
+    protected void setUseOnlyCache(boolean useOnlyCache) {
+        this.useOnlyCache = useOnlyCache;
+    }
+    
 }
