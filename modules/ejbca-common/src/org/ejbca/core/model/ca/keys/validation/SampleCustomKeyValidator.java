@@ -28,7 +28,7 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 /**
  * Sample custom key validator implementation for demo purposes (set read only to true).
  * 
- * @version $Id: SampleCustomKeyValidator.java 25117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class SampleCustomKeyValidator extends AbstractCustomKeyValidator
         implements ICustomKeyValidator, CustomKeyValidatorUiSupport, CustomKeyValidatorAccessRulesSupport {

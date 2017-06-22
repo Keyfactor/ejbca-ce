@@ -41,7 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @version $Id: SetCleartextPasswordCommandTest.java 18439 2014-02-05 10:45:34Z mikekushner $
+ * @version $Id$
  *
  */
 public class SetSubjDirAttrCommandTest {

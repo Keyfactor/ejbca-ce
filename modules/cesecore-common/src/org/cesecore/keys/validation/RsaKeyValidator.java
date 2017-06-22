@@ -37,7 +37,7 @@ import org.cesecore.keys.util.KeyTools;
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
  * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf
  * 
- * @version $Id: RsaKeyValidator.java 25263 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class RsaKeyValidator extends BaseKeyValidator {
 

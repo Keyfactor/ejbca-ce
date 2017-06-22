@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * An enum domain class representing all key validator base parameter options.
  *
- * @version $Id: KeyValidatorSettingsTemplate.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public enum KeyValidatorSettingsTemplate {
 

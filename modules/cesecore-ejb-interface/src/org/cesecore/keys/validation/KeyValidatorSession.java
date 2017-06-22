@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * Interface for key validator operations.
  *
- * @version $Id: KeyValidatorSession.java 21703 2017-03-01 12:00:00Z anjakobs $
+ * @version $Id$
  */
 public interface KeyValidatorSession {
 }

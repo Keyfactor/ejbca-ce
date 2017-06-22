@@ -18,7 +18,7 @@ import org.cesecore.ErrorCode;
 
 /**
  * Thrown when trying to create a new CA signed by an external CA using the WS *
- * @version $Id: CAExistsException.java 17625 2013-09-20 07:12:06Z netmackan $
+ * @version $Id$
  */
 public class SignedByExternalCANotSupportedException extends CesecoreException {
 

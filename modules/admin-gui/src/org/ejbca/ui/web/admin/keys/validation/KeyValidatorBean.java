@@ -61,7 +61,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JSF MBean backing the edit key validators page.
  *  
- * @version $Id: KeyValidatorBean.java 25238 2017-03-10 15:19:29Z anjakobs $
+ * @version $Id$
  */
 // Declarations in faces-config.xml
 //@javax.faces.bean.SessionScoped

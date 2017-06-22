@@ -18,7 +18,7 @@ import org.cesecore.ErrorCode;
 /**
  * Exception used in order to catch the error that we're trying to create a certificate that already exists.
  * 
- * @version $Id: CustomCertSerialNumberException.java 17625 2013-09-20 07:12:06Z netmackan $
+ * @version $Id$
  */
 public class CertificateSerialNumberException extends CesecoreException {
 

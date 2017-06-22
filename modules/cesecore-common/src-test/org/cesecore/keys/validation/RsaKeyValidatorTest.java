@@ -14,7 +14,7 @@
 /**
  * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
  * 
- * @version $Id: RsaKeyValidatorTest.java 25263 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 package org.cesecore.keys.validation;
 
@@ -40,7 +40,7 @@ import org.junit.Test;
 /**
  * Tests RSA key validator functions.
  * 
- * @version $Id: RsaKeyValidatorTest.java 25500 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 public class RsaKeyValidatorTest {
 

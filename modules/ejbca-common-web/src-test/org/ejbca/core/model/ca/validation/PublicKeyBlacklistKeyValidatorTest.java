@@ -14,7 +14,7 @@
 /**
  * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
  * 
- * @version $Id: RsaKeyValidatorTest.java 25263 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 package org.ejbca.core.model.ca.validation;
 
@@ -42,7 +42,7 @@ import org.junit.Test;
 /**
  * Tests public key blacklist key validator functions.
  * 
- * @version $Id: PublicKeyBlacklistKeyValidatorTest.java 25500 2017-04-01 11:28:08Z anjakobs $
+ * @version $Id$
  */
 public class PublicKeyBlacklistKeyValidatorTest {
 

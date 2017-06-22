@@ -49,7 +49,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @version $Id: UpdatePublicKeyBlacklistCommandTest.java 24602 2017-06-01 13:26:34Z anjakobs $
+ * @version $Id$
  *
  */
 public class UpdatePublicKeyBlacklistCommandTest {

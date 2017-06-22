@@ -24,7 +24,7 @@ import org.cesecore.internal.CommonCacheBase;
  * Public key blacklist entry (see {@link PublicKeyBlacklistEntry}) and name to id lookup cache. 
  * Configured through CesecoreConfiguration.getCachePublicKeyBlacklistTime().
  * 
- * @version $Id: PublicKeyBlacklistCache.java 25671 2017-04-01 14:29:38Z anjakobs $
+ * @version $Id$
  */
 public enum PublicKeyBlacklistEntryCache implements CommonCache<PublicKeyBlacklistEntry> {
 

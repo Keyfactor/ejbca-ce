@@ -52,7 +52,7 @@ import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntryCache;
 /**
  * Handles management of public key blacklist entries.
  * 
- * @version $Id: PublicKeyBlacklistSessionBean.java 24997 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublicKeyBlacklistSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

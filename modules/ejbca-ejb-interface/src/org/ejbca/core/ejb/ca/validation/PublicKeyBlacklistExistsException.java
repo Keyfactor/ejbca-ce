@@ -16,7 +16,7 @@ package org.ejbca.core.ejb.ca.validation;
 /**
  * An exception thrown when someone tries to store a public key blacklist entry that already exists.
  *
- * @version $Id: PublicKeyBlacklistExistsException.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class PublicKeyBlacklistExistsException extends Exception {
 

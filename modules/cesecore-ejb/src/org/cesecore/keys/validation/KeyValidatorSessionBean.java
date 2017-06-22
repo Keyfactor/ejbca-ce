@@ -63,7 +63,7 @@ import org.cesecore.util.ProfileID;
 /**
  * Handles management of key validators.
  * 
- * @version $Id: KeyValidatorSessionBean.java 24997 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

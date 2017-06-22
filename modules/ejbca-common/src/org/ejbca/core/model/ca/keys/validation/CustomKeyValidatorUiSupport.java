@@ -19,7 +19,7 @@ import java.util.List;
  * A key validator that implements this interface should expose the configurable properties in such a
  * way that an UI can parse it.
  * 
- * @version $Id: CustomKeyValidatorUiSupport.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public interface CustomKeyValidatorUiSupport {
 

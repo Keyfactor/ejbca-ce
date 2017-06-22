@@ -33,7 +33,7 @@ import org.junit.Test;
 
 /** Tests LookAheadObjectInputStream class that can be used to prevent java deserialization issue
  * 
- * @version $Id: LookAheadObjectInputStreamTest.java 22806 2016-02-19 18:58:27Z marko $
+ * @version $Id$
  */
 public class LookAheadObjectInputStreamTest {
 

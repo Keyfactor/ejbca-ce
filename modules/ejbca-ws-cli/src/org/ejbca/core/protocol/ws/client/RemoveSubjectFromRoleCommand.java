@@ -25,7 +25,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Removes an administrator from an Administrator role
  *
- * @version $Id: CaCertRequestCommand.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  */
 public class RemoveSubjectFromRoleCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

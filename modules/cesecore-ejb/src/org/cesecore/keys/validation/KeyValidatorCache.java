@@ -23,7 +23,7 @@ import org.cesecore.internal.CommonCacheBase;
 /**
  * Key validator object and name to id lookup cache. Configured through CesecoreConfiguration.getCacheKeyValidatorTime().
  * 
- * @version $Id: KeyValidatorCache.java 25671 2017-04-01 14:29:38Z anjakobs $
+ * @version $Id$
  */
 public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
 

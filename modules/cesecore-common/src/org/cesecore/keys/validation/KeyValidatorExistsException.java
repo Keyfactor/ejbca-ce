@@ -16,7 +16,7 @@ package org.cesecore.keys.validation;
 /**
  * An exception thrown when someone tries to store a KeyValidator that already exists.
  *
- * @version $Id: KeyValidatorExistsException.java 22117 2017-03-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class KeyValidatorExistsException extends Exception {
 

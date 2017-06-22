@@ -17,7 +17,7 @@ package org.cesecore.keys.validation;
  * An exception thrown when it was not possible to remove from datastore the public key blacklist entry fore some reason. 
  * The object is not referenced by other objects.
  *
- * @version $Id: CouldNotRemovePublicKeyBlacklistException.java 22117 2017-04-01 12:12:00Z anjakobs $
+ * @version $Id$
  */
 public class CouldNotRemovePublicKeyBlacklistException extends Exception {
 
