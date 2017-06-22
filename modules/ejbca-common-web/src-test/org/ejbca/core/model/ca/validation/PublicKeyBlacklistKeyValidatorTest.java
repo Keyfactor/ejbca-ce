@@ -12,7 +12,7 @@
  *************************************************************************/
 
 /**
- * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
+ * Test class fot public key blacklist key validator functional methods.
  * 
  * @version $Id$
  */
@@ -23,13 +23,13 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.validation.KeyValidatorTestUtil;
-import org.cesecore.keys.validation.RsaKeyValidator;
+import org.cesecore.keys.validation.BaseKeyValidator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
@@ -80,7 +80,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         BigInteger modulus = BigInteger.valueOf(6553765537L);
         BigInteger exponent = BigInteger.valueOf(65537);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
-        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) KeyValidatorTestUtil.createKeyValidator(
+        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator(
                 PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE, "publickey-blacklist-validation-test-1", "Description", null, -1, null, -1, -1,
                 new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
@@ -122,4 +122,55 @@ public class PublicKeyBlacklistKeyValidatorTest {
         
         log.trace("<test01MatchBlacklistedPublicKey()");
     }
+    
+    /**
+     * Factory method to create key validators.
+     * 
+     * @param type the key validator type (see {@link BaseKeyValidator#KEY_VALIDATOR_TYPE}
+     * @param name the logical name
+     * @param description the description text
+     * @param notBefore the certificates validity not before
+     * @param notBeforeCondition the certificates validity not before condition
+     * @param notAfter the certificates validity not after
+     * @param notAfterCondition the certificates validity not after condition
+     * @param failedAction the failed action to be performed.
+     * @param certificateProfileIds list of IDs of certificate profile to be applied to. 
+     * @return the concrete key validator instance.
+     */
+    private BaseKeyValidator createKeyValidator(final int type, final String name, final String description, final Date notBefore,
+            final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
+            final Integer... certificateProfileIds) {
+        BaseKeyValidator result;
+        if (PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE == type) {
+            result = new PublicKeyBlacklistKeyValidator();
+        } else {
+            return null;
+        }
+        result.setName(name);
+        if (null != description) {
+            result.setDescription(description);
+        }
+        if (null != notBefore) {
+            result.setNotBefore(notBefore);
+        }
+        if (-1 < notBeforeCondition) {
+            result.setNotBeforeCondition(notBeforeCondition);
+        }
+        if (null != notAfter) {
+            result.setNotAfter(notAfter);
+        }
+        if (-1 < notAfterCondition) {
+            result.setNotAfterCondition(notAfterCondition);
+        }
+        if (-1 < failedAction) {
+            result.setFailedAction(failedAction);
+        }
+        final List<Integer> ids = new ArrayList<Integer>();
+        for (Integer id : certificateProfileIds) {
+            ids.add(id);
+        }
+        result.setCertificateProfileIds(ids);
+        return result;
+    }
+
 }

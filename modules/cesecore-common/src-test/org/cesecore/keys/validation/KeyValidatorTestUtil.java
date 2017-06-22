@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistKeyValidator;
-
 public final class KeyValidatorTestUtil {
 
     /**
@@ -48,8 +46,6 @@ public final class KeyValidatorTestUtil {
             result = new RsaKeyValidator();
         } else if (EccKeyValidator.KEY_VALIDATOR_TYPE == type) {
             result = new EccKeyValidator();
-        } else if (PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE == type) {
-            result = new PublicKeyBlacklistKeyValidator();
         } else {
             return null;
         }
