@@ -220,7 +220,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     fingerprint = tokens[0];
                     fingerprints.add(fingerprint);
                     if (log.isDebugEnabled()) {
-                        log.debug("Try to remove public key blacklist entries which should not exist.");
+                        log.debug("Trying to retrievepublic key blacklist entry: "+fingerprint);
                     }
                     entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
                     assertTrue("Public key fingerprint must have been imported.", null != entry);
@@ -269,10 +269,10 @@ public class UpdatePublicKeyBlacklistCommandTest {
      * 
      * @param resource the resource file to mark the target directory.
      * @throws IllegalArgumentException if the resource could not  be found.
-     * @throws FileNotFoundException if a file could not be found.
      * @throws CertificateParsingException if a public key could not be parsed.
+     * @throws IOException 
      */
-    private static final void removePublicKeysFromBlacklist(String resource) throws FileNotFoundException, CertificateParsingException {
+    private static final void removePublicKeysFromBlacklist(String resource) throws CertificateParsingException, IOException {
         final URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(resource);
         if (null == url) {
             throw new IllegalArgumentException("Could not find resource " + resource);
@@ -284,7 +284,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         byte[] asn1Encodedbytes;
         String fingerprint;
         for (File file : files) {
-            log.info("Try to remove public key blacklist entries which should not exist.");
+            log.info("Trying to remove public key blacklist entry: "+file.getCanonicalPath());
             asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
             publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
             log.trace("Loaded public key " + publicKey);
@@ -331,7 +331,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     fingerprint = tokens[0];
                     try {
                         if (log.isDebugEnabled()) {
-                            log.debug("Try to remove public key blacklist entries which should not exist.");
+                            log.debug("Trying to remove public key blacklist entriy: "+fingerprint);
                         }
                         publicKeyBlacklistSession.removePublicKeyBlacklistEntry(authenticationToken, fingerprint);
                     } catch (PublicKeyBlacklistDoesntExistsException e) {
