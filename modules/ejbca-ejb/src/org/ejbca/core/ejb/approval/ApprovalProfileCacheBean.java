@@ -26,8 +26,8 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.profiles.ProfileData;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.profiles.ProfileData;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
@@ -126,7 +126,7 @@ public class ApprovalProfileCacheBean {
         }
         final Map<Integer, String> idNameCache = new HashMap<>(idNameMapCacheTemplate);
         final Map<Integer, ApprovalProfile> profCache = new HashMap<>();
-        for (final ProfileData current : approvalProfileSession.findAllApprovalProfiles()) {
+        for (final ProfileData current : approvalProfileSession.findAllProfiles()) {
             final Integer id = current.getId();
             final String approvalProfileName = current.getProfileName();
             idNameCache.put(id, approvalProfileName);
