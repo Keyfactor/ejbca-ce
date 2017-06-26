@@ -40,7 +40,6 @@ import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -309,7 +308,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
            try {
-                if(!approvalProfileSession.findByNameAndType(approvalProfileName, ApprovalProfileBase.TYPE_NAME).isEmpty()) {
+                if(!approvalProfileSession.findByApprovalProfileName(approvalProfileName).isEmpty()) {
                     //Handle this below
                     throw new ApprovalProfileExistsException("Approval profile of name " + approvalProfileName + " already exists");
                 }
