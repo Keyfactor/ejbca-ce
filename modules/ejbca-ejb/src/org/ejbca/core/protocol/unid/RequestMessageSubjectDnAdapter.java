@@ -188,5 +188,9 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	@Override
 	public String getPbeKey() {
 		return this.original.getPbeKey();
-	}		
+	}
+    @Override
+    public boolean isImplicitConfirm() {
+        return this.original.isImplicitConfirm();
+    }
 }
