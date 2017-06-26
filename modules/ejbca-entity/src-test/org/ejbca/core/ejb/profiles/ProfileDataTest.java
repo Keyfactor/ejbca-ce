@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.profiles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.cesecore.profiles.ProfileData;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;

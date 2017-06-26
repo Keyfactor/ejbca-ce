@@ -1,16 +1,16 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
+ *  modify it under the terms of the GNU Lesser General                  *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.profiles;
+package org.cesecore.profiles;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -27,9 +27,9 @@ import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.profiles.Profile;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
-import org.ejbca.core.model.profiles.Profile;
 
 /**
  * Implementation of the "ProfileData" table in the database

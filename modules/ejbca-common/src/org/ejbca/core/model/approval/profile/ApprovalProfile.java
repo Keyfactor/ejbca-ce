@@ -20,10 +20,10 @@ import java.util.Set;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.profiles.Profile;
 
 /**
  * An interface for approval profiles types. 
