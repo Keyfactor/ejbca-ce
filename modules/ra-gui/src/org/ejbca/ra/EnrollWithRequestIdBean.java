@@ -103,12 +103,11 @@ public class EnrollWithRequestIdBean implements Serializable {
     private String requestId;
     private String selectedAlgorithm; 
     private String certificateRequest;
-    private String preSetKeyAlgorithm;
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
     private byte[] generatedToken;
     private IdNameHashMap<CAInfo> authorizedCAInfos;
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private boolean isCsrChanged;
 
     @PostConstruct
@@ -198,7 +197,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             try {
                 X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
                 CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
-                LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+                LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
                 chain.addFirst(certificate);
                 byte[] pemToDownload = CertTools.getPemFromCertificateChain(chain);
                 downloadToken(pemToDownload, "application/octet-stream", ".pem");
@@ -223,7 +222,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             try {
                 X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
                 CAInfo caInfo = authorizedCAInfos.get(endEntityInformation.getCAId()).getValue();
-                LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+                LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
                 chain.addFirst(certificate);
                 byte[] pkcs7ToDownload = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(chain)));
                 downloadToken(pkcs7ToDownload, "application/octet-stream", ".p7b");
@@ -421,7 +420,17 @@ public class EnrollWithRequestIdBean implements Serializable {
      */
     public boolean isKeyAlgorithmPreSet() {
         return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() != null || 
-                endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
+                endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN ||
+                endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY;
+    }
+    
+    /**
+     * Checks if a non-modifiable text displaying the previously set key algorithm should be shown.
+     */
+    public boolean isPreSetKeyAlgorithmVisible() {
+        return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() != null &&
+                endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN &&
+                endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
     }
     
     /**
@@ -449,23 +458,13 @@ public class EnrollWithRequestIdBean implements Serializable {
 
         final String filename = StringTools.stripFilename(fileName + fileExtension);
         ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
-        OutputStream output = null;
-        try {
-            output = ec.getResponseOutputStream();
+        try (final OutputStream output = ec.getResponseOutputStream()) {
             output.write(token);
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             log.info("Token " + filename + " could not be downloaded", e);
             raLocaleBean.addMessageError("enroll_token_could_not_be_downloaded", filename);
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    throw new IllegalStateException("Failed to close outputstream", e);
-                }
-            }
         }
     }
 
@@ -701,9 +700,5 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     public String getPreSetKeyAlgorithm() {
         return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() + " " + endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmSubType();
-    }
-    
-    public void setPreSetKeyAlgorithm(String keyAlgorithm) {
-        this.preSetKeyAlgorithm = keyAlgorithm;
     }
 }
