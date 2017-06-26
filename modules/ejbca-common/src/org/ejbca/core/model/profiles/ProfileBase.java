@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.profiles.Profile;
 
 /**
  * Base class for all Profile entity beans. Mainly a holder for an UpgradeableDataHashMap, it's meant to be completely agnostic of any implementation

@@ -24,13 +24,13 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.profiles.Profile;
 import org.cesecore.roles.RoleInformation;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.DynamicUiPropertyCallback;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.profiles.Profile;
 
 /**
  * PartitionedApprovalProfile represents an approval archetype where each approval is partitioned into several subtasks, assigned to one or more roles. 

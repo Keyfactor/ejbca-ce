@@ -21,7 +21,7 @@ import javax.ejb.Local;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.ejbca.core.ejb.profiles.ProfileData;
+import org.cesecore.profiles.ProfileData;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 
 /**
@@ -32,13 +32,6 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 @Local
 public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
     
-    /** @return the found entity instance or null if the entity does not exist */
-    ProfileData findById(int id);
-    
-    /**
-     * @return the found entity instances or an empty list. 
-     */
-    List<ProfileData> findByNameAndType(final String name, final String type);
     
     /**
      * @return the found entity instance or null if the entity does not exist
@@ -46,7 +39,7 @@ public interface ApprovalProfileSessionLocal extends ApprovalProfileSession {
     List<ProfileData> findByApprovalProfileName(String profileName);
     
     /** @return return all approval profiles  as a List. */
-    List<ProfileData> findAllApprovalProfiles();
+    List<ProfileData> findAllProfiles();
     
     /**
      * @return a map of all existing approval profiles.

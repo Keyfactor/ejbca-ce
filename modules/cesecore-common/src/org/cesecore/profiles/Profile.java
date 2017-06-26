@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.profiles;
+package org.cesecore.profiles;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
