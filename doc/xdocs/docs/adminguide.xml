@@ -790,6 +790,17 @@ In RA mode, EJBCA supports several CAs and profiles based on the use of configur
 <a href="https://www.primekey.com/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
 configure EJBCA for 3GPP/4G/LTE networks using CMP. The guide is available together with a support subscription from PrimeKey. 
 </p>
+<p>An example cmpforopenssl command to test Vendor CA authentication with a three level Vendor CA PKI is:</p>
+<source>
+./cmpclient --server 127.0.0.1 --port 8080 --path ejbca/publicweb/cmp/vendor --srvcert 3GPPCA.cacert.pem --ir --subject "C=SE,O=Test,CN=Network Element 32" --clcert nevcert.pem --newclcert nev-op-crt.der --newkey nev-op-key.pem --key nevkey.pem --extracert casubnevcert.pem
+</source>
+<p>CMP Alias Configuration</p>
+<ul>
+<li>CMP Operational Mode: Client mode</li>
+<li>CMP Authentication Module: 	EndEntityCertificate</li>
+<li>Extract Username Component: CN</li>
+<li>Use Vendor Certificate Mode: Use and add CANevRoot as Vendor CA</li>
+</ul>
 </subsection>
 
 <subsection name="Configuration">

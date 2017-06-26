@@ -37,7 +37,7 @@ public interface CmpVendorMode {
     /** Checks if the certificate is issued by a configured Vendor CA, and that it can be verified using that Vendor CA certificate
      * @param admin administrator making the call, must have access to get CAInfo for the Vendor CA
      * @param confAlias the CMP alias in use
-     * @param extraCerts certificates from the extraCert field of the CMP request 
+     * @param extraCerts certificates from the extraCert field of the CMP request, a certificate path ordered with leaf certificate first (pos 0) and CA certificate(s) after
      * @return CAInfo if the Vendor CA, in the specified CMP alias, that issues the extraCert, null if no issuing Vendor CA was found.
      */
     CAInfo isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final List<X509Certificate> extraCerts);
