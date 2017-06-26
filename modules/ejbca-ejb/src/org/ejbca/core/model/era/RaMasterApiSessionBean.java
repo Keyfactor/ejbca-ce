@@ -1507,12 +1507,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public byte[] generateKeyStore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
+    public byte[] generateKeyStore(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
         KeyStore keyStore;
         try {
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
+            boolean usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+            EndEntityInformation data = endEntityAccessSession.findUser(endEntity.getUsername());
+            if (data == null) {
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+endEntity.getUsername()+"' does not exist");
+            }
+            boolean savekeys = data.getKeyRecoverable() && usekeyrecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+            boolean loadkeys = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+            boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
+            
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(),
                     endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(),
-                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, false, false, false, endEntity.getEndEntityProfileId());
+                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, loadkeys, savekeys, reusecertificate, endEntity.getEndEntityProfileId());
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
                 | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
