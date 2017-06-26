@@ -43,6 +43,7 @@ import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -128,6 +129,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient String pbeMacAlg = null;
     private transient String pbeKeyId = null;
     private transient String pbeKey = null;
+    private transient boolean implicitConfirm = false;
     private transient CertificateData certificateData;
     private transient Base64CertData base64CertData;
 
@@ -273,6 +275,14 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                                 log.debug("Creating response body of type " + respType);
                             }
                             myPKIBody = new PKIBody(respType, myCertRepMessage);
+                            // All good, see if we should add implicitConfirm
+                            if (implicitConfirm) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Adding implicitConform to CMP response message with transId: "+transactionId);
+                                }
+                                final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+                                myPKIHeader.setGeneralInfo(genInfo);                                
+                            }
                         } finally {
                             certASN1InputStream.close();
                             cacertASN1InputStream.close();
@@ -404,6 +414,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             this.pbeMacAlg = crmf.getPbeMacAlg();
             this.pbeKeyId = crmf.getPbeKeyId();
             this.pbeKey = crmf.getPbeKey();
+            this.implicitConfirm = crmf.isImplicitConfirm();
         }
     }
 

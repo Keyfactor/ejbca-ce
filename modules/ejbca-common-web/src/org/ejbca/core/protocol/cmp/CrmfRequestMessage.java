@@ -35,6 +35,8 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -544,6 +546,19 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         if(log.isDebugEnabled()) {
             log.debug("Key and provider were set for a CrmfRequestMessage. These values are not used and will be ignored.");
         }
+    }
+
+    @Override
+    public boolean isImplicitConfirm() {
+        InfoTypeAndValue[] infos = this.getHeader().getGeneralInfo();
+        if (infos != null) {
+            for (int i = 0; i < infos.length; i++) {
+                if (CMPObjectIdentifiers.it_implicitConfirm.equals(infos[i].getInfoType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
