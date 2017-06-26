@@ -172,6 +172,10 @@ so you can actually connect locally as the ejbca user.
 
 Create a backup with 'pg_dump -U ejbca ejbca > ejbca.sql'
 
+Usage example, log in and list tables:
+ psql ejbca ejbca
+ \dt
+
 Oracle specifics
 ----------------
 JDBC driver for Java 6: ojdbc6.zip
