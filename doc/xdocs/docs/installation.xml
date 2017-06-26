@@ -843,7 +843,7 @@ ant deploy-keystore
 
 <subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
 <p>
-WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper) by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper), since <a href="https://jira.primekey.se/browse/ECA-5079">EJBCA 6.6.3</a>, by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
  <i>modules/system/layers/base/sun/jdk/main/module.xml</i> not needed.
 </p>
 </subsubsection>
@@ -1001,7 +1001,7 @@ ant deploy-keystore
 
 <subsubsection name="Optional: Add support for PKCS#11 (HSMs)">
 <p>
-WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper) by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+WildFly by default isolates away most sun classes. EJBCA configures JBoss/WildFly to expose these classes (sun/security/pkcs11/wrapper), since <a href="https://jira.primekey.se/browse/ECA-5079">EJBCA 6.6.3</a>, by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
  <i>modules/system/layers/base/sun/jdk/main/module.xml</i> not needed.
 </p>
 </subsubsection>
