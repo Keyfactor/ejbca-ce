@@ -81,7 +81,7 @@
 								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 								<h:outputText id="usernameField" value="#{enrollWithUsernameBean.username}" />
 							</h:panelGroup>
-							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.keyAlgorithmPreSet and !enrollWithUsernameBean.renderGenerateCertificate}">
+							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.preSetKeyAlgorithmVisible}">
 								<h:outputLabel for="requestKeyAlgorithmField" value="Key Algorithm"/>
 								<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithUsernameBean.preSetKeyAlgorithm}"/>
 							</h:panelGroup>
