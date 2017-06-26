@@ -237,5 +237,9 @@ public class UnidFnrHandlerTest {
 		public String getPbeKey() {
 			return null;
 		}
+        @Override
+        public boolean isImplicitConfirm() {
+            return false;
+        }
 	}
 }

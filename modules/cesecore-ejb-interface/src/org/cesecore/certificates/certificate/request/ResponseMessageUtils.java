@@ -70,7 +70,7 @@ public abstract class ResponseMessageUtils {
         // Hint to the response which request type it is in response to
         ret.setRequestType(req.getRequestType());
         ret.setRequestId(req.getRequestId());
-        // If there is some protection parameters we need to lift over from the request message, the request and response knows about it
+        // If there is some protection parameters, or other params, we need to lift over from the request message, the request and response knows about it
         ret.setProtectionParamsFromRequest(req);
         return ret;
     }

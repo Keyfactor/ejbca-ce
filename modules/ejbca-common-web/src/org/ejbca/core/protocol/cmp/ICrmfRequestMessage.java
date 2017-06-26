@@ -31,5 +31,7 @@ public interface ICrmfRequestMessage extends RequestMessage {
 	String getPbeKeyId();
 
 	String getPbeKey();
+	
+	boolean isImplicitConfirm();
 
 }

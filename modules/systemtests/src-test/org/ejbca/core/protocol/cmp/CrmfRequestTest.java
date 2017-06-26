@@ -209,7 +209,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03CrmfHttpOkUser() throws Exception {
         log.trace(">test03CrmfHttpOkUser");
         // Create a new good USER
-        final X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
+        X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -243,6 +243,24 @@ public class CrmfRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId, 
                                 PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
+
+        // 
+        // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
+        userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
+        nonce = CmpMessageHelper.createSenderNonce();
+        transid = CmpMessageHelper.createSenderNonce();
+        req = genCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, true);
+        assertNotNull(req);
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), true);
+        cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        altNames = CertTools.getSubjectAlternativeName(cert);
+        assertNull("AltNames was not null (" + altNames + ").", altNames);
+
         log.trace("<test03CrmfHttpOkUser");
     }
 

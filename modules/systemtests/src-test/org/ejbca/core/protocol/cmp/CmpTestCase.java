@@ -81,6 +81,7 @@ import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.CertStatus;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIConfirmContent;
@@ -242,12 +243,27 @@ public abstract class CmpTestCase extends CaTestCase {
 
     public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
+    }
+
+    public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
-                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID);
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
 
+    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID)
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+    }
     /** 
      * 
      * @param issuerDN
@@ -274,7 +290,7 @@ public abstract class CmpTestCase extends CaTestCase {
      */
     protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
-            AlgorithmIdentifier pAlg, DEROctetString senderKID)
+            AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         // Validity can have notBefore, notAfter or both
         ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
@@ -383,6 +399,10 @@ public abstract class CmpTestCase extends CaTestCase {
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
         pkiHeaderBuilder.setProtectionAlg(pAlg);
         pkiHeaderBuilder.setSenderKID(senderKID);
+        if (implicitConfirm) {
+            final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+            pkiHeaderBuilder.setGeneralInfo(genInfo);
+        }
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_INIT_REQ, certReqMessages);
         PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         return pkiMessage;
@@ -644,6 +664,11 @@ public abstract class CmpTestCase extends CaTestCase {
 
     public static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+        checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false);
+    }
+
+    public static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+            boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -758,6 +783,17 @@ public abstract class CmpTestCase extends CaTestCase {
         // transid should be the same as the one we sent
         nonce = header.getTransactionID().getOctets();
         assertEquals(new String(nonce), new String(transId));
+        
+        if (implicitConfirm) {
+            // We expect implicit confirm to be present in the message
+            InfoTypeAndValue[] infos = header.getGeneralInfo();
+            assertNotNull("expected one InfoTypeAndValue", infos);
+            assertEquals("expected one InfoTypeAndValue", 1, infos.length);
+            assertEquals("Expected implicitConfirm in response header", CMPObjectIdentifiers.it_implicitConfirm, infos[0].getInfoType());
+        } else {
+            InfoTypeAndValue[] infos = header.getGeneralInfo();
+            assertTrue("expected no InfoTypeAndValue", infos == null);
+        }
 
     }
 
