@@ -208,18 +208,18 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * Get the end entity certificate that was attached to the CMP request in it's extreCert filed.
      * If the extraCerts field contains multiple certificates, these are ordered in a CertPath and the leaf certificate is returned. 
      * 
-     * @return The end entity certificate that was attached to the CMP request in it's extraCert field, or null
+     * @return The end entity certificate that was attached to the CMP request in it's extraCert field, or null, as an ordered certificate path with leaf certificate in first position
      */
     private List<X509Certificate> getExtraCerts(final PKIMessage msg) {
         final CMPCertificate[] extraCerts = msg.getExtraCerts();
         if ((extraCerts == null) || (extraCerts.length == 0)) {
             if(log.isDebugEnabled()) {
-                log.debug("There is no certificate in the extraCert field in the PKIMessage");
+                log.debug("There are no certificates in the extraCert field in the PKIMessage");
             }
             return null;
         } else {
             if(log.isDebugEnabled()) {
-                log.debug("A certificate is found in the extraCert field in the CMP message");
+                log.debug(extraCerts.length+ " certificate(s) found in the extraCert field in the CMP message");
             }
         }
         
@@ -232,18 +232,28 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 certlist.add(jcaX509CertificateConverter.getCertificate(new X509CertificateHolder(extraCerts[i].getX509v3PKCert())));
             }
             if (!certlist.isEmpty()) {
+                List<X509Certificate> orderedCerts = CertTools.orderX509CertificateChain(certlist);
                 if (log.isDebugEnabled()) {
-                    log.debug("Obtaining the certificate(s) from extraCert field was done successfully.");
+                    log.debug("Obtaining " +certlist.size()+ " certificate(s) from extraCert field was done successfully.");
                 }
-                return certlist;
+                if (log.isTraceEnabled()) {
+                    log.trace("extraCerts obtained: "+orderedCerts);
+                }
+                return orderedCerts;
             } else {
                 if(log.isDebugEnabled()) {
                     log.debug("Obtaining the certificate from extraCert field failed, the result was null.");
                 }            	
             }
         } catch (CertificateException e) {
+            // We only log debug to prevent DOS attacks (log spamming) by sending invalid messages
             if(log.isDebugEnabled()) {
                 log.debug(e.getLocalizedMessage(), e);
+            }
+        } catch (CertPathValidatorException e) {
+            // We only log debug to prevent DOS attacks (log spamming) by sending invalid messages
+            if(log.isDebugEnabled()) {
+                log.debug("extraCerts does not contain a valid certificate path: "+e.getMessage());
             }
         }
         return null;
@@ -297,7 +307,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.debug("CMP is operating in Vendor mode: " + vendormode);
             log.debug("CMP message already been authenticated: " + authenticated);
             log.debug("Omitting some verifications: " + omitVerifications);
-            log.debug("CMP message signed by: SubjectDN '" + CertTools.getSubjectDN(extraCert)+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
+            log.debug("CMP message (claimed to be) signed by (cert from extraCerts): SubjectDN '" + CertTools.getSubjectDN(extraCert)+"' IssuerDN '"+CertTools.getIssuerDN(extraCert) +"'");
         }    
         
         //----------------------------------------------------------------------------------------
