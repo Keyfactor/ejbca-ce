@@ -135,6 +135,11 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
+    
+    <mime-mapping>
+        <extension>vbs</extension>
+        <mime-type>text/vbscript</mime-type>
+    </mime-mapping>
 
     <ejb-local-ref>
         <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
