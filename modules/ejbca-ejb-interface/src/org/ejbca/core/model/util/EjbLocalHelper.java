@@ -33,6 +33,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -173,6 +174,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return getEjbLocal().getWebAuthenticationProviderSession(); }
 	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return getEjbLocal().getCryptoTokenManagementSession(); }
+	@Override public CryptoTokenSessionLocal getCryptoTokenSession() { return getEjbLocal().getCryptoTokenSession(); }
     @Override public InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession() { return getEjbLocal().getInternalKeyBindingDataSession(); }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return getEjbLocal().getInternalKeyBindingMgmtSession(); }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return getEjbLocal().getPublishingCrlSession(); }
