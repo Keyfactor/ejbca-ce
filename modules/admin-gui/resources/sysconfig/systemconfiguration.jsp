@@ -159,16 +159,17 @@ org.cesecore.authorization.AuthorizationDeniedException
 						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}"/>
 					<h:outputLabel for="toggleLocalKeyRecovery" value="#{web.text.FORCELOCALKEYRECOVERY}" styleClass="checkBoxOverlay"/>
 					
-					<h:selectOneMenu value="#{systemConfigMBean.currentConfig.localKeyRecoveryCryptoTokenId}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.localKeyRecovery}"
+					<h:selectOneMenu value="#{systemConfigMBean.currentConfig.localKeyRecoveryCryptoTokenId}"
+							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery}"
 							onchange="document.getElementById('systemconfiguration:selectLocalKeyRecoveryCryptoToken').click();">
 						<f:selectItems value="#{systemConfigMBean.availableCryptoTokens}"/>
 					</h:selectOneMenu>
 					<h:commandButton id="selectLocalKeyRecoveryCryptoToken" action="#{systemConfigMBean.selectLocalKeyRecoveryCryptoToken}" value="Update"
-						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.localKeyRecovery}"/>
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery}"/>
 					<script>document.getElementById('systemconfiguration:selectLocalKeyRecoveryCryptoToken').style.display = 'none';</script>
 
 					<h:selectOneMenu value="#{systemConfigMBean.currentConfig.localKeyRecoveryKeyAlias}"
-						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.localKeyRecovery || !systemConfigMBean.hasSelectedCryptoToken}">
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery || !systemConfigMBean.currentConfig.localKeyRecovery || !systemConfigMBean.hasSelectedCryptoToken}">
 						<f:selectItems value="#{systemConfigMBean.availableKeyAliases}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
