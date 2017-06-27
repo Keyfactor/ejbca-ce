@@ -1868,7 +1868,15 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
+    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CMSException, CryptoTokenOfflineException {
+        return doEncryptKeys(cryptoToken, alias, keypair);
+    }
+    
+    /**
+     * Static variant of encryptKeys.
+     * @see #encryptKeys
+     */
+    public static byte[] doEncryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair) throws IOException, CMSException, CryptoTokenOfflineException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(baos);
         os.writeObject(keypair);
