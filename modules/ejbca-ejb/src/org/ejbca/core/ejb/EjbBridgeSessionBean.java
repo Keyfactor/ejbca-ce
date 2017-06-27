@@ -31,6 +31,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
@@ -127,6 +128,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+	@EJB CryptoTokenSessionLocal cryptoTokenSession;
 	@EJB PublishingCrlSessionLocal publishingCrlSessionLocal;
 	@EJB ImportCrlSessionLocal importCrlSessionLocal;
 	@EJB RaMasterApiSessionLocal raMasterApiSessionLocal;
@@ -176,6 +178,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
 	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
     @Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
+    @Override public CryptoTokenSessionLocal getCryptoTokenSession() { return cryptoTokenSession; }
     @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSessionLocal; }
     @Override public ImportCrlSessionLocal getImportCrlSession() { return importCrlSessionLocal; }
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return raMasterApiSessionLocal; }
