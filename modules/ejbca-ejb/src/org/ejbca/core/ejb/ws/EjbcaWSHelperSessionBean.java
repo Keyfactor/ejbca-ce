@@ -298,7 +298,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         
         endEntityInformation.setPassword(userdata.getPassword());
         endEntityInformation.setCardNumber(userdata.getCardNumber());
-        
+        endEntityInformation.setSendNotification(userdata.isSendNotification());
         return endEntityInformation;
 	}
 
@@ -399,7 +399,8 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         dataWS.setEmail(endEntityInformation.getEmail());
         dataWS.setStatus(endEntityInformation.getStatus());
         dataWS.setCardNumber(endEntityInformation.getCardNumber());
-
+        dataWS.setSendNotification(endEntityInformation.getSendNotification());
+        
         final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
         if (ei != null) {
             String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
