@@ -140,6 +140,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
     private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
+    private static final   String LOCALKEYRECOVERY             = "localkeyrecovery";
     private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
     
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
@@ -399,6 +400,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     public boolean getEnableKeyRecovery() { return getBoolean(ENABLEKEYRECOVERY, false); }
     public void setEnableKeyRecovery(final boolean value) { putBoolean(ENABLEKEYRECOVERY, value);}
+
+    public boolean getLocalKeyRecovery() { return getBoolean(LOCALKEYRECOVERY, false); }
+    public void setLocalKeyRecovery(final boolean value) { putBoolean(LOCALKEYRECOVERY, value); }
 
     public boolean getIssueHardwareTokens() { return getBoolean(ISSUEHARDWARETOKENS, false);}
     public void setIssueHardwareTokens(final boolean value) { putBoolean(ISSUEHARDWARETOKENS, value);}

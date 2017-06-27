@@ -91,6 +91,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String footBanner;
         private boolean enableEndEntityProfileLimitations;
         private boolean enableKeyRecovery;
+        private boolean localKeyRecovery;
         private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
         private int hardTokenDataEncryptCA;
@@ -129,6 +130,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.footBanner = globalConfig.getFootBanner();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
+                this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
                 this.issueHardwareToken = globalConfig.getIssueHardwareTokens();
                 this.hardTokenDataEncryptCA = globalConfig.getHardTokenEncryptCA();
                 this.useAutoEnrollment = globalConfig.getAutoEnrollUse();
@@ -174,6 +176,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableEndEntityProfileLimitations(boolean enableLimitations) { this.enableEndEntityProfileLimitations=enableLimitations; }
         public boolean getEnableKeyRecovery() { return this.enableKeyRecovery; }
         public void setEnableKeyRecovery(boolean enableKeyRecovery) { this.enableKeyRecovery=enableKeyRecovery; }
+        public boolean getLocalKeyRecovery() { return this.localKeyRecovery; }
+        public void setLocalKeyRecovery(boolean localKeyRecovery) { this.localKeyRecovery=localKeyRecovery; }
         public boolean getIssueHardwareToken() { return this.issueHardwareToken; }
         public void setIssueHardwareToken(boolean issueHWtoken) { this.issueHardwareToken=issueHWtoken; }
         public int getHardTokenDataEncryptCA() { return hardTokenDataEncryptCA; }
@@ -619,6 +623,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setFootBanner(currentConfig.getFootBanner());
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
+                globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
                 globalConfig.setIssueHardwareTokens(currentConfig.getIssueHardwareToken());
                 globalConfig.setHardTokenEncryptCA(currentConfig.getHardTokenDataEncryptCA());
                 globalConfig.setAutoEnrollUse(currentConfig.getUseAutoEnrollment());
@@ -701,9 +706,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionID = 0;
     }
     
-    public void toggleUseAutoEnrollment() {
-        currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment());
-    }
+    public void toggleUseAutoEnrollment() { currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment()); }
+    public void toggleEnableKeyRecovery() { currentConfig.setEnableKeyRecovery(!currentConfig.getEnableKeyRecovery()); }
+    public void toggleLocalKeyRecovery() { currentConfig.setLocalKeyRecovery(!currentConfig.getLocalKeyRecovery()); }
     
     /** @return a list of all currently connected nodes in a cluster */
     public ListDataModel<String> getNodesInCluster() {
