@@ -1566,6 +1566,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
                 CertificateConstants.CERTTYPE_ROOTCA, null));
         CaCertificateCache.INSTANCE.loadCertificates(certs);
+        log.info("Reloaded CA certificate cache with "+certs.size()+" certificates");        
     }
 
     /**
