@@ -143,11 +143,24 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Recovery") %>
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enablekeyrecovery" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enablekeyrecovery" value="#{web.text.ACTIVATE}" />
+				<h:panelGroup layout="block" styleClass="">
+					<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}" 
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					<h:commandButton id="toggleEnableKeyRecovery" styleClass="checkBoxOverlay" action="#{systemConfigMBean.toggleEnableKeyRecovery}"
+						value="#{systemConfigMBean.currentConfig.enableKeyRecovery?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					<h:outputLabel for="toggleEnableKeyRecovery" value="#{web.text.ACTIVATE}" styleClass="checkBoxOverlay"/>
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="">
+				    <h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.localKeyRecovery}" 
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}"/>
+					<h:commandButton id="toggleLocalKeyRecovery" styleClass="checkBoxOverlay" action="#{systemConfigMBean.toggleLocalKeyRecovery}"
+						value="#{systemConfigMBean.currentConfig.localKeyRecovery?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+						disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration || !systemConfigMBean.currentConfig.enableKeyRecovery}"/>
+					<h:outputLabel for="toggleLocalKeyRecovery" value="#{web.text.FORCELOCALKEYRECOVERY}" styleClass="checkBoxOverlay"/>
+				</h:panelGroup>
 			</h:panelGroup>
-		
+
 			<h:panelGroup>
 				<h:outputLabel for="issuehwtokens" value="#{web.text.ISSUEHARDWARETOKENS}" styleClass="titles"/>
 				<br/>
