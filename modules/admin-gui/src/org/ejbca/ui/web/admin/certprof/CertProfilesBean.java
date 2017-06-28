@@ -187,19 +187,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAuthorizedToEdit() {
-        Integer selectedProfileId = getSelectedCertProfileId();
-        if (selectedProfileId != null) {
-            CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-            CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(selectedProfileId);
-            if (certificateProfile != null) {
-                return certificateProfileSession.authorizedToProfileWithResource(getAdmin(), certificateProfile, false, StandardRules.CERTIFICATEPROFILEEDIT.resource());
-            } else {
-                //Can happen if cache wasn't updated. 
-                return true;
-            }
-        } else {
-            return true;
-        }
+        return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEEDIT.resource());
     }
 
     public boolean isAuthorizedToOnlyView() {
