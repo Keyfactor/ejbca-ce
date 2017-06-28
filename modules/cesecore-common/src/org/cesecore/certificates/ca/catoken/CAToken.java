@@ -338,7 +338,7 @@ public class CAToken extends UpgradeableDataHashMap {
         return (String) data.get(CAToken.ENCRYPTIONALGORITHM);
     }
 
-    /** Sets the SignatureAlgoritm */
+    /** Sets the EncryptionAlgoritm */
     public void setEncryptionAlgorithm(String encryptionalgo) {
         data.put(CAToken.ENCRYPTIONALGORITHM, encryptionalgo);
     }
