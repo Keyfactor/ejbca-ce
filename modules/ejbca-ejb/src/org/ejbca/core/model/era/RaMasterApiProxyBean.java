@@ -903,6 +903,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             // "Force local key recovery" enabled. The certificate is issued on the CA, but the key pair is generated and stored locally.
             EndEntityInformation storedEndEntity = searchUser(authenticationToken, endEntity.getUsername());
             if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating locally stored key pair for end entity '" + endEntity.getUsername() + "'");
+                }
                 try {
                     final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
                     final CAInfo caInfo = caInfos.getValue(endEntity.getCAId());
@@ -929,7 +932,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
-                    if (localNodeKeyRecoverySession.addKeyRecoveryData(authenticationToken, cert, endEntity.getUsername(), kp, cryptoTokenId, keyAlias)) {
+                    if (!localNodeKeyRecoverySession.addKeyRecoveryData(authenticationToken, cert, endEntity.getUsername(), kp, cryptoTokenId, keyAlias)) {
+                        // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
                     // Build keystore
@@ -953,7 +957,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             } else {
                 // Recover existing key pair
+                if (log.isDebugEnabled()) {
+                    log.debug("Recovering locally stored key pair for end entity '" + endEntity.getUsername() + "'");
+                }
                 apiOrdered = raMasterApisLocalFirst;
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Requesting key store for end entity '" + endEntity.getUsername() + "'. Remote peer systems will be queried first");
             }
         }
         
