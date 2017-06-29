@@ -1016,10 +1016,16 @@ public class RAInterfaceBean implements Serializable {
         int nrOfFiles = 0;
         try {
             ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-            ZipEntry ze=zis.getNextEntry();
+            ZipEntry ze = zis.getNextEntry();
             if(ze == null) {
-                retmsg = "Error: Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
-                log.error(retmsg);
+                // Print import message if the file header corresponds to an empty zip archive
+                if (Arrays.equals(Arrays.copyOfRange(filebuffer, 0, 4), new byte[] { 80, 75, 5, 6 })) {
+                    retmsg = getSuccessImportMessage(importedProfileName, nrOfFiles, importedFiles, ignoredFiles);
+                    log.info(retmsg);
+                } else {
+                    retmsg = "Error: Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
+                    log.error(retmsg);
+                }
                 return retmsg;
             }
         
@@ -1112,14 +1118,18 @@ public class RAInterfaceBean implements Serializable {
             faultXMLmsg = faultXMLmsg.substring(0, faultXMLmsg.length()-2);
             retmsg = "Faulty XML files: " + faultXMLmsg + ". " + importedFiles + " profiles were imported.";
         } else {
-            retmsg = importedProfileName + " contained " + nrOfFiles + " files. " +
-                            importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
+            retmsg = getSuccessImportMessage(importedProfileName, nrOfFiles, importedFiles, ignoredFiles);
         }
         log.info(retmsg);
         
         return retmsg;
     }
     
+    private String getSuccessImportMessage(String fileName, int nrOfFiles, int importedFiles, int ignoredFiles) {
+        return importedProfileName + " contained " + nrOfFiles + " files. " +
+                        importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
+    }
+
     public String getAvailableHardTokenIssuers(final String defaulthardtokenissuer, final String[] values) {
         String availablehardtokenissuers = defaulthardtokenissuer;
         if (values!= null) {
