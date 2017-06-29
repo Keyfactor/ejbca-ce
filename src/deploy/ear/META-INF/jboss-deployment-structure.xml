@@ -14,7 +14,7 @@
         <!-- Using Oracle JDK and JBoss 7 signature verification on crypto providers do not work unless we specify to use-physical-code-source. 
         See https://issues.jboss.org/browse/WFLY-5 -->
         <resources>
-            <resource-root path="lib/bcprov-jdk15on-156.jar" use-physical-code-source="true"/>
+            <resource-root path="lib/bcprov-jdk15on-157.jar" use-physical-code-source="true"/>
         </resources>
     </deployment>
   

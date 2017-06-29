@@ -414,7 +414,7 @@ password than 7 characters. Anything longer gives an error?</question>
 	  Normally keytool (e.g. Java's) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
 	  </p>
 	  <source>
-keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath $EJBCA_HOME/lib/bcprov-jdk15on-156.jar
+keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath $EJBCA_HOME/lib/bcprov-jdk15on-157.jar
 	  </source>
 	  <p>
 	  It should be possible to import etc as well using keytool.
@@ -453,7 +453,7 @@ In theory, you can use the same method with a BouncyCastle PKCS12 keystore by ad
 arguments to every command above:
 </p>
 <source>
--provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12 -providerpath $EJBCA_HOME/lib/bcprov-jdk15on-156.jar
+-provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12 -providerpath $EJBCA_HOME/lib/bcprov-jdk15on-157.jar
 </source>
 <p>
 unforturnately a bug in keytool prevents this from functioning properly at the moment, therefore I
