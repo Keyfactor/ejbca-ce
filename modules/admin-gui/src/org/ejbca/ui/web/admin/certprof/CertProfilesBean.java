@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -481,9 +482,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
         ZipEntry ze = zis.getNextEntry();
         if (ze == null) {
-            String msg = uploadFile.getName() + " is not a zip file.";
-            log.info(msg);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            // Print import message if the file header corresponds to an empty zip archive
+            if (Arrays.equals(Arrays.copyOfRange(filebuffer, 0, 4), new byte[] { 80, 75, 5, 6 })) {
+                printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
+            } else {
+                String msg = uploadFile.getName() + " is not a zip file.";
+                log.info(msg);
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+            }
             return;
         }
 
@@ -557,7 +563,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         } while ((ze = zis.getNextEntry()) != null);
         zis.closeEntry();
         zis.close();
+        
+        printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
+    }
 
+    private void printImportMessage(int nrOfFiles, String importedFiles, String ignoredFiles) {
         String msg = uploadFile.getName() + " contained " + nrOfFiles + " files. ";
         log.info(msg);
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
