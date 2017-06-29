@@ -3536,20 +3536,6 @@ attributes(*,CKO_PRIVATE_KEY,*) = {
 </p>
 </subsubsection>
 
-<subsubsection name="SUN or IAIK PKCS#11 Provider">
-<p>
-The IAIK PKCS#11 provider have support for more algorithms than the SUN provider, and therefore you can choose which provider to use.
-EJBCA first tries to load the IAIK provider, and if that is not available it uses the SUN provider. The SUN provider is always available in 
-JDK 5 and later. To enable the IAIK provider you must do the following:
-<ul>
-<li>Purchase server licenses for the IAIK PKCS#11 provider and obtain the files. Visit their website for more information.</li>
-<li>Copy three jar files to the application servers class path, for JBoss this is usually APPSRV_HOME/server/default/lib. The jar files needed are:
-iaikPkcs11Provider.jar, iaikPkcs11Wrapper.jar and iaik_jce.jar.</li>
-<li>Copy the PKCS#11 provider shared library to the library search path for your platform. On linux this might be done by copying libpkcs11wrapper.so to /usr/lib.</li>
-<li>Start JBoss, EJBCA should now use the IAIK PKCS#11 provider instead of the SUN provider.</li>
-</ul>
-</p>
-</subsubsection>
 </subsection>
 
 <subsection name="Utimaco CryptoServer">
