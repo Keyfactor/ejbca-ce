@@ -567,6 +567,14 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
     }
 
+    /**
+     * Logs and creates FacesMessage with information about number of files, imported files
+     * and ignored files when importing Certificate Profiles.
+     * 
+     * @param nrOfFiles the number of files the uploaded archive contained
+     * @param importedFiles the files in the archive that were imported
+     * @param ignoredFiles the files in the archive that were ignored
+     */
     private void printImportMessage(int nrOfFiles, String importedFiles, String ignoredFiles) {
         String msg = uploadFile.getName() + " contained " + nrOfFiles + " files. ";
         log.info(msg);
