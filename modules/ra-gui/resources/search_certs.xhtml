@@ -47,12 +47,15 @@
                         <h:panelGroup styleClass="pure-u-2-3">
                             <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}" value="#{msg.search_certs_page_cdprevious_command}"
                                 styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"/>
+                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"
+                                immediate="true"/>
                             <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"
-                                styleClass="pure-button ra-button"/>
+                                styleClass="pure-button ra-button"
+                                immediate="true"/>
                             <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}" value="#{msg.search_certs_page_cdnext_command}"
                                 styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"/>
+                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"
+                                immediate="true"/>
                         </h:panelGroup>
                     </h:panelGroup>
                     <h:panelGroup styleClass="pure-u-1">

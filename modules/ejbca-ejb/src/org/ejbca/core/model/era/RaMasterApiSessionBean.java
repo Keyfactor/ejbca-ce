@@ -1695,6 +1695,62 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, Certificate cert) throws AuthorizationDeniedException, ApprovalException, 
+                                    CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
+        boolean keyRecoverySuccessful;
+        boolean authorized = true;
+        int endEntityProfileId = endEntityAccessSession.findUser(authenticationToken, username).getEndEntityProfileId();
+        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
+            authorized = authorizationSession.isAuthorized(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(endEntityProfileId) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
+                                                            AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
+        }
+        if(authorized) {
+            try {
+                keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert);
+                if (keyRecoverySuccessful) {
+                    // No approval required, continue by setting a new enrollment code
+                    endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                }    
+            } catch (WaitingForApprovalException e) {
+                // Set new EE password anyway
+                endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                throw e;
+            }
+            return keyRecoverySuccessful; //remove
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) throws AuthorizationDeniedException {
+        boolean returnval = true;
+        returnval = authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
+        if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
+            EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
+            if (data != null) {         
+                int profileid = data.getEndEntityProfileId();
+                returnval = endEntityAuthorization(authenticationToken, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);         
+            } else {
+                returnval = false;
+            }
+        }
+        return returnval && keyRecoverySessionLocal.existsKeys(cert) && !keyRecoverySessionLocal.isUserMarked(username);
+    }
+    
+    /** Help function used to check end entity profile authorization. */
+    private boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
+        boolean returnval = false;
+        if (log) {
+            returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
+                    AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+        } else {
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+                    + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+        }
+        return returnval;
+    }    
+
+    @Override
     public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException {
         final CertificateDataWrapper cdw = searchForCertificate(authenticationToken, fingerprint);

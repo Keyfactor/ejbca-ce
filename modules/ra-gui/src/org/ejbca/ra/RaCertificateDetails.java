@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
@@ -36,6 +40,8 @@ import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -48,8 +54,10 @@ import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -64,9 +72,14 @@ public class RaCertificateDetails {
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
+        boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
+                                                                                WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+        boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) throws AuthorizationDeniedException;
+        UIComponent getConfirmPasswordComponent();
     }
     
     private static final Logger log = Logger.getLogger(RaCertificateDetails.class);
+    public static String PARAM_REQUESTID = "requestId";
 
     private final Callbacks callbacks;
 
@@ -107,12 +120,18 @@ public class RaCertificateDetails {
     private boolean hasQcStatements = false;
     private boolean hasCertificateTransparencyScts = false;
     private String signatureAlgorithm;
+    private String password;
+    private String confirmPassword;
+    private int requestId;
 
     private boolean more = false;
+    private boolean renderConfirmRecovery = false;
+    private boolean keyRecoveryPossible;
     private int styleRowCallCounter = 0;
     
     private RaCertificateDetails next = null;
     private RaCertificateDetails previous = null;
+    
 
     private int newRevocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
 
@@ -229,6 +248,13 @@ public class RaCertificateDetails {
                 }
             }
         }
+        try {
+            this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
+        } catch (AuthorizationDeniedException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to check key recovery authorization: " + e.getMessage());
+            }
+        }
         this.expireDate = certificateData.getExpireDate();
         this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
@@ -335,7 +361,12 @@ public class RaCertificateDetails {
         }
         return "";
     }
-
+    
+    /** @return Certificate as java.security.cert.Certificate */
+    public Certificate getCertificate() {
+        return cdw.getCertificate();
+    }
+    
     /** @return true if more details should be shown */
     public boolean isMore() { return more; }
     public void actionToggleMore() {
@@ -401,6 +432,7 @@ public class RaCertificateDetails {
         }
         styleRowCallCounter = 0;    // Reset
     }
+    
     public void actionReactivate() {
         try {
             if (callbacks.changeStatus(this, CertificateConstants.CERT_ACTIVE, RevokedCertInfo.NOT_REVOKED)) {
@@ -415,4 +447,100 @@ public class RaCertificateDetails {
         }
         styleRowCallCounter = 0;    // Reset
     }
+    
+    public void actionRecovery() {
+        try {
+            if (callbacks.recoverKey(this)) {
+                callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_successful");
+            } else {
+                callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
+                log.info("Failed to perform key recovery for user: " + subjectDn); //Replace this
+            }
+        } catch (ApprovalException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", requestId);
+        } catch (WaitingForApprovalException e) {
+            // Setting requestId will render link to 'enroll with request id' page
+            requestId = e.getRequestId();
+            log.info("Request with Id: " + e.getRequestId() + " has been sent for approval");
+        } catch (CADoesntExistsException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
+        } catch (AuthorizationDeniedException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unauthorized");
+        } catch (NoSuchEndEntityException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_no_such_end_entity", username);
+        } catch (EndEntityProfileValidationException e) {
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
+        }
+        styleRowCallCounter = 0;    // Reset
+        renderConfirmRecoveryToggle(); //Reconsider placement
+    }
+    
+    /** Validate that password and password confirm entries match and render error messages otherwise. */
+    public final void validatePassword(ComponentSystemEvent event) {
+        if (renderConfirmRecovery){
+            FacesContext fc = FacesContext.getCurrentInstance();
+            UIComponent components = event.getComponent();
+            UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
+            String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
+            UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
+            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+            if (password.isEmpty()){
+                fc.addMessage(callbacks.getConfirmPasswordComponent().getClientId(fc), callbacks.getRaLocaleBean().getFacesMessage("enroll_password_can_not_be_empty"));
+                fc.renderResponse();
+            }
+            if (!password.equals(confirmPassword)) {
+                fc.addMessage(callbacks.getConfirmPasswordComponent().getClientId(fc), callbacks.getRaLocaleBean().getFacesMessage("enroll_passwords_are_not_equal"));
+                fc.renderResponse();
+            }
+        }
+    }
+    
+    public final String getParamRequestId(){
+        return PARAM_REQUESTID;
+    }
+    
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+    
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
+    public int getRequestId() {
+        return requestId;
+    }
+    
+    public void setRequestId(int requestId) {
+        this.requestId = requestId;
+    }
+
+    public boolean isKeyRecoveryPossible() {
+        return keyRecoveryPossible;
+    }
+    
+    public boolean isRenderConfirmRecovery() {
+        return renderConfirmRecovery;
+    }
+    
+    public void renderConfirmRecoveryToggle() {
+        renderConfirmRecovery = !renderConfirmRecovery;
+    }
+    
+    public boolean isRequestIdInfoRendered(){
+        return requestId != 0;
+    }
 }
+
+
+
+
+
