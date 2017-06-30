@@ -1646,6 +1646,9 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
   #manageRequestForm\:commandCancelEdit {
     padding: 1.3% 23px 1.3% 23px; }
 
+  select#detailsForm\:certDetails\:newRevocationReason ~ a {
+    height: 35px; }
+    
   select#detailsForm\:certDetails\:newRevocationReason ~ input {
     height: 35px; }
 

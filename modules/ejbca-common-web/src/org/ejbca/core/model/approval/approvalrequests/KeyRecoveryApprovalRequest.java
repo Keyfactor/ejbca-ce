@@ -101,6 +101,10 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_KEYRECOVERY;
 	}
+	
+	public String getUsername() {
+	    return username;
+	}
 
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
