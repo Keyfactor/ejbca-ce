@@ -125,7 +125,7 @@ public abstract class AbstractCustomKeyValidator extends BaseKeyValidator {
     public abstract void before();
 
     @Override
-    public abstract boolean validate(final PublicKey publicKey) throws KeyValidationException, Exception;
+    public abstract boolean validate(final PublicKey publicKey) throws KeyValidationException;
 
     @Override
     public abstract void after();

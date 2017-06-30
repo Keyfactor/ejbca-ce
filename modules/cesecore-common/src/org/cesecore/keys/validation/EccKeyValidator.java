@@ -229,7 +229,7 @@ public class EccKeyValidator extends BaseKeyValidator {
     }
 
     @Override
-    public boolean validate(final PublicKey publicKey) throws KeyValidationException, Exception {
+    public boolean validate(final PublicKey publicKey) throws KeyValidationException {
         super.validate(publicKey);
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "

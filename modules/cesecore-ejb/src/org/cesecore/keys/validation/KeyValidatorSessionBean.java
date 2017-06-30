@@ -416,6 +416,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         postProcessKeyValidation(keyValidator, result);
                     }
                 } catch (KeyValidationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Key validation failed: ", e);
+                    }
                     throw e;
                 } catch (Exception e) {
                     final String message = intres.getLocalizedMessage("keyvalidator.couldnotbeprocessed", name, e.getMessage());
@@ -480,9 +483,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == index) {
                 log.error(message);
             } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == index) {
+                log.debug(message);
                 throw new KeyValidationException(message);
             } else {
                 // NOOP
+                log.debug(message);
             }
         } else {
             final String message = intres.getLocalizedMessage("keyvalidator.validationsuccessful", name, keyValidator.getPublicKey().getEncoded());

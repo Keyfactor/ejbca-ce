@@ -131,7 +131,7 @@ public class SampleCustomKeyValidator extends AbstractCustomKeyValidator
     }
 
     @Override
-    public boolean validate(PublicKey publicKey) throws KeyValidationException, Exception {
+    public boolean validate(PublicKey publicKey) throws KeyValidationException {
         boolean result = true;
         if (LOG.isDebugEnabled()) {
             LOG.debug(getClassPath() + ".validate called: " + result);

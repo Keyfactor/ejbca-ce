@@ -334,7 +334,7 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
     public abstract void before();
 
     @Override
-    public boolean validate(PublicKey publicKey) throws KeyValidationException, Exception {
+    public boolean validate(PublicKey publicKey) throws KeyValidationException {
         this.publicKey = publicKey;
         return false;
     }

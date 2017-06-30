@@ -13,12 +13,17 @@
 
 package org.cesecore.keys.validation;
 
+import javax.xml.ws.WebFault;
+
+import org.cesecore.CesecoreException;
+
 /**
  * An exception thrown when someone tries to access a key validator that doesn't exits.
  *
  * @version $Id$
  */
-public class KeyValidatorDoesntExistsException extends Exception {
+@WebFault
+public class KeyValidatorDoesntExistsException extends CesecoreException {
 
     private static final long serialVersionUID = 4122021467195662691L;
 

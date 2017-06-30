@@ -30,8 +30,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 
 /**
- * Default RSA key validator using the Bouncy Castle BCRSAPublicKey implementation 
- * (see org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey). 
+ * Default RSA key validator. 
  * 
  * The key validator is used to implement the CA/B-Forum requirements for RSA public 
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
@@ -456,7 +455,7 @@ public class RsaKeyValidator extends BaseKeyValidator {
     }
 
     @Override
-    public boolean validate(final PublicKey publicKey) throws KeyValidationException, Exception {
+    public boolean validate(final PublicKey publicKey) throws KeyValidationException {
         super.validate(publicKey);
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
@@ -465,12 +464,13 @@ public class RsaKeyValidator extends BaseKeyValidator {
         if (!AlgorithmConstants.KEYALGORITHM_RSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof RSAPublicKey)) {
             final String message = "Invalid: Public key has no RSA algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
                     + publicKey.getFormat();
+            log.debug(message);
             messages.add(message);
             throw new KeyValidationIllegalKeyAlgorithmException(message);
         }
-        final RSAPublicKey bcRsaPublicKey = (RSAPublicKey) publicKey;
-        final BigInteger publicKeyExponent = bcRsaPublicKey.getPublicExponent();
-        final BigInteger publicKeyModulus = bcRsaPublicKey.getModulus();
+        final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+        final BigInteger publicKeyExponent = rsaPublicKey.getPublicExponent();
+        final BigInteger publicKeyModulus = rsaPublicKey.getModulus();
         if (log.isDebugEnabled()) {
             log.debug("Validate RSA public key with exponent " + publicKeyExponent + " and modulus " + publicKeyModulus);
         }
