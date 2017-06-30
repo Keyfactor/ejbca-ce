@@ -13,12 +13,14 @@
 
 package org.cesecore.keys.validation;
 
+import org.cesecore.CesecoreException;
+
 /**
  * An exception thrown when key validation fails for some reason and the certificate issuance has to be aborted.
  *
  * @version $Id$
  */
-public class KeyValidationException extends Exception {
+public class KeyValidationException extends CesecoreException {
 
     private static final long serialVersionUID = -3123446231118692L;
 

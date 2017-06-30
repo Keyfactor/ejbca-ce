@@ -35,6 +35,7 @@ import javax.ejb.EJBException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -582,7 +583,7 @@ public class KeyValidatorSessionTest {
     }
 
     public static final KeyPair generateRsaKeyPair(final int size) throws NoSuchProviderException, NoSuchAlgorithmException {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(size); // createFixedRandom()
         return generator.generateKeyPair();
     }
