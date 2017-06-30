@@ -64,6 +64,8 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
@@ -101,6 +103,7 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     private CertificateProfile certificateProfile;
     private String requestId;
+    private String requestUsername;
     private String selectedAlgorithm; 
     private String certificateRequest;
     private int requestStatus;
@@ -147,10 +150,16 @@ public class EnrollWithRequestIdBean implements Serializable {
                 break;
             case ApprovalDataVO.STATUS_APPROVED:
             case ApprovalDataVO.STATUS_EXECUTED:
-                String username = raApprovalRequestInfo.getEditableData().getUsername();
-                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
+                ApprovalRequest approvalRequest = raApprovalRequestInfo.getApprovalData().getApprovalRequest();
+                if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+                    KeyRecoveryApprovalRequest keyRecoveryApprovalRequest = (KeyRecoveryApprovalRequest) approvalRequest;
+                    requestUsername = keyRecoveryApprovalRequest.getUsername();
+                } else {
+                    requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
+                }
+                endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), requestUsername);
                 if (endEntityInformation == null) {
-                    log.error("Could not find endEntity for the username='" + username + "'");
+                    log.error("Could not find endEntity for the username='" + requestUsername + "'");
                 }else if(endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED){
                     raLocaleBean.addMessageInfo("enrollwithrequestid_enrollment_with_request_id_has_already_been_finalized", Integer.parseInt(requestId));
                 }else{
@@ -172,7 +181,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isFinalizeEnrollmentRendered() {
-        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW;
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null && 
+                (endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW || endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY);
     }
 
     public void generateCertificatePem() {

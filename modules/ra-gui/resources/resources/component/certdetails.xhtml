@@ -190,7 +190,39 @@
                 <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
                     styleClass="pure-button ra-button"
                     rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
+                <h:commandButton value="#{cc.attrs.raCertificateDetails.renderConfirmRecovery ? msg.component_certdetails_keyrecovery_cancel : msg.component_certdetails_keyrecovery_recover}" 
+                	action="#{cc.attrs.raCertificateDetails.renderConfirmRecoveryToggle}"
+                	immediate="true"
+                	styleClass="pure-button ra-button"
+                	rendered="#{cc.attrs.raCertificateDetails.keyRecoveryPossible}"/>
             </h:panelGroup>
+
+			<h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+			<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
+						<f:event type="postValidate" listener="#{cc.attrs.raCertificateDetails.validatePassword}"/>
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="passwordField" value="#{msg.enroll_password}" styleClass="#{cc.attrs.styleLabel}"/>
+							<h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}" autocomplete="off">
+								<f:validator validatorId="extendedRequiredValidator"/>
+								<f:attribute name="_required" value="true"/>
+							</h:inputSecret>
+							<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="pure-control-group">
+							<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" styleClass="#{cc.attrs.styleLabel}"/>
+							<h:inputSecret id="passwordConfirmField" binding="#{raSearchCertsBean.confirmPasswordComponent}" value="#{cc.attrs.raCertificateDetails.confirmPassword}"
+							 	autocomplete="off">
+								<f:validator validatorId="extendedRequiredValidator"/>
+								<f:attribute name="_required" value="true"/>
+							</h:inputSecret>
+							<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="showErrorMessage"/>
+						</h:panelGroup>
+						<h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+						<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}" styleClass="pure-button ra-button"
+							action="#{cc.attrs.raCertificateDetails.actionRecovery}">
+						</h:commandButton>	
+			</h:panelGroup>
+
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -274,6 +306,22 @@
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="dump" value="#{cc.attrs.raCertificateDetails.dump}"
                     styleClass="#{cc.attrs.styleValue}  #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis pre"/>
+            </h:panelGroup>
+            
+            <h:panelGroup layout="block" styleClass="internal-frame-black" rendered="#{cc.attrs.raCertificateDetails.requestIdInfoRendered}">
+				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+					<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+					<h:outputText value="#{msg.enroll_request_id}:&nbsp;" />
+					<h:outputText value="#{cc.attrs.raCertificateDetails.requestId}" />
+				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
+					<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink" styleClass="jsAutoFocusFirst">
+						<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}&nbsp;&gt;&gt;" />
+						<f:param name="#{cc.attrs.raCertificateDetails.paramRequestId}" value="#{cc.attrs.raCertificateDetails.requestId}" />
+					</h:outputLink>
+				</h:panelGroup>
             </h:panelGroup>
 
         </composite:implementation>

@@ -36,16 +36,20 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
 /**
@@ -91,6 +95,8 @@ public class RaSearchCertsBean implements Serializable {
     private String expiresBefore = "";
     private String revokedAfter = "";
     private String revokedBefore = "";
+    
+    private UIComponent confirmPasswordComponent;
 
     private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS };
     
@@ -107,6 +113,10 @@ public class RaSearchCertsBean implements Serializable {
             return raLocaleBean;
         }
         @Override
+        public UIComponent getConfirmPasswordComponent() {
+            return confirmPasswordComponent;
+        }
+        @Override
         public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException {
             final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint(),
                     newStatus, newRevocationReason);
@@ -115,6 +125,18 @@ public class RaSearchCertsBean implements Serializable {
                 final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint());
                 raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap);
             }
+            return ret;
+        }
+        @Override
+        public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
+                                    NoSuchEndEntityException, EndEntityProfileValidationException {
+            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(), 
+                                                                        raCertificateDetails.getCertificate());
+            return ret;
+        }
+        @Override
+        public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) throws AuthorizationDeniedException {
+            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
             return ret;
         }
     };
@@ -570,7 +592,15 @@ public class RaSearchCertsBean implements Serializable {
         });
         return entrySetSorted;
     }
+    
+    public UIComponent getConfirmPasswordComponent() {
+        return confirmPasswordComponent;
+    }
 
+    public void setConfirmPasswordComponent(UIComponent confirmPasswordComponent) {
+        this.confirmPasswordComponent = confirmPasswordComponent;
+    }
+    
     /** Chain the results in the current order for certificate details navigation. */
     private void chain() {
         RaCertificateDetails previous = null;

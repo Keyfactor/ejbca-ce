@@ -56,6 +56,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -1108,7 +1109,43 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return ret;
     }
     
-
+    @Override
+    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, Certificate cert) throws ApprovalException, CADoesntExistsException, 
+                                    AuthorizationDeniedException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
+        boolean ret = false;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.markForRecovery(authenticationToken, username, newPassword, cert);
+                    if (ret) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+    
+    @Override
+    public boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username)
+            throws AuthorizationDeniedException {
+        boolean ret = false;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.keyRecoveryPossible(authenticationToken, cert, username);
+                    if (ret) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
 
     @Override
     public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException {
