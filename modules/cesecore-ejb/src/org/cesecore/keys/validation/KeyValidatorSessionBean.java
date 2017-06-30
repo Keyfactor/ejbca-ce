@@ -313,7 +313,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Key validators found in datastore: " + result);
+            log.debug("Key validators found in datastore: " + result.keySet());
         }
         return result;
     }
@@ -416,9 +416,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         postProcessKeyValidation(keyValidator, result);
                     }
                 } catch (KeyValidationException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Key validation failed: ", e);
-                    }
                     throw e;
                 } catch (Exception e) {
                     final String message = intres.getLocalizedMessage("keyvalidator.couldnotbeprocessed", name, e.getMessage());
@@ -430,7 +427,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("No key validator configured for CA " + ca.getName() + " (id=" + ca.getCAId() + ").");
+                log.debug("No key validator configured for CA " + ca.getName() + " (ID=" + ca.getCAId() + ").");
             }
         }
         return result;
@@ -456,12 +453,16 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 }
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Created key validator " + result + " with type " + type + " and custom classpath " + classpath);
-        }
         if (result != null) {
             result.loadData(data);
             result.init();
+            if (log.isDebugEnabled()) {
+                log.debug("Created key validator " + result.getName() + " with type " + type + " and custom classpath " + classpath);
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("No key validator could be created with type " + type + " and custom classpath " + classpath);
+            }            
         }
         return result;
     }

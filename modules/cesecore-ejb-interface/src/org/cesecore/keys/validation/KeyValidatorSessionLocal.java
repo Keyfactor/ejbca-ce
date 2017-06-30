@@ -175,19 +175,19 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
 
     /**
      * Uses the ServiceLoader the retrieve all key validator implementations, see {@link IKeyValidator}
-     * @return the list of implementations.
+     * @return the list of implementations, or empty list, never null.
      */
     List<IKeyValidator> getKeyValidatorImplementations();
 
     /**
      * Uses the ServiceLoader the retrieve all key validator implementation classes, see {@link IKeyValidator}
-     * @return the list of fully qualified class paths.
+     * @return the list of fully qualified class paths, or empty list, never null.
      */
     List<String> getKeyValidatorImplementationClasses();
 
     /**
      * Gets all available key validator types. 
-     * @return the list of key validator types including the custom type.
+     * @return the list of key validator types including the custom type, or empty list, never null.
      */
     List<Integer> getKeyValidatorTypes();
 
