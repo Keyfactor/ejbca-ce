@@ -462,8 +462,8 @@ public class RsaKeyValidator extends BaseKeyValidator {
                     + publicKey.getClass().getName());
         }
         if (!AlgorithmConstants.KEYALGORITHM_RSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof RSAPublicKey)) {
-            final String message = "Invalid: Public key has no RSA algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
-                    + publicKey.getFormat();
+            final String message = "Invalid: Public key algorithm is not RSA or could not be parsed: " + publicKey.getAlgorithm() + ", format "
+                    + publicKey.getFormat()+", "+publicKey.getClass().getName();
             log.debug(message);
             messages.add(message);
             throw new KeyValidationIllegalKeyAlgorithmException(message);

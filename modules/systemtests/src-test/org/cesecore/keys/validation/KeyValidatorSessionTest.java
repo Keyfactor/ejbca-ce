@@ -14,8 +14,10 @@
 package org.cesecore.keys.validation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.StreamCorruptedException;
@@ -63,7 +65,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ca.validation.PublicKeyBlacklistKeyValidator;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -253,7 +254,7 @@ public class KeyValidatorSessionTest {
                     new Date(new Date().getTime() + 1000 * 86400), publicKey);
             fail("RSA key validator successfully validated an ECC key.");
         } catch (Exception e) {
-            Assert.assertTrue("KeyValidationException expected when a RSA key validator tries to validate an ECC key: " + keyValidator.getName(),
+            assertTrue("KeyValidationException expected when a RSA key validator tries to validate an ECC key: " + keyValidator.getName(),
                     e instanceof KeyValidationIllegalKeyAlgorithmException);
         }
 
@@ -263,15 +264,15 @@ public class KeyValidatorSessionTest {
         try {
             final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
                     new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
-            Assert.assertTrue("2048 bit RSA key should validate with default settings.", result);
+            assertTrue("2048 bit RSA key should validate with default settings.", result);
         } catch (EJBException e) {
-            Assert.assertTrue(
+            assertTrue(
                     "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
                             + e.getCause(),
                     e.getCause() instanceof StreamCorruptedException);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            fail("2048 bit RSA key validation failed with default RSA key validator.");
+            fail("2048 bit RSA key validation failed with default RSA key validator: "+e.getMessage());
         }
 
         // B-2: Check invalid RSA key with small key size and failed action 'Abort certificate issuance' -> issuance MUST be aborted.
@@ -280,10 +281,10 @@ public class KeyValidatorSessionTest {
         try {
             final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
                     new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
-            Assert.assertFalse("512 bit RSA key should validate with default settings.", result);
+            assertFalse("512 bit RSA key should validate with default settings.", result);
 
         } catch (EJBException e) {
-            Assert.assertTrue(
+            assertTrue(
                     "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
                             + e.getCause(),
                     e.getCause() instanceof StreamCorruptedException);
@@ -310,7 +311,7 @@ public class KeyValidatorSessionTest {
     //        log.info("TEST CA NAME: " + testCA.getName() + " " + testCA.getCAId());
     //        boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile, new Date(),
     //                new Date(new Date().getTime() + 86400000), keyPairRsa.getPublic());
-    //        Assert.assertTrue("Public key validation without any key validator defined should validate to true.", result);
+    //        assertTrue("Public key validation without any key validator defined should validate to true.", result);
     //
     //        log.trace("<test03ValidatePublicKey()");
     //    }
@@ -583,7 +584,7 @@ public class KeyValidatorSessionTest {
     }
 
     public static final KeyPair generateRsaKeyPair(final int size) throws NoSuchProviderException, NoSuchAlgorithmException {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); // Use default provider
         generator.initialize(size); // createFixedRandom()
         return generator.generateKeyPair();
     }
