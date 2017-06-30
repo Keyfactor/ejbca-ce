@@ -585,6 +585,9 @@ public class KeyValidatorSessionTest {
 
     public static final KeyPair generateRsaKeyPair(final int size) throws NoSuchProviderException, NoSuchAlgorithmException {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); // Use default provider
+        // Using BC provider, i.e. creating a BC public key object causes test failure
+        // in JDK7+JBOSS 7.1.1 combo
+        //final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(size); // createFixedRandom()
         return generator.generateKeyPair();
     }
