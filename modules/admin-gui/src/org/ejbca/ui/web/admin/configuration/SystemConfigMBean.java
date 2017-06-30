@@ -95,7 +95,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableEndEntityProfileLimitations;
         private boolean enableKeyRecovery;
         private boolean localKeyRecovery;
-        private Integer localKeyRecoveryCryptoTokenId;
+        private int localKeyRecoveryCryptoTokenId;
         private String localKeyRecoveryKeyAlias;
         private boolean enableIcaoCANameChange;
         private boolean issueHardwareToken;
@@ -136,7 +136,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
-                this.localKeyRecoveryCryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
+                this.localKeyRecoveryCryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId() != null ? globalConfig.getLocalKeyRecoveryCryptoTokenId() : 0;
                 this.localKeyRecoveryKeyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
                 this.issueHardwareToken = globalConfig.getIssueHardwareTokens();
                 this.hardTokenDataEncryptCA = globalConfig.getHardTokenEncryptCA();
@@ -185,8 +185,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableKeyRecovery(boolean enableKeyRecovery) { this.enableKeyRecovery=enableKeyRecovery; }
         public boolean getLocalKeyRecovery() { return this.localKeyRecovery; }
         public void setLocalKeyRecovery(boolean localKeyRecovery) { this.localKeyRecovery=localKeyRecovery; }
-        public Integer getLocalKeyRecoveryCryptoTokenId() { return this.localKeyRecoveryCryptoTokenId; }
-        public void setLocalKeyRecoveryCryptoTokenId(Integer localKeyRecoveryCryptoTokenId) { this.localKeyRecoveryCryptoTokenId=localKeyRecoveryCryptoTokenId; }
+        public int getLocalKeyRecoveryCryptoTokenId() { return this.localKeyRecoveryCryptoTokenId; }
+        public void setLocalKeyRecoveryCryptoTokenId(int localKeyRecoveryCryptoTokenId) { this.localKeyRecoveryCryptoTokenId=localKeyRecoveryCryptoTokenId; }
         public String getLocalKeyRecoveryKeyAlias() { return this.localKeyRecoveryKeyAlias; }
         public void setLocalKeyRecoveryKeyAlias(String localKeyRecoveryKeyAlias) { this.localKeyRecoveryKeyAlias=localKeyRecoveryKeyAlias; }
         public boolean getIssueHardwareToken() { return this.issueHardwareToken; }
@@ -633,12 +633,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             currentConfig.setLocalKeyRecovery(false);
         }
         if (currentConfig.getLocalKeyRecovery()) {
-            if (currentConfig.getLocalKeyRecoveryCryptoTokenId() == null) {
+            if (currentConfig.getLocalKeyRecoveryCryptoTokenId() == 0) {
                 String msg = "Please select a crypto token for local key recovery";
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
                 return false;
-            } else if (currentConfig.getLocalKeyRecoveryKeyAlias() == null) {
+            } else if (StringUtils.isEmpty(currentConfig.getLocalKeyRecoveryKeyAlias())) {
                 String msg = "Please select a key alias for local key recovery";
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
@@ -646,6 +646,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return true;
+    }
+    
+    private Integer zeroToNull(int value) {
+        return value == 0 ? null : value;
     }
     
     /** Invoked when admin saves the configurations */
@@ -661,7 +665,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
-                globalConfig.setLocalKeyRecoveryCryptoTokenId(currentConfig.getLocalKeyRecoveryCryptoTokenId());
+                globalConfig.setLocalKeyRecoveryCryptoTokenId(zeroToNull(currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                 globalConfig.setLocalKeyRecoveryKeyAlias(currentConfig.getLocalKeyRecoveryKeyAlias());
                 globalConfig.setIssueHardwareTokens(currentConfig.getIssueHardwareToken());
                 globalConfig.setHardTokenEncryptCA(currentConfig.getHardTokenDataEncryptCA());
@@ -761,7 +765,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     return o1.getLabel().compareToIgnoreCase(o1.getLabel());
                 }
             });
-            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT")));
+            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_ENCRYPTION_CRYPTOTOKEN")));
         }
         return availableCryptoTokens;
     }
@@ -773,13 +777,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getHasSelectedCryptoToken() {
-        return currentConfig.getLocalKeyRecoveryCryptoTokenId() != null;
+        return currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0;
     }
     
     public List<SelectItem> getAvailableKeyAliases() {
         if (availableKeyAliases == null) {
             availableKeyAliases = new ArrayList<>();
-            if (currentConfig.getLocalKeyRecoveryCryptoTokenId() != null) {
+            if (currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0) {
                 try {
                     final List<String> aliases = new ArrayList<>(cryptoTokenManagementSession.getKeyPairAliases(getEjbcaWebBean().getAdminObject(), currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                     Collections.sort(aliases);
@@ -790,7 +794,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                         }
                         availableKeyAliases.add(new SelectItem(keyAlias));
                     }
-                    availableKeyAliases.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT")));
+                    availableKeyAliases.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_KEY")));
                 } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
                     log.debug("Crypto Token is not usable. Can't list key aliases", e);
                 }
