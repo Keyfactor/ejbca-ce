@@ -349,7 +349,7 @@
             <basic fetch="EAGER" name="keyspec"><column name="keyspec" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
@@ -359,7 +359,7 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
