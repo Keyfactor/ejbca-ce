@@ -50,7 +50,6 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
         <class>org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData</class>
-        <class>org.cesecore.keys.validation.KeyValidatorData</class>
         <class>org.ejbca.peerconnector.PeerData</class>
         <class>org.ejbca.core.ejb.ra.UserData</class>
         <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>

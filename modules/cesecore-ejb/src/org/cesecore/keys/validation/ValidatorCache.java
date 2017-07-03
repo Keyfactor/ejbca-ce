@@ -25,11 +25,10 @@ import org.cesecore.internal.CommonCacheBase;
  * 
  * @version $Id$
  */
-public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
-
+public enum ValidatorCache implements CommonCache<Validator> {
     INSTANCE;
 
-    private final CommonCache<BaseKeyValidator> cache = new CommonCacheBase<BaseKeyValidator>() {
+    private final CommonCache<Validator> cache = new CommonCacheBase<Validator>() {
         @Override
         protected long getCacheTime() {
             long time = Math.max( CesecoreConfiguration.getCacheKeyValidatorTime(), -1);
@@ -44,7 +43,7 @@ public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
     };
 
     @Override
-    public BaseKeyValidator getEntry(final Integer id) {
+    public Validator getEntry(final Integer id) {
         if (id == null) {
             return null;
         }
@@ -52,7 +51,7 @@ public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
     }
 
     @Override
-    public BaseKeyValidator getEntry(final int id) {
+    public Validator getEntry(final int id) {
         return cache.getEntry(id);
     }
 
@@ -62,7 +61,7 @@ public enum KeyValidatorCache implements CommonCache<BaseKeyValidator> {
     }
 
     @Override
-    public void updateWith(int id, int digest, String name, BaseKeyValidator object) {
+    public void updateWith(int id, int digest, String name, Validator object) {
         cache.updateWith(id, digest, name, object);
     }
 

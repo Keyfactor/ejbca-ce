@@ -103,9 +103,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
-import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
 import org.cesecore.keys.validation.KeyValidatorSessionTest;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
@@ -505,22 +503,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
         final Integer certificateProfileId = certificateProfileSession.getCertificateProfileId(userdatas.get(0).getCertificateProfileName());
         final String keyValidatorName = "WSPKCS12-RsaKeyValidatorTest";
-        final RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorSessionTest.createKeyValidator(RsaKeyValidator.KEY_VALIDATOR_TYPE, "WSPKCS12-RsaKeyValidator", keyValidatorName, null, -1, null, -1, KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileId);
+        final RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorSessionTest.createKeyValidator(RsaKeyValidator.class,
+                "WSPKCS12-RsaKeyValidator", keyValidatorName, null, -1, null, -1, KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(),
+                certificateProfileId);
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         keyValidator.setBitLengths(RsaKeyValidator.getAvailableBitLengths(2048));
-        try {
-            keyValidatorSession.removeKeyValidator(intAdmin, keyValidatorName);
-        } catch (KeyValidatorDoesntExistsException e) {
-            // NOOP
-        } catch (CouldNotRemoveKeyValidatorException e) {
-            assertTrue("Remove key validator references from CA first: " + keyValidatorName, false);
-        }
-        keyValidatorSession.addKeyValidator(intAdmin, keyValidatorName, keyValidator);
+        int keyValidatorId = keyValidatorSession.addKeyValidator(intAdmin, keyValidator);
         
         // Add key validator to CA.
         final CAInfo caInfo = caSession.getCAInfo(intAdmin, CA1);
         final Collection<Integer> keyValidatorIds = new ArrayList<Integer>();
-        keyValidatorIds.add(keyValidatorSession.getKeyValidatorId(keyValidatorName));
+        keyValidatorIds.add(keyValidatorId);
         caInfo.setKeyValidators(keyValidatorIds);
         caSession.editCA(intAdmin, caInfo);
         
@@ -539,7 +532,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         userdatas.get(0).setSubjectDN(oldSubjectDn);
         userdatas.get(0).setPassword(oldPassword);
         ejbcaraws.editUser(userdatas.get(0));
-        keyValidatorSession.removeKeyValidator(intAdmin, keyValidatorName);
+        keyValidatorSession.removeKeyValidator(intAdmin, keyValidatorId);
     }
 
     @Test

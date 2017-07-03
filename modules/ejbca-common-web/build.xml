@@ -61,8 +61,8 @@
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
 		<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
-		<!-- Since the base classes reading properties is in ejbca-common, we also store defaultvalues.properties here so it can be used stand-alone -->
-		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${build-common-web.dir}" classpath="compile-common-web.classpath"/>
+		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher;org.cesecore.keys.validation.Validator" 
+			file="${build-common-web.dir}" classpath="compile-common-web.classpath"/>
 		<jar destfile="${mod.ejbca-common-web.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>

@@ -27,7 +27,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

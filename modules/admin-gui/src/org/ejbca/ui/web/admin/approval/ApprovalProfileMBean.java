@@ -400,7 +400,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public List<SelectItem> getApprovalProfileTypesAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         for (final ApprovalProfile type : ApprovalProfilesFactory.INSTANCE.getAllImplementations()) {
             ret.add(new SelectItem(type.getApprovalProfileTypeIdentifier(), type.getApprovalProfileLabel()));
         }

@@ -10,14 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.profiles;
+package org.cesecore.profiles;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.profiles.Profile;
 
 /**
  * Base class for all Profile entity beans. Mainly a holder for an UpgradeableDataHashMap, it's meant to be completely agnostic of any implementation
@@ -30,7 +29,7 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     
     private static final long serialVersionUID = 1L;
     
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 1f;
     
     private static final String PROFILE_NAME_KEY = "profile.name";
     private static final String PROFILE_ID_KEY = "profile.id";

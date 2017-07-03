@@ -34,7 +34,7 @@
 				<h:outputText value="#{web.text.VIEWKEYVALIDATOR}" rendered="#{keyValidatorsBean.viewOnly}" />
 			</h2>
 			<h3>
-				<h:outputText value="#{web.text.KEYVALIDATOR}: #{keyValidatorBean.keyValidator.name}"/>
+				<h:outputText value="#{web.text.KEYVALIDATOR}: #{keyValidatorBean.keyValidator.profileName}"/>
 			</h3>
 		</div>
 		<!--div class="message">
@@ -49,10 +49,10 @@
 					<h:outputText value="#{web.text.BACKTOKEYVALIDATORS}" />
 				</h:outputLink>
 				<h:outputLabel for="keyValidatorId" value="#{web.text.ID}"/>
-				<h:outputText id="keyValidatorId" value="#{keyValidatorBean.keyValidator.keyValidatorId}"/>
+				<h:outputText id="keyValidatorId" value="#{keyValidatorBean.keyValidator.profileId}"/>
 				<h:outputLabel for="keyValidatorType" value="#{web.text.KEYVALIDATORTYPE}"/>
 				<h:selectOneMenu id="keyValidatorType" value="#{keyValidatorBean.keyValidatorType}" disabled="#{keyValidatorsBean.viewOnly}">
-					<f:ajax listener="#{keyValidatorBean.keyValdatorTypeChanged}" render="@form"/>	
+					<f:ajax listener="#{keyValidatorBean.keyValidatorTypeChanged}" render="@form"/>	
 					<f:selectItems value="#{keyValidatorBean.availableKeyValidators}" />
 				</h:selectOneMenu>
 				<h:panelGroup></h:panelGroup>

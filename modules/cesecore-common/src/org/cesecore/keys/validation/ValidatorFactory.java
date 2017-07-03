@@ -10,38 +10,41 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.keys.validation;
 
-import java.util.Properties;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
+
+import org.cesecore.keys.validation.Validator;
 
 /**
- * All Custom key validators must implement this interface.
+ * Reads in the implementations of the Validator interface.  
  * 
  * @version $Id$
+ *
  */
+public enum ValidatorFactory {
+    INSTANCE;
 
-public interface ICustomKeyValidator extends IKeyValidator {
+    private Map<String, Validator> identifierToImplementationMap = new HashMap<>();
 
-    /**
-     * Gets the class path of the custom key validator.
-     * @return the class path.
-     */
-    String getClasspath();
-
-    /**
-     *  Method called to all newly created ICustomKeyValidator to set it up with
-     *  saved configuration.
-     */
-
-    /**
-     * Initializes the key validator.
-     */
-    void init();
-
-    /**
-     * Read only.
-     * @return true if this key validator type shouldn't be editable.
-     */
-    boolean isReadOnly();
+    private ValidatorFactory() {
+        ServiceLoader<Validator> svcloader = ServiceLoader.load(Validator.class);
+        for(Validator type : svcloader) {
+            type.initialize();
+            identifierToImplementationMap.put(type.getValidatorTypeIdentifier(), type);
+        }
+    }
+    
+    public Collection<Validator> getAllImplementations() {
+        return identifierToImplementationMap.values();
+    }
+    
+    public Validator getArcheType(String identifier) {
+        return identifierToImplementationMap.get(identifier).clone();
+    }
+    
+   
 }

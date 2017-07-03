@@ -34,7 +34,7 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.QueryResultWrapper;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 
 /**
  * Representation of a public key blacklist entry.

@@ -46,8 +46,8 @@ import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntryCache;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
 
 /**
  * Handles management of public key blacklist entries.

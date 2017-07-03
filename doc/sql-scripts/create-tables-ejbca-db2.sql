@@ -321,16 +321,6 @@ CREATE TABLE PublisherQueueData (
     PRIMARY KEY (pk)
 );
 
-CREATE TABLE KeyValidatorData (
-    id INTEGER NOT NULL,
-    data CLOB,
-    name VARCHAR(254),
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    updateCounter INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE RoleData (
     id INTEGER NOT NULL,
     roleName VARCHAR(254) NOT NULL,

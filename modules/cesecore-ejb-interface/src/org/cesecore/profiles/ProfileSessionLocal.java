@@ -13,6 +13,7 @@
 
 package org.cesecore.profiles;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
@@ -41,6 +42,14 @@ public interface ProfileSessionLocal {
      * @return the found entity instance or null if the entity does not exist 
      */
     ProfileData findById(int id);
+    
+    /**
+     * Retrieves a list of ProfileData objects
+     * 
+     * @param identifiers a list of identifiers
+     * @return the list of objects specified. Returns an empty list if none where found.
+     */
+    List<ProfileData> findByIds(final Collection<Integer> identifiers);
     
     
     /**

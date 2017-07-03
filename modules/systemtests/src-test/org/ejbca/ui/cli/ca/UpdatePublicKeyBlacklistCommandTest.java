@@ -41,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.Assert;

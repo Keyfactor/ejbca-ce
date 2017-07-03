@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.profiles;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -62,6 +63,14 @@ public class ProfileSessionBean implements ProfileSessionLocal {
     @Override
     public ProfileData findById(int id) {
         return entityManager.find(ProfileData.class, id);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<ProfileData> findByIds(final Collection<Integer> identifiers) {
+        final TypedQuery<ProfileData> query = entityManager.createQuery("SELECT a FROM ProfileData a WHERE a.id IN (:ids)", ProfileData.class);
+        query.setParameter("ids", identifiers);
+        return query.getResultList();
     }
     
     @Override

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -36,12 +37,16 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.keys.validation.BaseKeyValidator;
+import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.RsaKeyValidator;
+import org.cesecore.keys.validation.Validator;
+import org.cesecore.keys.validation.ValidatorFactory;
+import org.cesecore.profiles.Profile;
+import org.cesecore.profiles.ProfileBase;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -129,18 +134,18 @@ public class KeyValidatorsBean extends BaseManagedBean {
 
         private final int id;
         private final String name;
-        private final String classpath;
+        private final String implementationLabel;
 
         /**
          * Creates a new instance.
          * @param id the id
          * @param name the name
-         * @param classpath the class path (optional)
+         * @param implementationLabel the label of the imlementation
          */
-        public KeyValidatorItem(final int id, final String name, final String classpath) {
+        public KeyValidatorItem(final int id, final String name, final String implementationLabel) {
             this.id = id;
-            this.classpath = classpath;
-            this.name = name + " (" + classpath.substring(classpath.lastIndexOf('.') + 1) + ")";
+            this.implementationLabel = implementationLabel;
+            this.name = name;
         }
 
         public int getId() {
@@ -151,8 +156,8 @@ public class KeyValidatorsBean extends BaseManagedBean {
             return name;
         }
 
-        public String getClasspath() {
-            return classpath;
+        public String getLabel() {
+            return implementationLabel;
         }
     }
 
@@ -163,21 +168,18 @@ public class KeyValidatorsBean extends BaseManagedBean {
     public ListDataModel<KeyValidatorItem> getAvailableKeyValidators() {
         if (keyValidatorItems == null) {
             final List<KeyValidatorItem> items = new ArrayList<KeyValidatorItem>();
-            final Map<Integer, BaseKeyValidator> keyValidators = keyValidatorSession.getAllKeyValidators();
-            BaseKeyValidator keyValidator;
+            final Map<Integer, Validator> keyValidators = keyValidatorSession.getAllKeyValidators();
+            Validator keyValidator;
             String accessRule;
-            String className;
             for (Integer id : keyValidators.keySet()) {
                 keyValidator = keyValidators.get(id);
-                accessRule = StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getName();
+                accessRule = StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getProfileName();
                 if (isAuthorizedTo(accessRule)) {
-                    className = StringUtils.isNotBlank(keyValidator.getClasspath()) ? keyValidator.getClasspath() : keyValidator.getClass().getName();
-                    className = className.substring(className.lastIndexOf('.') + 1);
-                    items.add(new KeyValidatorItem(id, keyValidator.getName(), className));
+                    items.add(new KeyValidatorItem(id, keyValidator.getProfileName(), keyValidator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
-                                + StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getName() + ".");
+                                + StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getProfileName() + ".");
                     }
                 }
             }
@@ -237,7 +239,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
         final String name = getKeyValidatorName();
         if (StringUtils.isNotBlank(name)) {
             try {
-                keyValidatorSession.addKeyValidator(getAdmin(), name, new RsaKeyValidator());
+                keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 actionCancel();
             } catch (KeyValidatorExistsException e) {
@@ -288,7 +290,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
         final String name = getKeyValidatorName();
         if (name.length() > 0) {
             try {
-                keyValidatorSession.cloneKeyValidator(getAdmin(), getSelectedKeyValidatorName(), name);
+                keyValidatorSession.cloneKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 setKeyValidatorName(StringUtils.EMPTY);
             } catch (AuthorizationDeniedException e) {
@@ -323,7 +325,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
      */
     public void actionDeleteConfirm() throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
         try {
-            keyValidatorSession.removeKeyValidator(getAdmin(), getSelectedKeyValidatorName());
+            keyValidatorSession.removeKeyValidator(getAdmin(), getSelectedKeyValidatorId());
             keyValidatorSession.flushKeyValidatorCache();
             getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
         } catch (AuthorizationDeniedException e) {
@@ -359,7 +361,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
         final String name = getKeyValidatorName();
         if (name.length() > 0) {
             try {
-                keyValidatorSession.renameKeyValidator(getAdmin(), getSelectedKeyValidatorName(), name);
+                keyValidatorSession.renameKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 setKeyValidatorName(StringUtils.EMPTY);
             } catch (KeyValidatorDoesntExistsException e) {
@@ -455,6 +457,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
      * @throws NumberFormatException if the key validator id cannot be parsed.
      * @throws IOException if the stream cannot be read.
      */
+    // TODO: Move this method to C layer (session bean), it shouldn't be in the view layer
     public void importKeyValidatorsFromZip(final byte[] filebuffer)
             throws KeyValidatorExistsException, AuthorizationDeniedException, NumberFormatException, IOException {
         if (log.isDebugEnabled()) {
@@ -508,12 +511,12 @@ public class KeyValidatorsBean extends BaseManagedBean {
             if (log.isDebugEnabled()) {
                 log.debug("Extracted key validator name '" + nameToImport + "' and ID '" + idToImport + "'");
             }
-            if (ignoreKeyValidator(filename, nameToImport, idToImport)) {
+            if (ignoreKeyValidator(filename, idToImport)) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
 
-            if (keyValidatorSession.getKeyValidator(idToImport) != null) {
+            if (keyValidatorSession.getValidator(idToImport) != null) {
                 log.warn("Key valildator id '" + idToImport + "' already exist in database. Adding with a new key validator id instead.");
                 idToImport = -1; // means we should create a new id when adding the key validator.
             }
@@ -524,7 +527,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
                 filebytes[i++] = (byte) zis.read();
             }
 
-            final BaseKeyValidator baseKeyValidator = getKeyValidatorFromByteArray(nameToImport, filebytes);
+            final Validator baseKeyValidator = getKeyValidatorFromByteArray(nameToImport, filebytes);
             if (baseKeyValidator == null) {
                 String msg = "Faulty XML file '" + filename + "'. Failed to read key validator.";
                 log.info(msg + " Ignoring file.");
@@ -533,9 +536,9 @@ public class KeyValidatorsBean extends BaseManagedBean {
             }
 
             if (idToImport == -1) {
-                keyValidatorSession.addKeyValidator(getAdmin(), nameToImport, baseKeyValidator);
+                keyValidatorSession.addKeyValidator(getAdmin(), baseKeyValidator);
             } else {
-                keyValidatorSession.addKeyValidator(getAdmin(), idToImport, nameToImport, baseKeyValidator);
+                keyValidatorSession.importValidator(getAdmin(), baseKeyValidator);
             }
             getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
             importedFiles += filename + ", ";
@@ -574,16 +577,18 @@ public class KeyValidatorsBean extends BaseManagedBean {
      * @return the concrete key validator implementation.
      * @throws AuthorizationDeniedException if not authorized
      */
-    private BaseKeyValidator getKeyValidatorFromByteArray(final String name, final byte[] bytes) throws AuthorizationDeniedException {
+    @SuppressWarnings("unchecked")
+    private Validator getKeyValidatorFromByteArray(final String name, final byte[] bytes) throws AuthorizationDeniedException {
         final ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-        BaseKeyValidator baseKeyValidator = null;
+        Validator validator = null;
         try {
             final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
-            Object data = null;
+            LinkedHashMap<Object, Object> data = null;
             try {
-                data = decoder.readObject();
-                baseKeyValidator = (BaseKeyValidator) keyValidatorSession.createKeyValidatorInstanceByData((Map<?, ?>) data);
-            } catch (IOException e) {
+                data = (LinkedHashMap<Object, Object>) decoder.readObject();
+                validator = ((Class<? extends Validator>) data.get(ProfileBase.PROFILE_TYPE)).newInstance();
+                validator.setDataMap(data);
+            } catch (IOException|InstantiationException | IllegalAccessException e) {
                 log.info("Error parsing keyvalidator data: " + e.getMessage());
                 if (log.isDebugEnabled()) {
                     log.debug("Full stack trace: ", e);
@@ -594,7 +599,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
             }
 
             // Make sure certificate profiles exists.
-            final List<Integer> certificateProfileIds = baseKeyValidator.getCertificateProfileIds();
+            final List<Integer> certificateProfileIds = validator.getCertificateProfileIds();
             final ArrayList<Integer> certificateProfilesToRemove = new ArrayList<Integer>();
             for (Integer certificateProfileId : certificateProfileIds) {
                 if (null == certificateProfileSession.getCertificateProfile(certificateProfileId)) {
@@ -609,7 +614,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
                 log.warn("Warning: No certificate profiles left in key validator '" + name + "'.");
                 certificateProfileIds.add(Integer.valueOf(CertificateProfile.ANYCA));
             }
-            baseKeyValidator.setCertificateProfileIds(certificateProfileIds);
+            validator.setCertificateProfileIds(certificateProfileIds);
         } finally {
             try {
                 is.close();
@@ -617,7 +622,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
                 throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
             }
         }
-        return baseKeyValidator;
+        return validator;
     }
 
     /** 
@@ -641,9 +646,9 @@ public class KeyValidatorsBean extends BaseManagedBean {
      * Check ignore key validator.
      * @return true if the key validator should be ignored from a import because it already exists, false if it should be imported. 
      */
-    private boolean ignoreKeyValidator(final String filename, final String name, final int id) {
-        if (keyValidatorSession.getKeyValidator(name) != null) {
-            log.info("Key validator '" + name + "' already exist in database. IGNORED");
+    private boolean ignoreKeyValidator(final String filename, final int id) {
+        if (keyValidatorSession.getValidator(id) != null) {
+            log.info("Key validator with ID'" + id + "' already exist in database. IGNORED");
             return true;
         }
         return false;
