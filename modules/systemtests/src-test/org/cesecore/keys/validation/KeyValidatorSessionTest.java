@@ -272,7 +272,7 @@ public class KeyValidatorSessionTest {
                     e.getCause() instanceof StreamCorruptedException);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            fail("2048 bit RSA key validation failed with default RSA key validator: "+e.getMessage());
+            fail("2048 bit RSA key validation failed with exception for default RSA key validator: "+e.getMessage());
         }
 
         // B-2: Check invalid RSA key with small key size and failed action 'Abort certificate issuance' -> issuance MUST be aborted.
@@ -281,7 +281,7 @@ public class KeyValidatorSessionTest {
         try {
             final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
                     new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
-            assertFalse("512 bit RSA key should validate with default settings.", result);
+            assertFalse("512 bit RSA key should not validate with default settings.", result);
 
         } catch (EJBException e) {
             assertTrue(
@@ -290,7 +290,7 @@ public class KeyValidatorSessionTest {
                     e.getCause() instanceof StreamCorruptedException);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            fail("512 bit RSA key validation failed with default RSA key validator.");
+            fail("512 bit RSA key validation failed with exception for default RSA key validator: "+e.getMessage());
         }
 
         // B-3: Check invalid RSA key with failed action NOT 'Abort certificate issuance' -> issuance SHOULD NOT be aborted.
