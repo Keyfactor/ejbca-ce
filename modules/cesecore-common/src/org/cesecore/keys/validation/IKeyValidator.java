@@ -59,6 +59,7 @@ public interface IKeyValidator {
      * @param publicKey the public key to validate.
      * @return true if the public key was validated successfully and no error message was added.
      * @throws KeyValidationException if the certificate issuance MUST be aborted.
+     * @throw KeyValidationIllegalKeyAlgorithmException if publicKey is of an algorithm this validator can not handle
      * @throws Exception any technical motivated exception.
      */
     public boolean validate(PublicKey publicKey) throws KeyValidationException, Exception;

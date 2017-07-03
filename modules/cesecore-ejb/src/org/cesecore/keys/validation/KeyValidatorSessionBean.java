@@ -313,7 +313,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Key validators found in datastore: " + result.keySet());
+            for (Integer id: result.keySet()) {
+                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getName());                
+            }
         }
         return result;
     }
@@ -334,7 +336,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("Key validators found in datastore: " + result);
+            for (Integer id: result.keySet()) {
+                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getName());                
+            }
         }
         return result;
     }
@@ -367,7 +371,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException {
         boolean result = true;
         // ECA-4219 Workaround: While CA creation, select key validators in AdminGUI -> Edit CAs -> Create CA -> Key Validators.
-        // ca != null brcause of import or update of external certificates.
+        // ca != null because of import or update of external certificates.
         if (ca != null && !CollectionUtils.isEmpty(ca.getKeyValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
                     ca.getCACertificate(), false);
@@ -457,7 +461,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             result.loadData(data);
             result.init();
             if (log.isDebugEnabled()) {
-                log.debug("Created key validator " + result.getName() + " with type " + type + " and custom classpath " + classpath);
+                log.debug("Created key validator " + result.getKeyValidatorId()+":"+result.getName() + " with type " + type + " and custom classpath " + classpath);
             }
         } else {
             if (log.isDebugEnabled()) {
@@ -484,7 +488,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == index) {
                 log.error(message);
             } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == index) {
-                log.debug(message);
+                if (log.isDebugEnabled()) {
+                    log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);                    
+                }
                 throw new KeyValidationException(message);
             } else {
                 // NOOP
@@ -545,7 +551,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 result.add(keyValidator);
             }
             if (log.isDebugEnabled()) {
-                log.debug("Available KeyValidator plug-ins found: " + result);
+                for (IKeyValidator iKeyValidator : result) {
+                    log.debug("Available KeyValidator plug-ins found: " + iKeyValidator.getName());                    
+                }
             }
         } catch (Exception | Error e) {
             if (log.isDebugEnabled()) {
