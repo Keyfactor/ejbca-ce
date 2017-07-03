@@ -155,6 +155,11 @@ img.menu_logo {
   display: block;
   margin-left: 0; }
 
+.recovery-group {
+  border-radius: 2px;
+  background: #4f6177;
+  margin: 1% 0 4% 18%; }
+
 .finger-print {
   /* är tänkt för blå länkar i certficate details-vyn*/
   font-size: 100%; }
