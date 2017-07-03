@@ -28,7 +28,6 @@ drop table ProfileData;
 drop table PublisherData;
 drop table PublisherQueueData;
 drop table PublicKeyBlacklistData;
-drop table KeyValidatorData;
 drop table RoleData;
 drop table RoleMemberData;
 drop table ServiceData;

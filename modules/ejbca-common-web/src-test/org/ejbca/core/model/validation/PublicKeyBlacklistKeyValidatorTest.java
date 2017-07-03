@@ -1,9 +1,9 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General                  *
+ *  modify it under the terms of the GNU Lesser General Public           *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
@@ -16,7 +16,7 @@
  * 
  * @version $Id$
  */
-package org.ejbca.core.model.ca.validation;
+package org.ejbca.core.model.validation;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -29,10 +29,14 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.validation.BaseKeyValidator;
+import org.cesecore.keys.validation.KeyValidatorBase;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
+import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -80,9 +84,8 @@ public class PublicKeyBlacklistKeyValidatorTest {
         BigInteger modulus = BigInteger.valueOf(6553765537L);
         BigInteger exponent = BigInteger.valueOf(65537);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
-        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator(
-                PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE, "publickey-blacklist-validation-test-1", "Description", null, -1, null, -1, -1,
-                new Integer[] {});
+        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
+                "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         boolean result = keyValidator.validate(publicKey);
@@ -126,7 +129,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
     /**
      * Factory method to create key validators.
      * 
-     * @param type the key validator type (see {@link BaseKeyValidator#KEY_VALIDATOR_TYPE}
+     * @param type the key validator type (see {@link KeyValidatorBase#KEY_VALIDATOR_TYPE}
      * @param name the logical name
      * @param description the description text
      * @param notBefore the certificates validity not before
@@ -137,16 +140,10 @@ public class PublicKeyBlacklistKeyValidatorTest {
      * @param certificateProfileIds list of IDs of certificate profile to be applied to. 
      * @return the concrete key validator instance.
      */
-    private BaseKeyValidator createKeyValidator(final int type, final String name, final String description, final Date notBefore,
+    private PublicKeyBlacklistKeyValidator createKeyValidator(final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) {
-        BaseKeyValidator result;
-        if (PublicKeyBlacklistKeyValidator.KEY_VALIDATOR_TYPE == type) {
-            result = new PublicKeyBlacklistKeyValidator();
-        } else {
-            return null;
-        }
-        result.setName(name);
+        PublicKeyBlacklistKeyValidator result = new PublicKeyBlacklistKeyValidator(name);
         if (null != description) {
             result.setDescription(description);
         }

@@ -126,7 +126,7 @@ public class ProfileData extends ProtectedData implements Serializable {
     //
     @Transient
     @Override
-    protected String getProtectString(final int version) {
+    public String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getProfileName()).append(getDataMap());

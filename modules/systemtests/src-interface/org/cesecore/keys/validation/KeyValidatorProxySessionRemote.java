@@ -16,7 +16,6 @@ package org.cesecore.keys.validation;
 import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Remote;
@@ -40,21 +39,7 @@ public interface KeyValidatorProxySessionRemote {
      * @return a BaseKeyValidator or null if a key validator with the given id does not exist. Uses cache to get the object as quickly as possible.
      *         
      */
-    BaseKeyValidator getKeyValidator(int id);
-
-    /**
-     * Gets a key validator by cache or database.
-     * @return a BaseKeyValidator or null if a key validator with the given name does not exist. Uses cache to get the object as quickly as possible.
-     */
-    BaseKeyValidator getKeyValidator(String name);
-
-    /**
-     * Returns the id of the key validator with the given name.
-     * @return the id or 0 if the key validator cannot be found.
-     * 
-     * @throws KeyValidatorDoesntExistsException if a custom key validator does not exist.
-     */
-    int getKeyValidatorId(String name);
+    Validator getKeyValidator(int id);
 
     /**
      * Gets the name of the key validator with the given id.
@@ -68,7 +53,7 @@ public interface KeyValidatorProxySessionRemote {
      * 
      * @return Map of BaseKeyValidator mapped by ID.
      */
-    Map<Integer, BaseKeyValidator> getAllKeyValidators();
+    Map<Integer, Validator> getAllKeyValidators();
 
     /**
      * Retrieves a Map of key validators.
@@ -76,19 +61,13 @@ public interface KeyValidatorProxySessionRemote {
      * 
      * @return Map of BaseKeyValidator mapped by ID.
      */
-    Map<Integer, BaseKeyValidator> getKeyValidatorsById(Collection<Integer> ids);
+    Map<Integer, Validator> getKeyValidatorsById(Collection<Integer> ids);
 
     /**
      * Retrieves a Map of key validator names. 
      * @return mapping of key validators ids and names. 
      */
     Map<Integer, String> getKeyValidatorIdToNameMap();
-
-    /**
-     * @return the data map of the key validator with the given id.
-     * @throws KeyValidatorDoesntExistsException if there's no key validator with the given id.
-     */
-    Map<?, ?> getKeyValidatorData(int id) throws KeyValidatorDoesntExistsException;
 
     /**
      * Adds a key validator to the database. Used for importing and exporting
@@ -102,35 +81,33 @@ public interface KeyValidatorProxySessionRemote {
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
-    void addKeyValidator(AuthenticationToken admin, int id, String name, BaseKeyValidator validator)
+    void addKeyValidator(AuthenticationToken admin, int id, String name, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException;
 
     /**
      * Adds a key validator to the database.
      * 
      * @param admin AuthenticationToken of admin
-     * @param name the name of the key validator to add.
      * @param validator the key validator to add
      * @return the key validator ID as added
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
-    int addKeyValidator(AuthenticationToken admin, String name, BaseKeyValidator validator)
+    int addKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException;
 
     /** 
      * Updates the key validator with the given name.
      *  
      * @param admin AuthenticationToken of administrator.
-     * @param name the name of the key validator to change.
-     * @param validator the key validator to be added.
+     * @param validator the key validator to be modified.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
      * @throws KeyValidatorDoesntExistsException if there's no key validator with the given name.
      * 
      * */
-    void changeKeyValidator(AuthenticationToken admin, String name, BaseKeyValidator validator)
+    void changeKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException;
 
     /**
@@ -140,7 +117,7 @@ public interface KeyValidatorProxySessionRemote {
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
-    void cloneKeyValidator(AuthenticationToken admin, String oldname, String newname)
+    void cloneKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException;
 
     /**
@@ -150,19 +127,19 @@ public interface KeyValidatorProxySessionRemote {
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
-    void renameKeyValidator(AuthenticationToken admin, String oldname, String newname)
+    void renameKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException;
 
     /** Removes the key validator data equal if its referenced by a CA or not.
      * 
      * @param admin AuthenticationToken of admin.
-     * @param name the name of the key validator to remove.
+     * @param validatorId the ID of the key validator to remove.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidators
      * @throws KeyValidatorDoesntExistsException if the key validator does not exist.
      * @throws CouldNotRemoveKeyValidatorException if the key validator is referenced by other objects.
      */
-    void removeKeyValidator(AuthenticationToken admin, String name)
+    void removeKeyValidator(AuthenticationToken admin, final int validatorId)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, CouldNotRemoveKeyValidatorException;
 
     /** Retrieves a Collection of id:s (Integer) to authorized key validators. 
@@ -171,20 +148,7 @@ public interface KeyValidatorProxySessionRemote {
      * @return Collection of end key validator id:s (Integer)
      */
     Collection<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin, String keyValidatorAccessRule);
-
-    /**
-     * Uses the ServiceLoader the retrieve all custom key validator implementation classes, see {@link ICustomKeyValidator}
-     * @return the list of the implementation classes fully qualified paths.
-     */
-    List<String> getCustomKeyValidatorImplementationClasses();
-
-    /**
-     * Creates a concrete key validator instance by its entity data {@link KeyValidatorData}
-     * @param data the key validator data.
-     * @return the concrete IKeyValidator implementation.
-     */
-    IKeyValidator createKeyValidatorInstanceByData(Map<?, ?> data);
-
+    
     /**
      * Flushes the key validators cache to ensure that next time they are read from database.
      */

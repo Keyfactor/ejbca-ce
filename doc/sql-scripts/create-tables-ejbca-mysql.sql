@@ -333,16 +333,6 @@ CREATE TABLE PublicKeyBlacklistData (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE KeyValidatorData (
-    id INT(11) NOT NULL,
-    data LONGTEXT,
-    name VARCHAR(250) BINARY,
-    rowProtection LONGTEXT,
-    rowVersion INT(11) NOT NULL,
-    updateCounter INT(11) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE RoleData (
     id INT(11) NOT NULL,
     roleName VARCHAR(250) BINARY NOT NULL,

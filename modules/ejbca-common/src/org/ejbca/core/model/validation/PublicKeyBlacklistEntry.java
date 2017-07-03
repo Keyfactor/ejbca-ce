@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.model.ca.validation;
+package org.ejbca.core.model.validation;
 
 import java.io.Serializable;
 import java.security.PublicKey;

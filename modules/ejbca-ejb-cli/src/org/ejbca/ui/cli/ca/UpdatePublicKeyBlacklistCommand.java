@@ -37,7 +37,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistExistsException;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
-import org.ejbca.core.model.ca.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
