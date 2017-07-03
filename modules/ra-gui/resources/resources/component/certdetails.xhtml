@@ -198,10 +198,12 @@
             </h:panelGroup>
 
 			<h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
-			<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
+			<h:panelGroup layout="block" styleClass="recovery-group" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
 						<f:event type="postValidate" listener="#{cc.attrs.raCertificateDetails.validatePassword}"/>
 						<h:panelGroup layout="block" styleClass="pure-control-group">
-							<h:outputLabel for="passwordField" value="#{msg.enroll_password}" styleClass="#{cc.attrs.styleLabel}"/>
+						<h:outputLabel value="#{msg.component_certdetails_keyrecovery_finalize}" styleClass="#{cc.attrs.styleLabel}"/>
+			            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+							<h:outputLabel for="passwordField" value="#{msg.enroll_password_new}" styleClass="#{cc.attrs.styleLabel}"/>
 							<h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}" autocomplete="off">
 								<f:validator validatorId="extendedRequiredValidator"/>
 								<f:attribute name="_required" value="true"/>
