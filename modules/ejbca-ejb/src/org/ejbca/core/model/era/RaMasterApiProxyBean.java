@@ -82,6 +82,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -916,6 +917,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating locally stored key pair for end entity '" + endEntity.getUsername() + "'");
                 }
+                if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+                    throw new AuthorizationDeniedException("Not authorized to recover keys");
+                }
                 try {
                     final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
                     final CAInfo caInfo = caInfos.getValue(endEntity.getCAId());
@@ -942,7 +946,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
-                    if (!localNodeKeyRecoverySession.addKeyRecoveryData(authenticationToken, cert, endEntity.getUsername(), kp, cryptoTokenId, keyAlias)) {
+                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, cert, endEntity.getUsername(), kp, cryptoTokenId, keyAlias)) {
                         // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }

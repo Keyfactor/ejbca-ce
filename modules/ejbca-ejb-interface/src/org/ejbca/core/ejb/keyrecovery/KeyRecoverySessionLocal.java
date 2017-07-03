@@ -29,6 +29,9 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
     /**
      * Adds a certificates keyrecovery data to the database. This method allows a crypto token to be specified,
      * and does not require the CA to be present on the system.
+     * 
+     * Additionally, this method expects the caller to do the authorization checks, using the authorization
+     * HashMaps available on the RA.
      *
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keypair.
@@ -40,7 +43,7 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @return false if the certificates keyrecovery data already exists, or if the crypto token was offline.
      * @throws AuthorizationDeniedException if not authorized to administer keys.
      */
-    boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair, int cryptoTokenId,
+    boolean addKeyRecoveryDataInternal(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair, int cryptoTokenId,
             String keyAlias) throws AuthorizationDeniedException;
  
 }
