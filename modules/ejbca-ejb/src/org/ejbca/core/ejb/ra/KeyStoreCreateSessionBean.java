@@ -85,6 +85,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
+    private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
+    @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private CaSessionLocal caSession;
@@ -141,6 +143,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     		}
     		rsaKeys = keyData.getKeyPair();
     		if (reusecertificate) {
+    		    endEntityAuthenticationSession.authenticateUser(administrator, username, password);
     			// This is only done if reusecertificate == true because if you don't re-use certificate
     		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
                 if (log.isDebugEnabled()) {
