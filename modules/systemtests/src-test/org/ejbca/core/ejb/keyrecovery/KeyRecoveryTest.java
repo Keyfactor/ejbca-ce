@@ -388,7 +388,7 @@ public class KeyRecoveryTest extends CaTestCase {
             endEntityManagementSession.setPassword(internalAdmin, testuser, "foo123");
             
             // Now try to perform key recovery
-            assertTrue("markAsRecoverable failed", keyRecoverySession.markAsRecoverable(internalAdmin, usercert, eeProfileId));
+            assertTrue("markAsRecoverable failed",endEntityManagementSession.prepareForKeyRecovery(internalAdmin, testuser, eeProfileId, usercert));
             final byte[] ks2 = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, testuser, "foo123", caId2, "1024", AlgorithmConstants.KEYALGORITHM_RSA, createJKS, true, false, eeprofile.getReUseKeyRecoveredCertificate(), eeProfileId);
             KeyStore keystore2 = KeyStore.getInstance(createJKS?"JKS":"PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore2.load(new ByteArrayInputStream(ks2), "foo123".toCharArray());
