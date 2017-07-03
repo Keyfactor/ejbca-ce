@@ -27,7 +27,7 @@ public final class KeyValidatorTestUtil {
     /**
      * Factory method to create key validators.
      * 
-     * @param type the key validator type (see {@link BaseKeyValidator#KEY_VALIDATOR_TYPE}
+     * @param type the key validator type (see {@link KeyValidatorBase#KEY_VALIDATOR_TYPE}
      * @param name the logical name
      * @param description the description text
      * @param notBefore the certificates validity not before
@@ -37,19 +37,14 @@ public final class KeyValidatorTestUtil {
      * @param failedAction the failed action to be performed.
      * @param certificateProfileIds list of IDs of certificate profile to be applied to. 
      * @return the concrete key validator instance.
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
      */
-    public static final BaseKeyValidator createKeyValidator(final int type, final String name, final String description, final Date notBefore,
+    public static final Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
-            final Integer... certificateProfileIds) {
-        BaseKeyValidator result;
-        if (RsaKeyValidator.KEY_VALIDATOR_TYPE == type) {
-            result = new RsaKeyValidator();
-        } else if (EccKeyValidator.KEY_VALIDATOR_TYPE == type) {
-            result = new EccKeyValidator();
-        } else {
-            return null;
-        }
-        result.setName(name);
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
+        Validator result = type.newInstance();
+        result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
         }

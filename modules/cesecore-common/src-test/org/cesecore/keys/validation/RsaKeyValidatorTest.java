@@ -18,8 +18,6 @@
  */
 package org.cesecore.keys.validation;
 
-import static org.junit.Assert.fail;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -139,7 +137,7 @@ public class RsaKeyValidatorTest {
         BigInteger modulus = BigInteger.valueOf(15);
         BigInteger exponent = BigInteger.valueOf(3);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.KEY_VALIDATOR_TYPE,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom bit length.

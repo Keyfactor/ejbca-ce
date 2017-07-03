@@ -48,8 +48,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.validation.BaseKeyValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -223,15 +223,15 @@ public class ProfilesExportServlet extends HttpServlet {
             final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
             totalprofiles = map.size();
             log.info("Exporting key validators.");
-            BaseKeyValidator keyValidator;
+            Validator keyValidator;
             String profilenameEncoded;
             byte[] ba;
             String filename;
             ZipEntry ze;
             for (Integer id : map.keySet()) {
-                keyValidator = keyValidatorSession.getKeyValidator(id);
+                keyValidator = keyValidatorSession.getValidator(id);
                 try {
-                    profilenameEncoded = URLEncoder.encode(keyValidator.getName(), "UTF-8");
+                    profilenameEncoded = URLEncoder.encode(keyValidator.getProfileName(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     throw new IllegalStateException("UTF-8 was not a known encoding", e);
                 }
@@ -269,4 +269,9 @@ public class ProfilesExportServlet extends HttpServlet {
         baos.close();
         return ba;
     }
+    
+    private byte[] getProfileBytes(Validator profile) throws IOException {
+        return getProfileBytes(profile.getUpgradableHashmap());
+    }
+
 }

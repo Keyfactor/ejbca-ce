@@ -16,7 +16,6 @@ package org.cesecore.keys.validation;
 import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -50,18 +49,8 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     private KeyValidatorSessionLocal keyValidatorSession;
 
     @Override
-    public BaseKeyValidator getKeyValidator(int id) {
-        return keyValidatorSession.getKeyValidator(id);
-    }
-
-    @Override
-    public BaseKeyValidator getKeyValidator(String name) {
-        return keyValidatorSession.getKeyValidator(name);
-    }
-
-    @Override
-    public int getKeyValidatorId(String name) {
-        return keyValidatorSession.getKeyValidatorId(name);
+    public Validator getKeyValidator(int id) {
+        return keyValidatorSession.getValidator(id);
     }
 
     @Override
@@ -70,12 +59,12 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public Map<Integer, BaseKeyValidator> getAllKeyValidators() {
+    public Map<Integer, Validator> getAllKeyValidators() {
         return keyValidatorSession.getAllKeyValidators();
     }
 
     @Override
-    public Map<Integer, BaseKeyValidator> getKeyValidatorsById(Collection<Integer> ids) {
+    public Map<Integer, Validator> getKeyValidatorsById(Collection<Integer> ids) {
         return keyValidatorSession.getKeyValidatorsById(ids);
     }
 
@@ -85,59 +74,44 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public Map<?, ?> getKeyValidatorData(int id) throws KeyValidatorDoesntExistsException {
-        return keyValidatorSession.getKeyValidatorData(id);
-    }
-
-    @Override
-    public void addKeyValidator(AuthenticationToken admin, int id, String name, BaseKeyValidator validator)
+    public void addKeyValidator(AuthenticationToken admin, int id, String name, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
-        keyValidatorSession.addKeyValidator(admin, id, name, validator);
+        keyValidatorSession.importValidator(admin, validator);
     }
 
     @Override
-    public int addKeyValidator(AuthenticationToken admin, String name, BaseKeyValidator validator)
+    public int addKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
-        return keyValidatorSession.addKeyValidator(admin, name, validator);
+        return keyValidatorSession.addKeyValidator(admin, validator);
     }
 
     @Override
-    public void changeKeyValidator(AuthenticationToken admin, String name, BaseKeyValidator validator)
+    public void changeKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
-        keyValidatorSession.changeKeyValidator(admin, name, validator);
+        keyValidatorSession.changeKeyValidator(admin, validator);
     }
 
     @Override
-    public void cloneKeyValidator(AuthenticationToken admin, String oldname, String newname)
+    public void cloneKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
-        keyValidatorSession.cloneKeyValidator(admin, oldname, newname);
+        keyValidatorSession.cloneKeyValidator(admin, validator, newname);
     }
 
     @Override
-    public void renameKeyValidator(AuthenticationToken admin, String oldname, String newname)
+    public void renameKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
-        keyValidatorSession.renameKeyValidator(admin, oldname, newname);
+        keyValidatorSession.renameKeyValidator(admin, validator, newname);
     }
 
     @Override
-    public void removeKeyValidator(AuthenticationToken admin, String name)
+    public void removeKeyValidator(AuthenticationToken admin, final int validatorId)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, CouldNotRemoveKeyValidatorException {
-        keyValidatorSession.removeKeyValidator(admin, name);
+        keyValidatorSession.removeKeyValidator(admin, validatorId);
     }
 
     @Override
     public Collection<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin, String keyValidatorAccessRule) {
         return keyValidatorSession.getAuthorizedKeyValidatorIds(admin, keyValidatorAccessRule);
-    }
-
-    @Override
-    public List<String> getCustomKeyValidatorImplementationClasses() {
-        return keyValidatorSession.getCustomKeyValidatorImplementationClasses();
-    }
-
-    @Override
-    public IKeyValidator createKeyValidatorInstanceByData(Map<?, ?> data) {
-        return keyValidatorSession.createKeyValidatorInstanceByData(data);
     }
 
     @Override

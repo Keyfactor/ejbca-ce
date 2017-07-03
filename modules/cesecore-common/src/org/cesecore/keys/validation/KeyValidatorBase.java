@@ -20,12 +20,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.profiles.ProfileBase;
 
 /**
  * BaseKeyValidator is a basic class that should be inherited by all types
@@ -34,12 +36,12 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  *
  * @version $Id$
  */
-public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements Serializable, Cloneable, IKeyValidator {
+public abstract class KeyValidatorBase extends ProfileBase implements Serializable, Cloneable, Validator {
 
     private static final long serialVersionUID = -335459158399850925L;
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(BaseKeyValidator.class);
+    private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
 
     /** List separator. */
     private static final String LIST_SEPARATOR = ";";
@@ -48,12 +50,8 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
 
     public static final float LATEST_VERSION = 1F;
 
-    /** The key validator type. */
-    public static final int KEY_VALIDATOR_TYPE = -1;
-
     public static final String TYPE = "type";
     protected static final String SETTINGS_TEMPLATE = "settingsTemplate";
-    protected static final String CLASSPATH = "classpath";
     protected static final String DESCRIPTION = "description";
     protected static final String NOT_BEFORE = "notBefore";
     protected static final String NOT_BEFORE_CONDITION = "notBeforeCondition";
@@ -64,7 +62,6 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
 
     // Values used for lookup that are not stored in the data hash map.
     private int id;
-    private String name;
 
     /** Certificate profile reference of applied certificate profile. */
     protected CertificateProfile certificateProfile;
@@ -76,28 +73,38 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
     protected List<String> messages = new ArrayList<String>();
 
     /**
+     * Public constructor needed for deserialization.
+     */
+    public KeyValidatorBase() {
+        super();
+    }
+    
+    /**
      * Creates a new instance.
      */
-    public BaseKeyValidator() {
+    public KeyValidatorBase(final String name) {
+        super(name);
         init();
     }
 
     /**
      * Creates a new instance with the same attributes as the given one.
      */
-    public BaseKeyValidator(final BaseKeyValidator keyValidator) {
+    public KeyValidatorBase(final KeyValidatorBase keyValidator) {
         this.data = new LinkedHashMap<Object, Object>(keyValidator.data);
         this.id = keyValidator.id;
-        this.name = keyValidator.name;
     }
 
     @Override
-    public abstract Integer getKeyValidatorType();
-
+    public String getProfileType() {
+        return Validator.TYPE_NAME;
+    }
+    
     /**
      * Initializes uninitialized data fields.
      */
     public void init() {
+        super.initialize();
         if (null == data.get(VERSION)) {
             data.put(VERSION, new Float(LATEST_VERSION));
         }
@@ -121,140 +128,71 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
         }
     }
 
-    /**
-     * Populates the sub class specific key validator values with template values based on {@link BaseKeyValidator#getSettingsTemplate()}. 
-     * Sub classes only need to implement this method if they support configuration templates.
-     */
+    @Override
     public void setKeyValidatorSettingsTemplate() {
     }
 
-    /**
-     * Sets the certificate profile.
-     * @param certificateProfile
-     */
+    @Override
     public void setCertificateProfile(CertificateProfile certificateProfile) {
         this.certificateProfile = certificateProfile;
     }
 
-    /**
-     * Gets the key validator id.
-     * @return
-     */
-    public int getKeyValidatorId() {
-        return id;
-    }
-
-    /**
-     * Sets the key valildator id.
-     * @param id
-     */
-    public void setKeyValidtorId(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets the settings template index.
-     */
+    @Override
     public Integer getSettingsTemplate() {
         return (Integer) data.get(SETTINGS_TEMPLATE);
     }
 
-    /**
-     * Sets the settings template index.
-     * @param type the type {@link KeyValidatorSettingsTemplate}.
-     */
+    @Override
     public void setSettingsTemplate(Integer option) {
         data.put(SETTINGS_TEMPLATE, option);
     }
 
-    /**
-     * Gets the class path.
-     * @return the fully qualified path.
-     */
-    public String getClasspath() {
-        return (String) data.get(CLASSPATH);
-    }
-
-    /**
-     * Sets the class path.
-     * @param classpath the fully qualified path.
-     */
-    public void setClasspath(String classpath) {
-        data.put(CLASSPATH, classpath);
-    }
-
-    /**
-     * Gets the name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the name.
-     * @param name
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Gets the type.
-     */
-    public Integer getType() {
-        return (Integer) data.get(TYPE);
-    }
-
-    /**
-     * Sets the type.
-     * @param type the key validator type.
-     */
-    public void setType(Integer type) {
-        data.put(TYPE, type);
-    }
-
-    /**
-     * Returns the description.
-     */
+    @Override
     public String getDescription() {
         return (String) data.get(DESCRIPTION);
     }
 
-    /**
-     * Sets the description. 
-     */
+    @Override
     public void setDescription(String description) {
         data.put(DESCRIPTION, description);
     }
 
+    @Override
     public Date getNotBefore() {
         return (Date) data.get(NOT_BEFORE);
     }
 
+    @Override
     public void setNotBefore(Date date) {
         data.put(NOT_BEFORE, date);
     }
 
+    @Override
     public int getNotBeforeCondition() {
         return ((Integer) data.get(NOT_BEFORE_CONDITION)).intValue();
     }
 
+    @Override
     public void setNotBeforeCondition(int index) {
         data.put(NOT_BEFORE_CONDITION, index);
     }
 
+    @Override
     public Date getNotAfter() {
         return (Date) data.get(NOT_AFTER);
     }
 
+    @Override
     public void setNotAfter(Date date) {
         data.put(NOT_AFTER, date);
     }
 
+    @Override
     public void setNotAfterCondition(int index) {
         data.put(NOT_AFTER_CONDITION, index);
     }
 
+    @Override
     public int getNotAfterCondition() {
         return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
     }
@@ -264,11 +202,7 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
         return publicKey;
     }
 
-    /** 
-     * Gets a list of selected certificate profile ids. 
-     * 
-     * @return the list.
-     */
+    @Override
     public List<Integer> getCertificateProfileIds() {
         final String value = (String) data.get(CERTIFICATE_PROFILE_IDS);
         final List<Integer> result = new ArrayList<Integer>();
@@ -282,11 +216,7 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
         return result;
     }
 
-    /** 
-     * Sets the selected certificate profile ids.
-     * 
-     * @param ids the collection of ids.
-     */
+    @Override
     public void setCertificateProfileIds(Collection<Integer> ids) {
         final StringBuilder builder = new StringBuilder();
         for (Integer id : ids) {
@@ -299,6 +229,7 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
         data.put(CERTIFICATE_PROFILE_IDS, builder.toString());
     }
 
+    @Override
     public void setFailedAction(int index) {
         data.put(FAILED_ACTION, index);
     }
@@ -309,14 +240,6 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
 
     @Override
     public abstract String getTemplateFile();
-
-    @Override
-    public abstract Object clone() throws CloneNotSupportedException;
-
-    @Override
-    public float getLatestVersion() {
-        return LATEST_VERSION;
-    }
 
     @Override
     public void upgrade() {
@@ -346,15 +269,57 @@ public abstract class BaseKeyValidator extends UpgradeableDataHashMap implements
     public List<String> getMessages() {
         return messages;
     }
-
+    
+    @Override
     public String toDisplayString() {
         final StringBuilder result = new StringBuilder();
-        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(name).append(", classpath=").append(data.get(CLASSPATH))
-                .append(", certificateProfile=").append(certificateProfile).append(", applicableCertificateProfileIds=")
-                .append(data.get(CERTIFICATE_PROFILE_IDS)).append(", notBefore=").append(data.get(NOT_BEFORE)).append(", notBeforeCondition=")
-                .append(data.get(NOT_BEFORE_CONDITION)).append(", notAfter=").append(data.get(NOT_AFTER)).append(", notAfterCondition=")
-                .append(data.get(NOT_AFTER_CONDITION)).append(", failedAction=").append(data.get(FAILED_ACTION)).append(", publicKey=")
-                .append(publicKey).append(", messages=").append(messages);
+        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", certificateProfile=")
+                .append(certificateProfile).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
+                .append(", notBefore=").append(data.get(NOT_BEFORE)).append(", notBeforeCondition=").append(data.get(NOT_BEFORE_CONDITION))
+                .append(", notAfter=").append(data.get(NOT_AFTER)).append(", notAfterCondition=").append(data.get(NOT_AFTER_CONDITION))
+                .append(", failedAction=").append(data.get(FAILED_ACTION)).append(", publicKey=").append(publicKey).append(", messages=")
+                .append(messages);
         return result.toString();
     }
+    
+    @Override
+    public Validator clone() {
+        getType();
+        Validator clone;
+        try {
+            clone = (Validator) getType().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException("Could not instansiate class of type " + getType().getCanonicalName());
+        }
+        clone.setProfileName(getProfileName());
+        clone.setProfileId(getProfileId());
+
+        // We need to make a deep copy of the hashmap here
+        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>(data.size());
+        for (final Entry<Object, Object> entry : data.entrySet()) {
+            Object value = entry.getValue();
+            if (value instanceof ArrayList<?>) {
+                // We need to make a clone of this object, but the stored immutables can still be referenced
+                value = ((ArrayList<?>) value).clone();
+            }
+            dataMap.put(entry.getKey(), value);
+        }
+        clone.setDataMap(dataMap);
+        return clone;
+    }
+    
+    @Override
+    protected void saveTransientObjects() {
+
+    }
+
+    @Override
+    protected void loadTransientObjects() {
+    }
+    
+    @Override
+    public UpgradeableDataHashMap getUpgradableHashmap() {
+        return this;
+    }
+    
 }

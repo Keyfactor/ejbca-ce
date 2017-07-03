@@ -16,8 +16,6 @@ package org.cesecore.keys.validation;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -25,6 +23,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.profiles.Profile;
 
 /**
  * Default ECC key validator using the Bouncy Castle BCECPublicKey implementation 
@@ -36,7 +35,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
  * 
  * @version $Id$
  */
-public class EccKeyValidator extends BaseKeyValidator {
+public class EccKeyValidator extends KeyValidatorBase {
 
     private static final long serialVersionUID = -335429158339811928L;
 
@@ -45,7 +44,7 @@ public class EccKeyValidator extends BaseKeyValidator {
     public static final float LATEST_VERSION = 1;
 
     /** The key validator type. */
-    public static final int KEY_VALIDATOR_TYPE = 2;
+    private static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
 
     /** View template in /ca/editkeyvalidators. */
     protected static final String TEMPLATE_FILE = "editEccKeyValidator.xhtml";
@@ -56,10 +55,20 @@ public class EccKeyValidator extends BaseKeyValidator {
 
     protected static final String USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE = "useFullPublicKeyValidationRoutine";
 
+    
+    /**
+     * Public constructor needed for deserialization.
+     */
+    public EccKeyValidator() {
+        super();
+        init();
+    }
+    
     /**
      * Creates a new instance.
      */
-    public EccKeyValidator() {
+    public EccKeyValidator(final String name) {
+        super(name);
         init();
     }
 
@@ -67,13 +76,8 @@ public class EccKeyValidator extends BaseKeyValidator {
      * Creates a new instance with the same attributes as the given one.
      * @param keyValidator the base key validator to load.
      */
-    public EccKeyValidator(final BaseKeyValidator keyValidator) {
+    public EccKeyValidator(final KeyValidatorBase keyValidator) {
         super(keyValidator);
-    }
-
-    @Override
-    public Integer getKeyValidatorType() {
-        return KEY_VALIDATOR_TYPE;
     }
 
     /**
@@ -81,9 +85,6 @@ public class EccKeyValidator extends BaseKeyValidator {
      */
     public void init() {
         super.init();
-        if (null == data.get(TYPE)) {
-            data.put(TYPE, Integer.valueOf(KEY_VALIDATOR_TYPE));
-        }
         if (null == data.get(CURVES)) {
             setCurves(new ArrayList<String>());
         }
@@ -185,21 +186,6 @@ public class EccKeyValidator extends BaseKeyValidator {
     @Override
     public String getTemplateFile() {
         return TEMPLATE_FILE;
-    }
-
-    @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Object clone() throws CloneNotSupportedException {
-        final EccKeyValidator result = new EccKeyValidator();
-        final HashMap map = (HashMap) result.saveData();
-        final Iterator iterator = (data.keySet()).iterator();
-        Object key;
-        while (iterator.hasNext()) {
-            key = iterator.next();
-            map.put(key, data.get(key));
-        }
-        result.loadData(map);
-        return result;
     }
 
     @Override
@@ -326,5 +312,20 @@ public class EccKeyValidator extends BaseKeyValidator {
         setUsePartialPublicKeyValidationRoutine(true);
         // SHOULD use the full public key validation routine
         setUseFullPublicKeyValidationRoutine(true);
+    }
+    
+    @Override
+    public String getLabel() {
+        return intres.getLocalizedMessage("validator.implementation.key.ecc");
+    }
+
+    @Override
+    public String getValidatorTypeIdentifier() {
+        return TYPE_IDENTIFIER;
+    }
+
+    @Override
+    protected Class<? extends Profile> getImplementationClass() {
+        return EccKeyValidator.class;
     }
 }

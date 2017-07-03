@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -39,23 +38,21 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.validation.BaseKeyValidator;
-import org.cesecore.keys.validation.ICustomKeyValidator;
-import org.cesecore.keys.validation.IKeyValidator;
 import org.cesecore.keys.validation.KeyGeneratorSources;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
+import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.KeyValidatorDateConditions;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.Validator;
+import org.cesecore.keys.validation.ValidatorFactory;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ca.keys.validation.AbstractCustomKeyValidator;
-import org.ejbca.core.model.ca.keys.validation.CustomKeyValidatorTools;
-import org.ejbca.core.model.ca.keys.validation.CustomKeyValidatorUiSupport;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -88,9 +85,9 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
 
     /** Selected key validator id.*/
     private int currentKeyValidatorId = -1;
-
+    
     /** Selected key validator. */
-    private BaseKeyValidator keyValidator = null;
+    private Validator keyValidator = null;
 
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
@@ -134,7 +131,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
      * Gets the selected key validator.
      * @return the key validator.
      */
-    public BaseKeyValidator getKeyValidator() {
+    public Validator getKeyValidator() {
         if (currentKeyValidatorId != -1 && keyValidator != null && getSelectedKeyValidatorId().intValue() != currentKeyValidatorId) {
             reset();
         }
@@ -143,7 +140,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
                 log.debug("Request key validator with id " + getSelectedKeyValidatorId());
             }
             currentKeyValidatorId = getSelectedKeyValidatorId().intValue();
-            keyValidator = keyValidatorSession.getKeyValidator(currentKeyValidatorId);
+            keyValidator = keyValidatorSession.getValidator(currentKeyValidatorId);
         }
         return keyValidator;
     }
@@ -162,24 +159,14 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
      * 
      * @param e the event.
      */
-    public void keyValdatorTypeChanged(AjaxBehaviorEvent e) {
+    public void keyValidatorTypeChanged(AjaxBehaviorEvent e) {
         if (log.isDebugEnabled()) {
             log.debug("Setting key validator type " + ((HtmlSelectOneMenu) e.getComponent()).getValue());
         }
-        final String value = (String) ((HtmlSelectOneMenu) e.getComponent()).getValue();
-        int type;
-        try {
-            type = Integer.parseInt(value);
-            getKeyValidator().setClasspath("");
-        } catch (NumberFormatException ex) {
-            // Must be custom type.
-            final String classpath = value.substring(value.indexOf('-') + 1);
-            type = AbstractCustomKeyValidator.KEY_VALIDATOR_TYPE;
-            getKeyValidator().setClasspath(classpath);
-        }
-        getKeyValidator().setType(type);
-        keyValidator = (BaseKeyValidator) keyValidatorSession.createKeyValidatorInstanceByData(getKeyValidator().getRawData());
-        keyValidator.setKeyValidtorId(getSelectedKeyValidatorId());
+        final String type = (String) ((HtmlSelectOneMenu) e.getComponent()).getValue();
+        keyValidator = ValidatorFactory.INSTANCE.getArcheType(type);
+        keyValidator.setDataMap(getKeyValidator().getDataMap());
+        keyValidator.setProfileId(getSelectedKeyValidatorId());
         FacesContext.getCurrentInstance().renderResponse();
     }
 
@@ -193,14 +180,14 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
             log.debug("Setting key validator base parameter option " + ((HtmlSelectOneMenu) e.getComponent()).getValue());
         }
         final Integer value = (Integer) ((HtmlSelectOneMenu) e.getComponent()).getValue();
-        final BaseKeyValidator keyValidator = getKeyValidator();
+        final Validator keyValidator = getKeyValidator();
         keyValidator.setSettingsTemplate(value);
         keyValidator.setKeyValidatorSettingsTemplate();
         FacesContext.getCurrentInstance().renderResponse();
     }
 
     /**
-     * Checks weather the custom key validator settings are enabled and the concerning fields (key size, key strength, more detailed attributes, etc.) are enabled.
+     * Checks whether the custom key validator settings are enabled and the concerning fields (key size, key strength, more detailed attributes, etc.) are enabled.
      * @return true if customs settings are enabled.
      */
     public boolean isCustomBaseSettingsEnabled() {
@@ -213,29 +200,17 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
      * @return the available key validators as list
      */
     public List<SelectItem> getAvailableKeyValidators() {
-        String classPath;
-        String className;
-        final List<SelectItem> result = new ArrayList<SelectItem>();
-        final List<IKeyValidator> keyValidators = keyValidatorSession.getKeyValidatorImplementations();
-        for (IKeyValidator keyValidator : keyValidators) {
-            classPath = keyValidator.getClass().getName();
-            className = classPath.substring(classPath.lastIndexOf('.') + 1);
-            result.add(new SelectItem(Integer.toString(keyValidator.getType()), getEjbcaWebBean().getText(className.toUpperCase())));
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final Validator validator : ValidatorFactory.INSTANCE.getAllImplementations()) {
+            ret.add(new SelectItem(validator.getValidatorTypeIdentifier(), validator.getLabel()));
         }
-        final List<ICustomKeyValidator> customKeyValidators = keyValidatorSession.getCustomKeyValidatorImplementations();
-        for (ICustomKeyValidator keyValidator : customKeyValidators) {
-            classPath = keyValidator.getClasspath();
-            className = classPath.substring(classPath.lastIndexOf('.') + 1);
-            result.add(new SelectItem(Integer.toString(keyValidator.getType()) + "-" + classPath,
-                    getEjbcaWebBean().getText(className.toUpperCase()) + " (" + getEjbcaWebBean().getText("CUSTOMKEYVALIDATOR") + ")"));
-        }
-        Collections.sort(result, new Comparator<SelectItem>() { // Sort by label.
+        Collections.sort(ret, new Comparator<SelectItem>() {
             @Override
-            public int compare(final SelectItem selectItem0, final SelectItem selectItem1) {
-                return String.valueOf(selectItem0.getLabel()).compareTo(String.valueOf(selectItem1.getLabel()));
+            public int compare(SelectItem o1, SelectItem o2) {
+                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
             }
         });
-        return result;
+        return ret;
     }
 
     /**
@@ -257,35 +232,22 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
      * @return the selected type.
      */
     public String getKeyValidatorType() {
-        final int type = getKeyValidator().getType();
-        String result;
-        if (AbstractCustomKeyValidator.KEY_VALIDATOR_TYPE == type) {
-            result = Integer.toString(type) + "-" + getKeyValidator().getClasspath();
+        if(keyValidator != null) {
+            return keyValidator.getValidatorTypeIdentifier();
         } else {
-            result = Integer.toString(type);
+            return null;
         }
-        return result;
     }
-
-    /**
-     * Sets the selected key validator type.
-     * @param value the type as string.
-     */
-    public void setKeyValidatorType(final String value) {
-        int type;
-        try {
-            type = Integer.parseInt(value);
-        } catch (NumberFormatException ex) {
-            // Must be custom type.
-            final String classpath = value.substring(value.indexOf('-') + 1);
-            type = AbstractCustomKeyValidator.KEY_VALIDATOR_TYPE;
-            getKeyValidator().setClasspath(classpath);
-        }
-        getKeyValidator().setType(type);
+    
+    public void setKeyValidatorType(String value) {
+        keyValidator = ValidatorFactory.INSTANCE.getArcheType(value);
+        keyValidator.setDataMap(getKeyValidator().getDataMap());
+        keyValidator.setProfileId(getSelectedKeyValidatorId());
+        FacesContext.getCurrentInstance().renderResponse();
     }
-
+    
     /**
-     * Validates the BaseKeyValildator description field, see {@link BaseKeyValidator#getDescription()}.
+     * Validates the BaseKeyValildator description field, see {@link KeyValidatorBase#getDescription()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -303,45 +265,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator type field, see {@link BaseKeyValidator#getType()}.
-     * @param context the faces context.
-     * @param component the events source component
-     * @param value the source components value attribute
-     * @throws ValidatorException if the validation fails.
-     */
-    public void validateKeyValdatorType(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        int type = -1;
-        String message = null;
-        final List<Integer> types = keyValidatorSession.getKeyValidatorTypes();
-        try {
-            type = Integer.parseInt((String) value);
-            if (!types.contains(type)) {
-                message = "Key validator type must be on of " + types;
-            }
-        } catch (NumberFormatException e) { // Must be a custom type: '0-<fullyQualifiedClassPath>'
-            final String[] tokens = ((String) value).split("-");
-            if (tokens.length > 1) {
-                try {
-                    type = Integer.parseInt(tokens[0]);
-                    final String className = tokens[1];
-                    if (AbstractCustomKeyValidator.KEY_VALIDATOR_TYPE != type) {
-                        message = "Key validator type must be on of " + types;
-                    }
-                    if (StringUtils.isBlank(className) || !keyValidatorSession.getCustomKeyValidatorImplementationClasses().contains(className)) {
-                        message = "Custom key validator class not found: " + className;
-                    }
-                } catch (NumberFormatException e2) {
-                    message = "Could not parse key validator type (or custom type) index: " + value;
-                }
-            }
-        }
-        if (null != message) {
-            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
-        }
-    }
-
-    /**
-     * Validates the BaseKeyValildator notBefore field, see {@link BaseKeyValidator#getNotBefore()}.
+     * Validates the BaseKeyValildator notBefore field, see {@link KeyValidatorBase#getNotBefore()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -356,7 +280,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notBefore condition field, see {@link BaseKeyValidator#getNotBeforeCondition()}.
+     * Validates the BaseKeyValildator notBefore condition field, see {@link KeyValidatorBase#getNotBeforeCondition()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -371,7 +295,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notAfter field, see {@link BaseKeyValidator#getNotAfter()}.
+     * Validates the BaseKeyValildator notAfter field, see {@link KeyValidatorBase#getNotAfter()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -386,7 +310,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notAfter condition field, see {@link BaseKeyValidator#getNotAfterCondition()}.
+     * Validates the BaseKeyValildator notAfter condition field, see {@link KeyValidatorBase#getNotAfterCondition()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -401,7 +325,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator failedAction field, see {@link BaseKeyValidator#getFailedAction()}.
+     * Validates the BaseKeyValildator failedAction field, see {@link KeyValidatorBase#getFailedAction()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -416,7 +340,7 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator certificateProfileIds field, see {@link BaseKeyValidator#getCertificateProfileIds()}.
+     * Validates the BaseKeyValildator certificateProfileIds field, see {@link KeyValidatorBase#getCertificateProfileIds()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -474,17 +398,8 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
             //                success = false;
             //          }
             // Workaround: Required for saving after first editing (keyValidator.getName() is null).
-            final String name = getSelectedKeyValidatorName();
-            if (success) { // Modify the key validator.
-                if (keyValidator instanceof CustomKeyValidatorUiSupport) {
-                    final String propertiesString = CustomKeyValidatorTools
-                            .getString(((CustomKeyValidatorUiSupport) keyValidator).getCustomUiPropertyList());
-                    if (log.isDebugEnabled()) {
-                        log.debug("Store custom key validator properties for " + name + ": " + propertiesString);
-                    }
-                    ((AbstractCustomKeyValidator) keyValidator).setPropertyData(propertiesString);
-                }
-                keyValidatorSession.changeKeyValidator(getAdmin(), name, keyValidator);
+            if (success) { // Modify the key validator.            
+                keyValidatorSession.changeKeyValidator(getAdmin(), keyValidator);
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 addInfoMessage("KEYVALIDATORSAVED");
                 reset();
@@ -504,13 +419,17 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
      */
     public List<SelectItem> getAvailableCertificateProfiles() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
+        List<Integer> authorizedCertificateProfiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN);
         final Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
-        final Iterator<Integer> iterator = map.keySet().iterator();
-        Integer key;
-        while (iterator.hasNext()) {
-            key = iterator.next();
-            result.add(new SelectItem(key, map.get(key)));
+        for(Integer certificateProfileId : authorizedCertificateProfiles) {
+            result.add(new SelectItem(certificateProfileId, map.get(certificateProfileId)));
         }
+        Collections.sort(result, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem o1, SelectItem o2) {
+                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
+            }
+        });
         return result;
     }
 

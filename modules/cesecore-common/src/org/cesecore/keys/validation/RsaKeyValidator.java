@@ -18,8 +18,6 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +26,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.profiles.Profile;
 
 /**
  * Default RSA key validator. 
@@ -38,7 +37,7 @@ import org.cesecore.keys.util.KeyTools;
  * 
  * @version $Id$
  */
-public class RsaKeyValidator extends BaseKeyValidator {
+public class RsaKeyValidator extends KeyValidatorBase {
 
     private static final long serialVersionUID = -335429118359811926L;
 
@@ -66,10 +65,10 @@ public class RsaKeyValidator extends BaseKeyValidator {
     /** SHOULD be with smallest factor >= 752 */
     public static final int CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR = 752;
 
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 1f;
 
     /** The key validator type. */
-    public static final int KEY_VALIDATOR_TYPE = 1;
+    private static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
 
     /** View template in /ca/editkeyvalidators. */
     protected static final String TEMPLATE_FILE = "editRsaKeyValidator.xhtml";
@@ -164,11 +163,20 @@ public class RsaKeyValidator extends BaseKeyValidator {
         }
         return false;
     }
+    
+    /**
+     * Public constructor needed for deserialization.
+     */
+    public RsaKeyValidator() {
+        super();
+        init();
+    }
 
     /**
      * Creates a new instance.
      */
-    public RsaKeyValidator() {
+    public RsaKeyValidator(final String name) {
+        super(name);
         init();
     }
 
@@ -176,13 +184,8 @@ public class RsaKeyValidator extends BaseKeyValidator {
      * Creates a new instance with the same attributes as the given one.
      * @param keyValidator the base key validator to load.
      */
-    public RsaKeyValidator(final BaseKeyValidator keyValidator) {
+    public RsaKeyValidator(final KeyValidatorBase keyValidator) {
         super(keyValidator);
-    }
-
-    @Override
-    public Integer getKeyValidatorType() {
-        return KEY_VALIDATOR_TYPE;
     }
 
     /**
@@ -190,9 +193,6 @@ public class RsaKeyValidator extends BaseKeyValidator {
      */
     public void init() {
         super.init();
-        if (null == data.get(TYPE)) {
-            data.put(TYPE, Integer.valueOf(KEY_VALIDATOR_TYPE));
-        }
         if (null == data.get(BIT_LENGTHS)) {
             setBitLengths(new ArrayList<String>());
         }
@@ -414,21 +414,6 @@ public class RsaKeyValidator extends BaseKeyValidator {
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Object clone() throws CloneNotSupportedException {
-        final RsaKeyValidator result = new RsaKeyValidator();
-        final HashMap map = (HashMap) result.saveData();
-        final Iterator iterator = (data.keySet()).iterator();
-        Object key;
-        while (iterator.hasNext()) {
-            key = iterator.next();
-            map.put(key, data.get(key));
-        }
-        result.loadData(map);
-        return result;
-    }
-
-    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
@@ -569,5 +554,20 @@ public class RsaKeyValidator extends BaseKeyValidator {
             }
         }
         return result;
+    }
+    
+    @Override
+    public String getLabel() {
+        return intres.getLocalizedMessage("validator.implementation.key.rsa");
+    }
+
+    @Override
+    public String getValidatorTypeIdentifier() {
+        return TYPE_IDENTIFIER;
+    }
+
+    @Override
+    protected Class<? extends Profile> getImplementationClass() {
+        return RsaKeyValidator.class;
     }
 }
