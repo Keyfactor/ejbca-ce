@@ -44,7 +44,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * @param expired should be set to true if the notification is due to expiration of the approval request
      */
     void sendApprovalNotifications(ApprovalRequest approvalRequest, ApprovalProfile approvalProfile,
-            List<Approval> approvalsPerformed, boolean expired);
+            ApprovalData approvalData, boolean expired);
 
 	/**
 	 * Encode a Collection of Approval and set it in ApprovalData object.
