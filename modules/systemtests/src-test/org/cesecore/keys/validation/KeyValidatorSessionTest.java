@@ -281,6 +281,25 @@ public class KeyValidatorSessionTest {
         try {
             final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
                     new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
+            fail("With action 'Abort certificate issuance an exception should be thrown: "+result);
+        } catch (EJBException e) {
+            assertTrue(
+                    "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
+                            + e.getCause(),
+                    e.getCause() instanceof StreamCorruptedException);
+        } catch (Exception e) {
+            // Exception expected here
+            log.info(e.getMessage(), e);
+        }
+
+        // B-3: Check invalid RSA key with failed action NOT 'Abort certificate issuance' -> issuance SHOULD NOT be aborted.
+        keyPair = generateRsaKeyPair(512); // KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        publicKey = keyPair.getPublic();
+        keyValidator.setFailedAction(KeyValidationFailedActions.LOG_WARN.getIndex());
+        keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator.getName(), keyValidator);
+        try {
+            final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
+                    new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
             assertFalse("512 bit RSA key should not validate with default settings.", result);
 
         } catch (EJBException e) {
@@ -292,8 +311,6 @@ public class KeyValidatorSessionTest {
             log.error(e.getMessage(), e);
             fail("512 bit RSA key validation failed with exception for default RSA key validator: "+e.getMessage());
         }
-
-        // B-3: Check invalid RSA key with failed action NOT 'Abort certificate issuance' -> issuance SHOULD NOT be aborted.
 
         // Test server generated keys.
         //        KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
