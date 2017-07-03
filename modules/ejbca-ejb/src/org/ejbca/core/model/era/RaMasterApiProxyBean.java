@@ -880,14 +880,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public void checkUserStatus(AuthenticationToken authenticationToken, String username, String password)
             throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
+        NoSuchEndEntityException noSuchEndEntityException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     raMasterApi.checkUserStatus(authenticationToken, username, password);
+                    return;
+                } catch (NoSuchEndEntityException e) {
+                    if (noSuchEndEntityException != null) {
+                        noSuchEndEntityException = e;
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
+        }
+        if (noSuchEndEntityException != null) {
+            throw noSuchEndEntityException;
         }
     }
 
