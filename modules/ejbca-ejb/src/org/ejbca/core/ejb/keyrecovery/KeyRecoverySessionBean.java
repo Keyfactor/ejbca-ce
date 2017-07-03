@@ -209,43 +209,39 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public boolean addKeyRecoveryData(final AuthenticationToken admin, final Certificate certificate, final String username, final KeyPair keypair,
+    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final Certificate certificate, final String username, final KeyPair keypair,
             final int cryptoTokenId, final String keyAlias) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryData(user: " + username + ")");
         }
-        if (authorizedToAdministrateKeys(admin)) {
-            final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
-            boolean returnval = false;
-            try {
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-                final String publicKeyId = new String(Base64.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier(), false), StandardCharsets.US_ASCII);
-                
-                final byte[] encryptedKeyData = X509CA.doEncryptKeys(cryptoToken, keyAlias, keypair);
-                entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
-                                .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
-                // same method to make hex serno as in KeyRecoveryDataBean
-                String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16),
-                        CertTools.getIssuerDN(certificate), keyAlias, publicKeyId, cryptoTokenId);
-                final Map<String, Object> details = new LinkedHashMap<>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
-                                admin.toString(), null, certSerialNumber, username, details);
-                returnval = true;
-            } catch (Exception e) {
-                final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
-                        CertTools.getIssuerDN(certificate));
-                final Map<String, Object> details = new LinkedHashMap<>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), null, certSerialNumber, username, details);
-                log.error(msg, e);
-            }
-            log.trace("<addKeyRecoveryData()");
-            return returnval;
-        } else {
-            throw new AuthorizationDeniedException(admin + " not authorized to administer keys");
+        final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
+        boolean returnval = false;
+        try {
+            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+            final String publicKeyId = new String(Base64.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier(), false), StandardCharsets.US_ASCII);
+            
+            final byte[] encryptedKeyData = X509CA.doEncryptKeys(cryptoToken, keyAlias, keypair);
+            entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
+                            .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
+            // same method to make hex serno as in KeyRecoveryDataBean
+            String msg = intres.getLocalizedMessage("keyrecovery.addeddata", CertTools.getSerialNumber(certificate).toString(16),
+                    CertTools.getIssuerDN(certificate), keyAlias, publicKeyId, cryptoTokenId);
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
+                            admin.toString(), null, certSerialNumber, username, details);
+            returnval = true;
+        } catch (Exception e) {
+            final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
+                    CertTools.getIssuerDN(certificate));
+            final Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), null, certSerialNumber, username, details);
+            log.error(msg, e);
         }
+        log.trace("<addKeyRecoveryData()");
+        return returnval;
     }
 
     @Override
