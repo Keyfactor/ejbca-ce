@@ -437,7 +437,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     /**
      * Checks if a non-modifiable text displaying the previously set key algorithm should be shown.
      */
-    public boolean isPreSetKeyAlgorithmVisible() {
+    public boolean isPreSetKeyAlgorithmRendered() {
         return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() != null &&
                 endEntityInformation.getTokenType() != EndEntityConstants.TOKEN_USERGEN &&
                 endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
