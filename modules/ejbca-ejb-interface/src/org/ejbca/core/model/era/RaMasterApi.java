@@ -243,6 +243,9 @@ public interface RaMasterApi {
     /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
     
+    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
+    CertificateDataWrapper searchForCertificateByIssuerAndSerial(AuthenticationToken authenticationToken, String issuerDN, String serno);
+    
     /** @return list of certificates from the specified search criteria*/
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
 

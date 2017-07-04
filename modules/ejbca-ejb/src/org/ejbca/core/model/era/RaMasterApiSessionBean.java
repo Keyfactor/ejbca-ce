@@ -834,20 +834,33 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return returnval;
     }
 
-    @Override
-    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
-        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
-        if (cdw==null) {
-            return null;
-        }
+    private boolean authorizedToCert(final AuthenticationToken authenticationToken, final CertificateDataWrapper cdw) {
         if (!caSession.authorizedToCANoLogging(authenticationToken, cdw.getCertificateData().getIssuerDN().hashCode())) {
-            return null;
+            return false;
         }
         // Check EEP authorization (allow an highly privileged admin, e.g. superadmin, that can access all profiles to ignore this check
         // so certificates can still be accessed by this admin even after a EEP has been removed.
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
         final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
         if (!accessAnyEepAvailable && !authorizedEepIds.contains(Integer.valueOf(cdw.getCertificateData().getEndEntityProfileIdOrZero()))) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (cdw==null || !authorizedToCert(authenticationToken, cdw)) {
+            return null;
+        }
+        return cdw;
+    }
+    
+    @Override
+    public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serno) {
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDN, new BigInteger(serno, 16));
+        if (cdw==null || !authorizedToCert(authenticationToken, cdw)) {
             return null;
         }
         return cdw;

@@ -1891,12 +1891,16 @@ public class X509CA extends CA implements Serializable {
         log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
-
+    
     @Override
     public KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws IOException, CMSException, CryptoTokenOfflineException, ClassNotFoundException {
+        return doDecryptKeys(cryptoToken, alias, data);
+    }
+
+    public static KeyPair doDecryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CMSException, CryptoTokenOfflineException, ClassNotFoundException {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
-        RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
+        RecipientInformation recipient = recipients.getRecipients().iterator().next();
         ObjectInputStream ois = null;
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
         rec.setProvider(cryptoToken.getEncProviderName());
@@ -1915,7 +1919,7 @@ public class X509CA extends CA implements Serializable {
     public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
-        RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
+        RecipientInformation recipient = recipients.getRecipients().iterator().next();
         final String keyAlias = getCAToken().getAliasFromPurpose(cAKeyPurpose);
         JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(keyAlias));
         rec.setProvider(cryptoToken.getSignProviderName());

@@ -22,6 +22,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
@@ -607,6 +609,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return searchResponse;
     }
+    
+    @Override
+    public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serno) {
+        CertificateDataWrapper searchResponse = null;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    searchResponse = raMasterApi.searchForCertificateByIssuerAndSerial(authenticationToken, issuerDN, serno);
+                    if (searchResponse != null) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return searchResponse;
+    }
 
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken,
@@ -900,6 +920,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw noSuchEndEntityException;
         }
     }
+    
+    private X509Certificate requestCertForEndEntity(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final String password, final KeyPair kp)
+            throws AuthorizationDeniedException, EjbcaException, OperatorCreationException, CertificateParsingException, IOException {
+        final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
+        final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
+        final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+        final byte[] csr = pkcs10req.getEncoded();
+        endEntity.getExtendedinformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
+        endEntity.setPassword(password); // not persisted
+        // Request certificate
+        final byte[] certBytes = createCertificate(authenticationToken, endEntity);
+        return CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+    }
 
     // This method is somewhat special, because it should not be sent/forwarded upstream depending on a configuration setting
     @Override
@@ -907,38 +940,38 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         EjbcaException userNotFoundException = null;
-        RaMasterApi[] apiOrdered = raMasterApis;
         
+        final String username = endEntity.getUsername();
+        final EndEntityInformation storedEndEntity = searchUser(authenticationToken, username);
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (endEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+        if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             // "Force local key recovery" enabled. The certificate is issued on the CA, but the key pair is generated and stored locally.
-            EndEntityInformation storedEndEntity = searchUser(authenticationToken, endEntity.getUsername());
-            if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Creating locally stored key pair for end entity '" + endEntity.getUsername() + "'");
-                }
-                if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
-                    throw new AuthorizationDeniedException("Not authorized to recover keys");
-                }
-                try {
-                    final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
-                    final CAInfo caInfo = caInfos.getValue(endEntity.getCAId());
-                    if (caInfo == null) {
-                        throw new AuthorizationDeniedException("Not authorized to CA with ID " + endEntity.getCAId() + ", or it does not exist.");
+            final IdNameHashMap<CAInfo> caInfos = getAuthorizedCAInfos(authenticationToken);
+            final CAInfo caInfo = caInfos.getValue(storedEndEntity.getCAId());
+            if (caInfo == null) {
+                throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
+            }
+            final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
+            if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
+                throw new AuthorizationDeniedException("Not authorized to recover keys");
+            }
+            final EndEntityProfile endEntityProfile = getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY).getValue(storedEndEntity.getEndEntityProfileId());
+            if (endEntityProfile == null) {
+                throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
+            }
+            
+            final X509Certificate cert;
+            final KeyPair kp;
+            try {
+                if (storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Creating locally stored key pair for end entity '" + username + "'");
                     }
-                    Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
                     // Create new key pair and CSR
-                    final String keyalg = endEntity.getExtendedinformation().getKeyStoreAlgorithmType();
-                    final String keyspec = endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType();
-                    final KeyPair kp = KeyTools.genKeys(keyspec, keyalg);
-                    final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
-                    final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
-                    final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
-                    final byte[] csr = pkcs10req.getEncoded();
-                    endEntity.getExtendedinformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
-                    // Request certificate
-                    final byte[] certBytes = createCertificate(authenticationToken, endEntity);
-                    final X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+                    final String keyalg = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmType();
+                    final String keyspec = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmSubType();
+                    kp = KeyTools.genKeys(keyspec, keyalg);
+                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                     // Store key pair
                     final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
                     final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
@@ -946,43 +979,55 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
-                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, cert, endEntity.getUsername(), kp, cryptoTokenId, keyAlias)) {
+                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, cert, username, kp, cryptoTokenId, keyAlias)) {
                         // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
-                    // Build keystore
-                    final KeyStore ks;
-                    String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-                    if (alias == null) {
-                        alias = endEntity.getUsername();
+                } else {
+                    // Recover existing key pair
+                    if (log.isDebugEnabled()) {
+                        log.debug("Recovering locally stored key pair for end entity '" + username + "'");
                     }
-                    if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
-                        ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
+                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeys(authenticationToken, username, storedEndEntity.getEndEntityProfileId());
+                    kp = kri.getKeyPair();
+                    if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
+                        final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
+                        if (cdw == null) {
+                            final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
+                            log.info(msg);
+                            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
+                        }
+                        cert = (X509Certificate) cdw.getCertificate();
                     } else {
-                        ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
+                        cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                     }
-                    try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                        ks.store(baos, endEntity.getPassword().toCharArray());
-                        return baos.toByteArray();
-                    }
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
-                        InvalidAlgorithmParameterException | OperatorCreationException | IOException e) {
-                    throw new IllegalStateException(e);
                 }
-            } else {
-                // Recover existing key pair
-                if (log.isDebugEnabled()) {
-                    log.debug("Recovering locally stored key pair for end entity '" + endEntity.getUsername() + "'");
+                // Build keystore
+                final KeyStore ks;
+                String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                if (alias == null) {
+                    alias = username;
                 }
-                apiOrdered = raMasterApisLocalFirst;
+                if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_JKS) {
+                    ks = KeyTools.createJKS(alias, kp.getPrivate(), endEntity.getPassword(), cert, cachain);
+                } else {
+                    ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
+                }
+                try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    ks.store(baos, endEntity.getPassword().toCharArray());
+                    return baos.toByteArray();
+                }
+            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
+                    InvalidAlgorithmParameterException | OperatorCreationException | IOException e) {
+                throw new IllegalStateException(e);
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Requesting key store for end entity '" + endEntity.getUsername() + "'. Remote peer systems will be queried first");
+                log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
             }
         }
         
-        for (final RaMasterApi raMasterApi : apiOrdered) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     return raMasterApi.generateKeyStore(authenticationToken, endEntity);
