@@ -74,7 +74,7 @@ public class RaCertificateDetails {
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
                                                                                 WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
-        boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) throws AuthorizationDeniedException;
+        boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
         UIComponent getConfirmPasswordComponent();
     }
     
@@ -248,13 +248,7 @@ public class RaCertificateDetails {
                 }
             }
         }
-        try {
-            this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
-        } catch (AuthorizationDeniedException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Failed to check key recovery authorization: " + e.getMessage());
-            }
-        }
+        this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
         this.expireDate = certificateData.getExpireDate();
         this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
@@ -454,25 +448,40 @@ public class RaCertificateDetails {
                 callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_successful");
             } else {
                 callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
-                log.info("Failed to perform key recovery for user: " + subjectDn); //Replace this
+                log.info("Failed to perform key recovery for user: " + subjectDn);
             }
         } catch (ApprovalException e) {
             callbacks.getRaLocaleBean().addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", requestId);
+            if (log.isDebugEnabled()) {
+                log.debug("Request with ID: " + requestId + " is still waiting for approval", e);
+            }
         } catch (WaitingForApprovalException e) {
             // Setting requestId will render link to 'enroll with request id' page
             requestId = e.getRequestId();
             log.info("Request with Id: " + e.getRequestId() + " has been sent for approval");
         } catch (CADoesntExistsException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
+            if (log.isDebugEnabled()) {
+                log.debug("CA does not exist", e);
+            }
         } catch (AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unauthorized");
+            if (log.isDebugEnabled()) {
+                log.debug("Not authorized to perform key recovery", e);
+            }
         } catch (NoSuchEndEntityException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_no_such_end_entity", username);
+            if (log.isDebugEnabled()) {
+                log.debug("End entity with username: " + username + " does not exist", e);
+            }
         } catch (EndEntityProfileValidationException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
+            if (log.isDebugEnabled()) {
+                log.debug("End entity with username: " + username + " does not match end entity profile");
+            }
         }
         styleRowCallCounter = 0;    // Reset
-        renderConfirmRecoveryToggle(); //Reconsider placement
+        renderConfirmRecoveryToggle();
     }
     
     /** Validate that password and password confirm entries match and render error messages otherwise. */
