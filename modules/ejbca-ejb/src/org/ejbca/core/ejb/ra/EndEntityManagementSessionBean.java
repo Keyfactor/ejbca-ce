@@ -1007,6 +1007,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(), null),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeUserAfterApproval"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeCert"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionBean.class.getName(), "finishUser"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "unrevokeCert"),
@@ -1301,19 +1302,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
-        // Check if approvals is required, does not apply to the status Revoked since approvals is checked earlier
-        if (status != EndEntityConstants.STATUS_REVOKED) {
-            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data1.getCertificateProfileId());
-            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo, 
-                    certProfile);
-            if (approvalProfile != null) {
-                final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
-                        null, data1.getCaId(), endEntityProfileId, approvalProfile);
-                if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
-                    final int requestId = approvalSession.addApprovalRequest(admin, ar);
-                    String msg = intres.getLocalizedMessage("ra.approvaledit");                
-                    throw new WaitingForApprovalException(msg, requestId);
-                }
+        // Check if approvals is required.
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data1.getCertificateProfileId());
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo, 
+                certProfile);
+        if (approvalProfile != null) {
+            final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
+                    null, data1.getCaId(), endEntityProfileId, approvalProfile);
+            if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
+                final int requestId = approvalSession.addApprovalRequest(admin, ar);
+                String msg = intres.getLocalizedMessage("ra.approvaledit");                
+                throw new WaitingForApprovalException(msg, requestId);
             }
         }
         if (data1.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY
