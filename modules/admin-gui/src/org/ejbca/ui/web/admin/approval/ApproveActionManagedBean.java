@@ -253,11 +253,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         switch (action) {
                         case APPROVE:
                             approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
-                            updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
                             break;
                         case REJECT:
                             approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
-                            updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
                             break;
                         case NO_ACTION:
                             break;
@@ -283,6 +281,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                 }
             }
         }
+        updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
         approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
         //Hack for closing the window after saving
         FacesContext facesContext = FacesContext.getCurrentInstance(); 
