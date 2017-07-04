@@ -1142,8 +1142,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username)
-            throws AuthorizationDeniedException {
+    public boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username) {
         boolean ret = false;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
