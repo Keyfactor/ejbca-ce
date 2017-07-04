@@ -1165,10 +1165,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    final ApprovalProfile result = raMasterApi.getApprovalProfileForAction(authenticationToken, action, caId, certificateProfileId);
-                    if (result != null) {
-                        return result;
-                    }
+                    return raMasterApi.getApprovalProfileForAction(authenticationToken, action, caId, certificateProfileId);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
