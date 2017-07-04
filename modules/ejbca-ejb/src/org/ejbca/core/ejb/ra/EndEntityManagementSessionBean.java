@@ -1658,9 +1658,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             setUserStatus(admin, userData, EndEntityConstants.STATUS_REVOKED, 0, lastApprovingAdmin);
         } catch (ApprovalException e) {
-            throw new EJBException("This should never happen", e);
+            throw new IllegalStateException("This should never happen", e);
         } catch (WaitingForApprovalException e) {
-            throw new EJBException("This should never happen", e);
+            throw new IllegalStateException("This should never happen", e);
         }
         final String msg = intres.getLocalizedMessage("ra.revokedentity", username);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
