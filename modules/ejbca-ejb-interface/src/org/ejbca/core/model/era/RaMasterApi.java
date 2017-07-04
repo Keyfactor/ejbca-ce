@@ -416,9 +416,8 @@ public interface RaMasterApi {
      * @param cert Certificate to be recovered
      * @param username which the certificate is bound to
      * @return true if key recovery is possible given the parameters
-     * @throws AuthorizationDeniedException if requesting administrator isn't authorized to perform the checks
      */
-    boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username) throws AuthorizationDeniedException;
+    boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username);
     
     /**
      * Gets approval profile for specified action.

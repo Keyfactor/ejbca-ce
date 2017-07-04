@@ -1699,6 +1699,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                     CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
         boolean keyRecoverySuccessful;
         boolean authorized = true;
+        // If called from the wrong instance, return to proxybean and try next implementation
+        if (endEntityAccessSession.findUser(authenticationToken, username) == null) {
+            return false;
+        }
         int endEntityProfileId = endEntityAccessSession.findUser(authenticationToken, username).getEndEntityProfileId();
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
             authorized = authorizationSession.isAuthorized(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(endEntityProfileId) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
@@ -1722,16 +1726,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) throws AuthorizationDeniedException {
+    public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) {
         boolean returnval = true;
         returnval = authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
-            EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
-            if (data != null) {         
-                int profileid = data.getEndEntityProfileId();
-                returnval = endEntityAuthorization(authenticationToken, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);         
-            } else {
-                returnval = false;
+            try {
+                EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
+                if (data != null) {         
+                    int profileid = data.getEndEntityProfileId();
+                    returnval = endEntityAuthorization(authenticationToken, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);         
+                } else {
+                    returnval = false;
+                }
+            } catch (AuthorizationDeniedException e) {
+                log.info("Administrator: " + authenticationToken + " was not authorized to perform key recovery for end entity: " + username);
+                return false;
             }
         }
         return returnval && keyRecoverySessionLocal.existsKeys(cert) && !keyRecoverySessionLocal.isUserMarked(username);

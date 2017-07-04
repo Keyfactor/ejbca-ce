@@ -93,7 +93,7 @@ public class RaViewCertBean implements Serializable {
             return ret;
         }
         @Override
-        public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) throws AuthorizationDeniedException {
+        public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
             final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
             return ret;
         }
