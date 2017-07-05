@@ -960,6 +960,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
             }
             
+            final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
+            final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
             final X509Certificate cert;
             final KeyPair kp;
             try {
@@ -973,8 +975,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     kp = KeyTools.genKeys(keyspec, keyalg);
                     cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                     // Store key pair
-                    final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
-                    final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
                     if (cryptoTokenId == null || keyAlias == null) {
                         log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
@@ -988,7 +988,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     if (log.isDebugEnabled()) {
                         log.debug("Recovering locally stored key pair for end entity '" + username + "'");
                     }
-                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeys(authenticationToken, username, storedEndEntity.getEndEntityProfileId());
+                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
                     kp = kri.getKeyPair();
                     if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
                         final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
