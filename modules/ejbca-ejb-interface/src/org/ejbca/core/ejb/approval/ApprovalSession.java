@@ -86,7 +86,15 @@ public interface ApprovalSession {
      * But If the request is multiple steps and user have already performed that step, the exception will always be thrown.
      */
     int isApproved(int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
-    
+
+    /**
+     * Returns the current status of a given approval request.
+     * 
+     * @param approvalId the ID of the request
+     * @return the current status of the request
+     * @throws ApprovalException thrown if there's no request with the given status
+     */
+    int getStatus(int approvalId) throws ApprovalException;
     
     /**
      * Gives the remaining number of approvals for a given approval request
