@@ -228,69 +228,98 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     public String saveState(ActionEvent event) {
+        boolean closeWindow = true;
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
-        ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
-        ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
-        String javaScriptText = "window.close();"; 
-        for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
-            ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
-            Integer partitionId = approvalPartitionGuiObject.getPartitionId();
-            if (partitionsAuthorizedToApprove.contains(partitionId)) {
-                try {
-                    final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-                    ApprovalStep currentStep = getCurrentStep();
-                    //Overwrite the stored partition in the request in order to persist metadata.
-                    List<DynamicUiProperty<? extends Serializable>> updatedProperties = new ArrayList<>();
-                    for (Iterator<DynamicUiProperty<? extends Serializable>> propertyIterator = approvalPartitionGuiObject.getProfilePropertyList()
-                            .iterator(); propertyIterator.hasNext();) {
-                        updatedProperties.add(propertyIterator.next());
-                    }
-                    storedApprovalProfile.addPropertiesToPartition(currentStep.getStepIdentifier(), partitionId, updatedProperties);
-                    //Update any set meta data. 
-                    final Approval approval = new Approval(comment, currentStep.getStepIdentifier(), partitionId);
-                    Action action = getPartitionActions().get(partitionId);
-                    if(action != null) {
-                        switch (action) {
-                        case APPROVE:
-                            approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
-                            break;
-                        case REJECT:
-                            approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
-                            break;
-                        case NO_ACTION:
-                            break;
-                        default:
-                            break;
+        if (approvalDataVO != null) {
+            ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
+            ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
+            for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
+                ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
+                Integer partitionId = approvalPartitionGuiObject.getPartitionId();
+                if (partitionsAuthorizedToApprove.contains(partitionId)) {
+                    try {
+                        final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+                        ApprovalStep currentStep = getCurrentStep();
+                        //Overwrite the stored partition in the request in order to persist metadata.
+                        List<DynamicUiProperty<? extends Serializable>> updatedProperties = new ArrayList<>();
+                        for (Iterator<DynamicUiProperty<? extends Serializable>> propertyIterator = approvalPartitionGuiObject.getProfilePropertyList()
+                                .iterator(); propertyIterator.hasNext();) {
+                            updatedProperties.add(propertyIterator.next());
                         }
+                        storedApprovalProfile.addPropertiesToPartition(currentStep.getStepIdentifier(), partitionId, updatedProperties);
+                        //Update any set meta data. 
+                        final Approval approval = new Approval(comment, currentStep.getStepIdentifier(), partitionId);
+                        Action action = getPartitionActions().get(partitionId);
+                        if(action != null) {
+                            switch (action) {
+                            case APPROVE:
+                                approvalExecutionSession.approve(admin, approvalDataVOView.getApprovalId(), approval);
+                                break;
+                            case REJECT:
+                                approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
+                                break;
+                            case NO_ACTION:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    } catch (ApprovalRequestExpiredException e) {
+                        addErrorMessage("APPROVALREQUESTEXPIRED");
+                        closeWindow = false;
+                    } catch (ApprovalRequestExecutionException e) {
+                        addErrorMessage("ERROREXECUTINGREQUEST");
+                        closeWindow = false;
+                    } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
+                        addErrorMessage("AUTHORIZATIONDENIED");
+                        closeWindow = false;
+                    } catch (ApprovalException e) {
+                        addErrorMessage("ERRORHAPPENDWHENAPPROVING");
+                        closeWindow = false;
+                    } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
+                        addErrorMessage(e.getMessage());
+                        closeWindow = false;
                     }
-                } catch (ApprovalRequestExpiredException e) {
-                    addErrorMessage("APPROVALREQUESTEXPIRED");
-                    // Prevent window closing to display error message first
-                    javaScriptText = "";
-                } catch (ApprovalRequestExecutionException e) {
-                    addErrorMessage("ERROREXECUTINGREQUEST");
-                    javaScriptText = "";
-                } catch (AuthorizationDeniedException | AuthenticationFailedException e) {
-                    addErrorMessage("AUTHORIZATIONDENIED");
-                    javaScriptText = "";
-                } catch (ApprovalException e) {
-                    addErrorMessage("ERRORHAPPENDWHENAPPROVING");
-                    javaScriptText = "";
-                } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
-                    addErrorMessage(e.getMessage());
                 }
             }
+            approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
+        } else {
+            try {
+                int status = approvalSession.getStatus(approvalDataVOView.getApprovalId());
+                switch (status) {
+                case ApprovalDataVO.STATUS_EXECUTED:
+                case ApprovalDataVO.STATUS_EXECUTIONDENIED:
+                case ApprovalDataVO.STATUS_EXECUTIONFAILED:
+                    addErrorMessage("REQALREADYPROCESSED");
+                    break;
+                case ApprovalDataVO.STATUS_EXPIRED:
+                case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
+                    addErrorMessage("REQHASEXPIRED");
+                    break;
+                default:
+                    break;
+                }
+            } catch (ApprovalException e) {
+                addErrorMessage(e.getMessage());
+            }
+            closeWindow = false;
         }
         updateApprovalRequestData(approvalDataVOView.getApproveActionDataVO().getId());
-        approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
+        // Close window if successful
+        if (closeWindow) {
+            closeWindow();
+        }
+        return "approveaction";
+    }
+    
+    private void closeWindow() {
         //Hack for closing the window after saving
         FacesContext facesContext = FacesContext.getCurrentInstance(); 
         //Add the Javascript to the rendered page's header for immediate execution 
         AddResource addResource = AddResourceFactory.getInstance(facesContext); 
         //Think of a better solution and you're free to implement it.
-        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, javaScriptText);   
+        addResource.addInlineScriptAtPosition(facesContext, AddResource.HEADER_BEGIN, "window.close();");   
         //I'm so, so sorry. I have dishonored my dojo. 
-        return "approveaction";
     }
            
     public void setUniqueId(int uniqueId) {

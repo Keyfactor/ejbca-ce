@@ -303,6 +303,19 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
+    public int getStatus(int approvalId) throws ApprovalException {
+        final TypedQuery<ApprovalData> query = entityManager.createQuery(
+                "SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId", ApprovalData.class);
+        query.setParameter("approvalId", approvalId);
+        List<ApprovalData> resultList = query.getResultList();
+        if (resultList.size() > 0) {
+            return resultList.get(0).getStatus();
+        } else {
+            throw new ApprovalException("Approval request not found in database");
+        }
+    }
+    
+    @Override
     public void markAsStepDone(int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">markAsStepDone, approvalId: " + approvalId + ", step " + step);
