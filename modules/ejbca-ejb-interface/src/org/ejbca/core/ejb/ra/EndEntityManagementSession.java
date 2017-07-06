@@ -529,6 +529,23 @@ public interface EndEntityManagementSession {
     		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
     
     /**
+     * Marks a user for key recovery and performs authorization checks. This method will not mark the certificate for key recover.  
+     * Method is intended to be used when KeyRecoveryData is not present in the instance database (eg. when local key generation is enabled). 
+     * 
+     * @param admin used to authorize this action
+     * @param username is the user to key recover a certificate for
+     * @param endEntityProfileId of the end entity related to certificate
+     * @param certificate used to check if approval is required to recover this certificate
+     * @return true if operation was completed successfully
+     * @throws AuthorizationDeniedException if requesting administrator isn't authorized to perform key recovery
+     * @throws ApprovalException if an approval already exists to edit user status
+     * @throws CADoesntExistsException if CA holding the user does not exist
+     * @throws WaitingForApprovalException if the request requires approval. Expected to be thorws if approval is required to edit end entity
+     */
+    public boolean prepareForKeyRecoveryInternal(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate) 
+            throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, WaitingForApprovalException;
+    
+    /**
      * Selects a list of specific list of EndEntityInformation entities, as filtered by
      * the below parameters. 
      * 
