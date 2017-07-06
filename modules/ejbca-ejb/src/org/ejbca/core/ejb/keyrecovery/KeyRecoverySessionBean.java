@@ -107,30 +107,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
 	
-	    /**
-     * Method checking the following authorizations:
-     * 
-     * If /superadmin -> true
-     * 
-     * Other must have both
-     * AccessRulesConstants.
-     *  /ra_functionality/keyrecovery
-     *  and /endentityprofilesrules/<endentityprofile>/keyrecovery
-     *  
-     * 
-     * @param admin
-     * @param profileid end entity profile
-     * @return true if the admin is authorized to keyrecover
-     */
-    private boolean authorizedToKeyRecover(AuthenticationToken admin, int profileid) {
-        return authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid
-                + AccessRulesConstants.KEYRECOVERY_RIGHTS)
-                && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_KEYRECOVERY);
-
-    }
-    
     /**
-     * 
      * @param token The {@link AuthenticationToken} to check. 
      * @return true if authorized to or /ra_functionality/keyrecovery
      */
@@ -138,18 +115,16 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return authorizationSession.isAuthorizedNoLogging(token, AccessRulesConstants.REGULAR_KEYRECOVERY);
     }
 
-    /**
-     * Help method to check if approval of key recovery is required
-     * @param admin 
-     * @param certificate 
-     * @param username 
-     * @param userdata 
-     * @param checkNewest 
-     * @throws ApprovalException 
-     * @throws WaitingForApprovalException 
-     * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
-     */
-    private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
+    @Override
+    public boolean authorizedToKeyRecover(AuthenticationToken admin, int profileid) {
+        return authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid
+                + AccessRulesConstants.KEYRECOVERY_RIGHTS)
+                && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_KEYRECOVERY);
+
+    }
+
+    @Override
+    public void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
             throws ApprovalException, WaitingForApprovalException, CADoesntExistsException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
 		final CAInfo cainfo = caSession.getCAInfoInternal(caid);
@@ -505,7 +480,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 
 	@Override
     public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, 
-                            WaitingForApprovalException, ApprovalException, CADoesntExistsException {        
+                            WaitingForApprovalException, ApprovalException, CADoesntExistsException {
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
     	if (log.isTraceEnabled()) {
@@ -517,7 +492,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             String username = krd.getUsername();
             // Check that the administrator is authorized to keyrecover
             if (authorizedToKeyRecover(admin, endEntityProfileId)) {
-                // Check if approvals is required.            
+                // Check if approvals is required.
                 checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false);
                 krd.setMarkedAsRecoverable(true);
                 int caid = krd.getIssuerDN().hashCode();
@@ -538,6 +513,32 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
+	@Override
+    public boolean markAsRecoverableInternal(AuthenticationToken admin, Certificate certificate, String username) {
+        final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
+        final String dn = CertTools.getIssuerDN(certificate);   
+        if (log.isTraceEnabled()) {
+            log.trace(">markAsRecoverable(issuer: "+dn+"; certificatesn: " + hexSerial + ")");
+        }
+        boolean returnval = false;
+        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+        if (krd != null) {
+                krd.setMarkedAsRecoverable(true);
+                int caid = krd.getIssuerDN().hashCode();
+                String msg = intres.getLocalizedMessage("keyrecovery.markedcert", hexSerial, dn);
+                final Map<String, Object> details = new LinkedHashMap<>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.KEYRECOVERY_MARKED, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
+                        admin.toString(), String.valueOf(caid), hexSerial, username, details);
+                returnval = true;
+        } else {
+            String msg = intres.getLocalizedMessage("keyrecovery.errormarkcert", hexSerial, dn);                
+            log.info(msg);
+        } 
+        log.trace("<markAsRecoverable()");
+        return returnval;
+    }
+	
 	@Override
     public void unmarkUser(AuthenticationToken admin, String username) {
     	if (log.isTraceEnabled()) {

@@ -1166,28 +1166,64 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-    
+        
     @Override
-    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, Certificate cert) throws ApprovalException, CADoesntExistsException, 
+    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws ApprovalException, CADoesntExistsException, 
                                     AuthorizationDeniedException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
         boolean ret = false;
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final boolean localKeyRecoveryThisNode = globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery();
+        if (localKeyRecoveryThisNode) {
+            localKeyGeneration = true;
+        }
+        
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    ret = raMasterApi.markForRecovery(authenticationToken, username, newPassword, cert);
+                    ret = raMasterApi.markForRecovery(authenticationToken, username, newPassword, cert, localKeyGeneration);
                     if (ret) {
                         break;
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
+                } catch (WaitingForApprovalException e) {
+                    // If approval is required, the approving instance won't be able to set the flag in this database, so we set it anyway
+                    // Enrollment won't be possible until UserData status is set to KeyRecovery by the requesting instance (at approval).
+                    if (localKeyRecoveryThisNode) {
+                        localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert.getCertificate(), username);
+                    }
+                    throw e;
                 }
             }
+        }
+        
+        // If local key generation is enabled, we have to do this locally
+        if (ret && localKeyRecoveryThisNode) {
+            log.info("ret && localKeyGen");
+            ret = localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert.getCertificate(), username);
         }
         return ret;
     }
     
     @Override
     public boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username) {
+        // Special case where local key generation is enabled
+        GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            EndEntityInformation storedEndEntity = searchUser(authenticationToken, username);
+            if (storedEndEntity != null) {
+                boolean authorized = false;
+                authorized = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(storedEndEntity.getEndEntityProfileId()) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
+                        AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
+                if (authorized) {
+                    return localNodeKeyRecoverySession.existsKeys(cert) && !localNodeKeyRecoverySession.isUserMarked(username) && 
+                            storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
+                }
+            }
+            return false;
+        }
+        // Default case (everything we need should be available in one instance database)
         boolean ret = false;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {

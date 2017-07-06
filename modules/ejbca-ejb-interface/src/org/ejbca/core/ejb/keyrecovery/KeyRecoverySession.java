@@ -28,6 +28,36 @@ import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
  */
 public interface KeyRecoverySession {
 
+     /**
+     * Method checking the following authorizations:
+     * 
+     * If /superadmin -> true
+     * 
+     * Other must have both
+     * AccessRulesConstants.
+     *  /ra_functionality/keyrecovery
+     *  and /endentityprofilesrules/<endentityprofile>/keyrecovery
+     * 
+     * @param admin authentication token of requesting administrator
+     * @param profileid end entity profile
+     * @return true if the admin is authorized to keyrecover
+     */
+    public boolean authorizedToKeyRecover(AuthenticationToken admin, int profileid);
+    
+    /**
+     * Help method to check if approval of key recovery is required
+     * @param admin authentication token of requesting administrator
+     * @param certificate to recover
+     * @param username of the end entity related to the certificate
+     * @param endEntityProfileId used by the end entity
+     * @param checkNewest 
+     * @throws ApprovalException if approval already exists
+     * @throws WaitingForApprovalException if approval is required. Expected to be thrown in this case
+     * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
+     */
+    public void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
+            throws ApprovalException, WaitingForApprovalException, CADoesntExistsException;
+    
     /**
      * Adds a certificates keyrecovery data to the database.
      *
@@ -106,6 +136,20 @@ public interface KeyRecoverySession {
     boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId)
             throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException, CADoesntExistsException;
 
+    /**
+     * TODO is this safe to keep in this interface?
+     * 
+     * Marks a users certificate for key recovery. This method performs no authorization checks and should only be called
+     * when local key pair generation is used and checks has already been performed by the instance holding UserData in its
+     * database
+     * 
+     * @param admin requesting administrator
+     * @param certificate to be marked for recovery
+     * @param username of the end entity related to certificate
+     * @return true if flag was set in database successfully
+     */
+    public boolean markAsRecoverableInternal(AuthenticationToken admin, Certificate certificate, String username);
+    
     /** Resets keyrecovery mark for a user. */
     void unmarkUser(AuthenticationToken admin, String username);
 

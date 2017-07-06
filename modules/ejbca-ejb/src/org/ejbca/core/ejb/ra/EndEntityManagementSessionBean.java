@@ -2308,7 +2308,36 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         return returnval;
     }
-
+    
+    @Override
+    public boolean prepareForKeyRecoveryInternal(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate) 
+            throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
+        boolean ret = false;
+        if (keyRecoverySession.authorizedToKeyRecover(admin, endEntityProfileId)) {
+            keyRecoverySession.checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false);
+            ret = true;
+        } else {
+            throw new AuthorizationDeniedException(admin + " not authorized to key recovery for end entity profile id " + endEntityProfileId);
+        }
+        try {
+            final UserData data = UserData.findByUsername(entityManager, username);
+            if (data == null) {
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                // This exception message is used to not leak information to the user
+                final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+                log.info(msg);
+                throw new FinderException(msg);
+            }
+            assertAuthorizedToCA(admin, data.getCaId());
+            setUserStatus(admin, data, EndEntityConstants.STATUS_KEYRECOVERY, 0, null);
+        } catch (FinderException e) {
+            ret = false;
+            log.info("prepareForKeyRecovery: No such user: " + username);
+        }
+        
+        return ret;
+    }
+    
     @Override
     public boolean prepareForKeyRecovery(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate)
             throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {

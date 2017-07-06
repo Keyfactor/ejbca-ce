@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -131,7 +132,7 @@ public class RaSearchCertsBean implements Serializable {
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
                                     NoSuchEndEntityException, EndEntityProfileValidationException {
             final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(), 
-                                                                        raCertificateDetails.getCertificate());
+                    EJBTools.wrap(raCertificateDetails.getCertificate()), false);
             return ret;
         }
         @Override

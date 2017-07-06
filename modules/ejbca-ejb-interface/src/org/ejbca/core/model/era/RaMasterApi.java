@@ -391,8 +391,7 @@ public interface RaMasterApi {
             throws ApprovalException, WaitingForApprovalException;
     
     /**
-     * Marks certificate for key recovery and sets a new enrollment code for the End Entity (temporary until a new certificate has
-     * been enrolled)
+     * Marks End entity for key recovery, sets a new enrollment code (used to enroll a new certificate) and marks KeyRecoveryData for recovery.
      * 
      * @param authenticationToken of the requesting administrator
      * @param username of end entity holding the certificate to recover
@@ -400,20 +399,20 @@ public interface RaMasterApi {
      * @param cert Certificate to be recovered
      * @return true if key recovery was successful. False should not be returned unless unexpected error occurs. Other cases such as required approval
      * should throw exception instead
-     * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery
+     * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery preparations
      * @throws ApprovalException if key recovery is already awaiting approval
      * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
      * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
      * @throws NoSuchEndEntityException if End Entity bound to certificate no longer exists
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
      */
-    boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, Certificate cert) throws AuthorizationDeniedException, ApprovalException, 
+    boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws AuthorizationDeniedException, ApprovalException, 
                             CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
-
+    
     /**
      * Checks if key recovery is possible for the given parameters. Requesting administrator has be authorized to perform key recovery
      * and authorized to perform key recovery on the End Entity Profile which the End Entity belongs to.
-     * Key Recover Data has to be present in the database for the given certificate, 
+     * KeyRecoverData has to be present in the database for the given certificate, 
      * 
      * @param authenticationToken of the requesting administrator
      * @param cert Certificate to be recovered
@@ -457,5 +456,4 @@ public interface RaMasterApi {
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
-
 }
