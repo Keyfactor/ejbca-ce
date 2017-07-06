@@ -514,10 +514,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
     
     /** Proceed with request that will require approval */
     public void confirmRequest() {
-        if(KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())){
-            addEndEntityAndGenerateP12();
-        }else{
-            addEndEntityAndGenerateCertificateDer();
+        String username = getEndEntityInformation().getUsername();
+        if (raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username) == null) {
+            if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
+                addEndEntityAndGenerateP12();
+            } else {
+                addEndEntityAndGenerateCertificateDer();
+            }
+        } else {
+            raLocaleBean.addMessageError("enroll_username_already_exists", username);
         }
     }
 
