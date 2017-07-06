@@ -622,7 +622,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         try {
             getEjbcaWebBean().clearClusterCache(true); // exclude crypto tokens
         } catch (Exception e) {
-            String msg = "Statedump was successfull, but the cached could not be cleared automatically. Please manually restart your browser or JBoss. "+ e.getLocalizedMessage();
+            String msg = "Statedump was successful, but the cache could not be cleared automatically. Please manually restart your browser or JBoss. " + e.getLocalizedMessage();
             log.info(msg);
             super.addNonTranslatedErrorMessage(msg);
         }
