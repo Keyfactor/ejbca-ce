@@ -67,4 +67,16 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
      * @see KeyRecoverySession#recoverKeys
      */
     KeyRecoveryInformation recoverKeysInternal(AuthenticationToken admin, String username, int cryptoTokenId, String keyAlias);
+    
+    /**
+     * Marks a users certificate for key recovery. This method performs no authorization checks and should only be called
+     * when local key pair generation is used and checks has already been performed by the instance holding UserData in its
+     * database
+     * 
+     * @param admin requesting administrator
+     * @param certificate to be marked for recovery
+     * @param username of the end entity related to certificate
+     * @return true if flag was set in database successfully
+     */
+    boolean markAsRecoverableInternal(AuthenticationToken admin, Certificate certificate, String username);
 }
