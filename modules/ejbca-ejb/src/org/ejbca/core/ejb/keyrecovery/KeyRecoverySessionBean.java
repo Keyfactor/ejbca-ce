@@ -383,7 +383,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.trace(">recoverKeysInternal(user: " + username + ")");
         }
         KeyRecoveryInformation returnval = null;
-        X509Certificate certificate = null;
         Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
         try {
             String caidString = null;
@@ -396,7 +395,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                     final KeyPair keys = X509CA.doDecryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
                     returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
                             krd.getUsername(), krd.getMarkedAsRecoverable(), keys, null);
-                    certSerialNumber = CertTools.getSerialNumberAsString(certificate);
+                    certSerialNumber = krd.getCertificateSN().toString(16);
                     logMsg = intres.getLocalizedMessage("keyrecovery.sentdata", username, keyAlias, publicKeyId, cryptoTokenId);                
                 }
             }
