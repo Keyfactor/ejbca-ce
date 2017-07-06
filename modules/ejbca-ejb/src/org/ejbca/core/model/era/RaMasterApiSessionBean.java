@@ -1756,7 +1756,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     returnval = false;
                 }
             } catch (AuthorizationDeniedException e) {
-                log.info("Administrator: " + authenticationToken + " was not authorized to perform key recovery for end entity: " + username);
+                log.debug("Administrator: " + authenticationToken + " was not authorized to perform key recovery for end entity: " + username);
                 return false;
             }
         }
