@@ -1706,9 +1706,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return retval;
     }
-
+    
     @Override
-    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, Certificate cert) throws AuthorizationDeniedException, ApprovalException, 
+    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws AuthorizationDeniedException, ApprovalException, 
                                     CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
         boolean keyRecoverySuccessful;
         boolean authorized = true;
@@ -1721,9 +1721,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             authorized = authorizationSession.isAuthorized(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(endEntityProfileId) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                                                             AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
         }
-        if(authorized) {
+        if (authorized) {
             try {
-                keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert);
+                if (!localKeyGeneration) {
+                    keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert.getCertificate());
+                } else {
+                    keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecoveryInternal(authenticationToken, username, endEntityProfileId, cert.getCertificate());
+                }
                 if (keyRecoverySuccessful) {
                     // No approval required, continue by setting a new enrollment code
                     endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
@@ -1733,7 +1737,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
                 throw e;
             }
-            return keyRecoverySuccessful; //remove
+            return keyRecoverySuccessful;
         }
         return false;
     }
@@ -1741,7 +1745,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean keyRecoveryPossible(final AuthenticationToken authenticationToken, Certificate cert, String username) {
         boolean returnval = true;
-        returnval = authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
+        returnval = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY);
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
             try {
                 EndEntityInformation data = endEntityAccessSession.findUser(authenticationToken, username);
@@ -1766,7 +1770,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
                     AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         } else {
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+            returnval = isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
                     + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
         return returnval;
