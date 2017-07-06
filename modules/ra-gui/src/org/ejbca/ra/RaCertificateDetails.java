@@ -461,14 +461,10 @@ public class RaCertificateDetails {
             log.info("Request with Id: " + e.getRequestId() + " has been sent for approval");
         } catch (CADoesntExistsException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
-            if (log.isDebugEnabled()) {
                 log.debug("CA does not exist", e);
-            }
         } catch (AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unauthorized");
-            if (log.isDebugEnabled()) {
                 log.debug("Not authorized to perform key recovery", e);
-            }
         } catch (NoSuchEndEntityException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_no_such_end_entity", username);
             if (log.isDebugEnabled()) {
