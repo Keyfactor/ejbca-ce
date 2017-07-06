@@ -64,7 +64,7 @@ public enum CommandLibrary {
                 } catch (ServiceConfigurationError e) {
                     if (e.getCause() instanceof IllegalStateException && e.getCause().getLocalizedMessage().contains("No EJB receiver")) {
                         log.error("Error: CLI could not contact EJBCA instance. Either your application server is not up and running,"
-                                + " EJBCA has not been deployed succesfully, or some firewall rule is blocking the CLI from the application server.");
+                                + " EJBCA has not been deployed successfully, or some firewall rule is blocking the CLI from the application server.");
                         System.exit(1);
                     } else {
                         throw e;
