@@ -57,8 +57,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
@@ -237,18 +239,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean isBackendAvailable() {
-        boolean available = false;
         for (int caId : caSession.getAllCaIds()) {
             try {
                 if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
-                    available = true;
-                    break;
+                    return true;
                 }
             } catch (CADoesntExistsException e) {
                 log.debug("Fail to get existing CA's info. " + e.getMessage());
             }
         }
-        return available;
+        return false;
     }
     
     @Override
@@ -1517,6 +1517,33 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void checkUserStatus(AuthenticationToken admin, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException {
         endEntityAuthenticationSessionLocal.authenticateUser(admin, username, password);
+    }
+    
+    @Override
+    public void finishUserAfterLocalKeyRecovery(final AuthenticationToken authenticationToken, final String username, final String password) throws AuthorizationDeniedException, EjbcaException {
+        EndEntityInformation userdata = endEntityAccessSession.findUser(username);
+        if (userdata == null) {
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+username+"' does not exist");
+        }
+        if (userdata.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, "User '"+username+"' is not in KEYRECOVERY status");
+        }
+        try {
+            endEntityManagementSessionLocal.verifyPassword(authenticationToken, username, password); // FIXME this checks for edit access! should check for keyrecovery access
+            final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userdata.getCAId()).getFinishUser();
+            if (shouldFinishUser) {
+                    endEntityAuthenticationSessionLocal.finishUser(userdata);
+            }
+        
+            userdata = endEntityAccessSession.findUser(username);
+            if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+                // We require keyrecovery access. The operation below should not require edit access, so we use an AlwaysAllowLocalAuthenticationToken
+                endEntityManagementSessionLocal.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
+                        new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
+            }
+        } catch (NoSuchEndEntityException | CADoesntExistsException | EndEntityProfileValidationException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     @Override

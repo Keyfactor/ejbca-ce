@@ -921,6 +921,42 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
     
+    @Override
+    public void finishUserAfterLocalKeyRecovery(final AuthenticationToken authenticationToken, final String username, final String password) throws AuthorizationDeniedException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EjbcaException userNotFoundException = null;
+        
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    raMasterApi.finishUserAfterLocalKeyRecovery(authenticationToken, username, password);
+                    return;
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    // If the user is not found (e.g. during key recovery), try next implementation
+                    if (!ErrorCode.USER_NOT_FOUND.equals(e.getErrorCode())) {
+                        throw e;
+                    }
+                    if (userNotFoundException != null) {
+                        userNotFoundException = e;
+                    }
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (userNotFoundException != null) {
+            throw userNotFoundException;
+        }
+    }
+    
     private X509Certificate requestCertForEndEntity(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final String password, final KeyPair kp)
             throws AuthorizationDeniedException, EjbcaException, OperatorCreationException, CertificateParsingException, IOException {
         final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
@@ -973,6 +1009,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     final String keyalg = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmType();
                     final String keyspec = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmSubType();
                     kp = KeyTools.genKeys(keyspec, keyalg);
+                    // requestCertForEndEntity verifies the password and performs the finishUser operation
                     cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                     // Store key pair
                     if (cryptoTokenId == null || keyAlias == null) {
@@ -998,9 +1035,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
                         }
                         cert = (X509Certificate) cdw.getCertificate();
+                        // Verify password and finish user
+                        finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
                     } else {
+                        // requestCertForEndEntity verifies the password and performs the finishUser operation
                         cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                     }
+                    localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
                 }
                 // Build keystore
                 final KeyStore ks;
