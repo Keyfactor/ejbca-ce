@@ -309,6 +309,23 @@ public interface RaMasterApi {
     void deleteUser(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException;
     
     /**
+     * Performs a finishUser operation after a key recovery operation. The end entity must be in NEW or KEYRECOVERY status
+     * and the admin must have access to the CA of the end entity and key recovery access to the end entity profile. 
+     * 
+     * In detail this means:
+     * Decrements the issue counter for an end entity, and sets the status to GENERATED when it reaches zero.
+     * Usually this counter only goes from 1 to 0, so usually this method calls means "set end entity status to GENERATED".
+     * When the status is set to GENERATED the password is also cleared.
+     * 
+     * @param authenticationToken authentication token 
+     * @param username username of end entity
+     * @param password password of end entity
+     * @throws AuthorizationDeniedException if not authorized to perform key recovery for the given end entity
+     * @throws EjbcaException if the user was not found or had the wrong status
+     */
+    void finishUserAfterLocalKeyRecovery(AuthenticationToken authenticationToken, String username, String password) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
      * Generates keystore for the specified end entity. Used for server side generated key pairs. It can be of PKCS12 or JKS type.
      * Keystore can be loaded with:
      *  
