@@ -199,6 +199,13 @@ public class SecureXMLDecoder implements AutoCloseable {
             value = null;
             parser.nextTag();
             break;
+        case "class":
+            try {
+                value = Class.forName(readText());
+            } catch (ClassNotFoundException e) {
+                throw new IOException("Unknown class was sent with import.", e);
+            }
+            break;
         case "object":
             final String className = parser.getAttributeValue(null, "class");
             String method = parser.getAttributeValue(null, "method"); // used from java.util.Collections
