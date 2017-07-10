@@ -549,7 +549,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean renameEndEntity(final AuthenticationToken admin, String currentUsername, String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
         // Sanity check parameters

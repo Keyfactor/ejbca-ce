@@ -17,6 +17,7 @@ import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.zip.ZipException;
 
 import javax.ejb.Local;
 
@@ -85,6 +86,19 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      */
     void importValidator(AuthenticationToken admin, Validator validator) throws AuthorizationDeniedException, KeyValidatorExistsException;
 
+    /**
+     * Imports a list of key validators, stored in separate XML files in the ZIP container.
+     * @param authenticationToken an authentication token
+     * @param filebuffer a byte array containing a zip file
+     * 
+     * @return a container object containing lists of the imported and ignored key validator names
+     * 
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws ZipException if the byte array did not contain a zip file
+     */
+    ValidatorImportResult importKeyValidatorsFromZip(final AuthenticationToken authenticationToken, final byte[] filebuffer)
+            throws AuthorizationDeniedException, ZipException;
+   
     /**
      * Adds a key validator to the database.
      * 

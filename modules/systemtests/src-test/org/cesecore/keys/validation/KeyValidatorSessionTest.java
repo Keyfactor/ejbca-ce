@@ -20,8 +20,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.beans.XMLEncoder;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJBException;
 
@@ -56,6 +62,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -104,7 +111,7 @@ public class KeyValidatorSessionTest {
 
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+        
     private KeyValidatorProxySessionRemote keyValidatorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
 
@@ -157,7 +164,7 @@ public class KeyValidatorSessionTest {
     }
 
     @Test
-    public void test01AddChangeRemoveKeyValidators() throws Exception {
+    public void testAddChangeRemoveKeyValidators() throws Exception {
         log.trace(">test01AddChangeRemoveKeyValidators()");
         // Create some test data.
         final Validator rsaKeyValidatorDefault = createKeyValidator(RsaKeyValidator.class, "rsa-test-1-default", null, null, -1,
@@ -237,7 +244,7 @@ public class KeyValidatorSessionTest {
     }
 
     @Test
-    public void test02ValidateRsaPublicKey() throws Exception {
+    public void testValidateRsaPublicKey() throws Exception {
         log.trace(">test02ValidateRsaPublicKey()");
 
         // A-1: Check validation of non RSA key, use ECC key instead -> KeyValidationIllegalKeyAlgorithmException expected.
@@ -645,5 +652,58 @@ public class KeyValidatorSessionTest {
         }
         result.setCertificateProfileIds(ids);
         return result;
+    }
+    
+    @Test
+    public void testImportFromZip() throws Exception {
+        final String keyValidatorWithIdName = "keyValidatorWithId";
+        final Validator keyValidatorWithId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithIdName, null, null, -1, null, -1, -1);
+        int keyValidatorId = 4711;
+        keyValidatorWithId.setProfileId(keyValidatorId);
+        final String keyValidatorWithoutIdName = "keyValidatorWithoutId";
+        final Validator keyValidatorWithoutId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithoutIdName, null, null, -1, null, -1, -1);
+        //Export the validators to a zip
+        ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(zbaos);
+        String keyValidatorWithIdNameEncoded = URLEncoder.encode(keyValidatorWithId.getProfileName(), "UTF-8");
+        String keyValidatorWithoutIdNameEncoded = URLEncoder.encode(keyValidatorWithoutId.getProfileName(), "UTF-8");
+        byte[] keyValidatorWithIdNameEncodedBytes = getProfileBytes(keyValidatorWithId);
+        byte[] keyValidatorWithoutIdNameEncodedBytes = getProfileBytes(keyValidatorWithoutId);
+        String keyValidatorWithIdNameFilename = "keyvalidator_" + keyValidatorWithIdNameEncoded + "-" + keyValidatorId + ".xml";
+        String keyValidatorWithoutIdNameFilename = "keyvalidator_" + keyValidatorWithoutIdNameEncoded + "-" + -1 + ".xml";
+        ZipEntry ze = new ZipEntry(keyValidatorWithIdNameFilename);
+        zos.putNextEntry(ze);
+        zos.write(keyValidatorWithIdNameEncodedBytes);
+        zos.closeEntry();
+        ze = new ZipEntry(keyValidatorWithoutIdNameFilename);
+        zos.putNextEntry(ze);
+        zos.write(keyValidatorWithoutIdNameEncodedBytes);
+        zos.closeEntry();
+        zos.close();
+        final byte[] zipfile = zbaos.toByteArray();
+        zbaos.close();
+        ValidatorImportResult result = keyValidatorProxySession.importKeyValidatorsFromZip(internalAdmin, zipfile);
+        try {
+            List<Validator> validators = result.getImportedValidators();
+            assertEquals("Both validators weren't imported.", 2, validators.size());
+        } finally {
+            for (Validator validator : result.getImportedValidators()) {
+                removeKeyValidatorsIfExist(validator.getProfileId());
+            }
+        }
+    }
+    
+    private byte[] getProfileBytes(UpgradeableDataHashMap profile) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLEncoder encoder = new XMLEncoder(baos);
+        encoder.writeObject(profile.saveData());
+        encoder.close();
+        byte[] ba = baos.toByteArray();
+        baos.close();
+        return ba;
+    }
+    
+    private byte[] getProfileBytes(Validator profile) throws IOException {
+        return getProfileBytes(profile.getUpgradableHashmap());
     }
 }
