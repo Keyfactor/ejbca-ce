@@ -66,6 +66,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
@@ -314,7 +315,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * @return true if success
      */
     private boolean editUser(EjbcaWS ejbcaWS, UserDataVOWS userData) {
-        userData.setStatus(UserDataVOWS.STATUS_NEW);
+        userData.setStatus(EndEntityConstants.STATUS_NEW);
         userData.setPassword(PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(12, 12));
         userData.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         try {

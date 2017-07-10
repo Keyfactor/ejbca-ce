@@ -360,7 +360,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         endEntityInformation1.setCAId(caInfo.getCAId());
         endEntityInformation1.setEmail(null);
         endEntityInformation1.setSubjectAltName(null);
-        endEntityInformation1.setStatus(UserDataVOWS.STATUS_NEW);
+        endEntityInformation1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation1.setTokenType(SecConst.TOKEN_SOFT_JKS);
         endEntityInformation1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
         endEntityInformation1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -379,7 +379,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         endEntityInformation2.setCAId(caInfo.getCAId());
         endEntityInformation2.setEmail(null);
         endEntityInformation2.setSubjectAltName(null);
-        endEntityInformation2.setStatus(UserDataVOWS.STATUS_NEW);
+        endEntityInformation2.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation2.setTokenType(SecConst.TOKEN_SOFT_JKS);
         endEntityInformation2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
         endEntityInformation2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -541,7 +541,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user.setCaName(caName);
         user.setEmail(null);
         user.setSubjectAltName(null);
-        user.setStatus(UserDataVOWS.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(WS_EEPROF_EI);
         user.setCertificateProfileName(WS_CERTPROF_EI);
@@ -574,7 +574,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdata.getCertificateProfileName().equals(WS_CERTPROF_EI));
         assertTrue(userdata.getEndEntityProfileName().equals(WS_EEPROF_EI));
         assertTrue(userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_USERGENERATED));
-        assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
+        assertTrue(userdata.getStatus() == EndEntityConstants.STATUS_NEW);
 
         List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
         assertNotNull(userei);
@@ -762,7 +762,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setClearPwd(true);
         user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
         user1.setCaName(CA1);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName(WS_EEPROF_EI);
         user1.setCertificateProfileName(WS_CERTPROF_EI);
@@ -941,7 +941,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Test with custom extensions
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-        userData1.setStatus(UserDataVOWS.STATUS_NEW);
+        userData1.setStatus(EndEntityConstants.STATUS_NEW);
         userData1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         userData1.setEndEntityProfileName(WS_EEPROF_EI);
         userData1.setCertificateProfileName(WS_CERTPROF_EI);
@@ -1147,7 +1147,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             userDataVOWS.setCaName(caInfo.getName());
             userDataVOWS.setEmail(null);
             userDataVOWS.setSubjectAltName(null);
-            userDataVOWS.setStatus(UserDataVOWS.STATUS_NEW);
+            userDataVOWS.setStatus(EndEntityConstants.STATUS_NEW);
             userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             userDataVOWS.setEndEntityProfileName(WS_EEPROF_EI);
             userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
@@ -1218,7 +1218,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             userDataVOWS.setCaName(CA1);
             userDataVOWS.setEmail(null);
             userDataVOWS.setSubjectAltName(null);
-            userDataVOWS.setStatus(UserDataVOWS.STATUS_NEW);
+            userDataVOWS.setStatus(EndEntityConstants.STATUS_NEW);
             userDataVOWS.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             userDataVOWS.setEndEntityProfileName(WS_EEPROF_EI);
             userDataVOWS.setCertificateProfileName(WS_CERTPROF_EI);
@@ -1286,7 +1286,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setClearPwd(true);
         user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
         user1.setCaName(CA1);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName(WS_EEPROF_EI);
         user1.setCertificateProfileName(WS_CERTPROF_EI);
@@ -1442,7 +1442,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setClearPwd(true);
         user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
         user1.setCaName(CA1);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -1490,7 +1490,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(exceptionThrown); // Should fail
 
         // Change password to foo456 and status to NEW
-        userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
@@ -1524,7 +1524,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         userdatas = ejbcaraws.findUser(usermatch);
         assertTrue(userdatas != null);
         assertTrue(userdatas.size() == 1);
-        userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
@@ -1728,7 +1728,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             this.userdatas.get(0).setCertificateProfileName(WS_CERTPROF_EI);
         }
         public X509Certificate getCertificate(String hardTokenSN) throws Exception {
-            this.userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
+            this.userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
             this.userdatas.get(0).setPassword(PASSWORD);
             this.userdatas.get(0).setClearPwd(true);
             CommonEjbcaWS.this.ejbcaraws.editUser(userdatas.get(0));
@@ -1786,7 +1786,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCaName(getAdminCAName());
         user1.setEmail(null);
         user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -1848,7 +1848,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             tokenUser1.setCaName(getAdminCAName());
             tokenUser1.setEmail(null);
             tokenUser1.setSubjectAltName(null);
-            tokenUser1.setStatus(UserDataVOWS.STATUS_NEW);
+            tokenUser1.setStatus(EndEntityConstants.STATUS_NEW);
             tokenUser1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
             tokenUser1.setEndEntityProfileName("EMPTY");
             tokenUser1.setCertificateProfileName("ENDUSER");
@@ -2050,7 +2050,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas != null);
         assertTrue(userdatas.size() == 1);
         userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
         userdatas.get(0).setPassword(PASSWORD);
         userdatas.get(0).setClearPwd(true);
         ejbcaraws.editUser(userdatas.get(0));
@@ -2363,7 +2363,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 adminUser.setCAId(cainfo.getCAId());
                 adminUser.setEmail(null);
                 adminUser.setSubjectAltName(null);
-                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setStatus(EndEntityConstants.STATUS_NEW);
                 adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
                 adminUser.setEndEntityProfileId(endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI));
                 adminUser.setCertificateProfileId(cpid);
@@ -2371,7 +2371,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 log.info("Adding new user: "+adminUser.getUsername());
                 endEntityManagementSession.addUser(intAdmin, adminUser, true);
             } else {
-                adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+                adminUser.setStatus(EndEntityConstants.STATUS_NEW);
                 adminUser.setPassword("foo123");
                 log.info("Changing user: "+adminUser.getUsername());
                 endEntityManagementSession.changeUser(intAdmin, adminUser, true);
@@ -2415,7 +2415,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertTrue("Failed to create test CA: " + testCaName, caSession.existsCa(testCaName));
             cainfo = caSession.getCAInfo(intAdmin, testCaName);
             adminUser.setCAId(cainfo.getCAId());
-            adminUser.setStatus(UserDataVOWS.STATUS_NEW);
+            adminUser.setStatus(EndEntityConstants.STATUS_NEW);
             adminUser.setPassword("foo123");
             log.info("Changing user: "+adminUser.getUsername());
             endEntityManagementSession.changeUser(intAdmin, adminUser, true);
@@ -2506,7 +2506,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setSubjectDN("CN=WSTESTUSER29");
         user1.setEmail(null);
         user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -2579,7 +2579,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setSubjectDN("CN=WSTESTUSER30");
         user1.setEmail(null);
         user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -2641,7 +2641,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setSubjectDN("CN=WSTESTUSER31");
         user1.setEmail(null);
         user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -2699,7 +2699,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setSubjectDN("CN=WSTESTUSER32");
         user1.setEmail(null);
         user1.setSubjectAltName(null);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
