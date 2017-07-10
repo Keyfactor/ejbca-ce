@@ -142,6 +142,7 @@ public class SecureXMLDecoderTest {
         root.put("testbool", false);
         root.put("testemptyset", Collections.EMPTY_SET);
         root.put("testemptylist", Collections.emptyList());
+        root.put("testClass", Object.class);
         final List<Object> unmodifiable = new ArrayList<>();
         unmodifiable.add('A');
         unmodifiable.add('B');
