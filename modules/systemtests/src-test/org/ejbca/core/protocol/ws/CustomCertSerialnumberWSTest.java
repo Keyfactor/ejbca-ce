@@ -21,6 +21,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -123,7 +124,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             }
             // Fail to create a certificate with custom serialnumber for user TEST_USER1 when there is no unique constraint
             UserDataVOWS user = new UserDataVOWS(TEST_USER1, PASSWORD, true, "C=SE, CN="+TEST_USER1,
-                    getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+                    getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
             try {
@@ -136,7 +137,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             }
             // Succeed to create a certificate with custom serialnumber when there is a unique constraint
             user = new UserDataVOWS(TEST_USER1, PASSWORD, true, "C=SE, CN="+TEST_USER1,
-                    getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+                    getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
             // Make sure EJBCA "thinks" that we have a unique serno index in the database
@@ -163,7 +164,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
             // Succeed to create a certificate without a custom serialnumber when there is a unique constraint
             user = new UserDataVOWS(TEST_USER2, PASSWORD, true, "C=SE, CN="+TEST_USER2,
-                    getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+                    getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             ksenv = this.ejbcaraws.softTokenRequest(user,null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
             keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
@@ -187,7 +188,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
             // Try to issue another cert with the same custom serial number and get a rollback if there really is a unique constraint in the database
             user = new UserDataVOWS(TEST_USER3, PASSWORD, true, "C=SE, CN="+TEST_USER3,
-                    getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+                    getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
             // See if we really have a unique serno index in the database
