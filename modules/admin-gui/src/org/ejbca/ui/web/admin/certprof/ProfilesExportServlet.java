@@ -235,7 +235,7 @@ public class ProfilesExportServlet extends HttpServlet {
                 } catch (UnsupportedEncodingException e) {
                     throw new IllegalStateException("UTF-8 was not a known encoding", e);
                 }
-                ba = getProfileBytes(keyValidator);
+                ba = getProfileBytes(keyValidator.getUpgradableHashmap());
                 filename = "keyvalidator_" + profilenameEncoded + "-" + id + ".xml";
                 ze = new ZipEntry(filename);
                 zos.putNextEntry(ze);
@@ -270,8 +270,5 @@ public class ProfilesExportServlet extends HttpServlet {
         return ba;
     }
     
-    private byte[] getProfileBytes(Validator profile) throws IOException {
-        return getProfileBytes(profile.getUpgradableHashmap());
-    }
 
 }
