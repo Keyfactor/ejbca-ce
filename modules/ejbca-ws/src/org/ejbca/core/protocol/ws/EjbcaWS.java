@@ -2696,7 +2696,7 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
     private void setUserDataVOWS(UserDataVOWS userdata) {
-    	userdata.setStatus(UserDataVOWS.STATUS_NEW);
+    	userdata.setStatus(EndEntityConstants.STATUS_NEW);
     	if (userdata.getPassword() == null) {
     		final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
 			final String pwd = pwdgen.getNewPassword(12, 12);									
@@ -2774,7 +2774,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        log.debug("Soft token req for user '" + userdata.getUsername() + "'.");
-	        userdata.setStatus(UserDataVOWS.STATUS_NEW);
+	        userdata.setStatus(EndEntityConstants.STATUS_NEW);
 	        userdata.setClearPwd(true);
 	    	final AuthenticationToken admin = getAdmin(false);
 	    	logAdminName(admin,logger);

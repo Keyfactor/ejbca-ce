@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -196,7 +197,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        }
 
 	       final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
-	                getAdminCAName(), "DNSName=(top.secret).domain.se", "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+	                getAdminCAName(), "DNSName=(top.secret).domain.se", "foo@anatom.se", EndEntityConstants.STATUS_NEW,
 	                UserDataVOWS.TOKEN_TYPE_USERGENERATED, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
 	        this.ejbcaraws.editUser(userData);
 	        
@@ -290,7 +291,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 	private void editUser( byte[] values[], byte value[] ) throws Exception {
 		final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
-				getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+				getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
 				UserDataVOWS.TOKEN_TYPE_USERGENERATED, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
 		final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
 		for( int i=0; i<values.length; i++ ){
