@@ -28,7 +28,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
 
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(RaCertificateSearchRequest.class);
-    public static int DEFAULT_MAX_RESULTS = 25;
+    public static final int DEFAULT_MAX_RESULTS = 25;
 
     private int maxResults = DEFAULT_MAX_RESULTS;
     private List<Integer> eepIds = new ArrayList<>();
