@@ -274,7 +274,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     private Map<Integer, String> caIdToNameMap;
     private Map<Integer, String> eepIdToNameMap;
-    private Map<Integer, String> kvIdToNameMap;
+    private Map<Integer, String> keyValidatorsIdToNameMap;
     private String roleIdParam;
     private String advancedParam;
     private String summaryParam;
@@ -288,8 +288,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private List<SelectItem> availableResourcesEe = null;
     private List<String> resourcesEepSelected = new ArrayList<>();
     private LinkedList<SelectItem> availableResourcesEep = null;
-    private List<String> resourcesKvSelected = new ArrayList<>();
-    private LinkedList<SelectItem> availableResourcesKv = null;
+    private List<String> resourcesKeyValidatorsSelected = new ArrayList<>();
+    private LinkedList<SelectItem> availableResourcesKeyValidators = null;
     private List<String> resourcesIkbSelected = new ArrayList<>();
     private List<SelectItem> availableResourcesIkb = null;
     private List<String> resourcesOtherSelected = new ArrayList<>();
@@ -309,7 +309,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         summaryParam = requestParameterMap.get("summary");
         caIdToNameMap = caSession.getCAIdToNameMap();
         eepIdToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        kvIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
+        keyValidatorsIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
         reinitSelection();
     }
 
@@ -363,7 +363,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         availableResourcesCa = null;
         availableResourcesEe = null;
         availableResourcesEep = null;
-        availableResourcesKv = null;
+        availableResourcesKeyValidators = null;
         availableResourcesIkb = null;
         availableResourcesOther = null;
         // Calculate available templates and the current best match  
@@ -377,7 +377,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Find EEP resources allowed by this role
         setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet()));
         // Find KV resources allowed by this role
-        setResourcesKvSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.KEYVALIDATORPREFIX, kvIdToNameMap.keySet()));
+        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.KEYVALIDATORPREFIX, keyValidatorsIdToNameMap.keySet()));
         // Find IKB resources allowed by this role
         setResourcesIkbSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesIkb()));
         // Find Other resources allowed by this role
@@ -605,28 +605,30 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return the currently selected key validator resources */
-    public List<String> getResourcesKvSelected() { return resourcesKvSelected; }
+    public List<String> getResourcesKeyValidatorsSelected() { return resourcesKeyValidatorsSelected; }
     
     /** Set the currently selected key validator resources */
-    public void setResourcesKvSelected(final List<String> resourcesKvSelected) { this.resourcesKvSelected = new ArrayList<>(resourcesKvSelected); }
+    public void setResourcesKeyValidatorsSelected(final List<String> resourcesKeyValidatorsSelected) {
+        this.resourcesKeyValidatorsSelected = new ArrayList<>(resourcesKeyValidatorsSelected);
+    }
     
     /** @return the selectable key validator resources */
-    public List<SelectItem> getAvailableResourcesKv() {
-        if (availableResourcesKv==null) {
-            availableResourcesKv = new LinkedList<>();
+    public List<SelectItem> getAvailableResourcesKeyValidators() {
+        if (availableResourcesKeyValidators==null) {
+            availableResourcesKeyValidators = new LinkedList<>();
             final Collection<Integer> authorizedKvIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWKEYVALIDATOR);
             if (log.isDebugEnabled()) {
                 log.debug("Authorized key validator ids for " + getAdmin().getUniqueId() + " are " + authorizedKvIds);
             }
             for (final int id : authorizedKvIds) {
-                availableResourcesKv.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.KEYVALIDATORPREFIX + id), kvIdToNameMap.get(id)));
+                availableResourcesKeyValidators.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.KEYVALIDATORPREFIX + id), keyValidatorsIdToNameMap.get(id)));
             }
-            super.sortSelectItemsByLabel(availableResourcesKv);
+            super.sortSelectItemsByLabel(availableResourcesKeyValidators);
             if (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.KEYVALIDATORPREFIX)) {
-                availableResourcesKv.addFirst(new SelectItem(AccessRulesConstants.KEYVALIDATORPREFIX, super.getEjbcaWebBean().getText("ALL")));
+                availableResourcesKeyValidators.addFirst(new SelectItem(AccessRulesConstants.KEYVALIDATORPREFIX, super.getEjbcaWebBean().getText("ALL")));
             }
         }
-        return availableResourcesKv;
+        return availableResourcesKeyValidators;
     }
 
     /** @return true if the InternalKeyBinding rule selection box should be modifiable */
