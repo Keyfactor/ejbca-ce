@@ -19,6 +19,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keys.validation.KeyValidatorSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -50,6 +51,8 @@ public class ClearCacheCommand extends EjbcaCommandBase {
     private static final String CA_CACHE = "-ca";
     private static final String CT_CACHE = "-ct";
     private static final String APPROVAL_PROFILE_CACHE = "--approvalprofile";
+    private static final String VALIDATOR_CACHE = "--validators";
+
 
 
     //Register parameters 
@@ -65,6 +68,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
                 "Clear Authorization cache."));
         registerParameter(new Parameter(CA_CACHE, "CA Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CA cache."));
         registerParameter(new Parameter(CT_CACHE, "CT Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CT caches (OCSP and Fail Fast cache)."));
+        registerParameter(new Parameter(VALIDATOR_CACHE, "Validator Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear Validator caches."));
         registerParameter(Parameter.createFlag(APPROVAL_PROFILE_CACHE, "Clear the approval profile cache."));
 
     }
@@ -96,6 +100,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         final boolean cacache = (parameters.get(CA_CACHE) != null) || all;
         final boolean ctcache = (parameters.get(CT_CACHE) != null) || all;
         final boolean approvalProfileCache = (parameters.get(APPROVAL_PROFILE_CACHE) != null) || all;
+        final boolean validatorCache = (parameters.get(VALIDATOR_CACHE) != null) || all;
 
 
         if (!(all || globalconf || eeprofile || certprofile || authorization || cacache || ctcache)) {
@@ -149,6 +154,11 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             log.info("Flushing Approval Profile Cache");
             final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
             approvalProfileSession.forceProfileCacheRebuild();
+        }
+        if(validatorCache) {
+            log.info("Flushing Validator Cache");
+            final KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
+            keyValidatorSession.flushKeyValidatorCache();
         }
           
         return CommandResult.SUCCESS;

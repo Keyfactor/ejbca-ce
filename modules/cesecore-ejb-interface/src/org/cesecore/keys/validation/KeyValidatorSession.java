@@ -19,4 +19,9 @@ package org.cesecore.keys.validation;
  * @version $Id$
  */
 public interface KeyValidatorSession {
+    
+    /**
+     * Flushes the key validators cache to ensure that next time they are read from database.
+     */
+    void flushKeyValidatorCache();
 }
