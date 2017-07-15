@@ -196,11 +196,6 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
     Collection<Integer> getAuthorizedKeyValidatorIds(final AuthenticationToken admin, String keyValidatorAccessRule);
 
     /**
-     * Flushes the key validators cache to ensure that next time they are read from database.
-     */
-    void flushKeyValidatorCache();
-
-    /**
      * Validates a key against the key validators which match the filter criteria defined in it and the CA reference to it. 
      * The method is invoked while certificate issuance for user certificates and CA certificates.
      * 
