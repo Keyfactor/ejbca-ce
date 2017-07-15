@@ -257,7 +257,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 }
             }
         } catch (CADoesntExistsException e) {
-            throw new RuntimeException("Available CA is no longer available!");
+            throw new IllegalStateException("Available CA is no longer available!");
         }
         return false;
     }
