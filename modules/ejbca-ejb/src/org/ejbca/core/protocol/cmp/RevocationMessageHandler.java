@@ -155,11 +155,13 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		// For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
 		// If there exists CRL Entry Extensions we will use that, because it's the only thing allowed in CMPv2
 		int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
-		final ASN1OctetString reasonoctets = rd.getCrlEntryDetails().getExtension(Extension.reasonCode).getExtnValue();
+		
 		DERBitString reasonbits;
 		try {
+		    final ASN1OctetString reasonoctets = rd.getCrlEntryDetails().getExtension(Extension.reasonCode).getExtnValue();
 		    reasonbits = new DERBitString(reasonoctets.getEncoded());
-		} catch (IOException e) {
+		} catch (NullPointerException | IOException e) {
+		    //If reason wasn't included the request, or was incorrectly encoded
 		    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
 		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		}
@@ -184,7 +186,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		            }
 		            ai.close();
 		        } catch (IOException e) {
-		            LOG.info("Exception parsin CRL reason extension: ", e);
+		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+		            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
 		        }
 		    } else {
 		        if (LOG.isDebugEnabled()) {
@@ -230,7 +233,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    }
 		} else {
 		    failInfo = FailInfo.BAD_CERTIFICATE_ID;
-		    final String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke", issuer.toString(), serno.getValue().toString(16));
+            final String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke",
+                    (issuer != null ? issuer.toString() : "<no issuer in request>"),
+                    (serno != null ? serno.getValue().toString(16) : "<no serial number in request>"));
 		    failText = errMsg; 
 		    LOG.info(failText);
 		}
