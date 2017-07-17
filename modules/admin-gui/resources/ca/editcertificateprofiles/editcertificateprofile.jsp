@@ -149,7 +149,7 @@
 					disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="checkusecertificatevalidityoffset" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
-			<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCertificateValidityOffset}">
+			<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCertificateValidityOffset}" styleClass="help">
 				<h:inputText id="textfieldcertificatevalidityoffset" value="#{certProfileBean.certificateValidityOffset}" 
 			    	title="#{web.text.FORMAT_TIME_YMODHMS}" size="25" maxlength="255"
 					disabled="#{certProfilesBean.viewOnly}"
@@ -176,7 +176,7 @@
 					disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="checkuseexpirationtrestrictionforweekdays" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
-			<h:outputLabel for="expirationRestrictionWeekdaysSelection" value="#{web.text.CERT_EXPIRATION_RESTRICTION_FOR_WEEKDAYS}:" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"/>
+			<h:outputLabel for="expirationRestrictionWeekdaysSelection" value="#{web.text.CERT_EXPIRATION_RESTRICTION_FOR_WEEKDAYS}" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}"/>
 			<h:panelGrid id="expirationRestrictionWeekdaysSelection" columns="8" rendered="#{certProfileBean.certificateProfile.useExpirationRestrictionForWeekdays}">
 				<h:selectBooleanCheckbox id="expirationRestrictionMonday" value="#{certProfileBean.expirationRestrictionMonday}" disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="expirationRestrictionMonday" value="#{web.text.DAY_MONDAY}"/>
@@ -223,22 +223,27 @@
 			<h:outputLabel for="checkallowextensionoverridegroup" value="#{web.text.ALLOWEXTENSIONOVERRIDE}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20extension%20override") %>
 		</h:panelGroup>
-		<h:panelGroup id="checkallowextensionoverridegroup">
-			<h:selectBooleanCheckbox id="checkallowextensionoverride" value="#{certProfileBean.certificateProfile.allowExtensionOverride}" disabled="#{certProfilesBean.viewOnly}"/>
-			<h:outputLabel for="checkallowextensionoverride" value="#{web.text.ALLOW} "/>
-		</h:panelGroup>
-
-	    <!-- Which extension can be overridden and not -->
-		<h:panelGroup>
-			<h:outputLabel for="overridableextensionlistgroup" value="#{web.text.OVERRIDABLEOIDSEXTENSIONLIST}"/>
-		</h:panelGroup>
-		<h:panelGroup id="overridableextensionlistgroup">
-			<h:inputText id="textfieldcustomoverridableextension" size="25" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.overridableExtensionOIDs}"
-				disabled="#{certProfilesBean.viewOnly}" converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
-			<h:selectBooleanCheckbox id="checkcustomnonoverridableextension" value="#{certProfileBean.nonOverridableExtensionOIDs}" disabled="#{certProfilesBean.viewOnly}"/>
-			<h:outputText styleClass="help" value=" #{web.text.NONOVERRIDABLEOIDSEXTENSIONLIST}"/>		
-			</br><h:outputText styleClass="help" value=" #{web.text.CERT_OVERRIDABLE_EXTENSIONS_LISTS_HELP}"/>
-		</h:panelGroup>
+		<h:panelGrid columns="1">
+			<h:panelGroup id="checkallowextensionoverridegroup">
+				<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.allowExtensionOverride}" rendered="#{!web.legacyInternetExplorer}"
+					disabled="#{certProfilesBean.viewOnly}"/>
+				<h:commandButton id="checkallowextensionoverride" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleAllowExtensionOverride}"
+					value="#{certProfileBean.certificateProfile.allowExtensionOverride?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+					disabled="#{certProfilesBean.viewOnly}"/>
+				<h:outputLabel for="checkallowextensionoverride" value="#{web.text.ALLOW}…" styleClass="checkBoxOverlay"/>
+			</h:panelGroup>
+			<!-- Which extension can be overridden and not -->
+			<h:outputLabel for="overridableextensionlistgroup" value="#{web.text.OVERRIDABLEOIDSEXTENSIONLIST}" rendered="#{certProfileBean.certificateProfile.allowExtensionOverride}"/>
+			<h:panelGrid columns="1" rendered="#{certProfileBean.certificateProfile.allowExtensionOverride}">
+				<h:panelGroup id="overridableextensionlistgroup">
+					<h:inputText id="textfieldcustomoverridableextension" size="45" maxlength="500" title="#{web.text.FORMAT_OIDS}" value="#{certProfileBean.overridableExtensionOIDs}"
+						disabled="#{certProfilesBean.viewOnly}" converter="org.ejbca.OidsObjectLinkedHashSetConverter"/>
+					<h:selectBooleanCheckbox id="checkcustomnonoverridableextension" value="#{certProfileBean.nonOverridableExtensionOIDs}" disabled="#{certProfilesBean.viewOnly}"/>
+					<h:outputLabel for="checkcustomnonoverridableextension" value=" #{web.text.NONOVERRIDABLEOIDSEXTENSIONLIST}"/>
+					<br/><h:outputText styleClass="help" value=" #{web.text.CERT_OVERRIDABLE_EXTENSIONS_LISTS_HELP}"/>
+				</h:panelGroup>
+			</h:panelGrid>
+		</h:panelGrid>
 
 		<h:panelGroup>
 			<h:outputLabel for="allowcertserialnumberoverridegroup" value="#{web.text.ALLOWCERTSERIALNUMBEROVERRIDE}"/>

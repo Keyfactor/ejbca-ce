@@ -470,6 +470,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     /** Toggles which Set is populated, the one for overridable, or the one for non-overridable
      * @param true to populate non-overridable extension list, false for overridable 
      */ 
+    public void toggleAllowExtensionOverride() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setAllowExtensionOverride(!getCertificateProfile().getAllowExtensionOverride());
+        redirectToComponent("checkallowextensionoverridegroup");
+    }
     public void setNonOverridableExtensionOIDs(final boolean enabled) {
         final CertificateProfile profile = getCertificateProfile();
         Set<String> extensions = getOverridableExtensionOIDs();
