@@ -19,8 +19,15 @@ import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 /**
  * @version $Id$
@@ -43,6 +50,19 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
     @Override
     public boolean isBackendAvailable(Class<? extends RaMasterApi> apiType) {
         return raMasterApiProxyBean.isBackendAvailable(apiType);
+    }
+
+    @Override
+    public byte[] createCertificateWS(AuthenticationToken authenticationToken, UserDataVOWS userdata, String requestData, int requestType,
+            String hardTokenSN, String responseType)
+            throws AuthorizationDeniedException, ApprovalException, EjbcaException, EndEntityProfileValidationException {
+        return raMasterApiProxyBean.createCertificateWS(authenticationToken, userdata, requestData, requestType, hardTokenSN, responseType);
+    }
+
+    @Override
+    public boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd)
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+        return raMasterApiProxyBean.addUser(authenticationToken, endEntity, clearpwd);
     }
 
 }

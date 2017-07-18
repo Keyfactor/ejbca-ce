@@ -76,6 +76,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             }
         }
         accessTreeUpdateSession.signalForAccessTreeUpdate();
+        RoleMemberCache.INSTANCE.updateWith(roleMember.getId(), roleMember.hashCode(), null, roleMember);
         return roleMember;
     }
 
@@ -99,12 +100,22 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public RoleMember findRoleMember(int primaryKey) {
-        RoleMemberData roleMemberData = find(primaryKey);
-        if (roleMemberData != null) {
-            return roleMemberData.asValueObject();
-        } else {
-            return null;
+        // 1. Check cache if it is time to sync-up with database
+        if (RoleMemberCache.INSTANCE.shouldCheckForUpdates(primaryKey)) {
+            // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache
+            final RoleMemberData roleMemberData = find(primaryKey);
+            if (roleMemberData == null) {
+                // Ensure that it is removed from cache when the object is no longer present in the database
+                RoleMemberCache.INSTANCE.removeEntry(primaryKey);
+            } else {
+                final RoleMember roleMember = roleMemberData == null ? null : roleMemberData.asValueObject();
+                // 3. The cache compares the database data with what is in the cache
+                // 4. If database is different from cache, replace it in the cache
+                RoleMemberCache.INSTANCE.updateWith(primaryKey, roleMember.hashCode(), null, roleMember);
+            }
         }
+        // 5. Get object from cache now (or null) and be merry
+        return RoleMemberCache.INSTANCE.getEntry(primaryKey);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -134,6 +145,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         if (roleMember != null) {
             entityManager.remove(roleMember);
             accessTreeUpdateSession.signalForAccessTreeUpdate();
+            RoleMemberCache.INSTANCE.removeEntry(primaryKey);
             return true;
         } else {
             return false;
@@ -151,28 +163,45 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         }
     }
     
-    private TypedQuery<RoleMemberData> getQueryForAuthenticationToken(final AuthenticationToken authenticationToken) {
+    private List<RoleMember> getRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken) {
         final String tokenType = authenticationToken.getMetaData().getTokenType();
         final TypedQuery<RoleMemberData> query;
         final int preferredMatchKey = authenticationToken.getPreferredMatchKey();
-        if (preferredMatchKey != AuthenticationToken.NO_PREFERRED_MATCH_KEY) {
-            final List<AccessMatchType> accessMatchType = authenticationToken.getMetaData().getAccessMatchValueIdMap().get(preferredMatchKey).getAvailableAccessMatchTypes();
-            final int preferredOperator = accessMatchType.isEmpty() ? AccessMatchType.TYPE_UNUSED.getNumericValue() : accessMatchType.get(0).getNumericValue();
-            // Optimized search for preferred match values (e.g. serial number match key) amongst members with that match key.
-            // For members with other match keys, we include everything in the search
-            query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0 AND "+
-                    "((a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator AND a.tokenMatchValueColumn=:preferredTokenMatchValue) OR " +
-                    "NOT (a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator))", RoleMemberData.class)
-                    .setParameter("tokenType", tokenType)
-                    .setParameter("preferredTokenMatchKey", preferredMatchKey)
-                    .setParameter("operator", preferredOperator)
-                    .setParameter("preferredTokenMatchValue", authenticationToken.getPreferredMatchValue());
+        List<RoleMember> cachedValue = RoleMemberCache.INSTANCE.getRoleMembersForAuthenticationToken(authenticationToken);
+        if (cachedValue != null) {
+            return cachedValue;
         } else {
+            if (preferredMatchKey != AuthenticationToken.NO_PREFERRED_MATCH_KEY) {
+                final List<AccessMatchType> accessMatchType = authenticationToken.getMetaData().getAccessMatchValueIdMap().get(preferredMatchKey)
+                        .getAvailableAccessMatchTypes();
+                final int preferredOperator = accessMatchType.isEmpty() ? AccessMatchType.TYPE_UNUSED.getNumericValue()
+                        : accessMatchType.get(0).getNumericValue();
+                // Optimized search for preferred match values (e.g. serial number match key) amongst members with that match key.
+                // For members with other match keys, we include everything in the search
+                log.error("DEBUG: CACHE MISS!");
+                query = entityManager
+                        .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0 AND "
+                                + "((a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator AND a.tokenMatchValueColumn=:preferredTokenMatchValue) OR "
+                                + "NOT (a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator))", RoleMemberData.class)
+                        .setParameter("tokenType", tokenType).setParameter("preferredTokenMatchKey", preferredMatchKey)
+                        .setParameter("operator", preferredOperator)
+                        .setParameter("preferredTokenMatchValue", authenticationToken.getPreferredMatchValue());
+            } else {
             // Search for all members with the same token type
             query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0", RoleMemberData.class)
                     .setParameter("tokenType", tokenType);
+            }
         }
-        return query;
+    
+        List<RoleMember> result = new ArrayList<>();
+        for (RoleMemberData roleMemberData : query.getResultList()) {
+            result.add(roleMemberData.asValueObject());
+        }
+        if (!result.isEmpty()) {
+            RoleMemberCache.INSTANCE.setRoleMembersForAuthenticationToken(authenticationToken, result);
+        }
+        return result;
+
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -180,9 +209,8 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     public Set<Integer> getRoleIdsMatchingAuthenticationTokenOrFail(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         final Set<Integer> ret = new HashSet<>();
         if (authenticationToken!=null) {
-            final TypedQuery<RoleMemberData> query = getQueryForAuthenticationToken(authenticationToken);
-            for (final RoleMemberData roleMemberData : query.getResultList()) {
-                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
+            for (final RoleMember roleMemberData : getRoleMembersForAuthenticationToken(authenticationToken)) {
+                if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData))) {
                     ret.add(roleMemberData.getRoleId());
                 }
             }
@@ -195,11 +223,10 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     public Set<RoleMember> getRoleMembersMatchingAuthenticationToken(final AuthenticationToken authenticationToken) {
         final Set<RoleMember> ret = new HashSet<>();
         if (authenticationToken!=null) {
-            final TypedQuery<RoleMemberData> query = getQueryForAuthenticationToken(authenticationToken);
-            for (final RoleMemberData roleMemberData : query.getResultList()) {
+            for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
                 try {
-                    if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
-                        ret.add(roleMemberData.asValueObject());
+                    if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
+                        ret.add(roleMember);
                     }
                 } catch (AuthenticationFailedException e) {
                     log.debug(e.getMessage(), e);
@@ -213,11 +240,10 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     @Override
     @Deprecated
     public Map<Integer,Integer> getRoleIdsAndTokenMatchKeysMatchingAuthenticationToken(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        final TypedQuery<RoleMemberData> query = getQueryForAuthenticationToken(authenticationToken);
         final Map<Integer,Integer> ret = new HashMap<>();
-        for (final RoleMemberData roleMemberData : query.getResultList()) {
-            if (authenticationToken.matches(convertToAccessUserAspect(roleMemberData.asValueObject()))) {
-                ret.put(roleMemberData.getRoleId(), roleMemberData.getTokenMatchKey());
+        for (final RoleMember roleMember : getRoleMembersForAuthenticationToken(authenticationToken)) {
+            if (authenticationToken.matches(convertToAccessUserAspect(roleMember))) {
+                ret.put(roleMember.getRoleId(), roleMember.getTokenMatchKey());
             }
         }
         return ret;
@@ -270,7 +296,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
 
             @Override
             public String getTokenType() {
-                return roleMember.getTokenType();
+                return (roleMember == null ? null : roleMember.getTokenType());
             }
 
             @Override
