@@ -52,7 +52,6 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.query.BasicMatch;
 
 /**
- * @author Lars Silven, PrimeKey Solutions AB
  * @version $Id$
  */
 public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCommand {

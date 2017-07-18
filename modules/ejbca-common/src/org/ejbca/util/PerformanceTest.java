@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * @author Lars Silven, PrimeKey Solutions AB
  * @version $Id$
  */
 @SuppressWarnings("synthetic-access")

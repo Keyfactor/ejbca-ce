@@ -77,7 +77,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(KEY_SPECIFICATIONS_KEY, "Key specifications", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT,
                 "Comma separated list of key specifications. Use <Algorithm><Length>, i.e RSA2048,ECDSA256 or all if missing. If --mode fingerprint is chosen, the first value is set as default value when running with --command add. If running with --command remove, only blacklist entries with that key specification are removed."));
-        registerParameter(new Parameter(KEY_GENERATION_SOURCES_KEY, "Key generation sources", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+        registerParameter(new Parameter(KEY_GENERATION_SOURCES_KEY, "Key generation sources ", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "Comma separated list of key generator sources. Use " + KeyGeneratorSources.toStringList()
                         + " or all if missing.  If --mode fingerprint is chosen, the first value is set as default value when running with --command add. If running with --command remove, only blacklist entries with that key generation source are removed."));
         registerParameter(new Parameter(DIRECTORY_KEY, "Public key directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,

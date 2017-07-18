@@ -13,22 +13,21 @@
 
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.assertEquals;
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.config.GlobalCesecoreConfiguration;
-import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
@@ -37,7 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
+ * Creates tons of end entities. The baseline should be the user creation time for a single thread using an always allow token (forgoing database 
+ * checks), while this test should press the database to the point where caching influences behavior. 
  *
  * @version $Id$
  */
@@ -45,11 +45,13 @@ public class AddLotsofUsersTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(AddLotsofUsersTest.class);
 
-    private int userNo = 0;
-    
-    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+	private static final String USERNAME_PREFIX = "AddLotsofUsersTest";
+	private static final int NUMBER_OF_THREADS = 10;
+	private static final int USERS_PER_THREAD = 100;
+	
+    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AddLotsofUsersTest"));
+
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -64,57 +66,62 @@ public class AddLotsofUsersTest extends CaTestCase {
     public String getRoleName() {
         return "AddLotsofUsersTest"; 
     }
-    
-    /**
-     * Generate a new user name
-     */
-    private String genUserName(String baseUsername) throws Exception {
-        userNo++;
-        return baseUsername + userNo;
-    }
 
-    /**
-     * Tests creation of 2000 users
-     *
-     * @throws Exception error
-     */
     @Test
-    public void test01Create2000Users() throws Exception {
-        log.trace(">test01Create2000Users()");
-        final AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AddLotsofUsersTest"));
-        final String baseUsername = "lotsausers" + System.currentTimeMillis() + "-";
-        for (int i = 0; i < 2000; i++) {
-            String username = genUserName(baseUsername);
-            String pwd = genRandomPwd();
-            EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
-            int token = SecConst.TOKEN_SOFT_P12;
-            int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
-            int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-            int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
-            String dn = "C=SE, O=AnaTom, CN=" + username;
-            String subjectaltname = "rfc822Name=" + username + "@foo.se";
-            String email = username + "@foo.se";
-            if (endEntityAccessSession.findUser(administrator, username) != null) {
-                log.warn("User already exists in the database.");
-            } else {
-            	endEntityManagementSession.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
-                        type, token, hardtokenissuerid, getTestCAId());
+    public void testCreateManyUsers() throws Exception {
+        final StopWatch stopWatch = new StopWatch();
+        List<RaEntity> tasks = new ArrayList<>();
+        List<String> createdUsers = new ArrayList<>();
+        for(int i = 0; i < NUMBER_OF_THREADS; i++) {
+            tasks.add(new RaEntity(i, USERS_PER_THREAD));
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+        stopWatch.start();
+        try {
+            List<Future<String[]>> futures = executor.invokeAll(tasks);
+            for(Future<String[]> future : futures) {
+                createdUsers.addAll(Arrays.asList(future.get()));
             }
-            endEntityManagementSession.setClearTextPassword(administrator, username, pwd);
-            if (i % 100 == 0) {
-                log.debug("Created " + i + " users...");
+            stopWatch.stop();
+            long diff = stopWatch.getTime();
+            log.info(createdUsers.size() + " end entities have been generated. Total time: " + diff + " ms."); 
+            log.info("Average creation time: " + diff / (NUMBER_OF_THREADS * USERS_PER_THREAD) + " ms per end entity");
+        } finally {
+            for (String endEntityName : createdUsers) {
+                try {
+                    endEntityManagementSession.deleteUser(alwaysAllowToken, endEntityName);
+                } catch (NoSuchEndEntityException e) {
+                    //NOPMD Ignore
+                }
             }
         }
-        log.debug("Created 2000 users!");
-        log.trace("<test01Create2000Users()");
     }
     
-    @Test
-    public void test02FindAllBatchUsersByStatusWithLimit() {
-        log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
-    	List<EndEntityInformation> endEntityInformations = endEntityManagementSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
-    	GlobalCesecoreConfiguration globalConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-    	assertEquals("Did not returned the maximum hardcoded limit in query.", globalConfiguration.getMaximumQueryCount(), endEntityInformations.size());
-        log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
+    private class RaEntity implements Callable<String[]> {
+
+        private final int endEntitiesPerThread;
+        private final String[] usernames;
+        private final int threadNumber;
+        
+        public RaEntity(int threadNumber, int endEntitiesPerThread) {
+            this.threadNumber = threadNumber;
+            this.endEntitiesPerThread = endEntitiesPerThread;
+            this.usernames = new String[endEntitiesPerThread];
+        }
+
+        @Override
+        public String[] call() throws Exception {
+            String theadUsername = USERNAME_PREFIX + "_" + threadNumber;
+            for (int i = 0; i < endEntitiesPerThread; i++) {
+                String username = theadUsername + "_" + i;
+                usernames[i] = username;
+                endEntityManagementSession.addUser(roleMgmgToken, username, "foo123", "CN=" + username, null, null, false,
+                        SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                        EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, getTestCAId());
+
+            }
+            return usernames;
+        }
     }
+    
 }
