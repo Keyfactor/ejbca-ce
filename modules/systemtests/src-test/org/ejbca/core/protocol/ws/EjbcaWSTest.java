@@ -424,7 +424,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {
+    public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {   
         enforcementOfUniqueSubjectDN();
     }
 

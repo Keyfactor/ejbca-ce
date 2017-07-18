@@ -91,7 +91,7 @@ public class InternalEjbcaResources extends InternalResources {
             	try {
             		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
                 } catch (FileNotFoundException e) {
-                    log.error("Localization files not found", e);
+                    log.error("Localization files not found in InternalEjbcaResources: " +e.getMessage());
                 }
             }
             secondaryStream = InternalEjbcaResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
@@ -99,7 +99,7 @@ public class InternalEjbcaResources extends InternalResources {
             	try {
             		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
                 } catch (FileNotFoundException e) {
-                    log.error("Localization files not found", e);
+                    log.error("Localization files not found in InternalEjbcaResources: " +  e.getMessage());
                 }
             }
 

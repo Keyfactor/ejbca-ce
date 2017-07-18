@@ -26,7 +26,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 
 /**
- * Bean to handle the AuthorizationTreeUpdateData entity.
+ * Bean to handle the AccessTreeUpdateData entity.
  * 
  * @version $Id$
  */

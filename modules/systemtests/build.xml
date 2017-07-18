@@ -78,6 +78,7 @@
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.cesecore-ejb.lib}"/>
+		<path location="${mod.ejbca-ws.lib}"/>
 		<path refid="lib.commons-lang.classpath" />
 		<path location="${build.common.dir}" />
 	</path>
@@ -328,6 +329,7 @@
 					<exclude name="org/ejbca/core/ejb/log/LoggingStressTest$LogTester.class" />
 					<exclude name="org/ejbca/core/ejb/ra/AddLotsofCertsPerUserTest.class" />
 					<exclude name="org/ejbca/core/ejb/ra/AddLotsofUsersTest.class" />
+					<exclude name="org/ejbca/core/ejb/ra/RaMasterApiStressTest.class" />
 					<!-- Tests that require special configuration to work -->
 					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletTest.class" />	
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestTest.class" />

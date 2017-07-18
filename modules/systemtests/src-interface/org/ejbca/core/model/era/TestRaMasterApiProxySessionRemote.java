@@ -15,8 +15,15 @@ package org.ejbca.core.model.era;
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 /**
  * @version $Id$
@@ -24,6 +31,19 @@ import org.ejbca.core.protocol.cmp.NoSuchAliasException;
  */
 @Remote
 public interface TestRaMasterApiProxySessionRemote {
+
+    /**
+     * Adds (end entity) user.
+     * @param admin authentication token
+     * @param endEntity end entity data as EndEntityInformation object
+     * @param clearpwd 
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @return true if used has been added, false otherwise
+     */
+    boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd)
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
 
     /**
      * Dispatch CMP request over RaMasterApi.
@@ -47,5 +67,24 @@ public interface TestRaMasterApiProxySessionRemote {
      * @return returns true if an API of a certain type is available
      */
     boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
+    
+    /**
+     * Generates a certificate. This variant is used from the Web Service interface.
+     * @param authenticationToken authentication token.
+     * @param userdata end entity information, encoded as a UserDataVOWS (web service value object). Must have been enriched by the WS setUserDataVOWS/enrichUserDataWithRawSubjectDn methods.
+     * @param requestData see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param requestType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @param responseType see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null. 
+     * @throws AuthorizationDeniedException if not authorized to create a certificate with the given CA or the profiles
+     * @throws ApprovalException if the request requires approval
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process, for example non-existent CA
+     * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
+     * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest
+     */
+    byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
+            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
+            EndEntityProfileValidationException;
     
 }
