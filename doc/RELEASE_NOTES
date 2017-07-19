@@ -1,3 +1,8 @@
+EJBCA 6.8.0.1
+-----------
+
+This is a patch release containing a performance improvement upon EJBCA 6.8.0.1
+
 EJBCA 6.8.0
 -----------
 
@@ -13,9 +18,9 @@ improvements, we'd like to highlight the following:
 	*	The Advanced Rules page now has an Summary screen, which displays only the set rules for a Role
 	*	Setting Role Members has been simplified. Match Operators have been hard coded for different value types in order to make the process 
 		less error prone. 
-	* 	We have introduced the concept of Role Namespaces, allowing administators to sort Roles into groups. An logged in administrator may thus
+	* 	We have introduced the concept of Role Namespaces, allowing administrators to sort Roles into groups. An logged in administrator may thus
 		only see the Roles in the namespace in which they themselves belong, while being a member of a Role belonging to the "blank" namespace 
-		gives access to all. The purpose of this is to allow several different organisational units to be using their own CA, each creating their
+		gives access to all. The purpose of this is to allow several different organizational units to be using their own CA, each creating their
 		own Roles with similar names, but without interfering with each other. 
 	*	Last but not least, roles management has been built into the EJBCA RA as well, allowing RA users working on a proxy RA to administrate their
 		own roles without needing access to the CA. 
