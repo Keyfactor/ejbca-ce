@@ -248,7 +248,6 @@ public class RaCertificateDetails {
                 }
             }
         }
-        this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
         this.expireDate = certificateData.getExpireDate();
         this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
         if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
@@ -529,6 +528,7 @@ public class RaCertificateDetails {
     }
 
     public boolean isKeyRecoveryPossible() {
+        this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
         return keyRecoveryPossible;
     }
     
