@@ -25,6 +25,11 @@
   </section>
 
   <section name="Virtual Machine for Testing">
+  <note>Note that the version on the VM is outdated. We are working on improving Virtual Machine images.
+  </note>
+  <note>Note that the superadmin and probably TLS server certificate have expired on the testing VM. It is possible to 
+  manually renew superadmin using the command line interface. See <a href="docs/userguide.html#Renewing%20Superadmin">Renewing Superadmin</a> in the User Guide.
+  </note>
     <p>
     Get a feeling for, and start testing, EJBCA easily by downloading and running our 
     <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>, currently not with the latest release of EJBCA though.
