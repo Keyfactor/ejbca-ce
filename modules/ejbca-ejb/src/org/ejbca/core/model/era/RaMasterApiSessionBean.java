@@ -1530,6 +1530,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         try {
             endEntityManagementSessionLocal.verifyPassword(authenticationToken, username, password); // FIXME this checks for edit access! should check for keyrecovery access
+            endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password); // This actually checks if the password matches (which endEntityManagementSessionLocal.verifyPassword doesn't)
             final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userdata.getCAId()).getFinishUser();
             if (shouldFinishUser) {
                     endEntityAuthenticationSessionLocal.finishUser(userdata);
