@@ -925,8 +925,8 @@ public class EjbcaWebBean implements Serializable {
         // Invalidate local GUI cache
         initialized = false;
         if (failedHosts.length() > 0) {
-            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString().substring(1) + "), but succeeded on (" + succeededHost.toString().substring(1)
-                    + ").");
+            // The below will print hosts starting with a blank (space), but it's worth it to not have to consider error handling if toString is empty
+            throw new CacheClearException("Failed to clear cache on hosts (" + failedHosts.toString() + "), but succeeded on (" + succeededHost.toString() + ").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
