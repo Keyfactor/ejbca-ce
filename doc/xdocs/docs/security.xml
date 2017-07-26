@@ -327,7 +327,7 @@ A non-user friendly way to repair sequence gaps follows this principle:
 <ul>
 <li>In a copy of the database, delete all records except 1 (or as many as you have holes)</li>
 <li>update the record(s), using sql to change sequenceNumber to the ones missing, and primaryKey to something unique</li>
-<li>run ejbca-db-cli export from the copy database. This will result in a dump with only these records, metching the holes in the original database</li>
+<li>run ejbca-db-cli export from the copy database. This will result in a dump with only these records, matching the holes in the original database</li>
 <li>run ejbca-db-cli import to import this dump in the original database. This will insert the missing sequenceNumbers, using databaseprotection as configured in your ejbca-db-cli</li>
 </ul>
 </p>
