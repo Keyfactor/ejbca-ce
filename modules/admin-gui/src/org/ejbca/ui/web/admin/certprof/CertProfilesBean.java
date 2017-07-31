@@ -197,14 +197,22 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public String actionEdit() {
         selectCurrentRowData();
-        viewOnly = false;
-        return "edit"; // Outcome is defined in faces-config.xml
+        if (selectedProfileExists()) {
+            viewOnly = false;
+            return "edit"; // Outcome is defined in faces-config.xml
+        } else {
+            return "";
+        }
     }
 
     public String actionView() {
         selectCurrentRowData();
-        viewOnly = true;
-        return "view"; // Outcome is defined in faces-config.xml
+        if (selectedProfileExists()) {
+            viewOnly = true;
+            return "view"; // Outcome is defined in faces-config.xml
+        } else {
+            return "";
+        }
     }
     
     public boolean getViewOnly() {
@@ -246,7 +254,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void actionAddFromTemplate() {
         selectCurrentRowData();
-        addFromTemplateInProgress = true;
+        if (selectedProfileExists()) {
+            addFromTemplateInProgress = true;
+        }
     }
 
     public void actionAddFromTemplateConfirm() {
@@ -285,7 +295,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void actionDelete() {
         selectCurrentRowData();
-        deleteInProgress = true;
+        if (selectedProfileExists()) {
+            deleteInProgress = true;
+        }
     }
 
     public void actionDeleteConfirm() {
@@ -309,7 +321,9 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
 
     public void actionRename() {
         selectCurrentRowData();
-        renameInProgress = true;
+        if (selectedProfileExists()) {
+            renameInProgress = true;
+        }
     }
 
     public void actionRenameConfirm() {
@@ -338,6 +352,11 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         certificateProfileItems = null;
         selectedCertProfileId = null;
         certProfileName = null;
+    }
+    
+    /** @return true if there exists a certificate profile with the selected id */
+    private boolean selectedProfileExists() {
+        return getEjbcaWebBean().getEjb().getCertificateProfileSession().getCertificateProfile(selectedCertProfileId) != null;
     }
 
     /*
