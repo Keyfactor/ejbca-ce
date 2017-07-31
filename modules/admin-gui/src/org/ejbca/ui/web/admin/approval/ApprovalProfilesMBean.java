@@ -109,36 +109,32 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     }
     
     public void selectCurrentRowData() {
-        final ApprovalProfileGuiInfo approvalProfileItem = getApprovalProfiles().getRowData();
+        ListDataModel<ApprovalProfileGuiInfo> approvalProfiles = approvalProfilesList;
+        if (approvalProfiles == null) {
+            approvalProfiles = getApprovalProfiles();
+        }
+        final ApprovalProfileGuiInfo approvalProfileItem = approvalProfiles.getRowData();
         selectedApprovalProfileId = approvalProfileItem.getId();
     }
 
-    // Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
-    public String getResetApprovalProfilesTrigger() {
-        approvalProfilesList = null;
-        return "";
-    }
-
     public ListDataModel<ApprovalProfileGuiInfo> getApprovalProfiles() {
-        if (approvalProfilesList == null) {
-            final List<ApprovalProfileGuiInfo> items = new ArrayList<ApprovalProfileGuiInfo>();
-            final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
+        final List<ApprovalProfileGuiInfo> items = new ArrayList<ApprovalProfileGuiInfo>();
+        final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
 
-            authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
-            final Map<Integer, String> idToNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
-            for(Integer profileId : authorizedProfileIds) {
-                final String name = idToNameMap.get(profileId);
-                items.add(new ApprovalProfileGuiInfo(profileId, name));
-            }
-            // Sort list by name
-            Collections.sort(items, new Comparator<ApprovalProfileGuiInfo>() {
-                @Override
-                public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
-                    return a.getName().compareToIgnoreCase(b.getName());
-                }
-            });
-            approvalProfilesList = new ListDataModel<ApprovalProfileGuiInfo>(items);
+        authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
+        final Map<Integer, String> idToNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+        for (Integer profileId : authorizedProfileIds) {
+            final String name = idToNameMap.get(profileId);
+            items.add(new ApprovalProfileGuiInfo(profileId, name));
         }
+        // Sort list by name
+        Collections.sort(items, new Comparator<ApprovalProfileGuiInfo>() {
+            @Override
+            public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
+                return a.getName().compareToIgnoreCase(b.getName());
+            }
+        });
+        approvalProfilesList = new ListDataModel<ApprovalProfileGuiInfo>(items);
         return approvalProfilesList;
     }
     
