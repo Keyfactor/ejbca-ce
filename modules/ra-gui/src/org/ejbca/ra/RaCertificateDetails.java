@@ -450,9 +450,9 @@ public class RaCertificateDetails {
                 log.info("Failed to perform key recovery for user: " + subjectDn);
             }
         } catch (ApprovalException e) {
-            callbacks.getRaLocaleBean().addMessageInfo("enrollwithrequestid_request_with_request_id_is_still_waiting_for_approval", requestId);
+            callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_pending");
             if (log.isDebugEnabled()) {
-                log.debug("Request with ID: " + requestId + " is still waiting for approval", e);
+                log.debug("Request is still waiting for approval", e);
             }
         } catch (WaitingForApprovalException e) {
             // Setting requestId will render link to 'enroll with request id' page
