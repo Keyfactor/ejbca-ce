@@ -161,14 +161,22 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public String actionView() {
         selectCurrentRowData();
-        viewOnly = true;
-        return "view"; // Outcome is defined in faces-config.xml
+        if (selectedProfileExists()) {
+            viewOnly = true;
+            return "view"; // Outcome is defined in faces-config.xml
+        } else {
+            return "";
+        }
     }
     
     public String actionEdit() {
         selectCurrentRowData();
-        viewOnly = false;
-        return "edit"; 
+        if (selectedProfileExists()) {
+            viewOnly = false;
+            return "edit"; 
+        } else {
+            return "";
+        }
     }
     
     public boolean getViewOnly() {
@@ -189,7 +197,9 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public void actionDelete() {
         selectCurrentRowData();
-        deleteInProgress = true;
+        if (selectedProfileExists()) {
+            deleteInProgress = true;
+        }
     }
     public void actionDeleteConfirm() {
         if (canDeleteApprovalProfile()) {
@@ -269,7 +279,9 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public void actionRename() {
         selectCurrentRowData();
-        renameInProgress = true;
+        if (selectedProfileExists()) {
+            renameInProgress = true;
+        }
     }
 
     public void actionRenameConfirm() {
@@ -290,7 +302,9 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public void actionAddFromTemplate() {
         selectCurrentRowData();
-        addFromTemplateInProgress = true;
+        if (selectedProfileExists()) {
+            addFromTemplateInProgress = true;
+        }
     }
     
     public void actionAddFromTemplateConfirm() {
@@ -306,6 +320,11 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
             
         }
         actionCancel();
+    }
+    
+    /** @return true if there exists an approval profile with the selected id */
+    private boolean selectedProfileExists() {
+        return getEjbcaWebBean().getEjb().getApprovalProfileSession().getApprovalProfile(selectedApprovalProfileId) != null;
     }
     
     public void actionAdd() {
