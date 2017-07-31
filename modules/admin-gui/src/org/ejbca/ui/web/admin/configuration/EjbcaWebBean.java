@@ -29,12 +29,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -1174,11 +1176,11 @@ public class EjbcaWebBean implements Serializable {
         
         EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
         if (endEntityProfile == null) {
-            return new HashSet<String>();
+            return new HashSet<>();
         }
 
         Collection<String> caids = endEntityProfile.getAvailableCAs();
-        Set<String> cas = new HashSet<String>();
+        List<String> cas = new ArrayList<>();
 
         for(String caid : caids) {
             if (caid.equals("1")) {
@@ -1187,21 +1189,23 @@ public class EjbcaWebBean implements Serializable {
             CA ca = caSession.getCA(administrator, Integer.parseInt(caid));
             cas.add(ca.getName());
         }
-        return cas;
+        Collections.sort(cas);
+        return new LinkedHashSet<>(cas);
     }
 
     public Collection<String> getAvailableCertProfilessOfEEProfile(int endEntityProfileId) {
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
         if (profile == null) {
-            return new HashSet<String>();
+            return new HashSet<>();
         }
         Collection<String> cpids =  profile.getAvailableCertificateProfileIds();
-        Set<String> cps = new HashSet<String>();
+        List<String> cps = new ArrayList<>();
         for(String cpid : cpids) {
             String cpname = certificateProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
             cps.add(cpname);
         }
-        return cps;
+        Collections.sort(cps);
+        return new LinkedHashSet<>(cps);
     }
     
     public TreeMap<String, Integer> getVendorCAOptions() {
