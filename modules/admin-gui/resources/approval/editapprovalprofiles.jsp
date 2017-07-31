@@ -31,7 +31,6 @@
 	<h:form id="editapprovalprofiles">
 		<h:panelGroup rendered="#{!approvalProfilesMBean.operationInProgress}">
 		<h3><h:outputText value="#{web.text.LISTOFAPPROVALPROFILES}"/></h3>
-		<h:outputText value="#{approvalProfilesMBean.resetApprovalProfilesTrigger}"/>
 		<h:dataTable value="#{approvalProfilesMBean.approvalProfiles}" var="approvalProfile" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 			<h:column headerClass="gridColumn1">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILENAME}"/></f:facet>
