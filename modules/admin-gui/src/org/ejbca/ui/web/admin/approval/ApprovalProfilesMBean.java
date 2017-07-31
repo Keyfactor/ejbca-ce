@@ -113,6 +113,11 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         selectedApprovalProfileId = approvalProfileItem.getId();
     }
 
+    // Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
+    public String getResetApprovalProfilesTrigger() {
+        approvalProfilesList = null;
+        return "";
+    }
 
     public ListDataModel<ApprovalProfileGuiInfo> getApprovalProfiles() {
         if (approvalProfilesList == null) {
