@@ -1240,7 +1240,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         
         // If local key generation is enabled, we have to do this locally
         if (ret && localKeyRecoveryThisNode) {
-            log.info("ret && localKeyGen");
+            localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
             ret = localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert.getCertificate(), username);
         }
         return ret;
@@ -1257,13 +1257,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 authorized = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY,
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(storedEndEntity.getEndEntityProfileId()) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
-                if (authorized) {
-                    return localNodeKeyRecoverySession.existsKeys(cert) && !localNodeKeyRecoverySession.isUserMarked(username) && 
-                            storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
-                }
+                return authorized && storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY && localNodeKeyRecoverySession.existsKeys(cert);
             }
             return false;
         }
+        
         // Default case (everything we need should be available in one instance database)
         boolean ret = false;
         for (final RaMasterApi raMasterApi : raMasterApis) {
