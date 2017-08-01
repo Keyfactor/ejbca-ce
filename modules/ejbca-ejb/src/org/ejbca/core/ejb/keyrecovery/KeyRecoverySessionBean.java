@@ -200,7 +200,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
             
-            final byte[] encryptedKeyData = X509CA.doEncryptKeys(cryptoToken, keyAlias, keypair);
+            final byte[] encryptedKeyData = X509CA.encryptKeys(cryptoToken, keyAlias, keypair);
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
                             .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
             // same method to make hex serno as in KeyRecoveryDataBean
@@ -392,7 +392,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 if (returnval == null) {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
                     final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-                    final KeyPair keys = X509CA.doDecryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
+                    final KeyPair keys = X509CA.decryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
                     returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
                             krd.getUsername(), krd.getMarkedAsRecoverable(), keys, null);
                     certSerialNumber = krd.getCertificateSN().toString(16);
