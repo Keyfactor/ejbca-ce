@@ -504,7 +504,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final Integer certificateProfileId = certificateProfileSession.getCertificateProfileId(userdatas.get(0).getCertificateProfileName());
         final String keyValidatorName = "WSPKCS12-RsaKeyValidatorTest";
         final RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorSessionTest.createKeyValidator(RsaKeyValidator.class,
-                "WSPKCS12-RsaKeyValidator", keyValidatorName, null, -1, null, -1, KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(),
+                keyValidatorName, keyValidatorName, null, -1, null, -1, KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(),
                 certificateProfileId);
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         keyValidator.setBitLengths(RsaKeyValidator.getAvailableBitLengths(2048));
