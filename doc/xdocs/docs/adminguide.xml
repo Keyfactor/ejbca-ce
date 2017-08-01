@@ -4965,17 +4965,52 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 </subsection>
 </section>
 
-<section name="Key Validation">
-<p>ECA-4219 Write documentation and put into right place.</p>
-<p>
-...
-</p>
+<section name="Validators">
+<p>Validators are code that runs to validate certain conditions either before a certifciate is issued, or just after. 
+Validators are selected to be used by enabling them for selected CAs, but validation is only done for certificate profiles selected in the validator. 
+This gives total control over where validators are used. 
+To add a Validator, go to 'Validators, and add a new validator, then edit the validator selecting the desired properties and selecting the certificate profiles it should apply to.
+To add a validator to a CA, go to 'Edit CA' and select the desired validator to the CA. Now the validator will be called when a certificate is issued by the CA, using one of the certificate profiles selected in the Validator.</p>
 <subsection name="Key Validators">
-<p>...:</p>
+<p>
+The key validators listed below are available in the system by default. If you define a key validator for keys with other algorithm (i.e. RSA key validator for ECC keys) key validation will fail.
+</p>
 <ul>
-<li>...</li>
-<li>...</li>
+<li>RSA Key Validator
+<p>Performs inspection of RSA key parameters and validates key quality beyond key length and size: With this key validator the CA/B-Forum requirements can be enforced on the public keys certified or other restrictions on the RSA exponent and modulus can be defined.</p>
+<ul>
+<li>the value of the public exponent is an odd number equal to 3 or more</li>
+<li>the public exponent is in the range between 2^16+1 and 2^256‐1</li>
+<li>The modulus is an odd number, not the power of a prime, and have no factors smaller than 752</li>
 </ul>
+</li>
+<li>ECC Key Validator
+<p>Performs inspection of ECC key parameters and validates key quality beyond key length and size: With this key validator partial or full public key validation (of NIST SP 56A) routine on ECC keys can be performed.</p>
+</li>
+<li>Blacklist Key Validator
+<p>Compares public keys agains a blacklist of known bad public keys, by algorithm and key generation source.</p>
+</li>
+</ul>
+<subsubsection name="Public Key Validation">
+<p>
+With defining key validators the key quality of RSA and ECC public keys can be validated or keys can be blacklisted for certificate issuance.
+</p>
+<p>
+To control the behaviour while certificate issuance, for every key validator the following base restrictions can be applied:
+</p>
+<ul>
+<li>Certificate validity not before - Only perform validation of certificate validaty not before matches.</li>
+<li>Certificate validity not after - Only perform validation of certificate validaty not ater matches.</li>
+<li>Certificate Profiles - Validate keys for these certificate profiles only.</li>
+<li>Failed Action - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.)</li>
+</ul>
+</subsubsection>
+</subsection>
+<subsection name="Custom Key Validators">
+<p>
+You may implement a custom key validator.<br></br>
+Your class must be placed in the EJBCA code tree before re-building and re-deploying EJBCA. Otherwise it will not be recognized by EJBCA.
+</p>
 </subsection>
 </section>
 
