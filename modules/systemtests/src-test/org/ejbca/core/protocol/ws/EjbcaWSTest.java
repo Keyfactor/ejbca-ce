@@ -825,9 +825,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("WSTESTUSERKEYREC1");
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 1);
+        assertTrue("UserData for WSTESTUSERKEYREC1 not found", userdatas != null);
+        assertTrue("Unexpected amount of UserData entries for WSTESTUSERKEYREC1", userdatas.size() == 1);
         userdatas.get(0).setStatus(EndEntityConstants.STATUS_KEYRECOVERY);
+        // Setting new password (which was cleared on last enrollment)
+        userdatas.get(0).setPassword("foo456");
         ejbcaraws.editUser(userdatas.get(0));
         // A new PK12 request now should return the same key and certificate
         KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -964,6 +966,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + eepId + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_KEYRECOVERY
                         ), null);
+                // Password is cleared on each enrollment. Setting new one.
+                UserMatch usermatch2 = new UserMatch();
+                usermatch2.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+                usermatch2.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+                usermatch2.setMatchvalue("WSTESTUSERKEYREC2");
+                List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch2);
+                assertTrue("UserData for WSTESTUSERKEYREC2 not found", userdatas != null);
+                assertTrue("Unexpected amount of UserData entries for WSTESTUSERKEYREC2", userdatas.size() == 1);
+                userdatas.get(0).setStatus(EndEntityConstants.STATUS_KEYRECOVERY);
+                userdatas.get(0).setPassword("foo456");
+                ejbcaraws.editUser(userdatas.get(0));
                 KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
                 assertNotNull(ks2);
