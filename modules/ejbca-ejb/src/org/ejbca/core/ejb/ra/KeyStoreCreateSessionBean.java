@@ -143,6 +143,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     		}
     		rsaKeys = keyData.getKeyPair();
     		if (reusecertificate) {
+    		    // In this case, signSession.createCertificate is never called, hence the password isn't authentication elsewhere.
     		    endEntityAuthenticationSession.authenticateUser(administrator, username, password);
     			// This is only done if reusecertificate == true because if you don't re-use certificate
     		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
