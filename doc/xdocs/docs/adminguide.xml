@@ -6468,67 +6468,22 @@ Configuration of the System log depends on what application server you are using
 The recommended place to configure logging is in the application server, i.e. JBoss. You can configure logging very advanced.
 </p>
 <p>
-In JBoss 7/EAP6/WildFly10. If you configure the logging section of standalone.xml like the following:</p>
-<source>
-&lt;subsystem xmlns="urn:jboss:domain:logging:3.0"&gt;
-    &lt;console-handler name="CONSOLE"&gt;
-        &lt;level name="INFO"/&gt;
-        &lt;formatter&gt;
-            &lt;named-formatter name="COLOR-PATTERN"/&gt;
-        &lt;/formatter&gt;
-    &lt;/console-handler&gt;
-    &lt;periodic-rotating-file-handler name="FILE" autoflush="true"&gt;
-        &lt;formatter&gt;
-            &lt;named-formatter name="PATTERN"/&gt;
-        &lt;/formatter&gt;
-        &lt;file relative-to="jboss.server.log.dir" path="server.log"/&gt;
-        &lt;suffix value=".yyyy-MM-dd"/&gt;
-        &lt;append value="true"/&gt;
-    &lt;/periodic-rotating-file-handler&gt;
-    &lt;logger category="com.arjuna"&gt;
-        &lt;level name="WARN"/&gt;
-    &lt;/logger&gt;
-    &lt;logger category="org.jboss.as.config"&gt;
-        &lt;level name="DEBUG"/&gt;
-    &lt;/logger&gt;
-    &lt;logger category="sun.rmi"&gt;
-        &lt;level name="WARN"/&gt;
-    &lt;/logger&gt;
-    &lt;logger category="org.ejbca"&gt;
-        &lt;level name="DEBUG"/&gt;
-    &lt;/logger&gt;
-    &lt;logger category="org.cesecore"&gt;
-        &lt;level name="DEBUG"/&gt;
-    &lt;/logger&gt;
-    &lt;root-logger&gt;
-        &lt;level name="INFO"/&gt;
-        &lt;handlers&gt;
-            &lt;handler name="CONSOLE"/&gt;
-            &lt;handler name="FILE"/&gt;
-        &lt;/handlers&gt;
-    &lt;/root-logger&gt;
-    &lt;formatter name="PATTERN"&gt;
-        &lt;pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/&gt;
-    &lt;/formatter&gt;
-    &lt;formatter name="COLOR-PATTERN"&gt;
-        &lt;pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/&gt;
-    &lt;/formatter&gt;
-&lt;/subsystem>
-</source>
-<p>
-This will log EJBCA (and CESeCore) events of DEBUG level to the server.log file.
-You can, in run-time, change between DEBUG and INFO logging with the simple jboss-cli commands:
+In JBoss you can easily enable and disable DEBUG logging, and switch back to INFO logging at runtime. The first time you want to configure DEBUG log level you can run the following JBoss CLI commands:
 </p>
 <source>
+/subsystem=logging/logger=org.ejbca:add
+/subsystem=logging/logger=org.cesecore:add
 /subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=DEBUG)
 /subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
 </source>
-<p>and</p>
+<p>You can later switch between DEBUG and INFO logging in runtime, for example to set back INFO logging (normal production level):</p>
 <source>
 /subsystem=logging/logger=org.ejbca:write-attribute(name=level, value=INFO)
 /subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=INFO) 
 </source>
-<p>You can make a more advanced logger, logging EJBCA events to a separate ejbca.log log file that rotates by size every 32MB, and keep maximum 31 rotated log files</p>
+<p>
+In JBoss 7/EAP6/WildFly10, if you configure the logging section of standalone.xml.</p>
+<p>For example, you can make a more advanced logger, logging EJBCA events to a separate ejbca.log log file that rotates by size every 32MB, and keep maximum 31 rotated log files</p>
 <source>
 &lt;subsystem xmlns="urn:jboss:domain:logging:3.0"&gt;
     &lt;console-handler name="CONSOLE"&gt;
