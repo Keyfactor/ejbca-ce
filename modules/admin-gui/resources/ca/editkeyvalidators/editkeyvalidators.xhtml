@@ -29,7 +29,10 @@
     <f:view>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
-            <h1><h:outputText value="#{web.text.MANAGEKEYVALIDATORS}"/></h1>
+            <h1>
+              <h:outputText value="#{web.text.MANAGEKEYVALIDATORS}"/>
+              <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/adminguide.html#Validators')}" escape="false"/>
+            </h1>
             <!--div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div-->
         		<h:form id="editkeyvalidators" >
 					<h:panelGroup rendered="#{!keyValidatorsBean.operationInProgress}">

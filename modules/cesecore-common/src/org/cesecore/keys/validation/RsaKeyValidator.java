@@ -33,7 +33,7 @@ import org.cesecore.profiles.Profile;
  * 
  * The key validator is used to implement the CA/B-Forum requirements for RSA public 
  * key quality requirements, including FIPS 186-4 and NIST (SP 800-89 and NIST SP 56A: Revision 2)
- * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf
+ * requirements. See: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf section 6.1.6
  * 
  * @version $Id$
  */
