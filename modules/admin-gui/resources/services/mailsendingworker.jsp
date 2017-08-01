@@ -59,7 +59,7 @@
 		<f:verbatim><p class="help"></f:verbatim>
 	    <h:outputText value="#{web.text.ADMINMESSAGE_HELP}"/>
 		<f:verbatim></p></f:verbatim>
-		<f:verbatim>
+		<f:verbatim rendered="#{editService.hasEditRights}">
 <script type="text/javascript">
 <!--  
 checkUseAdminNotification();
