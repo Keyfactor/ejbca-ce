@@ -1428,28 +1428,6 @@ function toggleCANameChange(){
      </td>
    </tr>
    
-   <tr  id="Row<%=row++%2%>"> 
-     <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("KEYVALIDATORS") %> <br />&nbsp;
-     </td>
-     <td width="50%"> 
-       <select name="<%= SELECT_AVAILABLEKEYVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
-          <% Collection usedKeyValidators = null;
-               if(editca) usedKeyValidators = cainfo.getKeyValidators(); 
-               iter = keyValidatorIdToNameMap.keySet().iterator(); 
-               while(iter.hasNext()){
-                 Integer next = (Integer) iter.next(); %>
-          <option  value="<%= next %>" 
-             <%    if(editca && usedKeyValidators.contains(next))
-                     out.write(" selected ");
-                 %>>
-             <c:out value="<%= keyValidatorIdToNameMap.get(next) %>"/>                 
-          </option>  
-             <% } %>
-       </select>
-     </td>
-   </tr>
-   
     <tr id="Row<%=row%2%>" class="section"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("DEFAULT_USER_CERTIFICATE_AIA") %></strong>
@@ -1585,6 +1563,27 @@ function toggleCANameChange(){
         </td>
         <td width="50%">&nbsp;</td>
     </tr>
+   <tr  id="Row<%=row++%2%>"> 
+     <td width="50%" align="right"> 
+       <%= ejbcawebbean.getText("KEYVALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
+     </td>
+     <td width="50%"> 
+       <select name="<%= SELECT_AVAILABLEKEYVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
+          <% Collection usedKeyValidators = null;
+               if(editca) usedKeyValidators = cainfo.getKeyValidators(); 
+               Iterator iter = keyValidatorIdToNameMap.keySet().iterator(); 
+               while(iter.hasNext()){
+                 Integer next = (Integer) iter.next(); %>
+          <option  value="<%= next %>" 
+             <%    if(editca && usedKeyValidators.contains(next))
+                     out.write(" selected ");
+                 %>>
+             <c:out value="<%= keyValidatorIdToNameMap.get(next) %>"/>                 
+          </option>  
+             <% } %>
+       </select>
+     </td>
+   </tr>    
    <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>
