@@ -958,16 +958,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     private X509Certificate requestCertForEndEntity(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final String password, final KeyPair kp)
-            throws AuthorizationDeniedException, EjbcaException, OperatorCreationException, CertificateParsingException, IOException {
-        final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
-        final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
-        final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
-        final byte[] csr = pkcs10req.getEncoded();
-        endEntity.getExtendedinformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
-        endEntity.setPassword(password); // not persisted
-        // Request certificate
-        final byte[] certBytes = createCertificate(authenticationToken, endEntity);
-        return CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+            throws AuthorizationDeniedException, EjbcaException {
+        try {
+            final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
+            final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
+            final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+            final byte[] csr = pkcs10req.getEncoded();
+            endEntity.getExtendedinformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
+            endEntity.setPassword(password); // not persisted
+            // Request certificate
+            final byte[] certBytes = createCertificate(authenticationToken, endEntity);
+            return CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+        } catch (IOException | OperatorCreationException | CertificateParsingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // This method is somewhat special, because it should not be sent/forwarded upstream depending on a configuration setting
@@ -1059,7 +1063,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     return baos.toByteArray();
                 }
             } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
-                    InvalidAlgorithmParameterException | OperatorCreationException | IOException e) {
+                    InvalidAlgorithmParameterException | IOException e) {
                 throw new IllegalStateException(e);
             }
         } else {
