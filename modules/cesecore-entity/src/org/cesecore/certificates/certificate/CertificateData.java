@@ -1143,7 +1143,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         Query query;
         if (lastbasecrldate > 0) {
             query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
                             + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
                     "RevokedCertInfoSubset");
             query.setParameter("issuerDN", issuerDN);
@@ -1153,7 +1153,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
         } else {
             query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
+                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
                             + "a.issuerDN=:issuerDN AND a.status=:status",
                     "RevokedCertInfoSubset");
             query.setParameter("issuerDN", issuerDN);
@@ -1284,8 +1284,10 @@ public class CertificateData extends ProtectedData implements Serializable {
     public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
         CertificateInfo ret = null;
         final Query query = entityManager.createNativeQuery(
-                "SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.notBefore, a.expireDate, a.revocationDate, a.revocationReason, "
-                        + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
+                "SELECT a.issuerDN as issuerDN, a.subjectDN as subjectDN, a.cAFingerprint as cAFingerprint, a.status as status, a.type as type, a.serialNumber as serialNumber, "
+                        + "a.notBefore as notBefore, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, "
+                        + "a.username as username, a.tag as tag, a.certificateProfileId as certificateProfileId, a.endEntityProfileId as endEntityProfileId, a.updateTime as updateTime, "
+                        + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
                 "CertificateInfoSubset");
         query.setParameter("fingerprint", fingerprint);
         @SuppressWarnings("unchecked")
@@ -1393,7 +1395,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, Collection<Integer> certificateProfiles,
             long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
         // We don't select the base64 certificate data here, because it may be a LONG data type which we can't simply select, or we don't want to read all the data.
-        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint, username"
+        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint as fingerprint, username as username"
                 + " FROM CertificateData WHERE "
                 + "issuerDN IN (:cas) AND "
                 // If the list of certificate profiles is empty, ignore it as a parameter
