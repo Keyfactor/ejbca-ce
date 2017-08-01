@@ -325,6 +325,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         
         final String originalDN = endEntity.getDN();
+        EndEntityInformation unCanonicalized = endEntity;
         endEntity = canonicalizeUser(endEntity);
         if (log.isTraceEnabled()) {
             log.trace(">addUser(" + endEntity.getUsername() + ", password, " + endEntity.getDN() + ", " + originalDN + ", " + endEntity.getSubjectAltName()
@@ -372,6 +373,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if(log.isDebugEnabled()){
                     log.debug("Unique username '" + autousername + "' has been generated");
                 }
+                unCanonicalized.setUsername(autousername);
                 endEntity.setUsername(autousername);
             }
         }
