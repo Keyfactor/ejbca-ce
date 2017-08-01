@@ -12,6 +12,29 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -46,30 +69,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * CA is a base class that should be inherited by all CA types
@@ -1061,35 +1060,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             throws CryptoTokenOfflineException;
 
     public abstract byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
-
-    /**
-     * Encryption method used to encrypt a key pair using a CA
-     * 
-     * @param cryptoToken the crypto token where the encryption key is
-     * @param alias the alias of the key on the crypto token to use for encryption
-     * @param keypair the data to encrypt
-     * @return encrypted data
-     * @throws IOException In case reading/writing data streams failed during encryption, or encoding data after encryption.
-     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
-     * @throws CMSException In case parsing/encryption of CMS data fails. 
-     * @throws NoSuchProviderException If encryption provider is not available.
-     * @throws NoSuchAlgorithmException If desired encryption algorithm is not available.
-     */
-    public abstract byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException, CMSException;
-
-    /**
-     * Dncryption method used to decrypt a key pair using a CA
-     * 
-     * @param cryptoToken the crypto token where the decryption key is
-     * @param alias the alias of the key on the crypto token to use for decryption
-     * @param data the data to decrypt
-     * @return a KeyPair
-     * @throws CMSException In case parsing/decryption of CMS data fails. 
-     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
-     * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
-     * @throws ClassNotFoundException 
-     */
-    public abstract KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws CMSException, CryptoTokenOfflineException, IOException, ClassNotFoundException;
 
     /**
      * General encryption method used to encrypt using a CA
