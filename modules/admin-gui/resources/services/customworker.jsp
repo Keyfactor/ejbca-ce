@@ -33,7 +33,7 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
         <f:verbatim><br></f:verbatim>
         <h:inputText id="workerClassPathTextField" value="#{editService.customWorkerType.manualClassPath}" size="45" disabled="#{not editService.hasEditRights}"/>
         
-        <f:verbatim>
+        <f:verbatim rendered="#{editService.hasEditRights}">
             <script type="text/javascript">
             <!--
             {
