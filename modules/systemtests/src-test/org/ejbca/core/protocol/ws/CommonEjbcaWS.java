@@ -1734,7 +1734,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CommonEjbcaWS.this.ejbcaraws.editUser(userdatas.get(0));
             final KeyStore ksenv;
             try {
-                ksenv = CommonEjbcaWS.this.ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, PASSWORD, hardTokenSN, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                ksenv = CommonEjbcaWS.this.ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, PASSWORD, hardTokenSN, "2048", AlgorithmConstants.KEYALGORITHM_RSA);
             } catch (EjbcaException_Exception e) {
                 assertTrue(e.getMessage(), false);
                 return null;
