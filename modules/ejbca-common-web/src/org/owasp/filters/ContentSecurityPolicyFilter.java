@@ -198,7 +198,9 @@ public class ContentSecurityPolicyFilter implements Filter {
         // https://blogs.msdn.microsoft.com/ie/2008/07/02/ie8-security-part-iv-the-xss-filter/
         httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
         // Also X-Content-Type-Options, see https://blogs.msdn.microsoft.com/ie/2008/09/02/ie8-security-part-vi-beta-2-update/
-        httpResponse.setHeader("X-Content-Type-Options", "nosniff");
+        if ( httpResponse.getContentType() == null || (!httpResponse.getContentType().equalsIgnoreCase("text/vbscript") && !httpResponse.getContentType().equalsIgnoreCase("text/vbs")) ) {
+            httpResponse.setHeader("X-Content-Type-Options", "nosniff");
+        }
         
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
