@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.validation.KeyGeneratorSources;
@@ -422,7 +423,11 @@ public class KeyValidatorBean extends BaseManagedBean implements Serializable {
         List<Integer> authorizedCertificateProfiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN);
         final Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
         for(Integer certificateProfileId : authorizedCertificateProfiles) {
-            result.add(new SelectItem(certificateProfileId, map.get(certificateProfileId)));
+            // Don't include fixed certificate profiles in validators, keep it clean and force usage of "real"
+            // profiles if you want to issue serious certificates.
+            if (certificateProfileId > CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY) {
+                result.add(new SelectItem(certificateProfileId, map.get(certificateProfileId)));
+            }
         }
         Collections.sort(result, new Comparator<SelectItem>() {
             @Override
