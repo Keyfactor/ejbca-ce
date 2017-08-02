@@ -178,7 +178,6 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
                         : accessMatchType.get(0).getNumericValue();
                 // Optimized search for preferred match values (e.g. serial number match key) amongst members with that match key.
                 // For members with other match keys, we include everything in the search
-                log.error("DEBUG: CACHE MISS!");
                 query = entityManager
                         .createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0 AND "
                                 + "((a.tokenMatchKey=:preferredTokenMatchKey AND a.tokenMatchOperator=:operator AND a.tokenMatchValueColumn=:preferredTokenMatchValue) OR "
