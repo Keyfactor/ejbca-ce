@@ -120,7 +120,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         final String message = intres.getLocalizedMessage("keyvalidator.addedkeyvalidator", validator.getProfileName());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", message);
-        auditSession.log(EventTypes.KEYVALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.KEY_VALIDATOR, ServiceTypes.CORE, admin.toString(), null,
+        auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(), null,
                 null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<addKeyValidator()");
@@ -311,7 +311,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     @Override
     public void changeKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
-        assertIsAuthorizedToEditKeyValidators(admin);
+        assertIsAuthorizedToEditValidators(admin);
         ProfileData data = profileSession.findById(validator.getProfileId());   
         final String message;
         final String name = validator.getProfileName();
@@ -324,7 +324,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             details.put("msg", message);
             //TODO: Include a diff in the changelog (profileData.getProfile().diff(profile);), but make sure to resolve all steps so that we don't
             //      output a ton of serialized garbage (see ECA-5276)
-            auditSession.log(EventTypes.KEYVALIDATOR_CHANGE, EventStatus.SUCCESS, ModuleTypes.KEY_VALIDATOR, ServiceTypes.CORE, admin.toString(),
+            auditSession.log(EventTypes.VALIDATOR_CHANGE, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } else {
             message = intres.getLocalizedMessage("keyvalidator.errorchangekeyvalidator", name);
@@ -339,7 +339,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         if (log.isTraceEnabled()) {
             log.trace(">removeKeyValidator(id: " + validatorId + ")");
         }
-        assertIsAuthorizedToEditKeyValidators(admin);
+        assertIsAuthorizedToEditValidators(admin);
         String message;
        
             ProfileData data = profileSession.findById(validatorId);
@@ -358,7 +358,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 message = intres.getLocalizedMessage("keyvalidator.removedkeyvalidator", data.getProfileName());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", message);
-                auditSession.log(EventTypes.KEYVALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.KEY_VALIDATOR, ServiceTypes.CORE, admin.toString(),
+                auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                         null, null, null, details);
             }
    
@@ -402,7 +402,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             final String message = intres.getLocalizedMessage("keyvalidator.clonedkeyvalidator", newName, validator.getProfileName());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
-            auditSession.log(EventTypes.KEYVALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.KEY_VALIDATOR, ServiceTypes.CORE, admin.toString(),
+            auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } catch (KeyValidatorExistsException e) {
             final String message = intres.getLocalizedMessage("keyvalidator.errorclonekeyvalidator", newName, validator.getProfileName());
@@ -423,7 +423,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         if (log.isTraceEnabled()) {
             log.trace(">renameKeyValidator(from " + validator.getProfileName() + " to " + newName + ")");
         }
-        assertIsAuthorizedToEditKeyValidators(admin);
+        assertIsAuthorizedToEditValidators(admin);
         boolean success = false;
         if (profileSession.findByNameAndType(newName, Validator.TYPE_NAME).isEmpty()) {
             ProfileData data = profileSession.findById(validator.getProfileId());
@@ -438,7 +438,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             final String message = intres.getLocalizedMessage("keyvalidator.renamedkeyvalidator", validator.getProfileName(), newName);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
-            auditSession.log(EventTypes.KEYVALIDATOR_RENAME, EventStatus.SUCCESS, ModuleTypes.KEY_VALIDATOR, ServiceTypes.CORE, admin.toString(),
+            auditSession.log(EventTypes.VALIDATOR_RENAME, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } else {
             final String message = intres.getLocalizedMessage("keyvalidator.errorrenamekeyvalidator", validator.getProfileName(), newName);
@@ -496,7 +496,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         boolean result = true;
         // ECA-4219 Workaround: While CA creation, select key validators in AdminGUI -> Edit CAs -> Create CA -> Key Validators.
         // ca != null because of import or update of external certificates.
-        if (ca != null && !CollectionUtils.isEmpty(ca.getKeyValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
+        if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
                     ca.getCACertificate(), false);
             if (log.isDebugEnabled()) {
@@ -504,7 +504,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug("Certificate 'notBefore' " + certificateValidity.getNotBefore());
                 log.debug("Certificate 'notAfter' " + certificateValidity.getNotAfter());
             }
-            final Map<Integer, Validator> map = getKeyValidatorsById(ca.getKeyValidators());
+            final Map<Integer, Validator> map = getKeyValidatorsById(ca.getValidators());
             final List<Integer> ids = new ArrayList<>(map.keySet());
             Validator keyValidator;
             String name = null;
@@ -633,7 +633,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      */
     private int addKeyValidatorInternal(AuthenticationToken admin, Validator keyValidator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
-        assertIsAuthorizedToEditKeyValidators(admin);
+        assertIsAuthorizedToEditValidators(admin);
         if (profileSession.findByNameAndType(keyValidator.getProfileName(), Validator.TYPE_NAME).isEmpty()) {
             return profileSession.addProfile(keyValidator);
         } else {
@@ -674,8 +674,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     /** Assert the administrator is authorized to edit key validators. */
-    private void assertIsAuthorizedToEditKeyValidators(AuthenticationToken admin) throws AuthorizationDeniedException {
-        if (!authorizationSession.isAuthorized(admin, StandardRules.KEYVALIDATOREDIT.resource())) {
+    private void assertIsAuthorizedToEditValidators(AuthenticationToken admin) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.VALIDATOREDIT.resource())) {
             final String message = intres.getLocalizedMessage("store.editkeyvalidatornotauthorized", admin.toString());
             throw new AuthorizationDeniedException(message);
         }

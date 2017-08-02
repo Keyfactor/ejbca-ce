@@ -145,7 +145,7 @@ public interface KeyValidatorProxySessionRemote {
 
     /** Retrieves a Collection of id:s (Integer) to authorized key validators. 
      * @param admin the administrator for whom to get the profile ids he/she has access to
-     * @param keyValidatorAccessRule an access rule which is required on the key validator in order for it to be returned, for example AccessRulesConstants.CREATE_KEYVALIDATOR to only return profiles for which the admin have create rights
+     * @param keyValidatorAccessRule an access rule which is required on the key validator in order for it to be returned, for example AccessRulesConstants.CREATE_VALIDATOR to only return profiles for which the admin have create rights
      * @return Collection of end key validator id:s (Integer)
      */
     Collection<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin, String keyValidatorAccessRule);

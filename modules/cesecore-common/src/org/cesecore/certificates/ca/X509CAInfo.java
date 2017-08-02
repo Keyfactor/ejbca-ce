@@ -175,7 +175,7 @@ public class X509CAInfo extends CAInfo{
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
-        this.keyValidators = keyValidators;
+        this.validators = keyValidators;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
@@ -231,7 +231,7 @@ public class X509CAInfo extends CAInfo{
         this.crlOverlapTime = crlOverlapTime;
         this.deltacrlperiod = deltacrlperiod;
         this.crlpublishers = crlpublishers;
-        this.keyValidators = keyValidators;
+        this.validators = keyValidators;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;

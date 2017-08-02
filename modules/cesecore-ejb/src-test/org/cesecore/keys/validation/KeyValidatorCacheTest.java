@@ -45,7 +45,7 @@ public class KeyValidatorCacheTest {
     @Test
     public void disabledCacheBehavior() {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
-        ConfigurationHolder.updateConfiguration("keyvalidator.cachetime", "-1");
+        ConfigurationHolder.updateConfiguration("validator.cachetime", "-1");
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " Publ3";
@@ -103,7 +103,7 @@ public class KeyValidatorCacheTest {
     @Test
     public void enabledCacheBehavior() {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
-        ConfigurationHolder.updateConfiguration("keyvalidator.cachetime", "3000");
+        ConfigurationHolder.updateConfiguration("validator.cachetime", "3000");
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " Publ3";
@@ -176,7 +176,7 @@ public class KeyValidatorCacheTest {
     @Test
     public void cacheExpiration() throws InterruptedException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
-        ConfigurationHolder.updateConfiguration("keyvalidator.cachetime", "2000");
+        ConfigurationHolder.updateConfiguration("validator.cachetime", "2000");
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " CA1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " CA2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " CA3";

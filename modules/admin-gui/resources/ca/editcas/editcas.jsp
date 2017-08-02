@@ -196,7 +196,7 @@ org.ejbca.ui.web.ParameterException
   static final String SELECT_KEYSIZE                              = "selectsize";
   static final String SELECT_KEY_SEQUENCE_FORMAT                  = "selectkeysequenceformat";
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
-  static final String SELECT_AVAILABLEKEYVALIDATORS               = "selectavailablekeyvalidators";
+  static final String SELECT_AVAILABLEVALIDATORS                  = "selectavailablevalidators";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
@@ -375,7 +375,7 @@ org.ejbca.ui.web.ParameterException
                 final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
                 final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEKEYVALIDATORS);
+                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
                 final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
                 final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
                 final boolean keepexpiredoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_KEEPEXPIREDONCRL));
@@ -560,7 +560,7 @@ org.ejbca.ui.web.ParameterException
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEKEYVALIDATORS);
+                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
                 final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
                 final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));

@@ -41,7 +41,7 @@ public enum ModuleTypes implements ModuleType {
 	/** <i>Module type for Public key blacklist.</i> */
     PUBLIC_KEY_BLACKLIST,
 	/** <i>Module type for Key validator.</i> */
-    KEY_VALIDATOR,
+    VALIDATOR,
     /** <i>Module type is currently not used in EJBCA.</i> */
 	RECOVERY,
 	/** Administrator role management module. */

@@ -255,7 +255,7 @@ public class X509CA extends CA implements Serializable {
         final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getEncodedValidity(),
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
-                getDeltaCRLPeriod(), getCRLPublishers(), getKeyValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
+                getDeltaCRLPeriod(), getCRLPublishers(), getValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
                 getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), 
                 getAuthorityInformationAccess(), 
                 getCertificateAiaDefaultCaIssuerUri(),
@@ -1826,8 +1826,8 @@ public class X509CA extends CA implements Serializable {
                 setEncodedValidity(getEncodedValidity());
             }            
             // v23 'keyValidators' new empty list.
-            if (null == data.get(KEYVALIDATORS)) {
-                setKeyValidators(new ArrayList<Integer>());
+            if (null == data.get(VALIDATORS)) {
+                setValidators(new ArrayList<Integer>());
             }            
         }
     }

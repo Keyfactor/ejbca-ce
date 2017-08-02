@@ -101,14 +101,14 @@ public enum EventTypes implements EventType {
     PUBLICKEYBLACKLIST_CREATION,
     /** Removal of an existing public key blacklist. */
     PUBLICKEYBLACKLIST_REMOVAL,
-    /** Modification of an existing key validator. */
-    KEYVALIDATOR_CHANGE,
-    /** Creation of a new key validator. */
-    KEYVALIDATOR_CREATION,
-    /** Removal of an existing key validator. */
-    KEYVALIDATOR_REMOVAL,
-    /** Name change of an existing key validator. */
-    KEYVALIDATOR_RENAME,
+    /** Modification of an existing validator. */
+    VALIDATOR_CHANGE,
+    /** Creation of a new validator. */
+    VALIDATOR_CREATION,
+    /** Removal of an existing validator. */
+    VALIDATOR_REMOVAL,
+    /** Name change of an existing validator. */
+    VALIDATOR_RENAME,
     /** Removal of persisted audit log records. */
     LOG_DELETE,
     /** Export of audit log records. */

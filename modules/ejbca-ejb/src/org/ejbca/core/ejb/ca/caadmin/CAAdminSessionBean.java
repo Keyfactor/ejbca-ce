@@ -3180,7 +3180,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Secondly, find all CAs.
         for (final int caId : caSession.getAllCaIds()) {
             try {
-                final Collection<Integer> caKeyValidatorIds = caSession.getCAInfoInternal(caId).getKeyValidators();
+                final Collection<Integer> caKeyValidatorIds = caSession.getCAInfoInternal(caId).getValidators();
                 if (caKeyValidatorIds != null) {
                     final boolean isAuthorizedToCa = caSession.authorizedToCANoLogging(admin, caId);
                     for (Integer id : caKeyValidatorIds) {

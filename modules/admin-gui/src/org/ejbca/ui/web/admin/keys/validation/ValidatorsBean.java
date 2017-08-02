@@ -42,16 +42,16 @@ import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Managed bean for key edit validators page (editkeyvalidators.xhtml).
+ * Managed bean for key edit validators page (editvalidators.xhtml).
  *
  * @version $Id$
  */
-public class KeyValidatorsBean extends BaseManagedBean {
+public class ValidatorsBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1969611638716145216L;
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(KeyValidatorsBean.class);
+    private static final Logger log = Logger.getLogger(ValidatorsBean.class);
 
     /** Selected key validator id. */
     private Integer selectedKeyValidatorId = null;
@@ -163,13 +163,13 @@ public class KeyValidatorsBean extends BaseManagedBean {
             String accessRule;
             for (Integer id : keyValidators.keySet()) {
                 keyValidator = keyValidators.get(id);
-                accessRule = StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getProfileName();
+                accessRule = StandardRules.VALIDATORACCESS.resource() + keyValidator.getProfileName();
                 if (isAuthorizedTo(accessRule)) {
                     items.add(new KeyValidatorItem(id, keyValidator.getProfileName(), keyValidator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
-                                + StandardRules.KEYVALIDATORACCESS.resource() + keyValidator.getProfileName() + ".");
+                                + StandardRules.VALIDATORACCESS.resource() + keyValidator.getProfileName() + ".");
                     }
                 }
             }
@@ -183,7 +183,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
      * @return true if authorized.
      */
     public boolean isAuthorizedToView() {
-        return isAuthorizedTo(StandardRules.KEYVALIDATORVIEW.resource());
+        return isAuthorizedTo(StandardRules.VALIDATORVIEW.resource());
     }
 
     /**
@@ -191,7 +191,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
      * @return true if authorized.
      */
     public boolean isAuthorizedToEdit() {
-        return isAuthorizedTo(StandardRules.KEYVALIDATOREDIT.resource());
+        return isAuthorizedTo(StandardRules.VALIDATOREDIT.resource());
     }
 
     /**
@@ -233,7 +233,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 actionCancel();
             } catch (KeyValidatorExistsException e) {
-                addErrorMessage("KEYVALIDATORALREADY", name);
+                addErrorMessage("VALIDATORALREADY", name);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
@@ -286,7 +286,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } catch (KeyValidatorExistsException e) {
-                addErrorMessage("KEYVALIDATORALREADY", name);
+                addErrorMessage("VALIDATORALREADY", name);
             } catch (KeyValidatorDoesntExistsException e) {
                 // NOPMD: ignore do nothing
             }
@@ -323,7 +323,7 @@ public class KeyValidatorsBean extends BaseManagedBean {
         } catch (KeyValidatorDoesntExistsException e) {
             // NOPMD: ignore do nothing
         } catch (CouldNotRemoveKeyValidatorException e) {
-            addErrorMessage("COULDNTDELETEKEYVALIDATOR");
+            addErrorMessage("COULDNTDELETEVALIDATOR");
         }
         actionCancel();
     }
@@ -355,9 +355,9 @@ public class KeyValidatorsBean extends BaseManagedBean {
                 getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 setKeyValidatorName(StringUtils.EMPTY);
             } catch (KeyValidatorDoesntExistsException e) {
-                addErrorMessage("KEYVALIDATORDOESNOTEXIST", name);
+                addErrorMessage("VALIDATORDOESNOTEXIST", name);
             } catch (KeyValidatorExistsException e) {
-                addErrorMessage("KEYVALIDATORALREADY", name);
+                addErrorMessage("VALIDATORALREADY", name);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage("Not authorized to rename key validator.");
             }
