@@ -202,7 +202,7 @@ public final class CesecoreConfiguration {
      * Parameter to specify if retrieving KeyValidator objects from KeyValidatorSession should be cached, and in that case for how long.
      */
     public static long getCacheKeyValidatorTime() {
-        return getLongValue("keyvalidator.cachetime", 30000L, "milliseconds to cache key validators");
+        return getLongValue("validator.cachetime", 30000L, "milliseconds to cache validators");
     }
     
     /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */

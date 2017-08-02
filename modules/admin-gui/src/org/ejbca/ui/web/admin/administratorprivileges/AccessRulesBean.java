@@ -195,7 +195,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(StandardRules.APPROVALPROFILEVIEW.resource(), Role.STATE_ALLOW),
                     new AccessRule(CryptoTokenRules.VIEW.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWKEYVALIDATOR, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.SERVICES_VIEW, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW, Role.STATE_ALLOW),
@@ -229,9 +229,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_EDITPUBLISHER, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.KEYVALIDATORPREFIX, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_EDITKEYVALIDATOR, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWKEYVALIDATOR, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.VALIDATORPREFIX, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITVALIDATOR, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
                     // This was present in legacy DefaultRoles, but makes very little sense
                     //new AccessRule(AuditLogRules.LOG.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW),
@@ -377,7 +377,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Find EEP resources allowed by this role
         setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet()));
         // Find KV resources allowed by this role
-        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.KEYVALIDATORPREFIX, keyValidatorsIdToNameMap.keySet()));
+        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.VALIDATORPREFIX, keyValidatorsIdToNameMap.keySet()));
         // Find IKB resources allowed by this role
         setResourcesIkbSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesIkb()));
         // Find Other resources allowed by this role
@@ -616,16 +616,16 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableResourcesKeyValidators() {
         if (availableResourcesKeyValidators==null) {
             availableResourcesKeyValidators = new LinkedList<>();
-            final Collection<Integer> authorizedKvIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWKEYVALIDATOR);
+            final Collection<Integer> authorizedKvIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
             if (log.isDebugEnabled()) {
                 log.debug("Authorized key validator ids for " + getAdmin().getUniqueId() + " are " + authorizedKvIds);
             }
             for (final int id : authorizedKvIds) {
-                availableResourcesKeyValidators.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.KEYVALIDATORPREFIX + id), keyValidatorsIdToNameMap.get(id)));
+                availableResourcesKeyValidators.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.VALIDATORPREFIX + id), keyValidatorsIdToNameMap.get(id)));
             }
             super.sortSelectItemsByLabel(availableResourcesKeyValidators);
-            if (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.KEYVALIDATORPREFIX)) {
-                availableResourcesKeyValidators.addFirst(new SelectItem(AccessRulesConstants.KEYVALIDATORPREFIX, super.getEjbcaWebBean().getText("ALL")));
+            if (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.VALIDATORPREFIX)) {
+                availableResourcesKeyValidators.addFirst(new SelectItem(AccessRulesConstants.VALIDATORPREFIX, super.getEjbcaWebBean().getText("ALL")));
             }
         }
         return availableResourcesKeyValidators;

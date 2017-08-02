@@ -246,7 +246,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException {
         try {
             for (final Integer caId : getAllCaIds()) {
-                final Collection<Integer> ids = getCAInfoInternal(caId).getKeyValidators();
+                final Collection<Integer> ids = getCAInfoInternal(caId).getValidators();
                 if (ids != null) {
                     for (final Integer id : ids) {
                         if (id.intValue() == keyValidatorId) {

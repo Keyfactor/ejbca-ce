@@ -557,9 +557,9 @@ public class KeyValidatorSessionTest {
     }
 
     private void setKeyValidatorsForCa(final CA ca, int... validatorIds) throws AuthorizationDeniedException, CADoesntExistsException {
-        ca.getCAInfo().getKeyValidators().clear();
+        ca.getCAInfo().getValidators().clear();
         for (int validatorId : validatorIds) {
-            ca.getCAInfo().getKeyValidators().add(validatorId);
+            ca.getCAInfo().getValidators().add(validatorId);
         }
         caSession.editCA(internalAdmin, ca.getCAInfo());
         ca.setCAInfo(caSession.getCAInfo(internalAdmin, ca.getCAId()));

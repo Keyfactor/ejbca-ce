@@ -106,17 +106,17 @@
 #publickeyblacklist.cachetime=157680000000
 #publickeyblacklist.cachetime=-1
 
-# Set to a value for caching calls to getKeyValidator and getKeyValidatorId/Name in StoreSession. This means that for Key Validators to be updated
-# the cache time expires, an "Edit key validator" or server restart is done, or flushKeyValidatorCache is called on StoreSession. 
+# Set to a value for caching calls to getKeyValidator and getKeyValidatorId/Name in StoreSession. This means that for Validators to be updated
+# the cache time expires, an "Edit validator" or server restart is done, or flushKeyValidatorCache is called on StoreSession. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
-# this can be used to disable the check if a key validator has been edited on another node, so the key validator must be edited on all nodes, 
+# this can be used to disable the check if a validator has been edited on another node, so the validator must be edited on all nodes, 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 30000 (30 second)
 # Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
 # If you want caching for an infinite time then set something high for example 157680000000 (5years). 
-#keyvalidator.cachetime=157680000000
-#keyvalidator.cachetime=-1
+#validator.cachetime=157680000000
+#validator.cachetime=-1
 
 # Set to a value for caching calls to loadGlobalConfiguration. This means that for globalConfiguration to be updated
 # the cache time expires, an "Edit configuration" or server restart is done, or flushGlobalConfigurationCache is called on RAAdminSession.

@@ -514,7 +514,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final CAInfo caInfo = caSession.getCAInfo(intAdmin, CA1);
         final Collection<Integer> keyValidatorIds = new ArrayList<Integer>();
         keyValidatorIds.add(keyValidatorId);
-        caInfo.setKeyValidators(keyValidatorIds);
+        caInfo.setValidators(keyValidatorIds);
         caSession.editCA(intAdmin, caInfo);
         
         try {
@@ -526,7 +526,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         
         // Clean up.
-        caInfo.setKeyValidators(new ArrayList<Integer>());
+        caInfo.setValidators(new ArrayList<Integer>());
         caSession.editCA(intAdmin, caInfo);
         userdatas.get(0).setTokenType(oldTokenType);
         userdatas.get(0).setSubjectDN(oldSubjectDn);

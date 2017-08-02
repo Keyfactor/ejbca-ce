@@ -1565,12 +1565,12 @@ function toggleCANameChange(){
     </tr>
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("KEYVALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
+       <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
      </td>
      <td width="50%"> 
-       <select name="<%= SELECT_AVAILABLEKEYVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
+       <select name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
           <% Collection usedKeyValidators = null;
-               if(editca) usedKeyValidators = cainfo.getKeyValidators(); 
+               if(editca) usedKeyValidators = cainfo.getValidators(); 
                Iterator iter = keyValidatorIdToNameMap.keySet().iterator(); 
                while(iter.hasNext()){
                  Integer next = (Integer) iter.next(); %>

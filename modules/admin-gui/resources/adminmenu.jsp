@@ -28,7 +28,7 @@ org.cesecore.keybind.InternalKeyBindingRules
        
        final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/editcas/editcas.jsp";
        final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";
-       final String EDITKEYVALIDATORS_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editkeyvalidators/editkeyvalidators.xhtml";
+       final String EDITVALIDATORS_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editvalidators/editvalidators.xhtml";
 
        final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.jsf";
 
@@ -155,14 +155,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<li><a href="<%= CRYPTOTOKENS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CRYPTOTOKENS") %></a></li>
 <% } %>
 <%
-     if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWKEYVALIDATOR)) {
-        if(!caheaderprinted) {
-          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
-           caheaderprinted=true;
-        }  %>
-				<li><a href="<%= EDITKEYVALIDATORS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYVALIDATORS") %></a></li>
-<%  }  %>
-<%
      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWPUBLISHER)){ 
         if(!caheaderprinted){
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
@@ -170,6 +162,14 @@ org.cesecore.keybind.InternalKeyBindingRules
         } %>
 				<li><a href="<%= EDITPUBLISHERS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_PUBLISHERS") %></a></li>
 <% } %>
+<%
+     if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWVALIDATOR)) {
+        if(!caheaderprinted) {
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        }  %>
+				<li><a href="<%= EDITVALIDATORS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_VALIDATORS") %></a></li>
+<%  }  %>
 <%
    if(caheaderprinted){
      out.write("</ul></li>"); 

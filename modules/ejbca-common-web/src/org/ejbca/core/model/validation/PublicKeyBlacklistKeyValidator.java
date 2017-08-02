@@ -52,7 +52,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "BLACKLIST_KEY_VALIDATOR";
 
-    /** View template in /ca/editkeyvalidators. */
+    /** View template in /ca/editvalidators. */
     protected static final String TEMPLATE_FILE = "editBlacklistKeyValidator.xhtml";
 
     protected static final String KEY_GENERATOR_SOURCES = "keyGeneratorSources";

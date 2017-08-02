@@ -107,7 +107,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
     protected static final String CRLOVERLAPTIME = "crlOverlapTime";
     protected static final String CRLPUBLISHERS = "crlpublishers";
-    protected static final String KEYVALIDATORS = "keyvalidators";
+    protected static final String VALIDATORS = "keyvalidators";
     private static final String FINISHUSER = "finishuser";
     protected static final String REQUESTCERTCHAIN = "requestcertchain";
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
@@ -171,7 +171,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
         setCRLPublishers(cainfo.getCRLPublishers());
-        setKeyValidators(cainfo.getKeyValidators());
+        setValidators(cainfo.getValidators());
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
@@ -389,12 +389,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getKeyValidators() {
-        return ((Collection<Integer>) data.get(KEYVALIDATORS));
+    public Collection<Integer> getValidators() {
+        return ((Collection<Integer>) data.get(VALIDATORS));
     }
 
-    public void setKeyValidators(Collection<Integer> keyValidators) {
-        data.put(KEYVALIDATORS, keyValidators);
+    public void setValidators(Collection<Integer> validators) {
+        data.put(VALIDATORS, validators);
     }
     
     public boolean getKeepExpiredCertsOnCRL() {
@@ -861,7 +861,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
         data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
-        data.put(KEYVALIDATORS, cainfo.getKeyValidators());
+        data.put(VALIDATORS, cainfo.getValidators());
         data.put(APPROVALS, cainfo.getApprovals());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));

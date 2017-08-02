@@ -105,7 +105,7 @@
                         <f:selectItems value="#{accessRulesBean.availableResourcesEep}" />
                     </h:selectManyListbox> 
              
-             		<h:outputText value="#{web.text.KEYVALIDATORS}"/>
+             		<h:outputText value="#{web.text.VALIDATORS}"/>
                     <h:selectManyListbox id="selectkeyvalidators" value="#{accessRulesBean.resourcesKeyValidatorsSelected}" size="8" style="min-width: 220px;"
                         disabled="#{!accessRulesBean.authorizedToEditRole or !accessRulesBean.renderResourcesKvSelection}">
                         <f:selectItems value="#{accessRulesBean.availableResourcesKeyValidators}" />
