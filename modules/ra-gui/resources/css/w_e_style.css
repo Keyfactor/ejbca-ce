@@ -1335,7 +1335,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     padding: 1.3% 4% 1.3% 4%; }
 
   select#detailsForm\:certDetails\:newRevocationReason ~ input {
-    margin: 0 0 0 2%; }
+    margin: 0 4% 0 2%; }
 
   #contentForm\:commandEditData {
     margin: 1% 0 2% 0; }
