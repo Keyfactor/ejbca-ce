@@ -99,12 +99,19 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
         }
         try {
             final X509Certificate x509Certificate = (X509Certificate) certificate;
-            log.debug("SubjectDN: " + CertTools.getSubjectDN(x509Certificate) + " IssuerDN: " + CertTools.getIssuerDN(x509Certificate));
+            if (log.isDebugEnabled()) {
+                log.debug("SubjectDN: " + CertTools.getSubjectDN(x509Certificate) + " IssuerDN: " + CertTools.getIssuerDN(x509Certificate));
+            }
             final boolean[] ku = x509Certificate.getKeyUsage();
-            log.debug("Key usages: " + Arrays.toString(ku));
             if (ku != null) {
-                log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
-                log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+                if (log.isDebugEnabled()) {
+                    log.debug("Key usages: " + Arrays.toString(ku));
+                    log.debug("Key usage (digitalSignature): " + ku[0]);
+                    log.debug("Key usage (keyEncipherment): " + ku[2]);
+                }
+            } else {
+                log.debug("No Key Usage to verify.");
+                return false;            	
             }
             if (x509Certificate.getExtendedKeyUsage() == null) {
                 log.debug("No EKU to verify.");
@@ -118,12 +125,10 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
                 log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.2 (EKU_PKIX_CLIENTAUTH) is required.");
                 return false;
             }
-            if (!x509Certificate.getKeyUsage()[0]) {
+            // For TLS _client_ certificates you can actually be without KU completely, but we take the safe route here and require digitalSignature
+            // for TLS _server_ certificates also keyEncipherment is required, but not for client (it doesn't hurt it it's there for clients as well though)
+            if (!ku[0]) {
                 log.debug("Key usage digitalSignature is required.");
-                return false;
-            }
-            if (!x509Certificate.getKeyUsage()[2]) {
-                log.debug("Key usage keyEncipherment is required.");
                 return false;
             }
         } catch (CertificateParsingException e) {
