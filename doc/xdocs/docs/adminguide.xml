@@ -2440,6 +2440,22 @@ The same can be accomplished using a browser:
 <li>Public Web - Create Keystore - Enter username and password - Fetch the keystore.</li>
 </ul>
 </p>
+<subsection name="Local Key Generation">
+<p>
+In systems with distributed RA's, using key recovery, it might be desired to store the key pairs used for recovery in a database belonging to another instance than the CA. With local key generation, the keys are stored in the RA's database and are encrypted with a crypto token (e.g. from a HSM) in the RA, so the key material is inaccessible to the operators of the CA (provided that they are restricted from logging in to the RA). The certificates and end-entities, however, remain stored in the CA and can be managed (e.g. revoked) from there.
+</p>
+<p>
+In order to activate local key generation, the steps below are to be followed (this is performed on the RA which should keep the key recovery data):
+<ul>
+    <li>Under system configuration, set 'Enable Key Recovery' and 'Force Local Key Generation'</li>
+    <li>Select the crypto token to be used for encryption of the key pairs (key recovery data).</li>
+    <li>Select the desired key for encryption</li>
+</ul>
+</p>
+<p>
+Recovery data entries belonging to certificates enrolled before local key generation was enabled will remain in their initial database. Enabling local key generation doesn't change the way key recovery is performed by an administrator, nor the work flow of approvals, or access rules required. Keep in mind that the role handling the peer connector requires (at least) access to the same set of rules as the administrator of the external RA (e.g. to perform a key recovery).
+</p>
+</subsection>
 <subsection name="Technical details">
 <p>
 What the operation "bin/ejbca.sh ra keyrecovernewest", or "recover key" in the Admin GUI, or keyRecoverNewest in the WS API actually does is 
