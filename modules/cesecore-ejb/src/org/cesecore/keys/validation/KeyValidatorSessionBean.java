@@ -378,7 +378,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     @Override
     public int addKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
-        return addKeyValidatorInternal(admin, validator);
+        final int id = addKeyValidatorInternal(admin, validator);
+        final String message = intres.getLocalizedMessage("keyvalidator.addedkeyvalidator", validator.getProfileName());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", message);
+        auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(), null,
+                null, null, details);
+        return id;
     }
 
     @Override
