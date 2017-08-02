@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:component="http://java.sun.com/jsf/composite/component"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     version: $Id: editkeyvalidator.xhtml 25334 2017-02-24 16:22:09Z anjakobs $
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:define name="content">
+		<div align="center">
+			<h2>
+				<h:outputText value="#{web.text.EDITVALIDATOR}" rendered="#{validatorsBean.authorizedToEdit}" />
+				<h:outputText value="#{web.text.VIEWVALIDATOR}" rendered="#{validatorsBean.viewOnly}" />
+			</h2>
+			<h3>
+				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.keyValidator.profileName}"/>
+			</h3>
+		</div>
+		<!--div class="message">
+			<h:messages layout="table" errorClass="alert" infoClass="infoMessage" />
+		</div-->
+		<h:form id="kvf">
+			<h:inputHidden name="action" value="hiddenkeyvalidatortype" />
+			<h:inputHidden name="hiddenkeyvalidatorname" value="#{validatorsBean.keyValidatorName}"/>
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+				<h:panelGroup>&nbsp;</h:panelGroup>
+				<h:outputLink value="editvalidators.xhtml">
+					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
+				</h:outputLink>
+				<h:outputLabel for="keyValidatorId" value="#{web.text.ID}"/>
+				<h:outputText id="keyValidatorId" value="#{validatorBean.keyValidator.profileId}"/>
+				<h:outputLabel for="keyValidatorType" value="#{web.text.VALIDATORTYPE}"/>
+				<h:selectOneMenu id="keyValidatorType" value="#{validatorBean.keyValidatorType}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax listener="#{validatorBean.keyValidatorTypeChanged}" render="@form"/>	
+					<f:selectItems value="#{validatorBean.availableKeyValidators}" />
+				</h:selectOneMenu>
+				<h:panelGroup></h:panelGroup>
+				<ui:include src="#{validatorBean.keyValidator.templateFile}" />
+				<h:panelGroup></h:panelGroup>
+				<h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>
+				<h:panelGroup id="general_settings"/>
+				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
+				<h:inputTextarea id="description" value="#{validatorBean.keyValidator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
+				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
+				<h:selectManyListbox id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly}">
+					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>
+				</h:selectManyListbox>
+				<h:outputLabel for="textfieldnotbefore" value="#{web.text.VALIDATORNOTBEFORE}"/>
+				<h:panelGroup>
+					<h:selectOneMenu id="selectnotbeforecondition" value="#{validatorBean.notBeforeCondition}" validator="#{validatorBean.validateNotBeforeCondition}" disabled="#{validatorsBean.viewOnly}" onchange='fillNotBeforeConditionField()'>
+						<f:selectItems value="#{validatorBean.availableNotBeforeConditions}"/>
+					</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
+					<h:inputText id="textfieldnotbefore" value="#{validatorBean.notBefore}" validator="#{validatorBean.validateNotBefore}" required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}" >
+						<!--f:validateRegex pattern="[\\d]{4}-[\\d]{2}-[\\d]{2}( [\\d]{2}:[\\d]{2}:[\\d]{2}(\+[\\d]{2}:[\\d]{2}){0,1}){0,1}"></f:validateRegex-->
+					</h:inputText>
+				</h:panelGroup>
+				<h:outputLabel for="textfieldnotafter" value="#{web.text.VALIDATORNOTAFTER}"/>
+				<h:panelGroup>
+					<h:selectOneMenu id="selectnotaftercondition" value="#{validatorBean.notAfterCondition}" validator="#{validatorBean.validateNotAfterCondition}" disabled="#{validatorsBean.viewOnly}" onchange='fillNotAfterConditionField()'>
+						<f:selectItems value="#{validatorBean.availableNotAfterConditions}"/>
+					</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
+					<h:inputText id="textfieldnotafter" value="#{validatorBean.notAfter}" validator="#{validatorBean.validateNotAfter}" required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}" >
+						<!--f:validateRegex pattern="[\d]{4}-[\d]{2}-[\d]{2}( [\d]{2}:[\d]{2}:[\d]{2}(\+[\d]{2}:[\d]{2}){0,1}){0,1}"></f:validateRegex-->
+					</h:inputText>
+				</h:panelGroup>
+				<h:outputLabel for="selectfailedaction" value="#{web.text.VALIDATORFAILEDACTION}"/>
+				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}" onchange='fillFailedActionField()'>
+					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
+				</h:selectOneMenu>
+				<h:panelGroup>&nbsp;</h:panelGroup>
+				<h:panelGroup>
+					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
+					<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
+				</h:panelGroup>
+			</h:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

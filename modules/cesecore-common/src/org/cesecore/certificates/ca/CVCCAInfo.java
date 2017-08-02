@@ -100,7 +100,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlOverlapTime = crlOverlapTime;
 		this.deltacrlperiod = deltacrlperiod;
 		this.crlpublishers = crlpublishers;
-		this.keyValidators = keyValidators;
+		this.validators = keyValidators;
 		this.finishuser = finishuser;                     
 		this.certificateprofileid = certificateprofileid;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
@@ -135,7 +135,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlOverlapTime = crlOverlapTime;
 		this.deltacrlperiod = deltacrlperiod;
 		this.crlpublishers = crlpublishers;
-		this.keyValidators = keyValidators;
+		this.validators = keyValidators;
 		this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
 		setApprovals(approvals);

@@ -202,16 +202,16 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
         ret.put("CAACCESSRULES", accessRulesCaAccess);
         
         final Map<String,String> accessRulesKeyValidatorAccess = new LinkedHashMap<>();
-        accessRulesKeyValidatorAccess.put(StandardRules.KEYVALIDATORACCESSBASE.resource(), StandardRules.KEYVALIDATORACCESSBASE.resource());
+        accessRulesKeyValidatorAccess.put(StandardRules.VALIDATORACCESSBASE.resource(), StandardRules.VALIDATORACCESSBASE.resource());
         String kvName;
         for (final int kvId : kvIdToNameMap.keySet()) {
             kvName = kvIdToNameMap.get(kvId);
             if (kvName==null) {
                 kvName = String.valueOf(kvId);
             }
-            accessRulesKeyValidatorAccess.put(StandardRules.KEYVALIDATORACCESS.resource() + kvId, StandardRules.KEYVALIDATORACCESS.resource() + kvName);
+            accessRulesKeyValidatorAccess.put(StandardRules.VALIDATORACCESS.resource() + kvId, StandardRules.VALIDATORACCESS.resource() + kvName);
         }
-        ret.put("KEYVALIDATORACCESSRULES", accessRulesKeyValidatorAccess);
+        ret.put("VALIDATORACCESSRULES", accessRulesKeyValidatorAccess);
         
         // End entity profile rules
         if (endEntityProfileLimitationsEnabled) {

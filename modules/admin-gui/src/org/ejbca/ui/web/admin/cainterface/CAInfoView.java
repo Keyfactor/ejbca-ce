@@ -60,14 +60,14 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int CRLOVERLAPTIME          = 12;
    public static final int DELTACRLPERIOD          = 13;
    public static final int CRLPUBLISHERS           = 14;
-   public static final int KEYVALIDATORS           = 15;
+   public static final int VALIDATORS              = 15;
    
    private static final int SECTION_SERVICE        = 16;
    
    public static final int OCSP                    = 17;
   
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD, PUBLISHERS, KEYVALIDATORS
+    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD, PUBLISHERS, VALIDATORS
     * It must also have CADATA in position n° 4 (CA data) 
     * It must also have CRLSPECIFICDATA in position n° 9 (CRL Specific Data) 
     * It must also have SERVICES in position n° 15 (Services), if exists 
@@ -76,7 +76,7 @@ public class CAInfoView implements Serializable, Cloneable {
        "CADATA",               /* CA data */
        "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION",
        "CRLSPECIFICDATA",      /* CRL Specific Data */
-       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS","KEYVALIDATORS",
+       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS","VALIDATORS",
        "SERVICES",             /* Services */
        "OCSPSERVICE"};
 
@@ -110,16 +110,16 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
 			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(publisherIds.next());
         }
         
-        cainfodata[KEYVALIDATORS] = StringUtils.EMPTY;
+        cainfodata[VALIDATORS] = StringUtils.EMPTY;
         
-        final Iterator<Integer> keyValidatorIds = ((X509CAInfo) cainfo).getKeyValidators().iterator();
+        final Iterator<Integer> keyValidatorIds = ((X509CAInfo) cainfo).getValidators().iterator();
         if(keyValidatorIds.hasNext()) {
-            cainfodata[KEYVALIDATORS] = keyValidatorsIdToNameMap.get(keyValidatorIds.next()); 
+            cainfodata[VALIDATORS] = keyValidatorsIdToNameMap.get(keyValidatorIds.next()); 
         } else {
-            cainfodata[KEYVALIDATORS] = ejbcawebbean.getText("NONE");
+            cainfodata[VALIDATORS] = ejbcawebbean.getText("NONE");
         }
         while(keyValidatorIds.hasNext()) {
-            cainfodata[KEYVALIDATORS] = cainfodata[KEYVALIDATORS] + ", " + (String) keyValidatorsIdToNameMap.get(keyValidatorIds.next());
+            cainfodata[VALIDATORS] = cainfodata[VALIDATORS] + ", " + (String) keyValidatorsIdToNameMap.get(keyValidatorIds.next());
         }
         
 		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row

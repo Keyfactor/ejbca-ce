@@ -27,34 +27,34 @@
 <h:outputLabel for="keyvalidator_settings" value="#{web.text.RSAKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
 <h:panelGroup id="keyvalidator_settings">
 </h:panelGroup>
-<h:outputLabel for="settingsTemplate" value="#{web.text.KEYVALIDATORSETTINGSTEMPLATE}"/>
-<h:selectOneMenu id="settingsTemplate" value="#{keyValidatorBean.keyValidator.settingsTemplate}" disabled="#{keyValidatorsBean.viewOnly}">
-	<f:ajax listener="#{keyValidatorBean.keyValidatorTemplateChanged}" render="@form"/>	
-	<f:selectItems value="#{keyValidatorBean.availableKeyValidatorSettingsTemplates}" />
+<h:outputLabel for="settingsTemplate" value="#{web.text.VALIDATORSETTINGSTEMPLATE}"/>
+<h:selectOneMenu id="settingsTemplate" value="#{validatorBean.keyValidator.settingsTemplate}" disabled="#{validatorsBean.viewOnly}">
+	<f:ajax listener="#{validatorBean.keyValidatorTemplateChanged}" render="@form"/>	
+	<f:selectItems value="#{validatorBean.availableKeyValidatorSettingsTemplates}" />
 </h:selectOneMenu>
 <h:outputLabel for="keyValidatorBitLengths" value="#{web.text.RSAKEYVALILDATORAVAILABLEBITLENGTHS}" />
-<h:selectManyListbox id="keyValidatorBitLengths" value="#{keyValidatorBean.keyValidator.bitLengths}" disabled="#{keyValidatorsBean.viewOnly or !keyValidatorBean.customBaseSettingsEnabled}">
-	<f:selectItems value="#{keyValidatorBean.keyValidator.availableBitLengths}" />
+<h:selectManyListbox id="keyValidatorBitLengths" value="#{validatorBean.keyValidator.bitLengths}" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
+	<f:selectItems value="#{validatorBean.keyValidator.availableBitLengths}" />
 </h:selectManyListbox>
 <h:outputLabel for="rsaPublicKeyExponentOnlyAllowOdd" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTONLYALLOWODD}" styleClass="subItem"/>
-<h:selectBooleanCheckbox id="rsaPublicKeyExponentOnlyAllowOdd" value="#{keyValidatorBean.keyValidator.publicKeyExponentOnlyAllowOdd}" disabled="#{keyValidatorsBean.viewOnly}" />
+<h:selectBooleanCheckbox id="rsaPublicKeyExponentOnlyAllowOdd" value="#{validatorBean.keyValidator.publicKeyExponentOnlyAllowOdd}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyExponentMin" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMIN}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyExponentMin" value="#{keyValidatorBean.keyValidator.publicKeyExponentMin}" converter="javax.faces.BigInteger" required="false" disabled="#{keyValidatorsBean.viewOnly}" >
+<h:inputText id="rsaPublicKeyExponentMin" value="#{validatorBean.keyValidator.publicKeyExponentMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
 <h:outputLabel for="rsaPublicKeyExponentMax" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMAX}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyExponentMax" value="#{keyValidatorBean.keyValidator.publicKeyExponentMax}" converter="javax.faces.BigInteger" required="false" disabled="#{keyValidatorsBean.viewOnly}" >
+<h:inputText id="rsaPublicKeyExponentMax" value="#{validatorBean.keyValidator.publicKeyExponentMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusOnlyAllowOdd" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSONLYALLOWODD}" styleClass="subItem"/>
-<h:selectBooleanCheckbox id="rsaPublicKeyModulusOnlyAllowOdd" value="#{keyValidatorBean.keyValidator.publicKeyModulusOnlyAllowOdd}" disabled="#{keyValidatorsBean.viewOnly}" />
+<h:selectBooleanCheckbox id="rsaPublicKeyModulusOnlyAllowOdd" value="#{validatorBean.keyValidator.publicKeyModulusOnlyAllowOdd}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSDONTALLOWPOWEROFPRIME}" styleClass="subItem"/>
-<h:selectBooleanCheckbox id="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{keyValidatorBean.keyValidator.publicKeyModulusDontAllowPowerOfPrime}" disabled="#{keyValidatorsBean.viewOnly}" />
+<h:selectBooleanCheckbox id="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{validatorBean.keyValidator.publicKeyModulusDontAllowPowerOfPrime}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusMinFactor" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMINFACTOR}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMinFactor" value="#{keyValidatorBean.keyValidator.publicKeyModulusMinFactor}" required="false" maxlength="10" disabled="#{keyValidatorsBean.viewOnly}" >
+<h:inputText id="rsaPublicKeyModulusMinFactor" value="#{validatorBean.keyValidator.publicKeyModulusMinFactor}" required="false" maxlength="10" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusMin" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMIN}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMin" value="#{keyValidatorBean.keyValidator.publicKeyModulusMin}" converter="javax.faces.BigInteger" required="false" disabled="#{keyValidatorsBean.viewOnly}" >
+<h:inputText id="rsaPublicKeyModulusMin" value="#{validatorBean.keyValidator.publicKeyModulusMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusMax" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMAX}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMax" value="#{keyValidatorBean.keyValidator.publicKeyModulusMax}" converter="javax.faces.BigInteger" required="false" disabled="#{keyValidatorsBean.viewOnly}" >
+<h:inputText id="rsaPublicKeyModulusMax" value="#{validatorBean.keyValidator.publicKeyModulusMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
 </html>

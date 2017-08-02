@@ -83,7 +83,7 @@ public abstract class CAInfo implements Serializable {
     /** Default value 0 = disabled */
     protected long deltacrlperiod = 0;
     protected Collection<Integer> crlpublishers;
-    protected Collection<Integer> keyValidators;
+    protected Collection<Integer> validators;
     protected boolean keepExpiredCertsOnCRL = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
@@ -306,12 +306,12 @@ public abstract class CAInfo implements Serializable {
         this.crlpublishers = crlpublishers;
     }
     
-    public Collection<Integer> getKeyValidators() {
-        return keyValidators;
+    public Collection<Integer> getValidators() {
+        return validators;
     }
 
-    public void setKeyValidators(Collection<Integer> keyValidators) {
-        this.keyValidators = keyValidators;
+    public void setValidators(Collection<Integer> validators) {
+        this.validators = validators;
     }
 
     public boolean getKeepExpiredCertsOnCRL() { 

@@ -27,11 +27,11 @@
 <h:outputLabel for="keyvalidator_settings" value="#{web.text.BLACKLISTKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
 <h:panelGroup id="keyvalidator_settings"></h:panelGroup>
 <h:outputLabel for="keyGeneratorSources" value="#{web.text.BLACKLISTKEYVALIDATORSOURCES}" />
-<h:selectManyListbox id="keyGeneratorSources" value="#{keyValidatorBean.keyValidator.keyGeneratorSources}" validator="#{keyValidatorBean.validateKeyGenerationSource}" size="5" required="true" disabled="#{keyValidatorsBean.viewOnly}">
-	<f:selectItems value="#{keyValidatorBean.availableKeyGeneratorSources}" />
+<h:selectManyListbox id="keyGeneratorSources" value="#{validatorBean.keyValidator.keyGeneratorSources}" validator="#{validatorBean.validateKeyGenerationSource}" size="5" required="true" disabled="#{validatorsBean.viewOnly}">
+	<f:selectItems value="#{validatorBean.availableKeyGeneratorSources}" />
 </h:selectManyListbox>
 <h:outputLabel for="keyAlgorithms" value="#{web.text.BLACKLISTKEYVALIDATORKEYALGORITHMS}"/>
-<h:selectManyListbox id="keyAlgorithms" value="#{keyValidatorBean.keyValidator.keyAlgorithms}" size="3" required="true" disabled="#{keyValidatorsBean.viewOnly}">
-	<f:selectItems value="#{keyValidatorBean.availableKeyAlgorithms}"/>
+<h:selectManyListbox id="keyAlgorithms" value="#{validatorBean.keyValidator.keyAlgorithms}" size="3" required="true" disabled="#{validatorsBean.viewOnly}">
+	<f:selectItems value="#{validatorBean.availableKeyAlgorithms}"/>
 </h:selectManyListbox>
 </html>
