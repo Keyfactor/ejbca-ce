@@ -679,7 +679,7 @@ Run your installation without mixing root and user accounts as this may lead to 
 You can use a generic name, without version number, in order to get a generic 'driver-name' for the data source command.
 </p>
 <source>
->cp mariadb-java-client-1.2.0.jar wildfly_home/standalone/deployments/mariadb-java-client.jar
+>cp mariadb-java-client-2.1.0.jar wildfly_home/standalone/deployments/mariadb-java-client.jar
 </source>
 <p>
 If you are using another type of database, copy the JDBC driver to the deployments-directory and make note of the driver class and driver-name shown in the server log
@@ -742,6 +742,7 @@ If you are using another type of database, adapt the statement above with the co
 /subsystem=undertow/server=default-server/http-listener=remoting:add(socket-binding=remoting)
 :reload
 </source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 </subsubsection>
 
 <subsubsection name="Configure logging">
@@ -754,18 +755,6 @@ If you are using another type of database, adapt the statement above with the co
 </source>
 </subsubsection>
 
-<subsubsection name="Remove existing TLS and HTTP configuration">
-<p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
-<source>
-/subsystem=undertow/server=default-server/http-listener=default:remove
-/subsystem=undertow/server=default-server/https-listener=https:remove
-/socket-binding-group=standard-sockets/socket-binding=http:remove
-/socket-binding-group=standard-sockets/socket-binding=https:remove
-:reload
-</source>
-<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
-</subsubsection>
-
 <subsubsection name="Deploy EJBCA">
 <p>Finally build and deploy the EJBCA (application ear file) to WildFly, without touching any WildFly configuration, by running the following EJBCA command.</p>
 <p>Before running deployear below, don't forget to point to your application server by setting APPSRV_HOME, and configure your database in conf/database.properties.</p>
@@ -773,6 +762,7 @@ If you are using another type of database, adapt the statement above with the co
 <source>
 ant clean deployear
 </source>
+<p>Check in the JBoss/WildFly console or server.log that EJBCA was deployed without errors.</p>
 </subsubsection>
 
 <subsubsection name="Run install">
@@ -789,6 +779,18 @@ ant runinstall
 <source>
 ant deploy-keystore
 </source>
+</subsubsection>
+
+<subsubsection name="Remove existing TLS and HTTP configuration">
+<p>Run the following commands in JBoss CLI to remove existing TLS and HTTP configuration (just to be safe).</p>
+<source>
+/subsystem=undertow/server=default-server/http-listener=default:remove
+/subsystem=undertow/server=default-server/https-listener=https:remove
+/socket-binding-group=standard-sockets/socket-binding=http:remove
+/socket-binding-group=standard-sockets/socket-binding=https:remove
+:reload
+</source>
+<p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 </subsubsection>
 
 <subsubsection name="Configure TLS">
@@ -817,10 +819,12 @@ ant deploy-keystore
 <p>Restart the application server completely. Wait for it to finish start up by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
 <source>
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
+/subsystem=undertow/server=default-server/https-listener=httpspriv:write-attribute(name=max-parameters, value="2048")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
+/subsystem=undertow/server=default-server/https-listener=httpspub:write-attribute(name=max-parameters, value="2048")
 :reload
 </source>
-<p>Finalize Wildfly configurations</p>
+<p>Finalize Wildfly configuration with some important items:</p>
 <source>
 /system-property=org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH:add(value=true)
 /system-property=org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH:add(value=true)
@@ -974,8 +978,10 @@ ant deploy-keystore
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
+/subsystem=undertow/server=default-server/https-listener=httpspriv:write-attribute(name=max-parameters, value="2048")
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
+/subsystem=undertow/server=default-server/https-listener=httpspub:write-attribute(name=max-parameters, value="2048")
 :reload
 </source>
 <p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
@@ -1055,8 +1061,10 @@ ant deploy-keystore
 /core-service=management/security-realm=SSLRealm/authentication=truststore:add(keystore-path="${jboss.server.config.dir}/keystore/truststore.jks", keystore-password="changeit")
 /socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="8443",interface="httpspriv")
 /subsystem=undertow/server=default-server/https-listener=httpspriv:add(socket-binding=httpspriv, security-realm="SSLRealm", verify-client=REQUIRED)
+/subsystem=undertow/server=default-server/https-listener=httpspriv:write-attribute(name=max-parameters, value="2048")
 /socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="8442", interface="httpspub")
 /subsystem=undertow/server=default-server/https-listener=httpspub:add(socket-binding=httpspub, security-realm="SSLRealm")
+/subsystem=undertow/server=default-server/https-listener=httpspub:write-attribute(name=max-parameters, value="2048")
 :reload
 </source>
 <p>Wait for reload to complete by checking the server log or the result of ":read-attribute(name=server-state)" before continuing.</p> 
