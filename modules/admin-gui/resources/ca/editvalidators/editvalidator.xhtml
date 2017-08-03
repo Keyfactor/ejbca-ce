@@ -90,7 +90,7 @@
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
+					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" immediate="true" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
 				</h:panelGroup>
 			</h:panelGrid>
