@@ -63,7 +63,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -183,10 +182,10 @@ public class KeyRecoveryTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            if(!keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, new KeyPairWrapper(keypair1))) {
+            if(!keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1))) {
                 throw new RuntimeException("Key recovery data already exists in database.");
             }
-            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(cert1));
+            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
@@ -217,7 +216,7 @@ public class KeyRecoveryTest extends CaTestCase {
             endEntityManagementSession.changeUser(internalAdmin, ei, false);
             cert2 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair2.getPublic()));
             fp2 = CertTools.getFingerprintAsString(cert2);
-            keyRecoverySession.addKeyRecoveryData(internalAdmin, cert2, user, new KeyPairWrapper(keypair2));
+            keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert2), user, EJBTools.wrap(keypair2));
             // Recover the first (old) key pair
             endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
@@ -257,12 +256,12 @@ public class KeyRecoveryTest extends CaTestCase {
             // Only clean up left.
             log.trace(">test04RemoveKeyPairAndEntity()");
             if (cert1 != null) {
-                keyRecoverySession.removeKeyRecoveryData(internalAdmin, cert1);
-                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(cert1));
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
             }
             if (cert2 != null) {
-                keyRecoverySession.removeKeyRecoveryData(internalAdmin, cert2);
-                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(cert2));
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(cert2));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(cert2)));
             }
             internalCertStoreSession.removeCertificate(fp1);
             internalCertStoreSession.removeCertificate(fp2);
@@ -306,10 +305,10 @@ public class KeyRecoveryTest extends CaTestCase {
                     throw new IllegalStateException("Exception generating keys/cert", e);
                 }
             }
-            if (!keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, new KeyPairWrapper(keypair1))) {
+            if (!keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1))) {
                 throw new IllegalStateException("Key recovery data already exists in database.");
             }
-            if (!keyRecoverySession.existsKeys(cert1)) {
+            if (!keyRecoverySession.existsKeys(EJBTools.wrap(cert1))) {
                 throw new IllegalStateException("Couldn't save key's in database");
             }
             if (keyRecoverySession.isUserMarked(user)) {
@@ -324,7 +323,7 @@ public class KeyRecoveryTest extends CaTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(fp1);
             endEntityManagementSession.deleteUser(internalAdmin, user);
-            keyRecoverySession.removeKeyRecoveryData(internalAdmin, cert1);
+            keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1));
         }
 
     }
@@ -398,8 +397,8 @@ public class KeyRecoveryTest extends CaTestCase {
             assertNotNull("Could not find user's certificate in key-recovered keystore", keystore2.getCertificateAlias(usercert));
         } finally {
             if (usercert != null) {
-                keyRecoverySession.removeKeyRecoveryData(internalAdmin, usercert);
-                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(usercert));
+                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(usercert));
+                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(usercert)));
             }
             if (fp1 != null) {
                 internalCertStoreSession.removeCertificate(fp1);
