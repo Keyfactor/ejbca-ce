@@ -92,11 +92,19 @@ public class RoleMemberSessionBean implements RoleMemberSessionLocal, RoleMember
 
     @Override
     public RoleMember persist(final AuthenticationToken authenticationToken, final RoleMember roleMember) throws AuthorizationDeniedException {
+        return persist(authenticationToken, roleMember, true);
+    }
+    
+    @Override
+    public RoleMember persist(final AuthenticationToken authenticationToken, final RoleMember roleMember, final boolean requireNonImportantRoleMembership)
+            throws AuthorizationDeniedException {
         if (roleMember==null) {
             // Successfully did nothing
             return null;
         }
-        assertNonImportantRoleMembership(authenticationToken, roleMember);
+        if (requireNonImportantRoleMembership) {
+            assertNonImportantRoleMembership(authenticationToken, roleMember);
+        }
         roleSession.assertAuthorizedToRoleMembers(authenticationToken, roleMember.getRoleId(), true);
         RoleMember oldRoleMember = null;
         if (roleMember.getId() != RoleMember.ROLE_MEMBER_ID_UNASSIGNED) {
