@@ -72,6 +72,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -126,11 +127,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     /** Constructor for use from JUnit tests */
-    public RaMasterApiProxyBean(final RaMasterApi... raMasterApis) {
+    public RaMasterApiProxyBean(final RaMasterApiSessionLocal raMasterApiSession, 
+            final GlobalConfigurationSessionLocal globalConfigurationSession,
+            final KeyRecoverySessionLocal keyRecoverySession,
+            final RaMasterApi... raMasterApis) {
         this.raMasterApis = raMasterApis;
         final List<RaMasterApi> implementations = new ArrayList<>(Arrays.asList(raMasterApis));
         Collections.reverse(implementations);
         this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
+        this.raMasterApiSession = raMasterApiSession;
+        this.localNodeGlobalConfigurationSession = globalConfigurationSession;
+        this.localNodeKeyRecoverySession = keyRecoverySession;
     }
 
     @PostConstruct
@@ -983,6 +990,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         
         final String username = endEntity.getUsername();
         final EndEntityInformation storedEndEntity = searchUser(authenticationToken, username);
+        if (storedEndEntity == null) {
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User does not exist: " + username);
+        }
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (storedEndEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             // "Force local key recovery" enabled. The certificate is issued on the CA, but the key pair is generated and stored locally.
@@ -1020,7 +1030,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
-                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, cert, username, kp, cryptoTokenId, keyAlias)) {
+                    if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(kp), cryptoTokenId, keyAlias)) {
                         // Should never happen. An exception stack trace is error-logged in addKeyRecoveryData
                         throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                     }
@@ -1235,7 +1245,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // If approval is required, the approving instance won't be able to set the flag in this database, so we set it anyway
                     // Enrollment won't be possible until UserData status is set to KeyRecovery by the requesting instance (at approval).
                     if (localKeyRecoveryThisNode) {
-                        localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert.getCertificate(), username);
+                        localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert, username);
                     }
                     throw e;
                 }
@@ -1245,7 +1255,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         // If local key generation is enabled, we have to do this locally
         if (ret && localKeyRecoveryThisNode) {
             localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
-            ret = localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert.getCertificate(), username);
+            ret = localNodeKeyRecoverySession.markAsRecoverableInternal(authenticationToken, cert, username);
         }
         return ret;
     }
@@ -1261,7 +1271,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 authorized = isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY,
                         AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(storedEndEntity.getEndEntityProfileId()) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                         AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
-                return authorized && storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY && localNodeKeyRecoverySession.existsKeys(cert);
+                return authorized && storedEndEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY && localNodeKeyRecoverySession.existsKeys(EJBTools.wrap(cert));
             }
             return false;
         }

@@ -58,6 +58,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -381,7 +382,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                     certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", new PublicKeyWrapper(keypair.getPublic()));
             assertNotNull("Cert should have been created.", cert);
-            keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, new KeyPairWrapper(keypair));
+            keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username1, EJBTools.wrap(keypair));
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
             endEntityManagementSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username1));
@@ -403,7 +404,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             endEntityManagementSession.addUser(admin1, username2, "foo123", "CN=TESTKEYREC2" + username2, null, email, false, endEntityProfileId,
                     certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username2, "foo123", new PublicKeyWrapper(keypair.getPublic()));
-            keyRecoverySession.addKeyRecoveryData(admin1, cert, username2, new KeyPairWrapper(keypair));
+            keyRecoverySession.addKeyRecoveryData(admin1, EJBTools.wrap(cert), username2, EJBTools.wrap(keypair));
 
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username2));
             endEntityManagementSession.prepareForKeyRecovery(admin1, username2, endEntityProfileId, cert);

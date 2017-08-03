@@ -87,6 +87,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.RFC4683Tools;
 import org.cesecore.util.StringTools;
@@ -2349,7 +2350,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, WaitingForApprovalException {
         boolean ret = false;
         if (keyRecoverySession.authorizedToKeyRecover(admin, endEntityProfileId)) {
-            keyRecoverySession.checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false);
+            keyRecoverySession.checkIfApprovalRequired(admin, EJBTools.wrap(certificate), username, endEntityProfileId, false);
             ret = true;
         } else {
             throw new AuthorizationDeniedException(admin + " not authorized to key recovery for end entity profile id " + endEntityProfileId);

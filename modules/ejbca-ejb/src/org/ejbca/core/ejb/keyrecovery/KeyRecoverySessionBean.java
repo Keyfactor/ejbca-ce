@@ -43,6 +43,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -53,6 +54,7 @@ import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -124,8 +126,9 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
     @Override
-    public void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
-            throws ApprovalException, WaitingForApprovalException, CADoesntExistsException{    	
+    public void checkIfApprovalRequired(AuthenticationToken admin, CertificateWrapper certificateWrapper, String username, int endEntityProfileId, boolean checkNewest) 
+            throws ApprovalException, WaitingForApprovalException, CADoesntExistsException {
+        final Certificate certificate = EJBTools.unwrap(certificateWrapper);
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
 		final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         final CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
@@ -149,18 +152,20 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPairWrapper keypair)
+    public boolean addKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificateWrapper, String username, KeyPairWrapper keyPairWrapper)
             throws AuthorizationDeniedException {
-  	if (log.isTraceEnabled()) {
+        if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryData(user: " + username + ")");
     	}
         if (authorizedToAdministrateKeys(admin)) {
+            final Certificate certificate = EJBTools.unwrap(certificateWrapper);
+            final KeyPair keypair = EJBTools.unwrap(keyPairWrapper);
             final int caid = CertTools.getIssuerDN(certificate).hashCode();
             final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
             boolean returnval = false;
             try {
                 KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-                        new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair.getKeyPair()));
+                        new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair));
                 entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
                         .getIssuerDN(certificate), username, response.getKeyData(), response.getCryptoTokenId(), response.getKeyAlias(), response.getPublicKeyId()));
                 // same method to make hex serno as in KeyRecoveryDataBean
@@ -189,11 +194,13 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
     
     @Override
-    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final Certificate certificate, final String username, final KeyPair keypair,
+    public boolean addKeyRecoveryDataInternal(final AuthenticationToken admin, final CertificateWrapper certificateWrapper, final String username, final KeyPairWrapper keyPairWrapper,
             final int cryptoTokenId, final String keyAlias) {
         if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryDataInternal(user: " + username + ")");
         }
+        final Certificate certificate = EJBTools.unwrap(certificateWrapper);
+        final KeyPair keypair = EJBTools.unwrap(keyPairWrapper);
         final String certSerialNumber = CertTools.getSerialNumberAsString(certificate);
         boolean returnval = false;
         try {
@@ -225,53 +232,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
     @Override
-    public boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPairWrapper keypair) throws AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-            log.trace(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
-                    CertTools.getIssuerDN(certificate) + ")");
-    	}
-    	if(authorizedToAdministrateKeys(admin)) {
-    	    boolean returnval = false;
-    	    final String hexSerial = certificate.getSerialNumber().toString(16);
-    	    final String dn = CertTools.getIssuerDN(certificate);
-    	    final int caid = dn.hashCode();
-    	    try {
-    	        final KeyRecoveryData krd = KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
-    	        if (krd == null) {
-    	            throw new FinderException();
-    	        }
-    	        krd.setMarkedAsRecoverable(markedasrecoverable);
-    	        final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, caid,
-    	                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS, keypair.getKeyPair()));
-    	        krd.setKeyDataFromByteArray(response.getKeyData());
-    	        // Update with the key information for the key used to protect this new key recovery data
-    	        krd.setCryptoTokenId(response.getCryptoTokenId());
-    	        krd.setKeyAlias(response.getKeyAlias());
-    	        krd.setPublicKeyId(response.getPublicKeyId());
-    	        final String msg = intres.getLocalizedMessage("keyrecovery.changeddata", hexSerial, dn, response.getKeyAlias(), response.getPublicKeyId(), response.getCryptoTokenId());            	
-    	        final Map<String, Object> details = new LinkedHashMap<>();
-    	        details.put("msg", msg);
-    	        auditSession.log(EjbcaEventTypes.KEYRECOVERY_EDITDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, krd.getUsername(), details);
-    	        returnval = true;
-    	    } catch (Exception e) {
-    	        final String msg = intres.getLocalizedMessage("keyrecovery.errorchangedata", hexSerial, dn);            	
-    	        final Map<String, Object> details = new LinkedHashMap<>();
-    	        details.put("msg", msg);
-    	        auditSession.log(EjbcaEventTypes.KEYRECOVERY_EDITDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, null, details);
-    	        log.error(msg, e);
-    	    }
-    	    if (log.isTraceEnabled()) {
-    	        log.trace("<changeKeyRecoveryData()");
-    	    }
-    	    return returnval;
-    	} else {
-    	    throw new AuthorizationDeniedException(admin + " not authorized to administer key recovery keys");
-    	}
-    }
-
-    @Override
-    public void removeKeyRecoveryData(AuthenticationToken admin, Certificate certificate) throws AuthorizationDeniedException {
-        if(authorizedToAdministrateKeys(admin)) {
+    public void removeKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificateWrapper) throws AuthorizationDeniedException {
+        if (!authorizedToAdministrateKeys(admin)) {
+            throw new AuthorizationDeniedException(admin + " not authorized to administer keys");
+        }
+        final Certificate certificate = EJBTools.unwrap(certificateWrapper);
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
     	if (log.isTraceEnabled()) {
             log.trace(">removeKeyRecoveryData(certificate: " + CertTools.getSerialNumber(certificate).toString(16) +")");
@@ -298,9 +263,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             log.error(msg, e);
         }
         log.trace("<removeKeyRecoveryData()");
-        } else {
-            throw new AuthorizationDeniedException(admin + " not authorized to administer keys");
-        }
     }
 
     @Override
@@ -430,17 +392,14 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     	}
         boolean returnval = false;
         long newesttime = 0;
-        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = null;
-        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData newest = null;
+        KeyRecoveryData newest = null;
         X509Certificate certificate = null;
         X509Certificate newestcertificate = null;
         if (!isUserMarked(username)) {
             String caidString = null;
             String certSerialNumber = null;
-        	Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByUsername(entityManager, username);
-        	Iterator<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> iter = result.iterator();
-        	while (iter.hasNext()) {
-        		krd = iter.next();
+        	final Collection<KeyRecoveryData> result = KeyRecoveryData.findByUsername(entityManager, username);
+    		for (final KeyRecoveryData krd : result) {
         		caidString = String.valueOf(krd.getIssuerDN().hashCode());
         		certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(krd.getIssuerDN(), krd.getCertificateSN());
         		if (certificate != null) {
@@ -456,7 +415,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         		// Check that the administrator is authorized to keyrecover
                 if (authorizedToKeyRecover(admin, endEntityProfileId)) {
                     // Check if approvals is required.            
-                    checkIfApprovalRequired(admin, newestcertificate, username, endEntityProfileId, true);
+                    checkIfApprovalRequired(admin, EJBTools.wrap(newestcertificate), username, endEntityProfileId, true);
                     newest.setMarkedAsRecoverable(true);
                     returnval = true;
                 } else {
@@ -492,7 +451,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             // Check that the administrator is authorized to keyrecover
             if (authorizedToKeyRecover(admin, endEntityProfileId)) {
                 // Check if approvals is required.
-                checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false);
+                checkIfApprovalRequired(admin, EJBTools.wrap(certificate), username, endEntityProfileId, false);
                 krd.setMarkedAsRecoverable(true);
                 int caid = krd.getIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("keyrecovery.markedcert", hexSerial, dn);
@@ -513,7 +472,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
 	@Override
-    public boolean markAsRecoverableInternal(AuthenticationToken admin, Certificate certificate, String username) {
+    public boolean markAsRecoverableInternal(AuthenticationToken admin, CertificateWrapper certificateWrapper, String username) {
+	    final Certificate certificate = EJBTools.unwrap(certificateWrapper);
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);   
         if (log.isTraceEnabled()) {
@@ -575,9 +535,10 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsKeys(Certificate certificate) {
+    public boolean existsKeys(CertificateWrapper certificateWrapper) {
         log.trace(">existsKeys()");
-        if (certificate==null) {
+        final Certificate certificate = EJBTools.unwrap(certificateWrapper);
+        if (certificate == null) {
             log.debug("Key recovery requires a certificate to be present.");
             return false;
         }

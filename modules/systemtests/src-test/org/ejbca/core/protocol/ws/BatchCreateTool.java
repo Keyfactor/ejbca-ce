@@ -58,10 +58,10 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
@@ -538,7 +538,7 @@ public abstract class BatchCreateTool {
         if (useKeyRecovery && savekeys) {
             // Save generated keys to database.
             EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class)
-                    .addKeyRecoveryData(authenticationToken, cert, username, new KeyPairWrapper(rsaKeys));
+                    .addKeyRecoveryData(authenticationToken, EJBTools.wrap(cert), username, EJBTools.wrap(rsaKeys));
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username

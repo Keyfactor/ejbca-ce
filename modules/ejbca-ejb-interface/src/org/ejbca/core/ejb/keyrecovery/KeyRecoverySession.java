@@ -13,11 +13,11 @@
 package org.ejbca.core.ejb.keyrecovery;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.keys.util.KeyPairWrapper;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -55,7 +55,7 @@ public interface KeyRecoverySession {
      * @throws WaitingForApprovalException if approval is required. Expected to be thrown in this case
      * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
      */
-    public void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) 
+    public void checkIfApprovalRequired(AuthenticationToken admin, CertificateWrapper certificate, String username, int endEntityProfileId, boolean checkNewest) 
             throws ApprovalException, WaitingForApprovalException, CADoesntExistsException;
     
     /**
@@ -69,21 +69,7 @@ public interface KeyRecoverySession {
      * @return false if the certificates keyrecovery data already exists.
      * @throws AuthorizationDeniedException if not authorized to administer keys.
      */
-    boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPairWrapper keypair) throws AuthorizationDeniedException;
-
-    /**
-     * Updates keyrecovery data
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keypair.
-     * @param markedasrecoverable DOCUMENT ME!
-     * @param keypair the actual keypair to save.
-     *
-     * @return false if certificates keyrecovery data does not exist
-     * @throws AuthorizationDeniedException if not authorized to administrate keys.
-     *
-     */
-    boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPairWrapper keypair) throws AuthorizationDeniedException;
+    boolean addKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificate, String username, KeyPairWrapper keypair) throws AuthorizationDeniedException;
 
     /**
      * Removes a certificates keyrecovery data from the database.
@@ -92,7 +78,7 @@ public interface KeyRecoverySession {
      * @param certificate the certificate used with the keys about to be removed.
      * @throws AuthorizationDeniedException if not authorized to administer keys
      */
-    void removeKeyRecoveryData(AuthenticationToken admin, Certificate certificate) throws AuthorizationDeniedException;
+    void removeKeyRecoveryData(AuthenticationToken admin, CertificateWrapper certificate) throws AuthorizationDeniedException;
 
     /** Removes a all keyrecovery data saved for a user from the database. */
     void removeAllKeyRecoveryData(AuthenticationToken admin, String username);
@@ -146,5 +132,5 @@ public interface KeyRecoverySession {
      * @param certificate the certificate used with the keys about to be removed.
      * @return true if specified certificates keys exists in database.
      */
-    boolean existsKeys(Certificate certificate);
+    boolean existsKeys(CertificateWrapper certificate);
 }

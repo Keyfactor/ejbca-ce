@@ -122,7 +122,7 @@ public class KeyRecoveryCommandTest {
         if (null == endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)) {
             throw new RuntimeException("Could not create end entity.");
         }
-        keyRecoverySession.addKeyRecoveryData(authenticationToken, certificate, TESTCLASS_NAME, new KeyPairWrapper(keys));
+        keyRecoverySession.addKeyRecoveryData(authenticationToken, EJBTools.wrap(certificate), TESTCLASS_NAME, EJBTools.wrap(keys));
     }
 
     @After

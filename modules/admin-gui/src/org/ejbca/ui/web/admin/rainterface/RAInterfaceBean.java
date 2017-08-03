@@ -67,6 +67,7 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
@@ -837,7 +838,7 @@ public class RAInterfaceBean implements Serializable {
     			returnval = false;
     		}
     	}
-    	return returnval && keyrecoverysession.existsKeys(cert) && !keyrecoverysession.isUserMarked(username);
+    	return returnval && keyrecoverysession.existsKeys(EJBTools.wrap(cert)) && !keyrecoverysession.isUserMarked(username);
     }
 
     public void markForRecovery(String username, Certificate cert) throws AuthorizationDeniedException, ApprovalException, 
