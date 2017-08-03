@@ -328,7 +328,7 @@ public class RAInterfaceBean implements Serializable {
      * @throws NoSuchEndEntityException if the end entity could not be found. 
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      */
-    public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
+    public void changeUserData(UserView userdata, String newUsername) throws CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         log.trace(">changeUserData()");
         addedusermemory.changeUser(userdata);
@@ -341,7 +341,11 @@ public class RAInterfaceBean implements Serializable {
         uservo.setPassword(userdata.getPassword());
         uservo.setExtendedinformation(userdata.getExtendedInformation());
         uservo.setCardNumber(userdata.getCardNumber());
-        endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword());
+        if (userdata.getUsername().equals(newUsername)) {
+            endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword());
+        } else {
+            endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword(), newUsername);
+        }
         log.trace("<changeUserData()");
     }
 
