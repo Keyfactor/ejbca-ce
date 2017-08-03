@@ -213,13 +213,16 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
     }
     
-    private Role getOriginalRoleAndAssertAuthorizedToEdit(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException {
+    private Role getOriginalRoleAndAssertAuthorizedToEdit(final AuthenticationToken authenticationToken, final Role role, final boolean requireNonImportantRoleMembership)
+            throws AuthorizationDeniedException {
         // Check if the caller is authorized to edit roles in general
         assertAuthorizedToEditRoles(authenticationToken);
         // Is the authToken authorized to the role as provided as an argument?
         final Set<Integer> roleIdsCallerBelongsTo = roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken);
         assertAuthorizedToAllAccessRules(authenticationToken, role, roleIdsCallerBelongsTo);
-        assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
+        if (requireNonImportantRoleMembership) {
+            assertNonImportantRoleMembership(authenticationToken, role, roleIdsCallerBelongsTo);
+        }
         assertAuthorizedToNameSpace(authenticationToken, role, roleIdsCallerBelongsTo);
         // Is the authToken authorized to the role found by id in the database?
         final Role roleById = role.getRoleId()==Role.ROLE_ID_UNASSIGNED ? null : roleDataSession.getRole(role.getRoleId());
@@ -233,10 +236,16 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
 
     @Override
     public Role persistRole(final AuthenticationToken authenticationToken, final Role role) throws RoleExistsException, AuthorizationDeniedException {
+        return persistRole(authenticationToken, role, true);
+    }
+    
+    @Override
+    public Role persistRole(final AuthenticationToken authenticationToken, final Role role, final boolean requireNonImportantRoleMembership)
+            throws RoleExistsException, AuthorizationDeniedException {
         // Normalize and minimize access rules before checking authorization
         role.normalizeAccessRules();
         role.minimizeAccessRules();
-        final Role roleById = getOriginalRoleAndAssertAuthorizedToEdit(authenticationToken, role);
+        final Role roleById = getOriginalRoleAndAssertAuthorizedToEdit(authenticationToken, role, requireNonImportantRoleMembership);
         // Sort access rules to make raw xml editing (e.g. statedump) easier
         role.sortAccessRules();
         final Role roleByName = roleDataSession.getRole(role.getNameSpace(), role.getRoleName());
