@@ -55,9 +55,9 @@
 					<f:ajax listener="#{validatorBean.keyValidatorTypeChanged}" render="@form"/>	
 					<f:selectItems value="#{validatorBean.availableKeyValidators}" />
 				</h:selectOneMenu>
-				<h:panelGroup></h:panelGroup>
+				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
 				<ui:include src="#{validatorBean.keyValidator.templateFile}" />
-				<h:panelGroup></h:panelGroup>
+				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
 				<h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>
 				<h:panelGroup id="general_settings"/>
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>

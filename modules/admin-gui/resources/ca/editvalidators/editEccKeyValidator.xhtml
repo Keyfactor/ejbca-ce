@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -39,4 +39,4 @@
 <h:selectBooleanCheckbox id="eccUsePublicKeyPartialValidation" value="#{validatorBean.keyValidator.usePartialPublicKeyValidationRoutine}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="eccUsePublicKeyFullValidation" value="#{web.text.ECCKEYVALIDATORUSEFULLPUBLICKEYVALIDATION}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="eccUsePublicKeyFullValidation" value="#{validatorBean.keyValidator.useFullPublicKeyValidationRoutine}" disabled="#{validatorsBean.viewOnly}" />
-</html>
+</ui:composition>

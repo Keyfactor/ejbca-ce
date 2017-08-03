@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -34,4 +34,4 @@
 <h:selectManyListbox id="keyAlgorithms" value="#{validatorBean.keyValidator.keyAlgorithms}" size="3" required="true" disabled="#{validatorsBean.viewOnly}">
 	<f:selectItems value="#{validatorBean.availableKeyAlgorithms}"/>
 </h:selectManyListbox>
-</html>
+</ui:composition>
