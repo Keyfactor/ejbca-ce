@@ -28,6 +28,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Wrapper class for serializing KeyPair objects. 
  * 
+ * @see org.cesecore.util.EJBTools
+ * 
  * @version $Id$
  *
  */

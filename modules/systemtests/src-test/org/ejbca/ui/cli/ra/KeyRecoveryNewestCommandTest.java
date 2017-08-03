@@ -37,7 +37,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -120,7 +119,7 @@ public class KeyRecoveryNewestCommandTest {
         if (null == endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)) {
             throw new RuntimeException("Could not create end entity.");
         }
-        keyRecoverySession.addKeyRecoveryData(authenticationToken, certificate, TESTCLASS_NAME, new KeyPairWrapper(keys));
+        keyRecoverySession.addKeyRecoveryData(authenticationToken, EJBTools.wrap(certificate), TESTCLASS_NAME, EJBTools.wrap(keys));
     }
 
     @After

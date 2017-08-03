@@ -1788,7 +1788,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 return false;
             }
         }
-        return returnval && keyRecoverySessionLocal.existsKeys(cert) && !keyRecoverySessionLocal.isUserMarked(username);
+        return returnval && keyRecoverySessionLocal.existsKeys(EJBTools.wrap(cert)) && !keyRecoverySessionLocal.isUserMarked(username);
     }
     
     /** Help function used to check end entity profile authorization. */

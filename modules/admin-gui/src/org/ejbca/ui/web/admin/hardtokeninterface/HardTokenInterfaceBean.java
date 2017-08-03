@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.util.EJBTools;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -236,11 +237,10 @@ public class HardTokenInterfaceBean implements Serializable {
     public boolean isTokenKeyRecoverable(String tokensn, String username, RAInterfaceBean rabean) throws Exception {
         boolean retval = false;
         X509Certificate keyRecCert = null;
-        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
-        while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
-            if (keyrecoverysession.existsKeys(cert)) {
-                keyRecCert = cert;
+        for (final Certificate cert : hardtokensession.findCertificatesInHardToken(tokensn)) {
+            final X509Certificate x509cert = (X509Certificate) cert;
+            if (keyrecoverysession.existsKeys(EJBTools.wrap(x509cert))) {
+                keyRecCert = x509cert;
             }
         }
         if (keyRecCert != null) {
@@ -250,11 +250,10 @@ public class HardTokenInterfaceBean implements Serializable {
     }
 
     public void markTokenForKeyRecovery(String tokensn, String username, RAInterfaceBean rabean) throws Exception {
-        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
-        while (iter.hasNext()) {
-            X509Certificate cert = (X509Certificate) iter.next();
-            if (keyrecoverysession.existsKeys(cert)) {
-                rabean.markForRecovery(username, cert);
+        for (final Certificate cert : hardtokensession.findCertificatesInHardToken(tokensn)) {
+            final X509Certificate x509cert = (X509Certificate) cert;
+            if (keyrecoverysession.existsKeys(EJBTools.wrap(x509cert))) {
+                rabean.markForRecovery(username, x509cert);
             }
         }
     }

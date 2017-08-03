@@ -36,10 +36,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
-import org.cesecore.keys.util.KeyPairWrapper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
@@ -336,8 +336,8 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
         if (getUseKeyRecovery() && savekeys) {
             // Save generated keys to database.
-            EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAuthenticationToken(), cert, username,
-                    new KeyPairWrapper(rsaKeys));
+            EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAuthenticationToken(), EJBTools.wrap(cert), username,
+                    EJBTools.wrap(rsaKeys));
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
