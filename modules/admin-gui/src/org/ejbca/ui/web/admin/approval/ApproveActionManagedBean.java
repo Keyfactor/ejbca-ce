@@ -234,6 +234,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             ApprovalRequest approvalRequest = approvalDataVO.getApprovalRequest();
             ApprovalProfile storedApprovalProfile = approvalRequest.getApprovalProfile();
             for (Iterator<ApprovalPartitionProfileGuiObject> iter = partitionsAuthorizedToView.iterator(); iter.hasNext(); ) {
+                boolean isRejected = false;
                 ApprovalPartitionProfileGuiObject approvalPartitionGuiObject = iter.next();
                 Integer partitionId = approvalPartitionGuiObject.getPartitionId();
                 if (partitionsAuthorizedToApprove.contains(partitionId)) {
@@ -257,6 +258,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                                 break;
                             case REJECT:
                                 approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
+                                isRejected = true;
                                 break;
                             case NO_ACTION:
                                 break;
@@ -280,6 +282,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         addErrorMessage(e.getMessage());
                         closeWindow = false;
                     }
+                }
+                // Stop if a partition has been rejected
+                if (isRejected) {
+                    break;
                 }
             }
             approvalSession.updateApprovalRequest(approvalDataVO.getId(), approvalRequest);
