@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -57,4 +57,4 @@
 <h:outputLabel for="rsaPublicKeyModulusMax" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMAX}" styleClass="subItem"/>
 <h:inputText id="rsaPublicKeyModulusMax" value="#{validatorBean.keyValidator.publicKeyModulusMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
 </h:inputText>
-</html>
+</ui:composition>
