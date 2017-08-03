@@ -138,20 +138,6 @@
         if (request.getParameter(ACTION) != null) {
             if (request.getParameter(ACTION).equals(ACTION_EDITUSER)) {
                 if (request.getParameter(BUTTON_SAVE) != null) {
-                    String newUsername = request.getParameter(TEXTFIELD_NEWUSERNAME);
-                    if (!username.equals(newUsername)) {
-                        // Rename the end entity
-                        try {
-                            if (!rabean.renameUser(username, newUsername)) {
-                                approvalmessage = ejbcawebbean.getText("ENDENTITYDOESNTEXIST");
-                            }
-                        } catch (org.cesecore.authorization.AuthorizationDeniedException e) {
-                        	notauthorized = true;
-                        } catch (org.ejbca.core.ejb.ra.EndEntityExistsException e) {
-                            approvalmessage = ejbcawebbean.getText("ENDENTITYALREADYEXISTS");
-                        }
-                        username = newUsername;
-                    }
                     UserView newuser = new UserView();
                     newuser.setEndEntityProfileId(profileid);
                     newuser.setUsername(username);
@@ -513,10 +499,22 @@
                                 || newstatus == EndEntityConstants.STATUS_KEYRECOVERY)
                             newuser.setStatus(newstatus);
                     }
+                    String newUsername = request.getParameter(TEXTFIELD_NEWUSERNAME);
                     try {
                         // Send changes to database.
-                        rabean.changeUserData(newuser);
+                        rabean.changeUserData(newuser, newUsername);
                         endentitysaved = true;
+                        username = newUsername;
+                    } catch (org.cesecore.authorization.AuthorizationDeniedException e) {
+                    	notauthorized = true;
+                    } catch (org.ejbca.core.ejb.ra.NoSuchEndEntityException e) {
+                        approvalmessage = ejbcawebbean.getText("ENDENTITYDOESNTEXIST");
+                    } catch (org.cesecore.certificates.ca.IllegalNameException e) {
+                        if (e.getMessage().equals("Username already taken")) {
+                            approvalmessage = ejbcawebbean.getText("ENDENTITYALREADYEXISTS");
+                        } else {
+                            throw e;
+                        }
                     } catch (org.ejbca.core.model.approval.ApprovalException e) {
                         approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
                     } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
@@ -1043,7 +1041,7 @@ function checkUseInBatch(){
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
 	<td>
 		<strong>
-			<input type="text" name="<%= TEXTFIELD_NEWUSERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= userdata.getUsername() %>"/>'>
+			<input type="text" name="<%= TEXTFIELD_NEWUSERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= username %>"/>'>
         </strong>
     </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" CHECKED></td>
