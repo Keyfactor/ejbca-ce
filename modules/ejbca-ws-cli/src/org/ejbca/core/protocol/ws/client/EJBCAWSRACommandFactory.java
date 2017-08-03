@@ -103,6 +103,8 @@ public class EJBCAWSRACommandFactory {
             return new GetExpiredCertificatesByIssuerCommand(args);
         } else if (args[0].equals("getexpiredcertsbytype")) {
             return new GetExpiredCertificatesByTypeCommand(args);
+        } else if (args[0].equals("keyrecover")) {
+            return new KeyRecoverCommand(args);
         }
         
         else {
