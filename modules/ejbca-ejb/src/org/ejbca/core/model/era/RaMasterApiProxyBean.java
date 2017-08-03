@@ -88,6 +88,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
@@ -1173,6 +1174,41 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw caDoesntExistException;
         }
         return null;
+    }
+    
+    @Override
+    public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
+                                WaitingForApprovalException, CADoesntExistsException {
+        // Handle local key recovery
+        GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, issuerDN, certSNinHex);
+            final boolean localRecoveryPossible = keyRecoveryPossible(authenticationToken, cdw.getCertificate(), username);
+            if (!localRecoveryPossible) {
+                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE);
+            }
+            try {
+                markForRecovery(authenticationToken, username, null, cdw, true);
+            } catch (NoSuchEndEntityException e) {
+                // To not mess with the WS API
+                throw new NotFoundException(e.getMessage());
+            } catch (EndEntityProfileValidationException e) {
+                // To not mess with the WS API
+                throw new EjbcaException(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE);
+            }
+            return;
+        }
+        
+        // Default case
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    raMasterApi.keyRecoverWS(authenticationToken, username, certSNinHex, issuerDN);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
     }
     
     @Override

@@ -412,7 +412,7 @@ public interface RaMasterApi {
      * 
      * @param authenticationToken of the requesting administrator
      * @param username of end entity holding the certificate to recover
-     * @param newPassword selected new password for key recovery
+     * @param newPassword selected new password for key recovery. May be null (e.g. in a call from EjbcaWS)
      * @param cert Certificate to be recovered
      * @return true if key recovery was successful. False should not be returned unless unexpected error occurs. Other cases such as required approval
      * should throw exception instead
@@ -420,11 +420,26 @@ public interface RaMasterApi {
      * @throws ApprovalException if key recovery is already awaiting approval
      * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
      * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
-     * @throws NoSuchEndEntityException if End Entity bound to certificate no longer exists
+     * @throws NoSuchEndEntityException if End Entity bound to certificate isn't found.
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
      */
     boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws AuthorizationDeniedException, ApprovalException, 
                             CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+    
+    /**
+     * Key recovery method to be called from web services. This method handles some special cases differently from the regular key recovery method.
+     * 
+     * @param authenticationToken of the requesting administrator
+     * @param username of end entity holding the certificate to recover
+     * @param certSNinHex of the certificate to recover
+     * @param issuerDN which issued the certificate
+     * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery preparations
+     * @throws EjbcaException wrapped exceptions caught in EjbcaWS
+     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
+     * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
+     */
+    void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, EjbcaException, 
+                        WaitingForApprovalException, CADoesntExistsException;
     
     /**
      * Checks if key recovery is possible for the given parameters. Requesting administrator has be authorized to perform key recovery
@@ -435,7 +450,7 @@ public interface RaMasterApi {
      * @param cert Certificate to be recovered
      * @param username which the certificate is bound to
      * @return true if key recovery is possible given the parameters
-     */
+     */    
     boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username);
     
     /**
@@ -473,4 +488,5 @@ public interface RaMasterApi {
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
     byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
+
 }

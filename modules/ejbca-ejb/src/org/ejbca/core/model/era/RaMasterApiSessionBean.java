@@ -66,6 +66,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -1756,13 +1757,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecoveryInternal(authenticationToken, username, endEntityProfileId, cert.getCertificate());
                 }
-                if (keyRecoverySuccessful) {
+                if (keyRecoverySuccessful && newPassword != null) {
                     // No approval required, continue by setting a new enrollment code
                     endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
                 }    
             } catch (WaitingForApprovalException e) {
                 // Set new EE password anyway
-                endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                if (newPassword != null) { // Password may null if there is a call from EjbcaWS
+                    endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                }
                 throw e;
             }
             return keyRecoverySuccessful;
@@ -1789,6 +1792,48 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return returnval && keyRecoverySessionLocal.existsKeys(EJBTools.wrap(cert)) && !keyRecoverySessionLocal.isUserMarked(username);
+    }
+    
+    @Override
+    public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
+                WaitingForApprovalException, CADoesntExistsException {
+        try {
+            final boolean usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();  
+            if(!usekeyrecovery){
+                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Keyrecovery must be enabled in the system configuration in order to execute this command.");
+
+            }   
+            final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken, username);
+            if(userdata == null){
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);                
+                throw new NotFoundException(msg);
+            }
+            if (keyRecoverySessionLocal.isUserMarked(username)) {
+                // User is already marked for recovery.
+                return;                     
+            }
+            // check CAID
+            final int caid = userdata.getCAId();
+            caSession.verifyExistenceOfCA(caid);
+            if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caid)) {
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+                throw new AuthorizationDeniedException(msg);
+            }
+            
+            // find certificate to recover
+            final Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, new BigInteger(certSNinHex,16));
+            if (cert == null) {
+                final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerDN, certSNinHex);
+                throw new NotFoundException(msg);
+            }
+    
+            // Do the work, mark user for key recovery
+            endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, userdata.getUsername(), userdata.getEndEntityProfileId(), cert);
+        } catch (NotFoundException e) {
+            log.debug("EJBCA WebService error", e);
+            throw e; // extends EjbcaException
+        }
     }
     
     /** Help function used to check end entity profile authorization. */
