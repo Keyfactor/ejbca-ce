@@ -35,6 +35,8 @@
 			</h2>
 			<h3>
 				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.keyValidator.profileName}"/>
+				<br/><h:outputText value="ID: #{validatorBean.keyValidator.profileId}"/>
+				<br/><h:outputText value="Type: #{validatorBean.keyValidator.profileType}"/>
 			</h3>
 		</div>
 		<!--div class="message">
@@ -42,7 +44,6 @@
 		</div-->
 		<h:form id="kvf">
 			<h:inputHidden name="action" value="hiddenkeyvalidatortype" />
-			<h:inputHidden name="hiddenkeyvalidatorname" value="#{validatorsBean.keyValidatorName}"/>
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:outputLink value="editvalidators.xhtml">
@@ -90,7 +91,8 @@
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" immediate="true" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
+					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}">
+					</h:commandButton>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
 				</h:panelGroup>
 			</h:panelGrid>
