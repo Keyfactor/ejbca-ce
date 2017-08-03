@@ -36,6 +36,19 @@ public interface RoleSession {
     Role persistRole(AuthenticationToken authenticationToken, Role role) throws RoleExistsException, AuthorizationDeniedException;
 
     /**
+     * Store the provided role. If the role id is 0, a new Id will be assigned and the role will be created.
+     * 
+     * @param authenticationToken the callers AuthenticationToken
+     * @param role the role to be persisted
+     * @param requireNonImportantRoleMembership true if the admin needs to have a non-important role membership
+     * @return the persisted version of the object including an assigned id and normalized access rules.
+     * @throws RoleExistsException if provided role's nameSpace and roleName combination is used by another role
+     * @throws AuthorizationDeniedException if the caller is not authorized to store the role
+     */
+    Role persistRole(AuthenticationToken authenticationToken, Role role, boolean requireNonImportantRoleMembership)
+            throws RoleExistsException, AuthorizationDeniedException;
+
+    /**
      * Deletes the role with the requested id.
      * 
      * @throws AuthorizationDeniedException if the caller is not authorized to see this role and edit roles in general
