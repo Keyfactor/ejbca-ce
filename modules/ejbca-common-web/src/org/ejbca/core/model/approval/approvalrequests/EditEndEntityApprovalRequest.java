@@ -65,6 +65,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	private EndEntityInformation newuserdata;
 	private boolean clearpwd;
 	private EndEntityInformation orguserdata;
+	private boolean useOrgUsername;
 	
 	/** Constructor used in externalization only */
 	public EditEndEntityApprovalRequest() {}
@@ -75,6 +76,16 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         this.newuserdata = newuserdata;
         this.clearpwd = clearpwd;
         this.orguserdata = orguserdata;
+        this.useOrgUsername = false;
+    }
+    
+    public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
+            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, boolean useOrgUsername) {
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
+        this.newuserdata = newuserdata;
+        this.clearpwd = clearpwd;
+        this.orguserdata = orguserdata;
+        this.useOrgUsername = useOrgUsername;
     }
 
 	@Override
@@ -98,7 +109,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         newuserdata.setExtendedinformation(ext);
         
         try {
-        	endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin);
+            if (newuserdata.getUsername().equals(orguserdata.getUsername())) {
+        	    endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin);
+            } else {
+                endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin, orguserdata.getUsername());
+            }
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
         } catch (EndEntityProfileValidationException e) {
@@ -124,9 +139,13 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
     @Override
-	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
-	}
+    public int generateApprovalId() {	
+        if (useOrgUsername) {
+            return new String(getApprovalType() + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
+        } else {
+            return new String(getApprovalType() + ";" + newuserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
+        }
+    }
 
     @Override
 	public int getApprovalType() {		

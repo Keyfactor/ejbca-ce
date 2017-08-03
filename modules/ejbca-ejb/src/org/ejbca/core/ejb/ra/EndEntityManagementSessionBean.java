@@ -668,8 +668,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void changeUserAfterApproval(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final int approvalRequestId, final AuthenticationToken lastApprovingAdmin) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin);
+        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, null);
         
+    }
+    
+    @Override
+    public void changeUserAfterApproval(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
+            final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, String oldUsername) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+        String newUsername = endEntityInformation.getUsername();
+        endEntityInformation.setUsername(oldUsername);
+        changeUser(admin, endEntityInformation, clearpwd, false, approvalRequestId, lastApprovingAdmin, newUsername);
     }
     
     @Override
@@ -683,17 +692,24 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
             final boolean fromWebService) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        changeUser(admin, endEntityInformation, clearpwd, fromWebService, 0, null);
+        changeUser(admin, endEntityInformation, clearpwd, fromWebService, 0, null, null);
     }
 
     
+    @Override
+    public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd, String newUsername)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
+            ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+        changeUser(admin, userdata, clearpwd, false, 0, null, newUsername);
+    }
+    
     private void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
-            final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin) 
+            final boolean fromWebService, final int approvalRequestId, final AuthenticationToken lastApprovingAdmin, String newUsername) 
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
         final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
         final int caid = endEntityInformation.getCAId();
-        final String username = endEntityInformation.getUsername();
+        String username = endEntityInformation.getUsername();
         // Check if administrator is authorized to edit user to CA.
         assertAuthorizedToCA(admin, caid);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
@@ -718,7 +734,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">changeUser(calculated SIM " + altName + ")");
         }
-        final UserData userData = UserData.findByUsername(entityManager, username);
+        UserData userData = UserData.findByUsername(entityManager, username);
         if (userData == null) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
             log.info(msg);
@@ -804,13 +820,31 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 certificateProfile);
         if (approvalProfile != null) {
             final EndEntityInformation orguserdata = userData.toEndEntityInformation();
-            final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(endEntityInformation, clearpwd, orguserdata, admin, null,
-                     caid, endEntityProfileId, approvalProfile);
+            final EndEntityInformation requestInfo = new EndEntityInformation(endEntityInformation);
+            if (newUsername != null && !newUsername.equals(username)) {
+                requestInfo.setUsername(newUsername);
+            }
+            final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearpwd, orguserdata, admin, null,
+                     caid, endEntityProfileId, approvalProfile, true);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 final int requestId = approvalSession.addApprovalRequest(admin, ar);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);
             }
         }
+        // Rename the end entity if there's a new username
+        if (newUsername != null && !newUsername.equals(username)) {
+            boolean success = false;
+            try {
+                success = renameEndEntity(admin, username, newUsername);
+            } catch (EndEntityExistsException e) {
+                throw new IllegalNameException("Username already taken");
+            }
+            if (!success) {
+                throw new NoSuchEndEntityException("End entity does not exist");
+            }
+            username = newUsername;
+            userData = UserData.findByUsername(entityManager, username);
+        }      
         // Check if the subjectDN serialnumber already exists.
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
         if (cainfo.isDoEnforceUniqueSubjectDNSerialnumber()) {
