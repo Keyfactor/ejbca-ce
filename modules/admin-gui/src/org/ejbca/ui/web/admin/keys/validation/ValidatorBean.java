@@ -168,6 +168,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         keyValidator = ValidatorFactory.INSTANCE.getArcheType(type);
         keyValidator.setDataMap(getKeyValidator().getDataMap());
         keyValidator.setProfileId(getSelectedKeyValidatorId());
+        keyValidator.setProfileName(getSelectedKeyValidatorName());
         FacesContext.getCurrentInstance().renderResponse();
     }
 
@@ -241,10 +242,16 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public void setKeyValidatorType(String value) {
-        keyValidator = ValidatorFactory.INSTANCE.getArcheType(value);
-        keyValidator.setDataMap(getKeyValidator().getDataMap());
-        keyValidator.setProfileId(getSelectedKeyValidatorId());
-        FacesContext.getCurrentInstance().renderResponse();
+        // this re-creates the whole validator, so only do it if it actually changed type
+        if (!keyValidator.getValidatorTypeIdentifier().equals(value)) {
+            if (log.isTraceEnabled()) {
+                log.trace("Changing validator type to "+value);
+            }
+            keyValidator = ValidatorFactory.INSTANCE.getArcheType(value);
+            keyValidator.setDataMap(getKeyValidator().getDataMap());
+            keyValidator.setProfileId(getSelectedKeyValidatorId());
+            keyValidator.setProfileName(getSelectedKeyValidatorName());
+        }
     }
     
     /**
@@ -390,22 +397,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the navigation outcome defined in faces-config.xml.
      */
     public String save() {
-        boolean success = true;
         try {
-            // Perform last minute validations before saving
-            //          final BaseKeyValidator keyValidator = getKeyValidator();
-            //          if ( ... validate ...) {
-            //                addErrorMessage("ONEAVAILABLEKEYALGORITHM");
-            //                success = false;
-            //          }
-            // Workaround: Required for saving after first editing (keyValidator.getName() is null).
-            if (success) { // Modify the key validator.            
-                keyValidatorSession.changeKeyValidator(getAdmin(), keyValidator);
-                getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
-                addInfoMessage("VALIDATORSAVED");
-                reset();
-                return "done";
-            }
+            keyValidatorSession.changeKeyValidator(getAdmin(), keyValidator);
+            getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
+            addInfoMessage("VALIDATORSAVED");
+            reset();
+            return "done";
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to edit key validator.");
         } catch (KeyValidatorDoesntExistsException e) {

@@ -35,8 +35,6 @@
 			</h2>
 			<h3>
 				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.keyValidator.profileName}"/>
-				<br/><h:outputText value="ID: #{validatorBean.keyValidator.profileId}"/>
-				<br/><h:outputText value="Type: #{validatorBean.keyValidator.profileType}"/>
 			</h3>
 		</div>
 		<!--div class="message">
@@ -49,6 +47,8 @@
 				<h:outputLink value="editvalidators.xhtml">
 					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
 				</h:outputLink>
+				<h:outputLabel for="keyValidatorName" value="#{web.text.NAME}"/>
+				<h:outputText id="keyValidatorName" value="#{validatorBean.keyValidator.profileName}"/>
 				<h:outputLabel for="keyValidatorId" value="#{web.text.ID}"/>
 				<h:outputText id="keyValidatorId" value="#{validatorBean.keyValidator.profileId}"/>
 				<h:outputLabel for="keyValidatorType" value="#{web.text.VALIDATORTYPE}"/>
@@ -91,8 +91,7 @@
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}">
-					</h:commandButton>
+					<h:commandButton value="#{web.text.SAVE}" action="#{validatorBean.save}" rendered="#{validatorsBean.authorizedToEdit and not validatorsBean.viewOnly}"/>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{validatorBean.cancel}" immediate="true"/>
 				</h:panelGroup>
 			</h:panelGrid>
