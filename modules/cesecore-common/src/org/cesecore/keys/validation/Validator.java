@@ -52,11 +52,6 @@ public interface Validator extends Profile, Cloneable {
     void setFailedAction(int index);
 
     /**
-     * Method that is invoked before validation. This is the place to initialize resources such as crypto providers, custom data, etc.
-     */
-    void before();
-
-    /**
      * Method that validates the public key.
      * 
      * @param publicKey the public key to validate.
@@ -65,11 +60,6 @@ public interface Validator extends Profile, Cloneable {
      * @throws KeyValidationException if the certificate issuance MUST be aborted.
      */
     List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws KeyValidationException;
-
-    /**
-     * Method that is invoked after validation. This is a good place to clean up and finalize resources.
-     */
-    void after();
 
     /**
      * @return the settings template index.
