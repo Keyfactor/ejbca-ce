@@ -236,7 +236,6 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             }
             approvalSession.setApprovals(approvalData, approvalsPerformed);
             //Retrieve the approval profile just to make sure that the state is still valid
-            approvalProfile.canApprovalExecute(approvalsPerformed);
             //Kept for legacy reasons
             approvalData.setRemainingapprovals(0);
             if (approvalData.getApprovalRequest().isExecutable()) {

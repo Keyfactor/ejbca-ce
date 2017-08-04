@@ -877,23 +877,24 @@ public interface IEjbcaWS {
 	 * Authorization requirements: A valid certificate
 	 * 
 	 * @param approvalId unique id for the action
-	 * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
+	 * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status.
 	 * @throws ApprovalException if approvalId does not exist
-	 * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wount throw it anymore.
-	 * @throws EjbcaException if error occured server side
+	 * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it won't throw it anymore.
+	 * @throws EjbcaException if error occurred server side
 	 */
 	int isApproved(int approvalId) throws ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException;
 	
 	/**
 	 * 
-	 * @param requestId the ID of an approval reques
-	 * @return the number of remaining approvals required
+	 * @param requestId the ID of an approval request
+	 * @return the number of remaining approvals required, or STATUS_REJECTED (-1) if request was rejected
 	 * @throws ApprovalException if a request of the given ID didn't exist
 	 * @throws AuthorizationDeniedException if the current requester wasn't authorized. 
+	 * @throws ApprovalRequestExpiredException if sought approval request has expired
 	 * 
 	 */
-	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException;
+	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException;
 	
 	/**
 	 * Generates a Custom Log event in the database.
