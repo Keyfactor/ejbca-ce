@@ -60,27 +60,16 @@ public interface Validator extends Profile, Cloneable {
      * Method that validates the public key.
      * 
      * @param publicKey the public key to validate.
-     * @return true if the public key was validated successfully and no error message was added.
+     * @param certificateProfile the Certificate Profile as input for validation
+     * @return the error messages or an empty list if the public key was validated successfully.
      * @throws KeyValidationException if the certificate issuance MUST be aborted.
      */
-    boolean validate(PublicKey publicKey) throws KeyValidationException;
+    List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws KeyValidationException;
 
     /**
      * Method that is invoked after validation. This is a good place to clean up and finalize resources.
      */
     void after();
-
-    /**
-     * Gets the error messages or an empty list.
-     * @return the list.
-     */
-    List<String> getMessages();
-
-    /**
-     * Gets the public key reference.
-     * @return the public key.
-     */
-    PublicKey getPublicKey();
 
     /**
      * @return the settings template index.
@@ -99,12 +88,6 @@ public interface Validator extends Profile, Cloneable {
      */
     String getTemplateFile();
     
-    /**
-     * Sets the certificate profile.
-     * @param certificateProfile
-     */
-     void setCertificateProfile(final CertificateProfile certificateProfile);
-     
      /**
       * 
       * @return a display friendly string of this validator

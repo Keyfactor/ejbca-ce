@@ -14,7 +14,6 @@
 package org.cesecore.keys.validation;
 
 import java.io.Serializable;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -24,7 +23,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.profiles.ProfileBase;
@@ -63,15 +61,6 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
 
     // Values used for lookup that are not stored in the data hash map.
     private int id;
-
-    /** Certificate profile reference of applied certificate profile. */
-    protected CertificateProfile certificateProfile;
-
-    /** Public key reference (set while validate). */
-    protected PublicKey publicKey;
-
-    /** List of validation errors. */
-    protected List<String> messages = new ArrayList<String>();
 
     /**
      * Public constructor needed for deserialization.
@@ -138,11 +127,6 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     }
 
     @Override
-    public void setCertificateProfile(CertificateProfile certificateProfile) {
-        this.certificateProfile = certificateProfile;
-    }
-
-    @Override
     public Integer getSettingsTemplate() {
         return (Integer) data.get(SETTINGS_TEMPLATE);
     }
@@ -200,11 +184,6 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     @Override
     public int getNotAfterCondition() {
         return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
-    }
-
-    @Override
-    public PublicKey getPublicKey() {
-        return publicKey;
     }
 
     @Override
@@ -272,28 +251,15 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     public abstract void before();
 
     @Override
-    public boolean validate(PublicKey publicKey) throws KeyValidationException {
-        this.publicKey = publicKey;
-        return false;
-    }
-
-    @Override
     public abstract void after();
 
     @Override
-    public List<String> getMessages() {
-        return messages;
-    }
-    
-    @Override
     public String toDisplayString() {
         final StringBuilder result = new StringBuilder();
-        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", certificateProfile=")
-                .append(certificateProfile).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
+        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
                 .append(", notBefore=").append(data.get(NOT_BEFORE)).append(", notBeforeCondition=").append(data.get(NOT_BEFORE_CONDITION))
                 .append(", notAfter=").append(data.get(NOT_AFTER)).append(", notAfterCondition=").append(data.get(NOT_AFTER_CONDITION))
-                .append(", failedAction=").append(data.get(FAILED_ACTION)).append(", publicKey=").append(publicKey).append(", messages=")
-                .append(messages);
+                .append(", failedAction=").append(data.get(FAILED_ACTION));
         return result.toString();
     }
     
