@@ -121,9 +121,9 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public boolean validatePublicKey(CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
+    public boolean validatePublicKey(AuthenticationToken admin, CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException {
-        return keyValidatorSession.validatePublicKey(ca, endEntityInformation, certificateProfile, notBefore, notAfter, publicKey);
+        return keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certificateProfile, notBefore, notAfter, publicKey);
     }
 
     @Override
