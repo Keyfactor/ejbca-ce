@@ -702,7 +702,6 @@ and for later use when adding the DataSource. E.g.
 <subsubsection name="Create database">
 <p>Before creating the datasource in the following step, create your database. In MariaDB the command to create the database, matching the datasource in the next step, and add privileges to connect to the database is:</p>
 <source> 
-$ mysqladmin -u root -p create ejbca
 $ mysql -u root -p
 mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
 mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejbca';
