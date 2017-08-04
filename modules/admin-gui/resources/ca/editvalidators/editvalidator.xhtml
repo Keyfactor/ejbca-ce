@@ -59,10 +59,15 @@
 				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
 				<ui:include src="#{validatorBean.keyValidator.templateFile}" />
 				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
-				<h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>
+				<h:panelGroup>
+				  <h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>&nbsp;
+				  <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/adminguide.html#General%20Validator%20Settings')}" escape="false"/>
+				</h:panelGroup>
 				<h:panelGroup id="general_settings"/>
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
 				<h:inputTextarea id="description" value="#{validatorBean.keyValidator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
+				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
+				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}" />
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
 				<h:selectManyListbox id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly}">
 					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>

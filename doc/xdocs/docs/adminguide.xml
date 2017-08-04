@@ -4989,6 +4989,9 @@ To add a Validator, go to 'Validators, and add a new validator, then edit the va
 To add a validator to a CA, go to 'Edit CA' and select the desired validator to the CA. Now the validator will be called when a certificate is issued by the CA, using one of the certificate profiles selected in the Validator.</p>
 <subsection name="Key Validators">
 <p>
+With defining key validators the key quality of RSA and ECC public keys can be validated or keys can be blacklisted for certificate issuance.
+</p>
+<p>
 The key validators listed below are available in the system by default. If you define a key validator for keys with other algorithm (i.e. RSA key validator for ECC keys) key validation will fail.
 </p>
 <ul>
@@ -5007,20 +5010,19 @@ The key validators listed below are available in the system by default. If you d
 <p>Compares public keys agains a blacklist of known bad public keys, by algorithm and key generation source.</p>
 </li>
 </ul>
-<subsubsection name="Public Key Validation">
+<subsection name="General Validator Settings">
 <p>
-With defining key validators the key quality of RSA and ECC public keys can be validated or keys can be blacklisted for certificate issuance.
-</p>
-<p>
-To control the behaviour while certificate issuance, for every key validator the following base restrictions can be applied:
+To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:
 </p>
 <ul>
-<li>Certificate validity not before - Only perform validation of certificate validaty not before matches.</li>
-<li>Certificate validity not after - Only perform validation of certificate validaty not ater matches.</li>
-<li>Certificate Profiles - Validate keys for these certificate profiles only.</li>
-<li>Failed Action - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.)</li>
+<li>Description - a general decription of the Validator, not used for any validation purposes.</li>
+<li>Certificate validity not before - Only perform validation if certificate validaty NotBefore matches the condition, i.e. is less than or greater than the given date. If no date is set, this condition is not used. Date is on the form 2017-02-28 to for exampe validate only certificates that are valid from the 28th or february 2017.</li>
+<li>Certificate validity not after - Only perform validation if certificate validaty NotAfter matches the condition.</li>
+<li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
+<li>Apply for all Certificate Profiles - Validate keys for all certificate profiles, the list above will be ignored.</li>
+<li>Failed Action - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). All failed issuance also adds a record in the security audit log.</li>
 </ul>
-</subsubsection>
+</subsection>
 </subsection>
 <subsection name="Custom Key Validators">
 <p>

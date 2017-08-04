@@ -59,6 +59,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileBase;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.SecureXMLDecoder;
 
 /**
@@ -497,11 +498,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
-    public boolean validatePublicKey(final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
+    public boolean validatePublicKey(final AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException {
         boolean result = true;
-        // ECA-4219 Workaround: While CA creation, select key validators in AdminGUI -> Edit CAs -> Create CA -> Key Validators.
-        // ca != null because of import or update of external certificates.
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
                     ca.getCACertificate(), false);
@@ -510,21 +509,19 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug("Certificate 'notBefore' " + certificateValidity.getNotBefore());
                 log.debug("Certificate 'notAfter' " + certificateValidity.getNotAfter());
             }
-            final Map<Integer, Validator> map = getKeyValidatorsById(ca.getValidators());
-            final List<Integer> ids = new ArrayList<>(map.keySet());
             Validator keyValidator;
-            String name = null;
-            for (Integer id : ids) {
-                keyValidator = map.get(id);
+            for (Integer id : ca.getValidators()) {
+                keyValidator = getKeyValidatorInternal(id, true);
                 keyValidator.setCertificateProfile(certificateProfile);
-                name = keyValidator.getProfileName();
+                final String name = keyValidator.getProfileName();
                 if (log.isTraceEnabled()) {
                     log.trace("Try to apply key validator: " + keyValidator.toDisplayString());
                 }
                 try {
                     // Filter for base key validator critieria.
                     final List<Integer> certificateProfileIds = keyValidator.getCertificateProfileIds();
-                    if (null != certificateProfileIds && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
+                    final boolean allCertProfiles = keyValidator.isAllCertificateProfileIds();
+                    if (!allCertProfiles && null != certificateProfileIds && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
                         if (log.isDebugEnabled()) {
                             log.debug(intres.getLocalizedMessage("keyvalidator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
                         }
@@ -544,10 +541,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                         continue;
                     }
-                    log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername()));
+                    final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
+                    log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
                     keyValidator.before();
                     if (!(result = keyValidator.validate(publicKey))) {
-                        postProcessKeyValidation(keyValidator, result);
+                        postProcessKeyValidation(keyValidator, result, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
                     }
                 } catch (KeyValidationException e) {
                     throw e;
@@ -566,13 +564,17 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     /**
      * Post processes a key validator by the result of its validation and the failedAction stored in the BaseKeyValidator.
      * @param keyValidator the key validator.
-     * @param result the evaulation result.
+     * @param result the evaluation result.
      */
-    private void postProcessKeyValidation(Validator keyValidator, boolean result) throws KeyValidationException {
+    private void postProcessKeyValidation(final Validator keyValidator, final boolean result, final AuthenticationToken admin, final int caID, final String endEntity, final String keyFingerprint) throws KeyValidationException {
         final String name = keyValidator.getProfileName();
         if (!result) { // Evaluation has failed.
             final int index = keyValidator.getFailedAction();
             final String message = intres.getLocalizedMessage("keyvalidator.validationfailed", name, keyValidator.getMessages());
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", message);
+            auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
+                    String.valueOf(caID), keyFingerprint, endEntity, details);
             if (KeyValidationFailedActions.LOG_INFO.getIndex() == index) {
                 log.info(message);
             } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == index) {

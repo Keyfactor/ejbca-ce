@@ -436,6 +436,22 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
+     * Gets the BaseKeyValidator allCertificateProfileIds field.
+     * @return the list
+     */
+    public boolean isAllCertificateProfileIds() {
+        return keyValidator.isAllCertificateProfileIds();
+    }
+
+    /**
+     * Sets the BaseKeyValidator allCcertificateProfileIds field.
+     * @param true or false.
+     */
+    public void setAllCertificateProfileIds(boolean isAll) {
+        keyValidator.setAllCertificateProfileIds(isAll);
+    }
+
+    /**
      * Gets the BaseKeyValidator certificateProfileIds field.
      * @return the list
      */

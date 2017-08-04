@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -178,7 +179,7 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setPublicKeyBlacklist(PublicKeyBlacklistEntry entry) {
         // We must base64 encode string for UTF safety
-        final HashMap base64Map = new Base64PutHashMap();
+        final LinkedHashMap base64Map = new Base64PutHashMap();
         base64Map.putAll((HashMap) entry.saveData());
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);

@@ -110,7 +110,21 @@ public interface Validator extends Profile, Cloneable {
       * @return a display friendly string of this validator
       */
      String toDisplayString();
+
+     /** 
+      * If the validator should apply to All certificate profiles. 
+      * 
+      * @return true or false.
+      */
+     boolean isAllCertificateProfileIds();
      
+     /** 
+      * Sets if validation should be performed for all certificate profile ids.
+      * 
+      * @param isAll, true if validation should be done for all certificate profiles.
+      */
+     void setAllCertificateProfileIds(boolean isAll);
+
      /** 
       * Gets a list of selected certificate profile ids. 
       * 

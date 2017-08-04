@@ -48,7 +48,7 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 1F;
+    public static final float LATEST_VERSION = 2F;
 
     public static final String TYPE = "type";
     protected static final String SETTINGS_TEMPLATE = "settingsTemplate";
@@ -57,6 +57,7 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     protected static final String NOT_BEFORE_CONDITION = "notBeforeCondition";
     protected static final String NOT_AFTER = "notAfter";
     protected static final String NOT_AFTER_CONDITION = "notAfterCondition";
+    protected static final String ALL_CERTIFICATE_PROFILE_IDS = "allCertificateProfileIds";
     protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
     protected static final String FAILED_ACTION = "failedAction";
 
@@ -124,7 +125,11 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
             setNotAfterCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
         if (null == data.get(FAILED_ACTION)) {
-            setFailedAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
+            setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
+        }
+        // Added in v2
+        if (null == data.get(ALL_CERTIFICATE_PROFILE_IDS)) {
+            setAllCertificateProfileIds(true);
         }
     }
 
@@ -202,6 +207,16 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         return publicKey;
     }
 
+    @Override
+    public boolean isAllCertificateProfileIds() {
+        return ((Boolean) data.get(ALL_CERTIFICATE_PROFILE_IDS)).booleanValue();
+    }
+    
+    @Override 
+    public void setAllCertificateProfileIds(boolean isAll) {
+        data.put(ALL_CERTIFICATE_PROFILE_IDS, Boolean.valueOf(isAll));
+    }
+    
     @Override
     public List<Integer> getCertificateProfileIds() {
         final String value = (String) data.get(CERTIFICATE_PROFILE_IDS);

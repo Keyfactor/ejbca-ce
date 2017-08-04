@@ -350,7 +350,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
         try {
             final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
-            keyValidatorSession.validatePublicKey(ca, endEntityInformation, certProfile, notBefore, notAfter,
+            keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     publicKeyToValidate);
         }
         catch(KeyValidationException e) {

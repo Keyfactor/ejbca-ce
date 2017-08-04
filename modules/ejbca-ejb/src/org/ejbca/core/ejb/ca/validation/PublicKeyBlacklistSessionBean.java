@@ -302,10 +302,10 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
                 }
                 throw new EJBException(e);
             }
-            final HashMap<?, ?> map = (HashMap<?, ?>) decoder.readObject();
+            final LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>) decoder.readObject();
             decoder.close();
             // Handle Base64 encoded string values.
-            final HashMap<?, ?> base64Map = new Base64GetHashMap(map);
+            final LinkedHashMap<?, ?> base64Map = new Base64GetHashMap(map);
             result = new PublicKeyBlacklistEntry();
             result.setID(data.getId());
             result.setSource(data.getSource());

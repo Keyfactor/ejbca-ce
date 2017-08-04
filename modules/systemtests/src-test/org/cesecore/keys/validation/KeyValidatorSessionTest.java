@@ -257,7 +257,7 @@ public class KeyValidatorSessionTest {
         try {
             setKeyValidatorsForCa(testCA, validatorId);
             try {
-                keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile, new Date(new Date().getTime() - 1000 * 86400),
+                keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile, new Date(new Date().getTime() - 1000 * 86400),
                         new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 fail("RSA key validator successfully validated an ECC key.");
             } catch (Exception e) {
@@ -269,7 +269,7 @@ public class KeyValidatorSessionTest {
             keyPair = generateRsaKeyPair(2048); // KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
             publicKey = keyPair.getPublic();
             try {
-                final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
+                final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 assertTrue("2048 bit RSA key should validate with default settings.", result);
             } catch (EJBException e) {
@@ -286,7 +286,7 @@ public class KeyValidatorSessionTest {
             keyPair = generateRsaKeyPair(512); // KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             publicKey = keyPair.getPublic();
             try {
-                final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
+                final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 fail("With action 'Abort certificate issuance an exception should be thrown: " + result);
             } catch (EJBException e) {
@@ -305,7 +305,7 @@ public class KeyValidatorSessionTest {
             keyValidator.setFailedAction(KeyValidationFailedActions.LOG_WARN.getIndex());
             keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
             try {
-                final boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile,
+                final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 assertFalse("512 bit RSA key should not validate with default settings.", result);
 
@@ -422,6 +422,7 @@ public class KeyValidatorSessionTest {
         assertEquals("Latest version expected.", KeyValidatorBase.LATEST_VERSION, keyValidator.getLatestVersion(), 1f);
         assertEquals("Default description expected.", StringUtils.EMPTY, keyValidator.getDescription());
         assertEquals("Default certificate profile ids excepted.", new ArrayList<Integer>(), keyValidator.getCertificateProfileIds());
+        assertEquals("Default all certificate profile ids excepted.", true, keyValidator.isAllCertificateProfileIds());
         assertEquals("Default notBefore expected.", null, keyValidator.getNotBefore());
         assertEquals("Default notBefore condition expected.", KeyValidatorDateConditions.LESS_THAN.getIndex(), keyValidator.getNotBeforeCondition());
         assertEquals("Default notAfter expected.", null, keyValidator.getNotAfter());
@@ -434,6 +435,7 @@ public class KeyValidatorSessionTest {
         assertEquals("BaseKeyValidator name must be equal.", left.getProfileName(), right.getProfileName());
         assertEquals("BaseKeyValidator type must be equal.", left.getValidatorTypeIdentifier(), right.getValidatorTypeIdentifier());
         assertEquals("BaseKeyValidator description must be equal.", left.getDescription(), right.getDescription());
+        assertEquals("BaseKeyValidator all certificate profile ids must be equal.", left.isAllCertificateProfileIds(), right.isAllCertificateProfileIds());
         assertEquals("BaseKeyValidator certificate profile id must be equal.", left.getCertificateProfileIds(), right.getCertificateProfileIds());
         assertEquals("BaseKeyValidator notBefore must be equal.", left.getNotBefore(), right.getNotBefore());
         assertEquals("BaseKeyValidator notBeforeCondition must be equal.", left.getNotBeforeCondition(), right.getNotBeforeCondition());
