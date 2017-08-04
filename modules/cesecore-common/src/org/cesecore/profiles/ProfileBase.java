@@ -77,7 +77,7 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     
     @Override
     public void setDataMap(LinkedHashMap<Object, Object> dataMap) {
-        this.data = dataMap;
+        loadData(dataMap);
         loadTransientObjects();
     }
         
