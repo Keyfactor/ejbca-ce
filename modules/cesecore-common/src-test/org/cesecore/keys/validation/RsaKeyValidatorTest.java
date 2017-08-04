@@ -188,9 +188,8 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusDontAllowPowerOfPrime(true);
         messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
-        // Power of prime not implemented.
-//        Assert.assertTrue("Key valildation should have failed because of power of prime restriction for modulus.",
-//                keyValidator.getMessages().size() == 1);
+        Assert.assertTrue("Key valildation should have failed because of power of prime restriction for modulus.",
+                messages.size() == 1);
 
         log.trace("<test03RsaParameterValidations()");
     }

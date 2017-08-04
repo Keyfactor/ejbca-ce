@@ -115,16 +115,16 @@ public class RsaKeyValidator extends KeyValidatorBase {
         {
             // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
             log.debug("RSA modulus is not composite");
-            return false;
+            return true;
         }
         if (!mr.isNotPrimePower())
         {
             // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
             log.debug("RSA modulus is a power of a prime");
-            return false;
+            return true;
         }
         // --- end BC code
-        return true;
+        return false;
     }
 //    public static boolean isPowerOfPrime(BigInteger modulus) {
 //        BigInteger n = modulus;
