@@ -248,12 +248,6 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     }
 
     @Override
-    public abstract void before();
-
-    @Override
-    public abstract void after();
-
-    @Override
     public String toDisplayString() {
         final StringBuilder result = new StringBuilder();
         result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))

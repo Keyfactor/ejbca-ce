@@ -542,7 +542,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
                     log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
-                    keyValidator.before();
                     List<String> messages = keyValidator.validate(publicKey, certificateProfile);
                     if (messages.size() > 0) {
                         result = false;
@@ -550,8 +549,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                 } catch (KeyValidationException e) {
                     throw e;
-                } finally {
-                    keyValidator.after();
                 }
             }
         } else {

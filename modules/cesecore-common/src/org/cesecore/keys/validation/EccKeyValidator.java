@@ -205,14 +205,6 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public void before() {
-        if (log.isDebugEnabled()) {
-            log.debug("EccKeyValidator before.");
-            // Initialize used objects here.
-        }
-    }
-
-    @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
         List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
@@ -270,14 +262,6 @@ public class EccKeyValidator extends KeyValidatorBase {
             }
         }
         return messages;
-    }
-
-    @Override
-    public void after() {
-        if (log.isDebugEnabled()) {
-            log.debug("EccKeyValidator after.");
-            // Finalize used objects here.
-        }
     }
 
     private void performPartialPublicKeyValidationRoutine(final ECPublicKey publicKey) {
