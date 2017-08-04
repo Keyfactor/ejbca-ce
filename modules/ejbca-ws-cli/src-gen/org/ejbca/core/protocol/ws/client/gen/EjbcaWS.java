@@ -1043,6 +1043,7 @@ public interface EjbcaWS {
      *     returns int
      * @throws ApprovalException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws ApprovalRequestExpiredException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -1051,7 +1052,7 @@ public interface EjbcaWS {
     public int getRemainingNumberOfApprovals(
         @WebParam(name = "arg0", targetNamespace = "")
         int arg0)
-        throws ApprovalException_Exception, AuthorizationDeniedException_Exception
+        throws ApprovalException_Exception, AuthorizationDeniedException_Exception, ApprovalRequestExpiredException_Exception
     ;
     
     /**

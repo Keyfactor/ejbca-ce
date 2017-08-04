@@ -2486,7 +2486,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
     
     @Override
-    public int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException {
+    public int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
             logAdminName(getAdmin(true), logger);

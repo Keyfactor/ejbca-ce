@@ -102,7 +102,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     /**
      * 
      * @param approvalsPerformed the approvals performed against this profile
-     * @return the number of remaining approvals 
+     * @return the number of remaining approvals, or ApprovalDataVO.STATUS_REJECTED (-1) if any approval is denied
      */
     int getRemainingApprovals(final Collection<Approval> approvalsPerformed);
         
@@ -336,7 +336,8 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @param approvalsPerformed a collection of performed approvals 
      * @param stepIdentifier the ID of the step to check in
      * @param partitionIdentifier the ID of the partition to check in 
-     * @return the number of required approvals of the specified partition that has not yet been approved
+     * @return the number of required approvals of the specified partition that has not yet been approved, or 
+     *  ApprovalDataVO.STATUS_EXECUTIONDENIED (-7) if partition has been denied.
      */
     int getRemainingApprovalsInPartition(Collection<Approval> approvalsPerformed, int stepIdentifier, int partitionIdentifier);
     
