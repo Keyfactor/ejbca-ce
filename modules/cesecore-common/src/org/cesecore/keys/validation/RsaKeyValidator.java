@@ -65,8 +65,6 @@ public class RsaKeyValidator extends KeyValidatorBase {
     /** SHOULD be with smallest factor >= 752 */
     public static final int CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR = 752;
 
-    public static final float LATEST_VERSION = 1f;
-
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
 
@@ -448,9 +446,10 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
         if (!AlgorithmConstants.KEYALGORITHM_RSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof RSAPublicKey)) {
             final String message = "Invalid: Public key algorithm is not RSA or could not be parsed: " + publicKey.getAlgorithm() + ", format "
-                    + publicKey.getFormat()+", "+publicKey.getClass().getName();
-            log.debug(message);
+                    + publicKey.getFormat();
             messages.add(message);
+            // Make sure this ends up in the server log
+            log.info(message+", "+publicKey.getClass().getName());
             throw new KeyValidationIllegalKeyAlgorithmException(message);
         }
         final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;

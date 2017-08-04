@@ -47,8 +47,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(PublicKeyBlacklistKeyValidator.class);
 
-    public static final float LATEST_VERSION = 1F;
-
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "BLACKLIST_KEY_VALIDATOR";
 

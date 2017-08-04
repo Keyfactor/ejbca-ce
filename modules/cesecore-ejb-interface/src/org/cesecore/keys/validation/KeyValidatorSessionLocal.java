@@ -199,6 +199,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * Validates a key against the key validators which match the filter criteria defined in it and the CA reference to it. 
      * The method is invoked while certificate issuance for user certificates and CA certificates.
      * 
+     * @param admin the AuthenticationToken of the admin who requested the operation resulting in validation, used for audit logging, for example the admin requesting cert issuance 
      * @param ca the issuing CA, or CA to be issued in case of a root or sub-ca.
      * @param endEntityInformation the end entity information
      * @param certificateProfile the certificate profile
@@ -209,7 +210,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @throws KeyValidationException if the key validation failed. If the key validators failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, or the wrong algorithm type is chosen, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
      * @throws IllegalValidityException if the certificate validity could not be determined.
      */
-    boolean validatePublicKey(final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
+    boolean validatePublicKey(AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException;
 
     //  /**
