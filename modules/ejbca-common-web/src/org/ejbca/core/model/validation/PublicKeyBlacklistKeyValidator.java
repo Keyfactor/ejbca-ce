@@ -174,14 +174,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public void before() {
-        if (log.isDebugEnabled()) {
-            log.debug("BlacklistKeyValidator before.");
-            // Initialize used objects here.
-        }
-    }
-
-    @Override
     public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
         List<String> messages = new ArrayList<String>();
         final int keyLength = KeyTools.getKeyLength(publicKey);
@@ -230,14 +222,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
             }
         }
         return messages;
-    }
-
-    @Override
-    public void after() {
-        if (log.isDebugEnabled()) {
-            log.debug("BlacklistKeyValidator after.");
-            // Finalize used objects here.
-        }
     }
 
     private final String getKeySpec(PublicKey publicKey) {
