@@ -213,8 +213,8 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public boolean validate(final PublicKey publicKey) throws KeyValidationException {
-        super.validate(publicKey);
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
+        List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
                     + publicKey.getClass().getName());
@@ -265,11 +265,11 @@ public class EccKeyValidator extends KeyValidatorBase {
             performPartialPublicKeyValidationRoutine(bcEcPublicKey);
         }
         if (log.isDebugEnabled()) {
-            for (String message : getMessages()) {
+            for (String message : messages) {
                 log.debug(message);
             }
         }
-        return getMessages().size() == 0;
+        return messages;
     }
 
     @Override
