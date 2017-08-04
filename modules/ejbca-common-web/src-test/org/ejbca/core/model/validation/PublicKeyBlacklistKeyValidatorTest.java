@@ -30,13 +30,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.validation.KeyValidatorBase;
-import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
-import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
-import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
-import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,12 +84,11 @@ public class PublicKeyBlacklistKeyValidatorTest {
                 "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
-        boolean result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
-        Assert.assertTrue("Key valildation should have been successful.", result && keyValidator.getMessages().size() == 0);
+        List<String> messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
+        Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
 
         // B: Test public key blacklist validation NOK with match.
-        keyValidator.getMessages().clear();
         List<String> keyGeneratorSources = new ArrayList<String>();
         keyGeneratorSources.add("-1");
         List<String> algorithms = new ArrayList<String>();
@@ -108,20 +103,19 @@ public class PublicKeyBlacklistKeyValidatorTest {
             PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);
             PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), fingerprint, entry);
         }
-        result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
+        messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key valildation should have failed because of public key fingerprint match.",
-                !result && keyValidator.getMessages().size() == 1);
+                messages.size() == 1);
 
         // B-1: Test public key blacklist validation OK with match but other algorithm.
-        keyValidator.getMessages().clear();
         algorithms = new ArrayList<String>();
         algorithms.add("DSA");
         keyValidator.setKeyAlgorithms(algorithms);
-        result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
+        messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",
-                result && keyValidator.getMessages().size() == 0);
+                messages.size() == 0);
         
         log.trace("<test01MatchBlacklistedPublicKey()");
     }

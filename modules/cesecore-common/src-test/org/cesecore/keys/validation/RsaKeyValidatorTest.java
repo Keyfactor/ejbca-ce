@@ -144,12 +144,11 @@ public class RsaKeyValidatorTest {
         List<String> bitLengths = new ArrayList<String>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
-        boolean result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
-        Assert.assertTrue("Key valildation should have been successful.", result && keyValidator.getMessages().size() == 0);
+        List<String> messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
+        Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
 
         // A-2: Test RSA key validation failed RSA parameter bounds with even parameters.
-        keyValidator.getMessages().clear();
         modulus = BigInteger.valueOf(16);
         exponent = BigInteger.valueOf(4);
         publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
@@ -163,13 +162,12 @@ public class RsaKeyValidatorTest {
         bitLengths = new ArrayList<String>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
-        result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
+        messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key valildation should have failed because of even RSA parameter and outside paramter bounds.",
-                keyValidator.getMessages().size() == 6);
+                messages.size() == 6);
 
         // A-3: Test RSA key validation failed because of modulus factor restriction.
-        keyValidator.getMessages().clear();
         modulus = BigInteger.valueOf(25);
         exponent = BigInteger.valueOf(3);
         publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
@@ -180,17 +178,16 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyModulusMax(modulus);
         keyValidator.setPublicKeyModulusOnlyAllowOdd(true);
         keyValidator.setPublicKeyModulusMinFactor(6); // smallest factor = 5
-        result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
+        messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key valildation should have failed because of smalles factor restriction for modulus.",
-                keyValidator.getMessages().size() == 1);
+                messages.size() == 1);
 
         // A-4: Test RSA key validation failed because of modulus power of prime restriction.
-        keyValidator.getMessages().clear();
         keyValidator.setPublicKeyModulusMinFactor(5); // smallest factor = 5
         keyValidator.setPublicKeyModulusDontAllowPowerOfPrime(true);
-        result = keyValidator.validate(publicKey);
-        log.trace("Key validation error messages: " + keyValidator.getMessages());
+        messages = keyValidator.validate(publicKey, null);
+        log.trace("Key validation error messages: " + messages);
         // Power of prime not implemented.
 //        Assert.assertTrue("Key valildation should have failed because of power of prime restriction for modulus.",
 //                keyValidator.getMessages().size() == 1);

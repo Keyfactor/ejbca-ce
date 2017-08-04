@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidationException;
 import org.cesecore.keys.validation.KeyValidatorBase;
@@ -181,8 +182,8 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public boolean validate(final PublicKey publicKey) throws KeyValidationException {
-        super.validate(publicKey);
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
+        List<String> messages = new ArrayList<String>();
         final int keyLength = KeyTools.getKeyLength(publicKey);
         final String keyAlgorithm = publicKey.getAlgorithm(); // AlgorithmTools.getKeyAlgorithm(publicKey);
         if (log.isDebugEnabled()) {
@@ -224,11 +225,11 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         }
 
         if (log.isTraceEnabled()) {
-            for (String message : getMessages()) {
+            for (String message : messages) {
                 log.trace(message);
             }
         }
-        return getMessages().size() == 0;
+        return messages;
     }
 
     @Override

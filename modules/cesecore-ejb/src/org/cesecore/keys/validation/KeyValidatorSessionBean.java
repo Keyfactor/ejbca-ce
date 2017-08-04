@@ -512,7 +512,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             Validator keyValidator;
             for (Integer id : ca.getValidators()) {
                 keyValidator = getKeyValidatorInternal(id, true);
-                keyValidator.setCertificateProfile(certificateProfile);
                 final String name = keyValidator.getProfileName();
                 if (log.isTraceEnabled()) {
                     log.trace("Try to apply key validator: " + keyValidator.toDisplayString());
@@ -544,8 +543,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
                     log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
                     keyValidator.before();
-                    if (!(result = keyValidator.validate(publicKey))) {
-                        postProcessKeyValidation(keyValidator, result, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
+                    List<String> messages = keyValidator.validate(publicKey, certificateProfile);
+                    if (messages.size() > 0) {
+                        result = false;
+                        postProcessKeyValidation(keyValidator, publicKey, messages, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
                     }
                 } catch (KeyValidationException e) {
                     throw e;
@@ -566,11 +567,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      * @param keyValidator the key validator.
      * @param result the evaluation result.
      */
-    private void postProcessKeyValidation(final Validator keyValidator, final boolean result, final AuthenticationToken admin, final int caID, final String endEntity, final String keyFingerprint) throws KeyValidationException {
+    private void postProcessKeyValidation(final Validator keyValidator, final PublicKey publicKey, final List<String> messages, final AuthenticationToken admin, final int caID, final String endEntity, final String keyFingerprint) throws KeyValidationException {
         final String name = keyValidator.getProfileName();
-        if (!result) { // Evaluation has failed.
+        if (messages.size() > 0) { // Evaluation has failed.
             final int index = keyValidator.getFailedAction();
-            final String message = intres.getLocalizedMessage("keyvalidator.validationfailed", name, keyValidator.getMessages());
+            final String message = intres.getLocalizedMessage("keyvalidator.validationfailed", name, messages);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
@@ -591,7 +592,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug(message);
             }
         } else {
-            final String message = intres.getLocalizedMessage("keyvalidator.validationsuccessful", name, keyValidator.getPublicKey().getEncoded());
+            final String message = intres.getLocalizedMessage("keyvalidator.validationsuccessful", name, publicKey.getEncoded());
             log.info(message);
         }
     }

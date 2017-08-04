@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.KeyPair;
@@ -37,8 +36,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -268,17 +265,14 @@ public class KeyValidatorSessionTest {
             // B-1: Check valid RSA key -> issuance MUST be OK.
             keyPair = generateRsaKeyPair(2048); // KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
             publicKey = keyPair.getPublic();
+            System.out.println("Keytype: "+publicKey.getAlgorithm());
             try {
                 final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 assertTrue("2048 bit RSA key should validate with default settings.", result);
-            } catch (EJBException e) {
-                assertTrue(
-                        "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
-                                + e.getCause(),
-                        e.getCause() instanceof StreamCorruptedException);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                e.printStackTrace();
                 fail("2048 bit RSA key validation failed with exception for default RSA key validator: " + e.getMessage());
             }
 
@@ -289,11 +283,6 @@ public class KeyValidatorSessionTest {
                 final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 fail("With action 'Abort certificate issuance an exception should be thrown: " + result);
-            } catch (EJBException e) {
-                assertTrue(
-                        "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
-                                + e.getCause(),
-                        e.getCause() instanceof StreamCorruptedException);
             } catch (Exception e) {
                 // Exception expected here
                 log.info(e.getMessage(), e);
@@ -308,12 +297,6 @@ public class KeyValidatorSessionTest {
                 final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
                 assertFalse("512 bit RSA key should not validate with default settings.", result);
-
-            } catch (EJBException e) {
-                assertTrue(
-                        "ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured: "
-                                + e.getCause(),
-                        e.getCause() instanceof StreamCorruptedException);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 fail("512 bit RSA key validation failed with exception for default RSA key validator: " + e.getMessage());
@@ -427,7 +410,7 @@ public class KeyValidatorSessionTest {
         assertEquals("Default notBefore condition expected.", KeyValidatorDateConditions.LESS_THAN.getIndex(), keyValidator.getNotBeforeCondition());
         assertEquals("Default notAfter expected.", null, keyValidator.getNotAfter());
         assertEquals("Default notAfter condition expected.", KeyValidatorDateConditions.LESS_THAN.getIndex(), keyValidator.getNotAfterCondition());
-        assertEquals("Default failedAction expected.", KeyValidationFailedActions.DO_NOTHING.getIndex(), keyValidator.getFailedAction());
+        assertEquals("Default failedAction expected.", KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), keyValidator.getFailedAction());
     }
 
     private void assertEqualsBaseKeyValidator(final Validator left, final Validator right) {
