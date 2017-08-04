@@ -39,7 +39,7 @@ import org.ejbca.core.model.log.Admin;
  * Comment
  *  
  * 
- * Approvals is sorted by dates.
+ * Approvals are sorted by dates.
  * 
  * @version $Id$
  */
