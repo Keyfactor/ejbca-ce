@@ -15,6 +15,7 @@ package org.cesecore.keys.validation;
 
 import java.math.BigInteger;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.math.Primes;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -95,8 +97,34 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return the list of BigInteger prime factors.
      */
     public static boolean isPowerOfPrime(BigInteger modulus) {
-        // ECA-4219 Impl. RSA is power of prime.
-        return false;
+        // The isPowerOfPrime test is copied from org.bouncycastle.crypto.asymmetric.KeyUtils in the BC-FIPS package.
+        // If we move to use the FIPS provider we can use the methods directly instead
+        // --- Begin BC code
+        // Use the same iterations as if we were testing a candidate p or q value with error probability 2^-100
+        int bits = modulus.bitLength();
+        int iterations = bits >= 1536 ? 3
+            : bits >= 1024 ? 4
+            : bits >= 512 ? 7
+            : 50;
+        // SP 800-89 requires use of an approved DRBG.
+//        SecureRandom testRandom = FipsDRBG.SHA256.fromEntropySource(new SecureRandom(), false)
+//            .build(Pack.longToBigEndian(System.currentTimeMillis()), false, Strings.toByteArray(Thread.currentThread().toString()));
+        SecureRandom testRandom = new SecureRandom();
+        Primes.MROutput mr = Primes.enhancedMRProbablePrimeTest(modulus, testRandom, iterations);
+        if (!mr.isProvablyComposite())
+        {
+            // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+            log.debug("RSA modulus is not composite");
+            return false;
+        }
+        if (!mr.isNotPrimePower())
+        {
+            // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+            log.debug("RSA modulus is a power of a prime");
+            return false;
+        }
+        // --- end BC code
+        return true;
     }
 //    public static boolean isPowerOfPrime(BigInteger modulus) {
 //        BigInteger n = modulus;
@@ -467,11 +495,15 @@ public class RsaKeyValidator extends KeyValidatorBase {
         if (isPublicKeyExponentOnlyAllowOdd()) {
             if (publicKeyExponent.mod(BigInteger.valueOf(2L)).compareTo(BigInteger.ZERO) == 0) {
                 messages.add("Invalid: RSA public key exponent is odd.");
+            } else {
+                log.trace("isPublicKeyExponentOnlyAllowOdd passed");
             }
         }
         if (null != getPublicKeyExponentMin()) {
             if (publicKeyExponent.compareTo(getPublicKeyExponentMin()) == -1) {
                 messages.add("Invalid: RSA public key exponent is smaller than " + getPublicKeyExponentMin());
+            } else {
+                log.trace("getPublicKeyExponentMin passed");
             }
         }
         if (null != getPublicKeyExponentMax()) {
@@ -482,26 +514,36 @@ public class RsaKeyValidator extends KeyValidatorBase {
         if (isPublicKeyModulusOnlyAllowOdd()) {
             if (publicKeyModulus.mod(BigInteger.valueOf(2L)).compareTo(BigInteger.ZERO) == 0) {
                 messages.add("Invalid: RSA public key modulus is odd.");
+            } else {
+                log.trace("isPublicKeyModulusOnlyAllowOdd passed");
             }
         }
         if (isPublicKeyModulusDontAllowPowerOfPrime()) {
             if (isPowerOfPrime(publicKeyModulus)) {
                 messages.add("Invalid: RSA public key modulus is not allowed to be the power of a prime.");
+            } else {
+                log.trace("isPublicKeyModulusDontAllowPowerOfPrime passed");
             }
         }
         if (null != getPublicKeyModulusMinFactor()) {
             if (hasSmallerFactorThan(publicKeyModulus, getPublicKeyModulusMinFactor() + 1)) {
                 messages.add("Invalid: RSA public key modulus smallest factor is less than " + getPublicKeyModulusMinFactor());
+            } else {
+                log.trace("getPublicKeyModulusMinFactor passed");
             }
         }
         if (null != getPublicKeyModulusMin()) {
             if (publicKeyModulus.compareTo(getPublicKeyModulusMin()) == -1) {
                 messages.add("Invalid: RSA public key modulus is smaller than " + getPublicKeyModulusMin());
+            } else {
+                log.trace("getPublicKeyModulusMin passed");
             }
         }
         if (null != getPublicKeyModulusMax()) {
             if (publicKeyModulus.compareTo(getPublicKeyModulusMax()) == 1) {
                 messages.add("Invalid: RSA public key modulus is greater than " + getPublicKeyModulusMax());
+            } else {
+                log.trace("getPublicKeyModulusMax passed");
             }
         }
 
