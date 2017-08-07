@@ -5020,7 +5020,8 @@ To control the behaviour while certificate issuance, for every validator the fol
 <li>Certificate validity not after - Only perform validation if certificate validaty NotAfter matches the condition.</li>
 <li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
 <li>Apply for all Certificate Profiles - Validate keys for all certificate profiles, the list above will be ignored.</li>
-<li>Failed Action - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). All failed issuance also adds a record in the security audit log.</li>
+<li>Validation failed action - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). All failed issuance also adds a record in the security audit log.</li>
+<li>Validator not applicable action - Define behaviour if the input is not applicable for the selected validator (i.e. abort issuance, log error message to trigger monitoring systems, etc.). This handles the case when for example a CSR with ECC keys is passed to an RSA key validator.</li>
 </ul>
 </subsection>
 </subsection>

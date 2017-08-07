@@ -205,7 +205,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, KeyValidationException {
         List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
@@ -215,7 +215,7 @@ public class EccKeyValidator extends KeyValidatorBase {
             final String message = "Invalid: Public key has no ECC algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
                     + publicKey.getFormat();
             messages.add(message);
-            throw new KeyValidationIllegalKeyAlgorithmException(message);
+            throw new ValidatorNotApplicableException(message);
         }
         final ECPublicKey bcEcPublicKey = (ECPublicKey) publicKey;
         if (log.isDebugEnabled()) {
