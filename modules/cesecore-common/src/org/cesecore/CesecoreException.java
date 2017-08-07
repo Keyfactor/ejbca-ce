@@ -67,7 +67,7 @@ public class CesecoreException extends Exception {
      * baseclass <code>Exception</code>.
      *
      * @param errorCode defines the cause of the exception.
-     * @param message Human redable error message, can not be NULL.
+     * @param message Human readable error message, can not be NULL.
      */
     public CesecoreException(final ErrorCode errorCode, final String message) {
         super(message);
