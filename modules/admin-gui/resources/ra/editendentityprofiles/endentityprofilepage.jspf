@@ -53,6 +53,9 @@
    boolean emailfieldexists = false;
    int row = 0;
 %>
+
+<jsp:include page="script.jsp" flush="true" />
+
 <script type="text/javascript">
 
   <!-- // Method to check all textfields for valid input -->
@@ -93,18 +96,7 @@ function checkallfields(){
     if(!checkfieldforlegalemailcharswithoutatwithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
  
-	var options = document.editprofile.<%=SELECT_AVAILABLECERTPROFILES%>.selectedOptions;
-	var selInd = document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options.selectedIndex;
-	var existsInAvailable = false;
-	for (i = 0; i < options.length; i++) {
-		if (options[i].value == document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options[selInd].value) {
-			existsInAvailable = true;
-		}
-	}
-	if (!existsInAvailable) {
-	      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE", true) %>");
-	      illegalfields++;
-	}
+	illegalfields += checkDefaultAmongAvailable();
 
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
