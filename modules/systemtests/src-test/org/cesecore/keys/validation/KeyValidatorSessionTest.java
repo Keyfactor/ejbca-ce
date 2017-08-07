@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -59,6 +60,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -111,6 +113,9 @@ public class KeyValidatorSessionTest {
         
     private KeyValidatorProxySessionRemote keyValidatorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class,
             EjbRemoteHelper.MODULE_TEST);
+
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // Helper objects.
     protected X509CA testCA;
@@ -328,49 +333,55 @@ public class KeyValidatorSessionTest {
     //    }
 
     /**
-     * Test of the cache of publishers. This test depends on the default cache time of 1 second being used.
-     * If you changed this config, publisher.cachetime, this test may fail. 
+     * Test of the cache of validators. This test depends on cache time of 1 second being used.
      */
-    // ECA-4219 Impl. key validator cache test.
-    //    @Test
-    //    public void test02KeyValidatorCache() throws Exception {
-    //        // First make sure we have the right cache time
-    //        final String oldcachetime = configSession.getProperty("publisher.cachetime");
-    //        configSession.updateProperty("publisher.cachetime", "1000");
-    //        LdapPublisher publ = new LdapPublisher();
-    //        publ.setDescription("foobar");
-    //        final String name = KeyValidatorSessionTest.class.getSimpleName();
-    //        try {
-    //            // Add a publisher
-    //            publisherProxySession.addPublisher(internalAdmin, name, publ);
-    //            // Make sure publisher has the right value from the beginning
-    //            BasePublisher pub = publisherSession.getPublisher(name);
-    //            assertEquals("Description is not what we set", "foobar", pub.getDescription());
-    //            // Change publisher
-    //            pub.setDescription("bar");
-    //            publisherSession.changePublisher(internalAdmin, name, pub);
-    //            // Read publisher again, cache should have been updated directly
-    //            pub = publisherSession.getPublisher(name);
-    //            assertEquals("bar", pub.getDescription());
-    //            // Flush caches to reset cache timeout
-    //            publisherProxySession.flushPublisherCache();
-    //            /// Read publisher to ensure it is in cache
-    //            pub = publisherSession.getPublisher(name);
-    //            assertEquals("bar", pub.getDescription());
-    //            // Change publisher not flushing cache, old value should remain when reading
-    //            pub.setDescription("newvalue");
-    //            publisherProxySession.internalChangeCertificateProfileNoFlushCache(name, pub);
-    //            pub = publisherSession.getPublisher(name);
-    //            assertEquals("bar", pub.getDescription()); // old value
-    //            // Wait 2 seconds and try again, now the cache should have been updated
-    //            Thread.sleep(2000);
-    //            pub = publisherSession.getPublisher(name);
-    //            assertEquals("newvalue", pub.getDescription()); // new value
-    //        } finally {
-    //            configSession.updateProperty("publisher.cachetime", oldcachetime);
-    //            publisherProxySession.removePublisher(internalAdmin, name);
-    //        }
-    //    }
+    @Test
+    public void testKeyValidatorCache() throws Exception {
+        // First make sure we have the right cache time
+        final String oldcachetime = cesecoreConfigurationProxySession.getConfigurationValue("validator.cachetime");
+        cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", "1000");
+        final String name = "testKeyValidatorCache";
+        final Validator rsaKeyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
+        rsaKeyValidator.setDescription("foobar");
+        int id = 0; // id of the Validator we will add
+        try {
+            // See if we have to remove the old validator first
+            final Map<String, Integer> nameMap = keyValidatorProxySession.getKeyValidatorNameToIdMap();
+            if (nameMap.containsKey(name)) {
+                final int idtoremove = nameMap.get(name);
+                keyValidatorProxySession.removeKeyValidator(internalAdmin, idtoremove);                
+            }
+            // Add a Validator
+            id = keyValidatorProxySession.addKeyValidator(internalAdmin, rsaKeyValidator);
+            // Make sure Validator has the right value from the beginning
+            Validator val = keyValidatorProxySession.getKeyValidator(id);
+            assertEquals("Description is not what we set", "foobar", val.getDescription());
+            // Change publisher
+            val.setDescription("bar");
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, val);
+            // Read Validator again, cache should have been updated directly
+            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            assertEquals("bar", val.getDescription());
+            // Flush caches to reset cache timeout
+            keyValidatorProxySession.flushKeyValidatorCache();
+            /// Read Validator to ensure it is in cache
+            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            assertEquals("bar", val.getDescription());
+            // Change validator not flushing cache, old value should remain when reading
+            val.setDescription("newvalue");
+            //keyValidatorProxySession.changeKeyValidator(internalAdmin, val);
+            keyValidatorProxySession.internalChangeValidatorNoFlushCache(val);
+            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            assertEquals("bar", val.getDescription()); // old value
+            // Wait 2 seconds and try again, now the cache should have been updated
+            Thread.sleep(2000);
+            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            assertEquals("newvalue", val.getDescription()); // new value
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", oldcachetime);
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, id);                
+        }
+    }
 
     private void assertKeyValidatorsExist(final int... identifiers) {
         for (int identifier : identifiers) {
