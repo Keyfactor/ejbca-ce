@@ -191,6 +191,29 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     success = false;
                 }
             }
+            if (prof.getUseQCStatement()) {
+                boolean[] statements = {
+                        prof.getUsePkixQCSyntaxV2(),
+                        prof.getUseQCEtsiQCCompliance(),
+                        prof.getUseQCEtsiSignatureDevice(),
+                        prof.getUseQCEtsiValueLimit(),
+                        prof.getUseQCEtsiRetentionPeriod(),
+                        prof.getQCEtsiType() != null && !prof.getQCEtsiType().equals(""),
+                        prof.getQCEtsiPds() != null && prof.getQCEtsiPds().size() > 0 && !(prof.getQCEtsiPds().size() == 1 && prof.getQCEtsiPds().get(0).getUrl() == null),
+                        prof.getUseQCCustomString() && !prof.getQCCustomStringOid().equals("") && !prof.getQCCustomStringText().equals("")
+                };
+                // Check that at least one QC statement is used
+                boolean foundUsed = false;
+                for (boolean statement : statements) {
+                    if (statement) {
+                        foundUsed = true;
+                    }
+                }
+                if (!foundUsed) {
+                    addErrorMessage("ONEQCSTATEMENTUSED");
+                    success = false;
+                }
+            }
             if (success) {
                 // Remove the added defaults if they were never used
                 final CertificateProfile certificateProfile = getCertificateProfile();
