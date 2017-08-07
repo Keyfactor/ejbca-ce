@@ -91,7 +91,11 @@
 					</h:inputText>
 				</h:panelGroup>
 				<h:outputLabel for="selectfailedaction" value="#{web.text.VALIDATORFAILEDACTION}"/>
-				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}" onchange='fillFailedActionField()'>
+				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
+				</h:selectOneMenu>
+				<h:outputLabel for="selectnotapplicableaction" value="#{web.text.VALIDATORNOTAPPLICABLEACTION}"/>
+				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>

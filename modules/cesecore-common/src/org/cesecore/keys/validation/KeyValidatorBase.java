@@ -46,7 +46,7 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 2F;
+    public static final float LATEST_VERSION = 4F;
 
     public static final String TYPE = "type";
     protected static final String SETTINGS_TEMPLATE = "settingsTemplate";
@@ -58,6 +58,7 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
     protected static final String ALL_CERTIFICATE_PROFILE_IDS = "allCertificateProfileIds";
     protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
     protected static final String FAILED_ACTION = "failedAction";
+    protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
 
     // Values used for lookup that are not stored in the data hash map.
     private int id;
@@ -115,6 +116,9 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         }
         if (null == data.get(FAILED_ACTION)) {
             setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
+        }
+        if (null == data.get(NOT_APPLICABLE_ACTION)) {
+            setNotApplicableAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
         }
         // Added in v2
         if (null == data.get(ALL_CERTIFICATE_PROFILE_IDS)) {
@@ -228,8 +232,19 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         data.put(FAILED_ACTION, index);
     }
 
+    @Override
     public int getFailedAction() {
         return ((Integer) data.get(FAILED_ACTION)).intValue();
+    }
+
+    @Override
+    public void setNotApplicableAction(int index) {
+        data.put(NOT_APPLICABLE_ACTION, index);
+    }
+
+    @Override
+    public int getNotApplicableAction() {
+        return ((Integer) data.get(NOT_APPLICABLE_ACTION)).intValue();
     }
 
     @Override
@@ -243,7 +258,10 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("keyvalidator.upgrade", new Float(getVersion())));
+            super.upgrade();
             init();
+            // Finished upgrade, set new version
+            data.put(VERSION, new Float(LATEST_VERSION));
         }
     }
 

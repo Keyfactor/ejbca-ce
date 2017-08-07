@@ -342,7 +342,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void validateFailedAction(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         final Integer index = (Integer) value;
         if (!KeyValidationFailedActions.index().contains(index)) {
-            final String message = "Key validator failed action must be on of " + KeyValidatorDateConditions.index();
+            final String message = "Key validator action must be on of " + KeyValidatorDateConditions.index();
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
         }
     }
@@ -546,6 +546,22 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void setFailedAction(Integer index) {
         keyValidator.setFailedAction(index);
+    }
+
+    /**
+     * Sets the BaseKeyValidator notApplicableAction field.
+     * @param index the not applicable action index.
+     */
+    public void setNotApplicableAction(Integer index) {
+        keyValidator.setNotApplicableAction(index);
+    }
+
+    /**
+     * Gets the BaseKeyValidator notApplicableAction field.
+     * @return the notApplicableAction action index.
+     */
+    public Integer getNotApplicableAction() {
+        return keyValidator.getNotApplicableAction();
     }
 
     /**

@@ -44,7 +44,8 @@ public interface Validator extends Profile, Cloneable {
     void setKeyValidatorSettingsTemplate();
     
     /**
-     * Gets the failed action index {@link KeyValidationFailedActions}
+     * Gets the failed action index {@link KeyValidationFailedActions}, defining what action should
+     * be taken when validation fails, i.e. #validate returns errors
      * @return the index.
      */
     int getFailedAction();
@@ -52,14 +53,25 @@ public interface Validator extends Profile, Cloneable {
     void setFailedAction(int index);
 
     /**
+     * Gets the not_applicable action index {@link KeyValidationFailedActions}, defining what action should
+     * be taken when a Validator is not applicable for the input (for example ECC keys to an RSA key validator),
+     * i.e. #validate throws ValidatorNotApplicableException
+     * @return the index.
+     */
+    void setNotApplicableAction(int index);
+
+    int getNotApplicableAction();
+
+    /**
      * Method that validates the public key.
      * 
      * @param publicKey the public key to validate.
      * @param certificateProfile the Certificate Profile as input for validation
      * @return the error messages or an empty list if the public key was validated successfully.
+     * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example ECC keys as input to an RSA key validator
      * @throws KeyValidationException if the certificate issuance MUST be aborted.
      */
-    List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws KeyValidationException;
+    List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws ValidatorNotApplicableException, KeyValidationException;
 
     /**
      * @return the settings template index.
