@@ -89,7 +89,7 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public void internalChangeCertificateProfileNoFlushCache(String name, BasePublisher publisher) throws AuthorizationDeniedException {
+    public void internalChangePublisherNoFlushCache(String name, BasePublisher publisher) throws AuthorizationDeniedException {
         PublisherData htp = PublisherData.findByName(entityManager, name);
         if (htp != null) {
             htp.setPublisher(publisher);

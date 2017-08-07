@@ -131,7 +131,7 @@ public class PublisherSessionTest {
             assertEquals("bar", pub.getDescription());
             // Change publisher not flushing cache, old value should remain when reading
             pub.setDescription("newvalue");
-            publisherProxySession.internalChangeCertificateProfileNoFlushCache(name, pub);
+            publisherProxySession.internalChangePublisherNoFlushCache(name, pub);
             pub = publisherSession.getPublisher(name);
             assertEquals("bar", pub.getDescription()); // old value
             // Wait 2 seconds and try again, now the cache should have been updated
