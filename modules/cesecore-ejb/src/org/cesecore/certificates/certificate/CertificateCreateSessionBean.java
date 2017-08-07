@@ -232,15 +232,15 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             ret.create();          
         } catch (InvalidKeyException e) {
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(ErrorCode.INVALID_KEY, e);
         } catch (NoSuchAlgorithmException e) {
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(ErrorCode.BAD_REQUEST_SIGNATURE, e);
         } catch (NoSuchProviderException e) {
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(ErrorCode.INTERNAL_ERROR, e);
         } catch(CertificateEncodingException e) {
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e);
         } catch (CRLException e) {
-            throw new CertificateCreateException(e);
+            throw new CertificateCreateException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e);
         } 
 
         if (log.isTraceEnabled()) {
@@ -354,12 +354,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     publicKeyToValidate);
         }
         catch(KeyValidationException e) {
-            throw new CertificateCreateException( e);
+            throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         }
         catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
+            final CertificateCreateException t = new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
+            t.setErrorCode(ErrorCode.ILLEGAL_KEY);
+            throw t;
         }
-
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
 
@@ -368,7 +369,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (endEntityInformation.getType().isType(EndEntityTypes.INVALID)) {
                 final String msg = intres.getLocalizedMessage("createcert.usertypeinvalid", endEntityInformation.getUsername());
-                throw new CertificateCreateException(msg);
+                throw new CertificateCreateException(ErrorCode.INTERNAL_ERROR, msg);
             }
             final Certificate cacert = ca.getCACertificate();
             final String caSubjectDN = CertTools.getSubjectDN(cacert);       
@@ -666,7 +667,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
 
     /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. 
-     * @throws CertificateCreateException if serial number already exists in database
+     * @throws CertificateSerialNumberException if serial number already exists in database
      */
     private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CertificateSerialNumberException {
         if (ca.getCAType()==CAInfo.CATYPE_X509 && !isUniqueCertificateSerialNumberIndex()) {
