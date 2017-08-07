@@ -56,7 +56,18 @@ public class CertificateCreateException extends CesecoreException {
     public CertificateCreateException(Exception e) {
         super(e);
     }
-    
+
+    /**
+     * Marked as rollback=true
+     * 
+     * @see CertificateCreateException
+     * @param errorCode defines the cause of the exception.
+     * @param e causing exception that will be wrapped
+     */
+    public CertificateCreateException(ErrorCode errorCode, Exception e) {
+        super(errorCode, e);
+    }
+
     /**
      * Marked as rollback=true
      * 
@@ -67,6 +78,13 @@ public class CertificateCreateException extends CesecoreException {
         super(msg, e);
     }
 
+    /**
+     * Marked as rollback=true
+     *
+     * @see CertificateCreateException
+     * @param errorCode defines the cause of the exception.
+     * @param message Human readable error message, can not be NULL.
+     */
     public CertificateCreateException(ErrorCode errorCode, String msg) {
        super(errorCode, msg);
     }
