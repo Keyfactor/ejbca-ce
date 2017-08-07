@@ -33,6 +33,8 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.profiles.ProfileData;
+import org.cesecore.profiles.ProfileSessionLocal;
 
 /**
  * @version $Id$
@@ -48,6 +50,9 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
 
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
+
+    @EJB
+    private ProfileSessionLocal profileSession;
 
     @Override
     public Validator getKeyValidator(int id) {
@@ -72,6 +77,11 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     @Override
     public Map<Integer, String> getKeyValidatorIdToNameMap() {
         return keyValidatorSession.getKeyValidatorIdToNameMap();
+    }
+
+    @Override
+    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+        return keyValidatorSession.getKeyValidatorNameToIdMap();
     }
 
     @Override
@@ -130,5 +140,14 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     public ValidatorImportResult importKeyValidatorsFromZip(AuthenticationToken authenticationToken, byte[] filebuffer)
             throws AuthorizationDeniedException, ZipException {
         return keyValidatorSession.importKeyValidatorsFromZip(authenticationToken, filebuffer);
+    }
+    
+    @Override
+    public void internalChangeValidatorNoFlushCache(Validator validator)
+            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
+        ProfileData data = profileSession.findById(validator.getProfileId());   
+        if (data != null) {
+            profileSession.changeProfile(validator);
+        }
     }
 }
