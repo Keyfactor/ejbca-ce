@@ -71,6 +71,12 @@ public interface KeyValidatorProxySessionRemote {
     Map<Integer, String> getKeyValidatorIdToNameMap();
 
     /**
+     * Retrieves a Map of key validator ids. 
+     * @return mapping of key validators names and ids. 
+     */
+    Map<String, Integer> getKeyValidatorNameToIdMap();
+
+    /**
      * Adds a key validator to the database. Used for importing and exporting
      * profiles from xml-files.
      *
@@ -185,4 +191,9 @@ public interface KeyValidatorProxySessionRemote {
      */
     ValidatorImportResult importKeyValidatorsFromZip(final AuthenticationToken authenticationToken, final byte[] filebuffer)
             throws AuthorizationDeniedException, ZipException;
+    
+    /** Change a Validator without affecting the cache */
+    void internalChangeValidatorNoFlushCache(Validator validator)
+            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException;
+
 }

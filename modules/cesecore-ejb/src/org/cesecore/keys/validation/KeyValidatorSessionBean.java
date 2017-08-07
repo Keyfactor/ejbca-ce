@@ -498,6 +498,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
+    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+        final HashMap<String, Integer> result = new HashMap<>();
+        for (ProfileData data : profileSession.findAllProfiles(Validator.TYPE_NAME)) {
+            result.put(data.getProfileName(), data.getId());
+        }
+        return result;
+    }
+
+    @Override
     public boolean validatePublicKey(final AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException {
         boolean result = true;
