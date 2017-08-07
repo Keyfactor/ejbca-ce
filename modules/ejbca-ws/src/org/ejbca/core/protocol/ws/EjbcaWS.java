@@ -89,6 +89,7 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -1230,6 +1231,8 @@ public class EjbcaWS implements IEjbcaWS {
             throw getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_REQUEST_SIGNATURE, Level.ERROR);
 		} catch (InvalidKeySpecException e) {
             throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
+        } catch (CertificateCreateException e) {
+            throw getEjbcaException(e, logger, e.getErrorCode(), Level.ERROR);
 		} catch (NoSuchAlgorithmException e) {
             throw getInternalException(e, logger);
 		} catch (NoSuchProviderException e) {
