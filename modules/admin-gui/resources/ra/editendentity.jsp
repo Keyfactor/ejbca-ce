@@ -219,24 +219,30 @@
                         }
                     }
                     value = request.getParameter(TEXTFIELD_EMAIL);
+                    String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
                     if (value == null || value.trim().equals("")) {
-                        newuser.setEmail("");
+                        if (emaildomain == null || emaildomain.trim().equals("")) {
+                            newuser.setEmail("");
+                        } else {
+                            // TEXTFIELD_EMAIL empty but not TEXTFIELD_EMAILDOMAIN
+                            approvalmessage = ejbcawebbean.getText("EMAILINCOMPLETE");
+                        }
                     } else {
                         value = value.trim();
-                        if (!value.equals("")) {
-                            String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
-                            if (emaildomain != null) {
-                                emaildomain = emaildomain.trim();
-                                if (!emaildomain.equals("")) {
-                                    newuser.setEmail(value + "@" + emaildomain);
-                                }
+                        if (emaildomain != null) {
+                            emaildomain = emaildomain.trim();
+                            if (!emaildomain.equals("")) {
+                                newuser.setEmail(value + "@" + emaildomain);
+                            } else {
+                                // TEXTFIELD_EMAILDOMAIN empty but not TEXTFIELD_EMAIL
+                                approvalmessage = ejbcawebbean.getText("EMAILINCOMPLETE");
                             }
-                            emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
-                            if (emaildomain != null) {
-                                emaildomain = emaildomain.trim();
-                                if (!emaildomain.equals("")) {
-                                    newuser.setEmail(value + "@" + emaildomain);
-                                }
+                        }
+                        emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
+                        if (emaildomain != null) {
+                            emaildomain = emaildomain.trim();
+                            if (!emaildomain.equals("")) {
+                                newuser.setEmail(value + "@" + emaildomain);
                             }
                         }
                     }
@@ -500,41 +506,42 @@
                             newuser.setStatus(newstatus);
                     }
                     String newUsername = request.getParameter(TEXTFIELD_NEWUSERNAME);
-                    try {
-                        // Send changes to database.
-                        rabean.changeUserData(newuser, newUsername);
-                        endentitysaved = true;
-                        username = newUsername;
-                    } catch (org.cesecore.authorization.AuthorizationDeniedException e) {
-                    	notauthorized = true;
-                    } catch (org.ejbca.core.ejb.ra.NoSuchEndEntityException e) {
-                        approvalmessage = ejbcawebbean.getText("ENDENTITYDOESNTEXIST");
-                    } catch (org.cesecore.certificates.ca.IllegalNameException e) {
-                        if (e.getMessage().equals("Username already taken")) {
-                            approvalmessage = ejbcawebbean.getText("ENDENTITYALREADYEXISTS");
-                        } else {
-                            throw e;
+                    if (approvalmessage == null) {
+                        try {
+                            // Send changes to database.
+                            rabean.changeUserData(newuser, newUsername);
+                            endentitysaved = true;
+                            username = newUsername;
+                        } catch (org.cesecore.authorization.AuthorizationDeniedException e) {
+                            notauthorized = true;
+                        } catch (org.ejbca.core.ejb.ra.NoSuchEndEntityException e) {
+                            approvalmessage = ejbcawebbean.getText("ENDENTITYDOESNTEXIST");
+                        } catch (org.cesecore.certificates.ca.IllegalNameException e) {
+                            if (e.getMessage().equals("Username already taken")) {
+                                approvalmessage = ejbcawebbean.getText("ENDENTITYALREADYEXISTS");
+                            } else {
+                                throw e;
+                            }
+                        } catch (org.ejbca.core.model.approval.ApprovalException e) {
+                            approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+                        } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                            approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+                        } catch (org.ejbca.core.EjbcaException e) {
+                            if (e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)) {
+                                approvalmessage = ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS");
+                            }
+                            if (e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)) {
+                                approvalmessage = ejbcawebbean.getText("CADOESNTEXIST");
+                            }
+                            if (e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)) {
+                                approvalmessage = e.getMessage();
+                            }
+                            if (e.getErrorCode().equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
+                                approvalmessage = e.getMessage();
+                            }
                         }
-                    } catch (org.ejbca.core.model.approval.ApprovalException e) {
-                        approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
-                    } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                        approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
-                    } catch (org.ejbca.core.EjbcaException e) {
-                        if (e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)) {
-                            approvalmessage = ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS");
-                        }
-                        if (e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)) {
-                            approvalmessage = ejbcawebbean.getText("CADOESNTEXIST");
-                        }
-                        if (e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)) {
-                            approvalmessage = e.getMessage();
-                        }
-                        if (e.getErrorCode().equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
-                            approvalmessage = e.getMessage();
-                        }
+                        userdata = newuser;
                     }
-                    userdata = newuser;
-
                 }
             }
         }
