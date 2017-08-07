@@ -458,7 +458,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, KeyValidationException {
         List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
@@ -470,7 +470,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
             messages.add(message);
             // Make sure this ends up in the server log
             log.info(message+", "+publicKey.getClass().getName());
-            throw new KeyValidationIllegalKeyAlgorithmException(message);
+            throw new ValidatorNotApplicableException(message);
         }
         final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
         final BigInteger publicKeyExponent = rsaPublicKey.getPublicExponent();

@@ -258,13 +258,24 @@ public class KeyValidatorSessionTest {
         keyValidator.setProfileId(validatorId);
         try {
             setKeyValidatorsForCa(testCA, validatorId);
+            // Check that the not applicable option works correctly, default to ABORT
             try {
                 keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile, new Date(new Date().getTime() - 1000 * 86400),
                         new Date(new Date().getTime() + 1000 * 86400), publicKey);
-                fail("RSA key validator successfully validated an ECC key.");
+                fail("RSA key validator successfully validated an ECC key when not_applicable action set to ABORT.");
             } catch (Exception e) {
-                assertTrue("KeyValidationException expected when a RSA key validator tries to validate an ECC key: " + keyValidator.getProfileName(),
-                        e instanceof KeyValidationIllegalKeyAlgorithmException);
+                assertTrue("KeyValidationException expected when a RSA key validator tries to validate an ECC key with '" + keyValidator.getProfileName()+"' but it was "+e.getClass().getName(),
+                        e instanceof KeyValidationException);
+            }
+            // Change to just log info, then validation should not fail
+            keyValidator.setNotApplicableAction(KeyValidationFailedActions.LOG_INFO.getIndex());
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
+            try {
+                final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile, new Date(new Date().getTime() - 1000 * 86400),
+                        new Date(new Date().getTime() + 1000 * 86400), publicKey);
+                assertTrue("ECC key should validate with RSA public key when set to not fail if not applicable.", result);
+            } catch (Exception e) {
+                fail("RSA key validator should not fail for an ECC key when not_applicable action set to LOG_INFO.");
             }
 
             // B-1: Check valid RSA key -> issuance MUST be OK.
@@ -277,7 +288,6 @@ public class KeyValidatorSessionTest {
                 assertTrue("2048 bit RSA key should validate with default settings.", result);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                e.printStackTrace();
                 fail("2048 bit RSA key validation failed with exception for default RSA key validator: " + e.getMessage());
             }
 

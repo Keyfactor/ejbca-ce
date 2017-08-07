@@ -352,11 +352,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     publicKeyToValidate);
-        }
-        catch(KeyValidationException e) {
+        } catch(KeyValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
-        }
-        catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
+        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
             final CertificateCreateException t = new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
             t.setErrorCode(ErrorCode.ILLEGAL_KEY);
             throw t;

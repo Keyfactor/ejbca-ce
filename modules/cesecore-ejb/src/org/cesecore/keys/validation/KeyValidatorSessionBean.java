@@ -551,11 +551,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
                     log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
-                    List<String> messages = keyValidator.validate(publicKey, certificateProfile);
-                    if (messages.size() > 0) {
-                        result = false;
-                        postProcessKeyValidation(keyValidator, publicKey, messages, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
-                    }
+                        List<String> messages = keyValidator.validate(publicKey, certificateProfile);                        
+                        if (messages.size() > 0) {
+                            result = false;
+                            postProcessKeyValidation(keyValidator, publicKey, messages, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
+                        }
+                } catch (ValidatorNotApplicableException e) {
+                    // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
+                    // use method performValidationFailedActions because it's the same actions
+                    performValidationFailedActions(keyValidator.getNotApplicableAction(), e.getMessage());
                 } catch (KeyValidationException e) {
                     throw e;
                 }
@@ -582,24 +586,28 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             details.put("msg", message);
             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caID), keyFingerprint, endEntity, details);
-            if (KeyValidationFailedActions.LOG_INFO.getIndex() == index) {
-                log.info(message);
-            } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == index) {
-                log.warn(message);
-            } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == index) {
-                log.error(message);
-            } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == index) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);                    
-                }
-                throw new KeyValidationException(message);
-            } else {
-                // NOOP
-                log.debug(message);
-            }
+            performValidationFailedActions(index, message);
         } else {
             final String message = intres.getLocalizedMessage("keyvalidator.validationsuccessful", name, publicKey.getEncoded());
             log.info(message);
+        }
+    }
+
+    private void performValidationFailedActions(final int index, final String message) throws KeyValidationException {
+        if (KeyValidationFailedActions.LOG_INFO.getIndex() == index) {
+            log.info(message);
+        } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == index) {
+            log.warn(message);
+        } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == index) {
+            log.error(message);
+        } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == index) {
+            if (log.isDebugEnabled()) {
+                log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);                    
+            }
+            throw new KeyValidationException(message);
+        } else {
+            // NOOP
+            log.debug(message);
         }
     }
 
