@@ -285,13 +285,16 @@
         if (value != null) {
             value = value.trim();
             oldemail = value;
+            String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
             if (!value.equals("")) {
-                String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
                 if (emaildomain != null) {
                     emaildomain = emaildomain.trim();
                     if (!emaildomain.equals("")) {
                         newuser.setEmail(value + "@" + emaildomain);
                         oldprofile.setValue(EndEntityProfile.EMAIL, 0, emaildomain);
+                    } else {
+                        // TEXTFIELD_EMAILDOMAIN empty but not TEXTFIELD_EMAIL
+                        approvalmessage = ejbcawebbean.getText("EMAILINCOMPLETE");
                     }
                 }
 
@@ -300,6 +303,14 @@
                     if (!emaildomain.equals("")) {
                         newuser.setEmail(value + "@" + emaildomain);
                         lastselectedemaildomain = emaildomain;
+                    }
+                }
+            } else {
+                if (emaildomain != null) {
+                    emaildomain = emaildomain.trim();
+                    if (!emaildomain.equals("")) {
+                        // TEXTFIELD_EMAIL empty but not TEXTFIELD_EMAILDOMAIN
+                        approvalmessage = ejbcawebbean.getText("EMAILINCOMPLETE");
                     }
                 }
             }
