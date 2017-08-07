@@ -255,10 +255,10 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         if (log.isTraceEnabled()) {
             log.trace(">upgrade: " + getLatestVersion() + ", " + getVersion());
         }
+        super.upgrade();
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("keyvalidator.upgrade", new Float(getVersion())));
-            super.upgrade();
             init();
             // Finished upgrade, set new version
             data.put(VERSION, new Float(LATEST_VERSION));
