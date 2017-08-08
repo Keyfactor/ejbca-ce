@@ -155,6 +155,10 @@
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />
 	<property name="mod.ra-gui.path" location="${mod.path}/ra-gui" />
 	<property name="mod.ra-gui.war" location="${mod.dist.path}/ra-gui.war" />
+	<property name="mod.caa.path" location="${mod.path}/caa" />
+	<property name="mod.caa.lib" location="${mod.dist.path}/caa.jar" />
+
+
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -230,7 +234,7 @@
 	<path id="lib.json-simple.classpath"><fileset dir="${ejbca.home}/lib" includes="json-simple-*.jar"/></path>
 	<path id="lib.ninbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
 	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
-
+	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>
@@ -338,6 +342,8 @@
             <include name="guava-*.jar" />
         </fileset>
     </path>
+            	
+            	
 
     <!-- Now when everything is set up, we can load the old property defaults -->
     <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">

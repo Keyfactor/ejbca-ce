@@ -98,6 +98,7 @@
 		<antcall target="externalra-scepclean"/>
 		<antcall target="peerconnectorclean"/>
 		<antcall target="acmeclean"/>
+		<antcall target="caaclean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -153,6 +154,12 @@
     <target name="ctclean" if="${mod.ct.exists}">
         <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
+	<condition property="mod.caa.exists">
+		<available file="${mod.caa.path}/build.xml" />
+    </condition>
+    <target name="caaclean" if="${mod.caa.exists}">
+        <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    </target>	
 	<condition property="mod.certsafe.exists">
 		<available file="${mod.certsafe.path}/build.xml" />
 	</condition>
@@ -193,7 +200,7 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web">
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web, caa">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
@@ -488,7 +495,7 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, 
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients, 
-					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, acme"/>
+					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, acme, caa"/>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -496,6 +503,10 @@
 	
 	<target name="certsafe" depends="ejbca-ejb-interface" if="mod.certsafe.exists">
 		<ant antfile="${mod.certsafe.path}/build.xml" target="jar" inheritall="false"></ant>
+	</target>
+	
+	<target name="caa" if="mod.caa.exists">
+		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">

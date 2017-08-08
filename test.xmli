@@ -47,6 +47,7 @@
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
     	<antcall target="optionaltestct" inheritrefs="true"/>
+    	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
     	<antcall target="createreport"/>
     </target>
@@ -62,6 +63,8 @@
     <target name="optionaltestacme" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test"/></target>
     <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
     <target name="optionaltestcmpproxy" if="${cmpproxy.exists}"><ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" /></target>
+    <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
+    <target name="optionaltestcaa" if="${caa.exists}"><ant antfile="build.xml" dir="modules/caa" target="test" /></target>
 
 
 
