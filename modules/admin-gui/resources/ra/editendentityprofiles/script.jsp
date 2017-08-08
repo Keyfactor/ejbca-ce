@@ -1,3 +1,5 @@
+<%@page import="org.ejbca.core.model.SecConst"%>
+
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
 <%! // Declarations
@@ -48,7 +50,8 @@ function checkDefaultAmongAvailable() {
     selInd = document.editprofile.<%=SELECT_DEFAULTCA%>.options.selectedIndex;
     existsInAvailable = false;
     for (i = 0; i < options.length; i++) {
-        if (options[i].value == document.editprofile.<%=SELECT_DEFAULTCA%>.options[selInd].value) {
+        if (options[i].value == document.editprofile.<%=SELECT_DEFAULTCA%>.options[selInd].value
+                || options[i].value == <%=SecConst.ALLCAS%>) {
             existsInAvailable = true;
         }
     }
