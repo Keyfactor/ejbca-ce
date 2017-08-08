@@ -28,6 +28,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -61,6 +62,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -78,6 +80,12 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.EccKeyValidator;
+import org.cesecore.keys.validation.KeyValidationFailedActions;
+import org.cesecore.keys.validation.KeyValidatorSessionRemote;
+import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.KeyValidatorTestUtil;
+import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -107,6 +115,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateCreateSessionTest"));
@@ -587,7 +596,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             }
             // Test happy path. ECDSA 256 bit key. Defaults allowed by certificate profile.
             try {
-                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
                 certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
                 issuedCerts++;
             } catch (IllegalKeyException e) {
@@ -629,6 +638,134 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         }
     }
 
+    @Test
+    public void testKeyValidator() throws Exception {
+        final String TEST_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
+        final String username = TEST_NAME;
+        final String RSA_VAL_NAME=TEST_NAME+"rsa-parameter-validation-test-1";
+        final String ECC_VAL_NAME=TEST_NAME+"ecc-parameter-validation-test-1";
+        // Make sure that certificate doesn't already exist in database.
+        for (final CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
+        }
+        // Make test that mimics a typical scenario
+        // A CA that can issue certificate with both RSA and EC keys
+        // Key Validators for RSA and EC keys, both RSA and EC CSRs must work, meaning that RSA validator must ignore EC keys for example
+        // Send in CSR with RSA that is valid
+        // Send in CSR with RSA that is invalid
+        // Send in CSR with EC that is valid
+        // Send in CSR with EC that is invalid
+        final KeyPair keyPairRsa = keys;
+        assertEquals("Unexpected key size of key pair used in this test.", 512, KeyTools.getKeyLength(keyPairRsa.getPublic()));
+        final KeyPair keyPairEc = KeyTools.genKeys("prime256v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        assertEquals("Unexpected key size of key pair used in this test.", 256, KeyTools.getKeyLength(keyPairEc.getPublic()));
+        int ecId = 0;
+        int rsaId = 0;
+        try {
+            final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            final int certificateProfileId = certProfileSession.addCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
+            final EndEntityInformation endEntityInformation = new EndEntityInformation(username, "C=SE,O=PrimeKey,CN="+TEST_NAME, testx509ca.getCAId(), null,
+                    null, new EndEntityType(EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntityInformation.setPassword("foo123");
+            // EC key validator
+            EccKeyValidator ecKeyValidator = (EccKeyValidator) KeyValidatorTestUtil.createKeyValidator(EccKeyValidator.class,
+                    ECC_VAL_NAME, "Description", null, -1, null, -1, -1, new Integer[] {});
+            ecKeyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
+            ecKeyValidator.setNotApplicableAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
+            ecKeyValidator.setAllCertificateProfileIds(true);
+            // Set custom curve
+            List<String> curves = new ArrayList<String>();
+            curves.add("secp256r1");
+            ecKeyValidator.setCurves(curves);
+            // RSA key validator
+            RsaKeyValidator rsaKeyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+                    RSA_VAL_NAME, "Description", null, -1, null, -1, -1, new Integer[] {});
+            rsaKeyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
+            rsaKeyValidator.setNotApplicableAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
+            rsaKeyValidator.setAllCertificateProfileIds(true);
+            // Set custom bit length.
+            List<String> bitLengths = new ArrayList<String>();
+            bitLengths.add(Integer.toString(512));
+            rsaKeyValidator.setBitLengths(bitLengths);
+            ecId = keyValidatorSession.addKeyValidator(alwaysAllowToken, ecKeyValidator);
+            ecKeyValidator.setProfileId(ecId);
+            rsaId = keyValidatorSession.addKeyValidator(alwaysAllowToken, rsaKeyValidator);
+            rsaKeyValidator.setProfileId(rsaId);
+            Collection<Integer> validators = new ArrayList<Integer>();
+            validators.add(ecId);
+            validators.add(rsaId);
+            testx509ca.getCAInfo().setValidators(validators);
+            caSession.editCA(alwaysAllowToken, testx509ca.getCAInfo());
+            // Test happy path. RSA 512 bit key. Defaults allowed by certificate profile.
+            {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                CertificateResponseMessage resp = certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                assertNotNull("Certificate should have been issued", resp);
+            }
+            // Test happy path. ECDSA 256 bit key. Defaults allowed by certificate profile.
+            {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                CertificateResponseMessage resp = certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                assertNotNull("Certificate should have been issued", resp);
+            }
+            // Test unhappy path. RSA 512 bit key. Not allowed by key validator.
+            bitLengths = new ArrayList<String>();
+            bitLengths.add(Integer.toString(1024));
+            rsaKeyValidator.setBitLengths(bitLengths);
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, rsaKeyValidator);
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairRsa.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                fail("Key algorithm and spec should not have been allowed by validator.");
+            } catch (CertificateCreateException e) {
+                assertEquals("Error message should come from Validator.", 
+                        "org.cesecore.keys.validation.KeyValidationException: Key validator testKeyValidatorrsa-parameter-validation-test-1 could not validate sufficient key quality for public key: [Invalid: RSA key size/strength: Use one of the following [1024].].", 
+                        e.getMessage());
+            }
+            // Test unhappy path. ECDSA 256 bit key. Not allowed by key validator.
+            curves = new ArrayList<String>();
+            curves.add("secp384r1");
+            ecKeyValidator.setCurves(curves);
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, ecKeyValidator);
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                fail("Key algorithm and spec should not have been allowed by validator.");
+            } catch (CertificateCreateException e) {
+                assertEquals("Error message should come from Validator.", 
+                        "org.cesecore.keys.validation.KeyValidationException: Key validator testKeyValidatorecc-parameter-validation-test-1 could not validate sufficient key quality for public key: [Invalid: ECDSA curve [prime256v1, secp256r1, P-256]: Use one of the following [secp384r1].].", 
+                        e.getMessage());
+            }
+            // Set RSA validator to fail on ECC keys
+            // and test happy path. ECDSA 256 bit key. Allowed by key validator.
+            rsaKeyValidator.setNotApplicableAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, rsaKeyValidator);
+            curves = new ArrayList<String>();
+            curves.add("secp256r1");
+            ecKeyValidator.setCurves(curves);
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, ecKeyValidator);
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                fail("ECC should fail on RSA validator.");
+            } catch (CertificateCreateException e) {
+                assertEquals("Error message should come from Validator.", 
+                        "org.cesecore.keys.validation.KeyValidationException: Invalid: Public key algorithm is not RSA or could not be parsed: ECDSA, format X.509", 
+                        e.getMessage());
+            }
+        } finally {
+            certProfileSession.removeCertificateProfile(roleMgmgToken, TEST_NAME);
+            for (final CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
+            }
+            Collection<Integer> validators = new ArrayList<Integer>();
+            testx509ca.getCAInfo().setValidators(validators);
+            caSession.editCA(alwaysAllowToken, testx509ca.getCAInfo());
+            keyValidatorSession.removeKeyValidator(alwaysAllowToken, ECC_VAL_NAME);
+            keyValidatorSession.removeKeyValidator(alwaysAllowToken, RSA_VAL_NAME);
+        }
+    }
     
     private void testInvalidKeySpecsInternal(final boolean expectNoIllegalKeyException, final String certificateProfileName, final EndEntityInformation endEntityInformation, final PublicKey publicKey,
             final String[] availableKeyAlgorithms, final int[] availableBitLengths) throws Exception {

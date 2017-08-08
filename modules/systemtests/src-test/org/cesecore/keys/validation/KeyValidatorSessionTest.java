@@ -222,6 +222,12 @@ public class KeyValidatorSessionTest {
                 fail("Key validators have no references on other entities, so no exceptions should be thrown.");
             }
             assertKeyValidatorsNotExist(allIdentifiers);
+            // Try to remove a validator that does not exist, should not do anything
+            try {
+                keyValidatorProxySession.removeKeyValidator(internalAdmin, 123);
+            } catch (CouldNotRemoveKeyValidatorException e) {
+                fail("Non existing validator ID, so no exceptions should be thrown.");
+            }
 
             // Check Referential integrity: 
             // Add to test CA and try to remove it -> CouldNot RemoveKeyValidatorException expected.
