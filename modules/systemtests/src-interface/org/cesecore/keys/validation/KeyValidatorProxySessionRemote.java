@@ -137,17 +137,16 @@ public interface KeyValidatorProxySessionRemote {
     void renameKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException;
 
-    /** Removes the key validator data equal if its referenced by a CA or not.
+    /** Removes the key validator data if it is not referenced by a CA. Does not throw any errors if the validator does not exist
      * 
      * @param admin AuthenticationToken of admin.
      * @param validatorId the ID of the key validator to remove.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidators
-     * @throws KeyValidatorDoesntExistsException if the key validator does not exist.
      * @throws CouldNotRemoveKeyValidatorException if the key validator is referenced by other objects.
      */
     void removeKeyValidator(AuthenticationToken admin, final int validatorId)
-            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, CouldNotRemoveKeyValidatorException;
+            throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException;
 
     /** Retrieves a Collection of id:s (Integer) to authorized key validators. 
      * @param admin the administrator for whom to get the profile ids he/she has access to
