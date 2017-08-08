@@ -1,6 +1,11 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
 <%! // Declarations
+static final String TEXTFIELD_EMAIL                       = "textfieldemail";
+
+static final String CHECKBOX_USE_EMAIL                    = "checkboxuseemail";
+static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
+
 static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
 static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
 
@@ -9,6 +14,17 @@ static final String SELECT_AVAILABLECAS                   = "selectavailablecas"
 %>
 
 <script type="text/javascript">
+function checkNonModifiableEmptyEmail() {
+    if (document.editprofile.<%= CHECKBOX_USE_EMAIL %>.checked
+            && !document.editprofile.<%= CHECKBOX_MODIFYABLE_EMAIL %>.checked
+            && document.editprofile.<%= TEXTFIELD_EMAIL %>.value == "") {
+        alert("<%=ejbcawebbean.getText("EMAILEMPTYNONMODIFIABLE", true)%>");
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 function checkDefaultAmongAvailable() {
     var illegalfields = 0;
     var i;
