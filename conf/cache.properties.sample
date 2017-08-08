@@ -106,7 +106,7 @@
 #publickeyblacklist.cachetime=157680000000
 #publickeyblacklist.cachetime=-1
 
-# Set to a value for caching calls to getKeyValidator and getKeyValidatorId/Name in StoreSession. This means that for Validators to be updated
+# Set to a value for caching calls to getValidator in KeyValidatorSessionBean. This means that for Validators to be updated
 # the cache time expires, an "Edit validator" or server restart is done, or flushKeyValidatorCache is called on StoreSession. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a validator has been edited on another node, so the validator must be edited on all nodes, 

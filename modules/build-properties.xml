@@ -157,6 +157,9 @@
 	<property name="mod.ra-gui.war" location="${mod.dist.path}/ra-gui.war" />
 	<property name="mod.caa.path" location="${mod.path}/caa" />
 	<property name="mod.caa.lib" location="${mod.dist.path}/caa.jar" />
+	<property name="mod.dist.caa-cli.dir" location="${ejbca.dist.path}/caa-cli"/>
+	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
+
 
 
 	

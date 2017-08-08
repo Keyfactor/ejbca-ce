@@ -509,6 +509,10 @@
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
+	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="cli-util" description="Creates a CLI jar for CAA lookups">
+		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="false"></ant>
+	</target>
+	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>

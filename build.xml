@@ -1140,6 +1140,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
     <target name="ejbca-db-cli" depends="deprecated:check, ejbca-db-cli:fail" description="Build EJBCA JPA database CLI">
     	<ant dir="modules" target="ejbca-db-cli" />
     </target>
+	
+    <target name="ejbca-caa-cli" depends="deprecated:check" if="caa.exists" description="Creates a CLI jar for CAA lookups">
+    	<ant dir="modules" target="ejbca-caa-cli" />
+    </target>
 
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
