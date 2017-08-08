@@ -96,6 +96,7 @@ function checkallfields(){
     if(!checkfieldforlegalemailcharswithoutatwithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
  
+    illegalfields += checkNonModifiableEmptyEmail();
     illegalfields += checkDefaultAmongAvailable();
 
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
