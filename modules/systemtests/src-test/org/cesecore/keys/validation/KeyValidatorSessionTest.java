@@ -463,8 +463,7 @@ public class KeyValidatorSessionTest {
     }
 
     private void assertEccKeyValidatorDefaultValues(final EccKeyValidator keyValidator) {
-        assertEquals("EccKeyValidator must have default partial validation value.", keyValidator.isUsePartialPublicKeyValidationRoutine(), false);
-        assertEquals("EccKeyValidator must have default full validation value.", keyValidator.isUseFullPublicKeyValidationRoutine(), false);
+        assertTrue("EccKeyValidator must have default full validation value true.", keyValidator.isUseFullPublicKeyValidationRoutine());
     }
 
     private void assertPublicKeyBlacklistKeyValidatorDefaultValues(final PublicKeyBlacklistKeyValidator keyValidator) {
@@ -494,8 +493,6 @@ public class KeyValidatorSessionTest {
     }
 
     private void assertEccKeyValidatorCABForumBaseLineRequirements142Values(final EccKeyValidator keyValidator) {
-        assertEquals("EccKeyValidator with CAB forum settings must have default partial validation value.",
-                keyValidator.isUsePartialPublicKeyValidationRoutine(), true);
         assertEquals("EccKeyValidator with CAB forum settings must have default full validation value.",
                 keyValidator.isUseFullPublicKeyValidationRoutine(), true);
     }

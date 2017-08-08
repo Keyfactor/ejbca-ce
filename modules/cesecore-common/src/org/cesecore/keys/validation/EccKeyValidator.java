@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
+import org.bouncycastle.math.ec.ECPoint;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -48,8 +50,6 @@ public class EccKeyValidator extends KeyValidatorBase {
     protected static final String TEMPLATE_FILE = "editEccKeyValidator.xhtml";
 
     protected static final String CURVES = "ecCurves";
-
-    protected static final String USE_PARTIAL_PUBLIC_KEY_VALIDATION_ROUTINE = "usePartialPublicKeyValidationRoutine";
 
     protected static final String USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE = "useFullPublicKeyValidationRoutine";
 
@@ -86,11 +86,8 @@ public class EccKeyValidator extends KeyValidatorBase {
         if (null == data.get(CURVES)) {
             setCurves(new ArrayList<String>());
         }
-        if (data.get(USE_PARTIAL_PUBLIC_KEY_VALIDATION_ROUTINE) == null) {
-            setUsePartialPublicKeyValidationRoutine(false);
-        }
         if (data.get(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE) == null) {
-            setUseFullPublicKeyValidationRoutine(false);
+            setUseFullPublicKeyValidationRoutine(true);
         }
     }
 
@@ -110,6 +107,7 @@ public class EccKeyValidator extends KeyValidatorBase {
         } else {
             // NOOP
         }
+        setUseFullPublicKeyValidationRoutine(true);
     }
 
     /**
@@ -120,7 +118,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     public void setCABForumBaseLineRequirements142Settings() {
         // Only apply most important conditions (sequence is Root-CA, Sub-CA, User-Certificate)!
         // But this is not required at the time, because certificate validity conditions are before 
-        // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 512
+        // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
         // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
 
         final List<String> allowedCurves = new ArrayList<String>();
@@ -134,7 +132,6 @@ public class EccKeyValidator extends KeyValidatorBase {
         } else {
             // NOOP
         }
-        setUsePartialPublicKeyValidationRoutine(true);
         setUseFullPublicKeyValidationRoutine(true);
     }
 
@@ -148,24 +145,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     /**
-     * Use partial public key validation routine.
-     * @return true if has to be used.
-     */
-    public boolean isUsePartialPublicKeyValidationRoutine() {
-        return ((Boolean) data.get(USE_PARTIAL_PUBLIC_KEY_VALIDATION_ROUTINE)).booleanValue();
-    }
-
-    /**
-     * Use partial public key validation routine.
-     * @see <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf">CA/B-Forum Baseline Requirements 1.4.2 Chapter 5.6.2.3.2</a>
-     * @param use
-     */
-    public void setUsePartialPublicKeyValidationRoutine(boolean use) {
-        data.put(USE_PARTIAL_PUBLIC_KEY_VALIDATION_ROUTINE, Boolean.valueOf(use));
-    }
-
-    /**
-     * Use partial public key validation routine.
+     * Use full public key validation routine.
      * @return true if has to be used.
      */
     public boolean isUseFullPublicKeyValidationRoutine() {
@@ -211,8 +191,8 @@ public class EccKeyValidator extends KeyValidatorBase {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
                     + publicKey.getClass().getName());
         }
-        if (!AlgorithmConstants.KEYALGORITHM_RSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof ECPublicKey)) {
-            final String message = "Invalid: Public key has no ECC algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
+        if (!AlgorithmConstants.KEYALGORITHM_ECDSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof ECPublicKey)) {
+            final String message = "Invalid: Public key is not ECC algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
                     + publicKey.getFormat();
             messages.add(message);
             throw new ValidatorNotApplicableException(message);
@@ -244,18 +224,67 @@ public class EccKeyValidator extends KeyValidatorBase {
             log.debug("Matching key specification " + keySpecification + " against allowed ECC curves: " + availableEcCurves);
         }
         if (!availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE)) {
+            boolean found = false;
             for (final String ecNamedCurveAlias : AlgorithmTools.getEcKeySpecAliases(keySpecification)) {
-                if (!availableEcCurves.contains(ecNamedCurveAlias)) {
-                    messages.add("Invalid: " + intres.getLocalizedMessage("createcert.illegaleccurve", keySpecification));
-                    break;
+                if (availableEcCurves.contains(ecNamedCurveAlias)) {
+                    found = true;
                 }
             }
+            if (!found) {
+                messages.add("Invalid: ECDSA curve "+AlgorithmTools.getEcKeySpecAliases(keySpecification)+": Use one of the following " + availableEcCurves + ".");
+            }
         }
+        
         if (isUseFullPublicKeyValidationRoutine()) {
-            performFullPublicKeyValidationRoutine(bcEcPublicKey);
-        } else if (isUsePartialPublicKeyValidationRoutine()) {
-            performPartialPublicKeyValidationRoutine(bcEcPublicKey);
+            if (log.isDebugEnabled()) {
+                log.debug("Performing full EC public key validation.");
+            }
+            // The FullPublicKeyValidationRoutine test is copied from org.bouncycastle.crypto.asymmetric.KeyUtils in the BC-FIPS package.
+            // If we move to use the FIPS provider we can use the methods directly instead
+
+            // Source-wise org.bouncycastle.crypto.asymmetric.KeyUtils in the BCFIPS
+            // library is the place with - the code refers to SP 800-89 which is the
+            // same validation (the full one) referred to in SP 800-56A, the original
+            // source document for both is actually X9.62.
+            // org.bouncycastle.math.ec.ECPoint has the "business end" of the code on
+            // starting on line 286, implIsValid(). For key validation purposes
+            // checkOrder is true so subgroup membership is always checked
+
+            // First convert the Java.security publicKey into a BC ECPoint
+            ECPoint q = EC5Util.convertPoint(bcEcPublicKey.getParams(), bcEcPublicKey.getW(), false);
+
+            // --- Begin BC code
+            // FSM_STATE:5.9, "FIPS 186-3/SP 800-89 ASSURANCES", "The module is performing FIPS 186-3/SP 800-89 Assurances self-test"
+            // FSM_TRANS:5.14, "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "Invoke FIPS 186-3/SP 800-89 Assurances test"
+            if (q == null)
+            {
+                // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+                messages.add("Invalid: EC key point has null value.");
+            } else {
+                log.trace("EC point has value test passed");
+            }
+
+            if (q.isInfinity())
+            {
+                // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+                messages.add("Invalid: EC key point at infinity.");
+            } else {
+                log.trace("EC point not on infinity test passed");
+            }
+
+            q = q.normalize();
+
+            if (!q.isValid())
+            {
+                // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+                messages.add("Invalid: EC key point not on curve.");
+            } else {
+                log.trace("EC point not on curve test passed");
+            }
         }
+        // FSM_TRANS:5.15, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test successful"
+        // --- End BC code
+
         if (log.isDebugEnabled()) {
             for (String message : messages) {
                 log.debug(message);
@@ -264,35 +293,11 @@ public class EccKeyValidator extends KeyValidatorBase {
         return messages;
     }
 
-    private void performPartialPublicKeyValidationRoutine(final ECPublicKey publicKey) {
-        if (log.isTraceEnabled()) {
-            log.trace(">performPartialPublicKeyValidationRoutine");
-        }
-        // ECA-4219 Impl. ECC partial public key validation routine (CAB-Forum requirements ch. 6.1.6)
-        if (log.isTraceEnabled()) {
-            log.trace("<performPartialPublicKeyValidationRoutine");
-        }
-    }
-
-    private void performFullPublicKeyValidationRoutine(final ECPublicKey publicKey) {
-        if (log.isTraceEnabled()) {
-            log.trace(">performFullPublicKeyValidationRoutine");
-        }
-        // ECA-4219 Impl. ECC full public key validation routine (CAB-Forum requirements ch. 6.1.6)
-        if (log.isTraceEnabled()) {
-            log.trace("<performFullPublicKeyValidationRoutine");
-        }
-    }
-
     /**
      * Sets the CA/B Forum requirements chapter 6.1.6 for ECC public keys.
      * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
-     * @param keyValidator
      */
     public final void setCABForumBaseLineRequirements142() {
-        // SHOULD use the partial public key validation routine
-        setUsePartialPublicKeyValidationRoutine(true);
-        // SHOULD use the full public key validation routine
         setUseFullPublicKeyValidationRoutine(true);
     }
     
