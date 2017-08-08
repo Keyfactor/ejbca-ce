@@ -146,7 +146,7 @@ public class RsaKeyValidatorTest {
         keyValidator.setBitLengths(bitLengths);
         List<String> messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
+        Assert.assertTrue("Key validation should have been successful.", messages.size() == 0);
 
         // A-2: Test RSA key validation failed RSA parameter bounds with even parameters.
         modulus = BigInteger.valueOf(16);
