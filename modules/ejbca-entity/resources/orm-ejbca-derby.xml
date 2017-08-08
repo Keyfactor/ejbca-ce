@@ -348,7 +348,7 @@
             <basic fetch="EAGER" name="keyspec"><column name="keyspec" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10 K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
