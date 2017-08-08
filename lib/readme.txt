@@ -1,39 +1,20 @@
-
-Commons-x jars are apache jars (http://jakarta.apache.org/commons/index.html), License is Apache.
-The jars: 
- commons-logging-1.1.1.jar 
- commons-beanutils-1.9.3.jar 
- commons-digester-1.8.jar 
- commons-el-1.0.jar 
- commons-codec-1.3.jar
- commons-collections-3.2.2.jar
- commons-fileupload-1.3.2.jar
- commons-io-1.3.2.jar
-are for example used by MyFaces/FileUpload etc.
-
-commons-configuration-1.6
-commons-lang-2.5.jar is used throughout EJBCA.
-
-commons-cli-1.0.jar is used to create nice CLI programs.
-
-Log4j.jar is from apache, License is Apache.
-The file is used for logging throughout EJBCA.
-Version is 1.2.16.
-
-The following jars are from the Apache Http Components project, using the Apache license:
-httpclient-4.5.3.jar
-httpcore-4.4.6.jar
-httpmime-4.5.3.jar
-
-bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
-These jars are the cryptographic foundation in EJBCA.
-
-Ldap.jar is from OpenLDAP and used for publishing in LDAP directories, current version is from 2009-10-07.
-OpenLDAP Public License, http://www.openldap.org/software/release/license.html
- 
-cert-cvc-1.4.6.jar is a library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA, 
-originally developed by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
-
-libidn.jar: version 0.6.9, http://www.gnu.org/software/libidn/, java library is LGPL.
-
-nimbus-jose-jwt-4.36.1.jar, from https://connect2id.com/products/nimbus-jose-jwt/download. Using Apache License. 
+Project							Library Name 					License					Source 													Comment
+Apache Commons					commons-logging					Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-beanutils				Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-codec					Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-collections				Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-configuration			Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-digester				Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-el						Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-fileupload				Apache					http://jakarta.apache.org/commons/index.html
+Apache Commons					commons-io						Apache					http://jakarta.apache.org/commons/index.html
+Apache HTTP Components			httpclient						Apache					https://hc.apache.org/index.html
+Apache HTTP Components			httpcore						Apache					https://hc.apache.org/index.html
+Apache HTTP Components			httpmime						Apache					https://hc.apache.org/index.html
+BouncyCastle					bcpkix							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
+BouncyCastle					bcprov							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
+Cert-CVC						cert-cvc						LGPL					https://svn.cesecore.eu/svn/ejbca/trunk/cert-cvc		A library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA. Originally developed by Keijo Kurkinen, and contributed to EJBCA. 
+DNSJava							dnsjava							BSD						http://dnsjava.org/			
+Log4j							log4j							Apache					https://logging.apache.org/log4j						Used for logging throughout EJBCA		
+Nimbus Jose						nimbus-jose-jwt					Apache					https://connect2id.com/products/nimbus-jose-jwt
+OpenLDAP						ldap							OpenLDAP Public License http://www.openldap.org/								Used for publishing in LDAP directories
