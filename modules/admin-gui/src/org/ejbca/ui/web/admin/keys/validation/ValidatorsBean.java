@@ -320,8 +320,6 @@ public class ValidatorsBean extends BaseManagedBean {
             getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to remove key validator.");
-        } catch (KeyValidatorDoesntExistsException e) {
-            // NOPMD: ignore do nothing
         } catch (CouldNotRemoveKeyValidatorException e) {
             addErrorMessage("COULDNTDELETEVALIDATOR");
         }

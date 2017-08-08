@@ -116,7 +116,7 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
 
     @Override
     public void removeKeyValidator(AuthenticationToken admin, final int validatorId)
-            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, CouldNotRemoveKeyValidatorException {
+            throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
         keyValidatorSession.removeKeyValidator(admin, validatorId);
     }
 

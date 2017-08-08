@@ -336,7 +336,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     @Override
     public void removeKeyValidator(AuthenticationToken admin, final int validatorId)
-            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, CouldNotRemoveKeyValidatorException {
+            throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
         if (log.isTraceEnabled()) {
             log.trace(">removeKeyValidator(id: " + validatorId + ")");
         }
@@ -348,7 +348,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to remove a key validator that does not exist with ID: " + validatorId);
                 }
-                throw new KeyValidatorDoesntExistsException();
+                return;
             } else {
                 if (caSession.existsKeyValidatorInCAs(data.getId())) {
                     throw new CouldNotRemoveKeyValidatorException();
@@ -363,6 +363,42 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         null, null, null, details);
             }
    
+        if (log.isTraceEnabled()) {
+            log.trace("<removeKeyValidator()");
+        }
+    }
+
+    @Override
+    public void removeKeyValidator(AuthenticationToken admin, final String validatorName)
+            throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
+        if (log.isTraceEnabled()) {
+            log.trace(">removeKeyValidator(id: " + validatorName + ")");
+        }
+        assertIsAuthorizedToEditValidators(admin);
+        String message;
+
+        List<ProfileData> datas = profileSession.findByNameAndType(validatorName, Validator.TYPE_NAME);
+        if (datas == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Trying to remove a key validator that does not exist with name: " + validatorName);
+            }
+            return;
+        } else {
+            for (ProfileData data : datas) {
+                if (caSession.existsKeyValidatorInCAs(data.getId())) {
+                    throw new CouldNotRemoveKeyValidatorException();
+                }
+                profileSession.removeProfile(data);
+                // Purge the cache here.
+                ValidatorCache.INSTANCE.removeEntry(data.getId());
+                message = intres.getLocalizedMessage("keyvalidator.removedkeyvalidator", data.getProfileName());
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", message);
+                auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
+                        null, null, null, details);                    
+            }
+        }
+
         if (log.isTraceEnabled()) {
             log.trace("<removeKeyValidator()");
         }
