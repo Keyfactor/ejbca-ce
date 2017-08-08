@@ -28,6 +28,7 @@
 		<path location="${mod.ejbca-common-web.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path location="${mod.ejbca-ws-client.lib}"/>
+		<path location="${mod.caa.lib}.lib}"/>
 	</path>
 
 	<target name="build" description="Build this module" depends="compile">
