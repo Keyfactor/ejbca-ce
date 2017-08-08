@@ -30,7 +30,9 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -42,9 +44,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.cesecore.CaTestUtils;
+import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -64,6 +69,9 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -79,7 +87,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class KeyValidatorSessionTest {
+public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorSessionTest.class);
@@ -87,6 +95,7 @@ public class KeyValidatorSessionTest {
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("KeyValidatorSessionTest-Admin"));
+    private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
 
     private static final String TEST_CA_NAME = "KeyValidatorSessionTest-TestCA";
 
@@ -152,16 +161,25 @@ public class KeyValidatorSessionTest {
         removeUserIfExists(TEST_EE_NAME);
         testUser = createTestEndEntity(TEST_EE_NAME);
 
+        super.setUpAuthTokenAndRole(null, "KeyValidatorSessionTest", Arrays.asList(
+                StandardRules.VALIDATORVIEW.resource(),
+                StandardRules.VALIDATORACCESSBASE.resource()
+                ), null);
         log.trace("<setUp()");
     }
 
     @After
     public void tearDown() throws Exception {
         log.trace(">tearDown()");
-        removeUserIfExists(TEST_EE_NAME);
-        removeEndEntityProfileIfExist(TEST_EEP_NAME);
-        removeCertificateProfileIfExist(TEST_CP_NAME);
-        CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+        try {
+            removeUserIfExists(TEST_EE_NAME);
+            removeEndEntityProfileIfExist(TEST_EEP_NAME);
+            removeCertificateProfileIfExist(TEST_CP_NAME);
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+        } finally {
+            // Be sure to to this, even if the above fails
+            super.tearDownRemoveRole();
+        }
         log.trace("<tearDown()");
     }
 
@@ -322,31 +340,12 @@ public class KeyValidatorSessionTest {
                 log.error(e.getMessage(), e);
                 fail("512 bit RSA key validation failed with exception for default RSA key validator: " + e.getMessage());
             }
-
-            // Test server generated keys.
-            //        KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-
         } finally {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
         }
         log.trace("<test02ValidateRsaPublicKey()");
     }
-
-    //    @Test
-    //    public void test03ValidatePublicKey() throws Exception {
-    //        log.trace(">test03ValidatePublicKey()");
-    //
-    //        // A: Validate different RSA Keys.
-    //        // No key validator configured at all -> true
-    //        KeyPair keyPairRsa = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-    //        log.info("TEST CA NAME: " + testCA.getName() + " " + testCA.getCAId());
-    //        boolean result = keyValidatorProxySession.validatePublicKey(testCA, testUser, testCertificateProfile, new Date(),
-    //                new Date(new Date().getTime() + 86400000), keyPairRsa.getPublic());
-    //        assertTrue("Public key validation without any key validator defined should validate to true.", result);
-    //
-    //        log.trace("<test03ValidatePublicKey()");
-    //    }
 
     /**
      * Test of the cache of validators. This test depends on cache time of 1 second being used.
@@ -396,6 +395,72 @@ public class KeyValidatorSessionTest {
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", oldcachetime);
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id);                
+        }
+    }
+
+    @Test
+    public void testAuthorization() throws Exception {
+        // AuthenticationToken that does not have privileges to edit a Validator
+        KeyPair keys = KeyTools.genKeys("1024",  "RSA");
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test KeyValidatorSessionTest", 365, null, keys.getPrivate(),
+                keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
+
+        final String name = "testKeyValidatorCache";
+        final Validator rsaKeyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
+        rsaKeyValidator.setDescription("foobar");
+        int id = 0; // id of the Validator we will add
+        int id1 = 0;
+        // See if we have to remove the old validator first
+        final Map<String, Integer> nameMap = keyValidatorProxySession.getKeyValidatorNameToIdMap();
+        if (nameMap.containsKey(name)) {
+            final int idtoremove = nameMap.get(name);
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, idtoremove);                
+        }
+        try {
+            try {
+                // Try to add a Validator
+                id = keyValidatorProxySession.addKeyValidator(roleMgmgToken, rsaKeyValidator);
+                fail("roleMgmtToken should not be allowed to add validator");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                // Try to add a Validator
+                id = keyValidatorProxySession.addKeyValidator(adminTokenNoAuth, rsaKeyValidator);
+                fail("adminTokenNoAuth should not be allowed to add validator");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            // Add it by someone who can
+            id = keyValidatorProxySession.addKeyValidator(internalAdmin, rsaKeyValidator);
+            Validator val = keyValidatorProxySession.getKeyValidator(id);
+            try {
+                // Try to edit a Validator
+                keyValidatorProxySession.changeKeyValidator(roleMgmgToken, val);
+                fail("roleMgmtToken should not be allowed to edit validator");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                // Try to remove a Validator
+                keyValidatorProxySession.removeKeyValidator(roleMgmgToken, id);
+                fail("roleMgmtToken should not be allowed to remove validator");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            // Update the role, add edit privileges
+            final Role fetchedRole = roleSession.getRole(internalAdmin, null, "KeyValidatorSessionTest");
+            fetchedRole.getAccessRules().put(StandardRules.VALIDATOREDIT.resource(), Role.STATE_ALLOW);
+            roleSession.persistRole(internalAdmin, fetchedRole);
+            // Try to edit a Validator
+            keyValidatorProxySession.changeKeyValidator(roleMgmgToken, val);
+            keyValidatorProxySession.removeKeyValidator(roleMgmgToken, id);
+            id1 = keyValidatorProxySession.addKeyValidator(roleMgmgToken, rsaKeyValidator);
+            assertFalse("id of new validator should not be same as last one", id == id1);
+        } finally {
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, id);
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, id1);
         }
     }
 
