@@ -10,10 +10,10 @@ static final String SELECT_AVAILABLECAS                   = "selectavailablecas"
 
 <script type="text/javascript">
 function checkDefaultAmongAvailable() {
-	var illegalfields = 0;
-	var i;
+    var illegalfields = 0;
+    var i;
 
-	// Check that Default Certificate Profile is among Available Certificate Profiles
+    // Check that Default Certificate Profile is among Available Certificate Profiles
     var options = document.editprofile.<%=SELECT_AVAILABLECERTPROFILES%>.selectedOptions;
     var selInd = document.editprofile.<%=SELECT_DEFAULTCERTPROFILE%>.options.selectedIndex;
     var existsInAvailable = false;
