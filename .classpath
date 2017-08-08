@@ -9,6 +9,7 @@
 	<classpathentry kind="src" path="modules/buildtools/src"/>
 	<classpathentry kind="src" path="modules/buildtools/src-test"/>
 	<classpathentry kind="src" path="modules/caa/src"/>
+	<classpathentry kind="src" path="modules/caa/src-cli"/>
 	<classpathentry kind="src" path="modules/caa/src-test"/>
 	<classpathentry kind="src" path="modules/certificatestore/src"/>
 	<classpathentry kind="src" path="modules/certsafe/src"/>
