@@ -16,6 +16,10 @@
     reg.initialize(request);
     %>
     
+    <% if (!reg.validCpAndEep()) { %>
+    <p>Certificate type unavailable, contact your administrator.</p>
+    <% } else { %>
+    
     <c:forEach var="error" items="${reg.errors}">
         <p><strong>ERROR:</strong> <c:out value="${error}" /></p>
     </c:forEach>
@@ -218,6 +222,7 @@
 
 
     </c:if>
+    <% } %>
 <% } %>
 
 
