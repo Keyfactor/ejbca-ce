@@ -316,7 +316,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN1, this.cacert1, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, nonce, transid, true, null, null);
+        PKIMessage rev = genRevReq(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, nonce, transid, false, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -328,10 +328,10 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpRevokeConfirmMessage(this.issuerDN1, userDN1, cert.getSerialNumber(), this.cacert1, resp, true);
         int reason = checkRevokeStatus(this.issuerDN1, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
-        // Create a revocation request for a non existing cert, chould fail!
-        rev = genRevReq(this.issuerDN1, userDN1, new BigInteger("1"), this.cacert1, nonce, transid, true, null, null);
+        // Create a revocation request for a non existing cert, should fail (CMP response message with status failure)!
+        rev = genRevReq(this.issuerDN1, userDN1, new BigInteger("1"), this.cacert1, nonce, transid, false, null, null);
         revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -506,8 +506,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN2, this.cacert2, resp);
 
-        // Now revoke the bastard!
-        PKIMessage rev = genRevReq(this.issuerDN2, userDN2, cert.getSerialNumber(), this.cacert2, nonce, transid, true, null, null);
+        // Now revoke the bastard
+        PKIMessage rev = genRevReq(this.issuerDN2, userDN2, cert.getSerialNumber(), this.cacert2, nonce, transid, false, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -519,7 +519,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpRevokeConfirmMessage(this.issuerDN2, userDN2, cert.getSerialNumber(), this.cacert2, resp, true);
         int reason = checkRevokeStatus(this.issuerDN2, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
     }
 
     @Ignore

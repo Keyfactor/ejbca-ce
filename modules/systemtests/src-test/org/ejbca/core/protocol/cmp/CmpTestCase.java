@@ -409,26 +409,25 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
-            boolean reasonCessationOfOperation, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
+            boolean noRevocationReason, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
         CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
         certTemplateBuilder.setIssuer(new X500Name(issuerDN));
         certTemplateBuilder.setSubject(userDN);
         certTemplateBuilder.setSerialNumber(new ASN1Integer(serNo));
 
-        ExtensionsGenerator extgen = new ExtensionsGenerator();
-        CRLReason crlReason;
-        if (reasonCessationOfOperation) {
-            crlReason = CRLReason.lookup(CRLReason.cessationOfOperation);
-        } else {
-            crlReason = CRLReason.lookup(CRLReason.keyCompromise);
-        }
-        extgen.addExtension(Extension.reasonCode, false, crlReason);
         
-        Extensions exts = extgen.generate();
         
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add(certTemplateBuilder.build());
-        v.add(exts);
+        if (noRevocationReason) {
+            // NOOP, crlEntryDetails are optional
+        } else {
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            CRLReason crlReason = CRLReason.lookup(CRLReason.keyCompromise);
+            extgen.addExtension(Extension.reasonCode, false, crlReason);
+            Extensions exts = extgen.generate();
+            v.add(exts);
+        }
         ASN1Sequence seq = new DERSequence(v);
         RevDetails revDetails = RevDetails.getInstance(seq);
         RevReqContent revReqContent = new RevReqContent(revDetails);
