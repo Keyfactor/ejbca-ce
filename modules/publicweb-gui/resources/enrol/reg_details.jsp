@@ -106,6 +106,24 @@
                     </c:if>
                     Include e-mail in certificate altname
                 </c:when>
+                <c:when test='${field.name == "rfc822name" || field.name == "upn"}'>
+                    <!-- rfc822name (e-mail) without "use email field" or ms upn -->
+                    <input name="${id}" id="${id}" type="text" size="10" />
+                    <input name="type_${id}" id="type_${id}" type="hidden" value="${field.name}" />
+                    <b>@</b>
+                    <c:choose>
+                        <c:when test="${field.modifiable}">
+                            <input name="domain_${id}" id="domain_${id}" value="${field.defaultValue}" type="text" size="10" />
+                        </c:when>
+                        <c:otherwise>
+                            <select name="domain_${id}" id="domain_${id}">
+                                <c:forEach var="domain" items="${field.allowedValuesList}">
+                                    <option value="<c:out value="${domain}" />"><c:out value="${domain}" /></option>
+                                </c:forEach>
+                            </select>
+                        </c:otherwise>
+                    </c:choose>
+                </c:when>
                 <c:when test="${field.modifiable}">
                     <!-- Free text -->
                     <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
@@ -166,7 +184,7 @@
         <b>Certificate enrollment</b><br />
         <c:if test="${reg.usernameVisible}">
             <label for="username">Username *</label>
-            <input name="username" id="username" type="text" size="20" accesskey="u" />
+            <input name="username" id="username" type="text" size="25" accesskey="u" />
             <br />
         </c:if>
         
