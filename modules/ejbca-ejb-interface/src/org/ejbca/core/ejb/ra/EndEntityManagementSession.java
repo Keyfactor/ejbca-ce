@@ -466,7 +466,7 @@ public interface EndEntityManagementSession {
      * @param checkPermission if true and if 'revocationdate' is not null then the certificate profile must allow back dating otherwise a {@link RevokeBackDateNotAllowedForProfileException} is thrown.
      * 
      * @throws AuthorizationDeniedException
-     * @throws NoSuchEndEntityException
+     * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
      * @throws WaitingForApprovalException
      * @throws AlreadyRevokedException
@@ -489,7 +489,7 @@ public interface EndEntityManagementSession {
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
      * @throws AlreadyRevokedException if the certificate was already revoked
-     * @throws NoSuchEndEntityException
+     * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if an approval already exists for this request.
      * @throws WaitingForApprovalException
      * @throws AlreadyRevokedException
