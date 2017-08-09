@@ -1373,7 +1373,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpPKIConfirmMessage(userDN, ecdsaCaCert, resp);
 
             //-------------------------  Send a CMP revocation request
-            PKIMessage rev = genRevReq(ecdsaCaInfo.getSubjectDN(), userDN, cert.getSerialNumber(), ecdsaCaCert, _nonce, _transid, true, pAlg, null);
+            PKIMessage rev = genRevReq(ecdsaCaInfo.getSubjectDN(), userDN, cert.getSerialNumber(), ecdsaCaCert, _nonce, _transid, false, pAlg, null);
             assertNotNull(rev);
             rev = CmpMessageHelper.buildCertBasedPKIProtection(rev, extraCert, admkeys.getPrivate(),
                     AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), "BC");
