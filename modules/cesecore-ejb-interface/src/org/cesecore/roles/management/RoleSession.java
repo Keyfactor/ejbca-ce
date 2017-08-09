@@ -40,7 +40,7 @@ public interface RoleSession {
      * 
      * @param authenticationToken the callers AuthenticationToken
      * @param role the role to be persisted
-     * @param requireNonImportantRoleMembership true if the admin needs to have a non-important role membership
+     * @param requireNonImportantRoleMembership if true, this method will check that the admin does not decrease its own access by adding/modifying this role
      * @return the persisted version of the object including an assigned id and normalized access rules.
      * @throws RoleExistsException if provided role's nameSpace and roleName combination is used by another role
      * @throws AuthorizationDeniedException if the caller is not authorized to store the role
