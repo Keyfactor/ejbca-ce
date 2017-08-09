@@ -409,7 +409,7 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected static PKIMessage genRevReq(String issuerDN, X500Name userDN, BigInteger serNo, Certificate cacert, byte[] nonce, byte[] transid,
-            boolean crlEntryExtension, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
+            boolean reasonCessationOfOperation, AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException {
         CertTemplateBuilder certTemplateBuilder = new CertTemplateBuilder();
         certTemplateBuilder.setIssuer(new X500Name(issuerDN));
         certTemplateBuilder.setSubject(userDN);
@@ -417,7 +417,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         CRLReason crlReason;
-        if (crlEntryExtension) {
+        if (reasonCessationOfOperation) {
             crlReason = CRLReason.lookup(CRLReason.cessationOfOperation);
         } else {
             crlReason = CRLReason.lookup(CRLReason.keyCompromise);

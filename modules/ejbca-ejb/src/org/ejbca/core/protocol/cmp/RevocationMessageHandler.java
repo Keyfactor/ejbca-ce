@@ -23,9 +23,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
@@ -151,26 +149,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		final CertTemplate ct = rd.getCertDetails();
 		final ASN1Integer serno = ct.getSerialNumber();
 		final X500Name issuer = ct.getIssuer();
-		// Get the revocation reason. 
-		// For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
-		// If there exists CRL Entry Extensions we will use that, because it's the only thing allowed in CMPv2
+		// Get the revocation reason if it exists, it is optional. 
 		int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
-		
-		DERBitString reasonbits;
-		try {
-		    final ASN1OctetString reasonoctets = rd.getCrlEntryDetails().getExtension(Extension.reasonCode).getExtnValue();
-		    reasonbits = new DERBitString(reasonoctets.getEncoded());
-		} catch (NullPointerException | IOException e) {
-		    //If reason wasn't included the request, or was incorrectly encoded
-		    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
-		}
-		if (reasonbits != null) {
-		    reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
-		    if (LOG.isDebugEnabled()) {
-		        LOG.debug("CMPv1 revocation reason: "+reason);
-		    }
-		}
+        // CRL Entry Extensions is the only thing allowed in CMPv2
 		final Extensions crlExt = rd.getCrlEntryDetails();
 		if (crlExt != null) {
 		    final Extension ext = crlExt.getExtension(Extension.reasonCode);
