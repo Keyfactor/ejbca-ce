@@ -198,9 +198,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                         prof.getUseQCEtsiSignatureDevice(),
                         prof.getUseQCEtsiValueLimit(),
                         prof.getUseQCEtsiRetentionPeriod(),
-                        prof.getQCEtsiType() != null && !prof.getQCEtsiType().equals(""),
+                        !StringUtils.isEmpty(prof.getQCEtsiType()),
                         prof.getQCEtsiPds() != null && prof.getQCEtsiPds().size() > 0 && !(prof.getQCEtsiPds().size() == 1 && prof.getQCEtsiPds().get(0).getUrl() == null),
-                        prof.getUseQCCustomString() && !prof.getQCCustomStringOid().equals("") && !prof.getQCCustomStringText().equals("")
+                        prof.getUseQCCustomString() && !prof.getQCCustomStringOid().isEmpty() && !prof.getQCCustomStringText().isEmpty()
                 };
                 // Check that at least one QC statement is used
                 boolean foundUsed = false;
