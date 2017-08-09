@@ -40,6 +40,7 @@ public interface RoleMemberSession {
 
     /**
      * Adds or updates a Role Member (use ID RoleMember.ROLE_MEMBER_ID_UNASSIGNED to assign when adding a RoleMember).
+     * @param requireNonImportantRoleMembership if true, this method will check that the admin does not decrease its own access by adding/modifying this role
      * @return The persisted version of the role member (and null if the provided roleMember was null)
      * @throws AuthorizationDeniedException If access was denied to editing this role member or the referenced CA or Role.
      */
