@@ -103,7 +103,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         final boolean validatorCache = (parameters.get(VALIDATOR_CACHE) != null) || all;
 
 
-        if (!(all || globalconf || eeprofile || certprofile || authorization || cacache || ctcache)) {
+        if (!(all || globalconf || eeprofile || certprofile || authorization || cacache || ctcache || approvalProfileCache || validatorCache)) {
             log.error("ERROR: No caches were flushed because no parameters were specified.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
