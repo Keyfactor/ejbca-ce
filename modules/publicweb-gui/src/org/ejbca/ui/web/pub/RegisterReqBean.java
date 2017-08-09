@@ -399,9 +399,24 @@ public class RegisterReqBean {
             
             if (key.startsWith("altnamefield_")) {
                 if (!value.isEmpty()) {
-                    String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
-                    subjectAltName = appendToDN(subjectAltName, altName, value);
-                    allFields.put(altName.toUpperCase(Locale.ROOT), value);
+                    boolean valid = true;
+                    String domain = request.getParameter("domain_" + key);
+                    if (domain != null) {
+                        // The field is RFC 822 or MS UPN
+                        domain = domain.trim();
+                        if (!domain.isEmpty()) {
+                            value = value += "@" + domain;
+                        } else {
+                            // Got value but empty domain name
+                            valid = false;
+                            internalError("Incomplete field: " + request.getParameter("type_" + key));
+                        }
+                    }
+                    if (valid) {
+                        String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
+                        subjectAltName = appendToDN(subjectAltName, altName, value);
+                        allFields.put(altName.toUpperCase(Locale.ROOT), value);
+                    }
                 }
             }
             
