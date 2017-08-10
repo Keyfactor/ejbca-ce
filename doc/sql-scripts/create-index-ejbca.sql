@@ -46,3 +46,6 @@ CREATE INDEX userdata_idx10 ON UserData (subjectDN);
 CREATE INDEX userdata_idx11 ON UserData (status);
 
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
+
+-- When using a public key blacklist with many entries
+CREATE INDEX publickeyblacklist_idx1 ON PublicKeyBlacklistData (fingerprint);
