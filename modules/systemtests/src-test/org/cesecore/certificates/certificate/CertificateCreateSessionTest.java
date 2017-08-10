@@ -92,6 +92,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -644,6 +645,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         final String username = TEST_NAME;
         final String RSA_VAL_NAME=TEST_NAME+"rsa-parameter-validation-test-1";
         final String ECC_VAL_NAME=TEST_NAME+"ecc-parameter-validation-test-1";
+        final String BLACKLIST_VAL_NAME=TEST_NAME+"blacklist-parameter-validation-test-1";
         // Make sure that certificate doesn't already exist in database.
         for (final CertificateWrapper certWrapper : certificateStoreSession.findCertificatesByUsername(username)) {
             internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certWrapper.getCertificate()));
@@ -659,8 +661,6 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         assertEquals("Unexpected key size of key pair used in this test.", 512, KeyTools.getKeyLength(keyPairRsa.getPublic()));
         final KeyPair keyPairEc = KeyTools.genKeys("prime256v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         assertEquals("Unexpected key size of key pair used in this test.", 256, KeyTools.getKeyLength(keyPairEc.getPublic()));
-        int ecId = 0;
-        int rsaId = 0;
         try {
             final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final int certificateProfileId = certProfileSession.addCertificateProfile(roleMgmgToken, TEST_NAME, certificateProfile);
@@ -688,13 +688,19 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             List<String> bitLengths = new ArrayList<String>();
             bitLengths.add(Integer.toString(512));
             rsaKeyValidator.setBitLengths(bitLengths);
-            ecId = keyValidatorSession.addKeyValidator(alwaysAllowToken, ecKeyValidator);
+            // Blacklist validator
+            PublicKeyBlacklistKeyValidator blacklistKeyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator(PublicKeyBlacklistKeyValidator.class,
+                    BLACKLIST_VAL_NAME, "Description");
+            int ecId = keyValidatorSession.addKeyValidator(alwaysAllowToken, ecKeyValidator);
             ecKeyValidator.setProfileId(ecId);
-            rsaId = keyValidatorSession.addKeyValidator(alwaysAllowToken, rsaKeyValidator);
+            int rsaId = keyValidatorSession.addKeyValidator(alwaysAllowToken, rsaKeyValidator);
             rsaKeyValidator.setProfileId(rsaId);
+            int blacklistId = keyValidatorSession.addKeyValidator(alwaysAllowToken, blacklistKeyValidator);
+            blacklistKeyValidator.setProfileId(blacklistId);
             Collection<Integer> validators = new ArrayList<Integer>();
             validators.add(ecId);
             validators.add(rsaId);
+            validators.add(blacklistId);
             testx509ca.getCAInfo().setValidators(validators);
             caSession.editCA(alwaysAllowToken, testx509ca.getCAInfo());
             // Test happy path. RSA 512 bit key. Defaults allowed by certificate profile.
@@ -764,6 +770,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             caSession.editCA(alwaysAllowToken, testx509ca.getCAInfo());
             keyValidatorSession.removeKeyValidator(alwaysAllowToken, ECC_VAL_NAME);
             keyValidatorSession.removeKeyValidator(alwaysAllowToken, RSA_VAL_NAME);
+            keyValidatorSession.removeKeyValidator(alwaysAllowToken, BLACKLIST_VAL_NAME);
         }
     }
     

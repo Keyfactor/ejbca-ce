@@ -257,10 +257,10 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
                 log.debug("PublicKeyBlacklistEntry with ID " + idValue + " and/or fingerpint '" + fingerprint + "' will be checked for updates.");
             }
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
-            final PublicKeyBlacklistData data;
+            PublicKeyBlacklistData data = null;
             if (fingerprint != null) {
                 data = PublicKeyBlacklistData.findByFingerprint(entityManager, fingerprint);
-            } else {
+            } else if (idValue != null) {
                 data = PublicKeyBlacklistData.findById(entityManager, idValue);
             }
             if (data != null) {
@@ -301,7 +301,6 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
             final LinkedHashMap<?, ?> base64Map = new Base64GetHashMap(map);
             result = new PublicKeyBlacklistEntry();
             result.setID(data.getId());
-            result.setSource(data.getSource());
             result.setKeyspec(data.getKeyspec());
             result.setFingerprint(data.getFingerprint());
             result.loadData(base64Map);

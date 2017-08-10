@@ -17,7 +17,6 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
@@ -26,7 +25,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidationException;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
@@ -54,8 +52,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     /** View template in /ca/editvalidators. */
     protected static final String TEMPLATE_FILE = "editBlacklistKeyValidator.xhtml";
 
-    protected static final String KEY_GENERATOR_SOURCES = "keyGeneratorSources";
-
     protected static final String KEY_ALGORITHMS = "keyAlgorithms";
     
     /** field used for JUnit testing, avoiding lookups so we can control the cache */
@@ -82,43 +78,11 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
      */
     public void init() {
         super.init();
-        if (data.get(KEY_GENERATOR_SOURCES) == null) {
-            setKeyGeneratorSources(new ArrayList<String>()); // KeyGeneratorSources.sourcesAsString()
-        }
         if (data.get(KEY_ALGORITHMS) == null) {
-            setKeyAlgorithms(new ArrayList<String>());
+            ArrayList<String> algs = new ArrayList<String>();
+            algs.add("RSA");
+            setKeyAlgorithms(algs);
         }
-    }
-
-    /** Gets a list of key generation sources.
-     * @return a list of key generation source indexes.
-     */
-    public List<Integer> getKeyGeneratorSources() {
-        final String value = (String) data.get(KEY_GENERATOR_SOURCES);
-        final List<Integer> result = new ArrayList<Integer>();
-        if (StringUtils.isNotBlank(value)) {
-            final String[] tokens = value.trim().split(LIST_SEPARATOR);
-            for (int i = 0, j = tokens.length; i < j; i++) {
-                result.add(Integer.valueOf(tokens[i]));
-            }
-        }
-        return result;
-    }
-
-    /** Sets key generation source indexes.
-     * 
-     * @param indexes list of key generation source indexes.
-     */
-    public void setKeyGeneratorSources(List<String> indexes) {
-        final StringBuilder builder = new StringBuilder();
-        for (String index : indexes) {
-            if (builder.length() == 0) {
-                builder.append(index);
-            } else {
-                builder.append(LIST_SEPARATOR).append(index);
-            }
-        }
-        data.put(KEY_GENERATOR_SOURCES, builder.toString());
     }
 
     /** Gets a list of key algorithms.
@@ -134,7 +98,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         return result;
     }
 
-    /** Sets the key algorithms.
+    /** Sets the key algorithms, RSA, ECDSA, ....
      * 
      * @param algorithms list of key algorithms.
      */
@@ -197,20 +161,15 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         }
         Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
-        boolean keyGeneratorSourceMatched = false;
         boolean keySpecMatched = false;
 
         if (null != entry) {
-            // Filter for key generator sources.
-            if (getKeyGeneratorSources().contains(new Integer(-1)) || getKeyGeneratorSources().contains(Integer.valueOf(entry.getSource()))) {
-                keyGeneratorSourceMatched = true;
-            }
             // Filter for key specifications.
             if (getKeyAlgorithms().contains("-1") || getKeyAlgorithms().contains(getKeySpec(publicKey))) {
                 keySpecMatched = true;
             }
         }
-        if (keyGeneratorSourceMatched && keySpecMatched) {
+        if (keySpecMatched) {
             final String message = "Public key with id " + entry.getID() + " and fingerprint " + fingerprint
                     + " found in public key blacklist.";
             messages.add("Invalid: " + message);

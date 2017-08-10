@@ -88,11 +88,8 @@ public class PublicKeyBlacklistKeyValidatorTest {
         Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
 
         // B: Test public key blacklist validation NOK with match.
-        List<String> keyGeneratorSources = new ArrayList<String>();
-        keyGeneratorSources.add("-1");
         List<String> algorithms = new ArrayList<String>();
         algorithms.add("-1");
-        keyValidator.setKeyGeneratorSources(keyGeneratorSources);
         keyValidator.setKeyAlgorithms(algorithms);
         {
             // Manual update of cache entry
