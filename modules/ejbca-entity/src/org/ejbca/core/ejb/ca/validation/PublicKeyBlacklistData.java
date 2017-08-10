@@ -56,7 +56,6 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
 
     // data fields.
     private int id;
-    private int source;
     private String keyspec;
     private String fingerprint;
     private int updateCounter;
@@ -81,7 +80,6 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
             log.debug("Creating PublicKeyBlacklistData '" + fingerprint + "' (" + id + ")");
         }
         setId(entry.getID());
-        setSource(entry.getSource());
         setKeyspec(entry.getKeyspec());
         setFingerprint(entry.getFingerprint());
         if (entry != null) {
@@ -97,15 +95,6 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    //@Column
-    public int getSource() {
-        return source;
-    }
-
-    public void setSource(int source) {
-        this.source = source;
     }
 
     //@Column
@@ -206,7 +195,7 @@ public class PublicKeyBlacklistData extends ProtectedData implements Serializabl
     public String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getSource()).append(getKeyspec()).append(getFingerprint()).append(getUpdateCounter()).append(getData());
+        build.append(getId()).append(getKeyspec()).append(getFingerprint()).append(getUpdateCounter()).append(getData());
         return build.toString();
     }
 
