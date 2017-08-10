@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 
 /**
@@ -47,10 +46,9 @@ public interface PublicKeyBlacklistSession {
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
      * @throws PublicKeyBlacklistDoesntExistsException if the public key blacklist does not exist.
-     * @throws CouldNotRemovePublicKeyBlacklistException if the public key blacklist could not be removed from datastore.
      */
     void removePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint)
-            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException, CouldNotRemovePublicKeyBlacklistException;
+            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException;
 
     /**
      * Retrieves a Map of all public key blacklist entry ids and fingerprints. 

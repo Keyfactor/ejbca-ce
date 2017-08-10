@@ -5004,12 +5004,22 @@ The key validators listed below are available in the system by default. If you d
 </ul>
 </li>
 <li>ECC Key Validator
-<p>Performs inspection of ECC key parameters and validates key quality beyond key length and size: With this key validator partial or full public key validation (of NIST SP 56A) routine on ECC keys can be performed.</p>
+<p>Performs inspection of ECC key parameters and validates key quality beyond key length and size: With this key validator the full public key validation (NIST SP 56A) routine on ECC keys can be performed.</p>
 </li>
 <li>Blacklist Key Validator
-<p>Compares public keys agains a blacklist of known bad public keys, by algorithm and key generation source.</p>
+<p>Compares public keys agains a blacklist of known bad public keys. The list is empty by default and must be filled.</p>
 </li>
 </ul>
+<p>The public key blacklisted entries can be added using the CLI command:</p>
+<source>
+bin/ejbca.sh ca updatepublickeyblacklist --command add --dir &lt;directory of blacklisted public keys&gt;
+</source>
+<p>Where the directory contains public key files in PEM format. If you have a list of PEM formatted private keys, you can create the public key entries, and CSRs to test with using these commands:</p>
+<source>
+openssl req -key blacklisted-privatekey.pem -out blacklisted.csr -new
+openssl rsa -in blacklisted-privatekey.pem -pubout > tmp/blacklisted-publickey.pem
+</source>
+<p><a href="https://www.primekey.com">PrimeKey</a> can provide a blacklist of Debian weak keys as created by the <a href="https://github.com/g0tmi1k/debian-ssh">Metasploit project</a>.</p>
 <subsection name="General Validator Settings">
 <p>
 To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:
