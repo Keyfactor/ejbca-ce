@@ -182,15 +182,18 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
             log.debug("Validating public key with algorithm " + keyAlgorithm + ", length " + keyLength + ", format " + publicKey.getFormat()
                     + ", implementation " + publicKey.getClass().getName() + " against public key blacklist.");
         }
-        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
-        log.info("Matching public key with fingerprint " + fingerprint + " with public key blacklist.");
+        // Use the entry class to create a correct fingerprint
+        PublicKeyBlacklistEntry fp = new PublicKeyBlacklistEntry();
+        fp.setFingerprint(publicKey);
+        final String fingerprint = fp.getFingerprint();
+        log.info("Matching public key with blacklist fingerprint " + fingerprint + " with public key blacklist.");
         if (!useOnlyCache) {
             // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded
             // this call is made here, even if the Validator does not use blacklists, but Validator can not call an EJB so easily.
             // and we don't want to do instanceof, so we take the hit
             // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
             // should better be implemented as a full in memory cache with a state so we know if it's loaded or not, with background updates. See ECA-5951
-            new EjbLocalHelper().getPublicKeyBlacklistSession().getPublicKeyBlacklistEntryId(CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM));
+            new EjbLocalHelper().getPublicKeyBlacklistSession().getPublicKeyBlacklistEntryId(fingerprint);
         }
         Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
@@ -210,15 +213,14 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         if (keyGeneratorSourceMatched && keySpecMatched) {
             final String message = "Public key with id " + entry.getID() + " and fingerprint " + fingerprint
                     + " found in public key blacklist.";
-            if (log.isDebugEnabled()) {
-                log.debug(message);
-            }
             messages.add("Invalid: " + message);
+        } else {
+            log.trace("publicKeyBlacklist passed");
         }
 
-        if (log.isTraceEnabled()) {
+        if (log.isDebugEnabled()) {
             for (String message : messages) {
-                log.trace(message);
+                log.debug(message);
             }
         }
         return messages;
