@@ -547,9 +547,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
             }
         }
 
-        if (log.isTraceEnabled()) {
+        if (log.isDebugEnabled()) {
             for (String message : messages) {
-                log.trace(message);
+                log.debug(message);
             }
         }
         return messages;

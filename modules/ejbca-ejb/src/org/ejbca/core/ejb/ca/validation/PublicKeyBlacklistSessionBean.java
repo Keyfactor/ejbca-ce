@@ -42,10 +42,8 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.validation.CouldNotRemovePublicKeyBlacklistException;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.ProfileID;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
 
@@ -150,32 +148,27 @@ public class PublicKeyBlacklistSessionBean implements PublicKeyBlacklistSessionL
 
     @Override
     public void removePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint)
-            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException, CouldNotRemovePublicKeyBlacklistException {
+            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">removePublicKeyBlacklist(fingerprint: " + fingerprint + ")");
         }
         assertIsAuthorizedToEditPublicKeyBlacklists(admin);
         String message;
-        try {
-            PublicKeyBlacklistData data = PublicKeyBlacklistData.findByFingerprint(entityManager, fingerprint);
-            if (data == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Trying to remove a public key blacklist that does not exist: " + fingerprint);
-                }
-                throw new PublicKeyBlacklistDoesntExistsException();
-            } else {
-                entityManager.remove(data);
-                // Purge the cache here.
-                PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
-                message = intres.getLocalizedMessage("publickeyblacklist.removedpublickeyblacklist", fingerprint);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", message);
-                auditSession.log(EventTypes.PUBLICKEYBLACKLIST_REMOVAL, EventStatus.SUCCESS, ModuleTypes.PUBLIC_KEY_BLACKLIST, ServiceTypes.CORE,
-                        admin.toString(), null, null, null, details);
+        PublicKeyBlacklistData data = PublicKeyBlacklistData.findByFingerprint(entityManager, fingerprint);
+        if (data == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Trying to remove a public key blacklist that does not exist: " + fingerprint);
             }
-        } catch (Exception e) {
-            message = intres.getLocalizedMessage("publickeyblacklist.errorremovepublickeyblacklist", fingerprint);
-            log.info(message, e);
+            throw new PublicKeyBlacklistDoesntExistsException();
+        } else {
+            entityManager.remove(data);
+            // Purge the cache here.
+            PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
+            message = intres.getLocalizedMessage("publickeyblacklist.removedpublickeyblacklist", fingerprint);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", message);
+            auditSession.log(EventTypes.PUBLICKEYBLACKLIST_REMOVAL, EventStatus.SUCCESS, ModuleTypes.PUBLIC_KEY_BLACKLIST, ServiceTypes.CORE,
+                    admin.toString(), null, null, null, details);
         }
         if (log.isTraceEnabled()) {
             log.trace("<removePublicKeyBlacklist()");
