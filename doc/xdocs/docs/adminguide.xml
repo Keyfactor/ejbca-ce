@@ -5020,6 +5020,15 @@ openssl req -key blacklisted-privatekey.pem -out blacklisted.csr -new
 openssl rsa -in blacklisted-privatekey.pem -pubout > tmp/blacklisted-publickey.pem
 </source>
 <p><a href="https://www.primekey.com">PrimeKey</a> can provide a blacklist of Debian weak keys as created by the <a href="https://github.com/g0tmi1k/debian-ssh">Metasploit project</a>.</p>
+<p>You can import a blacklist fingerprint file (a files with one blacklist fingerprint per line) with:</p>
+<source>
+bin/ejbca.sh ca updatepublickeyblacklist --command add --mode fingerprint --keyspecs RSA2048 --dir &lt;directory when blacklist fingerprint file resides&gt;
+</source>
+<p>Note that blacklist fingerprints are a bit special. 
+<br/>You can also remove fingerprints using the fingerprint file:</p>
+<source>
+bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --dir &lt;directory when blacklist fingerprint file resides&gt;
+</source>
 <subsection name="General Validator Settings">
 <p>
 To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:

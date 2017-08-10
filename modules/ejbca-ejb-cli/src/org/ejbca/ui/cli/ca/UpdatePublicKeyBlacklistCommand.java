@@ -181,14 +181,18 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     if (tokens.length > 1) {
                                         keySpecification = tokens[1];
                                     }
-                                    keyGenerationSource = null;
+                                    keyGenerationSource = 0;
                                     if (CollectionUtils.isNotEmpty(sources)) {
                                         keyGenerationSource = sources.get(0);
                                     }
                                     if (tokens.length > 2) {
                                         keyGenerationSource = KeyGeneratorSources.valueOf(tokens[2]).getSource();
                                     }
-                                    addPublicKeyFingerprintToBlacklist(fingerprint, keySpecification, keyGenerationSource);
+                                    state = addPublicKeyFingerprintToBlacklist(fingerprint, keySpecification, keyGenerationSource);
+                                    if (STATUS_OK != state) {
+                                        log.info("Update public key blacklist failed on fingerprint: " + fingerprint); 
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -211,7 +215,15 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                 tokens = line.split(CSV_SEPARATOR);
                                 if (tokens.length > 0) {
                                     fingerprint = tokens[0];
-                                    removeFromBlacklist(fingerprint);
+                                    log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
+                                    try {
+                                        state = removeFromBlacklist(fingerprint);
+                                    } catch (PublicKeyBlacklistDoesntExistsException e) {
+                                        // Do nothing, it was already printed to info
+                                    }
+                                    if (STATUS_OK != state) {
+                                        log.info("remove public key blacklist failed on fingerprint: " + fingerprint);                                        
+                                    }
                                 }
                             }
                         }
@@ -309,25 +321,6 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     }
 
     /**
-     * Removes a public key from the public key blacklist.
-     * 
-     * @param publicKey the public key to remove.
-     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
-     * @throws Exception any exception.
-     */
-    public int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
-        log.trace(">removePublicKeyFromBlacklist()");
-        int result = STATUS_GENERALIMPORTERROR;
-        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-        entry.setFingerprint(publicKey); // sets the fingerprint in proper format from the public key
-        final String fingerprint = entry.getFingerprint();
-        log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
-        result = removeFromBlacklist(fingerprint);
-        log.trace("<removePublicKeyFromBlacklist()");
-        return result;
-    }
-
-    /**
      * Adds a fingerprint to the public key blacklist.
      * 
      * @param fingerprint the fingerprint to add, note the special conditions for this fingerprint see {@link PublicKeyBlacklistEntry#setFingerprint(PublicKey)}
@@ -347,6 +340,25 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         log.info("Try to add public key into public key blacklist by fingerprint (fingerprint=" + fingerprint + ").");
         result = addToBlacklist(entry);
         log.trace("<addPublicKeyFingerprintToBlacklist()");
+        return result;
+    }
+
+    /**
+     * Removes a public key from the public key blacklist.
+     * 
+     * @param publicKey the public key to remove.
+     * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
+     * @throws Exception any exception.
+     */
+    public int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
+        log.trace(">removePublicKeyFromBlacklist()");
+        int result = STATUS_GENERALIMPORTERROR;
+        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+        entry.setFingerprint(publicKey); // sets the fingerprint in proper format from the public key
+        final String fingerprint = entry.getFingerprint();
+        log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
+        result = removeFromBlacklist(fingerprint);
+        log.trace("<removePublicKeyFromBlacklist()");
         return result;
     }
 
