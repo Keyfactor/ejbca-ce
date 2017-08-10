@@ -69,10 +69,12 @@ public class PublicKeyBlacklistEntrySessionTest {
             assertNull("foo should not return an entry", listSession.getPublicKeyBlacklistEntry("foo"));
             Map<Integer, String> map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
             int initialSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
-            assertTrue("initial map should be empty", map.isEmpty());
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint("abc123");
             listSession.addPublicKeyBlacklistEntry(internalAdmin, entry);
+            map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
+            int newSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
+            assertEquals("map size should be increased", initialSize+1, newSize);
             assertNull("foo should not return an entry", listSession.getPublicKeyBlacklistEntry("foo"));
             map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
             assertEquals("map should contain a new entry", initialSize+1, map.size());
@@ -85,7 +87,11 @@ public class PublicKeyBlacklistEntrySessionTest {
             assertEquals("map should contain one less entry", initialSize, map.size());
             assertNull("abc123 should not return an entry any longer", listSession.getPublicKeyBlacklistEntry("abc123"));
         } finally {
+            try {
             listSession.removePublicKeyBlacklistEntry(internalAdmin, "abc123");
+            } catch (PublicKeyBlacklistDoesntExistsException e) {
+                // NOOMD: do nothing
+            }
         }
         log.trace("<testAddGetChangeRemove()");
     }
