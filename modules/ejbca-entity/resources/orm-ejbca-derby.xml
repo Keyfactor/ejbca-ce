@@ -344,7 +344,6 @@
     <entity class="org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
-            <basic fetch="EAGER" name="source"><column name="source" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyspec"><column name="keyspec" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(64)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>

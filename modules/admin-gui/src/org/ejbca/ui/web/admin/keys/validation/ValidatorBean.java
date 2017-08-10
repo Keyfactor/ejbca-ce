@@ -43,7 +43,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.validation.KeyGeneratorSources;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.KeyValidatorDateConditions;
@@ -367,23 +366,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BlacklistKeyValildator key generation sources index field.
-     * @param context the faces context.
-     * @param component the events source component
-     * @param value the source components value attribute
-     * @throws ValidatorException if the validation fails.
-     */
-    @SuppressWarnings("unchecked")
-    public void validateKeyGenerationSource(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        final List<String> includesAll = new ArrayList<String>(KeyGeneratorSources.sourcesAsString());
-        includesAll.add("-1");
-        if (!includesAll.containsAll((ArrayList<String>) value)) {
-            final String message = "Key generator source index must be on of " + includesAll;
-            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
-        }
-    }
-
-    /**
      * Cancel action.
      * @return the navigation outcome defined in faces-config.xml.
      */
@@ -618,26 +600,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Gets a list of available items of public generator sources.
-     * @return the list.
-     */
-    public List<SelectItem> getAvailableKeyGeneratorSources() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
-        final KeyGeneratorSources[] items = KeyGeneratorSources.values();
-        result.add(new SelectItem(new Integer(-1), getEjbcaWebBean().getText("KEYGENERATORSOURCE_ALL")));
-        for (int i = 0, j = items.length; i < j; i++) {
-            result.add(new SelectItem(items[i].getSource(), getEjbcaWebBean().getText(items[i].getLabel())));
-        }
-        return result;
-    }
-
-    /**
      * Gets the available key algorithms.
      * @return the list
      */
     public List<SelectItem> getAvailableKeyAlgorithms() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
-        result.add(new SelectItem("-1", getEjbcaWebBean().getText("KEYGENERATORSOURCE_ALL")));
+        result.add(new SelectItem("-1", getEjbcaWebBean().getText("ALL")));
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
             result.add(new SelectItem(current));
         }

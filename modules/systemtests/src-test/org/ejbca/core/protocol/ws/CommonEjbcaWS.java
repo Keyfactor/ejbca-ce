@@ -144,7 +144,6 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
-import org.cesecore.keys.validation.KeyGeneratorSources;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -779,10 +778,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (blacklistKey) {
             final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setKeyspec("RSA2048");
-            entry.setSource(KeyGeneratorSources.UNKNOWN.getSource());
-            // ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0
-//            entry.setPublicKey(publicKey);
-            entry.setFingerprint(publicKeyFingerprint);
+            entry.setPublicKey(publicKey);
             try {
                 publicKeyBlacklistSession.removePublicKeyBlacklistEntry(intAdmin, publicKeyFingerprint);
             } catch(Exception e) {

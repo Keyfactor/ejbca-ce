@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.KeyGeneratorSources;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -224,8 +223,6 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     }
                     entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
                     assertTrue("Public key fingerprint must have been imported.", null != entry);
-                    assertTrue("Public key blacklist key generation source must be unknown.",
-                            KeyGeneratorSources.OPEN_SSL.getSource() == entry.getSource());
                 }
             }
         }

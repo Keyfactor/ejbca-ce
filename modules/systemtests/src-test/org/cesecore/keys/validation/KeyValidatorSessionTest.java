@@ -540,8 +540,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     private void assertPublicKeyBlacklistKeyValidatorDefaultValues(final PublicKeyBlacklistKeyValidator keyValidator) {
         assertEquals("PublicKeyBlacklistKeyValidator must have default key algorithems value.", keyValidator.getKeyAlgorithms(),
                 new ArrayList<String>());
-        assertEquals("PublicKeyBlacklistKeyValidator must have default key generator sources value.", keyValidator.getKeyGeneratorSources(),
-                new ArrayList<Integer>());
     }
 
     private void assertRsaKeyValidatorCABForumBaseLineRequirements142Values(final RsaKeyValidator keyValidator) {

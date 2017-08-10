@@ -24,7 +24,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.validation.KeyGeneratorSources;
 
 /**
  * Domain class representing a public key blacklist entry.
@@ -55,13 +54,11 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
 
     public static final float LATEST_VERSION = 1F;
 
-    public static final String SOURCE = "source";
     public static final String KEYSPEC = "keySpec";
     public static final String FINGERPRINT = "fingerprint";
 
     // Values used for lookup that are not stored in the data hash map.
     private int id;
-    private int source;
     private String keyspec;
     /** Fingerprint of the key to compare, this is not just a normal fingerprint over the DER encoding
      * For RSA keys this is the hash (see {@link #DIGEST_ALGORITHM}) over the binary bytes of the public key modulus.
@@ -114,7 +111,7 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
     }
 
     /**
-     * Sets the key spec.
+     * Sets the key spec, RSA2048 etc.
      * @param keyspec the key spec string.
      */
     public void setKeyspec(String keyspec) {
@@ -169,27 +166,10 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
             final String fingerprint = Hex.toHexString(digest.digest());
             setFingerprint(fingerprint);
         } else {
-            throw new IllegalArgumentException("PublicKeyBlacklist can only handle RSA public keys at the moment");            
+            log.debug("PublicKeyBlacklist can only handle RSA public keys at the moment");
         }
     }
     
-    /**
-     * Gets the source index, see {@link KeyGeneratorSources}
-     * @return the source index.
-     */
-    public int getSource() {
-        return source;
-    }
-
-    /**
-     * Sets the source index, see {@link KeyGeneratorSources}
-     
-     * @param source the index
-     */
-    public void setSource(int source) {
-        this.source = source;
-    }
-
     /**
      * Gets the public key, have to be set transient with {@link #setPublicKey(PublicKey)}, not available after serialization
      * or storage.
