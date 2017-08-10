@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.validation.KeyValidatorBase;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
 import org.junit.After;
@@ -97,11 +96,10 @@ public class PublicKeyBlacklistKeyValidatorTest {
         keyValidator.setKeyAlgorithms(algorithms);
         {
             // Manual update of cache entry
-            final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
             final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-            entry.setFingerprint(fingerprint);
+            entry.setFingerprint(publicKey);
             PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);
-            PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), fingerprint, entry);
+            PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), entry.getFingerprint(), entry);
         }
         messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
