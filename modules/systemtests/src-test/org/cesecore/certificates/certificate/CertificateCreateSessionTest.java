@@ -84,8 +84,8 @@ import org.cesecore.keys.validation.EccKeyValidator;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
-import org.cesecore.keys.validation.KeyValidatorTestUtil;
 import org.cesecore.keys.validation.RsaKeyValidator;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -669,8 +669,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityInformation.setPassword("foo123");
             // EC key validator
-            EccKeyValidator ecKeyValidator = (EccKeyValidator) KeyValidatorTestUtil.createKeyValidator(EccKeyValidator.class,
-                    ECC_VAL_NAME, "Description", null, -1, null, -1, -1, new Integer[] {});
+            EccKeyValidator ecKeyValidator = (EccKeyValidator) createKeyValidator(EccKeyValidator.class,
+                    ECC_VAL_NAME, "Description");
             ecKeyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
             ecKeyValidator.setNotApplicableAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
             ecKeyValidator.setAllCertificateProfileIds(true);
@@ -679,8 +679,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             curves.add("secp256r1");
             ecKeyValidator.setCurves(curves);
             // RSA key validator
-            RsaKeyValidator rsaKeyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
-                    RSA_VAL_NAME, "Description", null, -1, null, -1, -1, new Integer[] {});
+            RsaKeyValidator rsaKeyValidator = (RsaKeyValidator) createKeyValidator(RsaKeyValidator.class,
+                    RSA_VAL_NAME, "Description");
             rsaKeyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
             rsaKeyValidator.setNotApplicableAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
             rsaKeyValidator.setAllCertificateProfileIds(true);
@@ -1075,6 +1075,15 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(newCertificate);
             internalCertStoreSession.removeCertificate(onhold);
         }
+    }
+
+    private Validator createKeyValidator(Class<? extends Validator> type, final String name, final String description) throws InstantiationException, IllegalAccessException {
+        Validator result = type.newInstance();
+        result.setProfileName(name);
+        if (null != description) {
+            result.setDescription(description);
+        }
+        return result;
     }
 
 }
