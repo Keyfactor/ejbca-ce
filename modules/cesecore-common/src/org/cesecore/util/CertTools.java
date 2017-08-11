@@ -1413,9 +1413,11 @@ public abstract class CertTools {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try ( final PrintStream printStream = new PrintStream(baos) ) {
             for (final Certificate certificate : certs) {
-                printStream.println("Subject: " + CertTools.getSubjectDN(certificate));
-                printStream.println("Issuer: " + CertTools.getIssuerDN(certificate));
-                writeAsPemEncoded(printStream, certificate.getEncoded(), BEGIN_CERTIFICATE, END_CERTIFICATE);
+                if (certificate != null) {
+                    printStream.println("Subject: " + CertTools.getSubjectDN(certificate));
+                    printStream.println("Issuer: " + CertTools.getIssuerDN(certificate));
+                    writeAsPemEncoded(printStream, certificate.getEncoded(), BEGIN_CERTIFICATE, END_CERTIFICATE);                    
+                }
             }
         }
         return baos.toByteArray();
