@@ -15,7 +15,8 @@ Apache HTTP Components			httpmime						Apache					https://hc.apache.org/index.ht
 BouncyCastle					bcpkix							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
 BouncyCastle					bcprov							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
 Cert-CVC						cert-cvc						LGPL					https://svn.cesecore.eu/svn/ejbca/trunk/cert-cvc		A library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA. Originally developed by Keijo Kurkinen, and contributed to EJBCA. 
-DNSJava							dnsjava							BSD						http://dnsjava.org/			
+DNSJava							dnsjava							BSD						http://dnsjava.org/										Used to perform DNS lookups
+Jitsi							dnssecjava						Eclipse					https://github.com/ibauersachs/dnssecjava				Used in addition to DNSJava to validate DNSSec
 Log4j							log4j							Apache					https://logging.apache.org/log4j						Used for logging throughout EJBCA		
 Nimbus Jose						nimbus-jose-jwt					Apache					https://connect2id.com/products/nimbus-jose-jwt
 OpenLDAP						ldap							OpenLDAP Public License http://www.openldap.org/								Used for publishing in LDAP directories
