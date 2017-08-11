@@ -209,6 +209,7 @@
 
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-log4j*.jar"/></path>
+	<path id="lib.slf4japi.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-api*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>
 	<path id="lib.commons-beanutils.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-beanutils-*.jar"/></path>
 	<path id="lib.commons-codec.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-codec-*.jar"/></path>
@@ -238,6 +239,7 @@
 	<path id="lib.ninbus-jose-jwt.classpath"><fileset dir="${ejbca.home}/lib/" includes="nimbus-jose-jwt-*.jar"/></path>
 	<path id="lib.json-smart.classpath"><fileset dir="${ejbca.home}/lib/" includes="json-smart-*.jar"/></path>
 	<path id="lib.dnsjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnsjava-*.jar"/></path>
+	<path id="lib.dnssecjava.classpath"><fileset dir="${ejbca.home}/lib" includes="dnssecjava-*.jar"/></path>
 	<path id="lib.utils.classpath">
 		<fileset dir="${ejbca.home}/lib">
 			<include name="commons-*.jar"/>
