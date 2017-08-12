@@ -58,7 +58,7 @@ public interface PublicKeyBlacklistSession {
     
     /**
      * Gets a public key blacklist entry by cache or database.
-     * @param a public key fingerprint, CertTools.createPublicKeyFingerprint
+     * @param a fingerprint of the public key blacklist entry, PublicKeyBlacklistEntry.createFingerprint 
      * @return a PublicKeyBlacklistEntry or null if a public key blacklist entry with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
      */
     PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(String fingerprint);

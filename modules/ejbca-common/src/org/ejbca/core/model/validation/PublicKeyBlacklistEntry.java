@@ -148,6 +148,15 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
      * @param publicKey an RSA public key
      */
     public void setFingerprint(PublicKey publicKey) {
+        setFingerprint(createFingerprint(publicKey));
+    }
+    
+    /** Creates the fingerprint in the correct format from a public key object
+     * see {@link #setFingerprint(String)}
+     * @param publicKey an RSA public key
+     * @return public key fingerprint, as required by Blacklist, or null of no fingerprint can be created (due to unhandled key type for example)
+     */
+    public static String createFingerprint(PublicKey publicKey) {
         if (publicKey instanceof RSAPublicKey) {
             // Fingerprint of the key to compare, this is not just a normal fingerprint over the DER encoding
             // For RSA keys this is the hash (see {@link #DIGEST_ALGORITHM}) over the binary bytes of the public key modulus.
@@ -164,10 +173,11 @@ public class PublicKeyBlacklistEntry extends UpgradeableDataHashMap implements S
             digest.reset();
             digest.update(modulusBytes);
             final String fingerprint = Hex.toHexString(digest.digest());
-            setFingerprint(fingerprint);
+            return fingerprint;
         } else {
             log.debug("PublicKeyBlacklist can only handle RSA public keys at the moment");
         }
+        return null;
     }
     
     /**

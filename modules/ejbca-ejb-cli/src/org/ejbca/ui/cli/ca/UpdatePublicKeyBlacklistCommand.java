@@ -117,8 +117,8 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             }
             final File files[] = importDir.listFiles();
             if (files == null || files.length < 1) {
-                log.error("No files in directory '" + importDir.getCanonicalPath() + "'. Nothing to do.");
-                return CommandResult.CLI_FAILURE;
+                log.info("No files in directory '" + importDir.getCanonicalPath() + "'. Nothing to do.");
+                return CommandResult.SUCCESS; // Nothing to do is OK
             }
 
             // Read public key file (or lists of fingerprint) to add/remove to/from public key blacklist.
@@ -134,7 +134,6 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             PublicKey publicKey;
             String fingerprint;
             String keySpecification;
-            Integer keyGenerationSource;
             byte[] asn1Encodedbytes;
 
             for (final File file : files) {

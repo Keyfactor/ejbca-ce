@@ -34,7 +34,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
@@ -101,10 +100,10 @@ public class UpdatePublicKeyBlacklistCommandTest {
 
         URL url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
         if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
+            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
         }
         File dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory: " + dir.getAbsolutePath());
+        log.info("Using directory (public keys): " + dir.getAbsolutePath());
 
         // A-1: Add/remove public key blacklist entries that does not exist, including invalid files (wrong format, unknown key).
         String[] args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
@@ -123,7 +122,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             try {
                 asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
                 publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
-                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
+                fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
                 keySpecifications.put(fingerprint, AlgorithmTools.getKeySpecification(publicKey));
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
@@ -145,7 +144,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             try {
                 asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
                 publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
-                fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
+                fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
                 keySpecifications.put(fingerprint, AlgorithmTools.getKeySpecification(publicKey));
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
@@ -164,13 +163,13 @@ public class UpdatePublicKeyBlacklistCommandTest {
             throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_EMPTY_FOLDER);
         }
         dir = new File(url.getPath());
-        log.info("Using directory: " + dir.getAbsolutePath());
+        log.info("Using directory (empty folder): " + dir.getAbsolutePath());
         final int countEntries = publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size();
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
-        Assert.assertTrue("Import an empty folder must cause a CLI failure: " + result,
-                result.getReturnCode() == CommandResult.CLI_FAILURE.getReturnCode());
+        Assert.assertTrue("Add empty dir for lists of public key must exit with success: " + result,
+                result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that nothing was imported ~
         Assert.assertTrue("After importing an empty folder, the number of blacklist entries must still be the same.",
                 publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size() == countEntries);
@@ -188,7 +187,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         }
         File dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory: " + dir.getAbsolutePath());
+        log.info("Using directory (fingerprints): " + dir.getAbsolutePath());
 
         // A-1: Insert public key blacklist entries that does not exist, including invalid files (wrong format, unknown key).
         String[] args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
@@ -215,7 +214,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     fingerprint = tokens[0];
                     fingerprints.add(fingerprint);
                     if (log.isDebugEnabled()) {
-                        log.debug("Trying to retrievepublic key blacklist entry: "+fingerprint);
+                        log.debug("Trying to retrieve public key blacklist entry: "+fingerprint);
                     }
                     entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
                     assertTrue("Public key fingerprint must have been imported.", null != entry);
@@ -242,8 +241,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
         if (null == url) {
             throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_EMPTY_FOLDER);
         }
-        dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory: " + dir.getAbsolutePath());
+        dir = new File(url.getPath());
+        log.info("Using directory (empty folder): " + dir.getAbsolutePath());
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.UPDATE_MODE_KEY, UpdatePublicKeyBlacklistCommand.UPDATE_MODE_FINGERPINT,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
@@ -271,7 +270,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             throw new IllegalArgumentException("Could not find resource " + resource);
         }
         final File dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory: " + dir.getAbsolutePath());
+        log.info("Using directory (remove publicKey): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
         PublicKey publicKey;
         byte[] asn1Encodedbytes;
@@ -281,7 +280,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             asn1Encodedbytes = KeyTools.getBytesFromPublicKeyFile(FileTools.readFiletoBuffer(file.getAbsolutePath()));
             publicKey = KeyTools.getPublicKeyFromBytes(asn1Encodedbytes);
             log.trace("Loaded public key " + publicKey);
-            fingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
+            fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
             try {
                 publicKeyBlacklistSession.removePublicKeyBlacklistEntry(authenticationToken, fingerprint);
             } catch (PublicKeyBlacklistDoesntExistsException e) {
@@ -307,7 +306,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
             throw new IllegalArgumentException("Could not find resource " + resource);
         }
         final File dir = new File(url.getPath()).getParentFile();
-        log.info("Using directory: " + dir.getAbsolutePath());
+        log.info("Using directory (remove fingerprint): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
         FileReader reader;
         List<String> lines;
