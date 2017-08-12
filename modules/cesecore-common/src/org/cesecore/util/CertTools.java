@@ -4404,7 +4404,7 @@ public abstract class CertTools {
             digest.update(publicKey.getEncoded());
             final String result = Hex.toHexString(digest.digest());
             if (log.isDebugEnabled()) {
-                log.debug("Fingerprint " + result + " created for public key \n" + Base64.encode(publicKey.getEncoded()));
+                log.debug("Fingerprint " + result + " created for public key: " + new String(Base64.encode(publicKey.getEncoded())));
             }
             return result;
         } catch (NoSuchAlgorithmException e) {
