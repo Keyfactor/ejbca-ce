@@ -70,7 +70,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param admin AuthenticationToken of administrator.
      * @param validator the key validator to add.
      *
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
     void importValidator(AuthenticationToken admin, Validator validator) throws AuthorizationDeniedException, KeyValidatorExistsException;
@@ -95,7 +95,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param the ID of a validator
      * @param newName the name of the clone
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
@@ -105,7 +105,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
     /**
      * Adds a key validator with the same content as the original.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
@@ -119,7 +119,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param validatorId the ID of the validator to modify
      * @param newName the new name of the validator
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
@@ -133,7 +133,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param validator the validator to modify
      * @param newName the new name of the validator
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
