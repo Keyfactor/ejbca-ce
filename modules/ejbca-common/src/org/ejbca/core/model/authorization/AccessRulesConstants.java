@@ -40,8 +40,6 @@ public abstract class AccessRulesConstants {
     // Name of end entity profile prefix directory in authorization module.
     public static final String ENDENTITYPROFILEBASE                       = "/endentityprofilesrules";
     public static final String ENDENTITYPROFILEPREFIX                     = "/endentityprofilesrules/";
-    public static final String VALIDATORBASE                           = "/validatorrules";
-    public static final String VALIDATORPREFIX                         = "/validatorrules/";
     
     // Name of end entity profile prefix directory in authorization module.
     public static final String USERDATASOURCEBASE                         = "/userdatasourcesrules";

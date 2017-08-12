@@ -229,9 +229,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(StandardRules.CERTIFICATEPROFILEVIEW.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_EDITPUBLISHER, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.VALIDATORPREFIX, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_EDITVALIDATOR, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
+                    new AccessRule(StandardRules.VALIDATORACCESSBASE.resource(), Role.STATE_ALLOW),
                     // This was present in legacy DefaultRoles, but makes very little sense
                     //new AccessRule(AuditLogRules.LOG.resource(), Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW),
@@ -377,7 +377,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Find EEP resources allowed by this role
         setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet()));
         // Find KV resources allowed by this role
-        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.VALIDATORPREFIX, keyValidatorsIdToNameMap.keySet()));
+        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.VALIDATORACCESS.resource(), keyValidatorsIdToNameMap.keySet()));
         // Find IKB resources allowed by this role
         setResourcesIkbSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesIkb()));
         // Find Other resources allowed by this role
@@ -621,11 +621,11 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 log.debug("Authorized key validator ids for " + getAdmin().getUniqueId() + " are " + authorizedKvIds);
             }
             for (final int id : authorizedKvIds) {
-                availableResourcesKeyValidators.add(new SelectItem(AccessRulesHelper.normalizeResource(AccessRulesConstants.VALIDATORPREFIX + id), keyValidatorsIdToNameMap.get(id)));
+                availableResourcesKeyValidators.add(new SelectItem(AccessRulesHelper.normalizeResource(StandardRules.VALIDATORACCESS.resource() + id), keyValidatorsIdToNameMap.get(id)));
             }
             super.sortSelectItemsByLabel(availableResourcesKeyValidators);
-            if (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.VALIDATORPREFIX)) {
-                availableResourcesKeyValidators.addFirst(new SelectItem(AccessRulesConstants.VALIDATORPREFIX, super.getEjbcaWebBean().getText("ALL")));
+            if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.VALIDATORACCESS.resource())) {
+                availableResourcesKeyValidators.addFirst(new SelectItem(StandardRules.VALIDATORACCESS.resource(), super.getEjbcaWebBean().getText("ALL")));
             }
         }
         return availableResourcesKeyValidators;
