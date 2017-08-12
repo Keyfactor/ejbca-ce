@@ -255,8 +255,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
         Assert.assertTrue("Add empty dir for lists of fingerprints must exit with success: " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that nothing was imported ~
-        Assert.assertTrue("After importing an empty folder, the number of blacklist entries must still be the same.",
-                publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size() == countEntries);
+        Assert.assertEquals("After importing an empty folder, the number of blacklist entries must still be the same.",
+                countEntries, publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size());
 
         log.trace("<test02AddAndRemoveCommandModeByFingerprint()");
     }
