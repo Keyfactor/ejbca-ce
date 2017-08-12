@@ -668,18 +668,26 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     public Collection<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin, String keyValidatorAccessRule) {
         final ArrayList<Integer> result = new ArrayList<Integer>();
         final Map<Integer, String> map = getKeyValidatorIdToNameMap();
-        String accessRule;
-        boolean authorized;
-        if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, keyValidatorAccessRule)) {
+            final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+            final List<Integer> authorizedCPIDs = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0);
             for (final Entry<Integer, String> entry : map.entrySet()) {
-                // ECA-4219 Fix. Authorization does not seem to be effective. If so, it would NOT be put into list for AdminGUI -> Amdin. Privileges -> Access Rules -> Base Mode -> Key Validators. But it would still appear in the Advanced Mode!
-                // accessRule = "/keyvalidator/" + entry.getValue() + keyValidatorAccessRule; // AccessRulesConstants.KEYVALIDATORPREFIX not available here.
-                accessRule = "/keyvalidatorrules/" + entry.getValue().toString() + keyValidatorAccessRule;
-                authorized = authorizationSession.isAuthorizedNoLogging(admin, accessRule);
-                if (log.isDebugEnabled()) {
-                    log.debug("Access rule " + accessRule + " authorized " + authorized);
+                // Check that administrator have access to all certificate profiles referenced by the validator
+                Validator val = getValidator(entry.getKey());
+                boolean allexists = true;
+                for (final Integer nextcpid : val.getCertificateProfileIds()) {
+                    // If any CP is selected, it's access to all (only authorized will be displayed)
+                    if (nextcpid.intValue() == -1) {
+                        allexists = true;
+                        break;
+                    }
+                    // superadmin should be able to access profiles with missing CA Ids
+                    if (!authorizedCPIDs.contains(nextcpid) && (!rootAccess)) {
+                        allexists = false;
+                        break;
+                    }
                 }
-                if (authorized) {
+                if (allexists) {
                     result.add(entry.getKey());
                 }
             }
