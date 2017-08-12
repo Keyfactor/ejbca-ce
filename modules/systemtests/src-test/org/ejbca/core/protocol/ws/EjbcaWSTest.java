@@ -127,7 +127,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
-import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -395,8 +394,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test03_1GeneratePkcs10WithBlacklistedKey() throws Exception {
-        generatePkcs10(true);
+    public void test03_1GeneratePkcs10() throws Exception {
+        generatePkcs10();
     }
 
     @Test
@@ -1670,7 +1669,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test72CreateCA() throws Exception {
-        // ECA-4219 Test: WS call create CA with key validator.
         log.trace(">test72CreateCA()");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());

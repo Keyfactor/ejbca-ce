@@ -183,7 +183,6 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -753,7 +752,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     }
 
-    protected void generatePkcs10(final boolean blacklistKey) throws Exception {
+    protected void generatePkcs10() throws Exception {
 
         UserDataVOWS user1 = new UserDataVOWS();
         user1.setUsername(CA1_WSTESTUSER1);
@@ -769,71 +768,44 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-        final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        final PublicKey publicKey = keyPair.getPublic();
-        final String publicKeyFingerprint = CertTools.createPublicKeyFingerprint(publicKey, PublicKeyBlacklistEntry.DIGEST_ALGORITHM);
-        PKCS10CertificationRequest pkcs10 = getP10Request(keyPair);
-        
-        // Blacklist public key.
-        if (blacklistKey) {
-            final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-            entry.setKeyspec("RSA2048");
-            entry.setPublicKey(publicKey);
-            try {
-                publicKeyBlacklistSession.removePublicKeyBlacklistEntry(intAdmin, publicKeyFingerprint);
-            } catch(Exception e) {
-                // NOOP
-            }
-            publicKeyBlacklistSession.addPublicKeyBlacklistEntry(intAdmin, entry);
-        }
-        
+        PKCS10CertificationRequest pkcs10 = getP10Request();
         // Submit the request
         CertificateResponse certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                 CertificateHelper.RESPONSETYPE_CERTIFICATE);
         assertNotNull(certenv);
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-        
-        if (!blacklistKey) {
+        assertNotNull(cert);
+        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        byte[] ext = cert.getExtensionValue("1.2.3.4");
+        // Certificate profile did not allow extension override
+        assertNull("no extension should exist", ext);
+        // Allow extension override
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        profile.setAllowExtensionOverride(true);
+        certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
+        // Now our extension should be possible to get in there
+        try {
+            ejbcaraws.editUser(user1);
+            pkcs10 = getP10Request();
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            assertNotNull(certenv);
+            cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
             assertNotNull(cert);
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-            byte[] ext = cert.getExtensionValue("1.2.3.4");
-            // Certificate profile did not allow extension override
-            assertNull("no extension should exist", ext);
-            // Allow extension override
-            CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
-            profile.setAllowExtensionOverride(true);
-            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
-            // Now our extension should be possible to get in there
+            ext = cert.getExtensionValue("1.2.3.4");
+            assertNotNull("there should be an extension", ext);
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
             try {
-                ejbcaraws.editUser(user1);
-                pkcs10 = getP10Request(null);
-                certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
-                        CertificateHelper.RESPONSETYPE_CERTIFICATE);
-                assertNotNull(certenv);
-                cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-                assertNotNull(cert);
-                assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-                ext = cert.getExtensionValue("1.2.3.4");
-                assertNotNull("there should be an extension", ext);
-                ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
-                try {
-                    DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
-                    assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
-                } finally {
-                    asn1InputStream.close();
-                }
+                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
             } finally {
-                // restore
-                profile.setAllowExtensionOverride(false);
-                certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
+                asn1InputStream.close();
             }
-        } else { // public key is blacklisted.
-            
-        }
-        
-        // Remove blacklisted public key.
-        if (blacklistKey) {
-            publicKeyBlacklistSession.removePublicKeyBlacklistEntry(intAdmin, publicKeyFingerprint);
+        } finally {
+            // restore
+            profile.setAllowExtensionOverride(false);
+            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
         }
     }
 
@@ -895,13 +867,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      * Generate a new key pair and return a B64 encoded PKCS#10 encoded certificate request for the keypair.
      */
     private String getP10() throws Exception {
-        return new String(Base64.encode(getP10Request(null).getEncoded()));
+        return new String(Base64.encode(getP10Request().getEncoded()));
     }
     
-    private PKCS10CertificationRequest getP10Request(KeyPair keys) throws Exception {
-        if (null == keys) {
-            keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        }
+    private PKCS10CertificationRequest getP10Request() throws Exception {
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         // Make a PKCS10 request with extensions
         ASN1EncodableVector attributes = new ASN1EncodableVector();
         // Add a custom extension (dummy)
