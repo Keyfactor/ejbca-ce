@@ -676,13 +676,22 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 Validator val = getValidator(entry.getKey());
                 boolean allexists = true;
                 for (final Integer nextcpid : val.getCertificateProfileIds()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Validator '"+val.getProfileName()+"' has "+val.getCertificateProfileIds().size()+" no of CPs selected");
+                    }
                     // If any CP is selected, it's access to all (only authorized will be displayed)
                     if (nextcpid.intValue() == -1) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Validator is applicable to all certificate profiles, not limiting access based on CPs");
+                        }
                         allexists = true;
                         break;
                     }
                     // superadmin should be able to access profiles with missing CA Ids
                     if (!authorizedCPIDs.contains(nextcpid) && (!rootAccess)) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Validator have certificate profile "+nextcpid+" selected which admin is not authorized to:"+admin.toString());
+                        }
                         allexists = false;
                         break;
                     }
