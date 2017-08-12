@@ -92,6 +92,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Before;
@@ -117,6 +119,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
+    private PublicKeyBlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateCreateSessionTest"));
@@ -759,6 +762,22 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 assertEquals("Error message should come from Validator.", 
                         "org.cesecore.keys.validation.KeyValidationException: Invalid: Public key algorithm is not RSA or could not be parsed: ECDSA, format X.509", 
                         e.getMessage());
+            }
+            // and test happy path, but now forbidden by Blacklist. ECDSA 256 bit key. Not allows by blacklist.
+            rsaKeyValidator.setNotApplicableAction(KeyValidationFailedActions.DO_NOTHING.getIndex());
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, rsaKeyValidator);
+            keyValidatorSession.changeKeyValidator(alwaysAllowToken, ecKeyValidator);
+            PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+            entry.setFingerprint(keyPairEc.getPublic());
+            entry.setKeyspec("secp256r1");
+            listSession.addPublicKeyBlacklistEntry(alwaysAllowToken, entry);
+            try {
+                final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+                certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
+                fail("ECC should fail on blacklist.");
+            } catch (CertificateCreateException e) {
+                assertTrue("Error message should come from Validator.", 
+                        e.getMessage().startsWith("org.cesecore.keys.validation.KeyValidationException: Key validator testKeyValidatorblacklist-parameter-validation-test-1 could not validate sufficient key quality for public key"));
             }
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, TEST_NAME);

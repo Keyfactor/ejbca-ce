@@ -81,6 +81,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         if (data.get(KEY_ALGORITHMS) == null) {
             ArrayList<String> algs = new ArrayList<String>();
             algs.add("RSA");
+            algs.add("ECDSA");
             setKeyAlgorithms(algs);
         }
     }
