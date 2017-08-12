@@ -129,10 +129,6 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
                 }
                 entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
-                // ECA-4219 Fix. BouncyCastle RSA keys cause java.io.StreamCorruptedException: Unexpected byte found when reading an object: 0, but another exception occured:
-                //                assertTrue("Public key blacklist entries must have been imported.", null != entry);
-                //                assertTrue("Public key blacklist key specification must match the one imported.",
-                //                        entry.getKeyspec().equals(keySpecifications.get(fingerprint)));
             } catch (CertificateParsingException e) {
                 // NOOP -> Only if it was possible to parse it.
             }
