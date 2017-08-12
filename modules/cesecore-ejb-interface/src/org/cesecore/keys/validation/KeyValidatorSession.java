@@ -47,7 +47,7 @@ public interface KeyValidatorSession {
      * @param validator the key validator to add
      * @return the key validator ID as added
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
     int addKeyValidator(AuthenticationToken admin, Validator validator) throws AuthorizationDeniedException, KeyValidatorExistsException;
@@ -58,7 +58,7 @@ public interface KeyValidatorSession {
      * @param admin AuthenticationToken of administrator.
      * @param validator the key validator to be modified.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if there's no key validator with the given name.
      * 
      * */
@@ -71,7 +71,7 @@ public interface KeyValidatorSession {
      * @param admin AuthenticationToken of admin.
      * @param validatorId the ID of the validator to remove
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidators
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validators
      * @throws CouldNotRemoveKeyValidatorException if the key validator is referenced by other objects.
      */
     void removeKeyValidator(final AuthenticationToken admin, final int validatorId)
@@ -83,7 +83,7 @@ public interface KeyValidatorSession {
      * @param admin AuthenticationToken of admin.
      * @param validatorName the name of the validator to remove
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidators
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validators
      * @throws CouldNotRemoveKeyValidatorException if the key validator is referenced by other objects.
      */
     void removeKeyValidator(AuthenticationToken admin, String validatorName) 

@@ -85,7 +85,7 @@ public interface KeyValidatorProxySessionRemote {
      * @param name the name of the key validator to add.
      * @param validator the key validator to add.
      *
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
     void addKeyValidator(AuthenticationToken admin, int id, String name, Validator validator)
@@ -98,7 +98,7 @@ public interface KeyValidatorProxySessionRemote {
      * @param validator the key validator to add
      * @return the key validator ID as added
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorExistsException if key validator already exists.
      */
     int addKeyValidator(AuthenticationToken admin, Validator validator)
@@ -110,7 +110,7 @@ public interface KeyValidatorProxySessionRemote {
      * @param admin AuthenticationToken of administrator.
      * @param validator the key validator to be modified.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if there's no key validator with the given name.
      * 
      * */
@@ -120,7 +120,7 @@ public interface KeyValidatorProxySessionRemote {
     /**
      * Adds a key validator with the same content as the original.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
@@ -130,7 +130,7 @@ public interface KeyValidatorProxySessionRemote {
     /**
      * Renames a key validator or throws an exception.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidator
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validator
      * @throws KeyValidatorDoesntExistsException if key validator does not exist
      * @throws KeyValidatorExistsException if key validator already exists.
      */
@@ -142,7 +142,7 @@ public interface KeyValidatorProxySessionRemote {
      * @param admin AuthenticationToken of admin.
      * @param validatorId the ID of the key validator to remove.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_keyvalidators
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_validators
      * @throws CouldNotRemoveKeyValidatorException if the key validator is referenced by other objects.
      */
     void removeKeyValidator(AuthenticationToken admin, final int validatorId)
