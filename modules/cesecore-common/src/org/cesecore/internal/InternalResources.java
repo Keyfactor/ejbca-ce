@@ -87,7 +87,7 @@ public class InternalResources implements Serializable {
             	try {
             		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
                 } catch (FileNotFoundException e) {
-                    log.error("Localization files not found");
+                    log.error("Localization files not found: "+e.getMessage());
                 }
             }
             secondaryStream = InternalResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
@@ -95,7 +95,7 @@ public class InternalResources implements Serializable {
             	try {
             		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
                 } catch (FileNotFoundException e) {
-                    log.error("Localization files not found");
+                    log.error("Localization files not found: "+e.getMessage());
                 }
             }
 
