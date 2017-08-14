@@ -260,11 +260,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 }
             }
             for (Integer toRemove : certificateProfilesToRemove) {
-                log.warn("Warning: certificate profile with id " + toRemove + " was not found and will not be used in key validator '" + name + "'.");
+                log.info("Warning: certificate profile with id " + toRemove + " was not found and will not be used in key validator '" + name + "'.");
                 certificateProfileIds.remove(toRemove);
             }
             if (certificateProfileIds.size() == 0) {
-                log.warn("Warning: No certificate profiles left in key validator '" + name + "'.");
+                log.info("Warning: No certificate profiles left in key validator '" + name + "'.");
                 certificateProfileIds.add(Integer.valueOf(CertificateProfile.ANYCA));
             }
             validator.setCertificateProfileIds(certificateProfileIds);
@@ -283,7 +283,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      * @return true if the file shall be ignored from a key validator import, false if it should be imported. 
      */
     private boolean ignoreFile(final String filename) {
-        if (filename.lastIndexOf(".xml") != (filename.length() - 4)) {
+        if (!filename.endsWith(".xml")) {
             log.info(filename + " is not an XML file. IGNORED");
             return true;
         }
