@@ -126,7 +126,7 @@ public class RaCertificateDetails {
 
     private boolean more = false;
     private boolean renderConfirmRecovery = false;
-    private boolean keyRecoveryPossible;
+    private Boolean keyRecoveryPossible;
     private int styleRowCallCounter = 0;
     
     private RaCertificateDetails next = null;
@@ -528,7 +528,10 @@ public class RaCertificateDetails {
     }
 
     public boolean isKeyRecoveryPossible() {
-        this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
+        // This check performs multiple database queries. Only check it on new page load
+        if (keyRecoveryPossible == null) {
+            this.keyRecoveryPossible = callbacks.keyRecoveryPossible(this);
+        }
         return keyRecoveryPossible;
     }
     
