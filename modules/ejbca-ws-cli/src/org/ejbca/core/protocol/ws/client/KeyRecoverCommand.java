@@ -67,7 +67,6 @@ public class KeyRecoverCommand extends EJBCAWSRABaseCommand implements IAdminCom
            } catch (ApprovalException_Exception e) {
                getPrintStream().println(e.getMessage());
            } catch (CADoesntExistsException_Exception e) {
-//               getPrintStream().println("CA with common name: '" + issuerDn + "' was not found");
                getPrintStream().println(e.getMessage());
            } catch (NotFoundException_Exception e) {
                getPrintStream().println(e.getMessage());
@@ -82,7 +81,7 @@ public class KeyRecoverCommand extends EJBCAWSRABaseCommand implements IAdminCom
     @Override
     protected void usage() {
         getPrintStream().println("Command used for key recovery");
-        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN)>");       
+        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN>");       
     }
     
 }
