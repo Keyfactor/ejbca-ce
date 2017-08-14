@@ -312,14 +312,14 @@ public class RegisterReqBean {
         
         // Check that the Certificate Profile or the Default CA has an Approval Profile set for Add/Edit End Entity
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddress));
-        boolean approvalInCa = false;
+        ApprovalProfile approvalProfile = null;
         try {
-            approvalInCa = ejbLocalHelper.getCaSession().getCA(admin, endEntityProfile.getDefaultCA()).getApprovals().get(ApprovalRequestType.ADDEDITENDENTITY) != -1;
+            CAInfo caInfo = ejbLocalHelper.getCaSession().getCAInfo(admin, endEntityProfile.getDefaultCA());
+            approvalProfile = ejbLocalHelper.getApprovalProfileSession().getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, caInfo, certificateProfile);
         } catch (AuthorizationDeniedException | CADoesntExistsException e) {
-            log.info("Self Registration: Could not evaluate Default CA", e);
-            valid = false;
+            log.info("Self Registration: Could not get Approval Profile", e);
         }
-        if (certificateProfile.getApprovals().get(ApprovalRequestType.ADDEDITENDENTITY) == -1 && !approvalInCa) {
+        if (approvalProfile == null) {
             log.info("Self Registration: An Approval Profile must be set for 'Add/Edit End Entity' in the Certificate Profile/Default CA for Certificate type: " + getCertType());
             valid = false;
         }
