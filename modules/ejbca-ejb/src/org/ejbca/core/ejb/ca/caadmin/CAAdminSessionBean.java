@@ -3172,12 +3172,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public Set<Integer> getAuthorizedKeyValidatorIds(final AuthenticationToken admin) {
         // Find all key validators, use this set to track not owned key validators.
         final Map<Integer, Validator> keyValidators = keyValidatorSession.getAllKeyValidators();
-        //TOOD: Firstly, weed out all key validators which we lack authorization to.
-
-
+        //Firstly, weed out all key validators which we lack authorization to.
         // Set to use to track all authorized key validator IDs
         final Set<Integer> result = new HashSet<Integer>();
-        // Secondly, find all CAs.
         for (final int caId : caSession.getAllCaIds()) {
             try {
                 final Collection<Integer> caKeyValidatorIds = caSession.getCAInfoInternal(caId).getValidators();
