@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionLocal;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
@@ -101,7 +101,7 @@ public interface EjbBridgeSessionLocal {
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
 	HardTokenSessionLocal getHardTokenSession();
 	KeyRecoverySessionLocal getKeyRecoverySession();
-	PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession();
+	BlacklistSessionLocal getBlacklistSession();
 	KeyValidatorSessionLocal getKeyValidatorSession();
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();

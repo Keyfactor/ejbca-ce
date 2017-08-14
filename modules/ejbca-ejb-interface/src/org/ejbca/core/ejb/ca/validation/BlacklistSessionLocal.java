@@ -17,7 +17,7 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.BlacklistEntry;
 
 /**
  * Local interface for public key blacklist operations.
@@ -25,29 +25,29 @@ import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
  * @version $Id$
  */
 @Local
-public interface PublicKeyBlacklistSessionLocal extends PublicKeyBlacklistSession {
+public interface BlacklistSessionLocal extends BlacklistSession {
 
     /**
      * Gets a public key blacklist entry by cache or database.
-     * @return a PublicKeyBlacklist or null if a public key blacklist with the given id does not exist. Uses cache to get the object as quickly as possible.
+     * @return a Blacklist or null if a public key blacklist with the given id does not exist. Uses cache to get the object as quickly as possible.
      *         
      */
-    PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(int id);
+    BlacklistEntry getBlacklistEntry(int id);
 
     /**
      * Returns the id of the public key blacklist entry with the given fingerprint.
      * @return the id or 0 if the public key blacklist cannot be found.
      * 
-     * @throws PublicKeyBlacklistDoesntExistsException if a custom public key blacklist does not exist.
+     * @throws BlacklistDoesntExistsException if a custom public key blacklist does not exist.
      */
-    int getPublicKeyBlacklistEntryId(String fingerprint);
+    int getBlacklistEntryId(String fingerprint);
 
     /**
      * Gets the fingerprint of the public key blacklist entry with the given id.
      * 
      * @return the fingerprint of the public key blacklist with the given id or null if none was found.
      */
-    String getPublicKeyBlacklistEntryFingerprint(int id);
+    String getBlacklistEntryFingerprint(int id);
 
     /**
      * Adds a public key blacklist entry to the database. Used for importing and exporting
@@ -58,27 +58,26 @@ public interface PublicKeyBlacklistSessionLocal extends PublicKeyBlacklistSessio
      * @param entry the public key blacklist to add.
      *
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
-     * @throws PublicKeyBlacklistExistsException if public key blacklist already exists.
+     * @throws BlacklistExistsException if public key blacklist already exists.
      */
-    void addPublicKeyBlacklistEntry(AuthenticationToken admin, int id, PublicKeyBlacklistEntry entry)
-            throws AuthorizationDeniedException, PublicKeyBlacklistExistsException;
+    void addBlacklistEntry(AuthenticationToken admin, int id, BlacklistEntry entry)
+            throws AuthorizationDeniedException, BlacklistExistsException;
 
     /** 
      * Updates the public key blacklist entry with the given fingerprint.
      *  
      * @param admin AuthenticationToken of administrator.
-     * @param fingerprint the fingerprint of the public key blacklist entry to change.
-     * @param entry the public key blacklist to be added.
+     * @param entry the public key blacklist to be changed.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
-     * @throws PublicKeyBlacklistDoesntExistsException if there's no public key blacklist with the given fingerprint.
+     * @throws BlacklistDoesntExistsException if there's no public key blacklist with the given fingerprint.
      * 
      * */
-    void changePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint, PublicKeyBlacklistEntry entry)
-            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException;
+    void changeBlacklistEntry(AuthenticationToken admin, BlacklistEntry entry)
+            throws AuthorizationDeniedException, BlacklistDoesntExistsException;
 
     /**
      * Flushes the public key blacklist entry cache to ensure that next time they are read from database.
      */
-    void flushPublicKeyBlacklistEntryCache();
+    void flushBlacklistEntryCache();
 }

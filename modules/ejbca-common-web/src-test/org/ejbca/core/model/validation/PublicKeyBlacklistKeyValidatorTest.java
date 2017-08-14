@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData;
+import org.ejbca.core.ejb.ca.validation.BlacklistData;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,7 +88,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
             // Manual update of cache entry
             final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint(keyPair.getPublic());
-            PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);
+            BlacklistData data = new BlacklistData(entry);
             PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), entry.getFingerprint(), entry);
         }
         messages = keyValidator.validate(keyPair.getPublic(), null);
@@ -131,7 +131,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
             // Manual update of cache entry
             final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint(keyPair.getPublic());
-            PublicKeyBlacklistData data = new PublicKeyBlacklistData(entry);
+            BlacklistData data = new BlacklistData(entry);
             PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), entry.getFingerprint(), entry);
         }
         messages = keyValidator.validate(keyPair.getPublic(), null);

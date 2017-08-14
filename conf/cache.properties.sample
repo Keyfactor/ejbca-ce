@@ -96,9 +96,9 @@
 #publisher.cachetime=157680000000
 #publisher.cachetime=-1
 
-# Set to a value for caching calls to getPublicKeyBlacklist and getPublicKeyBlacklistId/Name in PublicKeyBlacklistSessionBean. This means that for 
-# public key blacklist entries to be updated the cache time expires, an "Edit public key blacklist" or server restart is done, or 
-# flushPublicKeyBlacklistCache is called on PublicKeyBlacklistSessionBean. 
+# Set to a value for caching calls to getBlacklist and getBlacklistId/Name in BlacklistSessionBean. This means that for 
+# public key blacklist entries to be updated the cache time expires, an "Edit blacklist" or server restart is done, or 
+# flushBlacklistCache is called on BlacklistSessionBean. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a public key blacklist has been edited on another node, so the public key blacklist must be edited on all nodes, 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
@@ -106,8 +106,8 @@
 # Default: 30000 (30 second)
 # Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
 # If you want caching for an infinite time then set something high for example 157680000000 (5years). 
-#publickeyblacklist.cachetime=157680000000
-#publickeyblacklist.cachetime=-1
+#blacklist.cachetime=157680000000
+#blacklist.cachetime=-1
 
 # Set to a value for caching calls to getValidator in KeyValidatorSessionBean. This means that for Validators to be updated
 # the cache time expires, an "Edit validator" or server restart is done, or flushKeyValidatorCache is called on KeyValidatorSessionBean. 

@@ -345,13 +345,13 @@
             <transient name="markedAsRecoverableInt"/>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistData" access="PROPERTY" metadata-complete="false">
+    <entity class="org.ejbca.core.ejb.ca.validation.BlacklistData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
-            <basic fetch="EAGER" name="keyspec"><column name="keyspec" column-definition="VARCHAR(64) BINARY"/></basic>
-            <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(64) BINARY"/></basic>
+            <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INT(11)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="LONGTEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>

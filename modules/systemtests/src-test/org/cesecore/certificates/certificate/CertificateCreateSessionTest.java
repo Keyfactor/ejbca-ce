@@ -92,7 +92,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionRemote;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
@@ -119,7 +119,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
-    private PublicKeyBlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
+    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateCreateSessionTest"));
@@ -770,7 +770,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint(keyPairEc.getPublic());
             entry.setKeyspec("secp256r1");
-            listSession.addPublicKeyBlacklistEntry(alwaysAllowToken, entry);
+            listSession.addBlacklistEntry(alwaysAllowToken, entry);
             try {
                 final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPairEc.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
                 certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());

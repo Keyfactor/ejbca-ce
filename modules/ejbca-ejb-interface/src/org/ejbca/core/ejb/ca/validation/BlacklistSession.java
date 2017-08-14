@@ -17,14 +17,14 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
+import org.ejbca.core.model.validation.BlacklistEntry;
 
 /**
  * Interface for public key blacklist operations.
  *
  * @version $Id$
  */
-public interface PublicKeyBlacklistSession {
+public interface BlacklistSession {
 
     /**
      * Adds a public key blacklist entry to the database.
@@ -33,33 +33,33 @@ public interface PublicKeyBlacklistSession {
      * @param entry the public key blacklist entry to add
      * @return the public key blacklist ID as added
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
-     * @throws PublicKeyBlacklistExistsException if public key blacklist already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_blacklist
+     * @throws BlacklistExistsException if public key blacklist already exists.
      */
-    int addPublicKeyBlacklistEntry(AuthenticationToken admin, PublicKeyBlacklistEntry entry)
-            throws AuthorizationDeniedException, PublicKeyBlacklistExistsException;
+    int addBlacklistEntry(AuthenticationToken admin, BlacklistEntry entry)
+            throws AuthorizationDeniedException, BlacklistExistsException;
     
     /** Removes the public key blacklist entry.
      * 
      * @param admin AuthenticationToken of administrator.
      * @param fingerprint the fingerprint of the public key blacklist entry to remove.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
-     * @throws PublicKeyBlacklistDoesntExistsException if the public key blacklist does not exist.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_blacklist
+     * @throws BlacklistDoesntExistsException if the public key blacklist does not exist.
      */
-    void removePublicKeyBlacklistEntry(AuthenticationToken admin, String fingerprint)
-            throws AuthorizationDeniedException, PublicKeyBlacklistDoesntExistsException;
+    void removeBlacklistEntry(AuthenticationToken admin, String fingerprint)
+            throws AuthorizationDeniedException, BlacklistDoesntExistsException;
 
     /**
      * Retrieves a Map of all public key blacklist entry ids and fingerprints. 
      * @return the map. 
      */
-    Map<Integer, String> getPublicKeyBlacklistEntryIdToFingerprintMap();
+    Map<Integer, String> getBlacklistEntryIdToFingerprintMap();
     
     /**
      * Gets a public key blacklist entry by cache or database.
-     * @param a fingerprint of the public key blacklist entry, PublicKeyBlacklistEntry.createFingerprint 
-     * @return a PublicKeyBlacklistEntry or null if a public key blacklist entry with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
+     * @param a fingerprint of the public key blacklist entry, BlacklistEntry.createFingerprint 
+     * @return a BlacklistEntry or null if a public key blacklist entry with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
      */
-    PublicKeyBlacklistEntry getPublicKeyBlacklistEntry(String fingerprint);
+    BlacklistEntry getBlacklistEntry(String fingerprint);
 }
