@@ -45,7 +45,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.approval.profile.ApprovalProfileBase;
 
 /**
  * Keeps track of the approval profiles
@@ -191,7 +190,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ProfileData> findByApprovalProfileName(String profileName) {
-        return profileSession.findByNameAndType(profileName, Profile.PROFILE_TYPE);
+        return profileSession.findByNameAndType(profileName, ApprovalProfile.TYPE_NAME);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
