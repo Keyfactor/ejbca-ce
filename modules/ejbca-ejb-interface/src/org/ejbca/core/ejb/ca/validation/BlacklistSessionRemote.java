@@ -13,27 +13,11 @@
 
 package org.ejbca.core.ejb.ca.validation;
 
+import javax.ejb.Remote;
+
 /**
- * An exception thrown when someone tries to access a public key blacklist entry that doesn't exits.
- *
- * @version $Id$
+ * Remote interface for public key blacklist operations.
  */
-public class PublicKeyBlacklistDoesntExistsException extends Exception {
-
-    private static final long serialVersionUID = 412202146316881114L;
-
-    /**
-     * Creates a new instance.
-     */
-    public PublicKeyBlacklistDoesntExistsException() {
-        super( "Public key blacklist does not exist in datastore.");
-    }
-
-    /**
-     * Creates a new instance with the specified detail message.
-     * @param message the detail message.
-     */
-    public PublicKeyBlacklistDoesntExistsException(final String message) {
-        super(message);
-    }
+@Remote
+public interface BlacklistSessionRemote extends BlacklistSession {
 }

@@ -53,7 +53,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionLocal;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
@@ -156,7 +156,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public HardTokenSessionLocal getHardTokenSession() { return getEjbLocal().getHardTokenSession(); }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
 	@Override public KeyValidatorSessionLocal getKeyValidatorSession() { return getEjbLocal().getKeyValidatorSession(); }
-	@Override public PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession() { return getEjbLocal().getPublicKeyBlacklistSession(); }
+	@Override public BlacklistSessionLocal getBlacklistSession() { return getEjbLocal().getBlacklistSession(); }
     @Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return getEjbLocal().getEndEntityManagementSession(); }
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return getEjbLocal().getRaAdminSession(); }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }

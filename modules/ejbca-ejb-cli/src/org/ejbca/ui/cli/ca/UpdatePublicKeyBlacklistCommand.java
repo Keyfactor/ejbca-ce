@@ -30,9 +30,9 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistExistsException;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.ejb.ca.validation.BlacklistDoesntExistsException;
+import org.ejbca.core.ejb.ca.validation.BlacklistExistsException;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionRemote;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -199,7 +199,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
                                     try {
                                         state = removeFromBlacklist(fingerprint);
-                                    } catch (PublicKeyBlacklistDoesntExistsException e) {
+                                    } catch (BlacklistDoesntExistsException e) {
                                         // Do nothing, it was already printed to info
                                     }
                                     if (STATUS_OK != state) {
@@ -233,12 +233,12 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                     if (!resumeOnError && STATUS_OK != state) {
                         throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
                     }
-                } catch (PublicKeyBlacklistExistsException e) {
+                } catch (BlacklistExistsException e) {
                     log.info("Update public key blacklist failed: " + e.getMessage());
                     if (!resumeOnError) {
                         throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
                     }
-                } catch (PublicKeyBlacklistDoesntExistsException e) {
+                } catch (BlacklistDoesntExistsException e) {
                     log.info("Update public key blacklist failed: " + e.getMessage());
                     if (!resumeOnError) {
                         throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
@@ -314,7 +314,6 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
         entry.setFingerprint(fingerprint);
-        entry.setPublicKey(null);
         entry.setKeyspec(keySpecification);
         log.info("Try to add public key into public key blacklist by fingerprint (fingerprint=" + fingerprint + ").");
         result = addToBlacklist(entry);
@@ -332,9 +331,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     public int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
         log.trace(">removePublicKeyFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
-        entry.setFingerprint(publicKey); // sets the fingerprint in proper format from the public key
-        final String fingerprint = entry.getFingerprint();
+        final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
         log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
         result = removeFromBlacklist(fingerprint);
         log.trace("<removePublicKeyFromBlacklist()");
@@ -351,11 +348,11 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     private int addToBlacklist(final PublicKeyBlacklistEntry entry) throws Exception {
         log.trace(">addToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final PublicKeyBlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
+        final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
         try {
-            blacklistSession.addPublicKeyBlacklistEntry(getAuthenticationToken(), entry);
+            blacklistSession.addBlacklistEntry(getAuthenticationToken(), entry);
             result = STATUS_OK;
-        } catch (PublicKeyBlacklistExistsException e) {
+        } catch (BlacklistExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
             log.info("Public key blacklist entry with public key fingerprint " + entry.getFingerprint() + " already exists.");
             throw e;
@@ -382,11 +379,11 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     private int removeFromBlacklist(final String fingerprint) throws Exception {
         log.trace(">removeFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
-        final PublicKeyBlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
+        final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
         try {
-            blacklistSession.removePublicKeyBlacklistEntry(getAuthenticationToken(), fingerprint);
+            blacklistSession.removeBlacklistEntry(getAuthenticationToken(), fingerprint);
             result = STATUS_OK;
-        } catch (PublicKeyBlacklistDoesntExistsException e) {
+        } catch (BlacklistDoesntExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
             log.info("Public key blacklist entry with public key fingerprint " + fingerprint + " does not exist.");
             throw e;
