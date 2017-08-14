@@ -25,7 +25,7 @@ import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
 
 /**
- * Cache of the role objects.
+ * Cache of the role member objects.
  * 
  * The cached name is in the form "nameSpace:roleName".
  * 
