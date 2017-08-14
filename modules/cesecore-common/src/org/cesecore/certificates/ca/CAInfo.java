@@ -361,6 +361,7 @@ public abstract class CAInfo implements Serializable {
         if(approvals == null) {
             approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
         }
+        // We must store this as a predictable order map in the database, in order for databaseprotection to work
         this.approvals = new LinkedHashMap<ApprovalRequestType, Integer>(approvals);
     }
 
