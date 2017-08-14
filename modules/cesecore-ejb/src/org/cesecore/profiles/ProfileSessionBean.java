@@ -54,7 +54,7 @@ public class ProfileSessionBean implements ProfileSessionLocal {
             entityManager.persist(new ProfileData(Integer.valueOf(id), profile));
             return id;
         } else {
-            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile.id.exists", id);
+            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile_with_id_exists", id);
             throw new IllegalStateException(msg);
         }
     }
@@ -84,10 +84,9 @@ public class ProfileSessionBean implements ProfileSessionLocal {
 
         final ProfileData profileData = findById(profile.getProfileId());
         if (profileData == null) {
-            String msg = INTRES.getLocalizedMessage("profile.store.error.profile.not.found", name);
+            String msg = INTRES.getLocalizedMessage("profile.store.error.profile_not_found", name);
             log.info(msg);
         } else {         
-            // Get the diff of what changed
             // Do the actual change
             profileData.setProfile(profile);
             entityManager.merge(profileData);
@@ -106,7 +105,7 @@ public class ProfileSessionBean implements ProfileSessionLocal {
     public void renameProfile(final Profile profile, final String newName) throws ProfileDoesNotExistException {
         final ProfileData profileData = findById(profile.getProfileId());
         if (profileData == null) {
-            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile.not.found", profile.getProfileName());
+            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile_not_found", profile.getProfileName());
             throw new ProfileDoesNotExistException(msg);
         } else {
             // This changes the name in the database column
