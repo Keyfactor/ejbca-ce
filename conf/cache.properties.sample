@@ -52,8 +52,10 @@
 #eeprofiles.cachetime=157680000000
 #eeprofiles.cachetime=-1
 
-# Set to a value for caching calls to getCertificateProfile and getCertificateProfileId/Name in StoreSession. This means that for Certificate profiles to be updated
-# the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on StoreSession. 
+# Set to a value for caching calls to getCertificateProfile and getCertificateProfileId/Name in CertificateProfileSessionBean. This means that for 
+# Certificate Profiles to be updated the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on 
+# CertificateProfileSessionBean. 
+#
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.
@@ -80,8 +82,8 @@
 #approvalprofiles.cachetime=157680000000
 #approvalprofiles.cachetime=-1
 
-# Set to a value for caching calls to getPublisher and getPublisherId/Name in StoreSession. This means that for Publishers to be updated
-# the cache time expires, an "Edit publisher" or server restart is done, or flushPublisherCache is called on StoreSession. 
+# Set to a value for caching calls to getPublisher and getPublisherId/Name in PublisherSessionBean. This means that for Publishers to be updated
+# the cache time expires, an "Edit publisher" or server restart is done, or flushPublisherCache is called on PublisherSessionBean. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.
@@ -94,8 +96,9 @@
 #publisher.cachetime=157680000000
 #publisher.cachetime=-1
 
-# Set to a value for caching calls to getPublicKeyBlacklist and getPublicKeyBlacklistId/Name in StoreSession. This means that for public key blacklist entries to be updated
-# the cache time expires, an "Edit public key blacklist" or server restart is done, or flushPublicKeyBlacklistCache is called on StoreSession. 
+# Set to a value for caching calls to getPublicKeyBlacklist and getPublicKeyBlacklistId/Name in PublicKeyBlacklistSessionBean. This means that for 
+# public key blacklist entries to be updated the cache time expires, an "Edit public key blacklist" or server restart is done, or 
+# flushPublicKeyBlacklistCache is called on PublicKeyBlacklistSessionBean. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a public key blacklist has been edited on another node, so the public key blacklist must be edited on all nodes, 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
@@ -107,7 +110,7 @@
 #publickeyblacklist.cachetime=-1
 
 # Set to a value for caching calls to getValidator in KeyValidatorSessionBean. This means that for Validators to be updated
-# the cache time expires, an "Edit validator" or server restart is done, or flushKeyValidatorCache is called on StoreSession. 
+# the cache time expires, an "Edit validator" or server restart is done, or flushKeyValidatorCache is called on KeyValidatorSessionBean. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a validator has been edited on another node, so the validator must be edited on all nodes, 
 # For normal installations, where extreme speeds and response times are not required, leave as default.

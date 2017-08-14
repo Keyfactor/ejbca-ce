@@ -118,7 +118,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             log.trace(">addKeyValidator(name: " + validator.getProfileName() + ", id: " + validator.getProfileId() + ")");
         }
         addKeyValidatorInternal(admin, validator);
-        final String message = intres.getLocalizedMessage("keyvalidator.addedkeyvalidator", validator.getProfileName());
+        final String message = intres.getLocalizedMessage("validator.added_validator", validator.getProfileName());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", message);
         auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(), null,
@@ -320,7 +320,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             profileSession.changeProfile(validator);
             // Since loading a KeyValidator is quite complex, we simple purge the cache here.
             ValidatorCache.INSTANCE.removeEntry(data.getId());
-            message = intres.getLocalizedMessage("keyvalidator.changedkeyvalidator", name);
+            message = intres.getLocalizedMessage("validator.changed_validator", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             //TODO: Include a diff in the changelog (profileData.getProfile().diff(profile);), but make sure to resolve all steps so that we don't
@@ -328,7 +328,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             auditSession.log(EventTypes.VALIDATOR_CHANGE, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } else {
-            message = intres.getLocalizedMessage("keyvalidator.errorchangekeyvalidator", name);
+            message = intres.getLocalizedMessage("validator.error.change_validator", name);
             log.info(message);
             throw new KeyValidatorDoesntExistsException("Validator by ID " + validator.getProfileId() + " does not exist in database.");
         }
@@ -356,7 +356,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 profileSession.removeProfile(data);
                 // Purge the cache here.
                 ValidatorCache.INSTANCE.removeEntry(data.getId());
-                message = intres.getLocalizedMessage("keyvalidator.removedkeyvalidator", data.getProfileName());
+                message = intres.getLocalizedMessage("validator.removed_validator", data.getProfileName());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", message);
                 auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
@@ -391,7 +391,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 profileSession.removeProfile(data);
                 // Purge the cache here.
                 ValidatorCache.INSTANCE.removeEntry(data.getId());
-                message = intres.getLocalizedMessage("keyvalidator.removedkeyvalidator", data.getProfileName());
+                message = intres.getLocalizedMessage("validator.removed_validator", data.getProfileName());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", message);
                 auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
@@ -416,7 +416,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     public int addKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
         final int id = addKeyValidatorInternal(admin, validator);
-        final String message = intres.getLocalizedMessage("keyvalidator.addedkeyvalidator", validator.getProfileName());
+        final String message = intres.getLocalizedMessage("validator.added_validator", validator.getProfileName());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", message);
         auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(), null,
@@ -442,13 +442,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         validatorClone.setProfileName(newName);
         try {
             addKeyValidatorInternal(admin, validatorClone);
-            final String message = intres.getLocalizedMessage("keyvalidator.clonedkeyvalidator", newName, validator.getProfileName());
+            final String message = intres.getLocalizedMessage("validator.cloned_validator", newName, validator.getProfileName());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             auditSession.log(EventTypes.VALIDATOR_CREATION, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } catch (KeyValidatorExistsException e) {
-            final String message = intres.getLocalizedMessage("keyvalidator.errorclonekeyvalidator", newName, validator.getProfileName());
+            final String message = intres.getLocalizedMessage("validator.error.clone_validator", newName, validator.getProfileName());
             log.info(message);
             throw e;
         }   
@@ -478,13 +478,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
         if (success) {
-            final String message = intres.getLocalizedMessage("keyvalidator.renamedkeyvalidator", validator.getProfileName(), newName);
+            final String message = intres.getLocalizedMessage("validator.renamed_validator", validator.getProfileName(), newName);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             auditSession.log(EventTypes.VALIDATOR_RENAME, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     null, null, null, details);
         } else {
-            final String message = intres.getLocalizedMessage("keyvalidator.errorrenamekeyvalidator", validator.getProfileName(), newName);
+            final String message = intres.getLocalizedMessage("validator.errorrenamekeyvalidator", validator.getProfileName(), newName);
             log.info(message);
             throw new KeyValidatorExistsException();
         }
@@ -567,26 +567,26 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     final boolean allCertProfiles = keyValidator.isAllCertificateProfileIds();
                     if (!allCertProfiles && null != certificateProfileIds && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
                         if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("keyvalidator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
+                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
                         }
                         continue;
                     }
                     if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotBefore(), certificateValidity.getNotBefore(),
                             keyValidator.getNotBeforeCondition())) {
                         if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("keyvalidator.filterconditiondoesnotmatch", name, "notBefore"));
+                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notBefore"));
                         }
                         continue;
                     }
                     if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotAfter(), certificateValidity.getNotAfter(),
                             keyValidator.getNotAfterCondition())) {
                         if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("keyvalidator.filterconditiondoesnotmatch", name, "notAfter"));
+                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notAfter"));
                         }
                         continue;
                     }
                     final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
-                    log.info(intres.getLocalizedMessage("keyvalidator.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
+                    log.info(intres.getLocalizedMessage("validator.key.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
                         List<String> messages = keyValidator.validate(publicKey, certificateProfile);                        
                         if (messages.size() > 0) {
                             result = false;
@@ -617,14 +617,14 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         final String name = keyValidator.getProfileName();
         if (messages.size() > 0) { // Evaluation has failed.
             final int index = keyValidator.getFailedAction();
-            final String message = intres.getLocalizedMessage("keyvalidator.validationfailed", name, messages);
+            final String message = intres.getLocalizedMessage("validator.key.validation_failed", name, messages);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caID), keyFingerprint, endEntity, details);
             performValidationFailedActions(index, message);
         } else {
-            final String message = intres.getLocalizedMessage("keyvalidator.validationsuccessful", name, publicKey.getEncoded());
+            final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKey.getEncoded());
             log.info(message);
         }
     }
@@ -713,7 +713,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         if (profileSession.findByNameAndType(keyValidator.getProfileName(), Validator.TYPE_NAME).isEmpty()) {
             return profileSession.addProfile(keyValidator);
         } else {
-            final String message = intres.getLocalizedMessage("keyvalidator.erroraddkeyvalidator", keyValidator.getProfileName());
+            final String message = intres.getLocalizedMessage("validator.error.add_validator", keyValidator.getProfileName());
             log.info(message);
             throw new KeyValidatorExistsException();
         }
