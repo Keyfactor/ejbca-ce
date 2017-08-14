@@ -37,6 +37,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.profiles.Profile;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileDoesNotExistException;
 import org.cesecore.profiles.ProfileSessionLocal;
@@ -84,7 +85,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                     admin.toString(), null, null, null, details);
             return profileId;
         } else {
-            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile.name.exists", name);
+            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile_with_name_exists", name);
             throw new ApprovalProfileExistsException(msg);
         }
     }
@@ -149,7 +150,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
                     admin.toString(), null, null, null, details);
 
         } else {
-            final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile.name.exists", newName);
+            final String msg = INTRES.getLocalizedMessage("approval.profile.store.error.profile_with_name_exists", newName);
             throw new ApprovalProfileExistsException(msg);
         }
     }
@@ -161,7 +162,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
         ApprovalProfile profile = null;
         final Integer origProfileId = approvalProfile.getProfileId();
         if (origProfileId == null) {
-            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile.not.found", approvalProfile.getProfileName());
+            final String msg = INTRES.getLocalizedMessage("profile.store.error.profile_not_found", approvalProfile.getProfileName());
             throw new ApprovalProfileDoesNotExistException(msg);
         }
         profile = getApprovalProfile(origProfileId).clone();
@@ -190,7 +191,7 @@ public class ApprovalProfileSessionBean implements ApprovalProfileSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<ProfileData> findByApprovalProfileName(String profileName) {
-        return profileSession.findByNameAndType(profileName, ApprovalProfileBase.PROFILE_TYPE);
+        return profileSession.findByNameAndType(profileName, Profile.PROFILE_TYPE);
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
