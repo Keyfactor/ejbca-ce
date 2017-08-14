@@ -26,8 +26,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -262,7 +262,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d",
                 CAInfo.SELFSIGNED, null, caToken);
         cainfo.setExpireTime(new Date(System.currentTimeMillis() + 364 * 24 * 3600 * 1000));
-        Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
+        Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
         approvals.put(approvalRequirementType, approvalProfileId);
         cainfo.setApprovals(approvals);
         int caID = cainfo.getCAId();
