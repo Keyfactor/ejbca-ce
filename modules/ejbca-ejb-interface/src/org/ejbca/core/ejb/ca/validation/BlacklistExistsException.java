@@ -13,11 +13,27 @@
 
 package org.ejbca.core.ejb.ca.validation;
 
-import javax.ejb.Remote;
-
 /**
- * Remote interface for public key blacklist operations.
+ * An exception thrown when someone tries to store a public key blacklist entry that already exists.
+ *
+ * @version $Id$
  */
-@Remote
-public interface PublicKeyBlacklistSessionRemote extends PublicKeyBlacklistSession {
+public class BlacklistExistsException extends Exception {
+
+    private static final long serialVersionUID = 215999965395318151L;
+
+    /**
+     * Creates a new instance.
+     */
+    public BlacklistExistsException() {
+        super();
+    }
+
+    /**
+     * Creates a new instance with the specified detail message.
+     * @param message the detail message.
+     */
+    public BlacklistExistsException(final String message) {
+        super(message);
+    }
 }

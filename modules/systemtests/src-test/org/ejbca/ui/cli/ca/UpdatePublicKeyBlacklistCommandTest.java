@@ -37,8 +37,9 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistDoesntExistsException;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.ejb.ca.validation.BlacklistDoesntExistsException;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionRemote;
+import org.ejbca.core.model.validation.BlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
@@ -65,8 +66,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
             UpdatePublicKeyBlacklistCommandTest.class.getSimpleName());
 
     /** Public key blacklist remote session. */
-    private static final PublicKeyBlacklistSessionRemote publicKeyBlacklistSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(PublicKeyBlacklistSessionRemote.class);
+    private static final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(BlacklistSessionRemote.class);
 
     /** Command to be tested. */
     private final UpdatePublicKeyBlacklistCommand command = new UpdatePublicKeyBlacklistCommand();
@@ -115,7 +116,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         File[] files = dir.listFiles();
         Map<String, String> keySpecifications = new HashMap<String, String>();
         PublicKey publicKey;
-        PublicKeyBlacklistEntry entry;
+        BlacklistEntry entry;
         byte[] asn1Encodedbytes;
         String fingerprint;
         for (File file : files) {
@@ -127,7 +128,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
                 }
-                entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
+                entry = blacklistSession.getBlacklistEntry(fingerprint);
             } catch (CertificateParsingException e) {
                 // NOOP -> Only if it was possible to parse it.
             }
@@ -149,7 +150,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 if (log.isDebugEnabled()) {
                     log.debug("Validate public key blacklist entry exists in data store: " + fingerprint);
                 }
-                entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
+                entry = blacklistSession.getBlacklistEntry(fingerprint);
                 assertTrue("Public key blacklist entries must have been removed.", null == entry);
             } catch (CertificateParsingException e) {
                 // NOOP -> Only if it was possible to parse it.
@@ -164,7 +165,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
         }
         dir = new File(url.getPath());
         log.info("Using directory (empty folder): " + dir.getAbsolutePath());
-        final int countEntries = publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size();
+        final int countEntries = blacklistSession.getBlacklistEntryIdToFingerprintMap().size();
         args = new String[] { UpdatePublicKeyBlacklistCommand.COMMAND_KEY, UpdatePublicKeyBlacklistCommand.COMMAND_ADD,
                 UpdatePublicKeyBlacklistCommand.DIRECTORY_KEY, dir.getAbsolutePath(), UpdatePublicKeyBlacklistCommand.RESUME_ON_ERROR_KEY };
         result = command.execute(args);
@@ -172,7 +173,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that nothing was imported ~
         Assert.assertTrue("After importing an empty folder, the number of blacklist entries must still be the same.",
-                publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size() == countEntries);
+                blacklistSession.getBlacklistEntryIdToFingerprintMap().size() == countEntries);
 
         log.trace("<test01AddAndRemoveCommand()");
     }
@@ -198,7 +199,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that public key fingerprints were imported.
         File[] files = dir.listFiles();
-        PublicKeyBlacklistEntry entry;
+        BlacklistEntry entry;
         String fingerprint;
         FileReader reader;
         List<String> lines;
@@ -216,7 +217,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                     if (log.isDebugEnabled()) {
                         log.debug("Trying to retrieve public key blacklist entry: "+fingerprint);
                     }
-                    entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(fingerprint);
+                    entry = blacklistSession.getBlacklistEntry(fingerprint);
                     assertTrue("Public key fingerprint must have been imported.", null != entry);
                 }
             }
@@ -230,13 +231,13 @@ public class UpdatePublicKeyBlacklistCommandTest {
         Assert.assertTrue("Remove lists of fingerprints which do exist must exit with success: " + result,
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         for (String string : fingerprints) {
-            entry = publicKeyBlacklistSession.getPublicKeyBlacklistEntry(string);
+            entry = blacklistSession.getBlacklistEntry(string);
             assertTrue("Public key must exists in data store anymore.", null == entry);
         }
 
         // Other error cases.
         // B-1: Try add command with an empty folder.
-        final int countEntries = publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size();
+        final int countEntries = blacklistSession.getBlacklistEntryIdToFingerprintMap().size();
         url = UpdatePublicKeyBlacklistCommandTest.class.getClassLoader().getResource(TEST_RESOURCE_EMPTY_FOLDER);
         if (null == url) {
             throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_EMPTY_FOLDER);
@@ -251,7 +252,7 @@ public class UpdatePublicKeyBlacklistCommandTest {
                 result.getReturnCode() == CommandResult.SUCCESS.getReturnCode());
         // Verify that nothing was imported ~
         Assert.assertEquals("After importing an empty folder, the number of blacklist entries must still be the same.",
-                countEntries, publicKeyBlacklistSession.getPublicKeyBlacklistEntryIdToFingerprintMap().size());
+                countEntries, blacklistSession.getBlacklistEntryIdToFingerprintMap().size());
 
         log.trace("<test02AddAndRemoveCommandModeByFingerprint()");
     }
@@ -282,8 +283,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
             log.trace("Loaded public key " + publicKey);
             fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
             try {
-                publicKeyBlacklistSession.removePublicKeyBlacklistEntry(authenticationToken, fingerprint);
-            } catch (PublicKeyBlacklistDoesntExistsException e) {
+                blacklistSession.removeBlacklistEntry(authenticationToken, fingerprint);
+            } catch (BlacklistDoesntExistsException e) {
                 // NOOP
             } catch (Exception e) {
                 fail("Could not delete public key blacklist entries.");
@@ -325,8 +326,8 @@ public class UpdatePublicKeyBlacklistCommandTest {
                         if (log.isDebugEnabled()) {
                             log.debug("Trying to remove public key blacklist entriy: "+fingerprint);
                         }
-                        publicKeyBlacklistSession.removePublicKeyBlacklistEntry(authenticationToken, fingerprint);
-                    } catch (PublicKeyBlacklistDoesntExistsException e) {
+                        blacklistSession.removeBlacklistEntry(authenticationToken, fingerprint);
+                    } catch (BlacklistDoesntExistsException e) {
                         // NOOP
                     } catch (Exception e) {
                         fail("Could not delete public key blacklist entries.");

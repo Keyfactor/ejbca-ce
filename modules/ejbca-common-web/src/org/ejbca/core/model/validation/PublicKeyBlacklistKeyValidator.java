@@ -148,9 +148,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
                     + ", implementation " + publicKey.getClass().getName() + " against public key blacklist.");
         }
         // Use the entry class to create a correct fingerprint
-        PublicKeyBlacklistEntry fp = new PublicKeyBlacklistEntry();
-        fp.setFingerprint(publicKey);
-        final String fingerprint = fp.getFingerprint();
+        final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
         log.info("Matching public key with blacklist fingerprint " + fingerprint + " with public key blacklist.");
         if (!useOnlyCache) {
             // A bit hackish, make a call to blacklist session to ensure that blacklist cache has this entry loaded
@@ -158,7 +156,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
             // and we don't want to do instanceof, so we take the hit
             // TODO: if the key is not in the cache (which it hopefully is not) this is a database lookup for each key. Huuge performance hit
             // should better be implemented as a full in memory cache with a state so we know if it's loaded or not, with background updates. See ECA-5951
-            new EjbLocalHelper().getPublicKeyBlacklistSession().getPublicKeyBlacklistEntryId(fingerprint);
+            new EjbLocalHelper().getBlacklistSession().getBlacklistEntryId(fingerprint);
         }
         Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);

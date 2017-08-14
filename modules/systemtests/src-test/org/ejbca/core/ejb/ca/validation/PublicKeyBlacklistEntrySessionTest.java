@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.validation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -26,7 +25,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionRemote;
+import org.ejbca.core.model.validation.BlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +45,7 @@ public class PublicKeyBlacklistEntrySessionTest {
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal("PublicKeyBlacklistSessionTest-Admin"));
 
-    private PublicKeyBlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublicKeyBlacklistSessionRemote.class);
+    private BlacklistSessionRemote listSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
 
 
     @Before
@@ -66,30 +65,30 @@ public class PublicKeyBlacklistEntrySessionTest {
     public void testAddGetChangeRemove() throws Exception {
         log.trace(">testAddGetChangeRemove()");
         try {
-            assertNull("foo should not return an entry", listSession.getPublicKeyBlacklistEntry("foo"));
-            Map<Integer, String> map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
+            assertNull("foo should not return an entry", listSession.getBlacklistEntry("foo"));
+            Map<Integer, String> map = listSession.getBlacklistEntryIdToFingerprintMap();
             int initialSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint("abc123");
-            listSession.addPublicKeyBlacklistEntry(internalAdmin, entry);
-            map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
+            listSession.addBlacklistEntry(internalAdmin, entry);
+            map = listSession.getBlacklistEntryIdToFingerprintMap();
             int newSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
             assertEquals("map size should be increased", initialSize+1, newSize);
-            assertNull("foo should not return an entry", listSession.getPublicKeyBlacklistEntry("foo"));
-            map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
+            assertNull("foo should not return an entry", listSession.getBlacklistEntry("foo"));
+            map = listSession.getBlacklistEntryIdToFingerprintMap();
             assertEquals("map should contain a new entry", initialSize+1, map.size());
-            PublicKeyBlacklistEntry entry1 = listSession.getPublicKeyBlacklistEntry("abc123");
+            BlacklistEntry entry1 = listSession.getBlacklistEntry("abc123");
             assertNotNull("an entry should have been returned as we just added it", entry1);
             assertEquals("the map entry should have the same fingerprint as we added", "abc123", map.get(entry1.getID()));
-            assertEquals("entry should have the fingerprint added, abc123", "abc123", entry1.getFingerprint());
-            listSession.removePublicKeyBlacklistEntry(internalAdmin, "abc123");
-            map = listSession.getPublicKeyBlacklistEntryIdToFingerprintMap();
+            assertEquals("entry should have the fingerprint added, abc123", "abc123", entry1.getValue());
+            listSession.removeBlacklistEntry(internalAdmin, "abc123");
+            map = listSession.getBlacklistEntryIdToFingerprintMap();
             assertEquals("map should contain one less entry", initialSize, map.size());
-            assertNull("abc123 should not return an entry any longer", listSession.getPublicKeyBlacklistEntry("abc123"));
+            assertNull("abc123 should not return an entry any longer", listSession.getBlacklistEntry("abc123"));
         } finally {
             try {
-            listSession.removePublicKeyBlacklistEntry(internalAdmin, "abc123");
-            } catch (PublicKeyBlacklistDoesntExistsException e) {
+            listSession.removeBlacklistEntry(internalAdmin, "abc123");
+            } catch (BlacklistDoesntExistsException e) {
                 // NOOMD: do nothing
             }
         }

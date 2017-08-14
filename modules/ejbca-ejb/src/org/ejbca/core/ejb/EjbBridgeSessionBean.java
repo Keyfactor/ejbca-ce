@@ -50,7 +50,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ca.validation.PublicKeyBlacklistSessionLocal;
+import org.ejbca.core.ejb.ca.validation.BlacklistSessionLocal;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
@@ -108,7 +108,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB KeyValidatorSessionLocal keyValidatorSession;
-	@EJB PublicKeyBlacklistSessionLocal publicKeyBlacklistSession;
+	@EJB BlacklistSessionLocal blacklistSession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB AdminPreferenceSessionLocal raSession;
@@ -156,7 +156,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession() { return internalKeyBindingDataSession; }
     @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
-	@Override public PublicKeyBlacklistSessionLocal getPublicKeyBlacklistSession() { return publicKeyBlacklistSession; }
+	@Override public BlacklistSessionLocal getBlacklistSession() { return blacklistSession; }
 	@Override public KeyValidatorSessionLocal getKeyValidatorSession() { return keyValidatorSession; }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
