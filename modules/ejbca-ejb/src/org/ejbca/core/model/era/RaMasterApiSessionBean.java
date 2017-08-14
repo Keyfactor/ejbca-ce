@@ -1755,6 +1755,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 if (!localKeyGeneration) {
                     keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert.getCertificate());
                 } else {
+                    // In this case, the users status is set to 'Key Recovery' but not the flag in KeyRecoveryData since
+                    // this is stored in another instance database 
                     keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecoveryInternal(authenticationToken, username, endEntityProfileId, cert.getCertificate());
                 }
                 if (keyRecoverySuccessful && newPassword != null) {
