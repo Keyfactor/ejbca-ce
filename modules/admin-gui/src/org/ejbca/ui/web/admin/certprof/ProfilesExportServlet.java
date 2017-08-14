@@ -218,8 +218,7 @@ public class ProfilesExportServlet extends HttpServlet {
                 }
             }
         } else if (StringUtils.equalsIgnoreCase(type, "kv")) {
-            zipfilename = "keyvalidators.zip";
-
+            zipfilename = "validators.zip";
             final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
             totalprofiles = map.size();
             log.info("Exporting key validators.");
