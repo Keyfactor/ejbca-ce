@@ -325,6 +325,10 @@ public class RAInterfaceBean implements Serializable {
     /** Changes the userdata  
      * @param userdata the UserView object with the desired changes
      * @param newUsername the new username if it should be changed
+     * @throws CADoesntExistsException if CA with ID in userdata does not exist
+     * @throws AuthorizationDeniedException if admin is not authorized to CA
+     * @throws EndEntityProfileValidationException if End Entity doesn't match profile
+     * @throws WaitingForApprovalException if the request requires approval
      * @throws IllegalNameException  if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already is waiting for specified action
