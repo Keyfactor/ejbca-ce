@@ -243,6 +243,11 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                     if (!resumeOnError) {
                         return CommandResult.FUNCTIONAL_FAILURE;
                     }
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Not authorized to update blacklist: " + e.getMessage());
+                    if (!resumeOnError) {
+                        return CommandResult.FUNCTIONAL_FAILURE;
+                    }
                 } catch (Exception e) {
                     log.info("Update public key blacklist failed: " + e.getMessage(), e);
                     if (!resumeOnError) {
