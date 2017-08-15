@@ -32,7 +32,6 @@ public enum StandardRules {
 	CREATECRL(CAFUNCTIONALITY.resource()+"/create_crl"),
 	VALIDATORACCESSBASE("/validator"),
 	VALIDATORACCESS("/validator/"),
-	BLACKLISTVIEW(CAFUNCTIONALITY.resource()+"/view_blacklist"),
 	BLACKLISTEDIT(CAFUNCTIONALITY.resource()+"/edit_blacklist"),
 	VALIDATORVIEW(CAFUNCTIONALITY.resource()+"/view_validator"),
 	VALIDATOREDIT(CAFUNCTIONALITY.resource()+"/edit_validator"),
