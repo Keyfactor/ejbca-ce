@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -105,7 +105,7 @@ public abstract class CAInfo implements Serializable {
     @Deprecated
     protected int numOfReqApprovals;
     
-    private Map<ApprovalRequestType, Integer> approvals;
+    private LinkedHashMap<ApprovalRequestType, Integer> approvals;
 
 
     protected boolean includeInHealthCheck;
@@ -359,9 +359,9 @@ public abstract class CAInfo implements Serializable {
 
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         if(approvals == null) {
-            approvals = new HashMap<>();
+            approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
         }
-        this.approvals = approvals;
+        this.approvals = new LinkedHashMap<ApprovalRequestType, Integer>(approvals);
     }
 
     /**
