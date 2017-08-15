@@ -51,6 +51,20 @@ public interface BlacklistSession {
     void removeBlacklistEntry(AuthenticationToken admin, String type, String value)
             throws AuthorizationDeniedException, BlacklistDoesntExistsException;
 
+    /** 
+     * Updates the public key blacklist entry with the given fingerprint.
+     *  
+     * @param admin AuthenticationToken of administrator.
+     * @param entry the public key blacklist to be changed.
+     * 
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
+     * @throws BlacklistDoesntExistsException if there's no public key blacklist with the given fingerprint.
+     * 
+     * */
+    void changeBlacklistEntry(AuthenticationToken admin, BlacklistEntry entry)
+            throws AuthorizationDeniedException, BlacklistDoesntExistsException;
+
+
     /**
      * Retrieves a Map of all public key blacklist entry ids and fingerprints. 
      * @return the map. 
