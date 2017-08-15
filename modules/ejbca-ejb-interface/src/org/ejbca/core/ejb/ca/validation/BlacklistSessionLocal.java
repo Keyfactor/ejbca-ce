@@ -63,19 +63,6 @@ public interface BlacklistSessionLocal extends BlacklistSession {
     void addBlacklistEntry(AuthenticationToken admin, int id, BlacklistEntry entry)
             throws AuthorizationDeniedException, BlacklistExistsException;
 
-    /** 
-     * Updates the public key blacklist entry with the given fingerprint.
-     *  
-     * @param admin AuthenticationToken of administrator.
-     * @param entry the public key blacklist to be changed.
-     * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publickeyblacklist
-     * @throws BlacklistDoesntExistsException if there's no public key blacklist with the given fingerprint.
-     * 
-     * */
-    void changeBlacklistEntry(AuthenticationToken admin, BlacklistEntry entry)
-            throws AuthorizationDeniedException, BlacklistDoesntExistsException;
-
     /**
      * Flushes the public key blacklist entry cache to ensure that next time they are read from database.
      */

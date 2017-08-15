@@ -79,15 +79,28 @@ public class BlacklistSessionTest {
             assertEquals("map should contain a new entry", initialSize+1, map.size());
             BlacklistEntry entry1 = listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc123");
             assertNotNull("an entry should have been returned as we just added it", entry1);
-            assertEquals("the map entry should have the same fingerprint as we added", "abc123", map.get(entry1.getID()));
-            assertEquals("entry should have the fingerprint added, abc123", "abc123", entry1.getValue());
-            listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc123");
+            assertEquals("the map entry should have the same value as we added", "abc123", map.get(entry1.getID()));
+            assertEquals("entry should have the value added, abc123", "abc123", entry1.getValue());
+            entry1.setValue("abc1234");
+            listSession.changeBlacklistEntry(internalAdmin, entry1);
+            BlacklistEntry entryNotFound = listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc123");
+            assertNull("an entry should not be found anymore since we changed the entry", entryNotFound);
+            BlacklistEntry entry2 = listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc1234");
+            assertNotNull("an entry should have been returned as we just added it", entry2);
+            assertEquals("entry should have the value added, abc1234", "abc1234", entry2.getValue());
+            listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc1234");
             map = listSession.getBlacklistEntryIdToValueMap();
             assertEquals("map should contain one less entry", initialSize, map.size());
             assertNull("abc123 should not return an entry any longer", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc123"));
+            assertNull("abc1234 should not return an entry any longer", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc1234"));
         } finally {
             try {
-            listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc123");
+                listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc123");
+            } catch (BlacklistDoesntExistsException e) {
+                // NOOMD: do nothing
+            }
+            try {
+                listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc1234");
             } catch (BlacklistDoesntExistsException e) {
                 // NOOMD: do nothing
             }
