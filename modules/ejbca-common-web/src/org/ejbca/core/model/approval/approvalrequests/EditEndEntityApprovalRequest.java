@@ -76,7 +76,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         this.newuserdata = newuserdata;
         this.clearpwd = clearpwd;
         this.orguserdata = orguserdata;
-        this.useOrgUsername = false;
     }
     
     public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
