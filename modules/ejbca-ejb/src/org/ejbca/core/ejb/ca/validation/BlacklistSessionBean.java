@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.validation;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -118,14 +119,19 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">changeBlacklist(value: " + entry.getValue() + ")");
         }
         assertIsAuthorizedToEditBlacklists(admin);
-        BlacklistData data = BlacklistData.findByTypeAndValue(entityManager, entry.getType(), entry.getValue());
-        final String message;
+        BlacklistData dataExists = BlacklistData.findByTypeAndValue(entityManager, entry.getType(), entry.getValue());
+        if (dataExists != null) {
+            log.debug("An entry with type and value already exists: "+entry.getType()+", "+entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
+            log.info(message);            
+        }
+        BlacklistData data = BlacklistData.findById(entityManager, entry.getID());
         if (data != null) {
             final Map<Object, Object> diff = data.getBlacklistEntry().diff(entry);
             data.setBlacklistEntry(entry);
-            // Since loading a PublicKeyBlacklist is quite complex, we simple purge the cache here.
+            // Since loading a Blacklist is quite complex, we simple purge the cache here.
             PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
-            message = intres.getLocalizedMessage("blacklist.changedpublickeyblacklist", entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.changedpublickeyblacklist", entry.getValue());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             for (Map.Entry<Object, Object> mapEntry : diff.entrySet()) {
@@ -134,7 +140,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             auditSession.log(EventTypes.BLACKLIST_CHANGE, EventStatus.SUCCESS, ModuleTypes.BLACKLIST, ServiceTypes.CORE,
                     admin.toString(), null, null, null, details);
         } else {
-            message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
             log.info(message);
         }
         if (log.isTraceEnabled()) {
@@ -196,10 +202,11 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     @Override
     public Map<Integer, String> getBlacklistEntryIdToValueMap() {
         final HashMap<Integer, String> result = new HashMap<Integer, String>();
-        for (BlacklistData data : BlacklistData.findAll(entityManager)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Find blacklist " + data.getValue() + " with id " + data.getId());
-            }
+        List<BlacklistData> list = BlacklistData.findAll(entityManager);
+        if (log.isDebugEnabled()) {
+            log.debug("Found blacklist with " + list.size() + " items.");
+        }
+        for (BlacklistData data : list) {
             // TODO: this could populate the cache, and read form the cache
             result.put(data.getId(), data.getValue());
         }
