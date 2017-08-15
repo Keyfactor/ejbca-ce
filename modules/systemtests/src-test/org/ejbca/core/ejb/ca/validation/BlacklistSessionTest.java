@@ -36,10 +36,10 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class BlacklistEntrySessionTest {
+public class BlacklistSessionTest {
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(BlacklistEntrySessionTest.class);
+    private static final Logger log = Logger.getLogger(BlacklistSessionTest.class);
 
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
