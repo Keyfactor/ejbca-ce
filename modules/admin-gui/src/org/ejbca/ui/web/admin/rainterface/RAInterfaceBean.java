@@ -323,6 +323,8 @@ public class RAInterfaceBean implements Serializable {
     }
 
     /** Changes the userdata  
+     * @param userdata the UserView object with the desired changes
+     * @param newUsername the new username if it should be changed
      * @throws IllegalNameException  if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already is waiting for specified action
