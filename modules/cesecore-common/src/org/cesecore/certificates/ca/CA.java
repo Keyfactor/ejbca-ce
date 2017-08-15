@@ -781,6 +781,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
+        if(approvals == null) {
+            approvals = new LinkedHashMap<>();
+        }
         data.put(APPROVALS, new LinkedHashMap<ApprovalRequestType, Integer>(approvals));
     }
     
