@@ -374,13 +374,13 @@ public class ApprovalDataVOView implements Serializable {
                 String orgString = "";
                 try {
                     orgString = translateApprovalDataText((ApprovalDataText) orgTextRows.get(i));
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }
                 String newString = "";
                 try {
                     newString = translateApprovalDataText((ApprovalDataText) newTextRows.get(i));
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }
                 textComparisonList.add(new TextComparisonView(orgString, newString));
