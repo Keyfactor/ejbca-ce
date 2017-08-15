@@ -83,5 +83,4 @@ public class KeyRecoverCommand extends EJBCAWSRABaseCommand implements IAdminCom
         getPrintStream().println("Command used for key recovery");
         getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN>");       
     }
-    
 }

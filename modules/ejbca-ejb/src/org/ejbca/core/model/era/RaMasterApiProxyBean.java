@@ -1179,12 +1179,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
                                 WaitingForApprovalException, CADoesntExistsException {
-        // Handle local key recovery
+        // Handle local key recovery (Key recovery data is stored locally)
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
             if (searchUser(authenticationToken, username) == null) {
                 throw new NotFoundException("User with username '" + username + "' was not found");
             }
+            // Search for the certificate on all implementations
             CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, issuerDN, certSNinHex);
             if (cdw == null) {
                 throw new NotFoundException("Certificate for user: '" + username + "' with serialNr: '" + certSNinHex + "' issued by: '" + issuerDN + "' was not found");
@@ -1194,6 +1195,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE);
             }
             try {
+                // Attempts recovery on all implementations
                 markForRecovery(authenticationToken, username, null, cdw, true);
             } catch (NoSuchEndEntityException e) {
                 // To not mess with the WS API
