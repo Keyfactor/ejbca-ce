@@ -172,7 +172,13 @@ public enum EjbcaEventTypes implements EventType {
     /** Removal of an existing EJBCA background service. */
     SERVICE_REMOVE,
     /** Name change of an existing EJBCA background service. */
-    SERVICE_RENAME
+    SERVICE_RENAME,
+    /** Modification of an existing blacklist. */
+    BLACKLIST_CHANGE,
+    /** Creation of a new blacklist. */
+    BLACKLIST_CREATION,
+    /** Removal of an existing blacklist. */
+    BLACKLIST_REMOVAL    
     ;
 
     @Override
