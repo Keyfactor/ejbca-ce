@@ -234,19 +234,19 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                         throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
                     }
                 } catch (BlacklistExistsException e) {
-                    log.info("Update public key blacklist failed: " + e.getMessage());
+                    log.error("Update public key blacklist failed: " + e.getMessage());
                     if (!resumeOnError) {
-                        throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
+                        return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 } catch (BlacklistDoesntExistsException e) {
                     log.info("Update public key blacklist failed: " + e.getMessage());
                     if (!resumeOnError) {
-                        throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
+                        return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 } catch (Exception e) {
                     log.info("Update public key blacklist failed: " + e.getMessage(), e);
                     if (!resumeOnError) {
-                        throw new Exception("Update public key blacklist aborted --resumeonerror=" + resumeOnError);
+                        return CommandResult.FUNCTIONAL_FAILURE;
                     }
                 }
             }

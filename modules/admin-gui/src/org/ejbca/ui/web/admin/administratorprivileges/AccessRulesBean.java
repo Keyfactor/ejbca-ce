@@ -231,6 +231,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWPUBLISHER, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_EDITVALIDATOR, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWVALIDATOR, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_EDITBLACKLIST, Role.STATE_ALLOW),
                     new AccessRule(StandardRules.VALIDATORACCESSBASE.resource(), Role.STATE_ALLOW),
                     // This was present in legacy DefaultRoles, but makes very little sense
                     //new AccessRule(AuditLogRules.LOG.resource(), Role.STATE_ALLOW),

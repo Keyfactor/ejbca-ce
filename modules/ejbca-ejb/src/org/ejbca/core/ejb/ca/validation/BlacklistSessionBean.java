@@ -27,8 +27,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.enums.EventTypes;
-import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -37,9 +35,11 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.validation.BlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
@@ -57,7 +57,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     private static final Logger log = Logger.getLogger(BlacklistSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -105,7 +105,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
         final String message = intres.getLocalizedMessage("blacklist.addedpublickeyblacklist", entry.getValue());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", message);
-        auditSession.log(EventTypes.BLACKLIST_CREATION, EventStatus.SUCCESS, ModuleTypes.BLACKLIST, ServiceTypes.CORE,
+        auditSession.log(EjbcaEventTypes.BLACKLIST_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
                 admin.toString(), null, null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<addBlacklist()");
@@ -137,7 +137,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             for (Map.Entry<Object, Object> mapEntry : diff.entrySet()) {
                 details.put(mapEntry.getKey().toString(), mapEntry.getValue().toString());
             }
-            auditSession.log(EventTypes.BLACKLIST_CHANGE, EventStatus.SUCCESS, ModuleTypes.BLACKLIST, ServiceTypes.CORE,
+            auditSession.log(EjbcaEventTypes.BLACKLIST_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
                     admin.toString(), null, null, null, details);
         } else {
             final String message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
@@ -169,7 +169,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             message = intres.getLocalizedMessage("blacklist.removedpublickeyblacklist", value);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
-            auditSession.log(EventTypes.BLACKLIST_REMOVAL, EventStatus.SUCCESS, ModuleTypes.BLACKLIST, ServiceTypes.CORE,
+            auditSession.log(EjbcaEventTypes.BLACKLIST_REMOVAL, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
                     admin.toString(), null, null, null, details);
         }
         if (log.isTraceEnabled()) {
@@ -235,7 +235,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
         } else {
             final String message = intres.getLocalizedMessage("blacklist.erroraddpublickeyblacklist", blacklist.getValue());
             log.info(message);
-            throw new BlacklistExistsException();
+            throw new BlacklistExistsException("Blacklist entry already exists: "+blacklist.getValue());
         }
     }
 
@@ -301,7 +301,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     /** Assert the administrator is authorized to edit public key blacklists. */
     private void assertIsAuthorizedToEditBlacklists(AuthenticationToken admin) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorized(admin, StandardRules.BLACKLISTEDIT.resource())) {
-            final String message = intres.getLocalizedMessage("store.editpublickeyblacklistnotauthorized", admin.toString());
+            final String message = intres.getLocalizedMessage("store.editblacklistnotauthorized", admin.toString());
             throw new AuthorizationDeniedException(message);
         }
     }
