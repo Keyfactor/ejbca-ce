@@ -4999,7 +4999,7 @@ The key validators listed below are available in the system by default. If you d
 <p>Performs inspection of RSA key parameters and validates key quality beyond key length and size: With this key validator the CA/B-Forum requirements can be enforced on the public keys certified or other restrictions on the RSA exponent and modulus can be defined.</p>
 <ul>
 <li>the value of the public exponent is an odd number equal to 3 or more</li>
-<li>the public exponent is in the range between 2^16+1 and 2^256‐1</li>
+<li>the public exponent is in the range between 2^16+1 and 2^256-1</li>
 <li>The modulus is an odd number, not the power of a prime, and have no factors smaller than 752</li>
 </ul>
 </li>
