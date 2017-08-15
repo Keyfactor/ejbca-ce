@@ -27,7 +27,7 @@ drop table PeerData if exists;
 drop table ProfileData if exists;
 drop table PublisherData if exists;
 drop table PublisherQueueData if exists;
-drop table PublicKeyBlacklistData if exists;
+drop table BlacklistData if exists;
 drop table RoleData if exists;
 drop table RoleMemberData if exists;
 drop table ServiceData if exists;

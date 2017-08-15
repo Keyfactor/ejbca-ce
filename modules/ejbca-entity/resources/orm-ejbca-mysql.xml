@@ -348,8 +348,8 @@
     <entity class="org.ejbca.core.ejb.ca.validation.BlacklistData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
-            <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
