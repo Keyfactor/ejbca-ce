@@ -224,9 +224,10 @@ public class BlacklistData extends ProtectedData implements Serializable {
      * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
-    public static BlacklistData findByFingerprint(EntityManager entityManager, String fingerprint) {
-        final Query query = entityManager.createQuery("SELECT a FROM BlacklistData a WHERE a.value=:value");
-        query.setParameter("value", fingerprint);
+    public static BlacklistData findByTypeAndValue(EntityManager entityManager, final String type, final String value) {
+        final Query query = entityManager.createQuery("SELECT a FROM BlacklistData a WHERE a.type=:type and a.value=:value");
+        query.setParameter("type", type);
+        query.setParameter("value", value);
         return (BlacklistData) QueryResultWrapper.getSingleResult(query);
     }
 

@@ -40,7 +40,7 @@ public interface BlacklistSessionLocal extends BlacklistSession {
      * 
      * @throws BlacklistDoesntExistsException if a custom public key blacklist does not exist.
      */
-    int getBlacklistEntryId(String fingerprint);
+    int getBlacklistEntryId(String type, String value);
 
     /**
      * Gets the fingerprint of the public key blacklist entry with the given id.

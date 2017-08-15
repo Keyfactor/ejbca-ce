@@ -323,9 +323,9 @@ CREATE TABLE PublisherQueueData (
 
 CREATE TABLE PublicKeyBlacklistData (
     id INT(11) NOT NULL,
-    keyspec VARCHAR(64) BINARY NOT NULL,
-    fingerprint VARCHAR(64) BINARY NOT NULL,
-    data LONGTEXT,
+    type VARCHAR(250) BINARY NOT NULL,
+    value VARCHAR(250) BINARY NOT NULL,
+    data VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     updateCounter INT(11) NOT NULL,

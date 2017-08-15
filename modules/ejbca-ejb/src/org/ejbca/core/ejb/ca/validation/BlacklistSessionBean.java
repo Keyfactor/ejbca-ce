@@ -72,12 +72,12 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
 
     @Override
     public BlacklistEntry getBlacklistEntry(int id) {
-        return getBlacklistEntryInternal(id, null, true);
+        return getBlacklistEntryInternal(id, null, null, true);
     }
 
     @Override
-    public BlacklistEntry getBlacklistEntry(String value) {
-        return getBlacklistEntryInternal(-1, value, true);
+    public BlacklistEntry getBlacklistEntry(final String type, final String value) {
+        return getBlacklistEntryInternal(-1, type, value, true);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">getBlacklistEntryFingerprint(id: " + id + ")");
         }
         // Get public key blacklist to ensure it is in the cache, or read.
-        final BlacklistEntry entity = getBlacklistEntryInternal(id, null, true);
+        final BlacklistEntry entity = getBlacklistEntryInternal(id, null, null, true);
         final String result = (entity != null) ? entity.getValue() : null;
         if (log.isTraceEnabled()) {
             log.trace("<getBlacklistEntryFingerprint(): " + result);
@@ -118,7 +118,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">changeBlacklist(value: " + entry.getValue() + ")");
         }
         assertIsAuthorizedToEditBlacklists(admin);
-        BlacklistData data = BlacklistData.findByFingerprint(entityManager, entry.getValue());
+        BlacklistData data = BlacklistData.findByTypeAndValue(entityManager, entry.getType(), entry.getValue());
         final String message;
         if (data != null) {
             final Map<Object, Object> diff = data.getBlacklistEntry().diff(entry);
@@ -143,14 +143,14 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     }
 
     @Override
-    public void removeBlacklistEntry(AuthenticationToken admin, String value)
+    public void removeBlacklistEntry(AuthenticationToken admin, final String type, final String value)
             throws AuthorizationDeniedException, BlacklistDoesntExistsException {
         if (log.isTraceEnabled()) {
-            log.trace(">removeBlacklist(fingerprint: " + value + ")");
+            log.trace(">removeBlacklist(" + type+", "+value + ")");
         }
         assertIsAuthorizedToEditBlacklists(admin);
         String message;
-        BlacklistData data = BlacklistData.findByFingerprint(entityManager, value);
+        BlacklistData data = BlacklistData.findByTypeAndValue(entityManager, type, value);
         if (data == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Trying to remove a blacklist that does not exist: " + value);
@@ -194,21 +194,22 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     }
 
     @Override
-    public Map<Integer, String> getBlacklistEntryIdToFingerprintMap() {
+    public Map<Integer, String> getBlacklistEntryIdToValueMap() {
         final HashMap<Integer, String> result = new HashMap<Integer, String>();
         for (BlacklistData data : BlacklistData.findAll(entityManager)) {
             if (log.isDebugEnabled()) {
                 log.debug("Find blacklist " + data.getValue() + " with id " + data.getId());
             }
+            // TODO: this could populate the cache, and read form the cache
             result.put(data.getId(), data.getValue());
         }
         return result;
     }
 
     @Override
-    public int getBlacklistEntryId(String fingerprint) {
+    public int getBlacklistEntryId(final String type, final String value) {
         // Get object to ensure it is in the cache, or read.
-        final BlacklistEntry entry = getBlacklistEntryInternal(-1, fingerprint, true);
+        final BlacklistEntry entry = getBlacklistEntryInternal(-1, type, value, true);
         int result = 0;
         if (null != entry) {
             result = entry.getID();
@@ -219,7 +220,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     /** Adds a public key blacklist or throws an exception. Will not update the cache, it will be read into the cache on next try to read. */
     private void addBlacklistEntryInternal(AuthenticationToken admin, int id, BlacklistEntry blacklist) throws AuthorizationDeniedException, BlacklistExistsException {
         assertIsAuthorizedToEditBlacklists(admin);
-        if (BlacklistData.findByFingerprint(entityManager, blacklist.getValue()) == null
+        if (BlacklistData.findByTypeAndValue(entityManager, blacklist.getType(), blacklist.getValue()) == null
                 && BlacklistData.findById(entityManager, Integer.valueOf(id)) == null) {
             blacklist.setID(Integer.valueOf(id));
             final BlacklistData entity = new BlacklistData(blacklist);
@@ -232,9 +233,9 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
     }
 
     /** Gets a public key blacklist by cache or database, can return null. */
-    private BlacklistEntry getBlacklistEntryInternal(int id, final String value, boolean fromCache) {
+    private BlacklistEntry getBlacklistEntryInternal(int id, final String type, final String value, boolean fromCache) {
         if (log.isTraceEnabled()) {
-            log.trace(">getBlacklistEntryInternal: " + id + ", " + value);
+            log.trace(">getBlacklistEntryInternal: " + id + ", " + type + ", " + value);
         }
         Integer idValue = Integer.valueOf(id);
         if (id == -1) {
@@ -255,7 +256,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
             BlacklistData data = null;
             if (value != null) {
-                data = BlacklistData.findByFingerprint(entityManager, value);
+                data = BlacklistData.findByTypeAndValue(entityManager, type, value);
             } else if (idValue != null) {
                 data = BlacklistData.findById(entityManager, idValue);
             }

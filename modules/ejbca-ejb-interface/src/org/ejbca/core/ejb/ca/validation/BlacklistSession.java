@@ -42,24 +42,25 @@ public interface BlacklistSession {
     /** Removes the public key blacklist entry.
      * 
      * @param admin AuthenticationToken of administrator.
-     * @param fingerprint the fingerprint of the public key blacklist entry to remove.
+     * @param type the type of blacklist entry to remove.
+     * @param value the fingerprint of the blacklist entry to remove.
      * 
      * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_blacklist
      * @throws BlacklistDoesntExistsException if the public key blacklist does not exist.
      */
-    void removeBlacklistEntry(AuthenticationToken admin, String fingerprint)
+    void removeBlacklistEntry(AuthenticationToken admin, String type, String value)
             throws AuthorizationDeniedException, BlacklistDoesntExistsException;
 
     /**
      * Retrieves a Map of all public key blacklist entry ids and fingerprints. 
      * @return the map. 
      */
-    Map<Integer, String> getBlacklistEntryIdToFingerprintMap();
+    Map<Integer, String> getBlacklistEntryIdToValueMap();
     
     /**
      * Gets a public key blacklist entry by cache or database.
      * @param a fingerprint of the public key blacklist entry, BlacklistEntry.createFingerprint 
      * @return a BlacklistEntry or null if a public key blacklist entry with the given fingerprint does not exist. Uses cache to get the object as quickly as possible.
      */
-    BlacklistEntry getBlacklistEntry(String fingerprint);
+    BlacklistEntry getBlacklistEntry(String type, String value);
 }

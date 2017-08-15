@@ -27,7 +27,7 @@ drop table if exists PeerData cascade;
 drop table if exists ProfileData cascade;
 drop table if exists PublisherData cascade;
 drop table if exists PublisherQueueData cascade;
-drop table if exists PublicKeyBlacklistData cascade;
+drop table if exists BlacklistData cascade;
 drop table if exists RoleData cascade;
 drop table if exists RoleMemberData cascade;
 drop table if exists ServiceData cascade;

@@ -47,5 +47,5 @@ CREATE INDEX userdata_idx11 ON UserData (status);
 
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 
--- When using a public key blacklist with many entries
-CREATE INDEX publickeyblacklist_idx1 ON PublicKeyBlacklistData (fingerprint);
+-- When using a blacklist with many entries
+CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);

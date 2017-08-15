@@ -36,10 +36,10 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class PublicKeyBlacklistEntrySessionTest {
+public class BlacklistEntrySessionTest {
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(PublicKeyBlacklistEntrySessionTest.class);
+    private static final Logger log = Logger.getLogger(BlacklistEntrySessionTest.class);
 
     /** Test user. */
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(
@@ -65,29 +65,29 @@ public class PublicKeyBlacklistEntrySessionTest {
     public void testAddGetChangeRemove() throws Exception {
         log.trace(">testAddGetChangeRemove()");
         try {
-            assertNull("foo should not return an entry", listSession.getBlacklistEntry("foo"));
-            Map<Integer, String> map = listSession.getBlacklistEntryIdToFingerprintMap();
+            assertNull("foo should not return an entry", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "foo"));
+            Map<Integer, String> map = listSession.getBlacklistEntryIdToValueMap();
             int initialSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
             entry.setFingerprint("abc123");
             listSession.addBlacklistEntry(internalAdmin, entry);
-            map = listSession.getBlacklistEntryIdToFingerprintMap();
+            map = listSession.getBlacklistEntryIdToValueMap();
             int newSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
             assertEquals("map size should be increased", initialSize+1, newSize);
-            assertNull("foo should not return an entry", listSession.getBlacklistEntry("foo"));
-            map = listSession.getBlacklistEntryIdToFingerprintMap();
+            assertNull("foo should not return an entry", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "foo"));
+            map = listSession.getBlacklistEntryIdToValueMap();
             assertEquals("map should contain a new entry", initialSize+1, map.size());
-            BlacklistEntry entry1 = listSession.getBlacklistEntry("abc123");
+            BlacklistEntry entry1 = listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc123");
             assertNotNull("an entry should have been returned as we just added it", entry1);
             assertEquals("the map entry should have the same fingerprint as we added", "abc123", map.get(entry1.getID()));
             assertEquals("entry should have the fingerprint added, abc123", "abc123", entry1.getValue());
-            listSession.removeBlacklistEntry(internalAdmin, "abc123");
-            map = listSession.getBlacklistEntryIdToFingerprintMap();
+            listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc123");
+            map = listSession.getBlacklistEntryIdToValueMap();
             assertEquals("map should contain one less entry", initialSize, map.size());
-            assertNull("abc123 should not return an entry any longer", listSession.getBlacklistEntry("abc123"));
+            assertNull("abc123 should not return an entry any longer", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "abc123"));
         } finally {
             try {
-            listSession.removeBlacklistEntry(internalAdmin, "abc123");
+            listSession.removeBlacklistEntry(internalAdmin, PublicKeyBlacklistEntry.TYPE, "abc123");
             } catch (BlacklistDoesntExistsException e) {
                 // NOOMD: do nothing
             }
