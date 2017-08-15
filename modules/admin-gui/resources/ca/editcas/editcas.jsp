@@ -350,7 +350,7 @@ org.ejbca.ui.web.ParameterException
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
                 String validityString = requestMap.get(TEXTFIELD_VALIDITY);
                 
-                Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
                 for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                     String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
                     if(approvalProfile != null && !approvalProfile.equals("-1")) {
@@ -594,7 +594,7 @@ org.ejbca.ui.web.ParameterException
                     signedByString = String.valueOf(cainfo.getSignedBy());
                 }	
                 
-                Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+                Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
                 for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                     String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
                     if(approvalProfile != null) {

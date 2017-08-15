@@ -1406,7 +1406,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 CA ca = caSession.getCAForEdit(authenticationToken, caId);
                 //If approvals map is null or empty, then this CA may be in an unupgraded state.
                 if(ca.getApprovals() == null || ca.getApprovals().isEmpty()) {
-                	Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
+                    Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
                     int approvalProfile = ca.getApprovalProfile();
                     if (approvalProfile != -1) {
                         for (int approvalSetting : ca.getApprovalSettings()) {
@@ -1430,7 +1430,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (Integer profileId : certificateProfiles.keySet()) {
             CertificateProfile certificateProfile = certificateProfiles.get(profileId);
             String certificateProfileName = certProfileSession.getCertificateProfileName(profileId);
-            Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
+            Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
             int approvalProfile = certificateProfile.getApprovalProfileID();
             if (approvalProfile != -1) {
                 for (int approvalSetting : certificateProfile.getApprovalSettings()) {
