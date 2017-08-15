@@ -43,7 +43,9 @@ public enum EjbcaModuleTypes implements ModuleType {
     /** External logging module. */
     CUSTOM,
     /** Administrative web GUI module. */
-    ADMINWEB;
+    ADMINWEB,
+    /** Blacklist module. */
+    BLACKLIST;    
 
     @Override
     public boolean equals(ModuleType value) {
