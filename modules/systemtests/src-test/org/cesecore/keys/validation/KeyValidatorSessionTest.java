@@ -406,7 +406,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
-        final String name = "testKeyValidatorCache";
+        final String name = "testKeyValidatorAuthorization";
         final Validator rsaKeyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
         rsaKeyValidator.setDescription("foobar");
         int id = 0; // id of the Validator we will add
