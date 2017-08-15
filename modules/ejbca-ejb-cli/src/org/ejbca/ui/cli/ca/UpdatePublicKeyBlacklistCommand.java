@@ -198,7 +198,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     fingerprint = tokens[0];
                                     log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
                                     try {
-                                        state = removeFromBlacklist(fingerprint);
+                                        state = removeFromBlacklist(PublicKeyBlacklistEntry.TYPE, fingerprint);
                                     } catch (BlacklistDoesntExistsException e) {
                                         // Do nothing, it was already printed to info
                                     }
@@ -333,7 +333,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         int result = STATUS_GENERALIMPORTERROR;
         final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
         log.info("Try to remove public key from public key blacklist (fingerprint=" + fingerprint + ").");
-        result = removeFromBlacklist(fingerprint);
+        result = removeFromBlacklist(PublicKeyBlacklistEntry.TYPE, fingerprint);
         log.trace("<removePublicKeyFromBlacklist()");
         return result;
     }
@@ -376,16 +376,16 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    private int removeFromBlacklist(final String fingerprint) throws Exception {
+    private int removeFromBlacklist(final String type, final String value) throws Exception {
         log.trace(">removeFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final BlacklistSessionRemote blacklistSession = EjbRemoteHelper.INSTANCE.getRemoteSession(BlacklistSessionRemote.class);
         try {
-            blacklistSession.removeBlacklistEntry(getAuthenticationToken(), fingerprint);
+            blacklistSession.removeBlacklistEntry(getAuthenticationToken(), type, value);
             result = STATUS_OK;
         } catch (BlacklistDoesntExistsException e) {
             result = STATUS_CONSTRAINTVIOLATION;
-            log.info("Public key blacklist entry with public key fingerprint " + fingerprint + " does not exist.");
+            log.info("Public key blacklist entry with public key fingerprint " + value + " does not exist.");
             throw e;
         } catch (AuthorizationDeniedException e) {
             result = STATUS_GENERALIMPORTERROR;
