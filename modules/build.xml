@@ -200,7 +200,7 @@
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web, caa">
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
@@ -505,11 +505,11 @@
 		<ant antfile="${mod.certsafe.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="caa" if="mod.caa.exists">
+	<target name="caa" if="mod.caa.exists" depends="ejbca-common-web, cesecore-common">
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="cli-util" description="Creates a CLI jar for CAA lookups">
+	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, cli-util" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="false"></ant>
 	</target>
 	

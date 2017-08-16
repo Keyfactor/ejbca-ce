@@ -22,8 +22,8 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.KeyValidationException;
 import org.cesecore.keys.validation.KeyValidatorBase;
+import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.profiles.Profile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -139,7 +139,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws KeyValidationException {
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidationException {
         List<String> messages = new ArrayList<String>();
         final int keyLength = KeyTools.getKeyLength(publicKey);
         final String keyAlgorithm = publicKey.getAlgorithm(); // AlgorithmTools.getKeyAlgorithm(publicKey);

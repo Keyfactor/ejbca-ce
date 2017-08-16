@@ -27,14 +27,15 @@
 <h:outputLabel for="keyvalidator_settings" value="#{web.text.ECCKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
 <h:panelGroup id="keyvalidator_settings"></h:panelGroup>
 <h:outputLabel for="settingsTemplate" value="#{web.text.VALIDATORSETTINGSTEMPLATE}"/>
-<h:selectOneMenu id="settingsTemplate" value="#{validatorBean.keyValidator.settingsTemplate}" disabled="#{validatorsBean.viewOnly}">
-	<f:ajax listener="#{validatorBean.keyValidatorTemplateChanged}" render="@form"/>	
-	<f:selectItems value="#{validatorBean.availableKeyValidatorSettingsTemplates}" />
+<h:selectOneMenu id="settingsTemplate" value="#{validatorBean.validator.settingsTemplate}" disabled="#{validatorsBean.viewOnly}">
+	<f:ajax listener="#{validatorBean.validatorTemplateChanged}" render="@form"/>	
+	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
 </h:selectOneMenu>
 <h:outputLabel for="keyvalidatorcurves" value="#{web.text.ECCKEYVALILDATORAVAILABLECURVES}" />
-<h:selectManyListbox id="keyvalidatorcurves" value="#{validatorBean.keyValidator.curves}" size="10" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
+<h:selectManyListbox id="keyvalidatorcurves" value="#{validatorBean.validator.curves}" size="10" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
 	<f:selectItems value="#{validatorBean.availableEcCurves}" />
 </h:selectManyListbox>
 <h:outputLabel for="eccUsePublicKeyFullValidation" value="#{web.text.ECCKEYVALIDATORUSEFULLPUBLICKEYVALIDATION}" styleClass="subItem"/>
-<h:selectBooleanCheckbox id="eccUsePublicKeyFullValidation" value="#{validatorBean.keyValidator.useFullPublicKeyValidationRoutine}" disabled="#{validatorsBean.viewOnly}" />
+<h:selectBooleanCheckbox id="eccUsePublicKeyFullValidation" value="#{validatorBean.validator.useFullPublicKeyValidationRoutine}" disabled="#{validatorsBean.viewOnly}" />
+<ui:include src="certificateValidity.xhtml" />
 </ui:composition>

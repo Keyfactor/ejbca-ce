@@ -42,7 +42,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Managed bean for key edit validators page (editvalidators.xhtml).
+ * Managed bean for edit validators page (editvalidators.xhtml).
  *
  * @version $Id$
  */
@@ -67,7 +67,7 @@ public class ValidatorsBean extends BaseManagedBean {
     private boolean viewOnly = true;
 
     /** Backing object for key validator list. */
-    private ListDataModel<KeyValidatorItem> keyValidatorItems = null;
+    private ListDataModel<ValidatorItem> validatorItems = null;
 
     @EJB
     private CaSessionLocal caSession;
@@ -111,7 +111,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @return
      */
     public String getResetKeyValidatorsTrigger() {
-        keyValidatorItems = null;
+        validatorItems = null;
         return StringUtils.EMPTY;
     }
 
@@ -120,7 +120,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @version $Id$
      *
      */
-    public class KeyValidatorItem {
+    public class ValidatorItem {
 
         private final int id;
         private final String name;
@@ -132,7 +132,7 @@ public class ValidatorsBean extends BaseManagedBean {
          * @param name the name
          * @param implementationLabel the label of the imlementation
          */
-        public KeyValidatorItem(final int id, final String name, final String implementationLabel) {
+        public ValidatorItem(final int id, final String name, final String implementationLabel) {
             this.id = id;
             this.implementationLabel = implementationLabel;
             this.name = name;
@@ -155,9 +155,9 @@ public class ValidatorsBean extends BaseManagedBean {
      * Gets the available key validators.
      * @return
      */
-    public ListDataModel<KeyValidatorItem> getAvailableKeyValidators() {
-        if (keyValidatorItems == null) {
-            final List<KeyValidatorItem> items = new ArrayList<KeyValidatorItem>();
+    public ListDataModel<ValidatorItem> getAvailableValidators() {
+        if (validatorItems == null) {
+            final List<ValidatorItem> items = new ArrayList<ValidatorItem>();
             final Map<Integer, Validator> keyValidators = keyValidatorSession.getAllKeyValidators();
             Validator keyValidator;
             String accessRule;
@@ -165,7 +165,7 @@ public class ValidatorsBean extends BaseManagedBean {
                 keyValidator = keyValidators.get(id);
                 accessRule = StandardRules.VALIDATORACCESS.resource() + keyValidator.getProfileName();
                 if (isAuthorizedTo(accessRule)) {
-                    items.add(new KeyValidatorItem(id, keyValidator.getProfileName(), keyValidator.getLabel()));
+                    items.add(new ValidatorItem(id, keyValidator.getProfileName(), keyValidator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
@@ -173,9 +173,9 @@ public class ValidatorsBean extends BaseManagedBean {
                     }
                 }
             }
-            keyValidatorItems = new ListDataModel<KeyValidatorItem>(items);
+            validatorItems = new ListDataModel<ValidatorItem>(items);
         }
-        return keyValidatorItems;
+        return validatorItems;
     }
 
     /**
@@ -238,14 +238,14 @@ public class ValidatorsBean extends BaseManagedBean {
                 addNonTranslatedErrorMessage(e.getMessage());
             }
         }
-        keyValidatorItems = null;
+        validatorItems = null;
     }
 
     /**
      * Selection changed event.
      */
     private void selectCurrentRowData() {
-        final KeyValidatorItem item = (KeyValidatorItem) getAvailableKeyValidators().getRowData();
+        final ValidatorItem item = (ValidatorItem) getAvailableValidators().getRowData();
         setSelectedKeyValidatorId(item.getId());
     }
 
@@ -370,7 +370,7 @@ public class ValidatorsBean extends BaseManagedBean {
         addFromTemplateInProgress = false;
         deleteInProgress = false;
         renameInProgress = false;
-        keyValidatorItems = null;
+        validatorItems = null;
         selectedKeyValidatorId = null;
         keyValidatorName = null;
     }
@@ -431,7 +431,7 @@ public class ValidatorsBean extends BaseManagedBean {
         }
         try {
             importKeyValidatorsFromZip(getUploadFile().getBytes());
-            keyValidatorItems = null;
+            validatorItems = null;
         } catch (IOException | AuthorizationDeniedException | NumberFormatException | KeyValidatorExistsException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }

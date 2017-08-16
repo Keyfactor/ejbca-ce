@@ -1,68 +1,37 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General                  *
+ *  modify it under the terms of the GNU Lesser General Public           *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.keys.validation;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.profiles.ProfileBase;
+import org.apache.commons.lang.time.DateUtils;
+import org.jboss.logging.Logger;
 
 /**
- * BaseKeyValidator is a basic class that should be inherited by all types
- * of key validator in the system.
- *  
- *
  * @version $Id$
+ *
  */
-public abstract class KeyValidatorBase extends ProfileBase implements Serializable, Cloneable, Validator {
+public abstract class KeyValidatorBase extends ValidatorBase implements KeyValidator {
 
-    private static final long serialVersionUID = -335459158399850925L;
-
-    /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
+    
+    private static final long serialVersionUID = 1L;
 
-    /** List separator. */
-    private static final String LIST_SEPARATOR = ";";
 
-    protected static final InternalResources intres = InternalResources.getInstance();
-
-    public static final float LATEST_VERSION = 4F;
-
-    public static final String TYPE = "type";
-    protected static final String SETTINGS_TEMPLATE = "settingsTemplate";
-    protected static final String DESCRIPTION = "description";
-    protected static final String NOT_BEFORE = "notBefore";
-    protected static final String NOT_BEFORE_CONDITION = "notBeforeCondition";
-    protected static final String NOT_AFTER = "notAfter";
-    protected static final String NOT_AFTER_CONDITION = "notAfterCondition";
-    protected static final String ALL_CERTIFICATE_PROFILE_IDS = "allCertificateProfileIds";
-    protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
-    protected static final String FAILED_ACTION = "failedAction";
-    protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
-
-    // Values used for lookup that are not stored in the data hash map.
-    private int id;
-
+    
     /**
      * Public constructor needed for deserialization.
      */
@@ -82,74 +51,25 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
      * Creates a new instance with the same attributes as the given one.
      */
     public KeyValidatorBase(final KeyValidatorBase keyValidator) {
-        this.data = new LinkedHashMap<Object, Object>(keyValidator.data);
-        this.id = keyValidator.id;
-    }
-
-    @Override
-    public String getProfileType() {
-        return Validator.TYPE_NAME;
+        super();
     }
     
-    /**
-     * Initializes uninitialized data fields.
-     */
+    @Override
     public void init() {
-        super.initialize();
-        if (null == data.get(VERSION)) {
-            data.put(VERSION, new Float(LATEST_VERSION));
-        }
-        if (null == data.get(SETTINGS_TEMPLATE)) {
-            setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption());
-        }
-        if (null == data.get(DESCRIPTION)) {
-            setDescription(StringUtils.EMPTY);
-        }
-        if (null == data.get(CERTIFICATE_PROFILE_IDS)) {
-            setCertificateProfileIds(new ArrayList<Integer>());
-        }
+        super.init();
         if (null == data.get(NOT_BEFORE_CONDITION)) {
             setNotBeforeCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
         if (null == data.get(NOT_AFTER_CONDITION)) {
             setNotAfterCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
-        if (null == data.get(FAILED_ACTION)) {
-            setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
-        }
-        if (null == data.get(NOT_APPLICABLE_ACTION)) {
-            setNotApplicableAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
-        }
-        // Added in v2
-        if (null == data.get(ALL_CERTIFICATE_PROFILE_IDS)) {
-            setAllCertificateProfileIds(true);
-        }
     }
-
+    
     @Override
-    public void setKeyValidatorSettingsTemplate() {
+    public Class<? extends Validator> getValidatorSubType() {
+        return KeyValidator.class;
     }
-
-    @Override
-    public Integer getSettingsTemplate() {
-        return (Integer) data.get(SETTINGS_TEMPLATE);
-    }
-
-    @Override
-    public void setSettingsTemplate(Integer option) {
-        data.put(SETTINGS_TEMPLATE, option);
-    }
-
-    @Override
-    public String getDescription() {
-        return (String) data.get(DESCRIPTION);
-    }
-
-    @Override
-    public void setDescription(String description) {
-        data.put(DESCRIPTION, description);
-    }
-
+    
     @Override
     public Date getNotBefore() {
         return (Date) data.get(NOT_BEFORE);
@@ -190,129 +110,62 @@ public abstract class KeyValidatorBase extends ProfileBase implements Serializab
         return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
     }
 
-    @Override
-    public boolean isAllCertificateProfileIds() {
-        return ((Boolean) data.get(ALL_CERTIFICATE_PROFILE_IDS)).booleanValue();
-    }
     
-    @Override 
-    public void setAllCertificateProfileIds(boolean isAll) {
-        data.put(ALL_CERTIFICATE_PROFILE_IDS, Boolean.valueOf(isAll));
+    @Override
+    public String getNotBeforeAsString() {
+        return formatDate(getNotBefore());
     }
     
     @Override
-    public List<Integer> getCertificateProfileIds() {
-        final String value = (String) data.get(CERTIFICATE_PROFILE_IDS);
-        final List<Integer> result = new ArrayList<Integer>();
-        // Can be empty String here.
-        if (StringUtils.isNotBlank(value)) {
-            final String[] tokens = value.trim().split(LIST_SEPARATOR);
-            for (int i = 0, j = tokens.length; i < j; i++) {
-                result.add(Integer.valueOf(tokens[i]));
-            }
+    public String getNotAfterAsString() {
+        return formatDate(getNotAfter());
+    }
+
+    @Override
+    public void setNotBeforeAsString(String formattedDate) {
+        try {
+            setNotBefore(parseDate(formattedDate));
+        } catch (ParseException e) {
+            log.debug("Could not parse Date: " + formattedDate);
+        }
+    }
+    
+    @Override
+    public void setNotAfterAsString(String formattedDate) {
+        try {
+            setNotAfter(parseDate(formattedDate));
+        } catch (ParseException e) {
+            log.debug("Could not parse Date: " + formattedDate);
+        }
+    }
+    
+    
+    /**
+     * Formats a date.
+     * @param date the date
+     * @return the formatted date string.
+     */
+    private String formatDate(Date date) {
+        String result = StringUtils.EMPTY;
+        if (null != date) {
+            result = new SimpleDateFormat(DATE_FORMAT[0]).format(date);
         }
         return result;
     }
 
-    @Override
-    public void setCertificateProfileIds(Collection<Integer> ids) {
-        final StringBuilder builder = new StringBuilder();
-        for (Integer id : ids) {
-            if (builder.length() == 0) {
-                builder.append(id);
-            } else {
-                builder.append(LIST_SEPARATOR).append(id);
-            }
+    /**
+     * Parses a date string with the date format list.
+     * @param string the formatted date string.
+     * @return the date or null, if the date could not be parsed.
+     * @throws ParseException if the date couldn't be parsed
+     */
+    public static Date parseDate(String string) throws ParseException {
+        Date result = null;
+        if (StringUtils.isNotBlank(string)) {
+            final String dateString = string.trim();
+                result = DateUtils.parseDate(dateString, DATE_FORMAT);
+  
         }
-        data.put(CERTIFICATE_PROFILE_IDS, builder.toString());
+        return result;
     }
-
-    @Override
-    public void setFailedAction(int index) {
-        data.put(FAILED_ACTION, index);
-    }
-
-    @Override
-    public int getFailedAction() {
-        return ((Integer) data.get(FAILED_ACTION)).intValue();
-    }
-
-    @Override
-    public void setNotApplicableAction(int index) {
-        data.put(NOT_APPLICABLE_ACTION, index);
-    }
-
-    @Override
-    public int getNotApplicableAction() {
-        return ((Integer) data.get(NOT_APPLICABLE_ACTION)).intValue();
-    }
-
-    @Override
-    public abstract String getTemplateFile();
-
-    @Override
-    public void upgrade() {
-        if (log.isTraceEnabled()) {
-            log.trace(">upgrade: " + getLatestVersion() + ", " + getVersion());
-        }
-        super.upgrade();
-        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("keyvalidator.upgrade", new Float(getVersion())));
-            init();
-            // Finished upgrade, set new version
-            data.put(VERSION, new Float(LATEST_VERSION));
-        }
-    }
-
-    @Override
-    public String toDisplayString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("BaseKeyValidator [id=").append(id).append(", name=").append(getProfileName()).append(", applicableCertificateProfileIds=").append(data.get(CERTIFICATE_PROFILE_IDS))
-                .append(", notBefore=").append(data.get(NOT_BEFORE)).append(", notBeforeCondition=").append(data.get(NOT_BEFORE_CONDITION))
-                .append(", notAfter=").append(data.get(NOT_AFTER)).append(", notAfterCondition=").append(data.get(NOT_AFTER_CONDITION))
-                .append(", failedAction=").append(data.get(FAILED_ACTION));
-        return result.toString();
-    }
-    
-    @Override
-    public Validator clone() {
-        getType();
-        Validator clone;
-        try {
-            clone = (Validator) getType().newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException("Could not instansiate class of type " + getType().getCanonicalName());
-        }
-        clone.setProfileName(getProfileName());
-        clone.setProfileId(getProfileId());
-
-        // We need to make a deep copy of the hashmap here
-        LinkedHashMap<Object, Object> dataMap = new LinkedHashMap<>(data.size());
-        for (final Entry<Object, Object> entry : data.entrySet()) {
-            Object value = entry.getValue();
-            if (value instanceof ArrayList<?>) {
-                // We need to make a clone of this object, but the stored immutables can still be referenced
-                value = ((ArrayList<?>) value).clone();
-            }
-            dataMap.put(entry.getKey(), value);
-        }
-        clone.setDataMap(dataMap);
-        return clone;
-    }
-    
-    @Override
-    protected void saveTransientObjects() {
-
-    }
-
-    @Override
-    protected void loadTransientObjects() {
-    }
-    
-    @Override
-    public UpgradeableDataHashMap getUpgradableHashmap() {
-        return this;
-    }
-    
 }

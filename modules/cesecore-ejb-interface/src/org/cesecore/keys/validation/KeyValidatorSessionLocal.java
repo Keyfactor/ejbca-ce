@@ -159,11 +159,22 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param notAfter the certificates notAfter validity
      * @param publicKey the public key of the certificate
      * @return true if all matching key validators could validate the public key successfully. If false #getMessage().size() is greater than 0.
-     * @throws KeyValidationException if the key validation failed. If the key validators failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, or the wrong algorithm type is chosen, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
+     * @throws ValidationException if the key validation failed. If the key validators failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, or the wrong algorithm type is chosen, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
      * @throws IllegalValidityException if the certificate validity could not be determined.
      */
     boolean validatePublicKey(AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
-            Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException;
+            Date notAfter, PublicKey publicKey) throws ValidationException, IllegalValidityException;
+    
+    /**
+     * Validates dnsName fields defined in the SubjectAltName field of the end entity against CAA rules.
+     * 
+     * @param authenticationToken the authentication token of the admin performin the action, for logging purposes
+     * @param ca the issuing CA
+     * @param endEntityInformation the end entity object
+     *  
+     * @throws ValidationException if validation failed
+     */
+    void validateDnsNames(final AuthenticationToken authenticationToken,  final CA ca,  final EndEntityInformation endEntityInformation) throws ValidationException;
 
     //  /**
     //     * Checks authorization to key validators. Only key validators that refer to CA's that the authentication token is 

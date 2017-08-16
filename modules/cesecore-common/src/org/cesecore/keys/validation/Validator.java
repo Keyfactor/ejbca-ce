@@ -13,17 +13,14 @@
 
 package org.cesecore.keys.validation;
 
-import java.security.PublicKey;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.profiles.Profile;
 
 /**
- * Base interface for key validators. All key validators must implement this interface.
+ * Base interface for validators. All validators must implement this interface.
  * 
  * @version $Id$
  */
@@ -38,7 +35,7 @@ public interface Validator extends Profile, Cloneable {
     void init();
 
     /**
-     * Populates the sub class specific key validator values with template values based on {@link KeyValidatorBase#getSettingsTemplate()}. 
+     * Populates the sub class specific key validator values with template values based on {@link ValidatorBase#getSettingsTemplate()}. 
      * Sub classes only need to implement this method if they support configuration templates.
      */
     void setKeyValidatorSettingsTemplate();
@@ -61,17 +58,6 @@ public interface Validator extends Profile, Cloneable {
     void setNotApplicableAction(int index);
 
     int getNotApplicableAction();
-
-    /**
-     * Method that validates the public key.
-     * 
-     * @param publicKey the public key to validate.
-     * @param certificateProfile the Certificate Profile as input for validation
-     * @return the error messages or an empty list if the public key was validated successfully.
-     * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example ECC keys as input to an RSA key validator
-     * @throws KeyValidationException if the certificate issuance MUST be aborted.
-     */
-    List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws ValidatorNotApplicableException, KeyValidationException;
 
     /**
      * @return the settings template index.
@@ -124,22 +110,6 @@ public interface Validator extends Profile, Cloneable {
       */
      void setCertificateProfileIds(Collection<Integer> ids);
      
-     void setNotBefore(Date date);
-     
-     Date getNotBefore();
-     
-     void setNotBeforeCondition(int index);
-     
-     int getNotBeforeCondition();
-     
-     void setNotAfter(Date date);
-     
-     Date getNotAfter();
-     
-     int getNotAfterCondition();
-     
-     void setNotAfterCondition(int index);
-     
      /**
       * Clone has to be implemented instead of a copy constructor due to the fact that we'll be referring to implementations by this interface only. 
       * 
@@ -172,4 +142,9 @@ public interface Validator extends Profile, Cloneable {
        * @return the type as a human readable name.
        */
       String getLabel();
+      
+      /**
+       * @return the subtype of this validator
+       */
+      Class<? extends Validator> getValidatorSubType();
 }

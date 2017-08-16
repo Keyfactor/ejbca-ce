@@ -6,8 +6,8 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:t="http://myfaces.apache.org/tomahawk">
-<ui:remove>
-    <!--
+	<ui:remove>
+		<!--
     /*************************************************************************
      *                                                                       *
      *  EJBCA: The OpenSource Certificate Authority                          *
@@ -21,14 +21,16 @@
      *                                                                       *
      *************************************************************************/
      
-     version: $Id: editBlacklistKeyValidator.xhtml 25334 2017-04-01 16:22:09Z anjakobs $
+     version: $Id$
      -->
-</ui:remove>
-<h:outputLabel for="keyvalidator_settings" value="#{web.text.BLACKLISTKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
-<h:panelGroup id="keyvalidator_settings"></h:panelGroup>
-<h:outputLabel for="keyAlgorithms" value="#{web.text.BLACKLISTKEYVALIDATORKEYALGORITHMS}"/>
-<h:selectManyListbox id="keyAlgorithms" value="#{validatorBean.validator.keyAlgorithms}" size="3" required="true" disabled="#{validatorsBean.viewOnly}">
-	<f:selectItems value="#{validatorBean.availableKeyAlgorithms}"/>
-</h:selectManyListbox>
-<ui:include src="certificateValidity.xhtml" />
+	</ui:remove>
+	<h:outputLabel for="validator_settings" value="#{web.text.CAA_VALIDATOR_SETTINGS}" style="font-weight: bold;" />
+	<h:panelGroup id="validator_settings">
+	</h:panelGroup>
+	<h:outputLabel for="issuer" value="#{web.text.CAA_VALIDATOR_ISSUER}" styleClass="subItem" />
+	<h:inputText id="issuer" value="#{validatorBean.validator.issuer}" required="true" disabled="#{validatorsBean.viewOnly}" />
+	<h:outputLabel for="dnsResolver" value="#{web.text.CAA_VALIDATOR_DNS_RESOLVER}" styleClass="subItem" />
+	<h:inputText id="dnsResolver" value="#{validatorBean.validator.dnsResolver}" disabled="#{validatorsBean.viewOnly}" />
+	<h:outputLabel for="validateDnsSec" value="#{web.text.CAA_VALIDATOR_VALIDATE_DNSSEC}" styleClass="subItem" />
+	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}" />
 </ui:composition>

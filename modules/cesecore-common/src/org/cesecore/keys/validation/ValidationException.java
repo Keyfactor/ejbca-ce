@@ -16,11 +16,11 @@ package org.cesecore.keys.validation;
 import org.cesecore.CesecoreException;
 
 /**
- * An exception thrown when key validation fails for some reason and the certificate issuance has to be aborted.
+ * An exception thrown when validation fails for some reason and the certificate issuance has to be aborted.
  *
  * @version $Id$
  */
-public class KeyValidationException extends CesecoreException {
+public class ValidationException extends CesecoreException {
 
     private static final long serialVersionUID = -3123446231118692L;
 
@@ -28,7 +28,7 @@ public class KeyValidationException extends CesecoreException {
      * Creates a new instance with a detail message.
      * @param message the message.
      */
-    public KeyValidationException(String message) {
+    public ValidationException(String message) {
         super(message, null);
     }
 
@@ -37,7 +37,7 @@ public class KeyValidationException extends CesecoreException {
      * @param message the message.
      * @param cause the root cause.
      */
-    public KeyValidationException(String message, Throwable cause) {
+    public ValidationException(String message, Throwable cause) {
         super(message, cause);
     }
 }

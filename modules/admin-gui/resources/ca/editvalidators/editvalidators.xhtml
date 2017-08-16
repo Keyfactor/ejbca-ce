@@ -39,7 +39,7 @@
 					<h:panelGroup rendered="#{!validatorsBean.operationInProgress}">
 					<h3><h:outputText value="#{web.text.LISTOFVALIDATORS}"/></h3>
 					<h:outputText value="#{validatorsBean.resetKeyValidatorsTrigger}"/>
-					<h:dataTable value="#{validatorsBean.availableKeyValidators}" var="keyValidator" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+					<h:dataTable value="#{validatorsBean.availableValidators}" var="keyValidator" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 						<h:column headerClass="gridColumn1">
 							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{keyValidator.id}"/></f:facet>
 							<h:outputText value="#{keyValidator.name}"/>
