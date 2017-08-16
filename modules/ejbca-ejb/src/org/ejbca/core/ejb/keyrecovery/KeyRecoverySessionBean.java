@@ -465,7 +465,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             }
     	} else {
             String msg = intres.getLocalizedMessage("keyrecovery.errormarkcert", hexSerial, dn);            	
-        	log.info(msg);
+        	log.info(msg + " No key recovery data found on this node.");
         } 
         log.trace("<markAsRecoverable()");
         return returnval;
