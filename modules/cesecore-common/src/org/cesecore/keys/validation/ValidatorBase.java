@@ -211,7 +211,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         super.upgrade();
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade.
-            log.info(intres.getLocalizedMessage("keyvalidator.upgrade", new Float(getVersion())));
+            log.info(intres.getLocalizedMessage("validator.upgrade", new Float(getVersion())));
             init();
             // Finished upgrade, set new version
             data.put(VERSION, new Float(LATEST_VERSION));
