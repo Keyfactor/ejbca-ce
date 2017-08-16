@@ -37,7 +37,7 @@ import org.cesecore.profiles.Profile;
  * 
  * @version $Id$
  */
-public class EccKeyValidator extends KeyValidatorBase {
+public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
 
     private static final long serialVersionUID = -335429158339811928L;
 
@@ -185,7 +185,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, KeyValidationException {
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, ValidationException {
         List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "

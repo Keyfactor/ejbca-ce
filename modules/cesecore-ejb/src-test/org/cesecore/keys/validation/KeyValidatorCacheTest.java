@@ -49,9 +49,9 @@ public class KeyValidatorCacheTest {
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " Publ3";
-        final KeyValidatorBase keyValidator1 = getNewKeyValidator(name1);
-        final KeyValidatorBase keyValidator2 = getNewKeyValidator(name2);
-        final KeyValidatorBase keyValidator3 = getNewKeyValidator(name3);
+        final ValidatorBase keyValidator1 = getNewKeyValidator(name1);
+        final ValidatorBase keyValidator2 = getNewKeyValidator(name2);
+        final ValidatorBase keyValidator3 = getNewKeyValidator(name3);
         // Start out with an empty cache and verify state
         ValidatorCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, ValidatorCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -107,9 +107,9 @@ public class KeyValidatorCacheTest {
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " Publ1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " Publ2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " Publ3";
-        final KeyValidatorBase keyValidator1 = getNewKeyValidator(name1);
-        final KeyValidatorBase keyValidator2 = getNewKeyValidator(name2);
-        final KeyValidatorBase keyValidator3 = getNewKeyValidator(name3);
+        final ValidatorBase keyValidator1 = getNewKeyValidator(name1);
+        final ValidatorBase keyValidator2 = getNewKeyValidator(name2);
+        final ValidatorBase keyValidator3 = getNewKeyValidator(name3);
         // Start out with an empty cache and verify state
         ValidatorCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, ValidatorCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -180,9 +180,9 @@ public class KeyValidatorCacheTest {
         final String name1 = KeyValidatorCacheTest.class.getSimpleName() + " CA1";
         final String name2 = KeyValidatorCacheTest.class.getSimpleName() + " CA2";
         final String name3 = KeyValidatorCacheTest.class.getSimpleName() + " CA3";
-        final KeyValidatorBase keyValidator1 = getNewKeyValidator(name1);
-        final KeyValidatorBase keyValidator2 = getNewKeyValidator(name2);
-        final KeyValidatorBase keyValidator3 = getNewKeyValidator(name3);
+        final ValidatorBase keyValidator1 = getNewKeyValidator(name1);
+        final ValidatorBase keyValidator2 = getNewKeyValidator(name2);
+        final ValidatorBase keyValidator3 = getNewKeyValidator(name3);
         // Start out with an empty cache and verify state
         ValidatorCache.INSTANCE.flush();
         assertEquals("Expected empty map after flush.", 0, ValidatorCache.INSTANCE.getNameToIdMap().entrySet().size());
@@ -244,7 +244,7 @@ public class KeyValidatorCacheTest {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 
-    private KeyValidatorBase getNewKeyValidator(final String name) {
+    private ValidatorBase getNewKeyValidator(final String name) {
         return new RsaKeyValidator(name);
     }
 }

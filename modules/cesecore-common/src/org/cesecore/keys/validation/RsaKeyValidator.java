@@ -39,7 +39,7 @@ import org.cesecore.profiles.Profile;
  * 
  * @version $Id$
  */
-public class RsaKeyValidator extends KeyValidatorBase {
+public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
 
     private static final long serialVersionUID = -335429118359811926L;
 
@@ -214,9 +214,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         super(keyValidator);
     }
 
-    /**
-     * Initializes uninitialized data fields.
-     */
+    @Override
     public void init() {
         super.init();
         if (null == data.get(BIT_LENGTHS)) {
@@ -458,7 +456,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, KeyValidationException {
+    public List<String> validate(final PublicKey publicKey, final CertificateProfile certificateProfile) throws ValidatorNotApplicableException, ValidationException {
         List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "

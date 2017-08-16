@@ -543,8 +543,60 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
+    public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca,  final EndEntityInformation endEntityInformation) throws ValidationException {
+        if (!CollectionUtils.isEmpty(ca.getValidators())) { 
+            Validator validator;
+            DnsNameValidator dnsNameValidator;
+            for (Integer id : ca.getValidators()) {
+                validator = getKeyValidatorInternal(id, true);
+                if (validator.getValidatorSubType().equals(DnsNameValidator.class)) {
+                    dnsNameValidator = (DnsNameValidator) validator;
+                    final String name = dnsNameValidator.getProfileName();
+
+                    // Filter for base key validator critieria.
+                    final List<Integer> certificateProfileIds = dnsNameValidator.getCertificateProfileIds();
+                    final boolean allCertProfiles = dnsNameValidator.isAllCertificateProfileIds();
+                    if (!allCertProfiles && null != certificateProfileIds
+                            && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
+                        if (log.isDebugEnabled()) {
+                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
+                        }
+                        continue;
+                    }
+                    String subjectAltName = endEntityInformation.getSubjectAltName();
+                    List<String> dnsNames = new ArrayList<>();
+                    for (String split : subjectAltName.split(", ")) {
+                        if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
+                            dnsNames.add(split.substring(CertTools.DNS.length() + 1));
+                        }
+                    }
+                    List<String> messages = dnsNameValidator.validate(dnsNames.toArray(new String[dnsNames.size()]));
+                    final String validatorName = dnsNameValidator.getProfileName();
+                    if (messages.size() > 0) { // Evaluation has failed.
+                        final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName, dnsNameValidator.getIssuer(), messages);
+                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        details.put("msg", message);
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, authenticationToken.toString(),
+                                String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+                        final int index = dnsNameValidator.getFailedAction();
+                        performValidationFailedActions(index, message);
+                    } else {
+                        final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, dnsNameValidator.getIssuer());
+                        log.info(message);
+                    }
+
+                }
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("No validators configured for CA " + ca.getName() + " (ID=" + ca.getCAId() + ").");
+            }
+        }
+    }
+    
+    @Override
     public boolean validatePublicKey(final AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
-            Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException {
+            Date notAfter, PublicKey publicKey) throws ValidationException, IllegalValidityException {
         boolean result = true;
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
@@ -554,50 +606,67 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug("Certificate 'notBefore' " + certificateValidity.getNotBefore());
                 log.debug("Certificate 'notAfter' " + certificateValidity.getNotAfter());
             }
-            Validator keyValidator;
+            Validator validator;
+            KeyValidator keyValidator;
             for (Integer id : ca.getValidators()) {
-                keyValidator = getKeyValidatorInternal(id, true);
-                final String name = keyValidator.getProfileName();
-                if (log.isTraceEnabled()) {
-                    log.trace("Try to apply key validator: " + keyValidator.toDisplayString());
-                }
-                try {
-                    // Filter for base key validator critieria.
-                    final List<Integer> certificateProfileIds = keyValidator.getCertificateProfileIds();
-                    final boolean allCertProfiles = keyValidator.isAllCertificateProfileIds();
-                    if (!allCertProfiles && null != certificateProfileIds && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
-                        }
-                        continue;
+                validator = getKeyValidatorInternal(id, true);
+                if (validator.getValidatorSubType().equals(KeyValidator.class)) {
+                    keyValidator = (KeyValidator) validator;
+                    final String name = keyValidator.getProfileName();
+                    if (log.isTraceEnabled()) {
+                        log.trace("Try to apply key validator: " + keyValidator.toDisplayString());
                     }
-                    if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotBefore(), certificateValidity.getNotBefore(),
-                            keyValidator.getNotBeforeCondition())) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notBefore"));
+                    try {
+                        // Filter for base key validator critieria.
+                        final List<Integer> certificateProfileIds = keyValidator.getCertificateProfileIds();
+                        final boolean allCertProfiles = keyValidator.isAllCertificateProfileIds();
+                        if (!allCertProfiles && null != certificateProfileIds
+                                && !certificateProfileIds.contains(endEntityInformation.getCertificateProfileId())) {
+                            if (log.isDebugEnabled()) {
+                                log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "applicableCertificateProfiles"));
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotAfter(), certificateValidity.getNotAfter(),
-                            keyValidator.getNotAfterCondition())) {
-                        if (log.isDebugEnabled()) {
-                            log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notAfter"));
+                        if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotBefore(), certificateValidity.getNotBefore(),
+                                keyValidator.getNotBeforeCondition())) {
+                            if (log.isDebugEnabled()) {
+                                log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notBefore"));
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
-                    log.info(intres.getLocalizedMessage("validator.key.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
-                        List<String> messages = keyValidator.validate(publicKey, certificateProfile);                        
+                        if (!KeyValidatorDateConditions.evaluate(keyValidator.getNotAfter(), certificateValidity.getNotAfter(),
+                                keyValidator.getNotAfterCondition())) {
+                            if (log.isDebugEnabled()) {
+                                log.debug(intres.getLocalizedMessage("validator.filterconditiondoesnotmatch", name, "notAfter"));
+                            }
+                            continue;
+                        }
+                        final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
+                        log.info(intres.getLocalizedMessage("validator.key.isbeingprocessed", name, endEntityInformation.getUsername(), fingerprint));
+                        List<String> messages = keyValidator.validate(publicKey, certificateProfile);
                         if (messages.size() > 0) {
                             result = false;
-                            postProcessKeyValidation(keyValidator, publicKey, messages, admin, ca.getCAId(), endEntityInformation.getUsername(), fingerprint);
+                            final String keyValidatorName = keyValidator.getProfileName();
+                            if (messages.size() > 0) { // Evaluation has failed.
+                                final int index = keyValidator.getFailedAction();
+                                final String message = intres.getLocalizedMessage("validator.key.validation_failed", keyValidatorName, messages);
+                                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                                details.put("msg", message);
+                                auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
+                                        String.valueOf(ca.getCAId()), fingerprint, endEntityInformation.getUsername(), details);
+                                performValidationFailedActions(index, message);
+                            } else {
+                                final String message = intres.getLocalizedMessage("validator.key.validation_successful", keyValidatorName, publicKey.getEncoded());
+                                log.info(message);
+                            }
                         }
-                } catch (ValidatorNotApplicableException e) {
-                    // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
-                    // use method performValidationFailedActions because it's the same actions
-                    performValidationFailedActions(keyValidator.getNotApplicableAction(), e.getMessage());
-                } catch (KeyValidationException e) {
-                    throw e;
+                    } catch (ValidatorNotApplicableException e) {
+                        // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
+                        // use method performValidationFailedActions because it's the same actions
+                        performValidationFailedActions(keyValidator.getNotApplicableAction(), e.getMessage());
+                    } catch (ValidationException e) {
+                        throw e;
+                    }
                 }
             }
         } else {
@@ -608,28 +677,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
 
-    /**
-     * Post processes a key validator by the result of its validation and the failedAction stored in the BaseKeyValidator.
-     * @param keyValidator the key validator.
-     * @param result the evaluation result.
-     */
-    private void postProcessKeyValidation(final Validator keyValidator, final PublicKey publicKey, final List<String> messages, final AuthenticationToken admin, final int caID, final String endEntity, final String keyFingerprint) throws KeyValidationException {
-        final String name = keyValidator.getProfileName();
-        if (messages.size() > 0) { // Evaluation has failed.
-            final int index = keyValidator.getFailedAction();
-            final String message = intres.getLocalizedMessage("validator.key.validation_failed", name, messages);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", message);
-            auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(caID), keyFingerprint, endEntity, details);
-            performValidationFailedActions(index, message);
-        } else {
-            final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKey.getEncoded());
-            log.info(message);
-        }
-    }
-
-    private void performValidationFailedActions(final int index, final String message) throws KeyValidationException {
+    private void performValidationFailedActions(final int index, final String message) throws ValidationException {
         if (KeyValidationFailedActions.LOG_INFO.getIndex() == index) {
             log.info(message);
         } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == index) {
@@ -640,7 +688,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             if (log.isDebugEnabled()) {
                 log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);                    
             }
-            throw new KeyValidationException(message);
+            throw new ValidationException(message);
         } else {
             // NOOP
             log.debug(message);

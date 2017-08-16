@@ -172,11 +172,11 @@ public interface KeyValidatorProxySessionRemote {
      * @param notAfter the certificates notAfter validity
      * @param publicKey the public key of the certificate
      * @return true if all matching key validators could validate the public key successfully. If false #getMessage().size() is greater than 0.
-     * @throws KeyValidationException if the validation failed and failed action type is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE}.
+     * @throws ValidationException if the validation failed and failed action type is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE}.
      * @throws IllegalValidityException if the certificate validity could not be determined.
      */
     boolean validatePublicKey(AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
-            Date notAfter, PublicKey publicKey) throws KeyValidationException, IllegalValidityException;
+            Date notAfter, PublicKey publicKey) throws ValidationException, IllegalValidityException;
     
     /**
      * Imports a list of key validators, stored in separate XML files in the ZIP container.
