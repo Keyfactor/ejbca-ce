@@ -210,26 +210,26 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             allIdentifiers = new int[] { rsaDefaultId, rsaId, eccDefaultId, eccId };
             // A-1: Check add with defaults.
             // RSA key validator
-            Validator keyValidator = keyValidatorProxySession.getKeyValidator(rsaDefaultId);
+            KeyValidator keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(rsaDefaultId);
             assertKeyValidatorDefaultValues(keyValidator);
             // ECC key validator
-            keyValidator = keyValidatorProxySession.getKeyValidator(eccDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(eccDefaultId);
             assertKeyValidatorDefaultValues(keyValidator);
 
             // A-2: Check change and load again with custom values.
             // RSA key validator
-            keyValidator = keyValidatorProxySession.getKeyValidator(rsaDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(rsaDefaultId);
             ((RsaKeyValidator) keyValidator).setCABForumBaseLineRequirements142Settings();
             keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
-            Validator testKeyValidator = keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
-            assertEqualsBaseKeyValidator(keyValidator, testKeyValidator);
+            KeyValidator testKeyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
+            assertEqualsKeyValidator(keyValidator, testKeyValidator);
             assertRsaKeyValidatorCABForumBaseLineRequirements142Values((RsaKeyValidator) testKeyValidator);
             // ECC key validator
-            keyValidator = keyValidatorProxySession.getKeyValidator(eccDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(eccDefaultId);
             ((EccKeyValidator) keyValidator).setCABForumBaseLineRequirements142();
             keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
-            testKeyValidator = keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
-            assertEqualsBaseKeyValidator(keyValidator, testKeyValidator);
+            testKeyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
+            assertEqualsKeyValidator(keyValidator, testKeyValidator);
             assertEccKeyValidatorCABForumBaseLineRequirements142Values((EccKeyValidator) testKeyValidator);
 
             // A-3: Remove key validators.
@@ -250,7 +250,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             // Check Referential integrity: 
             // Add to test CA and try to remove it -> CouldNot RemoveKeyValidatorException expected.
             String name = "rsa-test-1-referential-integrity";
-            keyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
+            keyValidator = (KeyValidator) createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
             int validatorId = addKeyValidator(keyValidator);
             setKeyValidatorsForCa(testCA, validatorId);
             try {
@@ -289,7 +289,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 fail("RSA key validator successfully validated an ECC key when not_applicable action set to ABORT.");
             } catch (Exception e) {
                 assertTrue("KeyValidationException expected when a RSA key validator tries to validate an ECC key with '" + keyValidator.getProfileName()+"' but it was "+e.getClass().getName(),
-                        e instanceof KeyValidationException);
+                        e instanceof ValidationException);
             }
             // Change to just log info, then validation should not fail
             keyValidator.setNotApplicableAction(KeyValidationFailedActions.LOG_INFO.getIndex());
@@ -483,7 +483,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     }
 
     private void assertKeyValidatorDefaultValues(final Validator keyValidator) {
-        assertBaseKeyValidatorDefaultValues(keyValidator);
+        assertKeyValidatorDefaultValues(keyValidator);
         if (keyValidator instanceof RsaKeyValidator) {
             assertRsaKeyValidatorDefaultValues((RsaKeyValidator) keyValidator);
         } else if (keyValidator instanceof EccKeyValidator) {
@@ -493,8 +493,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         }
     }
 
-    private void assertBaseKeyValidatorDefaultValues(final Validator keyValidator) {
-        assertEquals("Latest version expected.", KeyValidatorBase.LATEST_VERSION, keyValidator.getLatestVersion(), 1f);
+    private void assertKeyValidatorDefaultValues(final KeyValidator keyValidator) {
+        assertEquals("Latest version expected.", ValidatorBase.LATEST_VERSION, keyValidator.getLatestVersion(), 1f);
         assertEquals("Default description expected.", StringUtils.EMPTY, keyValidator.getDescription());
         assertEquals("Default certificate profile ids excepted.", new ArrayList<Integer>(), keyValidator.getCertificateProfileIds());
         assertEquals("Default all certificate profile ids excepted.", true, keyValidator.isAllCertificateProfileIds());
@@ -505,18 +505,18 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("Default failedAction expected.", KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), keyValidator.getFailedAction());
     }
 
-    private void assertEqualsBaseKeyValidator(final Validator left, final Validator right) {
-        assertEquals("BaseKeyValidator id must be equal.", left.getProfileId(), right.getProfileId());
-        assertEquals("BaseKeyValidator name must be equal.", left.getProfileName(), right.getProfileName());
-        assertEquals("BaseKeyValidator type must be equal.", left.getValidatorTypeIdentifier(), right.getValidatorTypeIdentifier());
-        assertEquals("BaseKeyValidator description must be equal.", left.getDescription(), right.getDescription());
-        assertEquals("BaseKeyValidator all certificate profile ids must be equal.", left.isAllCertificateProfileIds(), right.isAllCertificateProfileIds());
-        assertEquals("BaseKeyValidator certificate profile id must be equal.", left.getCertificateProfileIds(), right.getCertificateProfileIds());
-        assertEquals("BaseKeyValidator notBefore must be equal.", left.getNotBefore(), right.getNotBefore());
-        assertEquals("BaseKeyValidator notBeforeCondition must be equal.", left.getNotBeforeCondition(), right.getNotBeforeCondition());
-        assertEquals("BaseKeyValidator notAfter must be equal.", left.getNotAfter(), right.getNotAfter());
-        assertEquals("BaseKeyValidator notAfterCondition must be equal.", left.getNotAfterCondition(), right.getNotAfterCondition());
-        assertEquals("BaseKeyValidator failedAction must be equal.", left.getFailedAction(), right.getFailedAction());
+    private void assertEqualsKeyValidator(final KeyValidator left, final KeyValidator right) {
+        assertEquals("KeyValidator id must be equal.", left.getProfileId(), right.getProfileId());
+        assertEquals("KeyValidator name must be equal.", left.getProfileName(), right.getProfileName());
+        assertEquals("KeyValidator type must be equal.", left.getValidatorTypeIdentifier(), right.getValidatorTypeIdentifier());
+        assertEquals("KeyValidator description must be equal.", left.getDescription(), right.getDescription());
+        assertEquals("KeyValidator all certificate profile ids must be equal.", left.isAllCertificateProfileIds(), right.isAllCertificateProfileIds());
+        assertEquals("KeyValidator certificate profile id must be equal.", left.getCertificateProfileIds(), right.getCertificateProfileIds());
+        assertEquals("KeyValidator notBefore must be equal.", left.getNotBefore(), right.getNotBefore());
+        assertEquals("KeyValidator notBeforeCondition must be equal.", left.getNotBeforeCondition(), right.getNotBeforeCondition());
+        assertEquals("KeyValidator notAfter must be equal.", left.getNotAfter(), right.getNotAfter());
+        assertEquals("KeyValidator notAfterCondition must be equal.", left.getNotAfterCondition(), right.getNotAfterCondition());
+        assertEquals("KeyValidator failedAction must be equal.", left.getFailedAction(), right.getFailedAction());
     }
 
     private void assertRsaKeyValidatorDefaultValues(final RsaKeyValidator keyValidator) {
@@ -695,10 +695,10 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     }
 
     // Code duplication: see org.cesecore.keys.validation.KeyValidatorTestUtil
-    public static final Validator createKeyValidator(final Class<? extends Validator> type, final String name, final String description, final Date notBefore,
+    public static final KeyValidator createKeyValidator(final Class<? extends KeyValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
-        Validator result = type.newInstance();
+        KeyValidator result = type.newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);

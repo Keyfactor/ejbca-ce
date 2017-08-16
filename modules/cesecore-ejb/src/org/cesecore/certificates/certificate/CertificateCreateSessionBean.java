@@ -91,7 +91,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.KeyValidationException;
+import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -352,13 +352,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     publicKeyToValidate);
-        } catch(KeyValidationException e) {
+        } catch(ValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
             final CertificateCreateException t = new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
             t.setErrorCode(ErrorCode.ILLEGAL_KEY);
             throw t;
         }
+        try {
+            keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation);
+        } catch (ValidationException e) {
+            throw new CertificateCreateException(ErrorCode.NOT_AUTHORIZED, e);
+        }
+        
         // Set up audit logging of CT pre-certificate
         addCTLoggingCallback(certGenParams, admin.toString());
 

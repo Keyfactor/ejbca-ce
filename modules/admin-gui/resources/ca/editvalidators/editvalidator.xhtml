@@ -34,7 +34,7 @@
 				<h:outputText value="#{web.text.VIEWVALIDATOR}" rendered="#{validatorsBean.viewOnly}" />
 			</h2>
 			<h3>
-				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.keyValidator.profileName}"/>
+				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.validator.profileName}"/>
 			</h3>
 		</div>
 		<!--div class="message">
@@ -48,16 +48,16 @@
 					<h:outputText value="#{web.text.BACKTOVALIDATORS}" />
 				</h:outputLink>
 				<h:outputLabel for="keyValidatorName" value="#{web.text.NAME}"/>
-				<h:outputText id="keyValidatorName" value="#{validatorBean.keyValidator.profileName}"/>
+				<h:outputText id="keyValidatorName" value="#{validatorBean.validator.profileName}"/>
 				<h:outputLabel for="keyValidatorId" value="#{web.text.ID}"/>
-				<h:outputText id="keyValidatorId" value="#{validatorBean.keyValidator.profileId}"/>
+				<h:outputText id="keyValidatorId" value="#{validatorBean.validator.profileId}"/>
 				<h:outputLabel for="keyValidatorType" value="#{web.text.VALIDATORTYPE}"/>
-				<h:selectOneMenu id="keyValidatorType" value="#{validatorBean.keyValidatorType}" disabled="#{validatorsBean.viewOnly}">
-					<f:ajax listener="#{validatorBean.keyValidatorTypeChanged}" render="@form"/>	
-					<f:selectItems value="#{validatorBean.availableKeyValidators}" />
+				<h:selectOneMenu id="keyValidatorType" value="#{validatorBean.validatorType}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax listener="#{validatorBean.validatorTypeChanged}" render="@form"/>	
+					<f:selectItems value="#{validatorBean.availableValidators}" />
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
-				<ui:include src="#{validatorBean.keyValidator.templateFile}" />
+				<ui:include src="#{validatorBean.validator.templateFile}" />
 				<h:panelGroup>&nbsp;</h:panelGroup>&nbsp;
 				<h:panelGroup>
 				  <h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}" style="font-weight: bold;"/>&nbsp;
@@ -65,31 +65,13 @@
 				</h:panelGroup>
 				<h:panelGroup id="general_settings"/>
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
-				<h:inputTextarea id="description" value="#{validatorBean.keyValidator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
+				<h:inputTextarea id="description" value="#{validatorBean.validator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
 				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
 				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}" />
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
 				<h:selectManyListbox id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly}">
 					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>
 				</h:selectManyListbox>
-				<h:outputLabel for="textfieldnotbefore" value="#{web.text.VALIDATORNOTBEFORE}"/>
-				<h:panelGroup>
-					<h:selectOneMenu id="selectnotbeforecondition" value="#{validatorBean.notBeforeCondition}" validator="#{validatorBean.validateNotBeforeCondition}" disabled="#{validatorsBean.viewOnly}" onchange='fillNotBeforeConditionField()'>
-						<f:selectItems value="#{validatorBean.availableNotBeforeConditions}"/>
-					</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
-					<h:inputText id="textfieldnotbefore" value="#{validatorBean.notBefore}" validator="#{validatorBean.validateNotBefore}" required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}" >
-						<!--f:validateRegex pattern="[\\d]{4}-[\\d]{2}-[\\d]{2}( [\\d]{2}:[\\d]{2}:[\\d]{2}(\+[\\d]{2}:[\\d]{2}){0,1}){0,1}"></f:validateRegex-->
-					</h:inputText>
-				</h:panelGroup>
-				<h:outputLabel for="textfieldnotafter" value="#{web.text.VALIDATORNOTAFTER}"/>
-				<h:panelGroup>
-					<h:selectOneMenu id="selectnotaftercondition" value="#{validatorBean.notAfterCondition}" validator="#{validatorBean.validateNotAfterCondition}" disabled="#{validatorsBean.viewOnly}" onchange='fillNotAfterConditionField()'>
-						<f:selectItems value="#{validatorBean.availableNotAfterConditions}"/>
-					</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
-					<h:inputText id="textfieldnotafter" value="#{validatorBean.notAfter}" validator="#{validatorBean.validateNotAfter}" required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}" >
-						<!--f:validateRegex pattern="[\d]{4}-[\d]{2}-[\d]{2}( [\d]{2}:[\d]{2}:[\d]{2}(\+[\d]{2}:[\d]{2}){0,1}){0,1}"></f:validateRegex-->
-					</h:inputText>
-				</h:panelGroup>
 				<h:outputLabel for="selectfailedaction" value="#{web.text.VALIDATORFAILEDACTION}"/>
 				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
