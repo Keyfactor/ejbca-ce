@@ -11,7 +11,9 @@ Among these changes and improvements, we'd like to highlight the following:
 EJBCA 6.8.0.1
 -----------
 
-This is a patch release containing a performance improvement upon EJBCA 6.8.0
+This is a patch release for ECA-6056, where Certificate Profiles using Approval Profiles would cease working if database protection was activated
+for the CertificateProfileData table.
+
 
 EJBCA 6.8.0
 -----------

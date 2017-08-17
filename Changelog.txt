@@ -1,8 +1,8 @@
-EJBCA 6.8.0.1, 2017-07-19
+EJBCA 6.8.0.1, 2017-08-17
 ---
 
 Improvement
-    [ECA-6007] - Cache Role Members
+    [ECA-6056] - Databaseprotection does not work with CertificateProfiles using Approvals
 
 EJBCA 6.8.0, 2017-06-19
 ---
