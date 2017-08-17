@@ -1537,7 +1537,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 // Check if administrator is authorized to perform key recovery
                 endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, userdata.getEndEntityProfileId(), AccessRulesConstants.KEYRECOVERY_RIGHTS);
             }
-            endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password); // This actually checks if the password matches (which endEntityManagementSessionLocal.verifyPassword doesn't)
+            endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password);
             final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userdata.getCAId()).getFinishUser();
             if (shouldFinishUser) {
                     endEntityAuthenticationSessionLocal.finishUser(userdata);
