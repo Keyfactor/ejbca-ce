@@ -1041,6 +1041,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.debug("Recovering locally stored key pair for end entity '" + username + "'");
                     }
                     final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias);
+                    if (kri == null) {
+                        // This should not happen when the user has its status set to KEYRECOVERY
+                        final String message = "Could not find key recovery data for end entity '" + username + "'";
+                        log.debug(message);
+                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
+                    }
                     kp = kri.getKeyPair();
                     if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
                         final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
