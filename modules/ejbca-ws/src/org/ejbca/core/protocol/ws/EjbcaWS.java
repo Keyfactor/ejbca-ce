@@ -1517,6 +1517,12 @@ public class EjbcaWS implements IEjbcaWS {
         } catch (CADoesntExistsException e) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
+        } catch (WaitingForApprovalException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        } catch (ApprovalException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
         } catch (EjbcaException e) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;

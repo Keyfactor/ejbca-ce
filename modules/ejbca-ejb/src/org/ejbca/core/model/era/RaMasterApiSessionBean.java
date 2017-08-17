@@ -1798,7 +1798,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
-                WaitingForApprovalException, CADoesntExistsException {
+                WaitingForApprovalException, ApprovalException, CADoesntExistsException {
         try {
             final boolean usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();  
             if (!usekeyrecovery) {
