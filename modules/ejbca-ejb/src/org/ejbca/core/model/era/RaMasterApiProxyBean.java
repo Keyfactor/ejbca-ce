@@ -1178,7 +1178,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
-                                WaitingForApprovalException, CADoesntExistsException {
+                                WaitingForApprovalException, ApprovalException, CADoesntExistsException {
         // Handle local key recovery (Key recovery data is stored locally)
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
