@@ -1495,6 +1495,7 @@ public class EjbcaWS implements IEjbcaWS {
 		log.trace("<keyRecoverNewest");
 	}
 
+    @Override
     public void keyRecover(String username, String certSNinHex, String issuerDN) throws CADoesntExistsException, AuthorizationDeniedException, 
             NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
