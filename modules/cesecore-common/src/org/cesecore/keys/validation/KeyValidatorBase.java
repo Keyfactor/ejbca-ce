@@ -18,7 +18,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jboss.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * @version $Id$
