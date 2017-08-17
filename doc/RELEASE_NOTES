@@ -1,3 +1,13 @@
+EJBCA 6.9.0
+
+PrimeKey Solutions are very proud to release EJBCA 6.9.0, with a bunch of new features that we sincerely hope you'll enjoy. 
+All in all, xyz issues that have been fixed for this release.
+
+Among these changes and improvements, we'd like to highlight the following:
+
+	* 	Validators and public key validation. Public keys in certificate requests can now be validated according to CA/B Forum guidelines. 
+		Public keys can also be blacklisted to prevent issuing certificates for known bad keys, i.e. weak debian keys.
+
 EJBCA 6.8.0.1
 -----------
 
