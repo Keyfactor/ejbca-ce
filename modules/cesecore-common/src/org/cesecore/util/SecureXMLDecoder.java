@@ -201,6 +201,10 @@ public class SecureXMLDecoder implements AutoCloseable {
             break;
         case "class":
             try {
+                //Only allow classes from our own hierarchy 
+                if(!(readText().startsWith("org.ejbca") || readText().startsWith("org.cesecore"))) {
+                    throw new IOException("Unauthorized class was decoded from XML: " + readText());
+                }
                 value = Class.forName(readText());
             } catch (ClassNotFoundException e) {
                 throw new IOException("Unknown class was sent with import.", e);

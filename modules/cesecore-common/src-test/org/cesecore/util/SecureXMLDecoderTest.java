@@ -142,7 +142,7 @@ public class SecureXMLDecoderTest {
         root.put("testbool", false);
         root.put("testemptyset", Collections.EMPTY_SET);
         root.put("testemptylist", Collections.emptyList());
-        root.put("testClass", Object.class);
+        root.put("testClass", SecureXMLDecoder.class);
         final List<Object> unmodifiable = new ArrayList<>();
         unmodifiable.add('A');
         unmodifiable.add('B');
@@ -224,6 +224,28 @@ public class SecureXMLDecoderTest {
         decodeBad(baos.toByteArray());
         
         log.trace("<testNotAllowedType");
+    }
+    
+    @Test
+    public void testDecodeUnknownClass() {
+        final Map<Object,Object> root = new LinkedHashMap<>();
+
+        root.put("testClass", Object.class);
+        
+        // Encode
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final XMLEncoder encoder = new XMLEncoder(baos);
+        encoder.writeObject(root);
+        encoder.close();
+        
+        // Try to decode it and compare
+        try {
+            decodeCompare(baos.toByteArray());
+            fail("Test should have failed when decoding an unauthorized class.");
+        } catch (IOException e) {
+            
+        }
+
     }
     
     @Test
