@@ -436,10 +436,11 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery preparations
      * @throws EjbcaException wrapped exceptions caught in EjbcaWS
      * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
+     * @throws ApprovalException if an approval is already pending to recover this certificate
      * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
      */
     void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, EjbcaException, 
-                        WaitingForApprovalException, CADoesntExistsException;
+                        WaitingForApprovalException, ApprovalException, CADoesntExistsException;
     
     /**
      * Checks if key recovery is possible for the given parameters. Requesting administrator has be authorized to perform key recovery
