@@ -47,5 +47,8 @@ CREATE INDEX userdata_idx11 ON UserData (status);
 
 CREATE INDEX publisherqueue_idx3 ON PublisherQueueData (publisherId, publishStatus, timeCreated);
 
+-- When using a role members with many entries
+CREATE INDEX rolemember_idx1 ON RoleMemberData (tokenType,roleId);
+
 -- When using a blacklist with many entries
 CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);
