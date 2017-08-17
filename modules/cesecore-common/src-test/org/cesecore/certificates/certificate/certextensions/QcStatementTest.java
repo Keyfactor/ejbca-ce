@@ -48,7 +48,7 @@ public class QcStatementTest {
         prof.setUseQCStatement(true);
         prof.setUseQCEtsiQCCompliance(true);
         prof.setUseQCEtsiSignatureDevice(true);
-        // QC Etsi type, eSign, from eIDAS EN 319 412-5, eseal = 0.4.0.1862.1.6.2, web = 0.4.0.1862.1.6.3
+        // QC ETSI type from eIDAS EN 319 412-5, eSign = 0.4.0.1862.1.6.2, eseal = 0.4.0.1862.1.6.2, web = 0.4.0.1862.1.6.3
         prof.setQCEtsiType("0.4.0.1862.1.6.1");
         prof.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("http://qcs.localhost/QcPDS", "en")));
         // id-qcs-pkixQCSyntax-v2 (OID = 1.3.6.1.55.7.11.2) with SematicsID = 0.4.0.194121.1.2 
