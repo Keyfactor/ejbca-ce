@@ -4982,78 +4982,140 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 </section>
 
 <section name="Validators">
-<p>Validators are code that runs to validate certain conditions either before a certifciate is issued, or just after. 
-Validators are selected to be used by enabling them for selected CAs, but validation is only done for certificate profiles selected in the validator. 
-This gives total control over where validators are used. 
-To add a Validator, go to 'Validators, and add a new validator, then edit the validator selecting the desired properties and selecting the certificate profiles it should apply to.
-To add a validator to a CA, go to 'Edit CA' and select the desired validator to the CA. Now the validator will be called when a certificate is issued by the CA, using one of the certificate profiles selected in the Validator.</p>
-<subsection name="Key Validators">
-<p>
-With defining key validators the key quality of RSA and ECC public keys can be validated or keys can be blacklisted for certificate issuance.
-</p>
-<p>
-The key validators listed below are available in the system by default. If you define a key validator for keys with other algorithm (i.e. RSA key validator for ECC keys) key validation will fail.
-</p>
-<ul>
-<li>RSA Key Validator
-<p>Performs inspection of RSA key parameters and validates key quality beyond key length and size: With this key validator the CA/B-Forum requirements can be enforced on the public keys certified or other restrictions on the RSA exponent and modulus can be defined.</p>
-<ul>
-<li>the value of the public exponent is an odd number equal to 3 or more</li>
-<li>the public exponent is in the range between 2^16+1 and 2^256-1</li>
-<li>The modulus is an odd number, not the power of a prime, and have no factors smaller than 752</li>
-</ul>
-</li>
-<li>ECC Key Validator
-<p>Performs inspection of ECC key parameters and validates key quality beyond key length and size: With this key validator the full public key validation (NIST SP 56A) routine on ECC keys can be performed.</p>
-</li>
-<li>Blacklist Key Validator
-<p>Compares public keys agains a blacklist of known bad public keys. The list is empty by default and must be filled.</p>
-</li>
-</ul>
-<p>The public key blacklisted entries can be added using the CLI command:</p>
-<source>
+	<p>
+		Validators are applied to CA's to validate the issuance of certificates, based on key strength, origin och on other values inherent to the 
+		certificate issued. To apply a Validator to a certificate it's chosen in the CA, where it will be called prior to issuance. Additionally, 
+		validators are restricted to only run for certain Certificate Profiles.
+	</p>
+	<p>
+		To explore Validators, go under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
+	</p>
+	<subsection name="Audit Logging">
+		<p>
+			All validation results are audit logged and also logged in the server logs for more detail. 
+		</p>
+	</subsection>
+	<subsection name="Key Validators">
+		<p>
+			Key Validators are rather intuitively meant to validate the quality of keys, foremost as a result of incoming CSRs. There are currently 
+			three types of Key Validators:
+		</p>
+		<subsubsection name="RSA Key Validator">	
+			<p>
+				The RSA Key Validator inspects RSA key parameters and validates key quality beyond key length and size. This key validator can 
+				enforce the CA/B-Forum requirements on public keys, and will also perform the following tests on the RSA exponent and modulus:</p>
+			<p>
+			<ul>
+				<li>That the value of the public exponent is an odd number equal to 3 or more</li>
+				<li>That the public exponent is in the range between 2^16+1 and 2^256-1</li>
+				<li>That the modulus is an odd number, not the power of a prime, and have no factors smaller than 752</li>
+			</ul>
+			</p>
+		</subsubsection>
+		<subsubsection name="ECC Key Validator">
+			<p>The ECC Key validator inspects performs the full public key validation (NIST SP 56A) routine on ECC keys.</p>
+		</subsubsection>	
+		<subsubsection name="Blacklist Key Validator">
+			<p>This validator compares public keys agains a blacklist of known bad public keys, such as the Debian bad keys.</p>
+			<note>The list is empty by default and must be filled.</note>
+			<p>The public key blacklisted entries can be added using the CLI:</p>
+			<source>
 bin/ejbca.sh ca updatepublickeyblacklist --command add --dir &lt;directory of blacklisted public keys&gt;
-</source>
-<p>Where the directory contains public key files in PEM format. If you have a list of PEM formatted private keys, you can create the public key entries, and CSRs to test with using these commands:</p>
-<source>
+			</source>
+			<p>
+				where the directory contains public key files in PEM format. If you have a list of PEM formatted private keys, you can create the 
+				public key entries, and CSRs to test with using these commands:
+			</p>
+			<source>
 openssl req -key blacklisted-privatekey.pem -out blacklisted.csr -new
 openssl rsa -in blacklisted-privatekey.pem -pubout > tmp/blacklisted-publickey.pem
-</source>
-<p><a href="https://www.primekey.com">PrimeKey</a> can provide a blacklist of Debian weak keys as created by the <a href="https://github.com/g0tmi1k/debian-ssh">Metasploit project</a>.</p>
-<p>You can import a blacklist fingerprint file (a files with one blacklist fingerprint per line) with:</p>
-<source>
+			</source>
+			<note>
+				<a href="https://www.primekey.com">PrimeKey</a> can provide a blacklist of Debian weak keys as created by the 
+				<a href="https://github.com/g0tmi1k/debian-ssh">Metasploit project</a>.
+			</note>
+			<p>You can import a blacklist fingerprint file (a files with one blacklist fingerprint per line) with:</p>
+			<source>
 bin/ejbca.sh ca updatepublickeyblacklist --command add --mode fingerprint --keyspecs RSA2048 --dir &lt;directory where blacklist fingerprint file resides&gt;
-</source>
-<p>Note that blacklist fingerprints are a bit special. 
-<br/>You can also remove fingerprints using the fingerprint file:</p>
-<source>
+			</source>
+			<p>Note that blacklist fingerprints are a bit special. 
+			<br/>You can also remove fingerprints using the fingerprint file:</p>
+			<source>
 bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --dir &lt;directory where blacklist fingerprint file resides&gt;
+			</source>
+		</subsubsection>
+		<subsubsection name="Common Key Validator Settings">
+			Some settings are common for all key validators. They are the following:
+			<ul>
+				<li>Certificate Validity Not Before</li>
+					<p>Only perform validation if certificate validity NotBefore matches the condition, i.e. is less than or greater 
+					than the given date. If no date is set, this condition is not used. Date is on the form 2017-02-28 to for exampe validate only certificates that are 
+					valid from the 28th or february 2017.</p>
+				<li>Certificate Validity Not After </li>
+				<p>Only perform validation if certificate validity NotAfter matches the condition.</p>
+			</ul>
+		</subsubsection>
+	</subsection>
+	<subsection name="End Entity Validators">
+		<p>One may also wish to validate issuance based on other values which can't be evaluated during end entity creation. Currently, only one 
+		such validator has been implemented, the CAA Validator.</p>
+		<subsubsection name="CAA Validator">
+			<p>
+			The Certificate Authority Authentication (CAA) validator is based on <a href="https://tools.ietf.org/html/rfc6844">RFC 6844</a> and the 
+			CA/B-Forum <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.5.pdf">guidelines</a>. These specify that for complying 
+			CAs issuing certificates containing DNSName values in the subjectAltName extension, the CA must perform a lookup check to the DNS(s) of 
+			all specified names and check that the CAA records allow issuance for the given issuer. </p> 
+			<note>
+				The result of all CAA lookups are written to the server logs on the INFO level.
+			</note>
+			<p> A typical CAA record has the following format:</p>
+<source>
+example.com. 243	IN	CAA	0 issue "ca.org"
 </source>
-<subsection name="General Validator Settings">
-<p>
-To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:
-</p>
-<ul>
-<li>Description - a general decription of the Validator, not used for any validation purposes.</li>
-<li>Certificate validity not before - Only perform validation if certificate validity NotBefore matches the condition, i.e. is less than or greater 
-than the given date. If no date is set, this condition is not used. Date is on the form 2017-02-28 to for exampe validate only certificates that are 
-valid from the 28th or february 2017.</li>
-<li>Certificate validity not after - Only perform validation if certificate validity NotAfter matches the condition.</li>
-<li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
-<li>Apply for all Certificate Profiles - Validate keys for all certificate profiles, the list above will be ignored.</li>
-<li>If Validation failed - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). 
-All failed issuance also adds a record in the security audit log.</li>
-<li>If Validator was not applicable: - Define behaviour if the input is not applicable for the selected validator (i.e. abort issuance, log error 
-message to trigger monitoring systems, etc.). This handles the case when for example a CSR with ECC keys is passed to an RSA key validator.</li>
-</ul>
-</subsection>
-</subsection>
-<subsection name="Custom Key Validators">
-<p>
-You may implement a custom key validator.<br></br>
-Your class must be placed in the EJBCA code tree before re-building and re-deploying EJBCA. Otherwise it will not be recognized by EJBCA.
-</p>
-</subsection>
+			<p>
+				This record says that the issuer known as "ca.org" is permitted to issue certificates (including wildcards) all domains and subdomains 
+				to the domain "example.com". In the EJBCA case, this means that according to CAA an end entity that includes the field <i>DNSNAME=example.com</i>
+				in the subjectAltName (SAN) extension must pass a CAA Validator check before having a certificate issued to it. To set up such a CAA Validator,
+				there are three specific settings which may/should be set: 
+			</p>
+			<p>
+				<ul>
+					<li>Issuer</li>
+						<p>This value should match up to the value field in the CAA record of the DNS, i.e "ca.org" in the above example.</p>
+					<li>DNS Resolver</li>
+						<p>Non-mandatory field where you may specify a DNS Resolver (such as 8.8.8.8 or 8.8.4.4). Should be an IP adress. If left 
+						blank, the system default responder will be used</p>
+					<li>Validate DNSSEC</li>
+						<p>
+							Check this box if you want DNSSEC to be validated. If this box is checked and your DNS either has faulty DNSSEC records or 
+							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended
+							to run DNSSEC.
+						</p>
+				</ul>
+			</p>
+			<p>
+				A few notes in regards to CAA validation:
+				<ul>
+					<li>CAA validation will pass of the DNS lacks CAA records entirely</li>
+					<li>According to the guidelines, a faulty CAA check should <b>always</b> lead to certificate issuance being canceled.</li>
+				</ul>			 
+			</p>
+		</subsubsection>
+	</subsection>
+	<subsection name="Common Validator Settings">
+		<p>
+			To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:
+		</p>
+		<ul>
+			<li>Description - a general decription of the Validator, not used for any validation purposes.</li>
+				<li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
+			<li>Apply for all Certificate Profiles - Validate keys for all certificate profiles, the list above will be ignored.</li>
+			<li>If Validation failed - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). 
+				All failed issuance also adds a record in the security audit log.</li>
+			<li>If Validator was not applicable: - Define behaviour if the input is not applicable for the selected validator (i.e. abort issuance, log error 
+				message to trigger monitoring systems, etc.). This handles the case when for example a CSR with ECC keys is passed to an RSA key validator.</li>
+		</ul>
+	</subsection>
 </section>
 
 <section name="LDAP and Publishers">
