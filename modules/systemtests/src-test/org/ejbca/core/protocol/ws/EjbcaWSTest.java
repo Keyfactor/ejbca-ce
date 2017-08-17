@@ -534,7 +534,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             fail("With a RSA key validator and a minimum key size of 2048 bits, the generation of P12 file with a 1024 bit RSA key should fail with an EjbcaException_Exception wrapping a KeyValidationException");
         } catch(Exception e) {
             Assert.assertTrue( "EjbcaException_Exception expected: " + e.getClass().getName(), e instanceof EjbcaException_Exception);
-            Assert.assertTrue( "EjbcaException_Exception with failed key validation must have message: " + e.getMessage(), (e.getMessage().startsWith("org.cesecore.keys.validation.KeyValidationException: Key Validator WSPKCS12-RsaKeyValidatorTest could not validate sufficient key quality")));            
+            Assert.assertTrue( "EjbcaException_Exception with failed key validation must have message: " + e.getMessage(), (e.getMessage().startsWith("org.cesecore.keys.validation.ValidationException: Key Validator WSPKCS12-RsaKeyValidatorTest could not validate sufficient key quality")));            
         }
         
         // Clean up.
