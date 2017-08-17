@@ -211,6 +211,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSessionLocal;
@@ -1530,7 +1532,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, "User '"+username+"' is not in KEYRECOVERY status");
         }
         try {
-            endEntityManagementSessionLocal.verifyPassword(authenticationToken, username, password); // FIXME this checks for edit access! should check for keyrecovery access
+            final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            if (globalConfig.getEnableEndEntityProfileLimitations()) {
+                // Check if administrator is authorized to perform key recovery
+                endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, userdata.getEndEntityProfileId(), AccessRulesConstants.KEYRECOVERY_RIGHTS);
+            }
             endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password); // This actually checks if the password matches (which endEntityManagementSessionLocal.verifyPassword doesn't)
             final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userdata.getCAId()).getFinishUser();
             if (shouldFinishUser) {
