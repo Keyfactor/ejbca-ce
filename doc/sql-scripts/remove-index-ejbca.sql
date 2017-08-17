@@ -26,3 +26,7 @@ DROP INDEX userdata_idx10 ON UserData;
 DROP INDEX userdata_idx11 ON UserData;
 
 DROP INDEX publisherqueue_idx3 ON PublisherQueueData;
+
+DROP INDEX rolemember_idx1 ON RoleMemberData;
+
+DROP INDEX blacklist_idx1 ON BlacklistData;
