@@ -55,6 +55,7 @@ import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleDataSessionLocal;
@@ -94,6 +95,7 @@ public class CADataHandler implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
     private EndEntityManagementSessionLocal endEntitySession;
+    private final KeyValidatorSessionLocal keyValidatorSession;
 
     private EjbcaWebBean ejbcawebbean;
     
@@ -109,6 +111,7 @@ public class CADataHandler implements Serializable {
        this.administrator = authenticationToken;
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
+       this.keyValidatorSession = ejb.getKeyValidatorSession();
     }
     
   /**
@@ -269,7 +272,7 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfo(administrator, name);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
@@ -278,20 +281,20 @@ public class CADataHandler implements Serializable {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfoInternal(-1, name, true);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
   
   public CAInfoView getCAInfoNoAuth(final int caid) throws CADoesntExistsException {
       final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-      return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
+      return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     }
   
 
   public CAInfoView getCAInfo(final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
     final CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-    return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), info.getKeyValidatorIdToNameMap());
+    return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
   }
 
   /**

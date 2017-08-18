@@ -77,7 +77,6 @@ public class InformationMemory implements Serializable {
     private Map<Integer, String> caidtonamemap = null;
     private Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     private Map<Integer, String> publisheridtonamemap = null;
-    private Map<Integer, String> keyValidatorIdToNameMap = null;
     
     private TreeMap<String, Integer> publishernames = null;
     private TreeMap<String, Integer> keyvalidatornames = null;
@@ -374,24 +373,12 @@ public class InformationMemory implements Serializable {
     }
     
     /**
-     * Method returning the all available key validators id to name.
-     * 
-     * @return a map containing the key validators id name mapping.
-     */
-    public Map<Integer, String> getKeyValidatorIdToNameMap() {
-        if (keyValidatorIdToNameMap == null) {
-            keyValidatorIdToNameMap = keyValidatorSession.getKeyValidatorIdToNameMap();
-        }
-        return keyValidatorIdToNameMap;
-    }
-    
-    /**
      * Returns all authorized key validators names as a TreeMap of name (String) -> id (Integer).
      */
     public TreeMap<String, Integer> getAuthorizedKeyValidatorNames() {
         if (keyvalidatornames == null) {
             keyvalidatornames = new TreeMap<String, Integer>();
-            final Map<Integer, String> map = getKeyValidatorIdToNameMap();
+            final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
             for(Integer id : caAdminSession.getAuthorizedKeyValidatorIds(administrator)) {
                 if (null != map.get(id)) { // Otherwise NPE when key validators are deleted and references remain in CA. 
                     keyvalidatornames.put(map.get(id), id);
@@ -529,7 +516,6 @@ public class InformationMemory implements Serializable {
      * Method that should be called every time a key validator has been edited.
      */
     public void keyValidatorsEdited() {
-        keyValidatorIdToNameMap = null;
         keyvalidatornames = null;
     }
 

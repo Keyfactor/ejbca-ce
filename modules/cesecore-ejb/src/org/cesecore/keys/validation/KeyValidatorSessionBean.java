@@ -21,12 +21,14 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
@@ -535,7 +537,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     @Override
     public Map<String, Integer> getKeyValidatorNameToIdMap() {
-        final HashMap<String, Integer> result = new HashMap<>();
+        final TreeMap<String, Integer> result = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         for (ProfileData data : profileSession.findAllProfiles(Validator.TYPE_NAME)) {
             result.put(data.getProfileName(), data.getId());
         }

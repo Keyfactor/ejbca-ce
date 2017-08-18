@@ -7,7 +7,7 @@
   TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();      
   Map<String,Integer> casigners = info.getActiveCANames();
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMapByValue();
-  Map<Integer,String> keyValidatorIdToNameMap = ejbcawebbean.getInformationMemory().getKeyValidatorIdToNameMap();
+  Map<String, Integer> keyValidatorNameToIdMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorNameToIdMap();
   Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
@@ -1568,17 +1568,18 @@ function toggleCANameChange(){
        <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
      </td>
      <td width="50%"> 
-       <select name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
+       <select name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> style="min-width: 10em" >
           <% Collection usedKeyValidators = null;
-               if(editca) usedKeyValidators = cainfo.getValidators(); 
-               Iterator iter = keyValidatorIdToNameMap.keySet().iterator(); 
-               while(iter.hasNext()){
-                 Integer next = (Integer) iter.next(); %>
-          <option  value="<%= next %>" 
-             <%    if(editca && usedKeyValidators.contains(next))
+               if(editca) {
+                   usedKeyValidators = cainfo.getValidators(); 
+               }
+               for(String validatorName : keyValidatorNameToIdMap.keySet()) {
+                 Integer id = keyValidatorNameToIdMap.get(validatorName);  %>
+          <option  value="<%= id %>" 
+             <%    if(editca && usedKeyValidators.contains(id))
                      out.write(" selected ");
                  %>>
-             <c:out value="<%= keyValidatorIdToNameMap.get(next) %>"/>                 
+             <c:out value="<%= validatorName %>"/>                 
           </option>  
              <% } %>
        </select>

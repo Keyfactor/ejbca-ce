@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin.keys.validation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipException;
@@ -158,23 +160,31 @@ public class ValidatorsBean extends BaseManagedBean {
     public ListDataModel<ValidatorItem> getAvailableValidators() {
         if (validatorItems == null) {
             final List<ValidatorItem> items = new ArrayList<ValidatorItem>();
-            final Map<Integer, Validator> keyValidators = keyValidatorSession.getAllKeyValidators();
-            Validator keyValidator;
+            final Map<Integer, Validator> validators = keyValidatorSession.getAllKeyValidators();
+            Validator validator;
             String accessRule;
-            for (Integer id : keyValidators.keySet()) {
-                keyValidator = keyValidators.get(id);
-                accessRule = StandardRules.VALIDATORACCESS.resource() + keyValidator.getProfileName();
+            for (Integer id : validators.keySet()) {
+                validator = validators.get(id);
+                accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileName();
                 if (isAuthorizedTo(accessRule)) {
-                    items.add(new ValidatorItem(id, keyValidator.getProfileName(), keyValidator.getLabel()));
+                    items.add(new ValidatorItem(id, validator.getProfileName() + " (" + validator.getLabel() + ")", validator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
-                                + StandardRules.VALIDATORACCESS.resource() + keyValidator.getProfileName() + ".");
+                                + StandardRules.VALIDATORACCESS.resource() + validator.getProfileName() + ".");
                     }
                 }
             }
+            Collections.sort(items, new Comparator<ValidatorItem>() {
+                @Override
+                public int compare(ValidatorItem o1, ValidatorItem o2) {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                }
+            });
             validatorItems = new ListDataModel<ValidatorItem>(items);
+           
         }
+
         return validatorItems;
     }
 
