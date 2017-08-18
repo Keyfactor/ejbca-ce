@@ -1212,7 +1212,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
     public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile, 
-            AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException;
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
 
     /** Store the latest link certificate in this object. */
     protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {

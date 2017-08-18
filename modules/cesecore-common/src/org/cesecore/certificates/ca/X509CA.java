@@ -737,9 +737,10 @@ public class X509CA extends CA implements Serializable {
      *       SubjectDN as CA's SubjectDN/IssuerDN after CA Name Change
      *       IssuerDN as CA's SubjectDN/IssuerDN before CA Name Change
      *       the Name Change Extension
+     * @param oldCaCert to get expire date info from the old CA certificate to put in the link certificate
      */
     private void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-            final AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean caNameChange) throws CryptoTokenOfflineException {
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean caNameChange, final Certificate oldCaCert) throws CryptoTokenOfflineException {
         byte[] ret = null;
         if (createLinkCertificate) {
             try {
@@ -757,7 +758,7 @@ public class X509CA extends CA implements Serializable {
                 final String provider = cryptoToken.getSignProviderName();
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
-                final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
+                final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
@@ -772,14 +773,14 @@ public class X509CA extends CA implements Serializable {
     
     
     public void createOrRemoveLinkCertificateDuringCANameChange(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
-        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/true);
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig, final Certificate oldCaCert) throws CryptoTokenOfflineException {
+        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/true, oldCaCert);
     }
     
     @Override
     public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-            final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
-        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/false);
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig, final Certificate oldCaCert) throws CryptoTokenOfflineException {
+        createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/false, oldCaCert);
     }
     
     
@@ -903,7 +904,7 @@ public class X509CA extends CA implements Serializable {
         // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
         CertificateValidity.checkPrivateKeyUsagePeriod(cacert, checkDate);
         // Get certificate validity time notBefore and notAfter
-        final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
+        final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA, linkCertificate);
 
         final BigInteger serno;
         {
