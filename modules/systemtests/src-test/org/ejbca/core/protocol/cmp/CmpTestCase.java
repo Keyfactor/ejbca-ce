@@ -57,6 +57,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.myfaces.shared.util.Assert;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -205,6 +206,7 @@ public abstract class CmpTestCase extends CaTestCase {
         this.CMP_HOST = SystemTestsConfiguration.getRemoteHost(this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         this.httpReqPath = "http://" + this.CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
+    
     @Override
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
