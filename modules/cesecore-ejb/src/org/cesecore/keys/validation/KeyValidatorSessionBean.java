@@ -600,7 +600,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         boolean result = true;
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
-                    ca.getCACertificate(), false);
+                    ca.getCACertificate(), false, false);
             if (log.isDebugEnabled()) {
                 log.debug("Validate " + publicKey.getAlgorithm() + " public key with " + publicKey.getFormat() + " format.");
                 log.debug("Certificate 'notBefore' " + certificateValidity.getNotBefore());

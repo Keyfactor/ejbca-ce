@@ -106,13 +106,13 @@ public class CertificateValidity {
     private Date firstDate;
    
     public CertificateValidity(final EndEntityInformation subject, final CertificateProfile certProfile, 
-            final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA) throws IllegalValidityException {
-        this(new Date(), subject, certProfile, notBefore, notAfter, cacert, isRootCA);
+            final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA, final boolean isLinkCertificate) throws IllegalValidityException {
+        this(new Date(), subject, certProfile, notBefore, notAfter, cacert, isRootCA, isLinkCertificate);
     }
    
     /** Constructor that injects the reference point (now). This constructor mainly is used for unit testing. */
 	public CertificateValidity(Date now, final EndEntityInformation subject, final CertificateProfile certProfile, 
-			final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA) throws IllegalValidityException {
+			final Date notBefore, final Date notAfter, final Certificate cacert, final boolean isRootCA, final boolean isLinkCertificate) throws IllegalValidityException {
 		if (log.isDebugEnabled()) {
 		    log.debug("Requested notBefore: "+notBefore);
 			log.debug("Requested notAfter: "+notAfter);
@@ -177,6 +177,10 @@ public class CertificateValidity {
             } catch(Exception e) {
                 log.warn("Expiration restriction of certificate profile could not be applied!");
             }
+        }
+        //If it is a link certificate that we create, we use the old ca's expire date, as requested, as link certificate expire date
+        if (isLinkCertificate) {
+            lastDate = notAfter;
         }
         if (lastDate == null) {
         	lastDate = certProfileLastDate;
