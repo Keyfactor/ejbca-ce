@@ -2017,6 +2017,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
                     .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
 
+            //Save old CA certificate before renewal, so we can use its expire date when creating link certificate
+            Certificate oldCaCertificate = ca.getCACertificate();
+            
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 if (subjectDNWillBeChanged) {
                     ca.setSubjectDN(newSubjectDN);
@@ -2079,12 +2082,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // We need to save all this, audit logging that the CA is changed
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
-                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig);
+                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caSession.addCA(authenticationToken, ca); //add new CA into database
                 caidBeforeNameChange = caid;
                 caid = CAData.calculateCAId(newSubjectDN).intValue(); // recalculate the caid to corresponds to new CA
             } else {
-                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig);
+                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caSession.editCA(authenticationToken, ca, true);
             }
 

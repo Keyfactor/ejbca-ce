@@ -232,7 +232,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 
     @Override
 	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
-	        final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException {
+	        final AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    if (createLinkCertificate) {
 	        try {
@@ -250,7 +250,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	            final AccessRights rights = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
 	            final PublicKey publicKey = caCertificate.getPublicKey();
 	            final Date validFrom = caCertificate.getCVCertificate().getCertificateBody().getValidFrom();
-	            final Date validTo = caCertificate.getCVCertificate().getCertificateBody().getValidTo();
+	            // When we create a link certificate, we want to have an expire date based on the old ca, not the renewed ca
+	            final Date validTo = ((CardVerifiableCertificate) oldCaCert).getCVCertificate().getCertificateBody().getValidTo();
 	            // Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
 	            final CVCertificate retcert = CertificateGenerator.createCertificate(publicKey, previousSignKeyPair.getPrivate(), caSigningAlgorithm, caRef, cvccertholder, authRole, rights, validFrom, validTo, cryptoToken.getSignProviderName());
 	            ret = retcert.getDEREncoded();
@@ -362,7 +363,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         // Get CA reference
         CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
         // Get certificate validity time notBefore and notAfter
-        CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
+        CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA, /*isLinkCertificate*/ false);
         final CAReferenceField caRef;
         if (isRootCA) {
            // This will be an initial root CA, since no CA-certificate exists
