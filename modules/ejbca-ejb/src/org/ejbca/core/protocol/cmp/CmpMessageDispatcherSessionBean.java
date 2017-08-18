@@ -75,45 +75,42 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
-        final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
-            final String msg = intres.getLocalizedMessage("cmp.nosuchalias", cmpConfigurationAlias);
-            log.info(msg);
-            throw new NoSuchAliasException(msg);
-        }
-        final PKIMessage pkiMessage = CmpMessageHelper.getPkiMessageFromBytes(pkiMessageBytes, false);
-        if (pkiMessage == null) {
-            // Log that we handled a bad request and respond to the client
-            final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
-            log.info(msg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, msg).getResponseMessage();
-        } else {
-            final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessage, cmpConfiguration, cmpConfigurationAlias, /*levelOfNesting=*/0);
-            if (responseMessage!=null) {
-                try {
-                    return responseMessage.getResponseMessage();
-                } catch (CertificateEncodingException e) {
-                    log.warn(e.getMessage());
-                    return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, e.getMessage()).getResponseMessage();
-                }
+	    try {
+            final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
+                final String msg = intres.getLocalizedMessage("cmp.nosuchalias", cmpConfigurationAlias);
+                log.info(msg);
+                throw new NoSuchAliasException(msg);
             }
-        }
-        return null;
+            final PKIMessage pkiMessage = CmpMessageHelper.getPkiMessageFromBytes(pkiMessageBytes, false);
+            if (pkiMessage == null) {
+                // Log that we handled a bad request and respond to the client
+                final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
+                log.info(msg);
+                return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessageBytes, FailInfo.BAD_REQUEST, msg).getResponseMessage();
+            }
+            final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessageBytes, pkiMessage, cmpConfiguration, cmpConfigurationAlias, /*levelOfNesting=*/0);
+            return responseMessage == null ? null : responseMessage.getResponseMessage();
+	    } catch (CertificateEncodingException e) {
+	        log.warn("Could not retrieve byte representation of from org.cesecore.certificates.certificate.request.ResponseMessage", e);
+	        return null;
+	    }
 	}
 
 	/**
 	 * The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
 	 * 
 	 * @param authenticationToken
+	 * @param pkiRequestBytes The CMP request received from the client
 	 * @param pkiMessage DER encoded CMP message
-	 * @param cmpConfigurationAlias the cmp alias we want to use for this request
+	 * @param cmpConfigurationAlias the CMP alias we want to use for this request
      * @param levelOfNesting
 	 * @return ResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(final AuthenticationToken authenticationToken, final PKIMessage pkiMessage, final CmpConfiguration cmpConfiguration,
+	private ResponseMessage dispatch(final AuthenticationToken authenticationToken, final byte[] pkiRequestBytes, final PKIMessage pkiMessage, final CmpConfiguration cmpConfiguration,
 	        String cmpConfigurationAlias, final int levelOfNesting) {
 	    if (levelOfNesting>CmpMessageHelper.MAX_LEVEL_OF_NESTING) {
-            return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
+            return CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBytes, FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
 	    }
 	    final boolean authenticated = levelOfNesting>0;
 		try {
@@ -171,16 +168,16 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     try {
                         final PKIMessages nestedPkiMessages = PKIMessages.getInstance(pkiMessage.getBody().getContent());
                         final PKIMessage nestedPkiMessage = nestedPkiMessages.toPKIMessageArray()[0];
-                        return dispatch(authenticationToken, nestedPkiMessage, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
+                        return dispatch(authenticationToken, pkiRequestBytes, nestedPkiMessage, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
                         log.info(errMsg, e);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, errMsg); 
+                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBytes, FailInfo.BAD_REQUEST, errMsg); 
                     }
                 }
                 final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                 log.info(errMsg);
-                return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessage.getHeader(), FailInfo.BAD_REQUEST, errMsg);
+                return CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBytes, FailInfo.BAD_REQUEST, errMsg);
 			default:
 				unknownMessageType = tagno;
 				log.info("Received an unknown message type, tagno="+tagno);
@@ -190,7 +187,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				if (unknownMessageType > -1) {
 					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
 					log.error(eMsg);
-					return CmpMessageHelper.createUnprotectedErrorMessage(FailInfo.BAD_REQUEST, eMsg);
+					return CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBytes, FailInfo.BAD_REQUEST, eMsg);
 				}
 				throw new IllegalStateException("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}

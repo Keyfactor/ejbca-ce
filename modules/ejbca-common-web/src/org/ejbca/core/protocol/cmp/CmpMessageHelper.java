@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -89,6 +89,8 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
+import sun.util.logging.resources.logging;
+
 /**
  * Helper class to create different standard parts of CMP messages
  * 
@@ -97,6 +99,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 public class CmpMessageHelper {
     private static Logger LOG = Logger.getLogger(CmpMessageHelper.class);
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
     public static final int MAX_LEVEL_OF_NESTING = 15;
@@ -317,80 +320,74 @@ public class CmpMessageHelper {
      * @return byte array of length 16
      */
     public static byte[] createSenderNonce() {
-        // Sendernonce is a random number
         byte[] senderNonce = new byte[16];
-        Random randomSource = new Random(); // Sufficient with regular Random to prevent replays?
-        randomSource.nextBytes(senderNonce);
+        secureRandom.nextBytes(senderNonce);
         return senderNonce;
     }
 
     /** Creates a very simple error message in response to msg (that's why we switch sender and recipient) */
     public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage cmpRequestMessage, FailInfo failInfo, String failText) {
-        if (cmpRequestMessage != null) {
-            return createUnprotectedErrorMessage(cmpRequestMessage.getHeader(), failInfo, failText);
-        } else {
-            return createUnprotectedErrorMessage(failInfo, failText);
-        }
+        return createUnprotectedErrorMessage(cmpRequestMessage.getHeader(), failInfo, failText);
     }
     
     /**
-     * creates a very simple error message in response to msg (that's why we switch sender and recipient)
-     * @param msg
-     * @param status
-     * @param failInfo
-     * @param failText
-     * @return IResponseMessage that can be sent to user
+     * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a raw PKIMessage obtained from
+     * a previous CMP client request message.
+     * @param pkiHeader A PKIHeader extracted from the previous CMP request
+     * @param failInfo An error code describing the type of error
+     * @param failText A human-readable description of the error
+     * @return An <code>org.cesecore.certificates.certificate.request.ResponseMessage</code> data structure containing the error
+     */
+    public static ResponseMessage createUnprotectedErrorMessage(final byte[] pkiRequestBytes, final FailInfo failInfo, final String failText) {
+        final PKIMessage pkiRequest = PKIMessage.getInstance(pkiRequestBytes);
+        if (pkiRequest == null) {
+            LOG.error("Cannot copy header fields to error message because I was unable to parse incoming PKI request.");
+            final PKIHeader emptyPkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
+            return createUnprotectedErrorMessage(emptyPkiHeader, failInfo, failText);
+        }
+        return createUnprotectedErrorMessage(pkiRequest.getHeader(), failInfo, failText);
+    }
+    
+    /**
+     * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a PKIHeader obtained from
+     * a previous CMP client request message.
+     * @param pkiHeader A PKIHeader extracted from the previous CMP request
+     * @param failInfo An error code describing the type of error
+     * @param failText A human-readable description of the error
+     * @return An <code>org.cesecore.certificates.certificate.request.ResponseMessage</code> data structure containing the error
      */
     public static ResponseMessage createUnprotectedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText) {
-        if (pkiHeader == null) {
-            return createUnprotectedErrorMessage(failInfo, failText);
-        }
-        
-        // Create a failure message
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + failText);
-        }
-        CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
-        resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
-        // Sender nonce is optional and might not always be included
-        if (pkiHeader.getSenderNonce() != null) {
-            resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
-        }
-        resp.setSender(pkiHeader.getRecipient());
-        resp.setRecipient(pkiHeader.getSender());
-        /* 
-         * Transaction IDs are not always included in requests. From RFC 4210:
-         * For transactions that consist of a single request/response pair, the rules are as follows.
-         * A client MAY populate the transactionID field of the request. (...)
-         */
-        if (pkiHeader.getTransactionID() != null) {
-            resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
-        }
-        resp.setFailInfo(failInfo);
-        resp.setFailText(failText);
+        final CmpErrorResponseMessage resp = new CmpErrorResponseMessage(); 
         try {
+            if (pkiHeader == null) {
+                pkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
+            }
+            // Create a failure message
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating an unprotected error message with failInfo=" + failInfo + ", failText=" + failText);
+            }
+            resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
+            // Sender nonce is optional and might not always be included
+            if (pkiHeader.getSenderNonce() != null) {
+                resp.setRecipientNonce(new String(Base64.encode(pkiHeader.getSenderNonce().getOctets())));
+            }
+            resp.setSender(pkiHeader.getRecipient());
+            resp.setRecipient(pkiHeader.getSender());
+            if (pkiHeader.getTransactionID() != null) {
+                resp.setTransactionId(new String(Base64.encode(pkiHeader.getTransactionID().getOctets())));
+            } else {
+                // Choose a random transaction ID if the client did not provide one
+                resp.setTransactionId(new String(Base64.encode(createSenderNonce())));
+            }
+            resp.setFailInfo(failInfo);
+            resp.setFailText(failText);
             resp.create();
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
             LOG.error("Exception during CMP processing: ", e);
         } 
         return resp;
     }
-
-    public static CmpErrorResponseMessage createUnprotectedErrorMessage(FailInfo failInfo, String failText) {
-        CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
-        resp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
-        // We didn't even have a request to get these from, so send back some dummy values
-        resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
-        resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
-        resp.setFailInfo(failInfo);
-        resp.setFailText(failText);
-        try {
-            resp.create();
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } 
-        return resp;
-    }
+    
     /**
      * creates a simple error message in response to msg.
      * 
@@ -405,7 +402,12 @@ public class CmpMessageHelper {
         cresp.setSenderNonce(new String(Base64.encode(createSenderNonce())));
         cresp.setSender(msg.getRecipient());
         cresp.setRecipient(msg.getSender());
-        cresp.setTransactionId(msg.getTransactionId());
+        if (msg.getTransactionId() != null) {
+            cresp.setTransactionId(msg.getTransactionId());
+        } else {
+            // Choose a random transaction ID if the client did not provide one
+            cresp.setTransactionId(new String(Base64.encode(createSenderNonce())));
+        }
         cresp.setFailText(failText);
         cresp.setFailInfo(failInfo);
         cresp.setRequestId(requestId);
