@@ -56,13 +56,16 @@ import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
+import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIMessages;
+import org.bouncycastle.asn1.cmp.PKIStatus;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
@@ -329,8 +332,25 @@ public class CmpMessageHelper {
     }
     
     /**
+     * Create a standard error message with PKIStatus.rejection and PKIFailureInfo.badRequest.
+     * @return The byte representation of the error message
+     */
+    public static byte[] createUnprotectedErrorMessage() {
+        final PKIHeader pkiHeader = new PKIHeaderBuilder(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME).
+                build();
+        final ErrorMsgContent errorMessage = new ErrorMsgContent(
+                new PKIStatusInfo(PKIStatus.rejection, 
+                        new PKIFreeText("Not a valid CMP message."), 
+                        new PKIFailureInfo(PKIFailureInfo.badRequest))); 
+        final PKIBody pkiBody = new PKIBody(PKIBody.TYPE_ERROR, errorMessage);
+        final PKIMessage pkiResponse = new PKIMessage(pkiHeader, pkiBody);
+        return CmpMessageHelper.pkiMessageToByteArray(pkiResponse);
+    }
+    
+    /**
      * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a raw PKIMessage obtained from
-     * a previous CMP client request message.
+     * a previous CMP client request message. The byte representation of the message must be checked for validity before
+     * being passed to this method.
      * @param pkiHeader A PKIHeader extracted from the previous CMP request
      * @param failInfo An error code describing the type of error
      * @param failText A human-readable description of the error
@@ -339,9 +359,7 @@ public class CmpMessageHelper {
     public static ResponseMessage createUnprotectedErrorMessage(final byte[] pkiRequestBytes, final FailInfo failInfo, final String failText) {
         final PKIMessage pkiRequest = PKIMessage.getInstance(pkiRequestBytes);
         if (pkiRequest == null) {
-            LOG.error("Cannot copy header fields to error message because I was unable to parse incoming PKI request.");
-            final PKIHeader emptyPkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
-            return createUnprotectedErrorMessage(emptyPkiHeader, failInfo, failText);
+            throw new IllegalStateException("Cannot create CMP error message because I was unable to parse your CMP request.");
         }
         return createUnprotectedErrorMessage(pkiRequest.getHeader(), failInfo, failText);
     }
