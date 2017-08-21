@@ -58,8 +58,8 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
     Map<Integer, String> getKeyValidatorIdToNameMap();
 
     /**
-     * Retrieves a Map of key validator ids. 
-     * @return mapping of key validators names and ids. 
+     * Retrieves a Map of key validator ids, sorted on profile name. 
+     * @return sorted mapping of key validator names and ids. 
      */
     Map<String, Integer> getKeyValidatorNameToIdMap();
 
