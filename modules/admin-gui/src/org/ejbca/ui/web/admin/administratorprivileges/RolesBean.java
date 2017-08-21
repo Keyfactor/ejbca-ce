@@ -120,10 +120,15 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         return nameSpacesAvailable;
     }
 
-    /** Invoked while adding or renaming a role to create a new namespace, instead of using on of the existing ones */
+    /** Invoked while adding or renaming a role to create a new namespace, instead of using one of the existing ones */
     public void actionEditNewNameSpace() {
-        // Use the current selected one for convenience
-        editNameSpace = editNameSpaceSelected;
+        // Use the current selected one for convenience, if it's not selected any namespace however, we set it to something so we can edit it.
+        // otherwise the isRenderEditNameSpace will not trigger a possibility to edit
+        if (StringUtils.isEmpty(editNameSpaceSelected)) {
+            editNameSpace = "";
+        } else {
+            editNameSpace = editNameSpaceSelected;
+        }
     }
     
     /** @return true when creating a new namespace, instead of using on of the existing ones while adding or renaming a role */
