@@ -191,9 +191,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Gets the available key validators.
+     * Gets the available key validator types.
      * 
-     * @return the available key validators as list
+     * @return List of the available key validator types
      */
     public List<SelectItem> getAvailableValidators() {
         final List<SelectItem> ret = new ArrayList<>();
