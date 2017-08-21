@@ -2,11 +2,11 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
+
+import static org.easymock.EasyMock.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.DEROctetString;
@@ -42,17 +42,17 @@ public class CmpMessageHelperTest {
         final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
         
         final PKIMessage pkiRequestMessage = new PKIMessage(pkiRequestHeader, pkiResponseBody);
-        final BaseCmpMessage pkiRequestBase = mock(BaseCmpMessage.class);
-        when(pkiRequestBase.getHeader()).thenReturn(pkiRequestHeader);
-        when(pkiRequestBase.getSender()).thenReturn(sender);
-        when(pkiRequestBase.getRecipient()).thenReturn(recipient);
+        final BaseCmpMessage pkiRequestBase = createNiceMock(BaseCmpMessage.class);
+        expect(pkiRequestBase.getHeader()).andReturn(pkiRequestHeader);
+        expect(pkiRequestBase.getSender()).andReturn(sender);
+        expect(pkiRequestBase.getRecipient()).andReturn(recipient);
         
         // We cannot pass any null objects, so here we go
         final FailInfo errorCode = FailInfo.BAD_TIME;
         final String errorDescription = "Testing not allowed";
         final int requestId = 0;
         final int requestType = 0;
-        final CmpPbeVerifyer cmpPbeVerifier = mock(CmpPbeVerifyer.class);
+        final CmpPbeVerifyer cmpPbeVerifier = createMock(CmpPbeVerifyer.class);
         final String keyId = "0";
         final String responseProtocol = "cmp";
         
@@ -98,19 +98,19 @@ public class CmpMessageHelperTest {
         final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
         
         final PKIMessage pkiRequestMessage = new PKIMessage(pkiRequestHeader, pkiResponseBody);
-        final BaseCmpMessage pkiRequestBase = mock(BaseCmpMessage.class);
-        when(pkiRequestBase.getHeader()).thenReturn(pkiRequestHeader);
-        when(pkiRequestBase.getSender()).thenReturn(sender);
-        when(pkiRequestBase.getRecipient()).thenReturn(recipient);
+        final BaseCmpMessage pkiRequestBase = createMock(BaseCmpMessage.class);
+        expect(pkiRequestBase.getHeader()).andReturn(pkiRequestHeader);
+        expect(pkiRequestBase.getSender()).andReturn(sender);
+        expect(pkiRequestBase.getRecipient()).andReturn(recipient);
         // BaseCmpMessage stores fields base64-encoded internally
-        when(pkiRequestBase.getSenderNonce()).thenReturn(new String(Base64.encodeBase64(senderNonce)));
+        expect(pkiRequestBase.getSenderNonce()).andReturn(new String(Base64.encodeBase64(senderNonce)));
         
         // We cannot pass any null objects, so here we go
         final FailInfo errorCode = FailInfo.BAD_TIME;
         final String errorDescription = "Testing not allowed";
         final int requestId = 0;
         final int requestType = 0;
-        final CmpPbeVerifyer cmpPbeVerifier = mock(CmpPbeVerifyer.class);
+        final CmpPbeVerifyer cmpPbeVerifier = createMock(CmpPbeVerifyer.class);
         final String keyId = "0";
         final String responseProtocol = "cmp";
         

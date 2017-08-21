@@ -86,10 +86,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-
-import sun.util.logging.resources.logging;
 
 /**
  * Helper class to create different standard parts of CMP messages
@@ -315,7 +312,8 @@ public class CmpMessageHelper {
         }
     }
 
-    /** Creates a 16 bytes random sender nonce
+    /** 
+     * Creates a 16 bytes random sender nonce.
      * 
      * @return byte array of length 16
      */
