@@ -46,13 +46,15 @@ public class CmpMessageHelperTest {
         expect(pkiRequestBase.getHeader()).andReturn(pkiRequestHeader);
         expect(pkiRequestBase.getSender()).andReturn(sender);
         expect(pkiRequestBase.getRecipient()).andReturn(recipient);
+        replay(pkiRequestBase);
         
         // We cannot pass any null objects, so here we go
         final FailInfo errorCode = FailInfo.BAD_TIME;
         final String errorDescription = "Testing not allowed";
         final int requestId = 0;
         final int requestType = 0;
-        final CmpPbeVerifyer cmpPbeVerifier = createMock(CmpPbeVerifyer.class);
+        final CmpPbeVerifyer cmpPbeVerifier = createNiceMock(CmpPbeVerifyer.class);
+        replay(cmpPbeVerifier);
         final String keyId = "0";
         final String responseProtocol = "cmp";
         
@@ -98,19 +100,21 @@ public class CmpMessageHelperTest {
         final PKIBody pkiResponseBody = new PKIBody(PKIBody.TYPE_ERROR, errorMsgContent);
         
         final PKIMessage pkiRequestMessage = new PKIMessage(pkiRequestHeader, pkiResponseBody);
-        final BaseCmpMessage pkiRequestBase = createMock(BaseCmpMessage.class);
+        final BaseCmpMessage pkiRequestBase = createNiceMock(BaseCmpMessage.class);
         expect(pkiRequestBase.getHeader()).andReturn(pkiRequestHeader);
         expect(pkiRequestBase.getSender()).andReturn(sender);
         expect(pkiRequestBase.getRecipient()).andReturn(recipient);
         // BaseCmpMessage stores fields base64-encoded internally
         expect(pkiRequestBase.getSenderNonce()).andReturn(new String(Base64.encodeBase64(senderNonce)));
+        replay(pkiRequestBase);
         
         // We cannot pass any null objects, so here we go
         final FailInfo errorCode = FailInfo.BAD_TIME;
         final String errorDescription = "Testing not allowed";
         final int requestId = 0;
         final int requestType = 0;
-        final CmpPbeVerifyer cmpPbeVerifier = createMock(CmpPbeVerifyer.class);
+        final CmpPbeVerifyer cmpPbeVerifier = createNiceMock(CmpPbeVerifyer.class);
+        replay(cmpPbeVerifier);
         final String keyId = "0";
         final String responseProtocol = "cmp";
         
