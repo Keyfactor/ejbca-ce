@@ -77,7 +77,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.validation.PublicKeyBlacklistKeyValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -250,7 +249,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             // Check Referential integrity: 
             // Add to test CA and try to remove it -> CouldNot RemoveKeyValidatorException expected.
             String name = "rsa-test-1-referential-integrity";
-            keyValidator = (KeyValidator) createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
+            keyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
             int validatorId = addKeyValidator(keyValidator);
             setKeyValidatorsForCa(testCA, validatorId);
             try {
@@ -482,17 +481,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         return id;
     }
 
-    private void assertKeyValidatorDefaultValues(final Validator keyValidator) {
-        assertKeyValidatorDefaultValues(keyValidator);
-        if (keyValidator instanceof RsaKeyValidator) {
-            assertRsaKeyValidatorDefaultValues((RsaKeyValidator) keyValidator);
-        } else if (keyValidator instanceof EccKeyValidator) {
-            assertEccKeyValidatorDefaultValues((EccKeyValidator) keyValidator);
-        } else if (keyValidator instanceof PublicKeyBlacklistKeyValidator) {
-            assertPublicKeyBlacklistKeyValidatorDefaultValues((PublicKeyBlacklistKeyValidator) keyValidator);
-        }
-    }
-
     private void assertKeyValidatorDefaultValues(final KeyValidator keyValidator) {
         assertEquals("Latest version expected.", ValidatorBase.LATEST_VERSION, keyValidator.getLatestVersion(), 1f);
         assertEquals("Default description expected.", StringUtils.EMPTY, keyValidator.getDescription());
@@ -518,30 +506,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         assertEquals("KeyValidator notAfterCondition must be equal.", left.getNotAfterCondition(), right.getNotAfterCondition());
         assertEquals("KeyValidator failedAction must be equal.", left.getFailedAction(), right.getFailedAction());
     }
-
-    private void assertRsaKeyValidatorDefaultValues(final RsaKeyValidator keyValidator) {
-        assertEquals("RsaKeyValidator must have default bit lengths.", keyValidator.getBitLengths(), new ArrayList<String>());
-        assertEquals("RsaKeyValidator must have default public key exponent only allow odd value.", keyValidator.isPublicKeyExponentOnlyAllowOdd(),
-                false);
-        assertEquals("RsaKeyValidator must have default public key exponent min value.", keyValidator.getPublicKeyExponentMin(), null);
-        assertEquals("RsaKeyValidator must have default public key exponent max value.", keyValidator.getPublicKeyExponentMax(), null);
-        assertEquals("RsaKeyValidator must have default public key modulus only allow odd value.", keyValidator.isPublicKeyModulusOnlyAllowOdd(),
-                false);
-        assertEquals("RsaKeyValidator must have default public key modulus do not allow power of prime value.",
-                keyValidator.isPublicKeyModulusDontAllowPowerOfPrime(), false);
-        assertEquals("RsaKeyValidator must have default public key modulus min value.", keyValidator.getPublicKeyModulusMin(), null);
-        assertEquals("RsaKeyValidator must have default public key modulus max value.", keyValidator.getPublicKeyModulusMax(), null);
-    }
-
-    private void assertEccKeyValidatorDefaultValues(final EccKeyValidator keyValidator) {
-        assertTrue("EccKeyValidator must have default full validation value true.", keyValidator.isUseFullPublicKeyValidationRoutine());
-    }
-
-    private void assertPublicKeyBlacklistKeyValidatorDefaultValues(final PublicKeyBlacklistKeyValidator keyValidator) {
-        assertEquals("PublicKeyBlacklistKeyValidator must have default key algorithems value.", keyValidator.getKeyAlgorithms(),
-                new ArrayList<String>());
-    }
-
+    
     private void assertRsaKeyValidatorCABForumBaseLineRequirements142Values(final RsaKeyValidator keyValidator) {
         assertEquals("RsaKeyValidator with CAB forum settings must have bit lengths.", keyValidator.getBitLengths(),
                 RsaKeyValidator.getAvailableBitLengths(RsaKeyValidator.CAB_FORUM_BLR_142_KEY_SIZE_MIN));
