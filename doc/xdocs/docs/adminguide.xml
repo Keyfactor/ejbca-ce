@@ -4988,7 +4988,7 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 		validators are restricted to only run for certain Certificate Profiles.
 	</p>
 	<p>
-		To explore Validators, go under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
+		To explore Validators, look under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
 	</p>
 	<subsection name="Audit Logging">
 		<p>
@@ -5096,7 +5096,7 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 			<p>
 				A few notes in regards to CAA validation:
 				<ul>
-					<li>CAA validation will pass of the DNS lacks CAA records entirely</li>
+					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
 					<li>According to the guidelines, a faulty CAA check should <b>always</b> lead to certificate issuance being canceled.</li>
 				</ul>			 
 			</p>
