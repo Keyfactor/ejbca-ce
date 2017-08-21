@@ -15,10 +15,10 @@ package org.ejbca.ui.web.admin.keys.validation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipException;
 
 import javax.ejb.EJB;
@@ -41,6 +41,7 @@ import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorImportResult;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -154,18 +155,17 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * Gets the available key validators.
-     * @return
+     * Gets the available key validators taking into account access rules. The admin need access to view vlidators, and to all certificate profiles
+     * referenced by the Validator.
+     * @return ListDataModel<ValidatorItem>
      */
     public ListDataModel<ValidatorItem> getAvailableValidators() {
         if (validatorItems == null) {
             final List<ValidatorItem> items = new ArrayList<ValidatorItem>();
-            final Map<Integer, Validator> validators = keyValidatorSession.getAllKeyValidators();
-            Validator validator;
-            String accessRule;
-            for (Integer id : validators.keySet()) {
-                validator = validators.get(id);
-                accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileName();
+            final Collection<Integer> validatorIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
+            for (Integer id : validatorIds) {
+            	final Validator validator = keyValidatorSession.getValidator(id);
+                final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileName();
                 if (isAuthorizedTo(accessRule)) {
                     items.add(new ValidatorItem(id, validator.getProfileName() + " (" + validator.getLabel() + ")", validator.getLabel()));
                 } else {
