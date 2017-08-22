@@ -90,6 +90,13 @@ public final class EjbcaConfiguration {
     }
 
     /**
+     * If an administrator should be able to approve a request after editing, without an additional approval
+     */
+    public static boolean getApprovalDefaultAllowSelfEdit() {
+        return false;
+    }
+    
+    /**
      * Excluded classes from approval.
      */
     public static String getApprovalExcludedClasses() {

@@ -116,11 +116,24 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         return (long) value;
     }
-    
 
     @Override
     public void setMaxExtensionTime(final long maxExtensionTime) {
         data.put(PROPERTY_MAX_EXTENSION_TIME, maxExtensionTime);
+    }
+    
+    @Override
+    public boolean getAllowSelfEdit() {
+        final Object value = data.get(PROPERTY_ALLOW_SELF_EDIT);
+        if (value == null) {
+            return EjbcaConfiguration.getApprovalDefaultAllowSelfEdit();
+        }
+        return (boolean) value;
+    }
+
+    @Override
+    public void setAllowSelfEdit(boolean allowSelfEdit) {
+        data.put(PROPERTY_ALLOW_SELF_EDIT, allowSelfEdit);
     }
 
     @Override
