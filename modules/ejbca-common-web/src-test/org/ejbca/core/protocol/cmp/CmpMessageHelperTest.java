@@ -57,6 +57,7 @@ public class CmpMessageHelperTest {
         replay(cmpPbeVerifier);
         final String keyId = "0";
         final String responseProtocol = "cmp";
+        final String customErrorMessage = "cmp.testing";
         
         final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getEncoded(), errorCode, errorDescription);
         final ResponseMessage responseMessage2 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBase, errorCode, errorDescription);
@@ -69,17 +70,20 @@ public class CmpMessageHelperTest {
                 requestType, cmpPbeVerifier, 
                 keyId, 
                 responseProtocol);
+        final byte[] responseMessage5 = CmpMessageHelper.createUnprotectedErrorMessage(customErrorMessage);
         
         final GeneralPKIMessage generalPkiMessage1 = new GeneralPKIMessage(responseMessage1.getResponseMessage());
         final GeneralPKIMessage generalPkiMessage2 = new GeneralPKIMessage(responseMessage2.getResponseMessage());
         final GeneralPKIMessage generalPkiMessage3 = new GeneralPKIMessage(responseMessage3.getResponseMessage());
         final GeneralPKIMessage generalPkiMessage4 = new GeneralPKIMessage(responseMessage4.getResponseMessage());
+        final GeneralPKIMessage generalPkiMessage5 = new GeneralPKIMessage(responseMessage5);
         
         // Assert transaction ID set in CMP response
         assertTrue(generalPkiMessage1.getHeader().getTransactionID() != null);
         assertTrue(generalPkiMessage2.getHeader().getTransactionID() != null);
         assertTrue(generalPkiMessage3.getHeader().getTransactionID() != null);
         assertTrue(generalPkiMessage4.getHeader().getTransactionID() != null);
+        assertTrue(generalPkiMessage5.getHeader().getTransactionID() != null);
     }
     
     /**
