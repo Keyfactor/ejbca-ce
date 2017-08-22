@@ -57,10 +57,10 @@ public class MailAttachment {
 				try {
 					attachmentData = ((Certificate)attachedObject).getEncoded();
 				} catch (CertificateEncodingException e) {
-					throw new RuntimeException("The email attachment type is not supported.", e);
+					throw new IllegalStateException("The email attachment type is not supported.", e);
 				}
 			} else {
-				throw new RuntimeException("The email attachment type is not supported.");
+				throw new IllegalStateException("The email attachment type is not supported.");
 			}
 			File file = File.createTempFile("ejbca-mailattachment", ".tmp");
 			fullFilePathName = file.getCanonicalPath();
@@ -71,7 +71,7 @@ public class MailAttachment {
 			dos.write(attachmentData);
 			}
 		} catch (IOException e) {
-			throw new RuntimeException("The email attachment type is not supported.", e);
+			throw new IllegalStateException("The email attachment type is not supported.", e);
 		}
 	}
 	

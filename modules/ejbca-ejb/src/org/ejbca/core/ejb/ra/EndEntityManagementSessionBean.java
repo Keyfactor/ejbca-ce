@@ -136,6 +136,7 @@ import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
+import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -2264,8 +2265,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             } else {
                                 final String customClassName = userNotification.getNotificationRecipient().substring(7);
                                 if (StringUtils.isNotEmpty(customClassName)) {
-                                    final ICustomNotificationRecipient plugin = (ICustomNotificationRecipient) Thread.currentThread()
-                                            .getContextClassLoader().loadClass(customClassName).newInstance();
+                                    ICustomNotificationRecipient plugin;
+                                    try {
+                                        plugin = (ICustomNotificationRecipient) Thread.currentThread()
+                                                .getContextClassLoader().loadClass(customClassName).newInstance();
+                                    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                                        throw new MailException("Custom notification class " + customClassName + " could not be instansiated.", e);
+                                    }
                                     recipientEmail = plugin.getRecipientEmails(endEntityInformation);
                                     if (StringUtils.isEmpty(recipientEmail)) {
                                         final String msg = intres.getLocalizedMessage("ra.errorcustomnoemail", userNotification.getNotificationRecipient());
@@ -2286,7 +2292,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         }
                         if (StringUtils.isEmpty(recipientEmail)) {
                             final String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", endEntityInformation.getUsername());
-                            throw new Exception(msg);
+                            throw new MailException(msg);
                         }
                         // Get the administrators DN from the admin certificate, if one exists
                         EndEntityInformation requestAdmin = null;
@@ -2315,7 +2321,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         MailSender.sendMailOrThrow(fromemail, Arrays.asList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
                         final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.info(logmsg);
-                    } catch (Exception e) {
+                    } catch (MailException e) {
                         final String msg = intres.getLocalizedMessage("ra.errorsendnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.error(msg, e);
                     }

@@ -20,6 +20,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
+import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 
 /**
@@ -66,7 +67,7 @@ public class MailAction extends BaseAction {
                 String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
                 log.info(logmsg);
             }
-        } catch (Exception e) {
+        } catch (MailException e) {
             String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.info(msg, e);
         }

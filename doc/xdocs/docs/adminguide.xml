@@ -5056,7 +5056,7 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 			</ul>
 		</subsubsection>
 	</subsection>
-	<subsection name="End Entity Validators">
+	<subsection name="Certificate Field Validators">
 		<p>One may also wish to validate issuance based on other values which can't be evaluated during end entity creation. Currently, only one 
 		such validator has been implemented, the CAA Validator.</p>
 		<subsubsection name="CAA Validator">
@@ -5091,6 +5091,26 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended
 							to run DNSSEC.
 						</p>
+					<li>Use IODEF E-mail</li>
+						<p>
+							Checking this box enables sending e-mails to any mailto-links registered on the DNA as CAA IODEF records. Doing so enables the 
+							following additional settings:
+							<ul>
+								<li>From:</li>
+									<p>The <i>From</i> field in the resulting e-mail.</p>
+								<li>Subject:</li>
+									<p>The <i>Subject</i> line in the resulting e-mail.</p>
+								<li>Additional Information:</li>
+									<p> 
+										Any additonal information required, in addition to the default message contents:
+									</p> 
+									<p><i><b>
+									Alert: An faulty Certificate request was made for the domain 'example.com' for the issuer ca.com which was 
+									rejected by the CA due to the issuer not having a CAA record on the domain's DNS.
+									</b></i></p> 
+								
+							</ul>
+						</p>
 				</ul>
 			</p>
 			<p>
@@ -5098,6 +5118,7 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 				<ul>
 					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
 					<li>According to the guidelines, a faulty CAA check should <b>always</b> lead to certificate issuance being canceled.</li>
+					<li>EJBCA currently doesn't validate parameters in CAA records, but such records will still be evaluated correctly. Parameter handling is planned in future versions.</li>
 				</ul>			 
 			</p>
 		</subsubsection>
