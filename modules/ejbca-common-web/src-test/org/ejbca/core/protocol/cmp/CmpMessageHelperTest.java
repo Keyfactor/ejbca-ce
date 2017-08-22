@@ -57,7 +57,6 @@ public class CmpMessageHelperTest {
         replay(cmpPbeVerifier);
         final String keyId = "0";
         final String responseProtocol = "cmp";
-        final String customErrorMessage = "cmp.testing";
         
         final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getEncoded(), errorCode, errorDescription);
         final ResponseMessage responseMessage2 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBase, errorCode, errorDescription);
@@ -70,7 +69,7 @@ public class CmpMessageHelperTest {
                 requestType, cmpPbeVerifier, 
                 keyId, 
                 responseProtocol);
-        final byte[] responseMessage5 = CmpMessageHelper.createUnprotectedErrorMessage(customErrorMessage);
+        final byte[] responseMessage5 = CmpMessageHelper.createUnprotectedErrorMessage(errorDescription);
         
         final GeneralPKIMessage generalPkiMessage1 = new GeneralPKIMessage(responseMessage1.getResponseMessage());
         final GeneralPKIMessage generalPkiMessage2 = new GeneralPKIMessage(responseMessage2.getResponseMessage());
@@ -139,8 +138,9 @@ public class CmpMessageHelperTest {
         final GeneralPKIMessage generalPkiMessage3 = new GeneralPKIMessage(responseMessage3.getResponseMessage());
         final GeneralPKIMessage generalPkiMessage4 = new GeneralPKIMessage(responseMessage4.getResponseMessage());
         
-        // The encoded response is DER encoded when calling createUnprotectedErrorMessage
+        // The encoded response is DER encoded
         final byte[] expected = new DEROctetString(senderNonce).getEncoded();
+        
         assertArrayEquals(expected, generalPkiMessage1.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage2.getHeader().getRecipNonce().getEncoded());
         assertArrayEquals(expected, generalPkiMessage3.getHeader().getRecipNonce().getEncoded());
