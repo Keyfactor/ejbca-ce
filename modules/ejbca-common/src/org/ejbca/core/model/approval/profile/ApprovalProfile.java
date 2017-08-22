@@ -52,6 +52,9 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
     /** @see #getMaxExtensionTime */
     final String PROPERTY_MAX_EXTENSION_TIME = "max_extension_time";
     
+    /** @see #getAllowSelfEdit()*/
+    final String PROPERTY_ALLOW_SELF_EDIT = "allow_self_edit";
+    
     /**
      * @return the type as a human readable name.
      */
@@ -90,6 +93,16 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable {
      * @return true if approval is relevant and should be used.
      */
     boolean isApprovalRequired();
+    
+    /**
+     * @return true if an administrator is able to approve a request after editing it, without approval from an additional administrator.
+     */
+    boolean getAllowSelfEdit();
+    
+    /**
+     * @param allowSelfEdit an administrator should be able to approve a request after editing it, without approval from an additional administrator
+     */
+    void setAllowSelfEdit(boolean allowSelfEdit);
     
     /**
      * @param approvalsPerformed a Collection of approvals already performed. 

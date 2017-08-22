@@ -158,7 +158,7 @@ public class RaApprovalRequestInfo implements Serializable {
         
         nextApprovalStep = null;
         nextApprovalStepPartition = null;
-        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && !lastEditedByMe) {
+        if (nextStep != null && status == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL && (!lastEditedByMe || approval.getApprovalProfile().getAllowSelfEdit())) {
             final Map<Integer, ApprovalPartition> partitions = nextStep.getPartitions();
             for (ApprovalPartition partition : partitions.values()) {
                 try {

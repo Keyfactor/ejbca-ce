@@ -191,6 +191,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return time.toString(SimpleTime.TYPE_DAYS);
     }
     
+    public boolean getAllowSelfEdit() {
+        return getApprovalProfile().getAllowSelfEdit();
+    }
+
+    public void setAllowSelfEdit(boolean allowSelfEdit) {
+       getApprovalProfile().setAllowSelfEdit(allowSelfEdit);
+    }
+    
     public void setMaxExtensionTime(final String maxExtensionTime) {
         final SimpleTime time = SimpleTime.getInstance(maxExtensionTime);
         getApprovalProfile().setMaxExtensionTime(time.getLong());

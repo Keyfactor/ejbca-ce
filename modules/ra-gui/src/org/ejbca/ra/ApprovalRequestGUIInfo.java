@@ -399,8 +399,9 @@ public class ApprovalRequestGUIInfo implements Serializable {
         }
         
         final ApprovalStep nextApprovalStep = request.getNextApprovalStep();
-        canApprove = nextApprovalStep != null && !request.isEditedByMe() && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
-        
+        // We can approve our own edits if allowed by approval profile
+        boolean allowSelfEdit = request.getApprovalRequest().getApprovalProfile().getAllowSelfEdit();
+        canApprove = nextApprovalStep != null && (!request.isEditedByMe() || allowSelfEdit) && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
         // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
         canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
         
