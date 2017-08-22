@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
+import org.cesecore.certificates.ca.internal.RequestAndPublicKeySelector;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -42,6 +43,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -281,41 +283,11 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
         
-        RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
-        PublicKey publicKey = null;
-        String debugPublicKeySource = null;
-        String debugRequestMessageSource = null;
-        if(providedRequestMessage != null){
-            try {
-                publicKey = providedRequestMessage.getRequestPublicKey();
-                debugPublicKeySource = "from providedRequestMessage";
-                debugRequestMessageSource = "from providedRequestMessage";
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e1) {
-                //Fine since public key can be provided with providedPublicKey or endEntityInformation.extendedInformation.certificateRequest
-            }
-        }
-        //ProvidedPublicKey has priority over providedRequestMessage.requestPublicKey
-        if(providedPublicKey != null){
-            publicKey = providedPublicKey;
-            debugPublicKeySource = "separately";
-        }
-        //Request inside endEntityInformation has priority since its algorithm is approved
-        if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
-            request = RequestMessageUtils.genCVCRequestMessage(subject.getExtendedinformation().getCertificateRequest());
-            try {
-                publicKey = request.getRequestPublicKey();
-                debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
-                debugRequestMessageSource = "from endEntity.extendedInformaion.certificateRequest";
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one provided separately", e);
-                }
-            }
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Public key is provided " + debugPublicKeySource);
-            log.debug("Request is provided " + debugRequestMessageSource);
-        }
+        // Which public key and request shall we use?
+        final ExtendedInformation ei = subject.getExtendedinformation();
+        final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, ei);
+        final PublicKey publicKey = pkSelector.getPublicKey();
+        final RequestMessage request = pkSelector.getRequestMessage();
         
         certProfile.verifyKey(publicKey);
         
