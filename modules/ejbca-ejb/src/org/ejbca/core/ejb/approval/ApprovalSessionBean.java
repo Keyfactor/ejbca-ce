@@ -87,6 +87,7 @@ import org.ejbca.core.model.approval.profile.ApprovalPartitionWorkflowState;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
+import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -676,7 +677,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             try {
                 MailSender.sendMailOrThrow(sender, Arrays.asList(recipient.split(" ")), MailSender.NO_CC, parameters.interpolate(subject), parameters.interpolate(body), MailSender.NO_ATTACHMENTS);
                 log.info(intres.getLocalizedMessage("approval.sentnotification", requestId));
-            } catch (Exception e) {
+            } catch (MailException e) {
                 log.info(intres.getLocalizedMessage("approval.errornotification", requestId), e);
             }
         } else {

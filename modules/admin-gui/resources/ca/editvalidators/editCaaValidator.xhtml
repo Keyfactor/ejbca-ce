@@ -33,4 +33,18 @@
 	<h:inputText id="dnsResolver" value="#{validatorBean.validator.dnsResolver}" disabled="#{validatorsBean.viewOnly}" />
 	<h:outputLabel for="validateDnsSec" value="#{web.text.CAA_VALIDATOR_VALIDATE_DNSSEC}" styleClass="subItem" />
 	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}" />
+	<h:outputLabel for="iodef_settings" value="#{web.text.CAA_VALIDATOR_IODEF_SETTINGS}" style="font-weight: bold;" />
+	<h:panelGroup id="iodef_settings" />
+	<h:outputLabel for="useIodefEmail" value="#{web.text.CAA_VALIDATOR_IODEF_USE_EMAIL}" styleClass="subItem" />
+	<h:selectBooleanCheckbox id="useIodefEmail" value="#{validatorBean.validator.useIodefEmail}" disabled="#{validatorsBean.viewOnly}">
+		<f:ajax listener="#{validatorBean.caaValidatorEmailChanged}" render="@form"/>	
+	</h:selectBooleanCheckbox>
+	<h:outputLabel for="emailSender" value="#{web.text.CAA_VALIDATOR_IODEF_EMAIL_SENDER}" styleClass="subItem" />
+	<h:inputText id="emailSender" value="#{validatorBean.validator.emailSender}" disabled="#{validatorsBean.viewOnly or !validatorBean.validator.useIodefEmail}" />
+	<h:outputLabel for="emailSubject" value="#{web.text.CAA_VALIDATOR_IODEF_EMAIL_SUBJECT}" styleClass="subItem" />
+	<h:inputText id="emailSubject" value="#{validatorBean.validator.emailSubject}" disabled="#{validatorsBean.viewOnly or !validatorBean.validator.useIodefEmail}" />
+	<h:outputLabel for="emailContent" value="#{web.text.CAA_VALIDATOR_IODEF_EMAIL_CONTENT}" styleClass="subItem" />
+	<h:inputTextarea id="emailContent" value="#{validatorBean.validator.emailContent}" cols="45" rows="3" required="false" 
+		disabled="#{validatorsBean.viewOnly or !validatorBean.validator.useIodefEmail}" />
+
 </ui:composition>

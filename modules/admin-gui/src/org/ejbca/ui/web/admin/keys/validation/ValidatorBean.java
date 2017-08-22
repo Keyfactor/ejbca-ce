@@ -165,6 +165,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         validator.setProfileName(getSelectedKeyValidatorName());
         FacesContext.getCurrentInstance().renderResponse();
     }
+    
+    public void caaValidatorEmailChanged(AjaxBehaviorEvent e) {
+        FacesContext.getCurrentInstance().renderResponse();
+    }
 
     /**
      * Processes the key validation base parameter options changed event and renders the concrete key validator view. 

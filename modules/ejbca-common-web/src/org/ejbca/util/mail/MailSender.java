@@ -53,11 +53,11 @@ public class MailSender {
 	 * @param subject The email subject
 	 * @param content The text message body
 	 * @param attachments List<MailAttachment> of files and objects to attach to the email or null to disable multipart messages
-	 * @throws Exception if the message could not be successfully handed over to JavaMail
+	 * @throws MailException if the message could not be successfully handed over to JavaMail
 	 */
-	public static void sendMailOrThrow(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) throws Exception {
+	public static void sendMailOrThrow(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) throws MailException {
 		if (!sendMail(fromAddress, toList, ccList, subject, content, attachments)) {
-			throw new Exception("Failed to hand over email to JavaMail.");
+			throw new MailException("Failed to hand over email to JavaMail.");
 		}
 	}
 
@@ -125,13 +125,12 @@ public class MailSender {
 		        msgBody.setContent(content, MailConfiguration.getMailMimeType());
 		        multipart.addBodyPart(msgBody);
 		        // Attach all the requested files
-				for (int i=0; i<attachments.size(); i++) {
-					MailAttachment mailAttachment = attachments.get(i);
-			        MimeBodyPart msgAttachment = new MimeBodyPart();
-			        msgAttachment.setDataHandler(mailAttachment.getDataHandler());
-			        msgAttachment.setFileName(mailAttachment.getName());
-			        multipart.addBodyPart(msgAttachment);
-		        }
+                for (MailAttachment mailAttachment : attachments) {
+                    MimeBodyPart msgAttachment = new MimeBodyPart();
+                    msgAttachment.setDataHandler(mailAttachment.getDataHandler());
+                    msgAttachment.setFileName(mailAttachment.getName());
+                    multipart.addBodyPart(msgAttachment);
+                }
 		        msg.setContent(multipart);
 	        }
 	        msg.setHeader("X-Mailer", "JavaMailer");
