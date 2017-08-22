@@ -67,6 +67,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.internal.RequestAndPublicKeySelector;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -349,15 +350,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final int certProfileId = endEntityInformation.getCertificateProfileId();
         final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
         try {
-            final PublicKey publicKeyToValidate = request != null && request.getRequestPublicKey() != null ? request.getRequestPublicKey() : pk;
+            // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
+            final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
+            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, ei);
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
-                    publicKeyToValidate);
+                    pkSelector.getPublicKey());
         } catch(ValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
-        } catch (NoSuchProviderException | NoSuchAlgorithmException | InvalidKeyException e) {
-            final CertificateCreateException t = new CertificateCreateException( "Could not read public key for validation: " + e.getMessage(), e); 
-            t.setErrorCode(ErrorCode.ILLEGAL_KEY);
-            throw t;
         }
         try {
             keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation);
