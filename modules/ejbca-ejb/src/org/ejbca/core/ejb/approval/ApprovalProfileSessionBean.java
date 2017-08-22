@@ -37,7 +37,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.profiles.Profile;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileDoesNotExistException;
 import org.cesecore.profiles.ProfileSessionLocal;
