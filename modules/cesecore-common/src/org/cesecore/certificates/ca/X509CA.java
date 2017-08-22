@@ -114,6 +114,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
+import org.cesecore.certificates.ca.internal.RequestAndPublicKeySelector;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -124,7 +125,6 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
@@ -844,42 +844,11 @@ public class X509CA extends CA implements Serializable {
             }
             throw new CAOfflineException(msg);
         }
-        
-        RequestMessage request = providedRequestMessage; //The request message was provided outside of endEntityInformation
-        PublicKey publicKey = null;
-        String debugPublicKeySource = null;
-        String debugRequestMessageSource = null;
-        if(providedRequestMessage != null){
-            try {
-                publicKey = providedRequestMessage.getRequestPublicKey();
-                debugPublicKeySource = "from providedRequestMessage";
-                debugRequestMessageSource = "from providedRequestMessage";
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e1) {
-                //Fine since public key can be provided with providedPublicKey or endEntityInformation.extendedInformation.certificateRequest
-            }
-        }
-        //ProvidedPublicKey has priority over providedRequestMessage.requestPublicKey
-        if(providedPublicKey != null){
-            publicKey = providedPublicKey;
-            debugPublicKeySource = "separately";
-        }
-        //Request inside endEntityInformation has priority over providedPublicKey and providedRequestMessage
-        if(subject.getExtendedinformation() != null && subject.getExtendedinformation().getCertificateRequest() != null){
-            request = RequestMessageUtils.genPKCS10RequestMessage(subject.getExtendedinformation().getCertificateRequest());
-            try {
-                publicKey = request.getRequestPublicKey();
-                debugPublicKeySource = "from endEntity.extendedInformaion.certificateRequest";
-                debugRequestMessageSource = "from endEntity.extendedInformaion.certificateRequest";
-            } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error occured with extracting public key from endEntityInformation.extendedInformation. Proceeding with one provided separately", e);
-                }
-            }
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Public key is provided " + debugPublicKeySource);
-            log.debug("Request is provided " + debugRequestMessageSource);
-        }
+        // Which public key and request shall we use?
+        final ExtendedInformation ei = subject.getExtendedinformation();
+        final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, ei);
+        final PublicKey publicKey = pkSelector.getPublicKey();
+        final RequestMessage request = pkSelector.getRequestMessage();
         
         certProfile.verifyKey(publicKey);
         
@@ -910,7 +879,6 @@ public class X509CA extends CA implements Serializable {
         {
             // Serialnumber is either random bits, where random generator is initialized by the serno generator.
             // Or a custom serial number defined in the end entity object
-            final ExtendedInformation ei = subject.getExtendedinformation();
             if (certProfile.getAllowCertSerialNumberOverride()) {
                 if (ei != null && ei.certificateSerialNumber()!=null) {
                     serno = ei.certificateSerialNumber();
@@ -968,7 +936,6 @@ public class X509CA extends CA implements Serializable {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
         } else {
-            final ExtendedInformation ei = subject.getExtendedinformation();
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
                 final String escapedPluses = CertTools.handleUnescapedPlus(stripped);
@@ -1049,8 +1016,7 @@ public class X509CA extends CA implements Serializable {
         }
         
         // If the subject has Name Constraints, then name constraints must be enabled in the certificate profile!
-        if (subject.getExtendedinformation() != null) {
-            final ExtendedInformation ei = subject.getExtendedinformation();
+        if (ei != null) {
             final List<String> permittedNC = ei.getNameConstraintsPermitted();
             final List<String> excludedNC = ei.getNameConstraintsExcluded();
             if ((permittedNC != null && !permittedNC.isEmpty()) ||
