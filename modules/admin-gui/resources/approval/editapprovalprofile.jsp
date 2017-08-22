@@ -112,6 +112,16 @@
                     <h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}. #{web.text.MAX_EXTENSION_TIME_HELP}"/>
                 </h:panelGroup>
             </h:panelGroup>
+            
+            <h:outputLabel for="selfApproveEdit" value ="#{web.text.SELF_APPROVE_EDIT}"/>
+            <h:panelGroup>
+            	<h:selectBooleanCheckbox value="#{approvalProfileMBean.allowSelfEdit}"/>
+            	<br/>
+                <h:panelGroup styleClass="help">
+                    <h:outputText value="#{web.text.SELF_APPROVE_EDIT_HELP}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            
 				
 		</h:panelGrid>
 		
