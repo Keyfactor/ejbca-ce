@@ -5119,6 +5119,7 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
 					<li>According to the guidelines, a faulty CAA check should <b>always</b> lead to certificate issuance being canceled.</li>
 					<li>EJBCA currently doesn't validate parameters in CAA records, but such records will still be evaluated correctly. Parameter handling is planned in future versions.</li>
+					<li>EJBCA currently only supports e-mail IODEF records.</li>
 				</ul>			 
 			</p>
 		</subsubsection>
