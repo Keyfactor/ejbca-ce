@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -332,15 +333,20 @@ public class CmpMessageHelper {
     }
     
     /**
-     * Create a standard error message with PKIStatus.rejection and PKIFailureInfo.badRequest.
+     * Create a standard unprotected error message with PKIStatus.rejection and PKIFailureInfo.badRequest.
+     * The generated message should be sent as a response to an unparsable CMP request only, since the sender nonce
+     * is not copied from the client's CMP request and a new transaction ID is generated.
      * @return The byte representation of the error message
      */
-    public static byte[] createUnprotectedErrorMessage() {
+    public static byte[] createUnprotectedErrorMessage(final String errorDescription) {
         final PKIHeader pkiHeader = new PKIHeaderBuilder(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME).
+                setTransactionID(createSenderNonce()).
+                setSenderNonce(createSenderNonce()).
+                setMessageTime(new ASN1GeneralizedTime(new Date())).
                 build();
         final ErrorMsgContent errorMessage = new ErrorMsgContent(
                 new PKIStatusInfo(PKIStatus.rejection, 
-                        new PKIFreeText("Not a valid CMP message."), 
+                        new PKIFreeText(errorDescription), 
                         new PKIFailureInfo(PKIFailureInfo.badRequest))); 
         final PKIBody pkiBody = new PKIBody(PKIBody.TYPE_ERROR, errorMessage);
         final PKIMessage pkiResponse = new PKIMessage(pkiHeader, pkiBody);

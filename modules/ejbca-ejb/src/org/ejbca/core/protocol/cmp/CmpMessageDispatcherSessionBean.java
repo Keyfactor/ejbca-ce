@@ -87,7 +87,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 // Log that we handled a bad request and respond to the client
                 final String msg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
                 log.info(msg);
-                return CmpMessageHelper.createUnprotectedErrorMessage(pkiMessageBytes, FailInfo.BAD_REQUEST, msg).getResponseMessage();
+                return CmpMessageHelper.createUnprotectedErrorMessage(msg);
             }
             final ResponseMessage responseMessage = dispatch(authenticationToken, pkiMessageBytes, pkiMessage, cmpConfiguration, cmpConfigurationAlias, /*levelOfNesting=*/0);
             return responseMessage == null ? null : responseMessage.getResponseMessage();
