@@ -160,7 +160,6 @@ public class X509CATest {
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
     }
 
-    @SuppressWarnings("unchecked")
     private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);

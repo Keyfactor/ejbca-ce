@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -171,21 +172,11 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      * @param authenticationToken the authentication token of the admin performin the action, for logging purposes
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
+     * @param the incoming request message
      *  
      * @throws ValidationException if validation failed
      */
-    void validateDnsNames(final AuthenticationToken authenticationToken,  final CA ca,  final EndEntityInformation endEntityInformation) throws ValidationException;
+    void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
+            final RequestMessage requestMessage) throws ValidationException;
 
-    //  /**
-    //     * Checks authorization to key validators. Only key validators that refer to CA's that the authentication token is 
-    //     * authorized to will be OK. Also checks the passed in extra resources. 
-    //     * Does this in a single call to authorizationSession to keep it efficient
-    //     * 
-    //     * @param admin Administrator performing the operation
-    //     * @param profile Certificate Profile that we want to check authorization for
-    //     * @param logging if we should log access or not
-    //     * @param resources, additional resources to check, for example StandardRules.CERTIFICATEPROFILEEDIT.resource()
-    //     * @return true if authorized to the profile and the resources
-    //     */
-    //    boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources);
 }

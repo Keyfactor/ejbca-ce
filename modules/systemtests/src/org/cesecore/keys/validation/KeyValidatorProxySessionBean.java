@@ -30,6 +30,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
@@ -149,5 +150,11 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
         if (data != null) {
             profileSession.changeProfile(validator);
         }
+    }
+
+    @Override
+    public void validateDnsNames(AuthenticationToken authenticationToken, CA ca, EndEntityInformation endEntityInformation,
+            RequestMessage requestMessage) throws ValidationException {
+        keyValidatorSession.validateDnsNames(authenticationToken, ca, endEntityInformation, requestMessage);
     }
 }

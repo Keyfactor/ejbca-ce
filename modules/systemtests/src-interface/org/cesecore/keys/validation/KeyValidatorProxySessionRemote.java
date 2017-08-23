@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -195,4 +196,16 @@ public interface KeyValidatorProxySessionRemote {
     void internalChangeValidatorNoFlushCache(Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException;
 
+    /**
+     * Validates dnsName fields defined in the SubjectAltName field of the end entity against CAA rules.
+     * 
+     * @param authenticationToken the authentication token of the admin performin the action, for logging purposes
+     * @param ca the issuing CA
+     * @param endEntityInformation the end entity object
+     * @param the incoming request message
+     *  
+     * @throws ValidationException if validation failed
+     */
+    void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
+            final RequestMessage requestMessage) throws ValidationException;
 }

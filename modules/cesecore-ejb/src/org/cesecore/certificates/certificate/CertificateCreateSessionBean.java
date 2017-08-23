@@ -359,7 +359,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         }
         try {
-            keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation);
+            keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation, request);
         } catch (ValidationException e) {
             throw new CertificateCreateException(ErrorCode.NOT_AUTHORIZED, e);
         }

@@ -40,6 +40,8 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -53,6 +55,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -552,7 +555,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
-    public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca,  final EndEntityInformation endEntityInformation) throws ValidationException {
+    public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
+            final RequestMessage requestMessage) throws ValidationException {
         if (!CollectionUtils.isEmpty(ca.getValidators())) { 
             Validator validator;
             DnsNameValidator dnsNameValidator;
@@ -572,6 +576,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                         continue;
                     }
+                    CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
                     String subjectAltName = endEntityInformation.getSubjectAltName();
                     List<String> dnsNames = new ArrayList<>();
                     for (String split : subjectAltName.split(", ")) {
@@ -579,6 +584,22 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             dnsNames.add(split.substring(CertTools.DNS.length() + 1));
                         }
                     }
+                    //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
+                    if (certificateProfile.getAllowExtensionOverride()) {
+                        Extensions extensions = requestMessage.getRequestExtensions();
+                        if (extensions != null) {
+                            Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
+                            if (extension != null) {
+                                String extendedSubjectAltName = CertTools.getAltNameStringFromExtension(extension);
+                                for (String split : extendedSubjectAltName.split(", ")) {
+                                    if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
+                                        dnsNames.add(split.substring(CertTools.DNS.length() + 1));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     List<String> messages = dnsNameValidator.validate(dnsNames.toArray(new String[dnsNames.size()]));
                     final String validatorName = dnsNameValidator.getProfileName();
                     if (messages.size() > 0) { // Evaluation has failed.
