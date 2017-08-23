@@ -294,7 +294,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    public int addPublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
+    private int addPublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
         log.trace(">addPublicKeyToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
@@ -314,7 +314,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    public int addPublicKeyFingerprintToBlacklist(final String fingerprint, final String keySpecification) throws Exception {
+    private int addPublicKeyFingerprintToBlacklist(final String fingerprint, final String keySpecification) throws Exception {
         log.trace(">addPublicKeyFingerprintToBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
@@ -333,7 +333,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
      * @return {@link #STATUS_GENERALIMPORTERROR} if error, {@link #STATUS_CONSTRAINTVIOLATION} if already existing or {@link #STATUS_OK} if added.
      * @throws Exception any exception.
      */
-    public int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
+    private int removePublicKeyToBlacklist(final PublicKey publicKey) throws Exception {
         log.trace(">removePublicKeyFromBlacklist()");
         int result = STATUS_GENERALIMPORTERROR;
         final String fingerprint = PublicKeyBlacklistEntry.createFingerprint(publicKey);
