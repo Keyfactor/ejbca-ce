@@ -42,7 +42,19 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -57,6 +69,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -65,6 +78,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
@@ -75,7 +89,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -346,6 +362,137 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         log.trace("<test02ValidateRsaPublicKey()");
     }
 
+    /**
+     * This test uses a mock DnsNameValidator to verify that DNS names are properly sourced. This test should grab the domain names from the EE. 
+     */
+    @Test
+    public void testValidateDnsNamesFromEndEntity() throws Exception {
+        final String eeDomain = "foo.com";
+        final String requestDomain = "bar.com";
+        final String eeSan = "dNSName=" + eeDomain;
+        final String requestSan = "dNSName=" + requestDomain;
+        DnsNameValidator keyValidator = new DnsNameValidatorMock("testValidateDnsNamesFromEndEntity", eeDomain);
+        keyValidator.setAllCertificateProfileIds(true);
+        int validatorId = addKeyValidator(keyValidator);
+        keyValidator.setProfileId(validatorId);
+        final String username = "testValidateDnsNamesFromEndEntity";
+        final String certificateProfileName = "testValidateDnsNamesFromEndEntity";
+        final String endEntityProfileName = "testValidateDnsNamesFromEndEntity";
+        try {
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfile.setAllowExtensionOverride(false);
+            int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+            endEntityProfile.addField(DnComponents.DNSNAME);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, 0,
+                    null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
+            KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            X500Name x509dn = CertTools.stringToBcX500Name("CN=" + username);
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            GeneralNames san = CertTools.getGeneralNamesFromAltName(requestSan);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);
+            Extensions exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+            v.add(new DERSequence(altnameattr));
+            DERSet attributes = new DERSet(v);
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, x509dn,
+                    keyPair.getPublic(), attributes, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+            PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
+            setKeyValidatorsForCa(testCA, validatorId);
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, testCA, endEntityInformation, requestMessage);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        } finally {
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
+            } catch(NoSuchEndEntityException e) {}
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+        }
+    }
+    
+    /**
+     * This test uses a mock DnsNameValidator to verify that DNS names are properly sourced. This test should grab the domain names from the 
+     * request, since the certificate profile allow extension override.  
+     */
+    @Test
+    public void testValidateDnsNamesFromRequest() throws Exception {
+        final String eeDomain = "foo.com";
+        final String requestDomain = "bar.com";
+        final String eeSan = "dNSName=" + eeDomain;
+        final String requestSan = "dNSName=" + requestDomain;
+        DnsNameValidator keyValidator = new DnsNameValidatorMock("testValidateDnsNamesFromRequest", requestDomain);
+        keyValidator.setAllCertificateProfileIds(true);
+        int validatorId = addKeyValidator(keyValidator);
+        keyValidator.setProfileId(validatorId);
+        final String username = "testValidateDnsNamesFromRequest";
+        final String certificateProfileName = "testValidateDnsNamesFromRequest";
+        final String endEntityProfileName = "testValidateDnsNamesFromRequest";
+        try {
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfile.setAllowExtensionOverride(true);
+            int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+            endEntityProfile.addField(DnComponents.DNSNAME);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, 0,
+                    null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
+            KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            X500Name x509dn = CertTools.stringToBcX500Name("CN=" + username);
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            GeneralNames san = CertTools.getGeneralNamesFromAltName(requestSan);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);
+            Extensions exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+            v.add(new DERSequence(altnameattr));
+            DERSet attributes = new DERSet(v);
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, x509dn,
+                    keyPair.getPublic(), attributes, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+            PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
+            setKeyValidatorsForCa(testCA, validatorId);
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, testCA, endEntityInformation, requestMessage);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        } finally {
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
+            } catch(NoSuchEndEntityException e) {}
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+        }
+    }
+    
     /**
      * Test of the cache of validators. This test depends on cache time of 1 second being used.
      */
