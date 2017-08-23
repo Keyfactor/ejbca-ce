@@ -729,7 +729,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 fail("Key algorithm and spec should not have been allowed by validator.");
             } catch (CertificateCreateException e) {
                 assertEquals("Error message should come from Validator.", 
-                        "org.cesecore.keys.validation.ValidationException: Key Validator testKeyValidatorrsa-parameter-validation-test-1 could not validate sufficient key quality for public key: [Invalid: RSA key size/strength: Use one of the following [1024].].", 
+                        "org.cesecore.keys.validation.ValidationException: Key Validator 'testKeyValidatorrsa-parameter-validation-test-1' could not validate sufficient key quality for public key: [Invalid: RSA key size/strength: Use one of the following [1024].].", 
                         e.getMessage());
             }
             // Test unhappy path. ECDSA 256 bit key. Not allowed by key validator.
@@ -743,7 +743,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 fail("Key algorithm and spec should not have been allowed by validator.");
             } catch (CertificateCreateException e) {
                 assertEquals("Error message should come from Validator.", 
-                        "org.cesecore.keys.validation.ValidationException: Key Validator testKeyValidatorecc-parameter-validation-test-1 could not validate sufficient key quality for public key: [Invalid: ECDSA curve [prime256v1, secp256r1, P-256]: Use one of the following [secp384r1].].", 
+                        "org.cesecore.keys.validation.ValidationException: Key Validator 'testKeyValidatorecc-parameter-validation-test-1' could not validate sufficient key quality for public key: [Invalid: ECDSA curve [prime256v1, secp256r1, P-256]: Use one of the following [secp384r1].].", 
                         e.getMessage());
             }
             // Set RSA validator to fail on ECC keys
@@ -777,7 +777,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 fail("ECC should fail on blacklist.");
             } catch (CertificateCreateException e) {
                 assertTrue("Error message should come from Validator.", 
-                        e.getMessage().startsWith("org.cesecore.keys.validation.ValidationException: Key Validator testKeyValidatorblacklist-parameter-validation-test-1 could not validate sufficient key quality for public key"));
+                        e.getMessage().startsWith("org.cesecore.keys.validation.ValidationException: Key Validator 'testKeyValidatorblacklist-parameter-validation-test-1' could not validate sufficient key quality for public key"));
             }
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, TEST_NAME);
