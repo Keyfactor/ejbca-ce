@@ -80,7 +80,7 @@
 							<h:outputLabel for="subjectDnField" value="Subject"/>
 							<h:outputText id="subjectDnField" styleClass="monospace" value="#{enrollWithRequestIdBean.endEntityInformation.DN};#{enrollWithRequestIdBean.endEntityInformation.subjectAltName}"/>
 						</h:panelGroup>
-						<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithRequestIdBean.keyAlgorithmPreSet and !enrollWithRequestIdBean.renderGenerateCertificate}">
+						<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithRequestIdBean.preSetKeyAlgorithmRendered}">
 							<h:outputLabel for="requestKeyAlgorithmField" value="Key Algorithm"/>
 							<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithRequestIdBean.preSetKeyAlgorithm}"/>
 						</h:panelGroup>
