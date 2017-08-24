@@ -47,20 +47,11 @@ When performing any upgrade, you should read through the upgrade notices below a
 From EJBCA 6.8.x to EJBCA 6.9.0
 -------------------------------
 
-When upgrading to EJBCA 6.8.0, the initial upgrade will occur automatically when 6.8.0 is deployed. All in all the following changes will have taken
-place. Note that complete descriptions of these steps follow:
+When upgrading to EJBCA 6.9.0, all changes are automatically performed and no post-upgrade step is required. 
 
-1. A new table is created for BlacklistData, this is empty by default but can be filled with data to match requests against a blacklist.
-   If using the new table with much data, there is a new recommended index in the create-index-ejbca,sql file.
-
-   
-Complete descriptions of changes:
-
-1. Validators
-
-From 6.9.0 and onwards, there is a new concept with Validators, that can validate public keys, and other attributes of a certificate request, 
-before issuing the certificate. This is documented in the Amdin Guide under the Validators chapter.
-
+On the database, the only change is the creation of the table BlacklistData. This table is empty by default, but can be filled with data to validate 
+requests against a blacklist using the new Validators feature. If this table is expected to contain much data, there is a recommended index to apply 
+in the create-index-ejbca,sql file.
 
 From EJBCA 6.7.x to EJBCA 6.8.0
 -------------------------------
