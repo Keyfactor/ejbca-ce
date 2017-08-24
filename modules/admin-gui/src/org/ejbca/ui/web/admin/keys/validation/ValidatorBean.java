@@ -169,26 +169,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void caaValidatorEmailChanged(AjaxBehaviorEvent e) {
         FacesContext.getCurrentInstance().renderResponse();
     }
+    
 
     /**
-     * Processes the key validation base parameter options changed event and renders the concrete key validator view. 
-     * 
-     * @param e the event.
-     */
-    public void keyValidatorTemplateChanged(AjaxBehaviorEvent e) {
-        if (log.isDebugEnabled()) {
-            log.debug("Setting key validator base parameter option " + ((HtmlSelectOneMenu) e.getComponent()).getValue());
-        }
-        final Integer value = (Integer) ((HtmlSelectOneMenu) e.getComponent()).getValue();
-        final Validator keyValidator = getValidator();
-        keyValidator.setSettingsTemplate(value);
-        keyValidator.setKeyValidatorSettingsTemplate();
-        FacesContext.getCurrentInstance().renderResponse();
-    }
-
-    /**
-     * Checks whether the custom key validator settings are enabled and the concerning fields (key size, key strength, more detailed attributes, etc.) are enabled.
-     * @return true if customs settings are enabled.
+     * Checks whether the Validator settings template is set to "Use custom settings".
+     * @return True iff custom settings are enabled
      */
     public boolean isCustomBaseSettingsEnabled() {
         return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == getValidator().getSettingsTemplate();

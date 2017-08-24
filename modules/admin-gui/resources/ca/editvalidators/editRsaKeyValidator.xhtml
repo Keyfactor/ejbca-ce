@@ -29,7 +29,7 @@
 </h:panelGroup>
 <h:outputLabel for="settingsTemplate" value="#{web.text.VALIDATORSETTINGSTEMPLATE}"/>
 <h:selectOneMenu id="settingsTemplate" value="#{validatorBean.validator.settingsTemplate}" disabled="#{validatorsBean.viewOnly}">
-	<f:ajax listener="#{validatorBean.validatorTemplateChanged}" render="@form"/>	
+	<f:ajax execute="settingsTemplate" render="keyValidatorBitLengths" />	
 	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
 </h:selectOneMenu>
 <h:outputLabel for="keyValidatorBitLengths" value="#{web.text.RSAKEYVALILDATORAVAILABLEBITLENGTHS}" />
