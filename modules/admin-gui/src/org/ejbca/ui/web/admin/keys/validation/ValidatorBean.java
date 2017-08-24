@@ -173,7 +173,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /**
      * Checks whether the Validator settings template is set to "Use custom settings".
-     * @return True iff custom settings are enabled
+     * @return true if custom settings are enabled
      */
     public boolean isCustomBaseSettingsEnabled() {
         return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == getValidator().getSettingsTemplate();
