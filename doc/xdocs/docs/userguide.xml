@@ -2129,7 +2129,11 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>manages log configuration</li>
 <li>manages publishers</li>
 <li>can create RA administrators</li>
-<li>can renew a CA using an existing key</li>
+<li>can renew a CA using an existing key
+    <ul style="list-style: none;">
+        <li><strong><u>Note:</u></strong> A CA administrator can not generate a new key using <i>KeySequence</i>.</li>
+    </ul>
+</li>
 <li>can have full read access to the audit log</li>
 </ul>
 <li>The RA Administrator:</li>
