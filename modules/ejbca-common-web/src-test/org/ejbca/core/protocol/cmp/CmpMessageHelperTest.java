@@ -41,7 +41,7 @@ import org.junit.Test;
 /**
  * JUnit tests for CmpMessageHelper.
  * 
- * @version $Id: CmpMessageHelperTest.java 0 2017-08-24 11:22:00Z bastianf $
+ * @version $Id$
  */
 public class CmpMessageHelperTest {
 
