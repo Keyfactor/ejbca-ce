@@ -69,9 +69,9 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Rolf Staflin, <!-- rolf@piro.se -->New public web for EJBCA 3.5.</li>
 <li>Joakim Bågnert, <!-- joakim.bagnert@primekey.com -->Core Technician.</li>
 <li>Munteanu Olimpiu Andrei, <!-- moa3333@gmail.com -->Jasper reports functionality.</li>
-<li>Lee, <!-- coregps@yahoo.com.cn -->updates to chineese translation.</li>
+<li>Lee, <!-- coregps@yahoo.com.cn -->updates to Chinese translation.</li>
 <li>Yuji, <!-- yistoneriver@users.sourceforge.net -->patch for deadlock problem.</li>
-<li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
+<li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->Portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
 <li>Nicolas Coudene, <!-- nicolas.coudene@linagora.com -->completing the DB2 support, updates to french translation.</li>
 <li>Sebastien Levesque, <!-- slevesque@linagora.com -->WS-API calls for listing CAs and profiles.</li>
 <li>Abbas Razam, <!-- abbasrazam@yahoo.com -->fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
@@ -99,7 +99,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation, proper key sequence incrementation, and other CVC fixes.</li>
 <li>Samuel Liden Borell, <!-- samuel.borell@primekey.com -->Core developer.</li>
 <li>Aveen Ismail, <!-- aveen.ismail@primekey.com  -->Core developer.</li>
-<li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer and Product Owner (2015 - )</li>
+<li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer (2010 - ) and Product Owner (2015 - )</li>
 <li>Anders Rundgren, Core developer (- 2014)</li>
 <li>Marcus Lundblad, <!-- marcus.lundblad@primekey.com -->Core developer</li>
 <li>Toru Tanaka, OGIS-RI Co. Ltd.,  Japaneese translation.</li>
@@ -110,13 +110,14 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Kaan Kivilcim of The Google Security Team, suggestions for security improvements.</li>
 <li>Stefan Selbitschka, <!-- selbitschka@rundquadrat.at -->patch to allow HELP text in custom publisher UI.</li>
 <li>Mohammad Anwari, <!--  mdamt@mdamt.net -->Add CESeCore API support for RFC-4683 idOnSim OtherName (altName).</li>
-<li>Andres Jakobs, <!-- AndresJakobs@web.de -->Admin GUI support for eIDAS QC extension (type and PDS url), Default "CA issuer URI" for CA. WS CA cert update.</li>
+<li>Andres Jakobs, <!-- AndresJakobs@web.de -->Admin GUI support for eIDAS QC extension (type and PDS url), Default "CA issuer URI" for CA. WS CA cert update. Validators.</li>
 <li>Mauricio Giacomini Penteado, <!-- mauricio.penteado@lcmtec.com.br -->Overridable and Non-overridable OIDs extension list limitations (ECA-5139).</li>
 <li>Jean-Sébastien Bevilacqua, <!-- realitix@gmail.com -->Patch for not removing end entity profile in legacy script based auto enrollment.</li>
 <li>Markus Kilås,  <!-- markus.kilas@primekey.com -->Core Developer</li>
-<li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer</li>
+<li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer (2017 - )</li>
 <li>Jaime Hablutzel, <!-- hablutzel1@gmail.com -->Ability to modify the built-in password encryption/obfuscation key.</li>
 <li>Christian Felsing, <!-- pug@felsing.net -->ejbca-setup install script for easier setup</li>
+<li>Bastian Fredriksson, <!-- bastian@primekey.com -->Core Developer (2017 - )</li>
 </ul>
     </section>
   </body>
