@@ -553,15 +553,20 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         return result;
     }
 
-    //    /**
-    //     * Redirect the client browser to the relevant section of key validator page.
-    //     * 
-    //     * @param componentId the target components id.
-    //     * @throws IOException if the redirect fails.
-    //     */
-    //    private void redirectToComponent(final String componentId) throws IOException {
-    //        final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-    //        ec.redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-    //                + "ca/editvalidators/editkeyvalidator.xhmtl#kvf:" + componentId);
-    //    }
+    /**
+     * Processes the key validation base parameter options changed event and renders the concrete key validator view. 
+     * 
+     * @param e the event.
+     */
+    public void validatorTemplateChanged(AjaxBehaviorEvent e) {
+        if (log.isDebugEnabled()) {
+            log.debug("Setting key validator base parameter option " + ((HtmlSelectOneMenu) e.getComponent()).getValue());
+        }
+        final Integer value = (Integer) ((HtmlSelectOneMenu) e.getComponent()).getValue();
+        final Validator keyValidator = getValidator();
+        keyValidator.setSettingsTemplate(value);
+        keyValidator.setKeyValidatorSettingsTemplate();
+        FacesContext.getCurrentInstance().renderResponse();
+    }
+
 }
