@@ -604,7 +604,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the key validator rule selection box should be modifiable */
     public boolean isRenderResourcesKvSelection() {
-        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateCaAdmin() && !isAccessRulesTemplateRaAdmin(); 
+        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateRaAdmin(); 
     }
 
     /** @return the currently selected key validator resources */
@@ -714,6 +714,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         filterOutSelectItems(newAccessRules, getAvailableResourcesCa());
         filterOutSelectItems(newAccessRules, getAvailableResourcesEe());
         filterOutSelectItems(newAccessRules, getAvailableResourcesEep());
+        filterOutSelectItems(newAccessRules, getAvailableResourcesKeyValidators());
         filterOutSelectItems(newAccessRules, getAvailableResourcesIkb());
         filterOutSelectItems(newAccessRules, getAvailableResourcesOther());
         // Add access rules selected by the user
@@ -737,6 +738,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
              * 
              * Long story short: Do nothing here.
              */
+        }
+        for (final String resource : getResourcesKeyValidatorsSelected()) {
+            newAccessRules.put(resource, Role.STATE_ALLOW);
         }
         for (final String resource : getResourcesIkbSelected()) {
             newAccessRules.put(resource, Role.STATE_ALLOW);
