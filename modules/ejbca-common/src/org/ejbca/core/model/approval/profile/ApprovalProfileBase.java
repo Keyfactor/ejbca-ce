@@ -126,7 +126,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public boolean getAllowSelfEdit() {
         final Object value = data.get(PROPERTY_ALLOW_SELF_EDIT);
         if (value == null) {
-            return EjbcaConfiguration.getApprovalDefaultAllowSelfEdit();
+            return false;
         }
         return (boolean) value;
     }
