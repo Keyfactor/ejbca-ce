@@ -35,8 +35,10 @@
 		</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
 		<h:inputText id="textfieldnotbefore" value="#{validatorBean.validator.notBeforeAsString}" validator="#{validatorBean.validateNotBefore}"
 			required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}">
+			<f:ajax execute="textfieldnotbefore" render="notbeforestatus" />
 			<!--f:validateRegex pattern="[\\d]{4}-[\\d]{2}-[\\d]{2}( [\\d]{2}:[\\d]{2}:[\\d]{2}(\+[\\d]{2}:[\\d]{2}){0,1}){0,1}"></f:validateRegex-->
-		</h:inputText>
+		</h:inputText>&nbsp;&nbsp;&nbsp;
+		<h:outputLabel id="notbeforestatus" for="textfieldnotbefore" value="Format: yyyy-MM-dd [HH:mm:ss]" />
 	</h:panelGroup>
 	<h:outputLabel for="textfieldnotafter" value="#{web.text.VALIDATORNOTAFTER}" />
 	<h:panelGroup>
@@ -44,9 +46,10 @@
 			validator="#{validatorBean.validateNotAfterCondition}" disabled="#{validatorsBean.viewOnly}" onchange='fillNotAfterConditionField()'>
 			<f:selectItems value="#{validatorBean.availableNotAfterConditions}" />
 		</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
-					<h:inputText id="textfieldnotafter" value="#{validatorBean.validator.notAfterAsString}" validator="#{validatorBean.validateNotAfter}"
+		<h:inputText id="textfieldnotafter" value="#{validatorBean.validator.notAfterAsString}" validator="#{validatorBean.validateNotAfter}"
 			required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}">
 			<!--f:validateRegex pattern="[\d]{4}-[\d]{2}-[\d]{2}( [\d]{2}:[\d]{2}:[\d]{2}(\+[\d]{2}:[\d]{2}){0,1}){0,1}"></f:validateRegex-->
-		</h:inputText>
+		</h:inputText>&nbsp;&nbsp;&nbsp;
+		<h:outputLabel id="notafterstatus" for="textfieldnotafter" value="Format: yyyy-MM-dd [HH:mm:ss]" />
 	</h:panelGroup>
 </ui:composition>
