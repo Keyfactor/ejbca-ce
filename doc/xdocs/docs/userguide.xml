@@ -2128,6 +2128,7 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>manages end entity profiles</li>
 <li>manages log configuration</li>
 <li>manages publishers</li>
+<li>manages key validators</li>
 <li>can create RA administrators</li>
 <li>can renew a CA using an existing key
     <ul style="list-style: none;">
@@ -2159,6 +2160,7 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>has full read access to authorized Publishers</li>
 <li>has full read access to authorized End Entities</li>
 <li>has full read access to authorized End Entity Profiles</li>
+<li>has full read access to authorized Key Validators</li>
 <li>has limited read access to Administrator Roles</li>
 <li>has full read access to Internal Key Bindings</li>
 <li>has full read access to Peer Systems</li>
