@@ -468,6 +468,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 AccessRulesHelper.minimizeAccessRules(remainingAccessRulesInRole);
                 filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesCa());
                 filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesEep());
+                filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesKeyValidators());
                 for (final Entry<String,Boolean> entry : accessRulesTemplate.getAccessRules().entrySet()) {
                     if (entry.getValue().booleanValue()) {
                         final String resource = entry.getKey();
