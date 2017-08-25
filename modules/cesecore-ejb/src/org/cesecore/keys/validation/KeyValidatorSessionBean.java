@@ -562,7 +562,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             DnsNameValidator dnsNameValidator;
             for (Integer id : ca.getValidators()) {
                 validator = getKeyValidatorInternal(id, true);
-                if (validator.getValidatorSubType().equals(DnsNameValidator.class)) {
+                if (validator != null && validator.getValidatorSubType().equals(DnsNameValidator.class)) {
                     dnsNameValidator = (DnsNameValidator) validator;
                     final String name = dnsNameValidator.getProfileName();
 
@@ -640,7 +640,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             KeyValidator keyValidator;
             for (Integer id : ca.getValidators()) {
                 validator = getKeyValidatorInternal(id, true);
-                if (validator.getValidatorSubType().equals(KeyValidator.class)) {
+                if (validator != null && validator.getValidatorSubType().equals(KeyValidator.class)) {
                     keyValidator = (KeyValidator) validator;
                     final String name = keyValidator.getProfileName();
                     if (log.isTraceEnabled()) {
@@ -823,7 +823,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 ValidatorCache.INSTANCE.removeEntry(id);
             }
         }
-
+        if (result == null) {
+            log.warn("Validator with id "+id+" didn't return any validator");
+        }
         return result;
     }
 
