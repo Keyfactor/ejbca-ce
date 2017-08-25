@@ -99,7 +99,7 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
                     + intres.getLocalizedMessage(KeyValidatorSettingsTemplate.optionOf(option).getLabel()));
         }
         if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == option) {
-            //            setEmptyCustomSettings();
+            // NOOP: In the validation method, the key specification is matched against the certificate profile.
         } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == option) {
             setCABForumBaseLineRequirements142Settings();
         } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == option) {
@@ -120,18 +120,11 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
         // But this is not required at the time, because certificate validity conditions are before 
         // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
         // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
-
         final List<String> allowedCurves = new ArrayList<String>();
-        //        allowedCurves.add
+        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-256"));
+        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-384"));
+        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-521"));
         setCurves(allowedCurves);
-        final List<Integer> ids = getCertificateProfileIds();
-        if (ids.contains(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA)) {
-            // NOOP
-        } else if (ids.contains(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA)) {
-            // NOOP
-        } else {
-            // NOOP
-        }
         setUseFullPublicKeyValidationRoutine(true);
     }
 

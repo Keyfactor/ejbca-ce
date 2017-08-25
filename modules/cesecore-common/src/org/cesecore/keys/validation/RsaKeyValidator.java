@@ -239,12 +239,12 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
                     + intres.getLocalizedMessage(KeyValidatorSettingsTemplate.optionOf(option).getLabel()));
         }
         if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == option) {
-            //            setEmptyCustomSettings();
+            // NOOP
         } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == option) {
             setCABForumBaseLineRequirements142Settings();
         } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == option) {
             // NOOP: In the validation method, the key specification is matched against the certificate profile.
-            setEmptyCustomSettings();
+            setCertProfileSettings();
         } else {
             // NOOP
         }
@@ -255,16 +255,18 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @see {@link https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf}
      * @param keyValidator
      */
-    public void setEmptyCustomSettings() {
+    private void setCertProfileSettings() {
         setBitLengths(new ArrayList<String>());
-        setPublicKeyExponentOnlyAllowOdd(false);
-        setPublicKeyExponentMin(null);
-        setPublicKeyExponentMax(null);
-        setPublicKeyModulusOnlyAllowOdd(false);
-        setPublicKeyModulusDontAllowPowerOfPrime(false);
-        setPublicKeyModulusMinFactor(null);
-        setPublicKeyModulusMin(null);
-        setPublicKeyModulusMax(null);
+        // We'll only reset the bit lengths, because this is what is passed on to the certificate profiles
+        // The other settings must be set manually anyhow and should not be reset
+//        setPublicKeyExponentOnlyAllowOdd(false);
+//        setPublicKeyExponentMin(null);
+//        setPublicKeyExponentMax(null);
+//        setPublicKeyModulusOnlyAllowOdd(false);
+//        setPublicKeyModulusDontAllowPowerOfPrime(false);
+//        setPublicKeyModulusMinFactor(null);
+//        setPublicKeyModulusMin(null);
+//        setPublicKeyModulusMax(null);
     }
 
     /**
