@@ -120,8 +120,6 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Internal class for key validator items rendered as table.
-     * @version $Id$
-     *
      */
     public class ValidatorItem {
 
@@ -165,13 +163,13 @@ public class ValidatorsBean extends BaseManagedBean {
             final Collection<Integer> validatorIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
             for (Integer id : validatorIds) {
             	final Validator validator = keyValidatorSession.getValidator(id);
-                final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileName();
+                final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileId();
                 if (isAuthorizedTo(accessRule)) {
                     items.add(new ValidatorItem(id, validator.getProfileName() + " (" + validator.getLabel() + ")", validator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
-                                + StandardRules.VALIDATORACCESS.resource() + validator.getProfileName() + ".");
+                                + StandardRules.VALIDATORACCESS.resource() + validator.getProfileName() + " ("+validator.getProfileId()+").");
                     }
                 }
             }
