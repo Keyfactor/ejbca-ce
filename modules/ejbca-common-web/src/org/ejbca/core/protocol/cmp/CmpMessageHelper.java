@@ -354,23 +354,6 @@ public class CmpMessageHelper {
     }
     
     /**
-     * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a raw PKIMessage obtained from
-     * a previous CMP client request message. The byte representation of the message must be checked for validity before
-     * being passed to this method.
-     * @param pkiHeader A PKIHeader extracted from the previous CMP request
-     * @param failInfo An error code describing the type of error
-     * @param failText A human-readable description of the error
-     * @return An <code>org.cesecore.certificates.certificate.request.ResponseMessage</code> data structure containing the error
-     */
-    public static ResponseMessage createUnprotectedErrorMessage(final byte[] pkiRequestBytes, final FailInfo failInfo, final String failText) {
-        final PKIMessage pkiRequest = PKIMessage.getInstance(pkiRequestBytes);
-        if (pkiRequest == null) {
-            throw new IllegalStateException("Cannot create CMP error message because I was unable to parse your CMP request.");
-        }
-        return createUnprotectedErrorMessage(pkiRequest.getHeader(), failInfo, failText);
-    }
-    
-    /**
      * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a PKIHeader obtained from
      * a previous CMP client request message.
      * @param pkiHeader A PKIHeader extracted from the previous CMP request
