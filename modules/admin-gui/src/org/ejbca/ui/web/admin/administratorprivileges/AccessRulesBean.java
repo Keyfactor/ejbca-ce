@@ -424,6 +424,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private boolean isAccessRulesTemplateCaAdmin() { return "CAADMINISTRATOR".equals(getAccessRulesTemplateSelected()); }
     /** @return true if this role is assumed to have been configured using the SuperAdministrator template */
     private boolean isAccessRulesTemplateSuperAdmin() { return "SUPERADMINISTRATOR".equals(getAccessRulesTemplateSelected()); }
+    /** @return true if this role is assumed to have been configured using RaAdministrator template */
+    private boolean isAccessRulesTemplateRaAdmin() {return "RAADMINISTRATOR".equals(getAccessRulesTemplateSelected());}
 
     /** @return currently selected AccessRuleTemplate */
     private AccessRulesTemplate getAccessRulesTemplate() {
@@ -602,7 +604,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the key validator rule selection box should be modifiable */
     public boolean isRenderResourcesKvSelection() {
-        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateCaAdmin();
+        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateCaAdmin() && !isAccessRulesTemplateRaAdmin(); 
     }
 
     /** @return the currently selected key validator resources */
