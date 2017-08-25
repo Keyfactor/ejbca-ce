@@ -244,6 +244,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             setCABForumBaseLineRequirements142Settings();
         } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == option) {
             // NOOP: In the validation method, the key specification is matched against the certificate profile.
+            setEmptyCustomSettings();
         } else {
             // NOOP
         }
