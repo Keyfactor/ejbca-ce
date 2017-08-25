@@ -76,7 +76,7 @@ public class CmpMessageHelperTest {
         final String keyId = "0";
         final String responseProtocol = "cmp";
         
-        final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getEncoded(), errorCode, errorDescription);
+        final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getHeader(), errorCode, errorDescription);
         final ResponseMessage responseMessage2 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBase, errorCode, errorDescription);
         final ResponseMessage responseMessage3 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestHeader, errorCode, errorDescription);
         final ResponseMessage responseMessage4 = CmpMessageHelper.createErrorMessage(
@@ -139,7 +139,7 @@ public class CmpMessageHelperTest {
         final String keyId = "0";
         final String responseProtocol = "cmp";
         
-        final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getEncoded(), errorCode, errorDescription);
+        final ResponseMessage responseMessage1 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestMessage.getHeader(), errorCode, errorDescription);
         final ResponseMessage responseMessage2 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestBase, errorCode, errorDescription);
         final ResponseMessage responseMessage3 = CmpMessageHelper.createUnprotectedErrorMessage(pkiRequestHeader, errorCode, errorDescription);
         final ResponseMessage responseMessage4 = CmpMessageHelper.createErrorMessage(
