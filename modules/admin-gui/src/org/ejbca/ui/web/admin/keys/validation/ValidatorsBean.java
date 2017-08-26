@@ -13,22 +13,17 @@
 
 package org.ejbca.ui.web.admin.keys.validation;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.zip.ZipException;
 
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -39,7 +34,6 @@ import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
-import org.cesecore.keys.validation.ValidatorImportResult;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -404,88 +398,4 @@ public class ValidatorsBean extends BaseManagedBean {
         }
     }
 
-    //----------------------------------------------
-    //                Import key validators
-    //----------------------------------------------
-
-    private UploadedFile part;
-
-    /**
-     * Gets the upload file for import.
-     * @return the file
-     */
-    public UploadedFile getUploadFile() {
-        return part;
-    }
-
-    /**
-     * Sets the upload file for import.
-     * @param uploadFile the file
-     */
-    public void setUploadFile(UploadedFile part) {
-        this.part = part;
-    }
-
-    /**
-     * ImportKeyValidators action.
-     */
-    public void actionImportKeyValidators() {
-        if (log.isDebugEnabled()) {
-            log.debug("Importing list of key validators in file " + part);
-        }
-        if (part == null) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed.", null));
-            return;
-        }
-        try {
-            importKeyValidatorsFromZip(getUploadFile().getBytes());
-            validatorItems = null;
-        } catch (IOException | AuthorizationDeniedException | NumberFormatException | KeyValidatorExistsException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        }
-    }
-
-    /**
-     * Imports a list of key validators, stored in separate XML files in the ZIP container.
-     * 
-     * @param Part the mime part.
-     * @throws KeyValidatorExistsException if a key validator already exists.
-     * @throws AuthorizationDeniedException if not authorized
-     */
-    public void importKeyValidatorsFromZip(final byte[] filebuffer) throws KeyValidatorExistsException, AuthorizationDeniedException {
-        try {
-            ValidatorImportResult validatorImportResult = keyValidatorSession.importKeyValidatorsFromZip(getAdmin(), filebuffer);
-            if (!validatorImportResult.getImportedValidators().isEmpty()) {
-                getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
-                StringBuffer importedFiles = new StringBuffer();
-                for (String importedFile : validatorImportResult.getIgnoredValidators()) {
-                    importedFiles.append(importedFile).append(", ");
-                }
-                String msg = "Imported key validator from files: " + importedFiles.substring(0, importedFiles.length() - 2);
-                if (log.isDebugEnabled()) {
-                    log.debug(msg);
-                }
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
-            }
-            if (!validatorImportResult.getIgnoredValidators().isEmpty()) {
-                StringBuffer ignoredFiles = new StringBuffer();
-                for (String ignoredImport : validatorImportResult.getIgnoredValidators()) {
-                    ignoredFiles.append(ignoredImport).append(", ");
-                }
-                String msg = "Failed to import key validators: " + ignoredFiles.substring(0, ignoredFiles.length() - 2);
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
-            }
-            String msg = part.getName() + " contained "
-                    + (validatorImportResult.getImportedValidators().size() + validatorImportResult.getIgnoredValidators().size()) + " files. ";
-            log.info(msg);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
-        } catch (ZipException e) {
-            String msg = part.getName() + " is not a zip file.";
-            log.info(msg);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
-            return;
-        }
-    }
-
-   
 }

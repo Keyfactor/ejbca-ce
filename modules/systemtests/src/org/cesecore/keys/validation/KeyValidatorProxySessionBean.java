@@ -17,7 +17,6 @@ import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-import java.util.zip.ZipException;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -137,12 +136,6 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
         return keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certificateProfile, notBefore, notAfter, publicKey);
     }
 
-    @Override
-    public ValidatorImportResult importKeyValidatorsFromZip(AuthenticationToken authenticationToken, byte[] filebuffer)
-            throws AuthorizationDeniedException, ZipException {
-        return keyValidatorSession.importKeyValidatorsFromZip(authenticationToken, filebuffer);
-    }
-    
     @Override
     public void internalChangeValidatorNoFlushCache(Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {

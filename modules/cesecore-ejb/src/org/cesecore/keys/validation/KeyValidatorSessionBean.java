@@ -15,8 +15,6 @@ package org.cesecore.keys.validation;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -133,101 +128,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
     
-
-    @Override
-    public ValidatorImportResult importKeyValidatorsFromZip(final AuthenticationToken authenticationToken, final byte[] filebuffer)
-            throws AuthorizationDeniedException, ZipException {
-        List<Validator> importedValidators = new ArrayList<>();
-        List<String> ignoredValidators = new ArrayList<>();
-        if (filebuffer.length == 0) {
-            throw new IllegalArgumentException("No input file");
-        }
-        final ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-        try {
-            ZipEntry ze = zis.getNextEntry();
-            if (ze == null) {
-                throw new ZipException("Was expecting a zip file.");
-            }
-
-            do {
-                String filename = ze.getName();
-                if (log.isDebugEnabled()) {
-                    log.debug("Importing file: " + filename);
-                }
-                if (ignoreFile(filename)) {
-                    ignoredValidators.add(filename);
-                    continue;
-                }
-                try {
-                    filename = URLDecoder.decode(filename, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-                }
-                int index1 = filename.indexOf("_");
-                int index2 = filename.lastIndexOf("-");
-                int index3 = filename.lastIndexOf(".xml");
-                String nameToImport = filename.substring(index1 + 1, index2);
-                int idToImport = 0;
-                try {
-                    idToImport = Integer.parseInt(filename.substring(index2 + 1, index3));
-                } catch (NumberFormatException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("NumberFormatException parsing key validator id: " + e.getMessage());
-                    }
-                    ignoredValidators.add(filename);
-                    continue;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Extracted key validator name '" + nameToImport + "' and ID '" + idToImport + "'");
-                }
-                if (ignoreKeyValidator(filename, idToImport)) {
-                    ignoredValidators.add(filename);
-                    continue;
-                }
-                if (getValidator(idToImport) != null) {
-                    log.warn("Key valildator id '" + idToImport + "' already exist in database. Adding with a new key validator id instead.");
-                    idToImport = -1; // means we should create a new id when adding the key validator.
-                }
-                final byte[] filebytes = new byte[102400];
-                int i = 0;
-                while ((zis.available() == 1) && (i < filebytes.length)) {
-                    filebytes[i++] = (byte) zis.read();
-                }
-                final Validator validator = getKeyValidatorFromByteArray(nameToImport, filebytes);
-                if (validator == null) {
-                    ignoredValidators.add(filename);
-                    log.info("Ignoring validator " + filename);
-                    continue;
-                }
-                try {
-                    if (idToImport == -1) {
-                        int validatorId =  addKeyValidator(authenticationToken, validator);
-                        validator.setProfileId(validatorId);
-                    } else {
-                        if (getValidator(idToImport) == null) {
-                            importValidator(authenticationToken, validator);
-                        } else {
-                            log.info("Ignoring validator " + validator.getProfileName() + " as it already exists.");
-                            ignoredValidators.add(validator.getProfileName());
-                        }
-                    }
-                } catch (KeyValidatorExistsException e) {
-                    throw new IllegalStateException("Key validator already exists in spite of the fact that we've just checked that it doesn't.", e);
-                }
-                importedValidators.add(validator);
-                log.info("Added key validator: " + nameToImport);
-            } while ((ze = zis.getNextEntry()) != null);
-            zis.closeEntry();
-            zis.close();
-        } catch (ZipException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected IOException caught.", e);
-        }
-        return new ValidatorImportResult(importedValidators, ignoredValidators);
-
-    }
-
     /**
      * Gets a key validator by the XML file stored in the byte[].    
      * @param name the name of the key validator

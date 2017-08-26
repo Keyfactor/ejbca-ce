@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -49,7 +48,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
-import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -216,31 +214,6 @@ public class ProfilesExportServlet extends HttpServlet {
                         exportedprofiles++;
                     }
                 }
-            }
-        } else if (StringUtils.equalsIgnoreCase(type, "kv")) {
-            zipfilename = "validators.zip";
-            final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
-            totalprofiles = map.size();
-            log.info("Exporting key validators.");
-            Validator keyValidator;
-            String profilenameEncoded;
-            byte[] ba;
-            String filename;
-            ZipEntry ze;
-            for (Integer id : map.keySet()) {
-                keyValidator = keyValidatorSession.getValidator(id);
-                try {
-                    profilenameEncoded = URLEncoder.encode(keyValidator.getProfileName(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    throw new IllegalStateException("UTF-8 was not a known encoding", e);
-                }
-                ba = getProfileBytes(keyValidator.getUpgradableHashmap());
-                filename = "keyvalidator_" + profilenameEncoded + "-" + id + ".xml";
-                ze = new ZipEntry(filename);
-                zos.putNextEntry(ze);
-                zos.write(ba);
-                zos.closeEntry();
-                exportedprofiles++;
             }
         }
         zos.close();

@@ -24,7 +24,6 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -37,8 +36,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -838,44 +835,44 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         return result;
     }
     
-    @Test
-    public void testImportFromZip() throws Exception {
-        final String keyValidatorWithIdName = "keyValidatorWithId";
-        final Validator keyValidatorWithId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithIdName, null, null, -1, null, -1, -1);
-        int keyValidatorId = 4711;
-        keyValidatorWithId.setProfileId(keyValidatorId);
-        final String keyValidatorWithoutIdName = "keyValidatorWithoutId";
-        final Validator keyValidatorWithoutId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithoutIdName, null, null, -1, null, -1, -1);
-        //Export the validators to a zip
-        ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(zbaos);
-        String keyValidatorWithIdNameEncoded = URLEncoder.encode(keyValidatorWithId.getProfileName(), "UTF-8");
-        String keyValidatorWithoutIdNameEncoded = URLEncoder.encode(keyValidatorWithoutId.getProfileName(), "UTF-8");
-        byte[] keyValidatorWithIdNameEncodedBytes = getProfileBytes(keyValidatorWithId);
-        byte[] keyValidatorWithoutIdNameEncodedBytes = getProfileBytes(keyValidatorWithoutId);
-        String keyValidatorWithIdNameFilename = "keyvalidator_" + keyValidatorWithIdNameEncoded + "-" + keyValidatorId + ".xml";
-        String keyValidatorWithoutIdNameFilename = "keyvalidator_" + keyValidatorWithoutIdNameEncoded + "-" + -1 + ".xml";
-        ZipEntry ze = new ZipEntry(keyValidatorWithIdNameFilename);
-        zos.putNextEntry(ze);
-        zos.write(keyValidatorWithIdNameEncodedBytes);
-        zos.closeEntry();
-        ze = new ZipEntry(keyValidatorWithoutIdNameFilename);
-        zos.putNextEntry(ze);
-        zos.write(keyValidatorWithoutIdNameEncodedBytes);
-        zos.closeEntry();
-        zos.close();
-        final byte[] zipfile = zbaos.toByteArray();
-        zbaos.close();
-        ValidatorImportResult result = keyValidatorProxySession.importKeyValidatorsFromZip(internalAdmin, zipfile);
-        try {
-            List<Validator> validators = result.getImportedValidators();
-            assertEquals("Both validators weren't imported.", 2, validators.size());
-        } finally {
-            for (Validator validator : result.getImportedValidators()) {
-                removeKeyValidatorsIfExist(validator.getProfileId());
-            }
-        }
-    }
+//    @Test
+//    public void testImportFromZip() throws Exception {
+//        final String keyValidatorWithIdName = "keyValidatorWithId";
+//        final Validator keyValidatorWithId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithIdName, null, null, -1, null, -1, -1);
+//        int keyValidatorId = 4711;
+//        keyValidatorWithId.setProfileId(keyValidatorId);
+//        final String keyValidatorWithoutIdName = "keyValidatorWithoutId";
+//        final Validator keyValidatorWithoutId = createKeyValidator(RsaKeyValidator.class, keyValidatorWithoutIdName, null, null, -1, null, -1, -1);
+//        //Export the validators to a zip
+//        ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
+//        ZipOutputStream zos = new ZipOutputStream(zbaos);
+//        String keyValidatorWithIdNameEncoded = URLEncoder.encode(keyValidatorWithId.getProfileName(), "UTF-8");
+//        String keyValidatorWithoutIdNameEncoded = URLEncoder.encode(keyValidatorWithoutId.getProfileName(), "UTF-8");
+//        byte[] keyValidatorWithIdNameEncodedBytes = getProfileBytes(keyValidatorWithId);
+//        byte[] keyValidatorWithoutIdNameEncodedBytes = getProfileBytes(keyValidatorWithoutId);
+//        String keyValidatorWithIdNameFilename = "keyvalidator_" + keyValidatorWithIdNameEncoded + "-" + keyValidatorId + ".xml";
+//        String keyValidatorWithoutIdNameFilename = "keyvalidator_" + keyValidatorWithoutIdNameEncoded + "-" + -1 + ".xml";
+//        ZipEntry ze = new ZipEntry(keyValidatorWithIdNameFilename);
+//        zos.putNextEntry(ze);
+//        zos.write(keyValidatorWithIdNameEncodedBytes);
+//        zos.closeEntry();
+//        ze = new ZipEntry(keyValidatorWithoutIdNameFilename);
+//        zos.putNextEntry(ze);
+//        zos.write(keyValidatorWithoutIdNameEncodedBytes);
+//        zos.closeEntry();
+//        zos.close();
+//        final byte[] zipfile = zbaos.toByteArray();
+//        zbaos.close();
+//        ValidatorImportResult result = keyValidatorProxySession.importKeyValidatorsFromZip(internalAdmin, zipfile);
+//        try {
+//            List<Validator> validators = result.getImportedValidators();
+//            assertEquals("Both validators weren't imported.", 2, validators.size());
+//        } finally {
+//            for (Validator validator : result.getImportedValidators()) {
+//                removeKeyValidatorsIfExist(validator.getProfileId());
+//            }
+//        }
+//    }
     
     private byte[] getProfileBytes(UpgradeableDataHashMap profile) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
