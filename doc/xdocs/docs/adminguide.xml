@@ -5053,6 +5053,8 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 				<li>Certificate Validity Not After </li>
 				<p>Only perform validation if certificate validity NotAfter matches the condition.</p>
 			</ul>
+			<p>The format of the date entered is 'yyyy-MM-dd [HH:mm:ss]', for example 2022-08-25 for the 25th of august 2022, or if you want to specify a time '2022-08-25 14:50:55'. 
+			The displayed date will be converted to the servers timezone, and you can specify timezone as well '2022-08-25 14:50:55-0000' for UTC</p>
 		</subsubsection>
 	</subsection>
 	<subsection name="Certificate Field Validators">
