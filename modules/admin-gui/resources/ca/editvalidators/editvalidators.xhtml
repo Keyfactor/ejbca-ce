@@ -103,24 +103,6 @@
 					</h:panelGrid>
 				</h:panelGroup>
         	</h:form>
-        	<h:panelGroup rendered="#{not validatorsBean.operationInProgress}" >
-			<h3>
-				<h:outputText value="#{web.text.IMPORT}/" rendered="#{validatorsBean.authorizedToEdit}"/>
-				<h:outputText value="#{web.text.EXPORT}"/>
-			</h3>
-			<h:form id="uploadKeyValidator" enctype="multipart/form-data">
-				<h:panelGrid columns="3">
-					<h:outputLabel for="keyValidatorUploadInput" value="#{web.text.IMPORTPROFILESFROM}:" rendered="#{validatorsBean.authorizedToEdit}"/>
-					<t:inputFileUpload id="keyValidatorUploadInput" value="#{validatorsBean.uploadFile}" size="20" rendered="#{validatorsBean.authorizedToEdit}"/>
-					<h:commandButton action="#{validatorsBean.actionImportKeyValidators}" value="#{web.text.IMPORT}" rendered="#{validatorsBean.authorizedToEdit}"/>
-				</h:panelGrid>
-				<h:panelGrid columns="1">
-					<h:outputLink value="/ejbca/adminweb/profilesexport?profileType=kv">
-						<h:outputText value="#{web.text.EXPORT}..."/>
-					</h:outputLink>
-				</h:panelGrid>
-			</h:form>
-			</h:panelGroup>
         </ui:define>
     </ui:composition>
     </f:view>
