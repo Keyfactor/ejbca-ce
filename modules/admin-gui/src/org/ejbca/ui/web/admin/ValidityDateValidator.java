@@ -21,6 +21,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -49,26 +50,34 @@ public class ValidityDateValidator implements Validator {
         if (null != component.getAttributes().get("maximumValue")) {
             maximumValue = Long.parseLong((String) component.getAttributes().get("maximumValue")); 
         }
+        boolean allowNull = false;
+        if (null != component.getAttributes().get("allowNull")) {
+            allowNull = Boolean.parseBoolean((String) component.getAttributes().get("allowNull")); 
+        }
         boolean failed = true;
-        if (StringTools.hasSqlStripChars(value).isEmpty()) {
-            // Parse ISO8601 date.
-            try {
-                ValidityDate.parseAsIso8601(value);
-                failed = false;
-            } catch (ParseException e) {
-                // NOOP
-            }
-            if (failed) {
-                // Parse time unit format.
+        if (allowNull && StringUtils.isEmpty(value)) {
+            failed = false;
+        } else {
+            if (StringTools.hasSqlStripChars(value).isEmpty()) {
+                // Parse ISO8601 date.
                 try {
-                    final long millis = format.parseMillis(value);
-                    if (minimumValue <= millis && millis <= maximumValue) {
-                        failed = false;
-                    }
-                } catch (NumberFormatException e) {
+                    ValidityDate.parseAsIso8601(value);
+                    failed = false;
+                } catch (ParseException e) {
                     // NOOP
                 }
-            }
+                if (failed) {
+                    // Parse time unit format.
+                    try {
+                        final long millis = format.parseMillis(value);
+                        if (minimumValue <= millis && millis <= maximumValue) {
+                            failed = false;
+                        }
+                    } catch (NumberFormatException e) {
+                        // NOOP
+                    }
+                }
+            }            
         }
         if (failed) {
             if (log.isDebugEnabled()) {

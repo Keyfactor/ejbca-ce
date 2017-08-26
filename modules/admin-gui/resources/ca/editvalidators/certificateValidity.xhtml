@@ -25,7 +25,10 @@
      version: $Id$
      -->
 	</ui:remove>
-	<h:outputLabel for="certificateValidity" value="#{web.text.VALIDATOR_PERFORM_DURING}" style="font-weight: bold;" />
+	<h:panelGroup>
+		<h:outputLabel for="certificateValidity" value="#{web.text.VALIDATOR_PERFORM_DURING}" style="font-weight: bold;" />&nbsp;
+    	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/adminguide.html#Common%20Key%20Validator%20Settings')}" escape="false"/>
+    </h:panelGroup>
 	<h:panelGroup id="certificateValidity" />
 	<h:outputLabel for="textfieldnotbefore" value="#{web.text.VALIDATORNOTBEFORE}" />
 	<h:panelGroup>
@@ -34,11 +37,12 @@
 			<f:selectItems value="#{validatorBean.availableNotBeforeConditions}" />
 		</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
 		<h:inputText id="textfieldnotbefore" value="#{validatorBean.validator.notBeforeAsString}" validator="#{validatorBean.validateNotBefore}"
-			required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}">
-			<f:ajax execute="textfieldnotbefore" render="notbeforestatus" />
-			<!--f:validateRegex pattern="[\\d]{4}-[\\d]{2}-[\\d]{2}( [\\d]{2}:[\\d]{2}:[\\d]{2}(\+[\\d]{2}:[\\d]{2}){0,1}){0,1}"></f:validateRegex-->
+			required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}" validatorMessage="#{web.text.INVALIDVALIDITYORCERTEND}">
+			<f:validator validatorId="validityDateValidator"/>
+			<f:attribute name="precision" value="seconds"/>
+			<f:attribute name="allowNull" value="true"/>
 		</h:inputText>&nbsp;&nbsp;&nbsp;
-		<h:outputLabel id="notbeforestatus" for="textfieldnotbefore" value="Format: yyyy-MM-dd [HH:mm:ss]" />
+		<h:outputText styleClass="help" value="#{web.text.DATE_HELP} #{web.ejbcaWebBean.dateExample}"/>
 	</h:panelGroup>
 	<h:outputLabel for="textfieldnotafter" value="#{web.text.VALIDATORNOTAFTER}" />
 	<h:panelGroup>
@@ -48,8 +52,10 @@
 		</h:selectOneMenu>&nbsp;&nbsp;&nbsp;
 		<h:inputText id="textfieldnotafter" value="#{validatorBean.validator.notAfterAsString}" validator="#{validatorBean.validateNotAfter}"
 			required="false" maxlength="25" disabled="#{validatorsBean.viewOnly}">
-			<!--f:validateRegex pattern="[\d]{4}-[\d]{2}-[\d]{2}( [\d]{2}:[\d]{2}:[\d]{2}(\+[\d]{2}:[\d]{2}){0,1}){0,1}"></f:validateRegex-->
+			<f:validator validatorId="validityDateValidator"/>
+			<f:attribute name="precision" value="seconds"/>
+			<f:attribute name="allowNull" value="true"/>
 		</h:inputText>&nbsp;&nbsp;&nbsp;
-		<h:outputLabel id="notafterstatus" for="textfieldnotafter" value="Format: yyyy-MM-dd [HH:mm:ss]" />
+		<h:outputText styleClass="help" value="#{web.text.DATE_HELP} #{web.ejbcaWebBean.dateExample}"/>
 	</h:panelGroup>
 </ui:composition>
