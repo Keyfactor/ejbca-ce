@@ -37,7 +37,7 @@
 	<h:panelGroup id="iodef_settings" />
 	<h:outputLabel for="useIodefEmail" value="#{web.text.CAA_VALIDATOR_IODEF_USE_EMAIL}" styleClass="subItem" />
 	<h:selectBooleanCheckbox id="useIodefEmail" value="#{validatorBean.validator.useIodefEmail}" disabled="#{validatorsBean.viewOnly}">
-		<f:ajax listener="#{validatorBean.caaValidatorEmailChanged}" render="@form"/>	
+		<f:ajax execute="useIodefEmail" render="emailSender emailSubject emailContent" event="change"/>
 	</h:selectBooleanCheckbox>
 	<h:outputLabel for="emailSender" value="#{web.text.CAA_VALIDATOR_IODEF_EMAIL_SENDER}" styleClass="subItem" />
 	<h:inputText id="emailSender" value="#{validatorBean.validator.emailSender}" disabled="#{validatorsBean.viewOnly or !validatorBean.validator.useIodefEmail}" />

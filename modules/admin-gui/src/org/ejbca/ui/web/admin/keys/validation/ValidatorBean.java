@@ -166,11 +166,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         FacesContext.getCurrentInstance().renderResponse();
     }
     
-    public void caaValidatorEmailChanged(AjaxBehaviorEvent e) {
-        FacesContext.getCurrentInstance().renderResponse();
-    }
-    
-
     /**
      * Checks whether the Validator settings template is set to "Use custom settings".
      * @return true if custom settings are enabled
