@@ -13,8 +13,6 @@
 
 package org.cesecore.keys.validation;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,11 +54,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.profiles.ProfileBase;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.SecureXMLDecoder;
 
 /**
  * Handles management of key validators.
@@ -128,92 +124,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
     
-    /**
-     * Gets a key validator by the XML file stored in the byte[].    
-     * @param name the name of the key validator
-     * @param bytes the XML file as bytes
-     * @return the concrete key validator implementation.
-     * @throws AuthorizationDeniedException if not authorized
-     */
-    @SuppressWarnings("unchecked")
-    private Validator getKeyValidatorFromByteArray(final String name, final byte[] bytes) throws AuthorizationDeniedException {
-        final ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-        Validator validator = null;
-        try {
-            final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
-            LinkedHashMap<Object, Object> data = null;
-            try {
-                data = (LinkedHashMap<Object, Object>) decoder.readObject();
-                validator = ((Class<? extends Validator>) data.get(ProfileBase.PROFILE_TYPE)).newInstance();
-                validator.setDataMap(data);
-            } catch (IOException|InstantiationException | IllegalAccessException e) {
-                log.info("Error parsing keyvalidator data: " + e.getMessage());
-                if (log.isDebugEnabled()) {
-                    log.debug("Full stack trace: ", e);
-                }
-                return null;
-            } finally {
-                decoder.close();
-            }
-
-            // Make sure certificate profiles exists.
-            final List<Integer> certificateProfileIds = validator.getCertificateProfileIds();
-            final ArrayList<Integer> certificateProfilesToRemove = new ArrayList<Integer>();
-            for (Integer certificateProfileId : certificateProfileIds) {
-                if (null == certificateProfileSession.getCertificateProfile(certificateProfileId)) {
-                    certificateProfilesToRemove.add(certificateProfileId);
-                }
-            }
-            for (Integer toRemove : certificateProfilesToRemove) {
-                log.info("Warning: certificate profile with id " + toRemove + " was not found and will not be used in key validator '" + name + "'.");
-                certificateProfileIds.remove(toRemove);
-            }
-            if (certificateProfileIds.size() == 0) {
-                log.info("Warning: No certificate profiles left in key validator '" + name + "'.");
-                certificateProfileIds.add(Integer.valueOf(CertificateProfile.ANYCA));
-            }
-            validator.setCertificateProfileIds(certificateProfileIds);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
-            }
-        }
-        return validator;
-    }
-
-    /** 
-     * Check ignore file.
-     * @return true if the file shall be ignored from a key validator import, false if it should be imported. 
-     */
-    private boolean ignoreFile(final String filename) {
-        if (!filename.endsWith(".xml")) {
-            log.info(filename + " is not an XML file. IGNORED");
-            return true;
-        }
-
-        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("keyvalidator_") < 0)) {
-            log.info(filename + " is not in the expected format. " + "The file name should look like: keyvalidator_<name>-<id>.xml. IGNORED");
-            return true;
-        }
-        return false;
-    }
-
-    /** 
-     * Check ignore key validator.
-     * @return true if the key validator should be ignored from a import because it already exists, false if it should be imported. 
-     */
-    private boolean ignoreKeyValidator(final String filename, final int id) {
-        if (getValidator(id) != null) {
-            log.info("Key validator with ID'" + id + "' already exist in database. IGNORED");
-            return true;
-        }
-        return false;
-    }
-    
-   
-
     @Override
     public void changeKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
