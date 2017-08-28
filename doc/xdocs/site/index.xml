@@ -25,16 +25,16 @@
 </script>
 </div>
  <div>  
-  <p><strong>EJBCA Enterprise 6.8.0 has now been released.</strong>
+  <p><strong>EJBCA Enterprise 6.9.0 has now been released.</strong>
  PrimeKey's <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria EAL4+ certified and CWA/ETSI compliant to provide the most powerful and flexible PKI. For entire non-community features, only available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise Edition features" in the features list</a>.
-  <br /><span class="date"> Posted: 2017-06-19</span>
+  <br /><span class="date"> Posted: 2017-08-28</span>
   </p>
  <p><strong>EJBCA Community 6.5.0.5 is now available</strong> Improved auditor role and granular name policy enforcement by the CA. The best open source PKI, supporting Java 8 and new advanced features.
   Visit the <a href="download.html">download</a> section. There you will also find a pre-installed VM (currently with an older version) to try.
   <br /><span class="date"> Posted: 2017-04-06</span>  
   </p>  
-    <p><strong>EJBCA Tech Blog!</strong> <a href="http://blog.ejbca.org" target="ejbcablog">A Sneak Peak into EJBCA 6.8.0: Roles, Rule and RA</a> 
-  <br /><span class="date"> Posted: 2017-06-19</span>
+    <p><strong>EJBCA Tech Blog!</strong> <a href="http://blog.ejbca.org" target="ejbcablog">Check out the release notes and new featues in EJBCA 6.9.0, as well as an ongoing series about the RA!</a> 
+  <br /><span class="date"> Posted: 2017-08-28</span>
   </p> 
   <p><strong>PKI-in-a-box!</strong> By integrating secure hardware technology with the flexibility, reliability and feature set of EJBCA Enterprise, 
   the turnkey PKI Appliance features an easy to install PKI-in-a-box, offering predictable costs and increased quality to your PKI solution. Check out the simpler, yet safer, <a href="https://www.primekey.com/products/hardware/pki-appliance/">PrimeKey PKI Appliance</a>.
