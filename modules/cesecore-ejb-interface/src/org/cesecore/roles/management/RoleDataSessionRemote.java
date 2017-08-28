@@ -10,18 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles.member;
+package org.cesecore.roles.management;
 
+import javax.ejb.Remote;
 
 /**
- * CRUD session bean for managing RoleMemberData objects
+ * Interface for low level Role operations.
  * 
  * @version $Id$
  */
-public interface RoleMemberDataSession {
-    
-    /**
-     * Forces the RoleData cache to expire
-     */
-    void forceCacheExpire();
+@Remote
+public interface RoleDataSessionRemote extends RoleDataSession {
+
 }

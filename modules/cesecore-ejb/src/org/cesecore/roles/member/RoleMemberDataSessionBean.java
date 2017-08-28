@@ -77,6 +77,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         }
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         RoleMemberCache.INSTANCE.updateWith(roleMember.getId(), roleMember.hashCode(), null, roleMember);
+        AuthenticationTokenCache.INSTANCE.flush();
         return roleMember;
     }
 
@@ -145,6 +146,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         if (roleMember != null) {
             entityManager.remove(roleMember);
             accessTreeUpdateSession.signalForAccessTreeUpdate();
+            AuthenticationTokenCache.INSTANCE.flush();
             RoleMemberCache.INSTANCE.removeEntry(primaryKey);
             return true;
         } else {
@@ -163,14 +165,39 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         }
     }
     
+    /**
+     * This method will retrieves all role members that match a certain authentication token. It utilizes the AuthorizationCache to do so, 
+     * a cache which saves previous authorization token searches. If the cache entry hasn't expired the cache will return a list of role 
+     * member IDs, which will be further pruned if any of the listed role members are missing (due to having been removed by another node in the 
+     * cluster).
+     * 
+     * @param authenticationToken an authentication token
+     * @return a list of role members that the authentication token matches
+     */
     private List<RoleMember> getRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken) {
         final String tokenType = authenticationToken.getMetaData().getTokenType();
         final TypedQuery<RoleMemberData> query;
         final int preferredMatchKey = authenticationToken.getPreferredMatchKey();
-        List<RoleMember> cachedValue = RoleMemberCache.INSTANCE.getCachedRoleMembersForAuthenticationToken(authenticationToken);
-        if (cachedValue != null) {
-            return cachedValue;
+        List<RoleMember> result = new ArrayList<>();
+        //First check the cache if this authentication token has been checked recently
+        List<Integer> cachedRoleMemberIds = AuthenticationTokenCache.INSTANCE.getCachedRoleMembersForAuthenticationToken(authenticationToken);            
+        if (cachedRoleMemberIds != null) {
+            //We found a cached (and valid) entry
+            for(Integer roleMemberId : cachedRoleMemberIds) {
+                //Role Members may have been removed in the background, so be prepared for this as well. If that happens, we should update 
+                //the cache entry as well.
+                RoleMember roleMember = findRoleMember(roleMemberId);
+                if(roleMember != null) {
+                    result.add(roleMember);
+                }
+            }
+            //If the number of found members differs from the number of ID's in the cache, there must be members missing, and we should update 
+            //the authorization cache
+            if(result.size() != cachedRoleMemberIds.size()) {
+                AuthenticationTokenCache.INSTANCE.cacheRoleMembersForAuthenticationToken(authenticationToken, result);
+            }    
         } else {
+            //We found nothing...
             if (preferredMatchKey != AuthenticationToken.NO_PREFERRED_MATCH_KEY) {
                 final List<AccessMatchType> accessMatchType = authenticationToken.getMetaData().getAccessMatchValueIdMap().get(preferredMatchKey)
                         .getAvailableAccessMatchTypes();
@@ -190,15 +217,14 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             query = entityManager.createQuery("SELECT a FROM RoleMemberData a WHERE a.tokenType=:tokenType AND a.roleId<>0", RoleMemberData.class)
                     .setParameter("tokenType", tokenType);
             }
+            for (RoleMemberData roleMemberData : query.getResultList()) {
+                result.add(roleMemberData.asValueObject());
+            }
+            if (!result.isEmpty()) {
+                AuthenticationTokenCache.INSTANCE.cacheRoleMembersForAuthenticationToken(authenticationToken, result);
+            }
         }
-    
-        List<RoleMember> result = new ArrayList<>();
-        for (RoleMemberData roleMemberData : query.getResultList()) {
-            result.add(roleMemberData.asValueObject());
-        }
-        if (!result.isEmpty()) {
-            RoleMemberCache.INSTANCE.cacheRoleMembersForAuthenticationToken(authenticationToken, result);
-        }
+
         return result;
 
     }
@@ -301,5 +327,11 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             @Override
             public void setTokenType(String tokenType) { }
         };
+    }
+    
+    @Override
+    public void forceCacheExpire() {
+        RoleMemberCache.INSTANCE.flush();
+        AuthenticationTokenCache.INSTANCE.flush();
     }
 }

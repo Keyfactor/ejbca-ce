@@ -20,6 +20,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.validation.KeyValidatorSessionRemote;
+import org.cesecore.roles.management.RoleDataSessionRemote;
+import org.cesecore.roles.member.RoleMemberDataSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -65,7 +67,7 @@ public class ClearCacheCommand extends EjbcaCommandBase {
         registerParameter(new Parameter(CERTIFICATE_PROFILE, "Certificate Profiles", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.FLAG, "Clear Certificate Profile cache."));
         registerParameter(new Parameter(AUTHORIZATION, "Authorization", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
-                "Clear Authorization cache."));
+                "Clear Authorization cache. This parameter will also flush the roles and role member caches."));
         registerParameter(new Parameter(CA_CACHE, "CA Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CA cache."));
         registerParameter(new Parameter(CT_CACHE, "CT Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CT caches (OCSP and Fail Fast cache)."));
         registerParameter(new Parameter(VALIDATOR_CACHE, "Validator Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear Validator caches."));
@@ -137,6 +139,10 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             log.info("Flushing Authorization cache.");
             // Flush access control
             EjbRemoteHelper.INSTANCE.getRemoteSession(AuthorizationSessionRemote.class).forceCacheExpire();
+            // Flush RoleData cache
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleDataSessionRemote.class).forceCacheExpire();
+            // Flush RoleMemberData cache
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataSessionRemote.class).forceCacheExpire();
         }
         if (cacache) {
             log.info("Flushing CA cache.");
