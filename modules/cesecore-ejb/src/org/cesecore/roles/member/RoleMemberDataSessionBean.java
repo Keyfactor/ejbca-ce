@@ -167,7 +167,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
         final String tokenType = authenticationToken.getMetaData().getTokenType();
         final TypedQuery<RoleMemberData> query;
         final int preferredMatchKey = authenticationToken.getPreferredMatchKey();
-        List<RoleMember> cachedValue = RoleMemberCache.INSTANCE.getRoleMembersForAuthenticationToken(authenticationToken);
+        List<RoleMember> cachedValue = RoleMemberCache.INSTANCE.getCachedRoleMembersForAuthenticationToken(authenticationToken);
         if (cachedValue != null) {
             return cachedValue;
         } else {
@@ -197,7 +197,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             result.add(roleMemberData.asValueObject());
         }
         if (!result.isEmpty()) {
-            RoleMemberCache.INSTANCE.setRoleMembersForAuthenticationToken(authenticationToken, result);
+            RoleMemberCache.INSTANCE.cacheRoleMembersForAuthenticationToken(authenticationToken, result);
         }
         return result;
 
