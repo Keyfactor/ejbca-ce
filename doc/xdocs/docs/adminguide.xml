@@ -4866,6 +4866,12 @@ will be shown.
 </p>
 <subsubsection name="Authorization of incoming connections">
 <p>
+By default EJBCA requires Admin TLS certificate to be present in the database.
+If you are setting up an external VA or RA, you probably want to be able to connect a Peer from the CA to the VA/RA without having to import the CAs
+TLS client certificate (from an Authenication Key Binding) into the VA/RA. This is done by setting "web.reqcertindb=false" in conf/web.properties. 
+See <a href="installation-ocsp.html#Building%20and%20configuring%20the%20Responder"> Building and configuring the OCSP Responder</a>.
+</p>
+<p>
 If no <a href="userguide.html#Administrator Roles">Administrator Role</a> exists for the connecting system's client certificate,
 you are presented with a <code>Create new role</code> button.
 Clicking this button will allow you to quickly setup a new Administrator Role with for the incoming client certificate
