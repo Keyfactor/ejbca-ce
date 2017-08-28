@@ -211,9 +211,11 @@ public class RaCertificateDetails {
                 }
                 keyUsages.clear();
                 final boolean[] keyUsageArray = x509Certificate.getKeyUsage();
-                for (int i=0; i<keyUsageArray.length; i++) {
-                    if (keyUsageArray[i]) {
-                        keyUsages.add(String.valueOf(i));
+                if (keyUsageArray != null) {
+                    for (int i=0; i<keyUsageArray.length; i++) {
+                        if (keyUsageArray[i]) {
+                            keyUsages.add(String.valueOf(i));
+                        }
                     }
                 }
                 extendedKeyUsages.clear();
