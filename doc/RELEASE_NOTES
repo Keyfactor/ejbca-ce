@@ -10,7 +10,7 @@ of EJBCA 6.9.0. All in all we've fixes about 90 issues during the summer, but we
 		be transmitted to the CA but merely be signed. Since this feature requires an EJBCA instance running as RA, it only applies to Enterprise 
 		customers. 
 	*	RSA/ECC Key Validation  - a long requested feature, we've now created an API for running validators during certificate creation. Foremost 
-		we've implemeted Key Validators, which can be applied to a CA to reject incoming signing requests based on inadequate key length or poorly
+		we've implemented Key Validators, which can be applied to a CA to reject incoming signing requests based on inadequate key length or poorly
 		chosen exponents. 
 	*	BlackList Validators - we've also developed an API for blacklisting signing requests based on known information. In EJBCA 6.9.0 we've 
 		implemented a Key Blacklist Validator, which will check incoming certificate requests against a user defined blacklist of known bad keys. 
