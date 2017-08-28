@@ -5103,10 +5103,10 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 									<p>The <i>Subject</i> line in the resulting e-mail.</p>
 								<li>Additional Information:</li>
 									<p> 
-										Any additonal information required, in addition to the default message contents:
+										Any additonal information required, in addition to the default message which will be appended last:
 									</p> 
 									<p><i><b>
-									Alert: An faulty Certificate request was made for the domain 'example.com' for the issuer ca.com which was 
+									A faulty Certificate Request was made for the domain 'example.com' for the issuer ca.com which was 
 									rejected by the CA due to the issuer not having a CAA record on the domain's DNS.
 									</b></i></p> 
 								
