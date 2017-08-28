@@ -5089,8 +5089,8 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 					<li>Validate DNSSEC</li>
 						<p>
 							Check this box if you want DNSSEC to be validated. If this box is checked and your DNS either has faulty DNSSEC records or 
-							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended
-							to run DNSSEC.
+							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is recommended
+							to run DNSSEC, albeit be aware that some issuance may fail due to resolvers not working with DNSSEC as expected, so thread carefully.
 						</p>
 					<li>Use IODEF E-mail</li>
 						<p>
