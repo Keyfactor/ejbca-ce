@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -39,9 +40,9 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * @version $Id$
  */
-@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleDataSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RoleDataSessionBean implements RoleDataSessionLocal {
+public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessionRemote {
 
     private static final Logger log = Logger.getLogger(RoleDataSessionBean.class);
 
@@ -189,5 +190,10 @@ public class RoleDataSessionBean implements RoleDataSessionLocal {
     
     private boolean isRoleMembersPresent(final int roleId) {
         return !roleMemberDataSession.findByRoleId(roleId).isEmpty();
+    }
+
+    @Override
+    public void forceCacheExpire() {
+        RoleCache.INSTANCE.flush();
     }
 }

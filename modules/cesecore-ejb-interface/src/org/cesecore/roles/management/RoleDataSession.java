@@ -10,18 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.roles.member;
-
+package org.cesecore.roles.management;
 
 /**
- * CRUD session bean for managing RoleMemberData objects
+ * Interface for low level Role operations.
  * 
  * @version $Id$
  */
-public interface RoleMemberDataSession {
-    
+public interface RoleDataSession {
+
     /**
-     * Forces the RoleData cache to expire
+     * Forces the RoleMemberData and AuthorizationToken caches to expire
      */
     void forceCacheExpire();
 }
