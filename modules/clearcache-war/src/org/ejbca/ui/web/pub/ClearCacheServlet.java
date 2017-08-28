@@ -188,11 +188,11 @@ public class ClearCacheServlet extends HttpServlet {
                 }
                 roleDataSession.forceCacheExpire();
                 if(log.isDebugEnabled()) {
-                    log.debug("Role cache cleared and reloaded.");
+                    log.debug("Role cache cleared.");
                 }
                 roleMemberDataSession.forceCacheExpire();
                 if(log.isDebugEnabled()) {
-                    log.debug("Role member cache cleared and reloaded.");
+                    log.debug("Role member cache cleared.");
                 }
         	}
         } else {
