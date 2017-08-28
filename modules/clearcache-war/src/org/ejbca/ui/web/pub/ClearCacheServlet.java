@@ -42,6 +42,8 @@ import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.roles.management.RoleDataSessionLocal;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.ScepConfiguration;
@@ -82,11 +84,15 @@ public class ClearCacheServlet extends HttpServlet {
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
-    private PublisherSessionLocal publisherSession;
-    @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
+    private RoleMemberDataSessionLocal roleMemberDataSession;
 	
     public void doPost(HttpServletRequest req, HttpServletResponse res)	throws IOException, ServletException {
     	doGet(req,res);
@@ -179,6 +185,14 @@ public class ClearCacheServlet extends HttpServlet {
                 certificateStoreSession.reloadCaCertificateCache(); 
                 if(log.isDebugEnabled()) {
                     log.debug("Certificate Store cache cleared and reloaded.");
+                }
+                roleDataSession.forceCacheExpire();
+                if(log.isDebugEnabled()) {
+                    log.debug("Role cache cleared and reloaded.");
+                }
+                roleMemberDataSession.forceCacheExpire();
+                if(log.isDebugEnabled()) {
+                    log.debug("Role member cache cleared and reloaded.");
                 }
         	}
         } else {

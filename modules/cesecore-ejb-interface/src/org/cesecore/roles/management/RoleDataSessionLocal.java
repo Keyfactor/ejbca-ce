@@ -24,7 +24,7 @@ import org.cesecore.roles.Role;
  * @version $Id$
  */
 @Local
-public interface RoleDataSessionLocal {
+public interface RoleDataSessionLocal extends RoleDataSession {
 
     /** @return all roles */
     List<Role> getAllRoles();

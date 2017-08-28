@@ -63,8 +63,9 @@ public interface RoleMemberDataSessionLocal extends RoleMemberDataSession {
      * @return a list of members to the given role
      */
     List<RoleMemberData> findByRoleId(int roleId);
+    
     /**
-     * Finds an RoleMember by its primary key.
+     * Finds an RoleMember by its primary key from the cache.
      * 
      * @param primaryKey
      *            Primary key of the sought instance.
