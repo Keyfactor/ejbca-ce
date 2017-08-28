@@ -48,7 +48,7 @@ public enum RoleMemberCache implements CommonCache<RoleMember> {
     
     /**
      * This map contains a list of RoleMember ids matched to the authentication token they match against. The rationale behind saving just the IDs 
-     * is because the list might grow rather large. 
+     * is because the list might grow rather large. Any new role members created, edited or removed will invalidate its contents. 
      */
     private final Map<AuthenticationTokenKey, List<Integer>> authenticationTokenToKeyMap = new HashMap<>();
 
@@ -74,13 +74,13 @@ public enum RoleMemberCache implements CommonCache<RoleMember> {
     public void updateWith(final int id, final int digest, final String name, final RoleMember roleMember) {
         //Insert a cloned instance into the cache 
         cache.updateWith(id, digest, String.valueOf(digest), new RoleMember(roleMember));
-        flushAuthenticationTokenCache();
+        authenticationTokenToKeyMap.clear();
     }
 
     @Override
     public void removeEntry(final int id) {
         cache.removeEntry(id);
-        flushAuthenticationTokenCache();
+        authenticationTokenToKeyMap.clear();
     }
     
     @Override
@@ -96,24 +96,29 @@ public enum RoleMemberCache implements CommonCache<RoleMember> {
     @Override
     public void flush() {
         cache.flush();
-        flushAuthenticationTokenCache();
-    }
-    
-    public void flushAuthenticationTokenCache() {
         authenticationTokenToKeyMap.clear();
     }
     
+
     @Override
     public void replaceCacheWith(List<Integer> keys) {
         cache.replaceCacheWith(keys);
-        flushAuthenticationTokenCache();
+        authenticationTokenToKeyMap.clear();
     }
 
     public Set<RoleMember> getAllValues() {
        return cache.getAllEntries();
     }
     
-    public List<RoleMember> getRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken) {
+    /**
+     * Delivers a list of cached role members, which have been previously mapped against the provided authentication token. An empty list does *not* 
+     * imply that the authentication token lacks matching members, just that such members may not have been cached yet. Should not be used outside
+     * of RoleMemberDataSession.
+     * 
+     * @param authenticationToken an authentication token
+     * @return a list of cached role members 
+     */
+    public List<RoleMember> getCachedRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken) {
         List<RoleMember> result = null;
         AuthenticationTokenKey key = new AuthenticationTokenKey(authenticationToken);
         if(authenticationTokenToKeyMap.containsKey(key)) {
@@ -125,7 +130,13 @@ public enum RoleMemberCache implements CommonCache<RoleMember> {
         return result;
     }
     
-    public void setRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken, final List<RoleMember> roleMembers) {
+    /**
+     * This method adds an authentication and its known role members to the cache. 
+     * 
+     * @param authenticationToken an authentication token.
+     * @param roleMembers a list of role members.
+     */
+    public void cacheRoleMembersForAuthenticationToken(final AuthenticationToken authenticationToken, final List<RoleMember> roleMembers) {
         List<Integer> identifiers = new ArrayList<>();
         for (RoleMember roleMember : roleMembers) {
             int roleMemberId = roleMember.getId();
