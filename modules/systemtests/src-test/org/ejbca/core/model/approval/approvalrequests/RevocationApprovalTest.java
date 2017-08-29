@@ -450,7 +450,7 @@ public class RevocationApprovalTest extends CaTestCase {
             EndEntityInformation executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             
             // Verify that the end entity contains the approval request ID of the RevocationApprovalRequest
-            ExtendedInformation ext = executeUser.getExtendedinformation();
+            ExtendedInformation ext = executeUser.getExtendedInformation();
             assertNotNull("end entity does not contain extended information", ext);
             List<Integer> revEEReqIds = ext.getRevokeEndEntityApprovalRequestIds();
             assertNotNull("Extended information does not contain the RevocationApprovalRequestIDs", revEEReqIds);
@@ -489,7 +489,7 @@ public class RevocationApprovalTest extends CaTestCase {
             
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             
-            ext = executeUser.getExtendedinformation();
+            ext = executeUser.getExtendedInformation();
             assertNotNull("end entity does not contain extended information", ext);
             revEEReqIds = ext.getRevokeEndEntityApprovalRequestIds();
             assertNotNull("Extended information does not contain the RevocationApprovalRequestIDs", revEEReqIds);

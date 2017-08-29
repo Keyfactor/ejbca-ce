@@ -271,10 +271,10 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
     
     protected void generateCertificate() {
-        if (getEndEntityInformation().getExtendedinformation() == null) {
-            getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
+        if (getEndEntityInformation().getExtendedInformation() == null) {
+            getEndEntityInformation().setExtendedInformation(new ExtendedInformation());
         }
-        byte[] certificateRequest = getEndEntityInformation().getExtendedinformation().getCertificateRequest();
+        byte[] certificateRequest = getEndEntityInformation().getExtendedInformation().getCertificateRequest();
         if (certificateRequest == null || isCsrChanged) {
             if (getCertificateRequest() == null) {
                 raLocaleBean.addMessageError("enrollwithrequestid_could_not_find_csr_inside_enrollment_request_with_request_id", requestId);
@@ -282,7 +282,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 return;
             }
             try {
-                getEndEntityInformation().getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                getEndEntityInformation().getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
             } catch (IOException e) {
                 raLocaleBean.addMessageError("enroll_invalid_certificate_request");
                 return;
@@ -338,11 +338,11 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info("No key specification was provided: "+selectedAlgorithm);
                 return;
             }
-            if (getEndEntityInformation().getExtendedinformation() == null) {
-                getEndEntityInformation().setExtendedinformation(new ExtendedInformation());
+            if (getEndEntityInformation().getExtendedInformation() == null) {
+                getEndEntityInformation().setExtendedInformation(new ExtendedInformation());
             }
-            getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmType(keyAlg);
-            getEndEntityInformation().getExtendedinformation().setKeyStoreAlgorithmSubType(keySpec);
+            getEndEntityInformation().getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
+            getEndEntityInformation().getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
         }
 
         try {
@@ -429,7 +429,7 @@ public class EnrollWithRequestIdBean implements Serializable {
      * @return true if key algorithm is set in EEI or to be uploaded by CSR
      */
     public boolean isKeyAlgorithmPreSet() {
-        return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() != null || 
+        return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null || 
                 endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN ||
                 endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY;
     }
@@ -438,7 +438,7 @@ public class EnrollWithRequestIdBean implements Serializable {
      * Checks if a non-modifiable text displaying the previously set key algorithm should be shown.
      */
     public boolean isPreSetKeyAlgorithmRendered() {
-        return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() != null &&
+        return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null &&
                endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
     }
     
@@ -447,7 +447,7 @@ public class EnrollWithRequestIdBean implements Serializable {
      * @return true if a CSR is set in EEI
      */
     public boolean isCsrPreSet() {
-        return endEntityInformation.getExtendedinformation().getCertificateRequest() != null;
+        return endEntityInformation.getExtendedInformation().getCertificateRequest() != null;
     }
 
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
@@ -509,7 +509,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     /** Updates selected algorithm with key algorithm and key size from the CSR preset in EEI. */
     protected void selectKeyAlgorithmFromCsr() {
         try {
-            PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+            PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
             final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
             final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
@@ -708,6 +708,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
     
     public String getPreSetKeyAlgorithm() {
-        return endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmType() + " " + endEntityInformation.getExtendedinformation().getKeyStoreAlgorithmSubType();
+        return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + " " + endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType();
     }
 }

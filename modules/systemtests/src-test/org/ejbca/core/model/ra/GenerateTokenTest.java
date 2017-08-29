@@ -120,12 +120,12 @@ public class GenerateTokenTest extends CaTestCase {
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12,
                     SecConst.NO_HARDTOKENISSUER, null);
             eeinfo.setPassword("foo123");
-            if (eeinfo.getExtendedinformation() == null) {
-                eeinfo.setExtendedinformation(new ExtendedInformation());
+            if (eeinfo.getExtendedInformation() == null) {
+                eeinfo.setExtendedInformation(new ExtendedInformation());
             }
             //Setting up algorithm specification ECDSA_secp256r1 that is going to be enforced
-            eeinfo.getExtendedinformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_ECDSA);
-            eeinfo.getExtendedinformation().setKeyStoreAlgorithmSubType("prime256v1");
+            eeinfo.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_ECDSA);
+            eeinfo.getExtendedInformation().setKeyStoreAlgorithmSubType("prime256v1");
 
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123");

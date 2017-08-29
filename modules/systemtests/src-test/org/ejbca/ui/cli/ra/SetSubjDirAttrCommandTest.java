@@ -102,6 +102,6 @@ public class SetSubjDirAttrCommandTest {
         final String args[] = new String[] { TESTCLASS_NAME, attributes };
         command.execute(args);
         assertEquals("SubjDirAttributes were not set.", attributes, endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)
-                .getExtendedinformation().getSubjectDirectoryAttributes());
+                .getExtendedInformation().getSubjectDirectoryAttributes());
     }
 }

@@ -464,7 +464,7 @@ public class CAInterfaceBean implements Serializable {
 			certificateProfileId = certreqhist.getEndEntityInformation().getCertificateProfileId();
 			password = certreqhist.getEndEntityInformation().getPassword();
 			dn = certreqhist.getEndEntityInformation().getCertificateDN();
-			ei = certreqhist.getEndEntityInformation().getExtendedinformation();
+			ei = certreqhist.getEndEntityInformation().getExtendedInformation();
 		}
 		final String fingerprint = certificateView.getSHA1Fingerprint().toLowerCase();
 		final CertificateDataWrapper cdw = certificatesession.getCertificateData(fingerprint);

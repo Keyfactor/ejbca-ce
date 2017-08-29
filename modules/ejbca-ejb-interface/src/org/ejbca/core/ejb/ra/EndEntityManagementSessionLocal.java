@@ -106,18 +106,6 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     void cleanUserCertDataSN(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
 
     /**
-     * Decrements the remaining failed login attempts counter. If the counter
-     * already was zero the status for the user is set to
-     * {@link EndEntityConstants#STATUS_GENERATED} if it wasn't that already.
-     * This method does nothing if the counter value is set to UNLIMITED (-1).
-     * 
-     * @param admin the administrator performing the action
-     * @param username the unique username of the user
-     * @throws NoSuchEndEntityException if the entity does not exist
-     */
-    void decRemainingLoginAttempts(String username) throws NoSuchEndEntityException;
-
-    /**
      * Decreases (the optional) request counter by 1, until it reaches 0.
      * Returns the new value. If the value is already 0, -1 is returned, but the
      * -1 is not stored in the database. Also sets status of user to generated
@@ -128,17 +116,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      * @throws NoSuchEndEntityException if user does not exist
      */
     int decRequestCounter(String username) throws NoSuchEndEntityException, ApprovalException, WaitingForApprovalException;
-    
-    /**
-     * Resets the remaining failed login attempts counter to the user's max login attempts value.
-     * This method does nothing if the counter value is set to UNLIMITED (-1 or not set at all).
-     * 
-     * @param admin Authentication token, provided primarily for logging purposes 
-     * @param username the unique username of the user
-     * @throws FinderException if the entity does not exist
-     */
-    void resetRemainingLoginAttempts(String username) throws FinderException;
-    
+        
     /**
      * Changes the CAId of the given end-entity. Intended to be used when an uninitialized CA's subject DN and CAId is changed
      * (CAs can be in the uninitialized state when they have been imported from a statedump).

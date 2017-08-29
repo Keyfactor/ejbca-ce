@@ -427,7 +427,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Fail without value specified
 		try {
@@ -438,7 +438,7 @@ public class BasicCertificateExtensionTest {
 		}
 		
 		// Success with value specified
-		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "The value 123");
         ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
         try {
             ASN1Encodable value1 = in.readObject();
@@ -465,7 +465,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static value is used
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
@@ -474,7 +474,7 @@ public class BasicCertificateExtensionTest {
 		assertEquals("The static value 123", ((DERPrintableString) value1).getString());
 		
 		// With value in userdata, that value is used
-		userData.getExtendedinformation().setExtensionData("1.2.3", "A dynamic value 123");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "A dynamic value 123");
 		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
@@ -500,7 +500,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static values is used
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
@@ -518,9 +518,9 @@ public class BasicCertificateExtensionTest {
 		}
 		
 		// With values in userdata, that values is used
-		userData.getExtendedinformation().setExtensionData("1.2.3.value1", "A dynamic value 1");
-		userData.getExtendedinformation().setExtensionData("1.2.3.value2", "A dynamic value 2");
-		userData.getExtendedinformation().setExtensionData("1.2.3.value3", "A dynamic value 3");
+		userData.getExtendedInformation().setExtensionData("1.2.3.value1", "A dynamic value 1");
+		userData.getExtendedInformation().setExtensionData("1.2.3.value2", "A dynamic value 2");
+		userData.getExtendedInformation().setExtensionData("1.2.3.value3", "A dynamic value 3");
 		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value = in.readObject();
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
@@ -550,7 +550,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Ok without value specified
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
@@ -559,7 +559,7 @@ public class BasicCertificateExtensionTest {
 		assertEquals("The static value", ((DERPrintableString) value1).getString());
 		
 		// Ignoring dynamic value specified
-		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "The value 123");
 		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
@@ -579,7 +579,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Ok without value specified
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
@@ -588,7 +588,7 @@ public class BasicCertificateExtensionTest {
 		assertEquals("The static value", ((DERPrintableString) value).getString());
 		
 		// Ignoring dynamic value specified
-		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "The value 123");
 		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value = in.readObject();
 		assertTrue(value.getClass().toString(), value instanceof DERPrintableString);
@@ -606,10 +606,10 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Success with value specified
-		userData.getExtendedinformation().setExtensionData("1.2.3.value", "The value 456");
+		userData.getExtendedInformation().setExtensionData("1.2.3.value", "The value 456");
         ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
         try {
             ASN1Encodable value1 = in.readObject();
@@ -632,14 +632,14 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static value is used
 		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "aabbccdd", new String(Hex.encode(value)));
 		
 		// With value in userdata, that value is used
-		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "eeff0000");
 		value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
 	}
@@ -689,7 +689,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		// Without value in userdata it should fail
 		try {
@@ -700,7 +700,7 @@ public class BasicCertificateExtensionTest {
 		}
 		
 		// With value in userdata, that value is used
-		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
+		userData.getExtendedInformation().setExtensionData("1.2.3", "eeff0000");
 		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
     }
@@ -741,7 +741,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, props);
 		EndEntityInformation userData = new EndEntityInformation();
-		userData.setExtendedinformation(new ExtendedInformation());
+		userData.setExtendedInformation(new ExtendedInformation());
 		
 		try {
 		    baseExt.getValueEncoded(userData, null, null, null, null, null);

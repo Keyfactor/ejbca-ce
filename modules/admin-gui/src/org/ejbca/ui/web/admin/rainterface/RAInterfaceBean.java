@@ -204,7 +204,7 @@ public class RAInterfaceBean implements Serializable {
             } else {
                 uservo.setPassword(userdata.getPassword());
             }
-            uservo.setExtendedinformation(userdata.getExtendedInformation());
+            uservo.setExtendedInformation(userdata.getExtendedInformation());
             uservo.setCardNumber(userdata.getCardNumber());
             endEntityManagementSession.addUser(administrator, uservo, userdata.getClearTextPassword());
             addedusermemory.addUser(userdata);
@@ -346,7 +346,7 @@ public class RAInterfaceBean implements Serializable {
                 userdata.getSubjectAltName(), userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(),
                 userdata.getCertificateProfileId(), null, null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
         uservo.setPassword(userdata.getPassword());
-        uservo.setExtendedinformation(userdata.getExtendedInformation());
+        uservo.setExtendedInformation(userdata.getExtendedInformation());
         uservo.setCardNumber(userdata.getCardNumber());
         if (userdata.getUsername().equals(newUsername)) {
             endEntityManagementSession.changeUser(administrator, uservo, userdata.getClearTextPassword());

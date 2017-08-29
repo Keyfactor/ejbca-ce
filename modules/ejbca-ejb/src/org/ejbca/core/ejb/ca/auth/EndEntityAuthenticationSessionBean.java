@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -73,6 +75,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
+    	EndEntityInformation ret = null;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = UserData.findByUsername(entityManager, username);
@@ -80,7 +83,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	throw new NoSuchEndEntityException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	endEntityManagementSession.decRemainingLoginAttempts(username);
+            ExtendedInformation ei = data.getExtendedInformation();
+           	boolean eichange = decRemainingLoginAttempts(data, ei);
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
@@ -94,7 +98,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 	throw new AuthLoginException(ErrorCode.LOGIN_ERROR, msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                endEntityManagementSession.resetRemainingLoginAttempts(username);
+                eichange = UserData.resetRemainingLoginAttemptsInternal(ei, data.getUsername());
             	// Log formal message that authentication was successful
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
@@ -102,11 +106,18 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
-                return data.toEndEntityInformation();
+                ret = data.toEndEntityInformation();
             }
-        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
-        	log.info(msg);
-            throw new AuthStatusException(msg);
+            if (eichange) {
+                data.setTimeModified(new Date().getTime());
+                data.setExtendedInformation(ei);
+            }
+            if (ret == null) {
+                final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
+                log.info(msg);
+                throw new AuthStatusException(msg);
+            }
+            return ret;
         } catch (NoSuchEndEntityException oe) {
         	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
         	log.info(msg);
@@ -119,6 +130,66 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             log.error(intres.getLocalizedMessage("error.unknown"), e);
             throw new EJBException(e);
         }
+    }
+
+    /**
+     * Decrements the remaining failed login attempts counter. If the counter
+     * already was zero the status for the user is set to
+     * {@link EndEntityConstants#STATUS_GENERATED} if it wasn't that already.
+     * This method does nothing if the counter value is set to UNLIMITED (-1).
+     * 
+     * @param admin the administrator performing the action
+     * @param username the unique username of the user
+     * @return true if the value was decremented or the status was changed, false if not
+     * @throws NoSuchEndEntityException if the entity does not exist
+     */
+    private boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) throws NoSuchEndEntityException {
+        if (log.isTraceEnabled()) {
+            log.trace(">decRemainingLoginAttempts(" + user.getUsername()+ ")");
+        }
+        boolean ret = false;
+        int counter = Integer.MAX_VALUE;
+            if (ei != null) {
+                counter = ei.getRemainingLoginAttempts();
+                // If we get to 0 we must set status to generated
+                if (counter == 0) {
+                    // if it isn't already
+                    if (user.getStatus() != EndEntityConstants.STATUS_GENERATED) {
+                        user.setStatus(EndEntityConstants.STATUS_GENERATED);
+                        user.setTimeModified(new Date().getTime());
+                        if (UserData.resetRemainingLoginAttemptsInternal(ei, user.getUsername())) {
+                            final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
+                            log.info(msg);
+                            // We return that ei was changed so it can be persisted later
+                            ret = true;
+                        }
+                    }
+                } else if (counter != -1) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found a remaining login counter with value " + counter);
+                    }
+                    ei.setRemainingLoginAttempts(--counter);
+                    // We return ei to set later
+                    // We return that ei was changed so it can be persisted later
+                    ret = true;
+                    String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
+                    log.info(msg);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+                    }
+                    counter = Integer.MAX_VALUE;
+                }
+        } else {
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", user.getUsername()));
+            // This exception message is used to not leak information to the user
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            throw new NoSuchEndEntityException(msg);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<decRemainingLoginAttempts(" + user.getUsername() + "): " + counter);
+        }
+        return ret;
     }
 
     @Override

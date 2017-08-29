@@ -835,7 +835,7 @@ public class X509CA extends CA implements Serializable {
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
 
-        // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
+    	// We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
         if ((getStatus() != CAConstants.CA_ACTIVE) && ((getStatus() != CAConstants.CA_EXPIRED))) {
             final String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
@@ -845,7 +845,7 @@ public class X509CA extends CA implements Serializable {
             throw new CAOfflineException(msg);
         }
         // Which public key and request shall we use?
-        final ExtendedInformation ei = subject.getExtendedinformation();
+        final ExtendedInformation ei = subject.getExtendedInformation();
         final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, ei);
         final PublicKey publicKey = pkSelector.getPublicKey();
         final RequestMessage request = pkSelector.getRequestMessage();
@@ -875,10 +875,10 @@ public class X509CA extends CA implements Serializable {
         // Get certificate validity time notBefore and notAfter
         final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA, linkCertificate);
 
+        // Serialnumber is either random bits, where random generator is initialized by the serno generator.
+        // Or a custom serial number defined in the end entity object
         final BigInteger serno;
         {
-            // Serialnumber is either random bits, where random generator is initialized by the serno generator.
-            // Or a custom serial number defined in the end entity object
             if (certProfile.getAllowCertSerialNumberOverride()) {
                 if (ei != null && ei.certificateSerialNumber()!=null) {
                     serno = ei.certificateSerialNumber();
@@ -895,11 +895,6 @@ public class X509CA extends CA implements Serializable {
         }
 
         // Make DNs
-        String dn = subject.getCertificateDN();
-        if (certProfile.getUseSubjectDNSubSet()) {
-            dn = certProfile.createSubjectDNSubSet(dn);
-        }
-        
         final X500NameStyle nameStyle;
         if (getUsePrintableStringSubjectDN()) {
             nameStyle = PrintableStringNameStyle.INSTANCE;
@@ -907,6 +902,10 @@ public class X509CA extends CA implements Serializable {
             nameStyle = CeSecoreNameStyle.INSTANCE;
         }
 
+        String dn = subject.getCertificateDN();
+        if (certProfile.getUseSubjectDNSubSet()) {
+            dn = certProfile.createSubjectDNSubSet(dn);
+        }
         if (certProfile.getUseCNPostfix()) {
             dn = CertTools.insertCNPostfix(dn, certProfile.getCNPostfix(), nameStyle);
         }

@@ -38,6 +38,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
@@ -58,6 +59,8 @@ public class UserData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(UserData.class);
+    /** Internal localization of logs and errors */
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private String username;
     private String subjectDN;
@@ -76,6 +79,9 @@ public class UserData extends ProtectedData implements Serializable {
     private int tokenType;
     private int hardTokenIssuerId;
     private String extendedInformationData;
+    /** instantiated object of the above, used to not have to encode/decode the object all the time.
+     * see PrePersist annotated method */
+    private ExtendedInformation extendedInformation;
     private String keyStorePassword;
     private int rowVersion = 0;
     private String rowProtection;
@@ -548,13 +554,35 @@ public class UserData extends ProtectedData implements Serializable {
      */
     @Transient
     public ExtendedInformation getExtendedInformation() {
-        return EndEntityInformation.getExtendedInformation(getExtendedInformationData());
+        if ((extendedInformation == null) && (extendedInformationData != null)) {
+            extendedInformation = getExtendedInformationFromData();    
+        }
+        return extendedInformation;
     }
 
     /**
      * Non-searchable information about a user.
      */
     public void setExtendedInformation(final ExtendedInformation extendedInformation) {
+        this.extendedInformation = extendedInformation;
+        // If we are making it blank, make sure our data is blank as well, otherwise getExtendedInformation 
+        // above will return the old value
+        if (extendedInformation == null) {
+            extendedInformationData = null;
+        }
+    }
+    /**
+     * Non-searchable information about a user.
+     */
+    @Transient
+    private ExtendedInformation getExtendedInformationFromData() {
+        return EndEntityInformation.getExtendedInformationFromStringData(getExtendedInformationData());
+    }
+
+    /**
+     * Non-searchable information about a user.
+     */
+    public void setExtendedInformationPrePersist(final ExtendedInformation extendedInformation) {
         setExtendedInformationData(EndEntityInformation.extendedInformationToStringData(extendedInformation));
     }
 
@@ -569,7 +597,7 @@ public class UserData extends ProtectedData implements Serializable {
         data.setDN(getSubjectDnNeverNull());
         data.setEmail(getSubjectEmail());
         data.setEndEntityProfileId(getEndEntityProfileId());
-        data.setExtendedinformation(getExtendedInformation());
+        data.setExtendedInformation(getExtendedInformation());
         data.setHardTokenIssuerId(getHardTokenIssuerId());
         data.setPassword(getOpenPassword());
         data.setStatus(getStatus());
@@ -580,6 +608,31 @@ public class UserData extends ProtectedData implements Serializable {
         data.setType(new EndEntityType(getType()));
         data.setCardNumber(getCardNumber());
         return data;
+    }
+
+    /**
+     * Assumes authorization has already been checked.. Modifies the ExtendedInformation object to reset the remaining login attempts.
+     * @return true if any change was made, false otherwise
+     */
+    @Transient
+    public static boolean resetRemainingLoginAttemptsInternal(final ExtendedInformation ei, final String username) {
+        if (log.isTraceEnabled()) {
+            log.trace(">resetRemainingLoginAttemptsInternal");
+        }
+        final boolean ret;
+        final int resetValue = ei.getMaxLoginAttempts();
+        if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
+            ei.setRemainingLoginAttempts(resetValue);
+            final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
+            log.info(msg);
+            ret = true;
+        } else {
+            ret = false;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue+", "+ret);
+        }
+        return ret;
     }
 
     //
@@ -621,6 +674,12 @@ public class UserData extends ProtectedData implements Serializable {
     @PreUpdate
     @Override
     protected void protectData() {
+        // This is a speed optimization to avoid encoding the extendedInformation into XML data too often
+        // We instead use the cached object in this class, and serialize it out to XML data only when we persist the object
+        // (create or update). This means you can call getExtendedInformation as much as you want, without causing an expensive
+        // XMLEncoder/Decoder
+        setExtendedInformationPrePersist(this.extendedInformation);
+        // After setting the data we want, continue on to the normal database integrity protection
         super.protectData();
     }
 

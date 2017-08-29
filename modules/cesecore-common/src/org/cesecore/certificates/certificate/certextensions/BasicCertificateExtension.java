@@ -242,14 +242,14 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         }
 
         if (dynamic) {
-            final ExtendedInformation ei = userData.getExtendedinformation();
+            final ExtendedInformation ei = userData.getExtendedInformation();
             if (ei == null) {
                 result = null;
             } else {
                 if (nvalues < 1 ) {
-                    String value = userData.getExtendedinformation().getExtensionData(getOID());
+                    String value = userData.getExtendedInformation().getExtensionData(getOID());
                     if (value == null || value.trim().isEmpty()) {
-                        value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
+                        value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
                     }
                     if (value == null) {
                         result = null;
@@ -258,7 +258,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                     }
                 } else {
                     for (int i = 1; i <= nvalues; i++) {
-                        String value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
+                        String value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
                         if (value != null) {
                             if (result == null) {
                                 result = new String[nvalues];

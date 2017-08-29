@@ -314,9 +314,9 @@ public class EndEntityManagementTest extends CaTestCase {
         ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        ei = user.getExtendedinformation();
+        ei = user.getExtendedInformation();
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, null);
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         endEntityManagementSession.changeUser(admin, user, false);
         // decrease the value
         counter = endEntityManagementProxySession.decRequestCounter(username);
@@ -327,9 +327,9 @@ public class EndEntityManagementTest extends CaTestCase {
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "2");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        ei = user.getExtendedinformation();
+        ei = user.getExtendedInformation();
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user, false);
         // decrease the value
@@ -378,7 +378,7 @@ public class EndEntityManagementTest extends CaTestCase {
         // Also changeUser to new from something else will re-set status, if ei value is 0
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user, false);
         // decrease the value
@@ -392,82 +392,82 @@ public class EndEntityManagementTest extends CaTestCase {
         ei = new ExtendedInformation();
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user1.setExtendedinformation(ei);
+        user1.setExtendedInformation(ei);
         user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         String value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("2", value);
         // If I change user with status to new and value 1 it should be set as that
         ei = new ExtendedInformation();
         allowedrequests = 1;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user1.setExtendedinformation(ei);
+        user1.setExtendedInformation(ei);
         user1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I set status to new again, with noting changed, nothing should change
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // The same when I change the user
         user1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to generated, nothing should happen
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to new from generated the default value should be used
         endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
         // It should be possible to simply set the value to 0
         ei = new ExtendedInformation();
         allowedrequests = 0;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user1.setExtendedinformation(ei);
+        user1.setExtendedInformation(ei);
         user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Changing again to new, with 0 passed in will set the default value
         user1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
         // Set back to 0
         user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
-        user1.setExtendedinformation(ei);
+        user1.setExtendedInformation(ei);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Setting with null value will always remove the request counter (the whole extendedinformatin actually)
-        user1.setExtendedinformation(null);
+        user1.setExtendedInformation(null);
         user1.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
-        ei = user1.getExtendedinformation();
+        ei = user1.getExtendedInformation();
         assertNull(ei);
 
         log.trace("<test06RequestCounter()");

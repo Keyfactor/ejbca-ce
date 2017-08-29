@@ -70,6 +70,7 @@ public class EndEntityInformation implements Serializable {
     /** Type of token, from {@link EndEntityConstants#TOKEN_USERGEN} etc*/
     private int tokentype;
     private int hardtokenissuerid;
+    /** ExtendedInformation holding extra data of the End entity */
     private ExtendedInformation extendedinformation;
 
     /** Creates new empty EndEntityInformation */
@@ -97,7 +98,7 @@ public class EndEntityInformation implements Serializable {
         this.timecreated = endEntityInformation.getTimeCreated();
         this.timemodified = endEntityInformation.getTimeModified();
         this.tokentype = endEntityInformation.getTokenType();
-        this.extendedinformation = (endEntityInformation.getExtendedinformation() != null ? new ExtendedInformation(endEntityInformation.getExtendedinformation()) : null);
+        this.extendedinformation = (endEntityInformation.getExtendedInformation() != null ? new ExtendedInformation(endEntityInformation.getExtendedInformation()) : null);
     }
 
     /**
@@ -137,7 +138,7 @@ public class EndEntityInformation implements Serializable {
         setTimeModified(timemodified);
         setTokenType(tokentype);
         setHardTokenIssuerId(hardtokenissuerid);
-        setExtendedinformation(extendedinfo);
+        setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
     
@@ -171,7 +172,7 @@ public class EndEntityInformation implements Serializable {
         setCertificateProfileId(certificateprofileid);
         setTokenType(tokentype);
         setHardTokenIssuerId(hardtokenissuerid);
-        setExtendedinformation(extendedinfo);
+        setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
     
@@ -302,13 +303,13 @@ public class EndEntityInformation implements Serializable {
 	/**
 	 * @return Returns the extendedinformation or null if no extended information exists.
 	 */
-	public ExtendedInformation getExtendedinformation() {
+	public ExtendedInformation getExtendedInformation() {
 		return extendedinformation;
 	}
 	/**
 	 * @param extendedinformation The extendedinformation to set.
 	 */
-	public void setExtendedinformation(ExtendedInformation extendedinformation) {
+	public void setExtendedInformation(ExtendedInformation extendedinformation) {
 		this.extendedinformation = extendedinformation;
 	}
 
@@ -316,7 +317,7 @@ public class EndEntityInformation implements Serializable {
      * Help Method used to create an ExtendedInformation from String representation.
      * Used when creating an ExtendedInformation from queries.
      */
-    public static ExtendedInformation getExtendedInformation(final String extendedinfostring) {
+    public static ExtendedInformation getExtendedInformationFromStringData(final String extendedinfostring) {
         ExtendedInformation returnval = null;
         if (extendedinfostring != null && !extendedinfostring.isEmpty() ) {
             try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {            	

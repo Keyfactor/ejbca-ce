@@ -520,12 +520,12 @@ public class RegisterReqBean {
     }
     
     private void assignDirAttrs(EndEntityInformation endEntity) {
-        ExtendedInformation ext = endEntity.getExtendedinformation();
+        ExtendedInformation ext = endEntity.getExtendedInformation();
         if (ext == null) {
             ext = new ExtendedInformation();
         }
         ext.setSubjectDirectoryAttributes(subjectDirAttrs);
-        endEntity.setExtendedinformation(ext);
+        endEntity.setExtendedInformation(ext);
     }
     
     /**
