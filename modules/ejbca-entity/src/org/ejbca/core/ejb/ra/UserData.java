@@ -620,17 +620,21 @@ public class UserData extends ProtectedData implements Serializable {
             log.trace(">resetRemainingLoginAttemptsInternal");
         }
         final boolean ret;
-        final int resetValue = ei.getMaxLoginAttempts();
-        if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
-            ei.setRemainingLoginAttempts(resetValue);
-            final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
-            log.info(msg);
-            ret = true;
+        if (ei != null) {
+            final int resetValue = ei.getMaxLoginAttempts();
+            if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
+                ei.setRemainingLoginAttempts(resetValue);
+                final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
+                log.info(msg);
+                ret = true;
+            } else {
+                ret = false;
+            }            
         } else {
             ret = false;
         }
         if (log.isTraceEnabled()) {
-            log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue+", "+ret);
+            log.trace("<resetRamainingLoginAttemptsInternal: "+ret);
         }
         return ret;
     }

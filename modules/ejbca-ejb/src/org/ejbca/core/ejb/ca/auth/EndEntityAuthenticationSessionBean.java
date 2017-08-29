@@ -149,42 +149,37 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
         }
         boolean ret = false;
         int counter = Integer.MAX_VALUE;
-            if (ei != null) {
-                counter = ei.getRemainingLoginAttempts();
-                // If we get to 0 we must set status to generated
-                if (counter == 0) {
-                    // if it isn't already
-                    if (user.getStatus() != EndEntityConstants.STATUS_GENERATED) {
-                        user.setStatus(EndEntityConstants.STATUS_GENERATED);
-                        user.setTimeModified(new Date().getTime());
-                        if (UserData.resetRemainingLoginAttemptsInternal(ei, user.getUsername())) {
-                            final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
-                            log.info(msg);
-                            // We return that ei was changed so it can be persisted later
-                            ret = true;
-                        }
+        if (ei != null) {
+            counter = ei.getRemainingLoginAttempts();
+            // If we get to 0 we must set status to generated
+            if (counter == 0) {
+                // if it isn't already
+                if (user.getStatus() != EndEntityConstants.STATUS_GENERATED) {
+                    user.setStatus(EndEntityConstants.STATUS_GENERATED);
+                    user.setTimeModified(new Date().getTime());
+                    if (UserData.resetRemainingLoginAttemptsInternal(ei, user.getUsername())) {
+                        final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
+                        log.info(msg);
+                        // We return that ei was changed so it can be persisted later
+                        ret = true;
                     }
-                } else if (counter != -1) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Found a remaining login counter with value " + counter);
-                    }
-                    ei.setRemainingLoginAttempts(--counter);
-                    // We return ei to set later
-                    // We return that ei was changed so it can be persisted later
-                    ret = true;
-                    String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
-                    log.info(msg);
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
-                    }
-                    counter = Integer.MAX_VALUE;
                 }
-        } else {
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", user.getUsername()));
-            // This exception message is used to not leak information to the user
-            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
-            throw new NoSuchEndEntityException(msg);
+            } else if (counter != -1) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Found a remaining login counter with value " + counter);
+                }
+                ei.setRemainingLoginAttempts(--counter);
+                // We return ei to set later
+                // We return that ei was changed so it can be persisted later
+                ret = true;
+                String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", user.getUsername(), counter);
+                log.info(msg);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
+                }
+                counter = Integer.MAX_VALUE;
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<decRemainingLoginAttempts(" + user.getUsername() + "): " + counter);
