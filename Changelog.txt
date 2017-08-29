@@ -1,3 +1,11 @@
+EJBCA 6.9.0.1, 2017-08-29
+---
+
+Bug
+    [ECA-6088] - Role Member caching does not play well with clusters
+    [ECA-6089] - NPE when upgrading from 6.9.0Beta to 6.9.0Final due to IODEF
+    [ECA-6091] - NPE in View Certificates in RA Web if certificates have no KeyUsage
+
 EJBCA 6.9.0, 2017-08-28
 ---
 
