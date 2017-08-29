@@ -1,3 +1,10 @@
+
+EJBCA 6.9.0.1
+-----------
+
+In the final stages of testing of 6.9.0 we found ECA-6088, which could potentially lead to caching issues for installations running clusters. Was 
+fixed before EJBCA 6.9.0 was released to the wild. 
+
 EJBCA 6.9.0
 -----------
 
