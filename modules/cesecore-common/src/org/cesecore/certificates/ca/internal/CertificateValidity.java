@@ -116,11 +116,11 @@ public class CertificateValidity {
 		if (log.isDebugEnabled()) {
 		    log.debug("Requested notBefore: "+notBefore);
 			log.debug("Requested notAfter: "+notAfter);
-			if (null != subject.getExtendedinformation()) {
-			    log.debug("End entity extended information 'notBefore': "+subject.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+			if (null != subject.getExtendedInformation()) {
+			    log.debug("End entity extended information 'notBefore': "+subject.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
 			}
-			if (null != subject.getExtendedinformation()) {
-                log.debug("End entity extended information 'notAfter': "+subject.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+			if (null != subject.getExtendedInformation()) {
+                log.debug("End entity extended information 'notAfter': "+subject.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
             }
 			log.debug("Default validty offset: "+DEFAULT_VALIDITY_OFFSET);
 			log.debug("Certificate profile validty: "+certProfile.getEncodedValidity());
@@ -298,7 +298,7 @@ public class CertificateValidity {
 	 */
 	private Date getExtendedInformationStartTime(final Date now, final EndEntityInformation subject) {
 	    Date result = null;
-        final ExtendedInformation extendedInformation = subject.getExtendedinformation();
+        final ExtendedInformation extendedInformation = subject.getExtendedInformation();
         if (extendedInformation != null) {
             result = parseExtendedInformationEncodedValidity(now, extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         }
@@ -315,7 +315,7 @@ public class CertificateValidity {
      */
 	private Date getExtendedInformationEndTime(final Date now, final EndEntityInformation subject) {
         Date result = null;
-        final ExtendedInformation extendedInformation = subject.getExtendedinformation();
+        final ExtendedInformation extendedInformation = subject.getExtendedInformation();
         if (extendedInformation != null) {
             result = parseExtendedInformationEncodedValidity(now, extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
         }
@@ -397,15 +397,16 @@ public class CertificateValidity {
      */
     private static final Boolean isRelativeTime(final String encodedValidity) {
         try {
-            ValidityDate.parseAsIso8601(encodedValidity);
-            return Boolean.FALSE;
-        } catch(ParseException e) {
-            // NOOP
-        }
-        try {
+        	// Try the most likely setting first, for fail-fast
             SimpleTime.parseMillies(encodedValidity);
             return Boolean.TRUE;
         } catch(NumberFormatException nfe) {
+            // NOOP
+        }
+        try {
+            ValidityDate.parseAsIso8601(encodedValidity);
+            return Boolean.FALSE;
+        } catch(ParseException e) {
             return null;
         }
     }

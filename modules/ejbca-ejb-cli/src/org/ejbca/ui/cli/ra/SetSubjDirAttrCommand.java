@@ -72,12 +72,12 @@ public class SetSubjDirAttrCommand extends BaseRaCommand {
         try {
             EndEntityInformation uservo = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
                     getAuthenticationToken(), username);
-            ExtendedInformation ext = uservo.getExtendedinformation();
+            ExtendedInformation ext = uservo.getExtendedInformation();
             if (ext == null) {
                 ext = new ExtendedInformation();
             }
             ext.setSubjectDirectoryAttributes(attributes);
-            uservo.setExtendedinformation(ext);
+            uservo.setExtendedInformation(ext);
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(), uservo, false);
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {

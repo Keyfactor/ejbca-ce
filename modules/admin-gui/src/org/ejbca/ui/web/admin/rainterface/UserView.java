@@ -55,7 +55,7 @@ public class UserView implements Serializable, Comparable<UserView> {
         this.caname = caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
         subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
         subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
-        String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+        String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
         subjectdirattrs = new DNFieldExtractor(dirattrs, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
         setCommonName();
 
@@ -91,17 +91,17 @@ public class UserView implements Serializable, Comparable<UserView> {
     }
 
     public void setSubjectDirAttributes(String subjectdirattr) {
-        ExtendedInformation ext = userdata.getExtendedinformation();
+        ExtendedInformation ext = userdata.getExtendedInformation();
         if (ext == null) {
             ext = new ExtendedInformation();
         }
         ext.setSubjectDirectoryAttributes(subjectdirattr);
-        userdata.setExtendedinformation(ext);
+        userdata.setExtendedInformation(ext);
         subjectdirattrs.setDN(subjectdirattr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     }
 
     public String getSubjectDirAttributes() {
-        return userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+        return userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
     }
 
     public void setEmail(String email) {
@@ -237,11 +237,11 @@ public class UserView implements Serializable, Comparable<UserView> {
     }
 
     public void setExtendedInformation(ExtendedInformation extinfo) {
-        userdata.setExtendedinformation(extinfo);
+        userdata.setExtendedInformation(extinfo);
     }
 
     public ExtendedInformation getExtendedInformation() {
-        return userdata.getExtendedinformation();
+        return userdata.getExtendedInformation();
     }
 
     public String getSubjectDNField(int parameter, int number) {

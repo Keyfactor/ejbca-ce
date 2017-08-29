@@ -65,7 +65,7 @@ public class NameConstraint extends StandardCertificateExtension {
             throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
         }
         
-        final ExtendedInformation ei = userData.getExtendedinformation();
+        final ExtendedInformation ei = userData.getExtendedInformation();
         if (ei != null) {
             final List<String> permittedNames = ei.getNameConstraintsPermitted();
             final List<String> excludedNames = ei.getNameConstraintsExcluded();

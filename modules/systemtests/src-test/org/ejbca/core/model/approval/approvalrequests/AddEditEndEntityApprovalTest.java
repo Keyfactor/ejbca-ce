@@ -94,7 +94,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             assertNotNull("Failed to execute AddEndEnitityApprovalRequest", executeUser);
             
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest
-            ExtendedInformation ext = executeUser.getExtendedinformation();
+            ExtendedInformation ext = executeUser.getExtendedInformation();
             assertNotNull("Newly created end entity does not contain extended information", ext);
             Integer addEEReqId = ext.getAddEndEntityApprovalRequestId();
             assertNotNull("Extended information does not contain the AddEndEntityApprovalRequestID", addEEReqId);
@@ -113,7 +113,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             assertEquals("CN=" + username + ",C=SE", executeUser.getDN());
             
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest
-            ext = executeUser.getExtendedinformation();
+            ext = executeUser.getExtendedInformation();
             assertNotNull("Newly edited end entity does not contain extended information", ext);
             addEEReqId = ext.getAddEndEntityApprovalRequestId();
             assertNotNull("Extended information does not contain the AddEndEntityApprovalRequestID", addEEReqId);
@@ -136,7 +136,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest 
             // and ChangeStatusEndEntityApprovalRequest
-            ext = executeUser.getExtendedinformation();
+            ext = executeUser.getExtendedInformation();
             assertNotNull("Newly edited end entity does not contain extended information", ext);
             addEEReqId = ext.getAddEndEntityApprovalRequestId();
             assertNotNull("Extended information does not contain the AddEndEntityApprovalRequestID", addEEReqId);

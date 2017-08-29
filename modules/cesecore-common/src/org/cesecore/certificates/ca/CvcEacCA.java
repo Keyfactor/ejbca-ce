@@ -284,7 +284,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 		}
         
         // Which public key and request shall we use?
-        final ExtendedInformation ei = subject.getExtendedinformation();
+        final ExtendedInformation ei = subject.getExtendedInformation();
         final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, ei);
         final PublicKey publicKey = pkSelector.getPublicKey();
         final RequestMessage request = pkSelector.getRequestMessage();

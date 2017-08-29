@@ -108,7 +108,7 @@ public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap im
     	String str = (String)data.get(EXTENDEDINFORMATION);
     	ExtendedInformation ret = null;
     	if (str != null) {
-    		ret = EndEntityInformation.getExtendedInformation(str);
+    		ret = EndEntityInformation.getExtendedInformationFromStringData(str);
     	}
     	return ret;
     }

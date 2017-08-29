@@ -417,7 +417,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // Now add extended information with the revocation reason
             ExtendedInformation ei = new ExtendedInformation();
             ei.setIssuanceRevocationReason(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-            user.setExtendedinformation(ei);
+            user.setExtendedInformation(ei);
             // create cert again
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
                     org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());

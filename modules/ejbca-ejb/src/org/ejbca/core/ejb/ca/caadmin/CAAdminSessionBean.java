@@ -1511,7 +1511,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         ExtendedInformation extInfo = new ExtendedInformation();
                         PKCS10CertificationRequest pkcs10 = ((PKCS10RequestMessage) requestmessage).getCertificationRequest();
                         extInfo.setCustomData(ExtendedInformationFields.CUSTOM_PKCS10, new String(Base64.encode(pkcs10.getEncoded())));
-                        cadata.setExtendedinformation(extInfo);
+                        cadata.setExtendedInformation(extInfo);
                     }
                     CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
                     String sequence = null;

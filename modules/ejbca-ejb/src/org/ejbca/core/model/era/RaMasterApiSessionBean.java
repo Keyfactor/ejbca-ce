@@ -474,8 +474,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             editableData.setEmail(userdata.getEmail());
             editableData.setSubjectDN(userdata.getDN());
             editableData.setSubjectAltName(userdata.getSubjectAltName());
-            if (userdata.getExtendedinformation() != null) {
-                final ExtendedInformation ei = userdata.getExtendedinformation();
+            if (userdata.getExtendedInformation() != null) {
+                final ExtendedInformation ei = userdata.getExtendedInformation();
                 editableData.setSubjectDirAttrs(ei.getSubjectDirectoryAttributes());
             }
         }
@@ -607,10 +607,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             userdata.setEmail(editData.getEmail());
             userdata.setDN(editData.getSubjectDN());
             userdata.setSubjectAltName(editData.getSubjectAltName());
-            if (userdata.getExtendedinformation() == null && editData.getSubjectDirAttrs() != null) {
-                userdata.setExtendedinformation(new ExtendedInformation());
+            if (userdata.getExtendedInformation() == null && editData.getSubjectDirAttrs() != null) {
+                userdata.setExtendedInformation(new ExtendedInformation());
             }
-            final ExtendedInformation ei = userdata.getExtendedinformation();
+            final ExtendedInformation ei = userdata.getExtendedInformation();
             ei.setSubjectDirectoryAttributes(editData.getSubjectDirAttrs());
         } else {
             // TODO implement more types of requests? (ECA-5290)
@@ -1569,7 +1569,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
             
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(admin, endEntity.getUsername(), endEntity.getPassword(), endEntity.getCAId(),
-                    endEntity.getExtendedinformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedinformation().getKeyStoreAlgorithmType(),
+                    endEntity.getExtendedInformation().getKeyStoreAlgorithmSubType(), endEntity.getExtendedInformation().getKeyStoreAlgorithmType(),
                     endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, loadkeys, savekeys, reusecertificate, endEntity.getEndEntityProfileId());
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
                 | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
@@ -1599,12 +1599,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException {
-        if(endEntityInformation.getExtendedinformation() == null || endEntityInformation.getExtendedinformation().getCertificateRequest() == null){
+        if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
         
         PKCS10RequestMessage req = null;
-        req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedinformation().getCertificateRequest());
+        req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         try {

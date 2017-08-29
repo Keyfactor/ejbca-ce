@@ -811,7 +811,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param data of user
      */
     private void cleanUserCertDataSN(final EndEntityInformation data) {
-        if (data == null || data.getExtendedinformation() == null || data.getExtendedinformation().certificateSerialNumber() == null) {
+        if (data == null || data.getExtendedInformation() == null || data.getExtendedInformation().certificateSerialNumber() == null) {
             return;
         }
         try {
@@ -927,7 +927,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
         if (!publishers.isEmpty()) {
-            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(), endEntity.getCertificateDN(), endEntity.getExtendedinformation());
+            publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(), endEntity.getCertificateDN(), endEntity.getExtendedInformation());
         }
     }
 }

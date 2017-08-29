@@ -176,7 +176,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
 
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
@@ -247,7 +247,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
 
         ResponseMessage resp = null;
         try {
@@ -287,7 +287,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         try {
             certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
             assertTrue("This method should throw exception", false);
