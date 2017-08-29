@@ -173,7 +173,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             userdata.setEndEntityProfileId(eid);
             ExtendedInformation extendedInformation = new ExtendedInformation();
             extendedInformation.setCustomData(EndEntityProfile.ENDTIME, "0:0:10");
-            userdata.setExtendedinformation(extendedInformation);
+            userdata.setExtendedInformation(extendedInformation);
             userdata.setCertificateProfileId(cid);
             endEntityManagementSession.changeUser(administrator, userdata, true);
             // Create some soon-to-be-expired certs

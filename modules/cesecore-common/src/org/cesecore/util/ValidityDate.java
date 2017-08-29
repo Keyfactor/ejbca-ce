@@ -176,20 +176,24 @@ public class ValidityDate {
      * Decodes encoded value to Date.
      * @param encodedValidity a relative time string (SimpleTime) or a date in ISO8601 format.
      * @param firstDate date to be used if encoded validity is a relative time.
-     * @return the end date.
+     * @return the end date or null if a date or relative time could not be read.
      * @see org.cesecore.util.SimpleTime
      * @see org.cesecore.util.ValidityDate
      */
 	public static Date getDate(final String encodedValidity, final Date firstDate) {
 	    try {
-	        return parseAsIso8601(encodedValidity);
-	    } catch(ParseException p) {
+	        // We think this is the most common, so try this first, it's fail-fast
+	        final long millis = SimpleTime.parseMillies(encodedValidity);
+	        final Date endDate = new Date(firstDate.getTime() + millis);
+	        return endDate;
+	    } catch(NumberFormatException nfe) {
+	        if (log.isDebugEnabled()) {
+	            log.debug("Could not read encoded validity as relative date: " +encodedValidity+", "+ nfe.getMessage());
+	        }
 	        try {
-	            final long millis = SimpleTime.parseMillies(encodedValidity);
-	            final Date endDate = new Date(firstDate.getTime() + millis);
-	            return endDate;
-	        } catch(NumberFormatException nfe) {
-	            log.error("Could not read encoded validity: " + nfe.getMessage(), nfe);
+	            return parseAsIso8601(encodedValidity);
+	        } catch(ParseException p) {
+	            log.error("Could not read encoded validity: " +encodedValidity+", "+ p.getMessage());
 	            return null;
 	        }
 	    }

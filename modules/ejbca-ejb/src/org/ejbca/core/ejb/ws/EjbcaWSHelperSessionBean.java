@@ -401,7 +401,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         dataWS.setCardNumber(endEntityInformation.getCardNumber());
         dataWS.setSendNotification(endEntityInformation.getSendNotification());
         
-        final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
+        final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
         if (ei != null) {
             String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
             if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {

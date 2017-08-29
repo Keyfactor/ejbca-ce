@@ -82,12 +82,12 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		
 		// Add the ID of the approval request to the end entity as extended information.
-        ExtendedInformation ext = userdata.getExtendedinformation();
+        ExtendedInformation ext = userdata.getExtendedInformation();
         if(ext == null) {
             ext = new ExtendedInformation();
         }
         ext.setAddEndEntityApprovalRequestId(approvalRequestID);
-        userdata.setExtendedinformation(ext);
+        userdata.setExtendedInformation(ext);
 		
 		try{
 			endEntityManagementSession.addUserAfterApproval(getRequestAdmin(), userdata, clearpwd, lastApprovingAdmin);
@@ -139,7 +139,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
         retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
         retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
         retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
-        String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+        String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
         retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
         retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
         retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
@@ -153,7 +153,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
-		String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
 		String caname;
@@ -165,7 +165,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
-		final ExtendedInformation eei = userdata.getExtendedinformation();
+		final ExtendedInformation eei = userdata.getExtendedInformation();
         if (eei != null && eei.getKeyStoreAlgorithmType() != null) {
             String keyTypeString = eei.getKeyStoreAlgorithmType();
             if (eei.getKeyStoreAlgorithmSubType() != null) {

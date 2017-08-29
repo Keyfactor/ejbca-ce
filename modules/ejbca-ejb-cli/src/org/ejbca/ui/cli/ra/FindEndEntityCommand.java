@@ -76,7 +76,7 @@ public class FindEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Password: " + (data.getPassword() != null ? data.getPassword() : "<hidden>"));
                 getLogger().info("DN: \"" + data.getDN() + "\"");
                 getLogger().info("Alt Name: \"" + data.getSubjectAltName() + "\"");
-                ExtendedInformation ei = data.getExtendedinformation();
+                ExtendedInformation ei = data.getExtendedInformation();
                 getLogger().info("Directory Attributes: \"" + (ei != null ? ei.getSubjectDirectoryAttributes() : "") + "\"");
                 getLogger().info("E-Mail: " + data.getEmail());
                 getLogger().info("Status: " + data.getStatus());
@@ -87,8 +87,8 @@ public class FindEndEntityCommand extends BaseRaCommand {
                 getLogger().info("Hard Token Issuer ID: " + data.getHardTokenIssuerId());
                 getLogger().info("Created: " + data.getTimeCreated());
                 getLogger().info("Modified: " + data.getTimeModified());
-                if (data.getExtendedinformation() != null) {
-                    byte[] csr = data.getExtendedinformation().getCertificateRequest();
+                if (data.getExtendedInformation() != null) {
+                    byte[] csr = data.getExtendedInformation().getCertificateRequest();
                     if ((csr != null) && (csr.length > 0)) {
                         getLogger().info("CSR:\n"+new String(CertTools.getPEMFromCertificateRequest(csr)));
                     }                    

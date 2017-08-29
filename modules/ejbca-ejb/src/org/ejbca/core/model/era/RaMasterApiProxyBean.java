@@ -972,7 +972,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
             final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             final byte[] csr = pkcs10req.getEncoded();
-            endEntity.getExtendedinformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
+            endEntity.getExtendedInformation().setCertificateRequest(csr); // not persisted, only sent over peer connection
             endEntity.setPassword(password); // not persisted
             // Request certificate
             final byte[] certBytes = createCertificate(authenticationToken, endEntity);
@@ -1021,8 +1021,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         log.debug("Creating locally stored key pair for end entity '" + username + "'");
                     }
                     // Create new key pair and CSR
-                    final String keyalg = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmType();
-                    final String keyspec = storedEndEntity.getExtendedinformation().getKeyStoreAlgorithmSubType();
+                    final String keyalg = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmType();
+                    final String keyspec = storedEndEntity.getExtendedInformation().getKeyStoreAlgorithmSubType();
                     kp = KeyTools.genKeys(keyspec, keyalg);
                     // requestCertForEndEntity verifies the password and performs the finishUser operation
                     cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);

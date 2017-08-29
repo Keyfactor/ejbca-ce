@@ -2315,7 +2315,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
 					if (publisherSession.storeCertificate(admin, certprofile.getPublisherList(), certreqhist.getFingerprint(),
-					        certreqhist.getEndEntityInformation().getPassword(), certreqhist.getEndEntityInformation().getCertificateDN(), certreqhist.getEndEntityInformation().getExtendedinformation())) {
+					        certreqhist.getEndEntityInformation().getPassword(), certreqhist.getEndEntityInformation().getCertificateDN(), certreqhist.getEndEntityInformation().getExtendedInformation())) {
 					} else {
 						throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
 					}

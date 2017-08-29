@@ -156,7 +156,7 @@ public class CertificateValidityTest {
         ExtendedInformation extendedInformation = new ExtendedInformation();
         extendedInformation.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, extendedInformationStartDate);
         extendedInformation.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, extendedInformationEndDate);
-        subject.setExtendedinformation(extendedInformation);
+        subject.setExtendedInformation(extendedInformation);
         Date methodParmameterStartDate = new Date( now.getTime() + 2L * SimpleTime.MILLISECONDS_PER_DAY);
         Date methodParmameterEndDate = new Date( absolulteTestDate.getTime() - 2L * SimpleTime.MILLISECONDS_PER_DAY);
         validity = new CertificateValidity(now, subject, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
@@ -168,8 +168,8 @@ public class CertificateValidityTest {
         
         // 4.2 Overwrite start date by method parameter
         // 5.2 Overwrite end date by method parameter
-        subject.getExtendedinformation().setCustomData(ExtendedInformation.CUSTOM_STARTTIME, null); // First priority -> set to null.
-        subject.getExtendedinformation().setCustomData(ExtendedInformation.CUSTOM_ENDTIME, null); // First priority -> set to null.
+        subject.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_STARTTIME, null); // First priority -> set to null.
+        subject.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_ENDTIME, null); // First priority -> set to null.
         validity = new CertificateValidity(now, subject, profile, methodParmameterStartDate, methodParmameterEndDate, caCertificate, false, false);
         notBefore = methodParmameterStartDate;
         notAfter = methodParmameterEndDate;
@@ -429,7 +429,7 @@ public class CertificateValidityTest {
     	ExtendedInformation ei = new ExtendedInformation();
     	ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, "10:0:0"); // days:hours:minutes
     	ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "30:0:0");
-    	subject.setExtendedinformation(ei);
+    	subject.setExtendedInformation(ei);
         cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
@@ -472,7 +472,7 @@ public class CertificateValidityTest {
     	assertTrue(notAfter.before(cal2.getTime()));
     	
     	// Remove extended information from EndEntityInformation and we should get what we pass as parameters to CertificateValidity
-    	subject.setExtendedinformation(null);
+    	subject.setExtendedInformation(null);
         cv = new CertificateValidity(subject, cp, requestNotBefore.getTime(), requestNotAfter.getTime(), cacert, false, false);
     	notBefore = cv.getNotBefore();
     	notAfter = cv.getNotAfter();
@@ -560,7 +560,7 @@ public class CertificateValidityTest {
         cal1.add(Calendar.DAY_OF_MONTH, -10);
         ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(cal1.getTime()));
         ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, "200:0:0");
-        subject.setExtendedinformation(ei);
+        subject.setExtendedInformation(ei);
         cv = new CertificateValidity(subject, cp, null, null, cacert, false, false);
         notBefore = cv.getNotBefore();
         notAfter = cv.getNotAfter();
@@ -588,7 +588,7 @@ public class CertificateValidityTest {
         cal2.add(Calendar.DAY_OF_MONTH, -1);
         assertTrue(notBefore.before(cal1.getTime()));
         assertTrue(notBefore.after(cal2.getTime()));
-        subject.setExtendedinformation(null); // Reset after test
+        subject.setExtendedInformation(null); // Reset after test
         cp.setAllowValidityOverride(true);
         
     	// Check that ca.toolateexpiredate setting in ejbca.properties is in effect

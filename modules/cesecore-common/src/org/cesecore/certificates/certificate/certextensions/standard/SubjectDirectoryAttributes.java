@@ -50,7 +50,7 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
 		ASN1Encodable ret = null;
-		final String dirAttrString  = subject.getExtendedinformation() != null ? subject.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		final String dirAttrString  = subject.getExtendedInformation() != null ? subject.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		if (StringUtils.isNotEmpty(dirAttrString)) {
 			// Subject Directory Attributes is a sequence of Attribute
 			final Collection<Attribute> attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);

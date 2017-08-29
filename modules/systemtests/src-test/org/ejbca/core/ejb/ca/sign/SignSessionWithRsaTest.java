@@ -1381,7 +1381,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         ExtendedInformation ei = new ExtendedInformation();
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user.setExtendedinformation(ei);
+        user.setExtendedInformation(ei);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         // create first cert

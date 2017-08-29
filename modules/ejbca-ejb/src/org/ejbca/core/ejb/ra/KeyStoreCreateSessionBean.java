@@ -156,17 +156,17 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
             
             //KeyStore algorithm specification inside endEntityInformation has priority since its algorithm is approved
-            if (userdata.getExtendedinformation() != null) {
-                if (userdata.getExtendedinformation().getKeyStoreAlgorithmType() != null
-                        && userdata.getExtendedinformation().getKeyStoreAlgorithmSubType() != null) {
+            if (userdata.getExtendedInformation() != null) {
+                if (userdata.getExtendedInformation().getKeyStoreAlgorithmType() != null
+                        && userdata.getExtendedInformation().getKeyStoreAlgorithmSubType() != null) {
                     if (log.isDebugEnabled()) {
                         log.debug("Using the key-store algorithm specification found inside the endEntityInformation ("
-                                + userdata.getExtendedinformation().getKeyStoreAlgorithmType() + "_"
-                                + userdata.getExtendedinformation().getKeyStoreAlgorithmSubType() + ") instead of one provided separately (" + keyalg
+                                + userdata.getExtendedInformation().getKeyStoreAlgorithmType() + "_"
+                                + userdata.getExtendedInformation().getKeyStoreAlgorithmSubType() + ") instead of one provided separately (" + keyalg
                                 + "_" + keyspec + ")");
                     }
-                    keyalg = userdata.getExtendedinformation().getKeyStoreAlgorithmType();
-                    keyspec = userdata.getExtendedinformation().getKeyStoreAlgorithmSubType();
+                    keyalg = userdata.getExtendedInformation().getKeyStoreAlgorithmType();
+                    keyspec = userdata.getExtendedInformation().getKeyStoreAlgorithmSubType();
                 }
             }
             // generate new keys.

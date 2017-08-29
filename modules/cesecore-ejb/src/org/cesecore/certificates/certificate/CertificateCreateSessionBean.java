@@ -351,7 +351,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
+            final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
             final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, ei);
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
@@ -389,7 +389,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             String serialNo = "unknown";
             final boolean useCustomSN;
             {
-                final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
+                final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
                 useCustomSN = ei != null && ei.certificateSerialNumber() != null;
             }
             final int maxRetrys;
@@ -486,7 +486,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance
             int revreason = RevokedCertInfo.NOT_REVOKED;
-            ExtendedInformation ei = endEntityInformation.getExtendedinformation();
+            final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
             if (ei != null) {
                 revreason = ei.getIssuanceRevocationReason();
                 if (revreason != RevokedCertInfo.NOT_REVOKED) {

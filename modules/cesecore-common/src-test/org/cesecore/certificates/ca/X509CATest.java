@@ -1226,8 +1226,8 @@ public class X509CATest {
         PKCS10RequestMessage requestMessageEnforcedAlg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequestEnforcedAlg));
         assertEquals("CN=EnforcedAlgCn,O=PrimeKey,C=SE", requestMessageEnforcedAlg.getRequestDN());
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        endEntityInformation.setExtendedinformation(new ExtendedInformation());
-        endEntityInformation.getExtendedinformation().setCertificateRequest(certificationRequestEnforcedAlg.getEncoded());
+        endEntityInformation.setExtendedInformation(new ExtendedInformation());
+        endEntityInformation.getExtendedInformation().setCertificateRequest(certificationRequestEnforcedAlg.getEncoded());
         
         //Create CP and generate certificate
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1333,9 +1333,9 @@ public class X509CATest {
         } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             return "brainpoolp224r1";
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
-            return "1024"; // RSA-PSS required at least 2014 bits
+            return "2048"; // RSA-PSS required at least 2014 bits
         } else {
-            return "512"; // Assume RSA
+            return "1024"; // Assume RSA
         }
     }
     

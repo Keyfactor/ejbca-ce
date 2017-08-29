@@ -118,7 +118,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         ExtendedInformation ei = new ExtendedInformation();
         ei.setMaxLoginAttempts(maxFailedLogins);
         ei.setRemainingLoginAttempts(maxFailedLogins);
-        userdata.setExtendedinformation(ei);
+        userdata.setExtendedInformation(ei);
         userdata.setPassword(password);
         endEntityManagementSession.addUser(admin, userdata, true);
         EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());

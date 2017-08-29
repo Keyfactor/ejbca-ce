@@ -93,7 +93,7 @@ public class RaEndEntityDetails {
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final String certProfName, final String eeProfName, final String caName) {
         this.endEntityInformation = endEntity;
-        final ExtendedInformation extendedInformation = endEntity.getExtendedinformation();
+        final ExtendedInformation extendedInformation = endEntity.getExtendedInformation();
         this.extendedInformation = extendedInformation==null ? new ExtendedInformation() : extendedInformation;
         this.callbacks = callbacks;
         this.username = endEntity.getUsername();
@@ -179,9 +179,9 @@ public class RaEndEntityDetails {
      * @return subject DN from CSR or null if CSR is missing / corrupted
      */
     public String getDnFromCsr() {
-        if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
+        if (endEntityInformation.getExtendedInformation().getCertificateRequest() != null) {
             try {
-                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
                 // Convert to "correct" display format
                 X500Name subjectDn = CertTools.stringToBcX500Name(pkcs10CertificationRequest.getSubject().toString());
                 return subjectDn.toString();
@@ -210,9 +210,9 @@ public class RaEndEntityDetails {
     }
 
     private String getKeysFromCsr() {
-        if (endEntityInformation.getExtendedinformation().getCertificateRequest() != null) {
+        if (endEntityInformation.getExtendedInformation().getCertificateRequest() != null) {
             try {
-                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedinformation().getCertificateRequest());
+                PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
                 final JcaPKCS10CertificationRequest jcaPKCS10CertificationRequest = new JcaPKCS10CertificationRequest(pkcs10CertificationRequest);
                 final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
@@ -423,7 +423,7 @@ public class RaEndEntityDetails {
      */
     public String getAddEndEntityApprovalRequestId() {
         String ret = "";
-        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        final ExtendedInformation ext = endEntityInformation.getExtendedInformation();
         if(ext != null) {
             final Integer reqid = ext.getAddEndEntityApprovalRequestId();
             if(reqid != null) {
@@ -439,7 +439,7 @@ public class RaEndEntityDetails {
      */
     public String getEditEndEntityApprovalRequestIds() {
         StringBuilder ret = new StringBuilder("");
-        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        final ExtendedInformation ext = endEntityInformation.getExtendedInformation();
         if(ext != null) {
             final List<Integer> ids = ext.getEditEndEntityApprovalRequestIds();
             if(!ids.isEmpty()) {
@@ -458,7 +458,7 @@ public class RaEndEntityDetails {
      */
     public String getRevokeEndEntityApprovalRequestIds() {
         StringBuilder ret = new StringBuilder("");
-        final ExtendedInformation ext = endEntityInformation.getExtendedinformation();
+        final ExtendedInformation ext = endEntityInformation.getExtendedInformation();
         if(ext != null) {
             final List<Integer> ids = ext.getRevokeEndEntityApprovalRequestIds();
             if(!ids.isEmpty()) {

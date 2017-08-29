@@ -588,7 +588,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
-        endEntityInformation.setExtendedinformation(new ExtendedInformation());//TODO don't know anything about it...
+        endEntityInformation.setExtendedInformation(new ExtendedInformation());//TODO don't know anything about it...
         endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
@@ -631,11 +631,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Fill end-entity information (KeyStoreAlgorithm* or CertificateRequest)
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
             final String[] tokenKeySpecSplit = getSelectedAlgorithm().split("_");
-            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmType(tokenKeySpecSplit[0]);
-            endEntityInformation.getExtendedinformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(tokenKeySpecSplit[0]);
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
         } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
             try {
-                endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
             } catch (IOException e) {
                 raLocaleBean.addMessageError("enroll_invalid_certificate_request");
                 return null;
@@ -710,7 +710,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
-                    endEntityInformation.getExtendedinformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
+                    endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
                     final byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation);
                     if(certificateDataToDownload == null){
