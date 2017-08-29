@@ -166,7 +166,7 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
     }
     
     /**
-     * This method will retrieves all role members that match a certain authentication token. It utilizes the AuthorizationCache to do so, 
+     * This method will retrieves all role members that match a certain authentication token. It utilizes the AuthenticationTokenCache to do so, 
      * a cache which saves previous authorization token searches. If the cache entry hasn't expired the cache will return a list of role 
      * member IDs, which will be further pruned if any of the listed role members are missing (due to having been removed by another node in the 
      * cluster).
