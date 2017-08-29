@@ -18,11 +18,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessMatchType;
 
 /**
+ * POJO that provides a search key for recently used authentication tokens. 
+ * 
  * @version $Id$
  *
- */
-/**
- * Private class that provides a search key for recently used authentication tokens. 
  */
 public class AuthenticationTokenCacheKey {
     private final String tokenType;
