@@ -75,7 +75,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
-    	EndEntityInformation ret = null;
+    	boolean eichange = false;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = UserData.findByUsername(entityManager, username);
@@ -84,7 +84,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
             ExtendedInformation ei = data.getExtendedInformation();
-           	boolean eichange = decRemainingLoginAttempts(data, ei);
+           	eichange = decRemainingLoginAttempts(data, ei);
+           	boolean authenticated = false;
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
@@ -95,10 +96,17 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
+                    if (eichange) {
+                        data.setTimeModified(new Date().getTime());
+                        data.setExtendedInformation(ei);
+                    }
                 	throw new AuthLoginException(ErrorCode.LOGIN_ERROR, msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                eichange = UserData.resetRemainingLoginAttemptsInternal(ei, data.getUsername());
+                if (UserData.resetRemainingLoginAttemptsInternal(ei, data.getUsername())) {
+                    // This call can never set eichange to false, only to true (because it is already false if it should be)
+                    eichange = true;
+                }
             	// Log formal message that authentication was successful
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
@@ -106,18 +114,20 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
-                ret = data.toEndEntityInformation();
+            	authenticated = true;
             }
             if (eichange) {
                 data.setTimeModified(new Date().getTime());
                 data.setExtendedInformation(ei);
             }
-            if (ret == null) {
+            if (authenticated) {
+                EndEntityInformation ret = data.toEndEntityInformation();
+                return ret;
+            } else {
                 final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
                 log.info(msg);
                 throw new AuthStatusException(msg);
             }
-            return ret;
         } catch (NoSuchEndEntityException oe) {
         	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
         	log.info(msg);
