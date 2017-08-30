@@ -321,7 +321,7 @@ CREATE TABLE PublisherQueueData (
     PRIMARY KEY (pk)
 );
 
-CREATE TABLE PublicKeyBlacklistData (
+CREATE TABLE BlacklistData (
     id INTEGER NOT NULL,
     type VARCHAR(255) NOT NULL,
     value VARCHAR(255) NOT NULL,
