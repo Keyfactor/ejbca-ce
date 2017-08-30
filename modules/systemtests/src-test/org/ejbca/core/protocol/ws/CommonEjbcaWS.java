@@ -2231,7 +2231,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void ejbcaVersion() throws Exception {
         final String version = ejbcaraws.getEjbcaVersion();
         // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 6.9";
+        final String expectedSubString = "EJBCA 6.10";
         assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString)); 
     }
 
