@@ -14,6 +14,8 @@ import javax.xml.ws.WebFault;
 public class PublisherException_Exception
     extends Exception
 {
+    
+    private static final long serialVersionUID = 1L;
 
     /**
      * Java type that goes as soapenv:Fault detail element.
