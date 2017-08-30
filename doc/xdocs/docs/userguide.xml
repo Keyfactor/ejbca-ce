@@ -2148,7 +2148,6 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 </ul>
 <li>Supervisor:</li>
 <ul>
-<li>can view created end entities</li>
 <li>has full read access to the audit log</li>
 </ul>
 <li>Auditor:</li>
