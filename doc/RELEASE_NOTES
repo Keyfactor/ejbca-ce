@@ -1,3 +1,8 @@
+EJBCA 6.9.0.2
+-----------
+
+Database creation scripts referred to PublicKeyBlacklistData instead of BlacklistData.
+
 
 EJBCA 6.9.0.1
 -----------
