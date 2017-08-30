@@ -35,7 +35,10 @@ import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationData;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keybind.InternalKeyBindingData;
 import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.roles.AdminGroupData;
@@ -90,8 +93,8 @@ public class DatabaseSchemaTest {
     private static String CLOB_10KiB;
     private static String CLOB_100KiB;
     private static String CLOB_1MiB;
-    private static final LinkedHashMap<String, byte[]> HASHMAP_200K = new LinkedHashMap<String, byte[]>();
-    private static final LinkedHashMap<String, byte[]> HASHMAP_1M = new LinkedHashMap<String, byte[]>();
+    private static final LinkedHashMap<String, Object> HASHMAP_200K = new LinkedHashMap<String, Object>();
+    private static final LinkedHashMap<String, Object> HASHMAP_1M = new LinkedHashMap<String, Object>();
     private static final int BOGUS_INT = -32; // Very random..
     private static final Integer BOGUS_INTEGER = Integer.valueOf(BOGUS_INT);
     private static EntityManagerFactory entityManagerFactory;
@@ -148,8 +151,15 @@ public class DatabaseSchemaTest {
         LOG.debug("CLOB_100KiB   is  " + CLOB_100KiB.length()     + " chars and  " + CLOB_100KiB.getBytes().length + " bytes.");
         LOG.debug("CLOB_1MiB     is " + CLOB_1MiB.length()        + " chars and " + CLOB_1MiB.getBytes().length + " bytes.");
         LOG.debug("Filling HashMaps..");
-        HASHMAP_200K.put("object", getLob(196 * 1024)); // It need to be less than 200KiB in Serialized format..
-        HASHMAP_1M.put("object", getLob(996 * 1024)); // It need to be less than 1MiB in Serialized format.. 
+        // Make them mimic "real" UpgradeablaHashMap's, because that's what is usaully stored
+        Float f = Float.valueOf("9999"); // high number so not to trigger any UpgradeableHashMap.upgrade()'s
+        HASHMAP_200K.put("object", new String(getLob(196 * 1024))); // It need to be less than 200KiB in Serialized format..
+        HASHMAP_200K.put(UpgradeableDataHashMap.VERSION, f);
+        // make it look also like a UserData.ExtendedInformation
+        HASHMAP_200K.put(ExtendedInformation.TYPE, Integer.valueOf(ExtendedInformation.TYPE_BASIC));
+        HASHMAP_1M.put("object", new String(getLob(996 * 1024))); // It need to be less than 1MiB in Serialized format.. 
+        HASHMAP_1M.put(UpgradeableDataHashMap.VERSION, f);
+        HASHMAP_1M.put(ExtendedInformation.TYPE, Integer.valueOf(ExtendedInformation.TYPE_BASIC));
         logMemStats();
         LOG.trace("<test000Setup");
     }
@@ -526,7 +536,12 @@ public class DatabaseSchemaTest {
         entity.setCertificateProfileId(0);
         entity.setClearPassword(VARCHAR_250B);
         entity.setEndEntityProfileId(0);
-        entity.setExtendedInformationData(CLOB_1MiB);
+        // Create a very large extendedInformation, that is still valid XML
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.loadData(HASHMAP_1M);
+        String eiString = EndEntityInformation.extendedInformationToStringData(ei);
+        assertTrue(eiString.length() > 900000);
+        entity.setExtendedInformationData(eiString);
         entity.setHardTokenIssuerId(0);
         entity.setKeyStorePassword(VARCHAR_250B);
         entity.setPasswordHash(VARCHAR_250B);
