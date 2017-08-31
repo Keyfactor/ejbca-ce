@@ -288,15 +288,14 @@ public final class ConfigurationHolder {
     public static List<String> getPrefixedPropertyNames(String prefix) {
         prefix = prefix + ".";
         Set<String> algs = new HashSet<String>();
-        Properties props = ConfigurationHolder.getAsProperties();
-        for (Entry<Object,Object> entry : props.entrySet()) {
-            final String key = (String)entry.getKey();
-            if (key.startsWith(prefix)) {
-                int dot = key.indexOf(".", prefix.length());
-                algs.add(key.substring(prefix.length(), dot));
-            }
+        // Just get the keys from configuration that starts with prefix, and we already know below
+        // that it has a . in it
+        for (@SuppressWarnings("unchecked")
+        Iterator<String> iterator = config.getKeys(prefix); iterator.hasNext();) {
+            final String key = iterator.next();
+            int dot = key.indexOf(".", prefix.length());
+            algs.add(key.substring(prefix.length(), dot));
         }
-        
         ArrayList<String> list = new ArrayList<String>(algs);
         Collections.sort(list);
         return list;
