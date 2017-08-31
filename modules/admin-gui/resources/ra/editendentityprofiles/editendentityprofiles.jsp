@@ -189,11 +189,11 @@
 
   // Initialize environment
   String includefile = "endentityprofilespage.jspf";
+  String[] profiledeletefailed = {"", "", ""};
   boolean  triedtoeditemptyprofile   = false;
   boolean  triedtoeditnonexistingprofile   = false;
   boolean  triedtodeleteemptyprofile = false;
   boolean  profileexists             = false;
-  boolean  profiledeletefailed       = false;
   boolean  cannotcloneempty          = false;
   boolean  fileuploadfailed          = false;
   boolean  fileuploadsuccess         = false;
@@ -275,7 +275,7 @@
           if(profile != null){
             if(!profile.trim().equals("")){
               if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
-                profiledeletefailed = !ejbcarabean.removeEndEntityProfile(profile); 
+                profiledeletefailed = ejbcarabean.removeEndEntityProfile(profile); 
               }else{
                 triedtodeleteemptyprofile=true;
               }

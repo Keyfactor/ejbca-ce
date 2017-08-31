@@ -2050,15 +2050,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForEndEntityProfileId(int endentityprofileid) {
+    public List<UserData> findByEndEntityProfileId(int endentityprofileid) {
         if (log.isTraceEnabled()) {
-            log.trace(">checkForEndEntityProfileId(" + endentityprofileid + ")");
+            log.trace(">findByEndEntityProfileId(" + endentityprofileid + ")");
         }
-        long count = UserData.countByEndEntityProfileId(entityManager, endentityprofileid);
+        List<UserData> found = UserData.findByEndEntityProfileId(entityManager, endentityprofileid);
         if (log.isTraceEnabled()) {
-            log.trace("<checkForEndEntityProfileId(" + endentityprofileid + "): " + count);
+            log.trace("<findByEndEntityProfileId(" + endentityprofileid + "), found: " + found.size());
         }
-        return count > 0;
+        return found;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
