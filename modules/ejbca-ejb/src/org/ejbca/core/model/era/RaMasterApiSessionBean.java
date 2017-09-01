@@ -931,7 +931,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
-                sb.append("a.subjectDN LIKE :subjectDN");
+                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
                 firstAppended = true;
             }
             if (!subjectAnSearchString.isEmpty()) {
@@ -948,7 +948,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.username LIKE :username");
+                sb.append("UPPER(a.username) LIKE :username");
             }
             if (!serialNumberSearchStringFromDec.isEmpty()) {
                 if (firstAppended) {
@@ -1024,9 +1024,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!subjectDnSearchString.isEmpty()) {
             if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString);
+                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
             } else {
-                query.setParameter("subjectDN", "%" + subjectDnSearchString + "%");
+                query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
         }
         if (!subjectAnSearchString.isEmpty()) {
@@ -1038,9 +1038,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!usernameSearchString.isEmpty()) {
             if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString);
+                query.setParameter("username", usernameSearchString.toUpperCase());
             } else {
-                query.setParameter("username", "%" + usernameSearchString + "%");
+                query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
         }
         if (!serialNumberSearchStringFromDec.isEmpty()) {
@@ -1171,7 +1171,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append(" AND (");
             boolean firstAppended = false;
             if (!subjectDnSearchString.isEmpty()) {
-                sb.append("a.subjectDN LIKE :subjectDN");
+                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
                 firstAppended = true;
             }
             if (!subjectAnSearchString.isEmpty()) {
@@ -1188,7 +1188,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.username LIKE :username");
+                sb.append("UPPER(a.username) LIKE :username");
             }
             sb.append(")");
         }
@@ -1233,9 +1233,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!subjectDnSearchString.isEmpty()) {
             if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString);
+                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
             } else {
-                query.setParameter("subjectDN", "%" + subjectDnSearchString + "%");
+                query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
         }
         if (!subjectAnSearchString.isEmpty()) {
@@ -1247,9 +1247,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         if (!usernameSearchString.isEmpty()) {
             if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString);
+                query.setParameter("username", usernameSearchString.toUpperCase());
             } else {
-                query.setParameter("username", "%" + usernameSearchString + "%");
+                query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
         }
         if (request.isModifiedAfterUsed()) {
