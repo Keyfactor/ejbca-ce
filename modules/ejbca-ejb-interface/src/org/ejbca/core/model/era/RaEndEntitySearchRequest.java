@@ -194,11 +194,13 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
 
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
-        return username != null && ((!usernameSearchExact && username.contains(usernameSearchString)) || (usernameSearchExact && username.equals(usernameSearchString)));
+        return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) || 
+                                    (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
     }
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
-        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.contains(subjectDnSearchString)) || (subjectDnSearchExact && subjectDn.equals(subjectDnSearchString)));
+        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) || 
+                                    (subjectDnSearchExact && subjectDn.equalsIgnoreCase(subjectDnSearchString)));
     }
     /** @return true if the subjectAn is matched by this search. */
     public boolean matchSubjectAn(final String subjectAn) {
