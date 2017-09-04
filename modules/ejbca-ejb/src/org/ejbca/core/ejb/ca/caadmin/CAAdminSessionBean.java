@@ -3366,21 +3366,4 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.flushCACache();
     }
 
-//    @Override
-//    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-//    public boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException {
-//        try {
-//            for (final Integer caId : caSession.getAllCaIds()) {
-//                for (final Integer id : caSession.getCAInfoInternal(caId).getKeyValidators()) {
-//                    if (id.intValue() == keyValidatorId) {
-//                        // We have found a match. No point in looking for more.
-//                        return true;
-//                    }
-//                }
-//            }
-//        } catch (CADoesntExistsException e) {
-//            throw new RuntimeException("Available CA is no longer available!");
-//        }
-//        return false;
-//    }
 }
