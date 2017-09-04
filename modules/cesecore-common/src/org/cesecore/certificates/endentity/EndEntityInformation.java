@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.endentity;
 
 import java.io.ByteArrayInputStream;
@@ -76,10 +76,10 @@ public class EndEntityInformation implements Serializable {
     /** Creates new empty EndEntityInformation */
     public EndEntityInformation() {
     }
-    
+
     /**
      * Copy constructor for {@link EndEntityInformation}
-     * 
+     *
      * @param endEntityInformation an end entity to copy
      */
     public EndEntityInformation(final EndEntityInformation endEntityInformation) {
@@ -141,11 +141,11 @@ public class EndEntityInformation implements Serializable {
         setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
-    
+
     /**
-     * Creates new EndEntityInformation. This constructor should only be used from UserDataSource 
+     * Creates new EndEntityInformation. This constructor should only be used from UserDataSource
      * implementations. Status and dates aren't used in these cases.
-     * 
+     *
      * @param username the unique username.
      * @param dn the DN the subject is given in his certificate.
      * @param caid the id of the CA that should be used to issue the users certificate
@@ -166,7 +166,7 @@ public class EndEntityInformation implements Serializable {
         setDN(dn);
         setCAId(caid);
         setSubjectAltName(subjectaltname);
-        setEmail(email);        
+        setEmail(email);
         setType(type);
         setEndEntityProfileId(endentityprofileid);
         setCertificateProfileId(certificateprofileid);
@@ -175,8 +175,8 @@ public class EndEntityInformation implements Serializable {
         setExtendedInformation(extendedinfo);
         setCardNumber(null);
     }
-    
-    
+
+
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
@@ -184,8 +184,9 @@ public class EndEntityInformation implements Serializable {
             dn = "";
         }
     	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
-    	final StringBuilder removedTrailingEmpties = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, true);
-    	if (removedTrailingEmpties == null) {
+        final StringBuilder removedTrailingEmpties = new StringBuilder(dn.length());
+        final boolean areEqual = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, removedTrailingEmpties);
+        if (areEqual) {
         	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
         	this.subjectDN=this.subjectDNClean;
     	} else {
@@ -193,7 +194,7 @@ public class EndEntityInformation implements Serializable {
         	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
     	}
     }
-    
+
     /** User DN as stored in the database. If the registered DN has unused DN fields the empty ones are kept, i.e.
      * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
      * Use method getCertificateDN() to get the DN stripped from empty fields.
@@ -233,17 +234,19 @@ public class EndEntityInformation implements Serializable {
     public int getHardTokenIssuerId() {return this.hardtokenissuerid;}
     public void setHardTokenIssuerId(int hardtokenissuerid) { this.hardtokenissuerid=hardtokenissuerid;}
 
-    
+
     /**
-     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
+     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean.
      */
+    @Deprecated
     public boolean getAdministrator(){
       return getType().contains(EndEntityTypes.ADMINISTRATOR);
     }
 
     /**
-     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
+     * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean.
      */
+    @Deprecated
     public void setAdministrator(final boolean administrator){
         final EndEntityType type = getType();
         if (administrator) {
@@ -285,7 +288,7 @@ public class EndEntityInformation implements Serializable {
         }
         setType(type);
     }
-    
+
     public boolean getPrintUserData(){
         return getType().contains(EndEntityTypes.PRINT);
     }
@@ -320,13 +323,13 @@ public class EndEntityInformation implements Serializable {
     public static ExtendedInformation getExtendedInformationFromStringData(final String extendedinfostring) {
         ExtendedInformation returnval = null;
         if (extendedinfostring != null && !extendedinfostring.isEmpty() ) {
-            try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {            	
+            try (final java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(new ByteArrayInputStream(extendedinfostring.getBytes(StandardCharsets.UTF_8)));) {
             	final HashMap<?, ?> data = (HashMap<?, ?>) decoder.readObject();
             	// No need to b64 decode Integer value, just read it
             	final int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch (type) {
             	case ExtendedInformation.TYPE_BASIC :
-            	    returnval = new ExtendedInformation();            	
+            	    returnval = new ExtendedInformation();
             	    returnval.loadData(data);
             	    break;
             	}
@@ -334,7 +337,7 @@ public class EndEntityInformation implements Serializable {
         }
         return returnval;
     }
-    
+
     public static String extendedInformationToStringData(final ExtendedInformation extendedinformation) {
     	String ret = null;
     	if (extendedinformation != null){
@@ -365,7 +368,7 @@ public class EndEntityInformation implements Serializable {
             return StringTools.getBase64String(subjectDNClean);
     	}
     }
-    
+
     /**
      * @return an information map about this end entity, listing all general fields.
      */
@@ -403,10 +406,10 @@ public class EndEntityInformation implements Serializable {
         details.put("username", username);
         return details;
     }
-    
+
     /**
-     * 
-     * 
+     *
+     *
      * @param other another {@link EndEntityInformation}
      * @return the differences between this map and the parameter, as <key, [thisValue, otherValue]>
      */
