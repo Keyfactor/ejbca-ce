@@ -26,6 +26,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -65,10 +66,10 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-/** 
+/**
  * Implementation of KeyStoreCreateSession
- * Class that has helper methods to generate tokens for users in ejbca. 
- * 
+ * Class that has helper methods to generate tokens for users in ejbca.
+ *
  * @version $Id$
  */
 
@@ -91,7 +92,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
     private SignSessionLocal signSession;
-    
+
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
             String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
@@ -99,9 +100,10 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
-            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException { 
-        
-        KeyStore keyStore = generateOrKeyRecoverToken(administrator,  username,  password,  caid,  keyspec, keyalg,  createJKS,  loadkeys,  savekeys,  reusecertificate,  endEntityProfileId);
+            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, createJKS, loadkeys,
+                savekeys,
+                reusecertificate, endEntityProfileId);
         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             keyStore.store(outputStream, password.toCharArray());
             return outputStream.toByteArray();
@@ -110,10 +112,12 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         return null;
     }
-    
+
     @Override
-    public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+    public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid,
+            String keyspec, String keyalg, Date notBefore, Date notAfter, boolean createJKS, boolean loadkeys, boolean savekeys,
+            boolean reusecertificate,
+            int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
@@ -149,12 +153,12 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 }
     			keyRecoverySession.unmarkUser(administrator,username);
     		}
-    		caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate 
+    		caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate
     	} else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new keys for user: "+ username);
             }
-            
+
             //KeyStore algorithm specification inside endEntityInformation has priority since its algorithm is approved
             if (userdata.getExtendedInformation() != null) {
                 if (userdata.getExtendedInformation().getKeyStoreAlgorithmType() != null
@@ -174,7 +178,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	}
     	X509Certificate cert = null;
     	if ((reusecertificate) && (keyData != null)) {
-    		cert = (X509Certificate) keyData.getCertificate();
+            cert = (X509Certificate) keyData.getCertificate(); // TODO Validity ignored here?
     		boolean finishUser = true;
 			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
@@ -184,7 +188,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-			cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()));
+            cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()), -1,
+                    notBefore, notAfter);
     	}
     	// Clear password from database
     	userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
@@ -202,7 +207,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
     	}
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = (Certificate[]) signSession.getCertificateChain(caid).toArray(new Certificate[0]);
+        Certificate[] cachain = signSession.getCertificateChain(caid).toArray(new Certificate[0]);
         // Verify CA-certificate
     	Certificate rootcert = cachain[cachain.length - 1];
     	if (CertTools.isSelfSigned(rootcert)) {

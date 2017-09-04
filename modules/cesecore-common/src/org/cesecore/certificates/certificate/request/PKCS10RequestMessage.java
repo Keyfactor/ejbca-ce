@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
 import java.io.IOException;
@@ -71,7 +71,10 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     /** manually set username */
     protected String username = null;
-    
+
+    protected Date notAfter = null;
+    protected Date notBefore = null;
+
     /** If the CA certificate should be included in the response or not, default to true = yes */
     protected boolean includeCACert = true;
 
@@ -103,7 +106,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param msg The DER encoded PKCS#10 request.
-     * @throws IOException 
+     * @throws IOException
      */
     public PKCS10RequestMessage(byte[] msg) {
     	if (log.isTraceEnabled()) {
@@ -120,7 +123,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param p10 the PKCS#10 request
-     * @throws IOException 
+     * @throws IOException
      */
     public PKCS10RequestMessage(JcaPKCS10CertificationRequest p10) throws IOException {
     	if (log.isTraceEnabled()) {
@@ -133,10 +136,10 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
     }
 
-    private void init() {        
+    private void init() {
         if(p10msg == null) {
             throw new NullPointerException("Cannot initiate with p10msg == null");
-        }       
+        }
         try {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
@@ -156,7 +159,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         return pkcs10.getPublicKey();
     }
 
-    /** 
+    /**
      * force a password, i.e. ignore the challenge password in the request
      */
     public void setPassword(String pwd) {
@@ -177,14 +180,14 @@ public class PKCS10RequestMessage implements RequestMessage {
             return null;
         }
 
-        String ret = null;      
+        String ret = null;
         Attribute[] attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
         ASN1Encodable obj = null;
         if (attributes.length == 0) {
             // See if we have it embedded in an extension request instead
             attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
             if (attributes.length == 0) {
-                return null;                
+                return null;
             }
             if (log.isDebugEnabled()) {
             	log.debug("got extension request");
@@ -226,11 +229,21 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /** 
+    /**
      * force a username, i.e. ignore the DN/username in the request
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    /**
+     * Set the date after which the private key no longer will be valid, or null to
+     * use the default validity specified in the certificate profile. The value
+     * specified here will only be considered if user-defined validity dates are
+     * allowed by the certificate profile, e.g. if Validity override" is enabled.
+     */
+    public void setNotAfter(final Date notAfter) {
+        this.notAfter = notAfter;
     }
 
     @Override
@@ -238,7 +251,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         if (username != null) {
             return username;
         }
-        // Special if the DN contains unstructuredAddress where it becomes: 
+        // Special if the DN contains unstructuredAddress where it becomes:
         // CN=pix.primekey.com + unstructuredAddress=pix.primekey.com
         // We only want the CN and not the oid-part.
         // Luckily for us this is handles automatically by BC X500Name class
@@ -258,20 +271,20 @@ public class PKCS10RequestMessage implements RequestMessage {
                         break;
                     }
                 }
-                // If we have a CN with a normal name like "Test Testsson" we only want to 
+                // If we have a CN with a normal name like "Test Testsson" we only want to
                 // use the first part as the username
             	int index = ret.indexOf(' ');
             	if (index > 0) {
             		ret = ret.substring(0, index);
             	}
-            }        	
+            }
         }
         if (log.isDebugEnabled()) {
         	log.debug("UserName='" + ret + "'");
         }
         return ret;
     }
- 
+
     @Override
     public String getIssuerDN() {
         return null;
@@ -281,7 +294,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     public BigInteger getSerialNo() {
     	return null;
     }
-    
+
     @Override
     public String getCRLIssuerDN() {
         return null;
@@ -298,7 +311,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     	X500Name name = getRequestX500Name();
     	if (name != null) {
     		String dn = name.toString();
-    		// We have to make special handling again for Cisco devices. 
+    		// We have to make special handling again for Cisco devices.
     		// they will submit requests like: SN=FFFFFF+unstructuredName=Router
     		// EJBCA does not handle this very well so we will change it to: SN=FFFFFF,unstructuredName=Router
     		dn = dn.replace("+unstructuredName=", ",unstructuredName=");
@@ -325,7 +338,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         }
         return X500Name.getInstance(new CeSecoreNameStyle(), pkcs10.getSubject());
     }
-    
+
     @Override
     public String getRequestAltNames() {
         String ret = null;
@@ -335,12 +348,12 @@ public class PKCS10RequestMessage implements RequestMessage {
         		Extension ext = exts.getExtension(Extension.subjectAlternativeName);
                 if (ext != null) {
                     // Finally read the value
-            		ret = CertTools.getAltNameStringFromExtension(ext);        	
+            		ret = CertTools.getAltNameStringFromExtension(ext);
                 } else {
                     if (log.isDebugEnabled()) {
                     	log.debug("no subject altName extension");
                     }
-                }        		
+                }
         	}
         } catch (IllegalArgumentException e) {
             if (log.isDebugEnabled()) {
@@ -352,14 +365,14 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
 	public Date getRequestValidityNotBefore() {
-		return null;
+        return notBefore;
 	}
-	
+
     @Override
 	public Date getRequestValidityNotAfter() {
-		return null;
+        return notAfter;
 	}
-	
+
     @Override
 	public Extensions getRequestExtensions() {
         try {
@@ -374,7 +387,7 @@ public class PKCS10RequestMessage implements RequestMessage {
 
         // Get attributes
         // The X509 extension is in a a pkcs_9_at_extensionRequest
-       
+
         // See if we have it embedded in an extension request instead
         Attribute[] attr = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         if (attr.length != 0) {
@@ -395,7 +408,7 @@ public class PKCS10RequestMessage implements RequestMessage {
 
         return ret;
 	}
-	
+
     /**
      * Gets the underlying BC <code>PKCS10CertificationRequest</code> object.
      *
@@ -415,18 +428,18 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     @Override
-    public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException {    
+    public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException {
         return verify(null);
     }
-    
+
     public boolean verify(PublicKey pubKey) throws InvalidKeyException, NoSuchAlgorithmException {
     	if (log.isTraceEnabled()) {
     		log.trace(">verify()");
-    	}	
+    	}
     	 if (pkcs10 == null) {
              init();
          }
-    	
+
         ContentVerifierProvider verifierProvider;
         try {
             if (pubKey == null) {
@@ -482,12 +495,12 @@ public class PKCS10RequestMessage implements RequestMessage {
     public byte[] getRequestKeyInfo() {
         return null;
     }
-    
+
     @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
-    
+
     @Override
     public boolean includeCACert() {
     	return includeCACert;
@@ -497,12 +510,12 @@ public class PKCS10RequestMessage implements RequestMessage {
     public int getRequestType() {
     	return 0;
     }
-    
+
     @Override
     public int getRequestId() {
     	return 0;
     }
-    
+
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         this.responsePrivateKey = key;
@@ -511,4 +524,4 @@ public class PKCS10RequestMessage implements RequestMessage {
         }
     }
 
-} 
+}

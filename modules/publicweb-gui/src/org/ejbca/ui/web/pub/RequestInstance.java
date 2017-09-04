@@ -82,7 +82,7 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
 /**
- * 
+ *
  * @version $Id$
  *
  */
@@ -91,10 +91,10 @@ public class RequestInstance {
 
 	private static final Logger log = Logger.getLogger(RequestInstance.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-	
+
     /** Max size of request parameters that we will receive */
     private static final int REQUEST_MAX_SIZE = 10000;
-    
+
     private class IncomatibleTokenTypeException extends EjbcaException {
         private static final long serialVersionUID = 5435852400591856793L;
 
@@ -102,7 +102,7 @@ public class RequestInstance {
             super(ErrorCode.BAD_USER_TOKEN_TYPE);
         }
     }
- 
+
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
 	private CaSessionLocal caSession;
@@ -113,7 +113,7 @@ public class RequestInstance {
 	private EndEntityManagementSessionLocal endEntityManagementSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	private EndEntityAccessSessionLocal endEntityAccessSession;
-	
+
 	private String password=null;
 	private String username=null;
 	private String openvpn=null;
@@ -124,11 +124,11 @@ public class RequestInstance {
 	private String keylengthstring=null;
 	private String keyalgstring=null;
 
-	/** HttpServletrequest.getParametersMap has changed from Map<String,Object> to Map<String,String[]> so 
+	/** HttpServletrequest.getParametersMap has changed from Map<String,Object> to Map<String,String[]> so
 	 * we can not be type safe here */
     @SuppressWarnings("rawtypes")
     private Map params = null;
-	
+
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAccessSessionLocal endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyStoreCreateSessionLocal keyStoreCreateSession,
 	        SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
@@ -193,7 +193,7 @@ public class RequestInstance {
     }
 
 
-    // set key lengths, but can be overridden by request parameter 
+    // set key lengths, but can be overridden by request parameter
     public void setKeylength(String keylength) {
         this.keylength = keylength;
     }
@@ -203,7 +203,7 @@ public class RequestInstance {
         return keyalg;
     }
 
-    // set key algorithm, but can be overridden by request parameter 
+    // set key algorithm, but can be overridden by request parameter
     public void setKeyalg(String keyalg) {
         this.keyalg = keyalg;
     }
@@ -229,7 +229,7 @@ public class RequestInstance {
         this.keyalgstring = keyalgstring;
     }
 
-    
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ServletDebug debug = new ServletDebug(request, response);
 		boolean usekeyrecovery = false;
@@ -243,21 +243,21 @@ public class RequestInstance {
              ** If parameters are not set by Set... they must be
              ** provided by request
              *********************************************************************/
-            if (username==null) { 
-                username = StringUtils.strip(getParameter("user")); 
+            if (username==null) {
+                username = StringUtils.strip(getParameter("user"));
             }
-            if (password==null) { 
-                password = getParameter("password"); 
+            if (password==null) {
+                password = getParameter("password");
             }
-            if (openvpn==null) { 
-                openvpn = getParameter("openvpn"); 
+            if (openvpn==null) {
+                openvpn = getParameter("openvpn");
             }
-            if (certprofile==null) { 
-                certprofile = getParameter("certprofile"); 
+            if (certprofile==null) {
+                certprofile = getParameter("certprofile");
             }
             if (keyalgstring==null && keylengthstring==null) {
             	// For token generation the option comes in the form "KEYALGORITHM_KEYSPEC"
-                final String tokenKeySpec = getParameter("tokenKeySpec"); 
+                final String tokenKeySpec = getParameter("tokenKeySpec");
                 if (tokenKeySpec!=null) {
                     final String[] tokenKeySpecSplit = tokenKeySpec.split("_");
                     if (tokenKeySpecSplit.length==2) {
@@ -266,11 +266,11 @@ public class RequestInstance {
                     }
                 }
             }
-            if (keylengthstring==null) { 
-                keylengthstring = getParameter("keylength"); 
+            if (keylengthstring==null) {
+                keylengthstring = getParameter("keylength");
             }
-            if (keyalgstring==null) { 
-                keyalgstring = getParameter("keyalg"); 
+            if (keyalgstring==null) {
+                keyalgstring = getParameter("keyalg");
             }
             // If nothing has been set by setKeyLengthString and nothing is received by request parameters use default value of keylength
             if (keylengthstring != null) {
@@ -322,7 +322,7 @@ public class RequestInstance {
 			if (StringUtils.isNotEmpty(certprofile)) {
 				boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
 				int id = certificateProfileSession.getCertificateProfileId(certprofile);
-				// Change the value if there exists a certprofile with the requested name, and it is not the same as 
+				// Change the value if there exists a certprofile with the requested name, and it is not the same as
 				// the one already registered to be used by default
                 if (id > 0) {
 					if (id != certificateProfileId) {
@@ -333,7 +333,7 @@ public class RequestInstance {
 							// This admin can be the public web user, which may not be allowed to change status,
 							// this is a bit ugly, but what can a man do...
 							AuthenticationToken tempadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance"+request.getRemoteAddr()));
-							endEntityManagementSession.changeUser(tempadmin, data, clearpwd);            		            			
+							endEntityManagementSession.changeUser(tempadmin, data, clearpwd);
 						} else {
 							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
 							log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
@@ -353,8 +353,9 @@ public class RequestInstance {
 			    if (hasCSRInRequest()) {
 			        throw new IncomatibleTokenTypeException();
 			    }
-				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
-				if (StringUtils.equals(openvpn, "on")) {            	  
+                KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
+                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+				if (StringUtils.equals(openvpn, "on")) {
 					sendOpenVPNToken(ks, username, password, response);
 				} else {
 					sendP12Token(ks, username, password, response);
@@ -366,7 +367,8 @@ public class RequestInstance {
                 if (hasCSRInRequest()) {
                     throw new IncomatibleTokenTypeException();
                 }
-				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
+                        null, null, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
@@ -375,7 +377,8 @@ public class RequestInstance {
                 if (hasCSRInRequest()) {
                     throw new IncomatibleTokenTypeException();
                 }
-				KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+                KeyStore ks = keyStoreCreateSession.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg,
+                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -432,7 +435,7 @@ public class RequestInstance {
 
 						}
 					} else {
-						reqBytes=pkcs10req.getBytes(); // The pasted request            		  
+						reqBytes=pkcs10req.getBytes(); // The pasted request
 					}
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
@@ -464,7 +467,7 @@ public class RequestInstance {
 
 						}
 					} else {
-						reqBytes=req.getBytes(); // The pasted request            		  
+						reqBytes=req.getBytes(); // The pasted request
 					}
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
@@ -493,7 +496,7 @@ public class RequestInstance {
                         if (log.isDebugEnabled()) {
                             log.debug("Filename: "+filename);
                         }
-						if(resulttype == CertificateResponseType.BINARY_CERTIFICATE) {  
+						if(resulttype == CertificateResponseType.BINARY_CERTIFICATE) {
 							RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", filename+".cvcert");
 						}
 						if(resulttype == CertificateResponseType.ENCODED_CERTIFICATE) {
@@ -503,7 +506,7 @@ public class RequestInstance {
 						throw new SignRequestException("No request bytes received.");
 					}
 				} else {
-				    // throw general exception, will be caught below and all parameters printed. 
+				    // throw general exception, will be caught below and all parameters printed.
                     throw new Exception("No known request type received.");
 				}
 			}
@@ -562,7 +565,7 @@ public class RequestInstance {
 				// this is already logged as an error, so no need to log it one more time
 				debug.printMessage(iMsg);
 				debug.printDebugInfo();
-				return;				
+				return;
 			} else {
 				if (e1 == null) { e1 = e; }
                 String iMsg = intres.getLocalizedMessage("certreq.errorgeneral", e1.getMessage());
@@ -608,11 +611,11 @@ public class RequestInstance {
         }
         return false;
     }
-    
+
     /**
      * Determines whether the issuer of a certificate is a "throw away" CA, i.e.
      * if it does not store certificates it issues in the database.
-     * 
+     *
      * @param certbytes DER encoded certificate.
      * @throws CertificateException
      */
@@ -625,11 +628,11 @@ public class RequestInstance {
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
         return (!caInfo.isUseCertificateStorage() && !certificateProfile.getUseCertificateStorage()) || !certificateProfile.getStoreCertificateData();
     }
-    
+
 	/**
 	 * Method creating a Map of request values, designed to handle both
 	 * regular x-encoded forms and multipart encoded upload forms.
-	 * 
+	 *
 	 * @param request
 	 *            HttpServletRequest
 	 * @throws FileUploadException
@@ -681,7 +684,7 @@ public class RequestInstance {
 			        if ( str[0].length() > REQUEST_MAX_SIZE ) {
 			            if (log.isDebugEnabled()) {
 			                log.debug("Parameter (first in list) '"+param+"' exceed size limit of "+REQUEST_MAX_SIZE);
-			            }	                    
+			            }
 			        } else {
 			            ret = str[0];
 			        }
@@ -713,7 +716,7 @@ public class RequestInstance {
                         RequestHelper.END_CERTIFICATE_WITH_NL);
                 break;
             case ENCODED_CERTIFICATE_CHAIN:
-                //Begin/end keys have already been set in the serialized object 
+                //Begin/end keys have already been set in the serialized object
                 RequestHelper.sendNewB64File(b64data, response, username + ".pem", "", "");
                 break;
             default:
