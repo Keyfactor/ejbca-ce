@@ -64,8 +64,8 @@ public class UserMatch extends BasicMatch {
     };
 
     // Represents the column names in ra userdata table.
-    private static final String MATCH_WITH_USERNAMESTRING = "username";
-    private static final String MATCH_WITH_SUBJECTDN = "subjectDN";
+    private static final String MATCH_WITH_USERNAMESTRING = "UPPER(username)";
+    private static final String MATCH_WITH_SUBJECTDN = "UPPER(subjectDN)";
     private static final String[] MATCH_WITH_SUBJECTDN_NAMES = {
         "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=",
         "DC", "C="
@@ -105,7 +105,7 @@ public class UserMatch extends BasicMatch {
     @Override
     public String getQueryString() {
         String returnval = "";
-        final String matchvalue = super.escapeSql(this.matchvalue);
+        final String matchvalue = super.escapeSql(this.matchvalue).toUpperCase();
         if (isSubjectDNMatch()) {
             // Ignore MATCH_TYPE_EQUALS.
             returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
