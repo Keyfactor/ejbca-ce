@@ -79,7 +79,7 @@ import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
@@ -256,7 +256,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     /**
      * Process a request in the CA module.
-     * 
+     *
      * @param admin is the requesting administrator
      * @param msg is the request message processed by the CA
      * @param hardTokenSN is the hard token to associate this or null
@@ -324,7 +324,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String password = userdata.getPassword();
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
-            KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys,
+            KeyStore keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, null, null,
+                    createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

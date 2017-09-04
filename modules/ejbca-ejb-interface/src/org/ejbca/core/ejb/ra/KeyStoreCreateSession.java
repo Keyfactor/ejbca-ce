@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -33,36 +34,37 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
- * 
+ *
  * @version $Id$
  *
  */
 public interface KeyStoreCreateSession {
-    
+
     /**
      * This method generates a new pkcs12 or jks token for a user, and key recovers the token, if the user is configured for that in EJBCA.
-     * 
+     *
      * @param administrator administrator performing the action
      * @param username username in ejbca
      * @param password password for user
      * @param caid caid of the CA the user is registered for
-     * @param keyspec name of ECDSA key or length of RSA and DSA keys (endEntityInformation.extendedInformation.keyStoreAlgorithmSubType has priority over this value) 
+     * @param keyspec name of ECDSA key or length of RSA and DSA keys (endEntityInformation.extendedInformation.keyStoreAlgorithmSubType has priority over this value)
      * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
+     * @param notBefore The date at which the private key starts to be valid, or null
+     * @param notAfer The date at which the private key should be considered expired, or null
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @param loadkeys true if keys should be recovered
      * @param savekeys true if generated keys should be stored for keyrecovery
      * @param reusecertificate true if the old certificate should be reused for a recovered key
      * @param endEntityProfileId the end entity profile the user is registered for
-     * 
+     *
      * @return a keystore
-     * 
+     *
      * @throws AuthorizationDeniedException if the authentication token was not allowed access to the EEP or CA of the end entity, to recover keys,
      * to issue certificates
      * @throws KeyStoreException if keys were set to be recovered, but no key recovery data was found
@@ -75,12 +77,12 @@ public interface KeyStoreCreateSession {
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * @throws CAOfflineException if the CA was offline
      * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
-     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found 
-     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA. 
-     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not. 
-     * @throws IllegalNameException if the certificate request contained an illegal name 
-     * @throws CertificateCreateException (rollback) if certificate couldn't be created. 
-     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile. 
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws IllegalNameException if the certificate request contained an illegal name
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
      * @throws NoSuchEndEntityException if the end entity was not found
      * @throws EndEntityProfileValidationException if the password doesn't fulfill the demands set by the EE profile
      * @throws CertificateSignatureException if verification of the CA certificate failed
@@ -90,6 +92,7 @@ public interface KeyStoreCreateSession {
      * @throws CertificateEncodingException if there was a problem with the certificate
      */
     KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, String keyalg,
+            Date notAfter, Date notBefore,
             boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,

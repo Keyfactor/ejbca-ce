@@ -34,16 +34,16 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ValidityDate;
 
 /**
- * The model representation of Extended Information about a user. It's used for non-searchable data about a user, 
+ * The model representation of Extended Information about a user. It's used for non-searchable data about a user,
  * like a image, in an effort to minimize the need for database alterations
- * 
+ *
  * TODO: Clean out whatever final static variables which aren't externally references.
- * 
+ *
  * @version $Id$
  *
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements Serializable {
-   
+
     public static final String TYPE = "type";
     /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
     public static final int TYPE_BASIC = 0;
@@ -64,11 +64,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public  static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed */
     public  static final String CUSTOMDATA = "customdata_";
-    
+
     /**
-     * Extension data can be used by the BasicCertificateExtension or custom 
-     * certificate extensions to store data to be used when creating the 
-     * extension such as the extension value. 
+     * Extension data can be used by the BasicCertificateExtension or custom
+     * certificate extensions to store data to be used when creating the
+     * extension such as the extension value.
      */
     public static final String EXTENSIONDATA = "extensiondata_";
 
@@ -80,7 +80,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.ENDTIME, "");
      */
     public  static final String CUSTOM_ENDTIME = "ENDTIME"; // EndEntityProfile.ENDTIME;
-    
+
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
     public  static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
 
@@ -103,18 +103,18 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private  static final String CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
-    
+
     /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
     private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
-    
+
     /** The ID of the approval request that was submitted to create the end entity */
     private static String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
     /** The IDs of the approval requests that were submitted to edit the end entity */
     private static String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
     /** The IDs of the approval requests that were submitted to revoke the end entity */
     private static String REVOKE_EE_APPROVAL_REQUEST_IDS = "REVOKE_EE_APPROVAL_REQUEST_IDS";
-    
+
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
     private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
@@ -127,38 +127,38 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
         setCertificateRequest(null);
     }
-    
+
     /**
      * Copy constructor
-     * 
+     *
      * @param extendedInformation the ExtendedInformation map top copy
      */
     public ExtendedInformation(final ExtendedInformation extendedInformation) {
         this.data = extendedInformation.getClonedData();
     }
-    
+
     /** @return The keystore algorithm subtype is the key length for RSA/DSA ('2046', '4096',...) or curve specification for ECDSA
      *  ('brainpoolP224r1', 'prime239v1', 'secp256k1'...) if it was provided during user enrollment request, null otherwise. Default: null*/
     public String getKeyStoreAlgorithmSubType(){
         return (String) data.get(KEYSTORE_ALGORITHM_SUBTYPE);
     }
-    
+
     public void setKeyStoreAlgorithmSubType(String keyStoreAlgorithmSubType){
         data.put(KEYSTORE_ALGORITHM_SUBTYPE, keyStoreAlgorithmSubType);
     }
-    
+
     /** @return The keystore algorithm type (RSA, DSA, ECDSA) if it was provided during user enrollment request, null otherwise. Default: null*/
     public String getKeyStoreAlgorithmType(){
         return (String) data.get(KEYSTORE_ALGORITHM_TYPE);
     }
-    
+
     public void setKeyStoreAlgorithmType(String keyStoreAlgorithmType){
         data.put(KEYSTORE_ALGORITHM_TYPE, keyStoreAlgorithmType);
     }
-    
+
     /** @return The certificate request in binary asn.1 form if it was provided during user enrollment request, null otherwise.*/
     public byte[] getCertificateRequest() {
-        // For legacy reasons (<EJBCA 6.7.0) the data in the database may be stored in binary format. 
+        // For legacy reasons (<EJBCA 6.7.0) the data in the database may be stored in binary format.
         // We will make the optimistic assumption that it is b64 encoded first
         final Object o = data.get(CERTIFICATE_REQUEST);
         if (o == null) {
@@ -168,11 +168,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             return Base64.decode(((String)o).getBytes(StandardCharsets.UTF_8));
         } catch (DecoderException | ClassCastException e) {
             // Not base 64 encoded, return binary bytes
-            return (byte[])o;            
+            return (byte[])o;
         }
     }
-    
-    /** 
+
+    /**
      * @param certificateRequest a CSR in binary asn.1 format
      */
     public void setCertificateRequest(byte[] certificateRequest) {
@@ -206,7 +206,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Set the number of remaining login attempts. -1 means unlimited.
-     * 
+     *
      * @param remainingLoginAttempts
      *            The number to set
      */
@@ -222,8 +222,27 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /**
+     * @return The certificate validity end time or null if not specified.
+     */
+    public String getCertificateEndTime() {
+        final Object o = data.get(CUSTOMDATA + CUSTOM_ENDTIME);
+        if (o == null) {
+            return null;
+        }
+        return o.toString();
+    }
+
+    /**
+     * Set the certificate validity end time to a user-defined value.
+     * @param value The certificate validity
+     */
+    public void setCertificateEndTime(final String value) {
+        data.put(CUSTOMDATA + CUSTOM_ENDTIME, value);
+    }
+
+    /**
      * Set the number of maximum allowed failed login attempts. -1 means unlimited.
-     * 
+     *
      * @param remainingLoginAttempts
      *            The number to set
      */
@@ -257,7 +276,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Returns the issuance revocation code configured on the end entity extended information.
-     * 
+     *
      * @param data user data
      * @return issuance revocation code configured on the end entity extended information, a constant from RevokedCertInfo. Default
      *         RevokedCertInfo.NOT_REVOKED.
@@ -276,13 +295,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
     * Sets the issuance revocation code configured on the end entity extended information.
-    * 
+    *
     * @param reason issuance revocation code, a constant from RevokedCertInfo such as RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD.
     */
     public void setIssuanceRevocationReason(int reason) {
     	setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + reason);
     }
-    
+
     /** @return Encoded name constraints to permit */
     public List<String> getNameConstraintsPermitted() {
         String value = (String) data.get(NAMECONSTRAINTS_PERMITTED);
@@ -291,7 +310,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
         return new ArrayList<String>(Arrays.asList(value.split(";")));
     }
-    
+
     public void setNameConstraintsPermitted(List<String> encodedNames) {
         if (encodedNames == null) {
             data.remove(NAMECONSTRAINTS_PERMITTED);
@@ -299,7 +318,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             data.put(NAMECONSTRAINTS_PERMITTED, StringUtils.join(encodedNames, ';'));
         }
     }
-    
+
     /** @return Encoded name constraints to exclude */
     public List<String> getNameConstraintsExcluded() {
         String value = (String) data.get(NAMECONSTRAINTS_EXCLUDED);
@@ -308,7 +327,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
         return new ArrayList<String>(Arrays.asList(value.split(";")));
     }
-    
+
     public void setNameConstraintsExcluded(List<String> encodedNames) {
         if (encodedNames == null) {
             data.remove(NAMECONSTRAINTS_EXCLUDED);
@@ -347,7 +366,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Special method used to retrieve custom set userdata
-     * 
+     *
      * @returns The data or null if no such data have been set for the user
      */
     public String getCustomData(String key) {
@@ -360,21 +379,21 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @param customly defined key to store the data with
      * @param the string representation of the data
      */
-    public void setExtensionData(String key, String value) {        	    	
+    public void setExtensionData(String key, String value) {
     	data.put(EXTENSIONDATA + key, value);
     }
-    
+
     /**
      * Special method used to retrieve custom extension data.
      * @returns The data or null if no such data have been set for the user
      */
-    public String getExtensionData(String key){ 
-    	String retval = (String) data.get(EXTENSIONDATA + key);	
+    public String getExtensionData(String key){
+    	String retval = (String) data.get(EXTENSIONDATA + key);
     	return retval;
     }
-    
+
     /**
-     * 
+     *
      * @param customly
      *            defined key to store the data with
      * @param the
@@ -395,12 +414,14 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
 
+    @Override
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
@@ -487,7 +508,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Method that returns the classpath to the this or inheriting classes.
-     * 
+     *
      * @return String containing the classpath.
      */
     public int getType() {
@@ -496,16 +517,16 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 
     /**
      * Method used to specify which kind of object that should be created during deserialization process.
-     * 
+     *
      * Inheriting class should call 'setClassPath(this) in it's constructor.
-     * 
+     *
      * @param object
      */
     private void setType(int type) {
         data.put(TYPE, type);
     }
 
-    
+
     public Integer getAddEndEntityApprovalRequestId() {
         Object id = data.get(ADD_EE_APPROVAL_REQUEST_ID);
         if(id != null) {
@@ -513,11 +534,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
         return null;
     }
-    
+
     public void setAddEndEntityApprovalRequestId(Integer requestId) {
         data.put(ADD_EE_APPROVAL_REQUEST_ID, requestId);
     }
-    
+
     public List<Integer> getEditEndEntityApprovalRequestIds() {
         @SuppressWarnings("unchecked")
         ArrayList<Integer> ids = (ArrayList<Integer>) data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
@@ -526,7 +547,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
         return new ArrayList<Integer>();
     }
-    
+
     public void addEditEndEntityApprovalRequestId(Integer requestId) {
         Object obj = data.get(EDIT_EE_APPROVAL_REQUEST_IDS);
         @SuppressWarnings("unchecked")
@@ -534,7 +555,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         ids.add(requestId);
         data.put(EDIT_EE_APPROVAL_REQUEST_IDS, ids);
     }
-    
+
     public List<Integer> getRevokeEndEntityApprovalRequestIds() {
         @SuppressWarnings("unchecked")
         ArrayList<Integer> ids = (ArrayList<Integer>) data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
@@ -543,7 +564,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
         return new ArrayList<Integer>();
     }
-    
+
     public void addRevokeEndEntityApprovalRequestId(Integer requestId) {
         @SuppressWarnings("unchecked")
         List<Integer> obj = (List<Integer>) data.get(REVOKE_EE_APPROVAL_REQUEST_IDS);
@@ -551,5 +572,5 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         ids.add(requestId);
         data.put(REVOKE_EE_APPROVAL_REQUEST_IDS, ids);
     }
-    
+
 }
