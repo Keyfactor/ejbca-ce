@@ -184,9 +184,8 @@ public class EndEntityInformation implements Serializable {
             dn = "";
         }
     	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
-        final StringBuilder removedTrailingEmpties = new StringBuilder(dn.length());
-        final boolean areEqual = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, removedTrailingEmpties);
-        if (areEqual) {
+        final StringBuilder removedTrailingEmpties = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, true);
+        if (removedTrailingEmpties == null) {
         	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
         	this.subjectDN=this.subjectDNClean;
     	} else {
