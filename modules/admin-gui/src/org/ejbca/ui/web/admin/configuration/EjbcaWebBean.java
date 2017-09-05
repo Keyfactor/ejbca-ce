@@ -246,7 +246,7 @@ public class EjbcaWebBean implements Serializable {
             // Since the errorpage.jsp requires a database connection to show, it does not make any sense
             // to move this code there..
             final Throwable cause = e.getCause();
-            if (cause instanceof SQLException || cause.getMessage().indexOf("SQLException", 0) >= 0) {
+            if ( cause instanceof SQLException || (cause.getMessage() != null && cause.getMessage().indexOf("SQLException", 0) >= 0) ) {
                 throw new Exception(getText("DATABASEDOWN"), e);
             }
             throw e;
