@@ -39,7 +39,7 @@ public class QueryTest {
         query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, "foo");
         str = query.getQueryString();
-        assertEquals("username = 'foo'", str);
+        assertEquals("UPPER(username) = 'FOO'", str);
         
         log.trace("<test01TestUserQuery()");
     }
@@ -49,10 +49,10 @@ public class QueryTest {
         log.trace(">testUserQueryTrim");
         final Query query1 = new Query(Query.TYPE_USERQUERY);
         query1.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, " Common Name ");
-        assertEquals("username = 'Common Name'", query1.getQueryString());
+        assertEquals("UPPER(username) = 'COMMON NAME'", query1.getQueryString());
         final Query query2 = new Query(Query.TYPE_USERQUERY);
         query2.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "Common Name ");
-        assertEquals("username LIKE 'Common Name %'", query2.getQueryString());
+        assertEquals("UPPER(username) LIKE 'COMMON NAME %'", query2.getQueryString());
         log.trace("<testUserQueryTrim");
     }
 
@@ -61,13 +61,13 @@ public class QueryTest {
         log.trace(">testUserQuerySingleQuote");
         final Query query1 = new Query(Query.TYPE_USERQUERY);
         query1.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, " D'Greatest ");
-        assertEquals("username = 'D''Greatest'", query1.getQueryString());
+        assertEquals("UPPER(username) = 'D''GREATEST'", query1.getQueryString());
         final Query query2 = new Query(Query.TYPE_USERQUERY);
         query2.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "D'Greatest ");
-        assertEquals("username LIKE 'D''Greatest %'", query2.getQueryString());
+        assertEquals("UPPER(username) LIKE 'D''GREATEST %'", query2.getQueryString());
         final Query query3 = new Query(Query.TYPE_USERQUERY);
         query3.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, "D''Greatest");
-        assertEquals("username LIKE 'D''''Greatest%'", query3.getQueryString());
+        assertEquals("UPPER(username) LIKE 'D''''GREATEST%'", query3.getQueryString());
         log.trace("<testUserQuerySingleQuote");
     }
 }
