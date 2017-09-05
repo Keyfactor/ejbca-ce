@@ -114,11 +114,13 @@ public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessio
                 // Ensure that it is removed from cache when the object is no longer present in the database
                 RoleCache.INSTANCE.removeEntry(roleId);
             } else {
-                final Role role = roleData==null ? null : roleData.getRole();
+                final Role role = roleData.getRole();
                 final int digest = role.hashCode();
                 // 3. The cache compares the database data with what is in the cache
                 // 4. If database is different from cache, replace it in the cache
                 RoleCache.INSTANCE.updateWith(roleId, digest, Role.getRoleNameFullAsCacheName(role.getNameSpace(), role.getRoleName()), role);
+                // Return role, working even if the cache is disabled
+                return role;
             }
         }
         // 5. Get object from cache now (or null) and be merry
