@@ -104,7 +104,12 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeOut(final Timer timer) {
         authorizationSession.refreshAuthorizationCache();
-        timerService.createSingleActionTimer(CesecoreConfiguration.getCacheAuthorizationTime(), new TimerConfig("AuthorizationSessionTimer", false));
+        final long interval = CesecoreConfiguration.getCacheAuthorizationTime();
+        if (interval > 0) {
+            timerService.createSingleActionTimer(interval, new TimerConfig("AuthorizationSessionTimer", false));
+        } else {
+            log.debug("Authorization cache disabled (-1), not creating new timer.");
+        }
     }
 
     @Override
