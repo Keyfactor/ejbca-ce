@@ -161,5 +161,6 @@
 	<classpathentry kind="lib" path="lib/jee/javaee-api-6.0-6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
