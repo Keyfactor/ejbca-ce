@@ -113,6 +113,8 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
                 // 3. The cache compares the database data with what is in the cache
                 // 4. If database is different from cache, replace it in the cache
                 RoleMemberCache.INSTANCE.updateWith(primaryKey, roleMember.hashCode(), null, roleMember);
+                // Return role member, working even if the cache is disabled
+                return roleMember;
             }
         }
         // 5. Get object from cache now (or null) and be merry
