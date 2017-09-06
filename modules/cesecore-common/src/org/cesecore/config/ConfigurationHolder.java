@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -197,7 +196,7 @@ public final class ConfigurationHolder {
         @SuppressWarnings("unchecked")
         final Iterator<String> i = instance().getKeys();
         while (i.hasNext()) {
-            final String key = (String) i.next();
+            final String key = i.next();
             properties.setProperty(key, instance().getString(key));
         }
         return properties;
@@ -343,7 +342,7 @@ public final class ConfigurationHolder {
         backupConfiguration(); // Only takes a backup if necessary.
         for (Object key : properties.keySet()) {
 
-            final String value = (String) properties.get((String) key);
+            final String value = (String) properties.get(key);
             config.setProperty((String) key, value);
         }
         return true;
