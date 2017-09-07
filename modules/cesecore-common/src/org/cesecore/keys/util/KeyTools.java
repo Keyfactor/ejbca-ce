@@ -957,7 +957,7 @@ public final class KeyTools {
      * 
      * @param privateKey
      *            the private key
-     * @param signatureAlgorithm a valid signature algorithm
+     * @param signatureAlgorithm a valid signature algorithm such as AlgorithmConstants.SIGALG_SHA256_WITH_RSA
      * @param data
      *            the data to sign
      * @return the signature
