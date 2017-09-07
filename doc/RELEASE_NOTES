@@ -1,3 +1,8 @@
+EJBCA 6.9.0.4
+-----------
+
+Patch release for ECA-6106, which allows a CAA lookup to continue up the domain tree even if the lookup for a subdomain failed. 
+
 EJBCA 6.9.0.3
 -----------
 
