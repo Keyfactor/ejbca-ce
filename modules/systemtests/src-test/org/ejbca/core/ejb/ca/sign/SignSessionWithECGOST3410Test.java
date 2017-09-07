@@ -54,6 +54,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
+
 public class SignSessionWithECGOST3410Test extends SignSessionCommon {
 
     private static final Logger log = Logger.getLogger(SignSessionWithECGOST3410Test.class);

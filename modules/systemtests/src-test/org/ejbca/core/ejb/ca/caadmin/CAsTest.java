@@ -270,12 +270,12 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         try {
             createEllipticCurveDsaCa();
-            CAInfo info = caSession.getCAInfo(admin, "TESTECDSA");
+            CAInfo info = caSession.getCAInfo(admin, TEST_ECDSA_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSA"));
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_ECDSA_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_ECDSA_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
