@@ -2751,7 +2751,9 @@ public class EjbcaWS implements IEjbcaWS {
         if (userdata.getExtendedInformation()==null) {
             userdata.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
         }
-        userdata.getExtendedInformation().add(new ExtendedInformationWS(ExtendedInformation.RAWSUBJECTDN, userdata.getSubjectDN()));
+        // It could/should B64 encoded to avoid XML baddies, ExtendedInformation.getRawSubjectDn does encoding, if the string is encoded
+        final String value = StringTools.putBase64String(userdata.getSubjectDN());
+        userdata.getExtendedInformation().add(new ExtendedInformationWS(ExtendedInformation.RAWSUBJECTDN, value));
     }
 
     @SuppressWarnings("deprecation")
