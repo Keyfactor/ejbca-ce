@@ -31,6 +31,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -84,7 +85,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
     public  static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
 
-    /** The subject DN exactly as requested in the UserDataVOWS object. */
+    /** The subject DN exactly as requested in the UserDataVOWS object. 
+     * Should be stored B64 encoded to avoid possible XML/database encoding issues, getRawSubjectDn does decoding if it is encoded */
     public static final String RAWSUBJECTDN = "RAWSUBJECTDN";
 
     /** The counter is a counter for how many failed login attempts that can be performed before the userstatus is changed to GENERATED */
@@ -342,7 +344,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return value;
+        // It could/should B64 encoded to avoid XML baddies
+        return StringTools.getBase64String(value);
     }
 
     /**
