@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from ejbca.properties
- * 
+ *
  * @version $Id$
  */
 public final class CesecoreConfiguration {
@@ -85,10 +85,10 @@ public final class CesecoreConfiguration {
     public static String getCaTooLateExpireDate() {
         return ConfigurationHolder.getExpandedString("ca.toolateexpiredate");
     }
-    
+
     /**
-     * The relative time offset for the notBefore value of CA and end entity certificates. Changing this value, 
-     * also changes the notAfter attribute of the certificates, if a relative time is used for its validity. While 
+     * The relative time offset for the notBefore value of CA and end entity certificates. Changing this value,
+     * also changes the notAfter attribute of the certificates, if a relative time is used for its validity. While
      * certificate issuance this value can be overwritten by the corresponding value in the certificate profile used.
      * @See {@link org.cesecore.certificates.certificateprofile.CertificateProfile#getCertificateValidityOffset()}
      * @See {@link org.cesecore.util.SimpleTime}
@@ -190,31 +190,31 @@ public final class CesecoreConfiguration {
     public static long getCacheGlobalOcspConfigurationTime() {
         return getLongValue("ocspconfigurationcache.cachetime", 30000, "milliseconds to cache OCSP settings");
     }
-    
+
     /**
      * Parameter to specify if retrieving PublicKeyBlacklist objects from PublicKeyBlacklistSession should be cached, and in that case for how long.
      */
     public static long getCachePublicKeyBlacklistTime() {
         return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key blacklist entries");
     }
-    
+
     /**
      * Parameter to specify if retrieving KeyValidator objects from KeyValidatorSession should be cached, and in that case for how long.
      */
     public static long getCacheKeyValidatorTime() {
         return getLongValue("validator.cachetime", 30000L, "milliseconds to cache validators");
     }
-    
+
     /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */
     public static long getCacheAuthorizationTime() {
         return getLongValue("authorization.cachetime", 30000L, "milliseconds to cache authorization");
     }
-    
+
     /**
      * Parameter to specify if retrieving GlobalConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
      */
     public static long getCacheGlobalConfigurationTime() {
-        return getLongValue("globalconfiguration.cachetime", 30000L, "milliseconds to cache authorization");       
+        return getLongValue("globalconfiguration.cachetime", 30000L, "milliseconds to cache authorization");
     }
 
     private static long getLongValue(final String propertyName, final long defaultValue, final String unit) {
@@ -287,7 +287,7 @@ public final class CesecoreConfiguration {
 				value = PROPERTY_VALUE;
 			}
 			// Update configuration, so we don't have to make a hostname lookup each time we call this method.
-			ConfigurationHolder.updateConfiguration(PROPERTY_NAME, value);
+            ConfigurationHolder.updateConfigurationWithoutBackup(PROPERTY_NAME, value);
         }
         return value;
     }
@@ -301,12 +301,12 @@ public final class CesecoreConfiguration {
     public static String getOidDstu4145() {
         return ConfigurationHolder.getString("extraalgs.dstu4145.oidtree");
     }
-    
+
     /** Returns extraalgs such as GOST, DSTU */
     public static List<String> getExtraAlgs() {
         return ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
     }
-    
+
     /** Returns title of the algorithm */
     public static String getExtraAlgTitle(String algName) {
         return ConfigurationHolder.getString("extraalgs." + algName.toLowerCase() + ".title");
@@ -316,7 +316,7 @@ public final class CesecoreConfiguration {
     public static List<String> getExtraAlgSubAlgs(String algName) {
         return ConfigurationHolder.getPrefixedPropertyNames("extraalgs." + algName + ".subalgs");
     }
-    
+
     public static String getExtraAlgSubAlgTitle(String algName, String subAlg) {
         String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".title");
         if (name == null) {
@@ -328,7 +328,7 @@ public final class CesecoreConfiguration {
         }
         return name;
     }
-    
+
     public static String getExtraAlgSubAlgName(String algName, String subAlg) {
         String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".name");
         if (name == null) {
@@ -337,11 +337,11 @@ public final class CesecoreConfiguration {
         }
         return name;
     }
-    
+
     public static String getExtraAlgSubAlgOid(String algName, String subAlg) {
         final String oidTree = ConfigurationHolder.getString("extraalgs." + algName + ".oidtree");
         final String oidEnd = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".oid");
-        
+
         if (oidEnd != null && oidTree != null) { return oidTree + "." + oidEnd; }
         if (oidEnd != null) { return oidEnd; }
         else { return null; }
@@ -354,7 +354,7 @@ public final class CesecoreConfiguration {
         final String value = ConfigurationHolder.getString("database.useSeparateCertificateTable");
         return value!=null && Boolean.parseBoolean(value.trim());
     }
-    
+
     /** If database integrity protection should be used or not. */
     public static boolean useDatabaseIntegrityProtection(final String tableName) {
         // First check if we have explicit configuration for this entity
@@ -376,7 +376,7 @@ public final class CesecoreConfiguration {
         // Otherwise use the global or default
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enableverify"));
     }
-    
+
     public static boolean getCaKeepOcspExtendedService() {
         return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
     }
@@ -446,15 +446,15 @@ public final class CesecoreConfiguration {
      * given certificate. Each SCT will be around 100-150 bytes, and a certificate will typically
      * have 2-4 SCTs. Also, the cache may temporarily overshoot by 50%. There's also some overhead
      * for the cache data structure (ConcurrentCache).
-     * 
+     *
      * -1 means no limit (and not "off"). The default is 100 000.
-     * 
+     *
      * @see getCTCacheEnabled
      */
     public static long getCTCacheMaxEntries() {
         return getLongValue("ct.cache.maxentries", 100000L, "number of entries in cache");
     }
-    
+
     /**
      * How many milliseconds between periodic cache cleanup. The cleanup routine is only
      * run when the cache is filled with too many entries.
@@ -462,13 +462,13 @@ public final class CesecoreConfiguration {
     public static long getCTCacheCleanupInterval() {
         return getLongValue("ct.cache.cleanupinterval", 10000L, "milliseconds between periodic cache cleanup");
     }
-    
+
     /** Whether caching of SCTs should be enabled. The default is true. */
     public static boolean getCTCacheEnabled() {
         final String value = ConfigurationHolder.getString("ct.cache.enabled");
         return value == null || !value.trim().equalsIgnoreCase("false");
     }
-    
+
     /**
      * Whether log availability should be tracked, and requests should "fast fail"
      * whenever a log is known to be down. A log is "known to be down" when it
@@ -478,7 +478,7 @@ public final class CesecoreConfiguration {
         final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
         return value != null && value.trim().equalsIgnoreCase(TRUE);
     }
-    
+
     /**
      * How long time (in milliseconds) EJBCA should wait until trying to use a log
      * which has failed to respond to a request.
