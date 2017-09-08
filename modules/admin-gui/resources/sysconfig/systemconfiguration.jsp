@@ -125,7 +125,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:panelGroup>
 			<h:inputText id="footbanner" value="#{systemConfigMBean.currentConfig.footBanner}" size="45" title="#{web.text.FORMAT_FILENAME}" 
 				disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-		
+			
 			<h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
 				<%= ejbcawebbean.getHelpReference("/userguide.html#Enable%20End%20Entity%20Profile%20Limitations") %>
@@ -660,6 +660,31 @@ org.cesecore.authorization.AuthorizationDeniedException
 		</h:dataTable>
 	</h:form>
 
+	<%-- Custom Style Sheets --%>
+
+	<h:form id="stylesheetform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Custom Style Sheets'}">
+	
+		<h:panelGroup>
+			<h3><h:outputText value="#{web.text.CSS_LIST_TITLE}"/></h3>
+			<h:dataTable value="#{systemConfigMBean.raCssInfos}" var="raCssInfo" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+				<h:column headerClass="gridColumn1">
+					<f:facet name="header"><h:outputText value="Name"/></f:facet>
+					<h:outputText value="#{raCssInfo.fileName}"/>
+				</h:column>
+				<h:column headerClass="gridColumn2">
+					<f:facet name="header"><h:outputText value="#{web.text.CSS_ACTION}"/></f:facet>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaCssInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
+				</h:column>
+			</h:dataTable>
+		</h:panelGroup>
+		<h3><h:outputText value="#{web.text.IMPORT}"/></h3>
+		<h:panelGrid columns="3" >
+			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}:"/>
+			<t:inputFileUpload id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
+			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaCss}"/>
+		</h:panelGrid>
+			
+	</h:form>
 
 	<%-- Statedump --%>
 
