@@ -122,8 +122,8 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.4.6.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-4.36.1.jar"/>
-	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar" sourcepath="/Users/mikek/Sources/dnsjava-2.1.8"/>
-	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar" sourcepath="/Users/mikek/Downloads/dnssecjava-master/src/main/java"/>
+	<classpathentry kind="lib" path="lib/dnsjava-2.1.8.jar"/>
+	<classpathentry kind="lib" path="lib/dnssecjava-1.1.3.jar"/>
 	<classpathentry exported="true" kind="var" path="JBOSS7_HOME"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="lib" path="conf"/>
