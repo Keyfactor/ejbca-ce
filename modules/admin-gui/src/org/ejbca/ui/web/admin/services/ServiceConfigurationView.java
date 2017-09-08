@@ -45,7 +45,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
  * Class responsible for converting the data between the GUI and a
- * SystemConfiguration VO
+ * ServiceConfiguration VO
  *
  * @version $Id$
  */
