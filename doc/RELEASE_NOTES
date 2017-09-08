@@ -1,3 +1,8 @@
+EJBCA 6.9.0.5
+-----------
+
+Patch release for ECA-6107, which fixed an issue in which CAA lookups weren't properly handled for wildcarded domains with subdomains. 
+
 EJBCA 6.9.0.4
 -----------
 

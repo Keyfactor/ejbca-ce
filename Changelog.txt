@@ -1,3 +1,10 @@
+EJBCA 6.9.0.5, 2017-09-08
+---
+
+Improvement
+    [ECA-6107] - CAA validation allows issuance of wildcard certificates for subdomains, even though issuance is prohibited. 
+
+
 EJBCA 6.9.0.4, 2017-09-07
 ---
 
