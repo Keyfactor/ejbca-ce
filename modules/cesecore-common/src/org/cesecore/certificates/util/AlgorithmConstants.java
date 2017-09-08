@@ -9,14 +9,14 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.util;
 
 import java.util.Arrays;
 import java.util.List;
 
 /** Constants for digital signature algorithms.
- * 
+ *
  * @version $Id$
  */
 public final class AlgorithmConstants {
@@ -44,19 +44,18 @@ public final class AlgorithmConstants {
     public static final String[] AVAILABLE_SIGALGS = { SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA, SIGALG_SHA384_WITH_RSA, SIGALG_SHA512_WITH_RSA,
             SIGALG_SHA256_WITH_RSA_AND_MGF1, SIGALG_SHA1_WITH_ECDSA, SIGALG_SHA224_WITH_ECDSA, SIGALG_SHA256_WITH_ECDSA, SIGALG_SHA384_WITH_ECDSA,
             SIGALG_SHA512_WITH_ECDSA, SIGALG_SHA1_WITH_DSA, SIGALG_GOST3411_WITH_ECGOST3410, SIGALG_GOST3411_WITH_DSTU4145 };
-  
+
     public static final String KEYALGORITHM_RSA         = "RSA";
     public static final String KEYALGORITHM_EC          = "EC";
     public static final String KEYALGORITHM_ECDSA       = "ECDSA"; //The same as "EC", just named differently sometimes. "EC" and "ECDSA" should be handled in the same way
     public static final String KEYALGORITHM_DSA         = "DSA";
     public static final String KEYALGORITHM_ECGOST3410  = "ECGOST3410";
     public static final String KEYALGORITHM_DSTU4145    = "DSTU4145";
-    
+
     public static final String KEYSPECPREFIX_ECGOST3410 = "GostR3410-";
-    
+
     public static final List<String> BLACKLISTED_EC_CURVES = Arrays.asList(new String[]{
-            // Can't be generated with BouncyCastle 1.54
-            "FRP256v1",
+            // No blacklisted EC curves at the moment
     });
 
     // Extra EC curves that we want to include that are not part of the "standard" curves in BC (ECNamedCurveTable.getNames)
