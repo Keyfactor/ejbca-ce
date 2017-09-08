@@ -193,7 +193,6 @@ public final class ConfigurationHolder {
      */
     public static Properties getAsProperties() {
         final Properties properties = new Properties();
-        @SuppressWarnings("unchecked")
         final Iterator<String> i = instance().getKeys();
         while (i.hasNext()) {
             final String key = i.next();
