@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,6 +60,7 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
+import org.cesecore.config.RaCssInfo;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -65,6 +68,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
@@ -154,7 +158,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
-                
                 // Admin Preferences
                 if(adminPreference == null) {
                     adminPreference = getEjbcaWebBean().getAdminPreference();
@@ -410,7 +413,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
     }
-    
     
     public String getStatedumpDir() {
         return statedumpDir;
@@ -741,6 +743,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig = null;
         nodesInCluster = null;
         ctLogs = null;
+        raCssInfos = null;
         excludeActiveCryptoTokensFromClearCaches = true;
         availableExtendedKeyUsages = null;
         availableExtendedKeyUsagesConfig = null;
@@ -922,10 +925,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return null;
         }
     }
-
+    
     public void removeCTLog() {
         final CTLogInfo ctlogToRemove = ctLogs.getRowData();
-        
         // Check if it's in use by certificate profiles
         final List<String> usedByProfiles = new ArrayList<>();
         final Map<Integer,String> idToName = certificateProfileSession.getCertificateProfileIdToNameMap();
@@ -1244,6 +1246,145 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return true;
     }
     
+    // ----------------------------------------------------
+    //               Custom Style Sheets
+    // ----------------------------------------------------
+    
+    private GlobalCustomCssConfiguration globalCustomCssConfiguration = null;
+    private ListDataModel<RaCssInfo> raCssInfos = null;
+    private List<RaCssInfo> raCssInfosList;
+    private UploadedFile raCssFile = null;
+
+    
+    public GlobalCustomCssConfiguration getGlobalCustomCssConfiguration() {
+        if (globalCustomCssConfiguration == null) {
+            globalCustomCssConfiguration = (GlobalCustomCssConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
+                    .getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
+        }
+        return globalCustomCssConfiguration;
+    }
+    
+    public void actionImportRaCss() {
+        if (raCssFile == null) {
+            addErrorMessage("NOFILESELECTED");
+            return;
+        }
+        try {
+            if (!authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
+                addErrorMessage("CSS_NOT_AUTH");
+                log.info("Administrator '" + getAdmin() + "' attempted to import css files. Authorazation denied: Insufficient privileges");
+                return;
+            }
+            importCssFromZip(getRaCssFile().getBytes());
+        } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+            addErrorMessage("CSSIMPORTFAIL", e.getLocalizedMessage());
+            log.info("Failed to read .zip file", e);
+        }
+    }
+    
+    private void importCssFromZip(byte[] fileBuffer) throws IOException, IllegalArgumentException, IllegalStateException {
+        if (fileBuffer.length == 0) {
+            throw new IllegalArgumentException("Empty input file");
+        }
+        String importedFiles = "";
+        String ignoredFiles = "";
+        int numberOfZipEntries = 0;
+        int numberOfImportedFiles = 0;
+        int numberOfignoredFiles = 0;
+        List<RaCssInfo> raCssInfosList = getRaCssInfosList();
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer));
+        ZipEntry ze;
+        // Read each zip entry
+        while ((ze = zis.getNextEntry()) != null) {
+            String fileName = ze.getName();
+            if (log.isDebugEnabled()) {
+                log.debug("Reading zip entry: " + fileName);
+            }
+            try {
+                fileName = URLDecoder.decode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+            }
+            numberOfZipEntries++;
+            if (!ze.getName().endsWith(".css")) {
+                log.info(fileName + " not recognized as a css file. Expected file extension '.css'. Skipping...");
+                numberOfignoredFiles++;
+                ignoredFiles += ze.getName() + ", ";
+                continue;
+            }
+            // Extract bytes from this entry
+            byte[] filebytes = new byte[10240];
+            int i = 0;
+            while ((zis.available() == 1) && (i < filebytes.length)) {
+                filebytes[i++] = (byte) zis.read();
+            }
+            RaCssInfo raCssInfo = new RaCssInfo(filebytes, fileName);
+            raCssInfosList.add(raCssInfo);
+            importedFiles += fileName + ", ";
+            numberOfImportedFiles++;
+        }
+        zis.close();
+        if (numberOfZipEntries == 0) {
+            addErrorMessage("ISNOTAZIPFILE");
+            return;
+        }
+        setRaCssInfosList(raCssInfosList);
+        raCssInfos = new ListDataModel<>(raCssInfosList);
+        saveCustomCssConfiguration();
+        if (numberOfignoredFiles == 0) {
+            addInfoMessage("CSSIMPORTSUCCESS", numberOfImportedFiles, importedFiles);
+        } else {
+            addInfoMessage("CSSIMPORTIGNORED", numberOfImportedFiles, importedFiles, numberOfignoredFiles, ignoredFiles);
+        }
+
+    }
+    
+    public void removeRaCssInfo() {
+        final RaCssInfo cssToRemove = raCssInfos.getRowData();
+        // TODO Check if used by any CA / Namespace / Role or whatever we decide to apply it to
+        List<RaCssInfo> raCssInfosList = getRaCssInfosList();
+        raCssInfosList.remove(cssToRemove);
+        setRaCssInfosList(raCssInfosList);
+        raCssInfos = new ListDataModel<>(raCssInfosList);
+        saveCustomCssConfiguration();
+    }
+    
+    public UploadedFile getRaCssFile() {
+        return raCssFile;
+    }
+    
+    public void setRaCssFile(final UploadedFile raCssFile) {
+        this.raCssFile = raCssFile;
+    }
+    // Necessary for front end row handling etc.
+    public ListDataModel<RaCssInfo> getRaCssInfos() {
+        if (raCssInfos == null) {
+            List<RaCssInfo> raCssInfosList = getRaCssInfosList();
+            raCssInfos = new ListDataModel<>(raCssInfosList);
+        }
+        return raCssInfos;   
+    }
+    
+    public List<RaCssInfo> getRaCssInfosList() {
+        raCssInfosList = new ArrayList<>(getGlobalCustomCssConfiguration().getRaCssInfo().values());
+        return raCssInfosList;
+    }
+    public void setRaCssInfosList(List<RaCssInfo> raCssInfos) {raCssInfosList = raCssInfos;}
+    
+    private void saveCustomCssConfiguration() {
+        LinkedHashMap<Integer, RaCssInfo> raCssMap = new LinkedHashMap<>();
+        for(RaCssInfo raCssInfo : raCssInfosList) {
+            raCssMap.put(raCssInfo.getCssId(), raCssInfo);
+        }
+        globalCustomCssConfiguration.setRaCss(raCssMap);
+        try {
+            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCustomCssConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info("Administrator '" + getAdmin() + "' " + msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+    }
     
     // ----------------------------------------------------
     //               Custom Certificate Extensions
@@ -1510,6 +1651,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Custom Certificate Extensions");
+        }
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
+            availableTabs.add("Custom Style Sheets");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
             availableTabs.add("Statedump");
