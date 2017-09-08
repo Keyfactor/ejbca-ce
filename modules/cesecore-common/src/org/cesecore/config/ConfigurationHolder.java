@@ -281,19 +281,17 @@ public final class ConfigurationHolder {
     }
     
     /**
-     * In a list of properties named "something.NAME.xxx.yyy", returns all
+     * Given the prefix "something", in a list of properties named "something.NAME.xxx.yyy", returns all
      * unique names (the NAME part only) in sorted order.
      */
     public static List<String> getPrefixedPropertyNames(String prefix) {
-        prefix = prefix + ".";
         Set<String> algs = new HashSet<String>();
-        // Just get the keys from configuration that starts with prefix, and we already know below
-        // that it has a . in it
-        for (@SuppressWarnings("unchecked")
-        Iterator<String> iterator = config.getKeys(prefix); iterator.hasNext();) {
+        // Just get the keys from configuration that starts with prefix, we assume below that it has a . following the prefix
+        Iterator<String> iterator = config.getKeys(prefix);
+        while (iterator.hasNext()) {
             final String key = iterator.next();
-            int dot = key.indexOf(".", prefix.length());
-            algs.add(key.substring(prefix.length(), dot));
+            final int dot = key.indexOf(".", prefix.length()+1); // +1 to skip the . directly following prefix
+            algs.add(key.substring(prefix.length()+1, dot));
         }
         ArrayList<String> list = new ArrayList<String>(algs);
         Collections.sort(list);
