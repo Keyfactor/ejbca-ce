@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.pub.retrieve;
 
 import java.io.UnsupportedEncodingException;
@@ -41,26 +41,26 @@ import org.ejbca.ui.web.CertificateView;
 
 /**
  * This bean performs a number of certificate searches for the public web.
- * 
+ *
  * To make it easy to use from JSTL pages, most methods take no arguments.
  * The arguments are supplied as member variables instead. <br>
- * 
+ *
  * @version $Id$
  */
 public class CertificateFinderBean {
-	
+
 	private static final Logger log = Logger.getLogger(CertificateFinderBean.class);
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
 	private CaSessionLocal caSession = ejb.getCaSession();
 	private CertificateStoreSessionLocal mStoreSession = ejb.getCertificateStoreSession();
-	
-	/** This member is used by the JSP pages to indicate which CA they are interested in. 
+
+	/** This member is used by the JSP pages to indicate which CA they are interested in.
 	 * It is used by getCAInfo().
 	 */
 	private int mCurrentCA;
-	
+
     // Used to store the result of lookupCertificateInfo
     private String issuerDN;
     private String subjectDN;
@@ -72,7 +72,7 @@ public class CertificateFinderBean {
 	 * NOTE: Call initialize() after creating this object.
 	 */
 	public CertificateFinderBean() { }
-	
+
 	public Collection<Integer> getAvailableCAs() {
 	    if(log.isTraceEnabled()) {
 		log.trace(">getAvailableCAs()");
@@ -87,7 +87,7 @@ public class CertificateFinderBean {
 	public boolean existsDeltaCrlForCurrentCA() {
 	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), true) != null;
 	}
-	
+
 	public void setCurrentCA(Integer currentCA) {
 		if (log.isTraceEnabled()) {
 			log.trace(">setCurrentCA(" + currentCA + ")");
@@ -104,7 +104,7 @@ public class CertificateFinderBean {
 			cainfo = caSession.getCAInfoInternal(mCurrentCA);
 		} catch (CADoesntExistsException e) {
 			log.info("CA does not exist : "+mCurrentCA, e);
-		} 
+		}
 		return cainfo;
 	}
 
@@ -118,17 +118,17 @@ public class CertificateFinderBean {
         for (Certificate cert : certs) {
             ret.add(new CertificateGuiInfo(cert));
         }
-		
+
 		return ret;
 	}
-	
-	   public Collection<CertificateGuiInfo> getCACertificateChainReversed() {
-	        Collection<CertificateGuiInfo> ret = getCACertificateChain();
-	        if (ret != null) {
-	            Collections.reverse((ArrayList<CertificateGuiInfo>) ret);
-	        }
-	        return ret;
-	    }
+
+    public Collection<CertificateGuiInfo> getCACertificateChainReversed() {
+        Collection<CertificateGuiInfo> ret = getCACertificateChain();
+        if (ret != null) {
+            Collections.reverse((ArrayList<CertificateGuiInfo>) ret);
+        }
+        return ret;
+    }
 
 	public String getCADN() {
 		String ret = "Unauthorized";
@@ -138,23 +138,23 @@ public class CertificateFinderBean {
 			}
 			final Certificate cert = certs.iterator().next();
 			ret = CertTools.getSubjectDN(cert);
-		
+
 		return ret;
 	}
 
 
-	
+
 	/**
 	 * Get revocation info for a certificate.
 	 * This method fills in the supplied RevokedCertInfo object with data about a certificate.
 	 * Since Java uses "call by reference" this works fine, but we can't create our own object because
 	 * the caller doesn't read the reference when unwinding the stack after this method returns.
-	 * 
+	 *
 	 * @param issuerDN DN of the certificate's issuer
 	 * @param serialNumber The serial number of the certificate
 	 * @param result An allocated object. Data about the certificate is entered in the result object by this method.
 	 *        If no info can be found (e.g., if the certificate does not exist), the revocationDate and
-	 *        userCertificate fields of result are set to null. 
+	 *        userCertificate fields of result are set to null.
 	 */
 	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) {
 		serialNumber = ("0000000000000000" + serialNumber).substring(serialNumber.length());	// Pad with zeroes up to 16 chars
@@ -165,7 +165,7 @@ public class CertificateFinderBean {
 			return; // There's nothing we can do here.
 		}
 		try {
-			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));			
+			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));
 			CertificateStatus info = mStoreSession.getStatus(StringUtils.trimToEmpty(issuerDN), serialBignum);
 			if (info.equals(CertificateStatus.NOT_AVAILABLE)) {
 				result.setRevocationDate(null);
@@ -180,7 +180,7 @@ public class CertificateFinderBean {
 		} catch (StringIndexOutOfBoundsException e) {
 			log.info("Invalid serial number entered (StringIndexOutOfBoundsException): "+serialNumber+": "+e.getMessage());
 		} catch (DecoderException e) {
-            log.info("Invalid serial number entered (DecoderException): "+serialNumber+": "+e.getMessage());		    
+            log.info("Invalid serial number entered (DecoderException): "+serialNumber+": "+e.getMessage());
 		}
 	}
 
@@ -209,7 +209,7 @@ public class CertificateFinderBean {
             result.add(new CertificateView(cdw));
 		}
 	}
-	
+
 	/**
 	 * Looks up a certificate information by issuer and serial number.
 	 * The information can be accessed by getter methods in this class.
@@ -227,7 +227,7 @@ public class CertificateFinderBean {
             this.fingerprint = CertTools.getFingerprintAsString(cert);
         }
     }
-    
+
     /**
      * @return the Issuer DN string of the current certificate.
      * @see lookupCertificateInfo(String, String)
@@ -235,7 +235,7 @@ public class CertificateFinderBean {
     public String getIssuerDN() {
         return issuerDN;
     }
-    
+
     /**
      * @return the Subject DN string of the current certificate.
      * @see lookupCertificateInfo(String, String)
@@ -259,7 +259,7 @@ public class CertificateFinderBean {
     public String getSerialNumber() {
         return serialNumber;
     }
-    
+
     /**
      * @return the fingerprint string of the current certificate.
      * @see lookupCertificateInfo(String, String)

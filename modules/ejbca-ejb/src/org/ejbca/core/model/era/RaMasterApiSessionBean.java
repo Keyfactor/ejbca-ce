@@ -1082,7 +1082,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+        final int offset = request.getPageNumber() * maxResults;
         query.setMaxResults(maxResults);
+        query.setFirstResult(offset);
+
         /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
          * - The hint is ignored
          * - A QueryTimeoutException is thrown
@@ -1263,7 +1266,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             query.setParameter("status", request.getStatuses());
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
+        final int offset = maxResults * request.getPageNumber();
         query.setMaxResults(maxResults);
+        query.setFirstResult(offset);
         /* Try to use the non-portable hint (depends on DB and JDBC driver) to specify how long in milliseconds the query may run. Possible behaviors:
          * - The hint is ignored
          * - A QueryTimeoutException is thrown

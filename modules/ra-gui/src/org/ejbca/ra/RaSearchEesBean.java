@@ -42,16 +42,16 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
- * Backing bean for Search Certificates page. 
- * 
+ * Backing bean for Search Certificates page.
+ *
  * @version $Id$
  */
 @ManagedBean
@@ -85,12 +85,12 @@ public class RaSearchEesBean implements Serializable {
     private RaEndEntitySearchResponse lastExecutedResponse = null;
 
     private String genericSearchString = "";
-    
+
     private String modifiedAfter = "";
     private String modifiedBefore = "";
 
     private enum SortOrder { PROFILE, CA, SUBJECT, USERNAME, MODIFIED, STATUS };
-    
+
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
 
@@ -119,7 +119,7 @@ public class RaSearchEesBean implements Serializable {
         }
         return endEntityProfileMap;
     }
-    
+
     /** Invoked action on search form post */
     public void searchAndFilterAction() {
         searchAndFilterCommon();
@@ -129,11 +129,14 @@ public class RaSearchEesBean implements Serializable {
     public void searchAndFilterAjaxListener(final AjaxBehaviorEvent event) {
         searchAndFilterCommon();
     }
-    
+
     /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
         final int compared = stagedRequest.compareTo(lastExecutedRequest);
-        boolean search = compared>0;
+        boolean search = compared > 0;
+        if (compared != 0) {
+            stagedRequest.setPageNumber(0);
+        }
         if (compared<=0 && lastExecutedResponse!=null) {
             // More narrow search → filter and check if there are sufficient results left
             if (log.isDebugEnabled()) {
@@ -155,13 +158,17 @@ public class RaSearchEesBean implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Wider criteria → Query");
             }
-            lastExecutedResponse = raMasterApiProxyBean.searchForEndEntities(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
-            if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getEndEntities().isEmpty()) {
-                // Only update last executed request when there is no timeout
-                lastExecutedRequest = stagedRequest;
-                stagedRequest = new RaEndEntitySearchRequest(stagedRequest);
-                filterTransformSort();
-            }
+            searchForEndEntities();
+        }
+    }
+
+    private void searchForEndEntities() {
+        lastExecutedResponse = raMasterApiProxyBean.searchForEndEntities(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getEndEntities().isEmpty()) {
+            // Only update last executed request when there is no timeout
+            lastExecutedRequest = stagedRequest;
+            stagedRequest = new RaEndEntitySearchRequest(stagedRequest);
+            filterTransformSort();
         }
     }
 
@@ -216,7 +223,7 @@ public class RaSearchEesBean implements Serializable {
             }
         });
     }
-    
+
     /** @return true if there were no matching search results for the current criteria. */
     public boolean isResultsNone() {
         return getFilteredResults().isEmpty() && !isMoreResultsAvailable();
@@ -229,7 +236,7 @@ public class RaSearchEesBean implements Serializable {
     public boolean isResultsTimeout() {
         return getFilteredResults().isEmpty() && isMoreResultsAvailable();
     }
-    
+
     public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
     public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
     public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
@@ -260,7 +267,7 @@ public class RaSearchEesBean implements Serializable {
         this.sortBy = sortOrder;
         sort();
     }
-    
+
     /** @return true if there might be more results in the back end than retrieved based on the current criteria. */
     public boolean isMoreResultsAvailable() {
         return lastExecutedResponse!=null && lastExecutedResponse.isMightHaveMoreResults();
@@ -292,7 +299,7 @@ public class RaSearchEesBean implements Serializable {
         stagedRequest.setSubjectAnSearchString(genericSearchString);
         stagedRequest.setUsernameSearchString(genericSearchString);
     }
-    
+
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
     public List<SelectItem> getAvailableMaxResults() {
@@ -413,7 +420,7 @@ public class RaSearchEesBean implements Serializable {
         }
         return defaultValue;
     }
-    
+
     /** Set or remove the styleClass "invalidInput" on the label with a for-attribute matching the current input component. */
     private void markCurrentComponentAsValid(final boolean valid) {
         final String STYLE_CLASS_INVALID = "invalidInput";
@@ -507,5 +514,29 @@ public class RaSearchEesBean implements Serializable {
     }
     public void closeEndEntityDetails() {
         currentEndEntityDetails = null;
+    }
+
+    /**
+     * Query for the next page of search results.
+     */
+    public void queryNextPage(final AjaxBehaviorEvent event) {
+        stagedRequest.setPageNumber(stagedRequest.getPageNumber() + 1);
+        searchForEndEntities();
+    }
+
+    /**
+     * Query for the previous page of search results.
+     */
+    public void queryPreviousPage(final AjaxBehaviorEvent event) {
+        stagedRequest.setPageNumber(stagedRequest.getPageNumber() - 1);
+        searchForEndEntities();
+    }
+
+    public boolean isShowNextPageButton() {
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
+    }
+
+    public boolean isShowPreviousPageButton() {
+        return stagedRequest != null && stagedRequest.getPageNumber() > 0;
     }
 }

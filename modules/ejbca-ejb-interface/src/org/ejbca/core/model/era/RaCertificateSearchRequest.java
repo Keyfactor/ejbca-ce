@@ -21,7 +21,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Search request for certificates from RA UI.
- * 
+ *
  * @version $Id$
  */
 public class RaCertificateSearchRequest implements Serializable, Comparable<RaCertificateSearchRequest> {
@@ -31,6 +31,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     public static final int DEFAULT_MAX_RESULTS = 25;
 
     private int maxResults = DEFAULT_MAX_RESULTS;
+    private int pageNumber = 0;
     private List<Integer> eepIds = new ArrayList<>();
     private List<Integer> cpIds = new ArrayList<>();
     private List<Integer> caIds = new ArrayList<>();
@@ -53,10 +54,11 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
 
     /** Default constructor */
     public RaCertificateSearchRequest() {}
-    
+
     /** Copy constructor */
     public RaCertificateSearchRequest(final RaCertificateSearchRequest request) {
         maxResults = request.maxResults;
+        pageNumber = request.pageNumber;
         eepIds.addAll(request.eepIds);
         cpIds.addAll(request.cpIds);
         caIds.addAll(request.caIds);
@@ -79,6 +81,15 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     }
 
     public int getMaxResults() { return maxResults; }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(final int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
     public void setMaxResults(final int maxResults) { this.maxResults = maxResults; }
     public void resetMaxResults() { this.maxResults = DEFAULT_MAX_RESULTS; }
 
@@ -173,7 +184,8 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         if (!(object instanceof RaCertificateSearchRequest)) {
             return false;
         }
-        return compareTo((RaCertificateSearchRequest) object)==0;
+        final RaCertificateSearchRequest request = (RaCertificateSearchRequest) object;
+        return compareTo(request) == 0 && request.getPageNumber() == this.pageNumber;
     }
 
     // negative = this object is less (more narrow) than other. E.g. only when other contains this and more.
@@ -222,7 +234,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
         }
         return 0;
     }
-    
+
     /** @return true if thisObject does contain whole other, but other does not contain whole this → more narrow */
     private boolean isMoreNarrow(final List<Integer> thisObject, final List<Integer> otherObject) {
         return thisObject.containsAll(otherObject) && !otherObject.containsAll(thisObject);
@@ -295,12 +307,12 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
 
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
-        return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) || 
+        return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
                                     (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
     }
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
-        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) || 
+        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) ||
                                     (subjectDnSearchExact && subjectDn.equalsIgnoreCase(subjectDnSearchString)));
     }
     /** @return true if the subjectAn is matched by this search. */

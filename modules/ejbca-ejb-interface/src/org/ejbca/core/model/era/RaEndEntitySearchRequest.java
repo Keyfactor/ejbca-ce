@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Search request for end entities from RA UI.
- * 
+ *
  * @version $Id$
  */
 public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndEntitySearchRequest> {
@@ -42,13 +42,15 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     private long modifiedAfter = 0L;
     private long modifiedBefore = Long.MAX_VALUE;
     private List<Integer> statuses = new ArrayList<>();
+    private int pageNumber = 0;
 
     /** Default constructor */
     public RaEndEntitySearchRequest() {}
-    
+
     /** Copy constructor */
     public RaEndEntitySearchRequest(final RaEndEntitySearchRequest request) {
         maxResults = request.maxResults;
+        pageNumber = request.pageNumber;
         eepIds.addAll(request.eepIds);
         cpIds.addAll(request.cpIds);
         caIds.addAll(request.caIds);
@@ -64,6 +66,15 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
     }
 
     public int getMaxResults() { return maxResults; }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(final int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
     public void setMaxResults(final int maxResults) { this.maxResults = maxResults; }
     public List<Integer> getEepIds() { return eepIds; }
     public void setEepIds(final List<Integer> eepIds) { this.eepIds = eepIds; }
@@ -107,7 +118,8 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         if (!(object instanceof RaEndEntitySearchRequest)) {
             return false;
         }
-        return compareTo((RaEndEntitySearchRequest) object)==0;
+        final RaEndEntitySearchRequest request = (RaEndEntitySearchRequest) object;
+        return compareTo(request) == 0 && this.pageNumber == request.getPageNumber();
     }
 
     // negative = this object is less (more narrow) than other. E.g. only when other contains this and more.
@@ -148,7 +160,7 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
         }
         return 0;
     }
-    
+
     /** @return true if thisObject does contain whole other, but other does not contain whole this → more narrow */
     private boolean isMoreNarrow(final List<Integer> thisObject, final List<Integer> otherObject) {
         return thisObject.containsAll(otherObject) && !otherObject.containsAll(thisObject);
@@ -194,12 +206,12 @@ public class RaEndEntitySearchRequest implements Serializable, Comparable<RaEndE
 
     /** @return true if the username is matched by this search. */
     public boolean matchUsername(final String username) {
-        return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) || 
+        return username != null && ((!usernameSearchExact && username.toUpperCase().contains(usernameSearchString.toUpperCase())) ||
                                     (usernameSearchExact && username.equalsIgnoreCase(usernameSearchString)));
     }
     /** @return true if the subjectDn is matched by this search. */
     public boolean matchSubjectDn(final String subjectDn) {
-        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) || 
+        return subjectDn != null && ((!subjectDnSearchExact && subjectDn.toUpperCase().contains(subjectDnSearchString.toUpperCase())) ||
                                     (subjectDnSearchExact && subjectDn.equalsIgnoreCase(subjectDnSearchString)));
     }
     /** @return true if the subjectAn is matched by this search. */
