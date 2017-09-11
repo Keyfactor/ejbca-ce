@@ -71,20 +71,22 @@
 	               		<h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
 		                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
 		                         title="#{msg.search_certs_page_criteria_generic_title}">
-		                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+		                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:inputText>
 	                    </h:panelGroup>
-    
-                        <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
-                            <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
-                        </h:panelGroup>
+	                    
+	                    <noscript>
+                            <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
+                                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
+                            </h:panelGroup>
+                        </noscript>
 	                    
 						<h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 pure-u-lg-1-5">
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
@@ -93,7 +95,7 @@
 						<h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
@@ -102,7 +104,7 @@
 						<h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
 		                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
@@ -111,7 +113,7 @@
 						<h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 pure-u-lg-1-5">
 		                    <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}" styleClass="pure-input-1">
 		                        <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 		                    </h:selectOneMenu>
@@ -139,7 +141,7 @@
 	                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
 	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
 	                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
-	                                    <f:ajax event="change" execute="@this" render=":contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+	                                    <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:selectOneMenu>
@@ -150,7 +152,7 @@
                                     <h:outputLabel for="issuedAfter" id="issuedAfterLabel" value="#{msg.search_certs_page_criteria_issuedafter}"/>
                                     <h:inputText id="issuedAfter" value="#{raSearchCertsBean.issuedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                             onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
                                             onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
@@ -159,7 +161,7 @@
                                     <h:outputLabel for="issuedBefore" id="issuedBeforeLabel" value="#{msg.search_certs_page_criteria_issuedbefore}"/>
                                     <h:inputText id="issuedBefore" value="#{raSearchCertsBean.issuedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
                                         styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:issuedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
                                             onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
                                             onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                                     </h:inputText>
@@ -170,7 +172,7 @@
 	                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel" value="#{msg.search_certs_page_criteria_expiresafter}"/>
 	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:expiresAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
@@ -179,7 +181,7 @@
 	                                <h:outputLabel for="expiresBefore" id="expiresBeforeLabel" value="#{msg.search_certs_page_criteria_expiresbefore}"/>
 	                                <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:expiresBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
@@ -190,7 +192,7 @@
 	                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel" value="#{msg.search_certs_page_criteria_revokedafter}"/>
 	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:revokedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
@@ -199,7 +201,7 @@
 	                                <h:outputLabel for="revokedBefore" id="revokedBeforeLabel" value="#{msg.search_certs_page_criteria_revokedbefore}"/>
 	                                <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
 	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:filteredResults :messages :contentForm:revokedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
 	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:inputText>
@@ -320,6 +322,15 @@
                             </h:column>
 	                    </h:dataTable>
 	                </h:panelGroup>
+		            
+		            <h:panelGroup id="pageButtons" layout="block" style="margin-top: 10px;">
+		                <h:commandButton id="previousPageButton" rendered="#{raSearchCertsBean.showPreviousPageButton}" value="#{msg.search_certs_page_previous_page}" styleClass="pure-button ra-button float-left">
+	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryPreviousPage}" />
+	                     </h:commandButton>
+	                    <h:commandButton id="nextPageButton" rendered="#{raSearchCertsBean.showNextPageButton}" value="#{msg.search_certs_page_next_page}" styleClass="pure-button ra-button float-right">
+	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryNextPage}" />
+	                    </h:commandButton>
+                    </h:panelGroup>
 	            </h:form>
             </h:panelGroup>
         </ui:define>

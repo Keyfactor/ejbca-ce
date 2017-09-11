@@ -54,8 +54,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
 /**
- * Backing bean for Search Certificates page. 
- * 
+ * Backing bean for Search Certificates page.
+ *
  * @version $Id$
  */
 @ManagedBean
@@ -96,16 +96,16 @@ public class RaSearchCertsBean implements Serializable {
     private String expiresBefore = "";
     private String revokedAfter = "";
     private String revokedBefore = "";
-    
+
     private UIComponent confirmPasswordComponent;
 
     private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS };
-    
+
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
 
     private boolean moreOptions = false;
-    
+
     private RaCertificateDetails currentCertificateDetails = null;
 
     private final Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
@@ -129,9 +129,9 @@ public class RaSearchCertsBean implements Serializable {
             return ret;
         }
         @Override
-        public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, 
+        public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
                                     NoSuchEndEntityException, EndEntityProfileValidationException {
-            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(), 
+            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(),
                     EJBTools.wrap(raCertificateDetails.getCertificate()), false);
             return ret;
         }
@@ -141,7 +141,7 @@ public class RaSearchCertsBean implements Serializable {
             return ret;
         }
     };
-    
+
     /** Invoked when the page is loaded */
     public void initialize() {
         // Perform a search if parameters where passed in the query string
@@ -159,11 +159,14 @@ public class RaSearchCertsBean implements Serializable {
     public void searchAndFilterAjaxListener(final AjaxBehaviorEvent event) {
         searchAndFilterCommon();
     }
-    
+
     /** Determine if we need to query back end or just filter and execute the required action. */
     private void searchAndFilterCommon() {
         final int compared = stagedRequest.compareTo(lastExecutedRequest);
-        boolean search = compared>0;
+        boolean search = compared > 0;
+        if (compared != 0) {
+            stagedRequest.setPageNumber(0);
+        }
         if (compared<=0 && lastExecutedResponse!=null) {
             // More narrow search → filter and check if there are sufficient results left
             if (log.isDebugEnabled()) {
@@ -185,13 +188,17 @@ public class RaSearchCertsBean implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Wider criteria → Query");
             }
-            lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
-            if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getCdws().isEmpty()) {
-                // Only update last executed request when there is no timeout
-                lastExecutedRequest = stagedRequest;
-                stagedRequest = new RaCertificateSearchRequest(stagedRequest);
-                filterTransformSort();
-            }
+            searchForCertificates();
+        }
+    }
+
+    private void searchForCertificates() {
+        lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getCdws().isEmpty()) {
+            // Only update last executed request when there is no timeout
+            lastExecutedRequest = stagedRequest;
+            stagedRequest = new RaCertificateSearchRequest(stagedRequest);
+            filterTransformSort();
         }
     }
 
@@ -259,7 +266,7 @@ public class RaSearchCertsBean implements Serializable {
             }
         });
     }
-    
+
     /** @return true if there were no matching search results for the current criteria. */
     public boolean isResultsNone() {
         return getFilteredResults().isEmpty() && !isMoreResultsAvailable();
@@ -272,7 +279,7 @@ public class RaSearchCertsBean implements Serializable {
     public boolean isResultsTimeout() {
         return getFilteredResults().isEmpty() && isMoreResultsAvailable();
     }
-    
+
     public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
     public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
     public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
@@ -307,7 +314,7 @@ public class RaSearchCertsBean implements Serializable {
         this.sortBy = sortOrder;
         sort();
     }
-    
+
     /** @return true if there might be more results in the back end than retrieved based on the current criteria. */
     public boolean isMoreResultsAvailable() {
         return lastExecutedResponse!=null && lastExecutedResponse.isMightHaveMoreResults();
@@ -349,7 +356,7 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
     }
-    
+
     public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
     public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
     public List<SelectItem> getAvailableMaxResults() {
@@ -435,6 +442,14 @@ public class RaSearchCertsBean implements Serializable {
         return availableCas;
     }
 
+    public boolean isShowNextPageButton() {
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
+    }
+
+    public boolean isShowPreviousPageButton() {
+        return stagedRequest != null && stagedRequest.getPageNumber() > 0;
+    }
+
     public String getIssuedAfter() {
         return getDateAsString(issuedAfter, stagedRequest.getIssuedAfter(), 0L);
     }
@@ -478,6 +493,22 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setRevokedBefore(parseDateAndUseDefaultOnFail(revokedBefore, Long.MAX_VALUE));
     }
 
+    /**
+     * Query for the next page of search results.
+     */
+    public void queryNextPage(final AjaxBehaviorEvent event) {
+        stagedRequest.setPageNumber(stagedRequest.getPageNumber() + 1);
+        searchForCertificates();
+    }
+
+    /**
+     * Query for the previous page of search results.
+     */
+    public void queryPreviousPage(final AjaxBehaviorEvent event) {
+        stagedRequest.setPageNumber(stagedRequest.getPageNumber() - 1);
+        searchForCertificates();
+    }
+
     /** @return the current value if the staged request value if the default value */
     private String getDateAsString(final String stagedValue, final long value, final long defaultValue) {
         if (value==defaultValue) {
@@ -498,7 +529,7 @@ public class RaSearchCertsBean implements Serializable {
         }
         return defaultValue;
     }
-    
+
     /** Set or remove the styleClass "invalidInput" on the label with a for-attribute matching the current input component. */
     private void markCurrentComponentAsValid(final boolean valid) {
         final String STYLE_CLASS_INVALID = "invalidInput";
@@ -561,7 +592,7 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setStatuses(statuses);
         stagedRequest.setRevocationReasons(revocationReasons);
     }
-    
+
     public List<SelectItem> getAvailableStatuses() {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("", raLocaleBean.getMessage("search_certs_page_criteria_status_option_any")));
@@ -593,7 +624,7 @@ public class RaSearchCertsBean implements Serializable {
         });
         return entrySetSorted;
     }
-    
+
     public UIComponent getConfirmPasswordComponent() {
         return confirmPasswordComponent;
     }
@@ -601,7 +632,7 @@ public class RaSearchCertsBean implements Serializable {
     public void setConfirmPasswordComponent(UIComponent confirmPasswordComponent) {
         this.confirmPasswordComponent = confirmPasswordComponent;
     }
-    
+
     /** Chain the results in the current order for certificate details navigation. */
     private void chain() {
         RaCertificateDetails previous = null;

@@ -1391,6 +1391,14 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     
   .topLeftButtons a.ra-button, .topRightButtons a.ra-button {
     padding: 1em; }
+    
+  .float-left {
+     float:left;
+  }
+  
+  .float-right {
+     float:right;
+  }
   
   /* Add some spacing between the drop down boxes in the role members form */
   #roleMembersForm\:genericSearchString {
