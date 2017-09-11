@@ -164,11 +164,14 @@ public class ProfileData extends ProtectedData implements Serializable {
     public Profile getProfile() {
         LinkedHashMap<Object, Object> datamap = (LinkedHashMap<Object, Object>)getDataMap();
         Class<? extends Profile> implementationClass = (Class<? extends Profile>) datamap.get(Profile.PROFILE_TYPE);
+        if (implementationClass == null) {
+            throw new IllegalStateException("No implementation class defined in profile "+profileName);
+        }
         Profile returnValue;
         try {     
             returnValue = implementationClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException("Could not instansiate class of type " + implementationClass.getCanonicalName(), e);
+            throw new IllegalStateException("Could not instansiate class of type " + implementationClass.getCanonicalName()+" for profile "+profileName, e);
         }
         returnValue.setProfileName(profileName);
         returnValue.setProfileId(id);
