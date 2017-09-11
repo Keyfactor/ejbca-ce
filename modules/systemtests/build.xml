@@ -142,6 +142,7 @@
 		<javac srcdir="${src.dir}" destdir="${build.common.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="common.classpath" target="${java.target.version}">
             <include name="org/cesecore/audit/impl/*EventTypes.java"/>
+            <include name="org/cesecore/keys/validation/DnsNameValidatorMock.java"/>
             <include name="org/cesecore/certificates/ca/TestExtendedCAServiceInfo.java"/>
             <include name="org/ejbca/core/ejb/ca/caadmin/UnAuthorizedCustomPublisherMock.java"/>			
             <include name="org/ejbca/core/ejb/ca/caadmin/AuthorizedCustomPublisherMock.java"/>			
