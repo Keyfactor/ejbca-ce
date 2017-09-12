@@ -615,7 +615,6 @@ public class RAInterfaceBean implements Serializable {
     public String[] removeEndEntityProfile(String name) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         String[] messageArray = {"", "", ""};
         int profileId = endEntityProfileSession.getEndEntityProfileId(name);
-
         List<UserData> users = endEntityManagementSession.findByEndEntityProfileId(profileId);
         if (users.size() > 0) {
             messageArray[0] = "used";
@@ -630,7 +629,6 @@ public class RAInterfaceBean implements Serializable {
         }
         // Only return the End Entities that the admin is authorized to (empty string if none)
         messageArray[1] = StringUtils.join(authorizedUsers, ", ");
-
         List<String> usedRules = getRulesWithEndEntityProfile(profileId);
         if (usedRules.size() > 0) {
             messageArray[0] = "used";
@@ -639,7 +637,10 @@ public class RAInterfaceBean implements Serializable {
             // Only return the used administrator roles if the admin is authorized to view them to prevent information leaks
             messageArray[2] = StringUtils.join(usedRules, ", ");
         }
-
+        // Remove profile if it's not in use
+        if (messageArray[0].isEmpty()) {
+            profiles.removeEndEntityProfile(name);
+        }
         return messageArray;
     }
 
