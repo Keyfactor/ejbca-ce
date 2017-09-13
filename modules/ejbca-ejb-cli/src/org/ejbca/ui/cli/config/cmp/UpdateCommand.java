@@ -144,6 +144,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
                 + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE + " - possible values: true | false" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY + " - possible values: true | false" + "\n");
+        sb.append("    " + CmpConfiguration.CONFIG_ALLOWSERVERGENERATEDKEYS + " - possible values: true | false" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS
                 + " - possible values: org.ejbca.core.protocol.unid.UnidFnrHandler | your own implementation of this class" + "\n");
         sb.append("    " + CmpConfiguration.CONFIG_UNIDDATASOURCE + " - possible values: java:/UnidDS | your own unid data source" + "\n");

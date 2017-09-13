@@ -16,9 +16,11 @@ package org.ejbca.core.protocol.cmp;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
@@ -54,8 +56,12 @@ import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.jcajce.JceCRMFEncryptorBuilder;
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.jcajce.JceAsymmetricKeyWrapper;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -119,6 +125,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient Collection<Certificate> signCertChain = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
+    /** The request message this response is for */
+    private transient CrmfRequestMessage reqMsg;
     /** used to choose response body type */
     private transient int requestType;
     /** used to match request with response */
@@ -262,7 +270,34 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         try {
                             CMPCertificate cmpcert = CMPCertificate.getInstance(certASN1InputStream.readObject());
                             CertOrEncCert retCert = new CertOrEncCert(cmpcert);
-                            CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
+                            CertifiedKeyPair myCertifiedKeyPair;
+                            // If the requestMessage has a server generated key pair, and the requestMessage had a public key 
+                            // "controls.protocolEncrKey" to encrypt the private key with
+                            if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() != null) {
+                                    log.debug("CMP request had a server generated key pair and controls.protocolEncrKey which we will use to encrypt the private key in the response");
+                                    final KeyPair kp = reqMsg.getServerGenKeyPair();
+                                    final PublicKey protocolEncrKey = reqMsg.getProtocolEncrKey();
+                                    if (!protocolEncrKey.getAlgorithm().equals("RSA")) {
+                                        final String msg = "CMP request had a controls.protocolEncrKey that is not an RSA key, can not create response: "+protocolEncrKey.getAlgorithm();
+                                        log.debug(msg);
+                                        throw new InvalidKeyException(msg);                                        
+                                    }
+                                    // JceAsymmetricKeyWrapper sets kp.getPublic to be the key used for wrapping
+                                    // JceCRMFEncryptorBuilder sets AES256 CBC to be the symmetric encryption algorithm used 
+                                    JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
+                                            new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
+                                            new JceCRMFEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+                                    // encBldr.build encrypts the privateKey using the wrapper above, i.e. encrypted with AES128_CBC with the symmkey wrapped with kp.getPublic
+                                    myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);                                    
+                            } else if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() == null) {
+                                // We should actually check this in the outer CMP layers before trying to create a real certificate response, but of course we have to check in here as well
+                                final String msg = "CMP request had a server generated key pair but no controls.protocolEncrKey, can not create response";
+                                log.debug(msg);
+                                throw new InvalidKeyException(msg);
+                            } else {
+                                myCertifiedKeyPair = new CertifiedKeyPair(retCert);                                
+                            }
+                            // If we have server generated keys, add privateKey
                             CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
                             
                             CertResponse[] certRespos = { myCertResponse };
@@ -350,6 +385,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             log.error("Error creating CertRepMessage: ", e);
         } catch (SignatureException e) {
             log.error("Error creating CertRepMessage: ", e);
+        } catch (CRMFException e) {
+            log.error("Error creating CertRepMessage: ", e);
         }
 
         return ret;
@@ -415,6 +452,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             this.pbeKeyId = crmf.getPbeKeyId();
             this.pbeKey = crmf.getPbeKey();
             this.implicitConfirm = crmf.isImplicitConfirm();
+            this.reqMsg = (CrmfRequestMessage)reqMsg; // final cast...
         }
     }
 

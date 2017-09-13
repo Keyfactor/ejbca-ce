@@ -599,6 +599,7 @@ function checkallfields() {
 		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr> 
+
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
@@ -615,8 +616,20 @@ function checkallfields() {
       </td>
     </tr> 
     
-    
-    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWSERVERGENERATEDKEYS\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Server%20Generated%20Keys") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWSERVERGENERATEDKEYS_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWSERVERGENERATED_KEYS%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
+			<% if(cmpConfigClone.getAllowServerGeneratedKeys(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_CMP_ALLOWSERVERGENERATED_KEYS%>" />
+		<label for="<%=CHECKBOX_CMP_ALLOWSERVERGENERATED_KEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+      </td>
+    </tr>     
     
     
     <!-- -------------------------- Nested Message Content ------------------------------ -->
