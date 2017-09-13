@@ -426,7 +426,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         ArrayList<CertificatePolicy> policies = new ArrayList<>();
         setCertificatePolicies(policies);
 
-        setAvailableKeyAlgorithmsAsList(getAvailableKeyAlgorithmsAvailable());
+        setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Arrays.asList(ANY_EC_CURVE));
         setAvailableBitLengths(DEFAULTBITLENGTHS);
         setSignatureAlgorithm(null);
@@ -1275,10 +1275,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
     }
-    public List<String> getAvailableKeyAlgorithmsAvailable() {
-        return AlgorithmTools.getAvailableKeyAlgorithms();
-    }
-
     public String[] getAvailableEcCurves() {
         final List<String> availableEcCurves = getAvailableEcCurvesAsList();
         return availableEcCurves.toArray(new String[availableEcCurves.size()]);
@@ -2878,7 +2874,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if(data.get(AVAILABLEKEYALGORITHMS) == null) { // v 39
                 // Make some intelligent guesses what key algorithm this profile is used for
-                final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAvailable();
+                final List<String> availableKeyAlgorithms = AlgorithmTools.getAvailableKeyAlgorithms();
                 if (getMinimumAvailableBitLength()>521) {
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECDSA);
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSTU4145);

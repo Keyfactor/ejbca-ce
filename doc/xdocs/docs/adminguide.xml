@@ -1077,6 +1077,43 @@ Currently these are the POPOs supported by EJBCA, so if you don't use raVerify o
 </p>
 </subsection>
 
+<subsection name="Server Generated Keys">
+<p>With CMP it is possible for clients to request server generated keys. The client requests this by one of the following in the CRMF certificate request:</p>
+<ul>
+<li>Leaving out the request public key in the CRMF request, as it is an optional field.</li>
+<li>Adding a subjectPublicKeyInfo containing an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey (RFC4210 Appendix D.4).</li>
+</ul>
+<p>These options of course open up a vast field of options. Adding in that the server want to restrict what type of keys the clients can 
+request, and certify, there are a number of rather strict rules and business logic used by EJBCA. The below list highlights these choices, and apply only if server generated keys are allowed in the CMP alias configuration.</p>
+<note>In order to use server generated keys, this must be allowed in the CMP alias. By default it is not allowed and all requests for server generated keys will be denied.</note>
+<ul>
+<li>If the request does not contain a request public key, key generation options are taken from the certificate profile that will be used to issue the certificate:</li>
+<ul>
+<li>The certificate profile must contain only one allowed key algorithm and one allowed key specification, for example 'RSA 1024' or 'ECDSA secp256r1'.</li>
+<li>If there is not a single distinct choice, the request will be denied and an error returned to the client.</li>
+</ul>
+<li>If the certificate profile contains a subjectPublicKeyInfo with the RSA algorithmId (rsaEncryption = 1.2.840.113549.1.1.1) the certificate profile must contain a single choice of key sizes allowed.</li>
+<ul>
+<li>If there is not a single distinct choice, the request will be denied</li>
+</ul>
+<li>If the certificate profile contains a subjectPublicKeyInfo with the ECDSA algorithmId (id_ecPublicKey = 1.2.840.10045.2.1) the subjectPublicKeyInfo must contain parameters where two choices are allowed:</li>
+<ul>
+<li>implicitlyCA - the certificate profile must contain a single choice of curves allowed, otherwise the request will be denied.</li>
+<li>namedCurve - with the OID of a supported named curve, which is among the allowed curves in the certificate profile.</li>
+</ul>
+</ul>
+<p>These rules allow the CA administrator to control what server generated keys the CA will generate and return to the client, and can be sumarized as:</p>
+<ul>
+<li>A distinct choice of a single key algorithm and key size/curve, defined in the certificate profile.</li>
+<li>A choice of a single RSA key size and a set of EC curves, defined in the certificate profile and selected by the client in the request.</li>
+</ul>
+<p>Only RSA and EC keys are supported at this moment.</p>
+<note>In order for server generated keys to be supported the client <strong>must</strong> include a id_regCtrl_protocolEncrKey in the request, containing a public key that the server will use to encrypt the private key returned in the response.</note>
+<p>Server generated keys are returned in the CertifiedKeyPair.privateKey field in the response, as defined in RFC4210 section 5.3.4 and section D.4. The EncryptedValue will contain the private key, encrypted using AES256 with a random symmetric key, 
+in turn wrapped using the public key in id_regCtrl_protocolEncrKey (RFC4211 Appendix B have more details on the EncryptedValue).</p>
+<p>Code example in Java for requesting server generated keys can be found in the test method CrmfRequestTest.test12ServerGeneratedKeys().</p>
+</subsection>
+
 <subsection name="Certificate validity">
 <p>Normally the validity period of issued certificates are controlled by the certificate profile. 
 If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certification request contains a 
@@ -1589,7 +1626,22 @@ Below is a exhaustive list of CMP error codes (don't use as definite guide, do y
     <td>NOT_AUTHORIZED (23)</td>
   </tr>
   <tr>
-    <td>Internal processing error due to invalid configuration such as missing profiles</td>
+    <td>A request for server generated keys when this is not enabled in CMP alias</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A request for server generated keys when the certificate profile does not exist</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A request for server generated keys when the key algorithm, key size (RSA) or curve (ECDSA) is not allowed</td>
+    <td>Unsigned CMP</td>
+    <td>BAD_REQUEST (2)</td>
+  </tr>
+  <tr>
+    <td>A request for server generated keys with invalid or unsupported key parameters</td>
     <td>Unsigned CMP</td>
     <td>BAD_REQUEST (2)</td>
   </tr>

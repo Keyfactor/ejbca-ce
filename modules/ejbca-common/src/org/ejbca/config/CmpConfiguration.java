@@ -74,21 +74,22 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RACERT_PATH             = "racertificatepath";
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
+    public static final String CONFIG_ALLOWSERVERGENERATEDKEYS  = "allowservergenkeys";
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
     public static final String CONFIG_UNIDDATASOURCE          = "uniddatasource";
     
     public static final String PROFILE_USE_KEYID = "KeyId";
     public static final String PROFILE_DEFAULT = "ProfileDefault";
     
-    // This List is used in the command line handling of updating a config value to insure a correct value.
+    // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
-                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY);
+                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS);
        
     private final String ALIAS_LIST = "aliaslist";
     public static final String CMP_CONFIGURATION_ID = "1";
 
     // Default Values
-    public static final float LATEST_VERSION = 3f;
+    public static final float LATEST_VERSION = 4f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
@@ -99,6 +100,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_VENDOR_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
     private static final String DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE = "false";
+    private static final String DEFAULT_ALLOW_SERVERGENERATED_KEYS = "false";
     private static final String DEFAULT_KUR_ALLOW_SAME_KEY = "true";
     private static final String DEFAULT_RESPONSE_PROTECTION = "signature";
     private static final String DEFAULT_ALLOW_RA_VERIFY_POPO = "false"; 
@@ -172,6 +174,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_RACERT_PATH, DEFAULT_RACERT_PATH);
             data.put(alias + CONFIG_RA_OMITVERIFICATIONSINEEC, DEFAULT_RA_OMITVERIFICATIONSINEEC);
             data.put(alias + CONFIG_ALLOWAUTOMATICKEYUPDATE, DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE);       
+            data.put(alias + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);       
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_KUR_ALLOW_SAME_KEY);
             data.put(alias + CONFIG_CERTREQHANDLER_CLASS, DEFAULT_CERTREQHANDLER);
             data.put(alias + CONFIG_UNIDDATASOURCE, DEFAULT_UNID_DATASOURCE);
@@ -207,6 +210,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
         keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
         keys.add(alias + CONFIG_UNIDDATASOURCE);
+        keys.add(alias + CONFIG_ALLOWSERVERGENERATEDKEYS);       
         return keys;
     }
 
@@ -523,6 +527,15 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_ALLOWAUTOMATICKEYUPDATE;
         setValue(key, Boolean.toString(allowAutomaticUpdate), alias);
     }
+    public boolean getAllowServerGeneratedKeys(String alias) {
+        String key = alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setAllowServerGeneratedKeys(String alias, boolean allowSrvGenKeys) {
+        String key = alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS;
+        setValue(key, Boolean.toString(allowSrvGenKeys), alias);
+    }
     
     
     public boolean getKurAllowSameKey(String alias) {
@@ -562,7 +575,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             if(data.containsKey(key)) {
                 return (String) data.get(key);
             } else {
-                log.error("Could not find key '" + key + "' in the CMP configuration data");
+                log.info("Could not find key '" + key + "' in the CMP configuration data");
             }
         } else {
             log.error("CMP alias '" + alias + "' does not exist");
@@ -574,10 +587,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             if(data.containsKey(key)) {
                 data.put(key, value);
                 if(log.isDebugEnabled()) {
-                    log.debug("Added '" + key + "=" + value + "' to the CMP configuration data");
+                    log.debug("Edited '" + key + "=" + value + "' in the CMP configuration data");
                 }
             } else {
-                log.error("Key '" + key + "' does not exist in the CMP configuration data");
+                data.put(key, value);
+                if(log.isDebugEnabled()) {
+                    log.debug("Added '" + key + "=" + value + "' to the CMP configuration data");
+                }
             }
         } else {
             log.error("CMP alias '" + alias + "' does not exist");
@@ -595,7 +611,11 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     
     
     
-    public void setAliasList(final Set<String> aliaslist) { 
+    /** set list of aliases. Use LinkedHashSet to maintain order, which is important for consistent databaseprotection
+     * 
+     * @param aliaslist LinkedHashSet of aliases, 
+     */
+    public void setAliasList(final LinkedHashSet<String> aliaslist) { 
         data.put(ALIAS_LIST, aliaslist); 
     }
     public Set<String> getAliasList() {
@@ -781,6 +801,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     @Override
     public void upgrade(){
         if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            // New version of the class, upgrade
+            log.info("Upgrading CMP Configuration with version "+Float.valueOf(getVersion()));
+            // v4
+            Set<String> aliases = getAliasList();
+            for (String alias : aliases) {
+                data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);                
+            }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
         }
     }

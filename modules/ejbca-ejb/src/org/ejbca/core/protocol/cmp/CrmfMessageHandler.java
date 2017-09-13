@@ -14,13 +14,26 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.ECNamedCurveTable;
+import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -34,12 +47,15 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
@@ -202,8 +218,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		                if(crmfreq.getHeader().getProtectionAlg() != null) {
 		                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
 		                }
+		                // Do we have a public key in the request? If not we may be trying to do server generated keys
+		                enrichWithServerGeneratedKeyOrThrow(crmfreq, endEntityInformation.getCertificateProfileId());
 		                resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, endEntityInformation);
-
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);						
@@ -224,6 +241,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 LOG.error(errMsg);
                 throw new IllegalStateException(errMsg);
 			}
+		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+		    // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request 
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e);    
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
+		} catch (NoSuchProviderException e) {
+		    // Thrown checking for the public key in the request, if this is thrown there is something missing in the system 
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.error(errMsg, e);    
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e);	
@@ -407,6 +434,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 }
 			}
 			try {
+	            // Do we have a public key in the request? If not we may be trying to do server generated keys
+                enrichWithServerGeneratedKeyOrThrow((CrmfRequestMessage)req, certProfileId);
 				try {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
@@ -418,6 +447,14 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// Try again
 					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
+            } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+                // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request 
+                LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, username), e);
+                resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.BAD_REQUEST, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
+            } catch (NoSuchProviderException e) {
+                // Thrown checking for the public key in the request, if this is thrown there is something missing in the system 
+                LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, username), e);
+                resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.SYSTEM_UNAVAILABLE, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
 			} catch (EndEntityProfileValidationException e) {
 				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
@@ -435,7 +472,167 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return resp;
 	}
 	
-	private EndEntityInformation getUserDataByDN(String dn) throws AuthorizationDeniedException {
+	private void enrichWithServerGeneratedKeyOrThrow(final CrmfRequestMessage req, final int certProfileID) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+	    SubjectPublicKeyInfo pkInfo = req.getRequestSubjectPublicKeyInfo();
+	    
+        // To trigger server generated keys, subjectPublicKeyInfo key could be null, but subjectPublicKeyInfo could also still be there
+        // with an AlgorithmIdentifier followed by a zero-length BIT STRING (RFC4210 Appendix D.4)
+	    if ( pkInfo == null || (pkInfo.getAlgorithm() != null && pkInfo.getPublicKeyData() != null && pkInfo.getPublicKeyData().getBytes().length == 0) ) {
+	        if (LOG.isDebugEnabled()) {
+	            LOG.debug("CRMF requests does not contain a request public key.");
+	            if (pkInfo != null) {
+	                LOG.debug("CRMF requests contains a SubjectPublicKeyInfo without key bits and with algorithmId "+pkInfo.getAlgorithm().getAlgorithm().getId());                
+	            }
+	        }
+	        // Trying to request server generated keys? See if this is allowed, and then try to figure out key generation parameters
+	        if (!this.cmpConfiguration.getAllowServerGeneratedKeys(this.confAlias)) {
+                // Not possible to server generate key when there is no key to encrypt the response with
+                throw new InvalidKeyException("Server generated keys not allowed");	            
+	        }
+
+	        // Only allow server generated keys if we have a key to encrypt the response with
+	        // Even though theoretically possible, we only support RSA key transport protection/wrapping
+            if (req.getProtocolEncrKey() == null || !req.getProtocolEncrKey().getAlgorithm().equals("RSA")) {
+                // Not possible to server generate key when there is no key to encrypt the response with
+                throw new InvalidKeyException("Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
+            } else {
+                LOG.debug("Found id_regCtrl_protocolEncrKey with an RSA key in request, clear to generate keys.");
+            }
+
+            KeyPair keys = null;
+            // 2. If not, get key generation parameters from the certificate profile
+            final CertificateProfile profile = certificateProfileSession.getCertificateProfile(certProfileID);
+            if (profile == null) {
+                final String msg = "No certificate profile to get key specification for server generated keys";
+                LOG.debug(msg);
+                throw new InvalidKeyException(msg);
+            }
+            List<String> algs = profile.getAvailableKeyAlgorithmsAsList();
+            List<String> curves = profile.getAvailableEcCurvesAsList();
+            if (pkInfo != null) {
+                // 1. Does the client specify algorithm OID in the request?
+                // If we come here we already know that there is an AlgorithmIdentifier, but no public key bits
+                AlgorithmIdentifier algId = pkInfo.getAlgorithm();
+                if (PKCSObjectIdentifiers.rsaEncryption.equals(algId.getAlgorithm())) {
+                    if (!algs.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                        final String msg = "RSA key generation requested, but certificate profile specified does not allow RSA";
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(msg+": "+certProfileID+": "+algs);
+                        }
+                        throw new InvalidKeyException(msg);                        
+                    }
+                    LOG.debug("RSA algorithm found in SubjectPublicKeyInfo, using as server key generation alg.");
+                    algs.clear();
+                    algs.add(AlgorithmConstants.KEYALGORITHM_RSA);
+                } else if (X9ObjectIdentifiers.id_ecPublicKey.equals(algId.getAlgorithm())) {
+                    if (!algs.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                        final String msg = "ECDSA key generation requested, but certificate profile specified does not allow ECDSA";
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(msg+": "+certProfileID+": "+algs);
+                        }
+                        throw new InvalidKeyException(msg);                        
+                    }
+                    LOG.debug("ECDSA algorithm found in SubjectPublicKeyInfo, using as server key generation alg.");
+                    algs.clear();
+                    algs.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
+                    // Looking for key gen parameters for EC
+                    if (pkInfo.getAlgorithm().getParameters() == null) {
+                        final String msg = "ECDSA key generation requested, but no key parameters included";
+                        throw new InvalidKeyException(msg);                                                
+                    } else {
+                        try {
+                            X962Parameters params = X962Parameters.getInstance(pkInfo.getAlgorithm().getParameters());
+                            if (params.isImplicitlyCA()) {
+                                LOG.debug("ECDSA key generation parameters is implicitlyCA, will try to use certificate profile parameters.");
+                            } else if (params.isNamedCurve()) {
+                                ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(params.getParameters());
+                                final String curveName = ECNamedCurveTable.getName(oid);
+                                if (curveName == null) {
+                                    final String msg = "ECDSA key generation requested, but X962Parameters is none of the supported named curves: "+oid.getId();
+                                    LOG.debug(msg);
+                                    throw new InvalidKeyException(msg);                                                                                                                                                
+                                }
+                                // Check that this curve is allowed in the Certificate Profile, 
+                                // compare oids, since names have many aliases...and first choice alias can change between different BC versions
+                                boolean found = false;
+                                for (String curve : curves) {
+                                    final ASN1ObjectIdentifier id = ECNamedCurveTable.getOID(curve);
+                                    if (id != null && oid.equals(id)) {
+                                        found = true;
+                                    }
+                                }
+                                if (!found) {
+                                    final String msg = "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: "+curveName;
+                                    LOG.debug(msg);
+                                    throw new InvalidKeyException(msg);                                                                                                                                                                                    
+                                }
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("ECDSA key generation parameters is namedCurve, will try to generate key with named curve "+oid.getId()+", "+curveName);
+                                }
+                                curves.clear();
+                                curves.add(curveName);
+                            } else {
+                                final String msg = "ECDSA key generation requested, but X962Parameters is none of the supported options implicitlyCA or namedCurve";
+                                throw new InvalidKeyException(msg);                                                                                                            
+                            }
+                        } catch (IllegalArgumentException e) {
+                            final String msg = "ECDSA key generation requested, but X962Parameters can not be decoded";
+                            throw new InvalidKeyException(msg, e);                                                                            
+                        }
+                    }
+                } else {
+                    final String msg = "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm "+algId.getAlgorithm().getId();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(msg+": "+certProfileID+": "+algs);
+                    }
+                    throw new InvalidKeyException(msg);                    
+                }
+            } // pkInfo != null
+            
+            if (algs.size() > 1) {
+                final String msg = "Certificate profile specified more than one key algoritm, not possible to server generate keys";
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(msg+": "+certProfileID+": "+algs);
+                }
+                throw new InvalidKeyException(msg);
+            }
+            if (AlgorithmConstants.KEYALGORITHM_RSA.equals(algs.get(0))) {
+                int[] sizes = profile.getAvailableBitLengths();
+                if (sizes == null || sizes.length > 1) {
+                    final String msg = "Certificate profile specified more than one key size, not possible to server generate keys";
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(msg+": "+certProfileID+": "+Arrays.asList(sizes));
+                    }
+                    throw new InvalidKeyException(msg);                        
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Generating server generated keypair RSA "+sizes[0]);
+                }
+                keys = KeyTools.genKeys(String.valueOf(sizes[0]), AlgorithmConstants.KEYALGORITHM_RSA);                    
+            } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(algs.get(0))) {
+                if (curves.size() > 1) {
+                    final String msg = "Certificate profile specified more than one EC curve, not possible to server generate keys";
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(msg+": "+certProfileID+": "+curves);
+                    }
+                    throw new InvalidKeyException(msg);                        
+                }
+                keys = KeyTools.genKeys(curves.get(0), AlgorithmConstants.KEYALGORITHM_ECDSA);  
+                
+            } else {
+                final String msg = "Certificate profile an algorithm not supported for server generated keys";
+                LOG.debug(msg);
+                throw new InvalidKeyException(msg);                    
+            }
+            // We finally got our keys if we get all the way down here
+            req.setServerGenKeyPair(keys);
+	    } else {
+	        LOG.debug("CRMF requests contains a request public key.");
+	    }
+
+	}
+
+    private EndEntityInformation getUserDataByDN(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation endEntityInformation = null;
 	    if (LOG.isDebugEnabled()) {
 	        LOG.debug("looking for user with dn: "+dn);

@@ -59,6 +59,7 @@
 	static final String CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE  	= "checkboxcmpuseautomatickeyupdate";
 	static final String CHECKBOX_CMP_KUR_USESAMEKEYS				= "checkboxcmpkurusesamekeys";
 	static final String CHECKBOX_CMP_ALLOWRAVERIFYPOPO				= "checkboxcmpallowraverifypopo";
+	static final String CHECKBOX_CMP_ALLOWSERVERGENERATED_KEYS		= "checkboxcmpallowservergeneratedkeys";
 	static final String CHECKBOX_CMP_ALLOWCUSTOMSERNO				= "checkboxcmpallowcustomserno";
 	static final String CHECKBOX_HMAC								= "checkboxhmac";
 	static final String CHECKBOX_EEC								= "checkboxeec";
@@ -392,7 +393,9 @@
     			            value = request.getParameter(CHECKBOX_CMP_KUR_USESAMEKEYS);
     			            cmpConfigClone.setKurAllowSameKey(alias, (value != null));
     			            
-    			            
+    			            // Server key generation
+    			            value = request.getParameter(CHECKBOX_CMP_ALLOWSERVERGENERATED_KEYS);
+    			            cmpConfigClone.setAllowServerGeneratedKeys(alias, (value != null));
     			            
     			            // Nested message content
     			            value = request.getParameter(TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH);
