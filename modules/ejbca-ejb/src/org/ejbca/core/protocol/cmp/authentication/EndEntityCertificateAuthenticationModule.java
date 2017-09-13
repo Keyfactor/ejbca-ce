@@ -858,9 +858,18 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 // Trust anchor is last, so if this is the last element, don't add it
                 Certificate crt = itr.next();
                 if (itr.hasNext()) {
-                    certlist.add(crt);
+                    if (!certlist.contains(crt)) {
+                        certlist.add(crt);                        
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Certlist already contains certificate with subject "+CertTools.getSubjectDN(crt)+", not adding to list");
+                        }
+                    }
                 } else {
                     rootcert = (X509Certificate)crt;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor");
+                    }
                 }
             }            
             CertPath cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);

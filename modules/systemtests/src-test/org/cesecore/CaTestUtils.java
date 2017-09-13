@@ -13,6 +13,7 @@
 package org.cesecore;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -68,6 +69,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -251,10 +253,41 @@ public abstract class CaTestUtils {
             cachain.add(cacert);
         }
         x509ca.setCertificateChain(cachain);
-        // Now our CA should be operational, if we generated keys, otherwise we will have to generate is, and a CA certificate later.
+        // Now our CA should be operational, if we generated keys, otherwise we will have to generate it, and a CA certificate later.
         return x509ca;
     }
 
+    public static CAInfo createTestX509SubCAGenKeys(AuthenticationToken admin, String cadn, char[] tokenpin, int signedBy, final String keyspec) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException, CADoesntExistsException {
+        // Create catoken
+        int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, tokenpin, true, false, cadn, keyspec);
+        final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
+        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        String caname = CertTools.getPartFromDN(cadn, "CN");
+        X509CAInfo cainfo = new X509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d",
+                signedBy, null, catoken);
+        cainfo.setDescription("JUnit RSA CA");
+        cainfo.setExtendedCAServiceInfos(extendedCaServices);
+        boolean ldapOrder = !CertTools.isDNReversed(cadn);
+        cainfo.setUseLdapDnOrder(ldapOrder);
+        cainfo.setCmpRaAuthSecret("foo123");
+        X509CA x509ca = new X509CA(cainfo);
+        try {
+            x509ca.setCAToken(catoken);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+        // Create the SubCA, signed by Root designated by "signedBy"
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        caAdminSession.createCA(admin, cainfo);
+        CAInfo newinfo = caSession.getCAInfo(admin, caname);
+        Collection<Certificate> newcerts = newinfo.getCertificateChain();
+        assertNotNull(newcerts);
+        assertEquals("A subCA should have two certificates in the certificate chain", 2, newcerts.size());
+        // Now our CA should be operational
+        return newinfo;
+    }
 
     /** @return a CAToken for referencing the specified CryptoToken. */
     public static CAToken createCaToken(final int cryptoTokenId, String sigAlg, String encAlg) {
