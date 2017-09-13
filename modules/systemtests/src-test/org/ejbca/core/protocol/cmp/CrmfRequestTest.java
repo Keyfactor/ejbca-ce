@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -32,21 +34,35 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CertRepMessage;
+import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.EncryptedValue;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.AsymmetricKeyUnwrapper;
+import org.bouncycastle.operator.jcajce.JceAsymmetricKeyUnwrapper;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.util.Arrays;
 import org.cesecore.CaTestUtils;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
@@ -55,6 +71,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -62,6 +79,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
@@ -209,7 +227,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03CrmfHttpOkUser() throws Exception {
         log.trace(">test03CrmfHttpOkUser");
         // Create a new good USER
-        X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
+        X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -246,7 +264,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         // 
         // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
-        userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid);
+        userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
         req = genCertReq(ISSUER_DN, userDN, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null, true);
@@ -269,7 +287,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test04BlueXCrmf");
         // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
         final String username = "cmptest_test04BlueXCrmf";
-        super.createCmpUser(username, "CN=Some Common Name", false, this.caid);
+        super.createCmpUser(username, "CN=Some Common Name", false, this.caid, -1, -1);
         byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
@@ -340,7 +358,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Create a new good USER
         String cmpsntestUsername = "cmpsntest";
         String cmpsntest2Username = "cmpsntest2";
-        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true, this.caid);
+        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true, this.caid, -1, -1);
         
         try {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -371,7 +389,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Create another USER with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
             KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
-            final X500Name userDN2 = createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid);
+            final X500Name userDN2 = createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid, -1, -1);
             req = genCertReq(ISSUER_DN, userDN2, keys2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
@@ -428,7 +446,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
         final String sRequestName = "CN=another\0nullguy%00<do>";
         // Create a new good USER
-        final X500Name requestName = createCmpUser(sRequestName, sRequestName, false, this.caid);
+        final X500Name requestName = createCmpUser(sRequestName, sRequestName, false, this.caid, -1, -1);
 
         try {
             PKIMessage req = genCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
@@ -468,7 +486,7 @@ public class CrmfRequestTest extends CmpTestCase {
         KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         
         // Create a new good USER
-        final X500Name dn = createCmpUser(username, sDN, false, this.caid);
+        final X500Name dn = createCmpUser(username, sDN, false, this.caid, -1, -1);
 
         try {
             PKIMessage req = genCertReq(ISSUER_DN, dn, key2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
@@ -591,6 +609,423 @@ public class CrmfRequestTest extends CmpTestCase {
             this.caSession.removeCA(ADMIN, subcaID);
         }
     }
+    
+    @Test
+    public void test12ServerGeneratedKeys() throws Exception {
+        log.trace(">test12ServerGeneratedKeys");
+        // Create a new good USER
+        final String cmptestUsername = "cmpsrvgentest";
+        //final String cmptestCPName = "CMPSRVGENTEST";
+        final String cmptestCPName = CP_DN_OVERRIDE_NAME;
+        CertificateProfile certificateProfile = this.certProfileSession.getCertificateProfile(CP_DN_OVERRIDE_NAME);
+        assertNotNull(certificateProfile);
+        // Backup the certificate profile so we can restore it afterwards, because we will modify it in this test
+        //      certificateProfile.setAvailableBitLengths(new int[] {1024, 2048});
+        //      certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA", "ECDSA"});
+        CertificateProfile backup = certificateProfile.clone();
+        final int cpID = certProfileSession.getCertificateProfileId(CP_DN_OVERRIDE_NAME);
+        final int eepID = endEntityProfileSession.getEndEntityProfileId(EEP_DN_OVERRIDE_NAME);
+        log.info("Using Certificate Profile with ID: "+cpID);
+        final X500Name userDN1 = createCmpUser(cmptestUsername, "C=SE,O=MemyselfandI,CN="+cmptestUsername, false, this.caid, eepID, cpID);
+        String fingerprint1 = null;
+        String fingerprint2 = null;
+        String fingerprint3 = null;
+        String fingerprint4 = null;
+        try {
+            byte[] nonce = CmpMessageHelper.createSenderNonce();
+            byte[] transid = CmpMessageHelper.createSenderNonce();
+
+            // 0.
+            
+            // Send a CMP request with empty public key, signaling server key generation, but where server key generation is not allowed (the default) in the CMP alias
+            // Should fail
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
+            PKIMessage req = genCertReq(ISSUER_DN, userDN1, /*keys*/null, this.cacert, nonce, transid, false, null, null, null, null, pAlg, null);
+            assertNotNull(req);
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            // This request should fail because we did not provide a protocolEncrKey key
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server generated keys not allowed");
+            // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
+
+            // 1.
+            
+            // Send a CMP request with empty public key, signaling server key generation, but where there is no protoclEncrKey to encrypt the response with
+            // Should fail
+            // Allow server key generation in the CMP alias
+            this.cmpConfiguration.setAllowServerGeneratedKeys(cmpAlias, true);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+            pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
+            req = genCertReq(ISSUER_DN, userDN1, /*keys*/null, this.cacert, nonce, transid, false, null, null, null, null, pAlg, null);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // This request should fail because we did not provide a protocolEncrKey key
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
+            // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
+
+            // 2.
+            
+            // Add protocolEncKey that is not an RSA key, this will return an error as well
+            KeyPair protocolEncKey = KeyTools.genKeys("secp256r1", "ECDSA");
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
+
+            // 3.
+            
+            // Add protocolEncrKey or the correct type (RSA), but have request public key null, and not a single choice of keys in the Certificate Profile, should fail
+            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
+            protocolEncKey = KeyTools.genKeys("1024", "RSA");
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key algoritm, not possible to server generate keys");
+
+            // 4.
+            
+            // Set a single selection in the Certificate Profile and expect a good answer
+            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
+            certificateProfile.setAvailableBitLengths(new int[] {1024});
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Now we should have a cert response
+            PKIMessage pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            assertNotNull(cert);
+            fingerprint1 = CertTools.getFingerprintAsString(cert);
+            // We should also have a private key in the response
+            { 
+                final PKIBody pkiBody = pkiMessage.getBody();
+                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+                final CertResponse certResponse = certRepMessage.getResponse()[0];
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                // certifiedKeyPair.getCertOrEncCert().getCertificate() is what we verified above in checkCmpCertRepMessage
+                // Now lets try to dig out the encrypted private key
+                // Created from:
+                // JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
+                //   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
+                //   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+                // myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
+                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
+                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
+                // recover private key
+                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
+                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
+                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
+                // Verify that the private key returned matches the public key in the certificate we got
+                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
+                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
+                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
+                assertTrue(signatureOK);
+                // Verify that the private/public key generated by the server is the algorithm and size that we expected
+                assertEquals("RSA", privKey.getAlgorithm());
+                assertEquals(1024, KeyTools.getKeyLength(cert.getPublicKey()));
+            }
+
+            // 5.
+            
+            // Try with ECC keys
+            // Sending null means that the server should choose the keytype and size allowed by the certificate profile
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
+            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Now we should have a cert response
+            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            assertNotNull(cert);
+            fingerprint2 = CertTools.getFingerprintAsString(cert);
+            // We should also have a private key in the response
+            { 
+                final PKIBody pkiBody = pkiMessage.getBody();
+                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+                final CertResponse certResponse = certRepMessage.getResponse()[0];
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
+                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
+                // recover private key
+                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
+                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
+                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
+                // Verify that the private key returned matches the public key in the certificate we got
+                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
+                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
+                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
+                assertTrue(signatureOK);
+                // Verify that the private/public key generated by the server is the algorithm and size that we expected
+                assertEquals("EC", privKey.getAlgorithm());
+                final String keySpec = AlgorithmTools.getKeySpecification(cert.getPublicKey());
+                assertEquals("prime256v1", keySpec);
+            }
+
+            // 6.
+            
+            // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
+            // First we try specifying RSA key, but profile only allows ECDSA, should fail
+            //
+            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey 
+            // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
+            // Server should then get the algorithm from the SubjectPublicKeyInfo
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
+            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            // Start with RSA public key info, with empty BITString
+            // Note for a normal RSA key the AlgorithmIdentifier.parameters is specified to be DERNull (not java null, but ASN.1 type null)
+            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
+            SubjectPublicKeyInfo spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+                    PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new byte[0]);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "RSA key generation requested, but certificate profile specified does not allow RSA");
+
+            // 7.
+            
+            // Same as above, but profile allows multiple RSA key sizes, should fail
+            //
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
+            certificateProfile.setAvailableBitLengths(new int[] {1024, 2048});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            // Start with RSA public key info, with empty BITString
+            // Note for a normal RSA key the AlgorithmIdentifier.parameters is specified to be DERNull (not java null, but ASN.1 type null)
+            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key size, not possible to server generate keys");
+
+            // 8.
+            
+            // Try the same but with an unsupported algorithm, should fail
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            // Start with RSA public key info, with empty BITString
+            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+                    PKCSObjectIdentifiers.des_EDE3_CBC, DERNull.INSTANCE), new byte[0]);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm 1.2.840.113549.3.7");
+
+            // 9.
+            
+            // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
+            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey 
+            // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
+            // Server should then get the algorithm from the SubjectPublicKeyInfo
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"RSA"});
+            certificateProfile.setAvailableBitLengths(new int[] {1024});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            // Start with RSA public key info, with empty BITString
+            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+                    PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new byte[0]);
+//            SubjectPublicKeyInfo spkInfoEC = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+//                    X9ObjectIdentifiers.id_ecPublicKey, DERNull.INSTANCE), new byte[0]);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Now we should have a cert response
+            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            assertNotNull(cert);
+            fingerprint3 = CertTools.getFingerprintAsString(cert);
+            // We should also have a private key in the response
+            { 
+                final PKIBody pkiBody = pkiMessage.getBody();
+                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+                final CertResponse certResponse = certRepMessage.getResponse()[0];
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
+                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
+                // recover private key
+                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
+                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
+                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
+                // Verify that the private key returned matches the public key in the certificate we got
+                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
+                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data);
+                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, data, signedData);
+                assertTrue(signatureOK);
+                // Verify that the private/public key generated by the server is the algorithm and size that we expected
+                assertEquals("RSA", privKey.getAlgorithm());
+                assertEquals(1024, KeyTools.getKeyLength(cert.getPublicKey()));
+            }
+
+            // 10.
+            
+            // Same as above with ECDSA, first specify a curve that isn't allowed in the profile
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
+            certificateProfile.setAvailableEcCurves(new String[]{"secp256r1"});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            // Try with an ECDSA public key info, with empty BITString
+            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
+            // We'll specify the named curve we request here
+            X962Parameters params = new X962Parameters(X9ObjectIdentifiers.prime192v1); 
+            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+                    X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: P-192");
+
+            // 11.
+            
+            // Change the profile to allow the curve we specify as params to SubjectPublicKeyInfo
+            this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
+            certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
+            certificateProfile.setAvailableEcCurves(new String[]{"prime192v1", "secp256r1"});
+            certProfileSession.changeCertificateProfile(ADMIN, cmptestCPName, certificateProfile);
+            // Try with an ECDSA public key info, with empty BITString, but with params specifying a curve
+            // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
+            // We'll specify the named curve we request here
+            spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
+                    X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
+            req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
+                    null, null, null, null, pAlg, null, false);
+            assertNotNull(req);
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ba = CmpMessageHelper.pkiMessageToByteArray(req);
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, cmpAlias);
+            // Now we should have a cert response
+            pkiMessage = checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
+            assertNotNull(cert);
+            fingerprint4 = CertTools.getFingerprintAsString(cert);
+            // We should also have a private key in the response
+            { 
+                final PKIBody pkiBody = pkiMessage.getBody();
+                final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+                final CertResponse certResponse = certRepMessage.getResponse()[0];
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                EncryptedValue encValue = certifiedKeyPair.getPrivateKey();
+                AsymmetricKeyUnwrapper unwrapper = new JceAsymmetricKeyUnwrapper(encValue.getKeyAlg(), protocolEncKey.getPrivate());
+                byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
+                // recover private key
+                PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
+                // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
+                assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
+                // Verify that the private key returned matches the public key in the certificate we got
+                PrivateKey privKey = BouncyCastleProvider.getPrivateKey(keyInfo);
+                byte[] data = "foobar we want to sign this data, cats and dogs rule!".getBytes();
+                byte[] signedData = KeyTools.signData(privKey, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data);
+                final boolean signatureOK = KeyTools.verifyData(cert.getPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, data, signedData);
+                assertTrue(signatureOK);
+                // Verify that the private/public key generated by the server is the algorithm and size that we expected
+                assertEquals("EC", privKey.getAlgorithm());
+                final String keySpec = AlgorithmTools.getKeySpecification(cert.getPublicKey());
+                assertEquals("prime192v1", keySpec);
+            }
+
+        } finally {
+            log.debug("Deleting certificate: "+fingerprint1);
+            this.internalCertStoreSession.removeCertificate(fingerprint1);
+            log.debug("Deleting certificate: "+fingerprint2);
+            this.internalCertStoreSession.removeCertificate(fingerprint2);
+            log.debug("Deleting certificate: "+fingerprint3);
+            this.internalCertStoreSession.removeCertificate(fingerprint3);
+            log.debug("Deleting certificate: "+fingerprint4);
+            this.internalCertStoreSession.removeCertificate(fingerprint4);
+            log.debug("Deleting user: "+cmptestUsername);
+            try {
+            this.endEntityManagementSession.deleteUser(ADMIN, cmptestUsername);
+            } catch (NoSuchEndEntityException e) {
+                // NOPMD: ignore
+            }
+            // Re-set CMP alias configuration
+            this.cmpConfiguration.setAllowServerGeneratedKeys(cmpAlias, false);
+            this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+            // Restore certificate profile to what it was before the test
+            this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, backup);
+        }
+        log.trace("<test12ServerGeneratedKeys");
+    }
+
 
     /*
      *     header

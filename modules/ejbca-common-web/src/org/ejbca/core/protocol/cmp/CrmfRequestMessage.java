@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -33,17 +34,22 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.InfoTypeAndValue;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
+import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKeyInput;
@@ -55,6 +61,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
@@ -83,6 +90,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
      */
     static final long serialVersionUID = 1002L;
 
+    public static final ASN1ObjectIdentifier id_regCtrl_protocolEncrKey  = CRMFObjectIdentifiers.id_regCtrl.branch("6");
+
     private int requestType = 0;
     private int requestId = 0;
     private String b64SenderNonce = null;
@@ -95,6 +104,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     private String username = null;
     /** manually set password */
     private String password = null;
+    /** manually set public and private key, if keys have been server generated */
+    private transient KeyPair serverGenKeyPair;
 
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */
@@ -170,15 +181,34 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        // If we have generated a key pair by the server, we should use this one
+        if (serverGenKeyPair != null) {
+            return serverGenKeyPair.getPublic();
+        }
+        // Else, see if we can find one in the request
+        final SubjectPublicKeyInfo keyInfo = getRequestSubjectPublicKeyInfo();
+        if (keyInfo == null) {
+            // No public key, which may be OK if we are requesting server generated keys
+            return null;
+        }
+        final PublicKey pk = getPublicKey(keyInfo, BouncyCastleProvider.PROVIDER_NAME);
+        return pk;
+    }
+
+    public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         final CertRequest request = getReq().getCertReq();
         final CertTemplate templ = request.getCertTemplate();
         final SubjectPublicKeyInfo keyInfo = templ.getPublicKey();
-        final PublicKey pk = getPublicKey(keyInfo, "BC");
-        return pk;
+        return keyInfo;
     }
 
     private PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String provider) throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidKeyException {
+        // If there is no public key here, but only an empty bit string, it means we have called for server generated keys
+        // i.e. no public key to see here...
+        if (subjectPKInfo.getPublicKeyData().equals(DERNull.INSTANCE)) {
+            return null;
+        }
         try {
             final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
             final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithm();
@@ -188,6 +218,36 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             newe.initCause(e);
             throw newe;
         }
+    }
+
+    public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        final CertRequest request = getReq().getCertReq();
+        Controls controls = request.getControls();
+        if (controls != null) {
+            AttributeTypeAndValue[] avs = controls.toAttributeTypeAndValueArray();
+            if (avs != null) {
+                for (int i = 0; i < avs.length; i++) {
+                    if (avs[i].getType().equals(CrmfRequestMessage.id_regCtrl_protocolEncrKey)) {
+                        ASN1Encodable asn1 = avs[i].getValue();
+                        if (asn1 != null) {
+                            SubjectPublicKeyInfo spi = SubjectPublicKeyInfo.getInstance(asn1);
+                            if (spi != null) {
+                                return getPublicKey(spi, BouncyCastleProvider.PROVIDER_NAME);
+                            }
+                        }
+                    }
+                }                
+            }
+        }
+        return null;
+    }
+    
+    public KeyPair getServerGenKeyPair() {
+        return serverGenKeyPair;
+    }
+
+    public void setServerGenKeyPair(KeyPair serverGenKeyPair) {
+        this.serverGenKeyPair = serverGenKeyPair;
     }
 
     /** force a password, i.e. ignore the password in the request */
@@ -391,9 +451,37 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final ProofOfPossession pop = getReq().getPopo();
         if (log.isDebugEnabled()) {
             log.debug("allowRaVerifyPopo: " + allowRaVerifyPopo);
-            log.debug("pop.getRaVerified(): " + (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED));
+            if (pop != null) {
+                log.debug("pop.getRaVerified(): " + (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED));                
+            } else {
+                log.debug("No POP in message");
+            }
         }
-        if (allowRaVerifyPopo && (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED)) {
+        if (pop == null) {
+            // POP can be null only if we don't have a public key in the message, then we request
+            // server generated keys, and don't send any POP
+            // This can be either no public key info, or public key info with a algId followed by a zero length bitstring
+            // SubjectPublicKeyInfo ::= SEQUENCE {
+            //   algorithm AlgorithmIdentifier,
+            //   publicKey BIT STRING }
+            SubjectPublicKeyInfo pkinfo = getRequestSubjectPublicKeyInfo();
+            if (pkinfo == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("POP is not present, but neither is a SubjectPublicKeyInfo, so POP is OK...for server generated keys.");
+                }
+                ret = true; // public key null, this is OK when there is no POP
+            } else if (pkinfo.getAlgorithm() != null && pkinfo.getPublicKeyData().intValue() == 0) {
+                if (log.isDebugEnabled()) {
+                    log.debug("POP is not present, but SubjectPublicKeyInfo is, with an algId followed by zero length data, so POP is OK...for server generated keys.");
+                }
+                ret = true;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("POP is not present, but SubjectPublicKey is, but not with an algId followed by zero length data, POP is not OK...not even for server generated keys.");
+                }
+                ret = false;
+            }
+        } else if ( allowRaVerifyPopo && (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED) ) {
             ret = true;
         } else if (pop.getType() == ProofOfPossession.TYPE_SIGNING_KEY) {
             try {

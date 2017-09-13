@@ -99,6 +99,7 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
+import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
@@ -246,7 +247,7 @@ public abstract class CmpTestCase extends CaTestCase {
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
-        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, implicitConfirm);
     }
 
@@ -254,7 +255,7 @@ public abstract class CmpTestCase extends CaTestCase {
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
-        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
 
@@ -262,7 +263,7 @@ public abstract class CmpTestCase extends CaTestCase {
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
-        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
     /** 
@@ -289,7 +290,8 @@ public abstract class CmpTestCase extends CaTestCase {
      * @throws InvalidKeyException
      * @throws SignatureException
      */
-    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+    protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, SubjectPublicKeyInfo spkInfo,  
+            KeyPair protocolEncrKey, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID, boolean implicitConfirm)
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
@@ -316,8 +318,15 @@ public abstract class CmpTestCase extends CaTestCase {
             // This field can be empty in the spec, and it has happened for real that someone has used empty value here
             certTemplateBuilder.setSubject(userDN);
         }
-        SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
-        certTemplateBuilder.setPublicKey(keyInfo);
+        if (keys != null) {
+            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
+            certTemplateBuilder.setPublicKey(keyInfo);
+        } else if (spkInfo != null) {
+            // If we didn't have a public key, perhaps we passed a SubjectPublicKeyInfo, which can
+            // be a AlgorithmIdentifier followed by a zero-length BIT STRING as specified for server key generation
+            // for CMP in RFC4210
+            certTemplateBuilder.setPublicKey(spkInfo);
+        }
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         Extensions exts = extensions;
         if (exts == null) {
@@ -347,7 +356,14 @@ public abstract class CmpTestCase extends CaTestCase {
             certTemplateBuilder.setSerialNumber(new ASN1Integer(customCertSerno));
         }
 
-        CertRequest certRequest = new CertRequest(4, certTemplateBuilder.build(), null);
+        // Add controls, if we have any
+        Controls controls = null;
+        if (protocolEncrKey != null) {
+            SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(protocolEncrKey.getPublic().getEncoded());
+            AttributeTypeAndValue av = new AttributeTypeAndValue(CrmfRequestMessage.id_regCtrl_protocolEncrKey, pkinfo);
+            controls = new Controls(av);
+        }
+        CertRequest certRequest = new CertRequest(4, certTemplateBuilder.build(), controls);
 
         // POPO
         /*
@@ -367,14 +383,14 @@ public abstract class CmpTestCase extends CaTestCase {
         if (raVerifiedPopo) {
             // raVerified POPO (meaning there is no POPO)
             proofOfPossession = new ProofOfPossession();
-        } else {
+        } else if (keys != null) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DEROutputStream mout = new DEROutputStream(baos);
             mout.writeObject(certRequest);
             mout.close();
             byte[] popoProtectionBytes = baos.toByteArray();            
-            String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
             try {
+                final String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
                 final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
                 signature.initSign(keys.getPrivate());
                 signature.update(popoProtectionBytes);
@@ -662,12 +678,12 @@ public abstract class CmpTestCase extends CaTestCase {
             return respBytes;
     }
 
-    public static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-        checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false);
+        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false);
     }
 
-    public static void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+    public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
@@ -675,7 +691,7 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(retMsg);
+        final PKIMessage respObject = PKIMessage.getInstance(retMsg);
         assertNotNull(respObject);
 
         // The signer, i.e. the CA, check it's the right CA
@@ -794,7 +810,7 @@ public abstract class CmpTestCase extends CaTestCase {
             InfoTypeAndValue[] infos = header.getGeneralInfo();
             assertTrue("expected no InfoTypeAndValue", infos == null);
         }
-
+        return respObject;
     }
 
     protected static String getProperty(String key, String defaultValue) {
@@ -1127,12 +1143,19 @@ public abstract class CmpTestCase extends CaTestCase {
         return user;
     }
     
-    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid)
+    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid, int eeProfileID, int certificateProfileID)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException, CustomFieldException {
         // Make USER that we know...
-        int cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
-        int eepID = SecConst.EMPTY_ENDENTITYPROFILE;
+        int cpID = certificateProfileID;
+        if (cpID == -1 ) {
+            cpID = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
+        }
+        
+        int eepID = eeProfileID;
+        if (eepID == -1) {
+            eepID = SecConst.EMPTY_ENDENTITYPROFILE;
+        }
         X500Name userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
         if (useDnOverride) {
             cpID = this.cpDnOverrideId;
@@ -1142,7 +1165,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
-        log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN);
+        log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN+", ");
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, true);
         } catch (EndEntityExistsException e) {
