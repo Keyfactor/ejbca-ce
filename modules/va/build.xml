@@ -24,6 +24,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.mail.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 	</path>
 
 	<path id="compile-ejbca.classpath">
