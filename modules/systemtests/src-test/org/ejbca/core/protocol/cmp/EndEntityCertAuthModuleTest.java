@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -61,6 +62,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -112,6 +114,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     
     private final static String RA1_ALIAS = "EECertAuthModTestRA1ConfAlias";
     private final static String RA2_ALIAS = "EECertAuthModTestRA2ConfAlias";
+    private final static String RA3_ALIAS = "EECertAuthModTestRA3ConfAlias";
     private final static String CA1 = "EECertAuthModTestRA1CA1";
     private final static String CA2 = "EECertAuthModTestRA2CA2";
     private final static String CP1 = "EECertAuthModTestRA1CP1";
@@ -119,10 +122,12 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     private final static String EEP1 = "EECertAuthModTestRA1EEP1";
     private final static String EEP2 = "EECertAuthModTestRA2EEP2";
     private final static String AUTH_PARAM_CA = "EECertAuthModTestAuthCA";
+    private final static String AUTH_PARAM_SUBCA = "EECertAuthModTestAuthSubCA";
     private final static String RA1_ADMIN_ROLE = "EECertAuthModTestRA1AdminRole";
     private final static String RA2_ADMIN_ROLE = "ECertAuthModTestRA2AdminRole";
     private final static String RA1_ADMIN = "EECertAuthModTestRA1Admin";
     private final static String RA2_ADMIN = "EECertAuthModTestRA2Admin";
+    private final static String RA3_ADMIN = "EECertAuthModTestRA3Admin";
     
     private final CmpConfiguration cmpConfiguration;
     private final byte[] nonce;
@@ -130,10 +135,13 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
     private static CA ca1;
     private static CA ca2;
     private static CA adminca;
+    private static CAInfo adminsubca;
     private Certificate ra1admincert;
     private Certificate ra2admincert;
+    private Certificate ra3admincert;
     private KeyPair ra1adminkeys;
     private KeyPair ra2adminkeys;
+    private KeyPair ra3adminkeys;
     
     private static final GlobalConfigurationSession globalConfigurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -158,6 +166,10 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ra2admincert = getCertFromAuthenticationToken(ra2admin);
 
+        ra3adminkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        AuthenticationToken ra3admin = createAdminToken(ra3adminkeys, RA3_ADMIN, "CN="+RA3_ADMIN, adminsubca.getCAId(), 
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        ra3admincert = getCertFromAuthenticationToken(ra3admin);
         
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
@@ -167,6 +179,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         final int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         adminca = CaTestUtils.createTestX509CA("CN=" + AUTH_PARAM_CA, "foo123".toCharArray(), false, keyusage);
+        
         ca1 = CaTestUtils.createTestX509CA("CN=" + CA1, null, false, keyusage);
         ca2 = CaTestUtils.createTestX509CA("CN=" + CA2, null, false, keyusage);
         for (final CA ca : Arrays.asList(adminca, ca1, ca2)) {
@@ -175,13 +188,19 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug("Added CA: " + ca.getName());
             }
         }
+        int subcaid = CertTools.stringToBCDNString("CN="+AUTH_PARAM_SUBCA).hashCode();
+        if (caSession.existsCa(subcaid)) {
+            caSession.removeCA(ADMIN, subcaid);
+            log.debug("Removed CA in beforeClass: " + subcaid);            
+        }
+        adminsubca = CaTestUtils.createTestX509SubCAGenKeys(ADMIN, "CN=" + AUTH_PARAM_SUBCA, "foo123".toCharArray(), adminca.getCAId(), "1024");
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         for (final CA ca : Arrays.asList(adminca, ca1, ca2)) {
             try {
-                if (caSession.existsCa(ca.getCAId())) {
+                if (ca != null && caSession.existsCa(ca.getCAId())) {
                     CryptoTokenTestUtils.removeCryptoToken(ADMIN, ca.getCAToken().getCryptoTokenId());
                     caSession.removeCA(ADMIN, ca.getCAId());
                     log.debug("Removed CA: " + ca.getName());
@@ -189,6 +208,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             } catch (Exception e) {
                 log.debug(e.getMessage());
             }
+        }
+        if (adminsubca != null && caSession.existsCa(adminsubca.getCAId())) {
+            CryptoTokenTestUtils.removeCryptoToken(ADMIN, adminsubca.getCAToken().getCryptoTokenId());
+            caSession.removeCA(ADMIN, adminsubca.getCAId());
+            log.debug("Removed CA: " + adminsubca.getName());
         }
     }
 
@@ -273,6 +297,17 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         cmpConfiguration.setExtractUsernameComponent(RA2_ALIAS, "CN");
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
 
+        // Configure CMP alias for RA3
+        cmpConfiguration.addAlias(RA3_ALIAS);
+        cmpConfiguration.setRAMode(RA3_ALIAS, true);
+        cmpConfiguration.setAuthenticationModule(RA3_ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(RA3_ALIAS, AUTH_PARAM_SUBCA);
+        cmpConfiguration.setRAEEProfile(RA3_ALIAS, String.valueOf(eep2Id));
+        cmpConfiguration.setRACertProfile(RA3_ALIAS, CP2);
+        cmpConfiguration.setRACAName(RA3_ALIAS, CA2);
+        cmpConfiguration.setExtractUsernameComponent(RA3_ALIAS, "CN");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
+
         // Add the first RA role
         final Role role1 = roleSession.persistRole(ADMIN, new Role(null, RA1_ADMIN_ROLE, Arrays.asList(
                 AccessRulesConstants.ROLE_ADMINISTRATOR,
@@ -313,6 +348,11 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 adminca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                 RA2_ADMIN, role2.getRoleId(), null));
+
+        // For simplicity, make raadmin3 member of the same role as raadmin3
+        roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                adminsubca.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                RA3_ADMIN, role2.getRoleId(), null));
     }
     
     @After
@@ -333,7 +373,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
-        for (final String username : Arrays.asList(RA1_ADMIN, RA2_ADMIN)) {
+        for (final String username : Arrays.asList(RA1_ADMIN, RA2_ADMIN, RA3_ADMIN)) {
             try {
                 if (endEntityManagementSession.existsUser(username)) {
                     endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, ReasonFlags.unused);
@@ -343,7 +383,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
-        for (final Certificate certificate : Arrays.asList(ra1admincert, ra2admincert)) {
+        for (final Certificate certificate : Arrays.asList(ra1admincert, ra2admincert, ra3admincert)) {
             try {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
             } catch (Exception e) {
@@ -467,6 +507,185 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug(e.getMessage());
             }
         }
+
+        // Send CRMF message signed by RA3Admin to RA2, RA3Admin is signed by a subCA, set only the EE cert in extraCerts
+        testUsername = "ra3testuser";
+        try {
+            final X500Name testUserDN = new X500Name("CN=" + testUsername);
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
+                    transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            // First
+            CMPCertificate[] extraCert = getCMPCert(ra3admincert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull("Signing CMP message failed.", msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            sig.initVerify(ra3admincert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("CrmfRequest did not return a certificate", cert);
+            fingerprintCert = CertTools.getFingerprintAsString(cert);
+        } finally {
+            internalCertStoreSession.removeCertificate(fingerprintCert);
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+            }
+        }
+
+        // Send CRMF message signed by RA3Admin to RA2, RA3Admin is signed by a subCA, set the EE cert and SubCA cert in extraCerts
+        try {            
+            final X500Name testUserDN = new X500Name("CN=" + testUsername);
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
+                    transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            CMPCertificate[] extraCert = new CMPCertificate[2];
+            extraCert[0] = getCMPCert(ra3admincert)[0];
+            extraCert[1] = getCMPCert(adminsubca.getCertificateChain().iterator().next())[0];
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull("Signing CMP message failed.", msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            sig.initVerify(ra3admincert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("CrmfRequest did not return a certificate", cert);
+            fingerprintCert = CertTools.getFingerprintAsString(cert);
+        } finally {
+            internalCertStoreSession.removeCertificate(fingerprintCert);
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+            }
+        }
+
+        // Send CRMF message signed by RA3Admin to RA2, RA3Admin is signed by a subCA, set the EE cert and SubCA cert in extraCerts, but in reverse order from the previous test
+        try {            
+            final X500Name testUserDN = new X500Name("CN=" + testUsername);
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
+                    transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            CMPCertificate[] extraCert = new CMPCertificate[2];
+            extraCert[0] = getCMPCert(adminsubca.getCertificateChain().iterator().next())[0];
+            extraCert[1] = getCMPCert(ra3admincert)[0];
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull("Signing CMP message failed.", msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            sig.initVerify(ra3admincert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("CrmfRequest did not return a certificate", cert);
+            fingerprintCert = CertTools.getFingerprintAsString(cert);
+        } finally {
+            internalCertStoreSession.removeCertificate(fingerprintCert);
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+            }
+        }
+
+        // One more test like above, but set the EE cert, SubCA cert and root cert in extraCerts, in non-linear order
+        try {            
+            final X500Name testUserDN = new X500Name("CN=" + testUsername);
+            KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(ca2.getSubjectDN(), testUserDN, keys, ca2.getCACertificate(), nonce, 
+                    transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+
+            CMPCertificate[] extraCert = new CMPCertificate[3];
+            Iterator<Certificate> subcacerts = adminsubca.getCertificateChain().iterator();
+            extraCert[0] = getCMPCert(subcacerts.next())[0];
+            extraCert[1] = getCMPCert(ra3admincert)[0];
+            extraCert[2] = getCMPCert(subcacerts.next())[0];
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull("Signing CMP message failed.", msg);
+            //******************************************''''''
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            sig.initVerify(ra3admincert.getPublicKey());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
+            boolean verified = sig.verify(msg.getProtection().getBytes());
+            assertTrue("Signing the message failed.", verified);
+            //***************************************************
+
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200, RA3_ALIAS);
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), testUserDN, ca2.getCACertificate(), msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+            Certificate cert = checkCmpCertRepMessage(testUserDN, (X509Certificate) ca2.getCACertificate(), resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("CrmfRequest did not return a certificate", cert);
+            fingerprintCert = CertTools.getFingerprintAsString(cert);
+        } finally {
+            internalCertStoreSession.removeCertificate(fingerprintCert);
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            } catch (Exception e) {
+                log.debug(e.getMessage());
+            }
+        }
+
         log.trace("<test01RA1SuccessfullCRMF");
     }
 
