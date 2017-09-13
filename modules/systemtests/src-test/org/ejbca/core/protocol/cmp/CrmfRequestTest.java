@@ -610,6 +610,10 @@ public class CrmfRequestTest extends CmpTestCase {
         }
     }
     
+    /** Tests server generated keys, which are requested by sending a missing request public key in the CRMF request
+     * message, or a SubjectPublicKeyInfo with AlgorithmId but not key bits, as specified in:
+     * RFC4210 section 5.3.4 and Appendix D.4, RFC4211 Section 6.6 and Appendix B    
+     */
     @Test
     public void test12ServerGeneratedKeys() throws Exception {
         log.trace(">test12ServerGeneratedKeys");
