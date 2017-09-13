@@ -166,7 +166,34 @@ public class CertToolsTest {
                     +"BE3M3tBSK1Q6zJ36DdgSx99hz0p8IutMX6ntYDWbA1DJ+V3zzCc5zF3ZSogWv3+T"
                     +"CJG3EfrGDJ91eVUlGyfDpHRr9a3WOWbypLjh1Q92xxHOJbvgnS9J6mybaOpQYyCn"
                     +"MVWCdyTMTi9Ik0eybpeVMZYaSEO4xIqwoGbvuBgE2WKm+RuMnMOkfA==").getBytes());
-            
+    
+    private static byte[] altNameCertWithSpecialCharacters = Base64.decode(
+                    ("MIIElDCCA3ygAwIBAgIIPQiMRNUtIDwwDQYJKoZIhvcNAQELBQAwNzEVMBMGA1UE"
+                    +"AwwMTWFuYWdlbWVudENBMREwDwYDVQQKDAhEZXYgQ0EgMTELMAkGA1UEBhMCU0Uw"
+                    +"HhcNMTcwOTEyMDk0ODI2WhcNMTkwOTEyMDk0ODI2WjCB3zEtMCsGCysGAQQBgjc8"
+                    +"AgECDBx0ZXN0LHdpdGhcc3BlY2lhbD1jaGFyYWN0ZXJzMSUwIwYDVQQJDBx0ZXN0"
+                    +"LHdpdGhcc3BlY2lhbD1jaGFyYWN0ZXJzMSUwIwYDVQRBDBx0ZXN0LHdpdGhcc3Bl"
+                    +"Y2lhbD1jaGFyYWN0ZXJzMRMwEQYDVQQUEwoxMiwzNDUsNjc4MSUwIwYDVQQPDBx0"
+                    +"ZXN0LHdpdGhcc3BlY2lhbD1jaGFyYWN0ZXJzMSQwIgYDVQQRDBt0ZXN0LHdpdGhc"
+                    +"c3BlY2lhbD1jaGFyYWN0ZXIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB"
+                    +"AQDJ2t2JMeWPzM8uh5UBA3LofGFFgcdQKI/VGZ8pzgM6O8LmZ/H8IVVCtY/92oHp"
+                    +"Szw/9kn7HbCUXshYv+NmzNnFFtnz95fT++79OWHWp90IxuY+yHcwy2fQYJNGSncU"
+                    +"csMHtU7voIydTGwYnSTCwvwClw10UMuTsIY+8FAT7NDg9m3HWybCCERck06aYBR6"
+                    +"htH0t4fx1yG2q6F6pArKgqR8+ddVyRVfw4Wa0uQCnbxNwaCFlmADogHF7+9BC3j3"
+                    +"D1cK2y72nJEYQCi1dUHbTCMs/HhJo6xSL36EuZsbiq0Y4iRbaO2Nwx63TDNatQyi"
+                    +"VJ8YP0Nu+auHfsgWOCJ+ZIDPAgMBAAGjgfowgfcwDAYDVR0TAQH/BAIwADAfBgNV"
+                    +"HSMEGDAWgBTM2eQQAXey4PApuOauspuJcEKByTB4BgNVHREEcTBvhg9odHRwOi8v"
+                    +"eC9BXCxCXFygLAYIKwYBBQUHCAegIBYedGVzdFwsd2l0aFxcc3BlY2lhbD1jaGFy"
+                    +"YWN0ZXJzoC4GCCsGAQUFBwgDoCIwIAwedGVzdFwsd2l0aFxcc3BlY2lhbD1jaGFy"
+                    +"YWN0ZXJzMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQU"
+                    +"tj6OychSszO4oMe9NViDMsY42mYwDgYDVR0PAQH/BAQDAgXgMA0GCSqGSIb3DQEB"
+                    +"CwUAA4IBAQBMojz+Ckh1+HgIbNaNJZWw5PxfpgWwfRijz7UsU4ERKjb66llrp4n9"
+                    +"b6PHwLHYbwvU4wXosKiywoNuX6Migs97kG9ocRMdwQT90TaM4zPpDRBlMGHn4sVI"
+                    +"gUsqJs+jJO9uoRRfQnH3iu0244tQgipyVAef3YT0Aai6J7eQbMbQnPIulReagBA7"
+                    +"otClag9bfSQrFqFStQkzrdMcT2RMQFXz/TNSUkHREBDM+gFoaar6+O5I0+pDrWya"
+                    +"6Q5uP6jRra4WeOWt3ylEYl9R8AGm2gEnGPyEGV7CDeM3+QHa8dFnBcMpXfXkjT6X"
+                    +"DAJPWF9uCqBxkH/fhnJTs64qn0zVB8zs").getBytes());
+    
     /** The reference certificate from RFC3739 */
     private static byte[] qcRefCert = Base64.decode(("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
             + "RTE5MDcGA1UECgwwR01EIC0gRm9yc2NodW5nc3plbnRydW0gSW5mb3JtYXRpb25z" + "dGVjaG5payBHbWJIMB4XDTA0MDIwMTEwMDAwMFoXDTA4MDIwMTEwMDAwMFowZTEL"
@@ -1256,6 +1283,10 @@ public class CertToolsTest {
         assertEquals("tomas@xmpp.domain.com", name);
         name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
         assertEquals("_Service.Name", name);
+        altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCertWithSpecialCharacters, Certificate.class));
+        // Note that the actual values in this particular certificate contains \, and \\, so that's why it looks like it's double escaped
+        assertEquals("uniformResourceIdentifier=http://x/A\\\\\\,B\\\\\\\\, srvName=test\\\\\\,with\\\\\\\\special=characters, permanentIdentifier=test\\\\\\,with\\\\\\\\special=characters/", altNames);
+        assertEquals("test\\\\\\,with\\\\\\\\special=characters/", CertTools.getPartFromDN(altNames, CertTools.PERMANENTIDENTIFIER));
         log.trace("<test13GetSubjectAltNameString()");
     }
 

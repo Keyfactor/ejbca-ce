@@ -2518,60 +2518,65 @@ public abstract class CertTools {
                     // Result already contains one altname, so we have to add comma if there are more altNames
                     append = ", ";
                 }
+                String rdn = null;
                 switch (type.intValue()) {
                 case 0:
                     final ASN1Sequence sequence = getAltnameSequence(item);
                     final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
                     switch(oid.getId()) {
                         case CertTools.UPN_OBJECTID:
-                            result += append + CertTools.UPN + "=" + getUTF8StringFromSequence(sequence, CertTools.UPN_OBJECTID);
+                            rdn = CertTools.UPN + "=" + getUTF8StringFromSequence(sequence, CertTools.UPN_OBJECTID);
                             break;
                         case CertTools.PERMANENTIDENTIFIER_OBJECTID:
-                            result += append + CertTools.PERMANENTIDENTIFIER + "=" + getPermanentIdentifierStringFromSequence(sequence);
+                            rdn = CertTools.PERMANENTIDENTIFIER + "=" + getPermanentIdentifierStringFromSequence(sequence);
                             break;
                         case CertTools.KRB5PRINCIPAL_OBJECTID:
-                            result += append + CertTools.KRB5PRINCIPAL + "=" + getKrb5PrincipalNameFromSequence(sequence);
+                            rdn = CertTools.KRB5PRINCIPAL + "=" + getKrb5PrincipalNameFromSequence(sequence);
                             break;
                         case RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD_OBJECTID:
                             final String sim = RFC4683Tools.getSimStringSequence(sequence);
-                            result += append + RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD + "=" + sim;
+                            rdn = RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD + "=" + sim;
                             break;
                         case CertTools.GUID_OBJECTID:
-                            result += append + CertTools.GUID + "=" + getGUIDStringFromSequence(sequence);
+                            rdn = CertTools.GUID + "=" + getGUIDStringFromSequence(sequence);
                             break;
                         case CertTools.XMPPADDR_OBJECTID:
-                            result += append + CertTools.XMPPADDR + "=" + getUTF8StringFromSequence(sequence, CertTools.XMPPADDR_OBJECTID);
+                            rdn = CertTools.XMPPADDR + "=" + getUTF8StringFromSequence(sequence, CertTools.XMPPADDR_OBJECTID);
                             break;
                         case CertTools.SRVNAME_OBJECTID:
-                            result += append + CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
+                            rdn = CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
                             break;
                     };
                     break;
                 case 1:
-                    result += append + CertTools.EMAIL + "=" + (String) value;
+                    rdn = CertTools.EMAIL + "=" + (String) value;
                     break;
                 case 2:
-                    result += append + CertTools.DNS + "=" + (String) value;
+                    rdn = CertTools.DNS + "=" + (String) value;
                     break;
                 case 3: // SubjectAltName of type x400Address not supported
                     break;
                 case 4:
-                    result += append + CertTools.DIRECTORYNAME + "=" + (String) value;
+                    rdn = CertTools.DIRECTORYNAME + "=" + (String) value;
                     break;
                 case 5: // SubjectAltName of type ediPartyName not supported
                     break;
                 case 6:
-                    result += append + CertTools.URI + "=" + (String) value;
+                    rdn = CertTools.URI + "=" + (String) value;
                     break;
                 case 7:
-                    result += append + CertTools.IPADDR + "=" + (String) value;
+                    rdn = CertTools.IPADDR + "=" + (String) value;
                     break;
                 case 8:
                     // OID names are returned as Strings according to the JDK X509Certificate javadoc
-                    result += append + CertTools.REGISTEREDID+ "=" + (String)value;
+                    rdn = CertTools.REGISTEREDID + "=" + (String) value;
                     break;
                 default: // SubjectAltName of unknown type
                     break;
+                }
+                if (rdn != null) {
+                    // The rdn might contain commas, so escape it.
+                    result += append + LDAPDN.escapeRDN(rdn);
                 }
             }
             if (log.isTraceEnabled()) {
