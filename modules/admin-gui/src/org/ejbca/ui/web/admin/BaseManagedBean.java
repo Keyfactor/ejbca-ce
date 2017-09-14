@@ -38,14 +38,14 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
  * Base EJBCA JSF Managed Bean, all managed beans of EJBCA should inherit this class
- * 
+ *
  * @version $Id$
  */
 public abstract class BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -8019234011853194880L;
-    private static final Logger log = Logger.getLogger(BaseManagedBean.class);
-    
+    protected static final Logger log = Logger.getLogger(BaseManagedBean.class);
+
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
 	protected EjbcaWebBean getEjbcaWebBean(){
@@ -75,7 +75,7 @@ public abstract class BaseManagedBean implements Serializable {
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
 	}
-	
+
 	protected void addInfoMessage(String messageResource, Object... params) {
         FacesContext ctx = FacesContext.getCurrentInstance();
         ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
@@ -126,9 +126,9 @@ public abstract class BaseManagedBean implements Serializable {
 	    });
 	}
 
-    /** 
+    /**
      * Perform a post-redirect-get if the requests is not invoked via AJAX to the current view id with the specified request string appended.
-     * 
+     *
      * It will try to preserve FacesMessages using the bug-riddled Flash scope.
      */
     protected void nonAjaxPostRedirectGet(final String requestString) {
