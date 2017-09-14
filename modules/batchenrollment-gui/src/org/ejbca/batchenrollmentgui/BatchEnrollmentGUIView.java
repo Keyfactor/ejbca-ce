@@ -145,7 +145,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
     private List<UserDataVOWS> endEntities = new ArrayList<UserDataVOWS>();
 
-    private JComboBox endEntitiesComboBox = new JComboBox();
+    private JComboBox<UserDataVOWS> endEntitiesComboBox = new JComboBox<>();
 
     private EjbcaWS ejbcaWS;
 
@@ -233,14 +233,14 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         });
 
-        endEntitiesComboBox.setModel(new DefaultComboBoxModel(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
+        endEntitiesComboBox.setModel(new DefaultComboBoxModel<UserDataVOWS>(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
 
         endEntitiesComboBox.setRenderer(new DefaultListCellRenderer() {
 
             private static final long serialVersionUID = 8940720890189526681L;
 
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 final Component component =
                         super.getListCellRendererComponent(list, value, index,
                             isSelected, cellHasFocus);
@@ -951,7 +951,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                 result.setContent((byte[]) content);
             }
 
-            Store certs = signedData.getCertificates();
+            Store<X509CertificateHolder> certs = signedData.getCertificates();
             SignerInformationStore  signers = signedData.getSignerInfos();
             for (Object o : signers.getSigners()) {
                 if (o instanceof SignerInformation) {
@@ -1034,7 +1034,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         return result;
     }
 
-    private static List<X509Certificate> validateChain(X509Certificate signerCert, Store certs, Collection<Certificate> trustedCerts) throws GeneralSecurityException {
+    private static List<X509Certificate> validateChain(X509Certificate signerCert, Store<X509CertificateHolder> certs, Collection<Certificate> trustedCerts) throws GeneralSecurityException {
 
         final Set<TrustAnchor> anchors
                 = new HashSet<TrustAnchor>();
@@ -1165,7 +1165,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                     LOG.debug("list: " + endEntities);
                 }
                 endEntitiesComboBox.setModel(
-                        new DefaultComboBoxModel(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
+                        new DefaultComboBoxModel<UserDataVOWS>(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
                 endEntitiesComboBox.revalidate();
             } else if (result instanceof Exception) {
                 final Exception ex = (Exception) result;
