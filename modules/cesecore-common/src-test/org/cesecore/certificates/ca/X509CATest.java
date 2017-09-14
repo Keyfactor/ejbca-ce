@@ -236,7 +236,7 @@ public class X509CATest {
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
         // directoryName is turned around, but it's just for string reasons in cert objects because it is gotten (internally in BC) getRFC2253Name().
-        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, directoryName=c=SE,o=PrimeKey,cn=Tomas", CertTools.getSubjectAlternativeName(usercert));
+        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, directoryName=c=SE\\,o=PrimeKey\\,cn=Tomas", CertTools.getSubjectAlternativeName(usercert));
         assertNull(CertTools.getUPNAltName(usercert));
         assertFalse(CertTools.isSelfSigned(usercert));
         usercert.verify(cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)));
@@ -544,7 +544,7 @@ public class X509CATest {
 	    assertNotNull("A subjectAltName extension should be present", genext);
 	    assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas,O=PrimeKey,C=SE", altName);
+        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", altName);
 	    // Test with CT publishing
 	    gen = ca.getSubjectAltNameExtensionForCert(ext, true);
 	    exts = gen.generate();
@@ -561,7 +561,7 @@ public class X509CATest {
         derInt = ASN1Integer.getInstance(seq.getObjectAt(2));
         assertEquals("third dnsName should have 2 redacted labels", 2, derInt.getValue().intValue());
         altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas,O=PrimeKey,C=SE", altName);
+        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", altName);
 	}
 	
 	@Test
@@ -672,7 +672,8 @@ public class X509CATest {
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            assertEquals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate));
+            // getSubjectAlternativeName performs escaping again
+            assertEquals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
@@ -868,7 +869,7 @@ public class X509CATest {
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
         assertEquals("A list was returned without any values present.", 0, result.size());        
         // Issue a certificate with two different basic certificate extensions
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas,O=PrimeKey,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Configure some custom basic certificate extension
         // one with a good IA5String encoding
