@@ -191,7 +191,6 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     
     private void saveCss() {
         Role roleToSave = rolesAvailable.getRowData();
-        log.info("Role To save: " + roleToSave.getRoleName() + " setting css: " + selectedCss);
         roleToSave.setCssId(selectedCss);
         try {
             roleSession.persistRole(getAdmin(), roleToSave);
