@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.administratorprivileges;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,14 +24,19 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.config.RaCssInfo;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -44,11 +50,12 @@ public class RolesBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(RolesBean.class);
-
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private RoleSessionLocal roleSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     private boolean addRoleInProgress = false;
     private Role roleToRename = null;
@@ -56,7 +63,8 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     private String editNameSpaceSelected;
     private String editNameSpace;
     private String editRoleName;
-    
+    private int selectedCss;
+    private List<SelectItem> raCssList;
     private ListDataModel<Role> rolesAvailable;
     private List<String> nameSpacesAvailable;
     private boolean onlyEmptyNameSpaceInUse = true;
@@ -150,7 +158,50 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     public String getEditRoleName() { return editRoleName; }
     /** Set the free-text role name when adding or renaming a role */
     public void setEditRoleName(String editRoleName) { this.editRoleName = editRoleName.trim(); }
-
+    
+    public int getSelectedCss() {
+        Role roleToSelect = rolesAvailable.getRowData();
+        selectedCss = roleToSelect.getCssId();
+        return selectedCss;
+    }
+    
+    public void setSelectedCss(int selectedCss) {
+        this.selectedCss = selectedCss;
+        saveCss();
+    }
+    
+    public boolean isCssSelectable() {
+        boolean authorizedToCssArchives = authorizationSession.isAuthorizedNoLogging(getAdmin(), 
+                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.EDITROLES.resource(), StandardRules.VIEWROLES.resource());
+        if (authorizedToCssArchives && raCssList != null && raCssList.size() > 1) {
+            return true;
+        }
+        return false;
+    }
+    
+    public List<SelectItem> getAvailableCssList() throws AuthorizationDeniedException {
+        GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
+        raCssList = new ArrayList<>();
+        raCssList.add(new SelectItem(0, "Default"));
+        for (RaCssInfo raCssInfo : globalCustomCssConfiguration.getRaCssInfo().values()) {
+            raCssList.add(new SelectItem(raCssInfo.getCssId(), raCssInfo.getFileName()));
+        }
+        return raCssList;
+    }
+    
+    private void saveCss() {
+        Role roleToSave = rolesAvailable.getRowData();
+        log.info("Role To save: " + roleToSave.getRoleName() + " setting css: " + selectedCss);
+        roleToSave.setCssId(selectedCss);
+        try {
+            roleSession.persistRole(getAdmin(), roleToSave);
+        } catch (RoleExistsException e) {
+            super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ROLEEXISTS");
+        } catch (AuthorizationDeniedException e) {
+            super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ROLES_ERROR_UNAUTHORIZED", e.getMessage());
+        }
+    }
+    
     private void editReset() {
         editNameSpaceSelected = "";
         editNameSpace = null;

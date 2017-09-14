@@ -50,7 +50,11 @@
                         <h:outputText value="#{role.roleName}"/>
                     </h:column>
                     <h:column>
-                        <f:facet name="header"></f:facet>
+                       	<f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_CSS}"/></f:facet>
+                        <h:selectOneMenu id="selectCustomCss" value="#{rolesBean.selectedCss}" disabled="#{!rolesBean.cssSelectable}">
+							<f:selectItems value="#{rolesBean.availableCssList}"/>
+                            <f:ajax event="change" execute="@this"/>
+						</h:selectOneMenu>
                         <h:outputLink value="rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
                             <f:param name="roleId" value="#{role.roleId}"/>
                             <h:outputText value="#{web.text.ROLEMEMBERS}"/>
