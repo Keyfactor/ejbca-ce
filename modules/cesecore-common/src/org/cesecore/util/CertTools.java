@@ -2437,9 +2437,9 @@ public abstract class CertTools {
                         continue;
                     }
                     if (altName == null) {
-                        altName = str;
+                        altName = LDAPDN.escapeRDN(str);
                     } else {
-                        altName += ", " + str;
+                        altName += ", " + LDAPDN.escapeRDN(str);
                     }
                 }
             } catch (IOException e) {
