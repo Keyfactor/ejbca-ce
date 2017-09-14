@@ -435,7 +435,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			}
 			try {
 	            // Do we have a public key in the request? If not we may be trying to do server generated keys
-                enrichWithServerGeneratedKeyOrThrow((CrmfRequestMessage)req, certProfileId);
+                enrichWithServerGeneratedKeyOrThrow((ICrmfRequestMessage)req, certProfileId);
 				try {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
@@ -472,7 +472,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return resp;
 	}
 	
-	private void enrichWithServerGeneratedKeyOrThrow(final CrmfRequestMessage req, final int certProfileID) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+	private void enrichWithServerGeneratedKeyOrThrow(final ICrmfRequestMessage req, final int certProfileID) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
 	    SubjectPublicKeyInfo pkInfo = req.getRequestSubjectPublicKeyInfo();
 	    
         // To trigger server generated keys, subjectPublicKeyInfo key could be null, but subjectPublicKeyInfo could also still be there
