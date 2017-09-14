@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
@@ -37,7 +38,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(Role.class);
+    private static final Logger log = Logger.getLogger(Role.class);
 
     public static final float LATEST_VERSION = 1;
     public static final int ROLE_ID_UNASSIGNED = 0;
@@ -45,6 +46,7 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     public static final Boolean STATE_DENY = Boolean.FALSE;
 
     private static final String KEY_ACCESS_RULES = "accessRules";
+    private static final String KEY_ASSOCIATED_CSS = "associatedCss";
     
     private int roleId;
     private String roleName;
@@ -191,6 +193,19 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
             return false;
         }
         return true;
+    }
+    
+    public void setCssId(int Id) {
+        data.put(KEY_ASSOCIATED_CSS, (Integer)Id);
+    }
+    
+    public int getCssId() {
+        Integer ret =  (Integer) data.get(KEY_ASSOCIATED_CSS);
+        if (ret == null) {
+            ret = 0;
+            data.put(KEY_ASSOCIATED_CSS, ret);
+        }
+        return (int)ret;
     }
 
     /**
