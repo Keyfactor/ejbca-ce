@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +66,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.RaCssInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.AccessRulesHelper;
@@ -303,6 +305,41 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return new ArrayList<>(caInfoMap.values());
+    }
+    
+    @Override
+    public LinkedHashMap<Integer, RaCssInfo> getAllCustomRaCss(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    LinkedHashMap<Integer, RaCssInfo> raCssInfos = raMasterApi.getAllCustomRaCss(authenticationToken);
+                    if (!raCssInfos.isEmpty()) {
+                        return raCssInfos;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public List<RaCssInfo> getAvailableCustomRaCss(AuthenticationToken authenticationToken) {
+        List<RaCssInfo> raCssInfos = new ArrayList<>();
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    raCssInfos = raMasterApi.getAvailableCustomRaCss(authenticationToken);
+                    if (!raCssInfos.isEmpty()) {
+                        return raCssInfos;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
     
     @Override
