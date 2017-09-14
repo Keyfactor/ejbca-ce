@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
@@ -32,24 +32,24 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
- * 
+ *
  * @version $Id$
  */
 public class RAAuthorization implements Serializable {
-    
+
     private static final long serialVersionUID = -3195162814492440326L;
     private String authcastring = null;
     private String authendentityprofilestring = null;
-    private TreeMap<String, Integer> authprofilenames = null;
-	private List<Integer> authprofileswithmissingcas = null;
+    private TreeMap<String, String> authprofilenames = null;
+    private List<String> authprofileswithmissingcas = null;
     private AuthenticationToken admin;
     private AuthorizationSessionLocal authorizationSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
-    
+
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AuthorizationSessionLocal authorizationSession, 
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AuthorizationSessionLocal authorizationSession,
                     CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
@@ -67,7 +67,7 @@ public class RAAuthorization implements Serializable {
      *
      * @return a string of administrators CA privileges that should be used in the where clause of SQL queries.
      */
-    public String getCAAuthorizationString() {      
+    public String getCAAuthorizationString() {
         if (authcastring==null) {
             authcastring = "";
             final List<Integer> authorizedCaIds = caSession.getAuthorizedCaIds(admin);
@@ -77,27 +77,27 @@ public class RAAuthorization implements Serializable {
             } else {
                 for (final Integer caId : caSession.getAuthorizedCaIds(admin)) {
                     if (authcastring.equals("")) {
-                        authcastring = " cAId = " + caId.toString();   
-                    } else {    
+                        authcastring = " cAId = " + caId.toString();
+                    } else {
                         authcastring = authcastring + " OR cAId = " + caId.toString();
                     }
                 }
                 if (!authcastring.isEmpty()) {
-                    authcastring = "( " + authcastring + " )"; 
+                    authcastring = "( " + authcastring + " )";
                 }
             }
         }
         return authcastring;
-    } 
-    
+    }
+
     /**
      * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
      * @throws AuthorizationDeniedException if the current requester isn't authorized to query for approvals
      */
     public String getEndEntityProfileAuthorizationString(String endentityAccessRule) throws AuthorizationDeniedException {
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
-        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
-     
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE
+
         authorizedToApproveCAActions = isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
 
         authorizedToApproveRAActions = isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
@@ -119,8 +119,8 @@ public class RAAuthorization implements Serializable {
         		endentityauth = " endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
 			}else if (authorizedToApproveRAActions) {
 				endentityauth = getEndEntityProfileAuthorizationString(true, endentityAccessRule);
-			}        	
-        	
+			}
+
         }
         return endentityauth == null ? endentityauth : endentityauth.trim();
     }
@@ -149,15 +149,15 @@ public class RAAuthorization implements Serializable {
                 }
             }
             if (authendentityprofilestring != null && includeparanteses) {
-                authendentityprofilestring = "( " + authendentityprofilestring + " )"; 
+                authendentityprofilestring = "( " + authendentityprofilestring + " )";
             }
         }
-        return authendentityprofilestring; 
+        return authendentityprofilestring;
     }
-    
-    public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(final String endentityAccessRule){
+
+    public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
     	if (authprofilenames==null){
-    		authprofilenames = new TreeMap<String, Integer>(new Comparator<String>() {
+            authprofilenames = new TreeMap<String, String>(new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     int result = o1.compareToIgnoreCase(o2);
@@ -169,32 +169,36 @@ public class RAAuthorization implements Serializable {
             });
     		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
     		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, endentityAccessRule)) {
-    			authprofilenames.put(idtonamemap.get(id), id);
+                authprofilenames.put(idtonamemap.get(id), String.valueOf(id));
     		}
     	}
-    	return authprofilenames;  
+    	return authprofilenames;
     }
-    
-	public List<Integer> getViewAuthorizedEndEntityProfilesWithMissingCAs() {
+
+    public List<String> getViewAuthorizedEndEntityProfilesWithMissingCAs() {
 	   if (authprofileswithmissingcas == null) {
-	       authprofileswithmissingcas = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(admin);
+            authprofileswithmissingcas = new ArrayList<String>();
+            final List<Integer> entries = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(admin);
+            for (final Integer entry : entries) {
+                authprofileswithmissingcas.add(String.valueOf(entry));
+            }
 	   }
 	   return authprofileswithmissingcas;
 	}
-    
+
     public void clear(){
       authcastring=null;
       authendentityprofilestring=null;
       authprofilenames = null;
 	  authprofileswithmissingcas = null;
     }
-    
+
     /**
      * Help function used to check end entity profile authorization.
      */
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
         return isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
-    }  
+    }
 }
 
 

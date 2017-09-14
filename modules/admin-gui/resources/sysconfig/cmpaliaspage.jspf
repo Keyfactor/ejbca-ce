@@ -407,7 +407,7 @@ function checkallfields() {
     
     
     
-    <% Integer ceep = -1; %>
+    <% String ceep = null; %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE\") %>"/>
@@ -416,13 +416,13 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
-          <% Integer currentEndEntityProfileId = Integer.valueOf(cmpConfigClone.getRAEEProfile(alias)); %>
+          <% String currentEndEntityProfileId = cmpConfigClone.getRAEEProfile(alias); %>
           <% ceep = currentEndEntityProfileId; %>
           <% boolean eepselected = false; %>
           <% 
-          	Map<String, Integer> nameToIdMap = ejbcawebbean.getAuthorizedEEProfileNamesAndIds(AccessRulesConstants.CREATE_END_ENTITY);
+          	Map<String, String> nameToIdMap = ejbcawebbean.getAuthorizedEEProfileNamesAndIds(AccessRulesConstants.CREATE_END_ENTITY);
             for(String endEntityProfileName : nameToIdMap.keySet()) { 
-                Integer endEntityProfileId = nameToIdMap.get(endEntityProfileName);
+                String endEntityProfileId = nameToIdMap.get(endEntityProfileName);
           %>   <option <% if(endEntityProfileId.equals(currentEndEntityProfileId)){ eepselected=true; %> selected <% } %> value='<c:out value="<%=endEntityProfileId %>"/>'>
           			<c:out value="<%= endEntityProfileName %>"/>
           		</option>
