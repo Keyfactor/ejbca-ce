@@ -39,6 +39,12 @@ public class GlobalCustomCssConfiguration extends ConfigurationBase {
         data.put(RA_CUSTOM_CSS_REFERENCE, raCssInfo);
     }
     
+    public void updateRaCss(RaCssInfo raCssInfo) {
+        Map<Integer, RaCssInfo> mapToUpdate = getRaCssInfo();
+        mapToUpdate.put(raCssInfo.getCssId(), raCssInfo);
+        data.put(RA_CUSTOM_CSS_REFERENCE, mapToUpdate);
+    }
+    
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer, RaCssInfo> getRaCssInfo() {
         final Map<Integer, RaCssInfo> ret = (Map<Integer,RaCssInfo>)data.get(RA_CUSTOM_CSS_REFERENCE);
