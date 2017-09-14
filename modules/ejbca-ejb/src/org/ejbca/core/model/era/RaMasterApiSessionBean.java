@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,6 +103,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.RaCssInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -117,6 +119,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -298,6 +301,36 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
 
+    private LinkedHashMap<Integer, RaCssInfo> getAllCustomRaCss() {
+        GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
+        // Returns an empty map if no CSS was found
+        return globalCustomCssConfiguration.getRaCssInfo();
+    }
+    
+    @Override
+    public LinkedHashMap<Integer,RaCssInfo> getAllCustomRaCss(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+        boolean authorizedToCssArchives = isAuthorizedNoLogging(authenticationToken, 
+                StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource());
+        if (!authorizedToCssArchives) {
+            throw new AuthorizationDeniedException(authenticationToken + " is not authorized to CSS archives");
+        }
+        return getAllCustomRaCss();
+    }
+    
+    @Override
+    public List<RaCssInfo> getAvailableCustomRaCss(AuthenticationToken authenticationToken) {
+        List<RaCssInfo> associatedCss = new ArrayList<>();
+        LinkedHashMap<Integer, RaCssInfo> allCssInfos = getAllCustomRaCss();
+        List<Role> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
+        for (Role role : isMemberOf) {
+            RaCssInfo cssToAdd = allCssInfos.get(role.getCssId());
+            if (cssToAdd != null) {
+                associatedCss.add(allCssInfos.get(role.getCssId()));
+            }
+        }
+        return associatedCss;
+    }
+    
     @Override
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
