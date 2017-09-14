@@ -195,6 +195,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return pk;
     }
 
+    @Override
     public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         final CertRequest request = getReq().getCertReq();
         final CertTemplate templ = request.getCertTemplate();
@@ -220,6 +221,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         }
     }
 
+    @Override
     public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final CertRequest request = getReq().getCertReq();
         Controls controls = request.getControls();
@@ -242,10 +244,12 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return null;
     }
     
+    @Override
     public KeyPair getServerGenKeyPair() {
         return serverGenKeyPair;
     }
 
+    @Override
     public void setServerGenKeyPair(KeyPair serverGenKeyPair) {
         this.serverGenKeyPair = serverGenKeyPair;
     }

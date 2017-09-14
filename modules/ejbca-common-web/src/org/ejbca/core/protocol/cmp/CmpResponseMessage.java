@@ -126,7 +126,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The request message this response is for */
-    private transient CrmfRequestMessage reqMsg;
+    private transient ICrmfRequestMessage reqMsg;
     /** used to choose response body type */
     private transient int requestType;
     /** used to match request with response */
@@ -446,13 +446,13 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
         if (reqMsg instanceof ICrmfRequestMessage) {
             ICrmfRequestMessage crmf = (ICrmfRequestMessage) reqMsg;
+            this.reqMsg = crmf;
             this.pbeIterationCount = crmf.getPbeIterationCount();
             this.pbeDigestAlg = crmf.getPbeDigestAlg();
             this.pbeMacAlg = crmf.getPbeMacAlg();
             this.pbeKeyId = crmf.getPbeKeyId();
             this.pbeKey = crmf.getPbeKey();
             this.implicitConfirm = crmf.isImplicitConfirm();
-            this.reqMsg = (CrmfRequestMessage)reqMsg; // final cast...
         }
     }
 
