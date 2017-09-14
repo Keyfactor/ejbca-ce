@@ -54,11 +54,11 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
 /**
  * A class used to improve performance by proxying authorization information about the administrator. It should be used in all jsp interface bean
  * classes.
- * 
+ *
  * @version $Id$
  */
 public class InformationMemory implements Serializable {
-    
+
     private static final long serialVersionUID = 2L;
 
     private AuthenticationToken administrator;
@@ -77,7 +77,7 @@ public class InformationMemory implements Serializable {
     private Map<Integer, String> caidtonamemap = null;
     private Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     private Map<Integer, String> publisheridtonamemap = null;
-    
+
     private TreeMap<String, Integer> publishernames = null;
     private TreeMap<String, Integer> keyvalidatornames = null;
 
@@ -90,7 +90,7 @@ public class InformationMemory implements Serializable {
     private EjbcaWebBean ejbcaWebBean;
 
     /** Creates a new instance of InformationMemory */
-    public InformationMemory(AuthenticationToken authenticationToken, GlobalConfiguration globalconfiguration, AvailableExtendedKeyUsagesConfiguration ekuConfig, 
+    public InformationMemory(AuthenticationToken authenticationToken, GlobalConfiguration globalconfiguration, AvailableExtendedKeyUsagesConfiguration ekuConfig,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, EjbcaWebBean ejbcaWebBean) {
         this.administrator = authenticationToken;
         this.globalConfiguration = globalconfiguration;
@@ -133,16 +133,16 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     * Returns authorized end entity profile names as a treemap of name (String) -> id (Integer)
+     * Returns authorized end entity profile names as a treemap of name (String) -> id (String)
      */
-    public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
+    public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
         return this.raauthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
-    
+
     /**
      * Returns a list of authorized end-entity profiles ids of profiles with missing CA Ids.
      */
-    public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
+    public List<String> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
         return this.raauthorization.getViewAuthorizedEndEntityProfilesWithMissingCAs();
     }
 
@@ -178,7 +178,7 @@ public class InformationMemory implements Serializable {
         }
         return canames;
     }
-    
+
     /**
      * Returns a CA names as a treemap of name (String) -> id (Integer). Doesn't include non-active or external CAs.
      */
@@ -191,8 +191,8 @@ public class InformationMemory implements Serializable {
         return canames;
     }
 
-    
-    
+
+
     /**
      * Returns a CA names as a treemap of name (String) -> id (Integer). Also includes external CAs
      */
@@ -214,11 +214,11 @@ public class InformationMemory implements Serializable {
             }
             if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                 externalcas.put(caInfo.getName(), caId);
-            }          
+            }
         }
         return externalcas;
     }
-    
+
     /**
      * Returns CA authorization string used in userdata queries.
      */
@@ -239,16 +239,17 @@ public class InformationMemory implements Serializable {
     public List<Integer> getAuthorizedCAIds() {
         return caauthorization.getAuthorizedCAIds();
     }
-    
+
     /** @return Collection of Integer containing authorized CA Ids sorted by CA name alphabetically*/
     public List<Integer> getAuthorizedCAIdsByName() {
         List<Integer> authCAIds = getAuthorizedCAIds();
         Collections.sort(authCAIds, new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {               
+            @Override
+            public int compare(Integer o1, Integer o2) {
                 return getCAIdToNameMap().get(o1).compareToIgnoreCase(getCAIdToNameMap().get(o2));
             }
         });
-        
+
         return authCAIds;
     }
 
@@ -258,11 +259,11 @@ public class InformationMemory implements Serializable {
     public GlobalConfiguration getGlobalConfiguration() {
         return globalConfiguration;
     }
-    
+
     public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() {
         return availableExtendedKeyUsagesConfiguration;
     }
-    
+
     public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() {
         return availableCustomCertExtensionsConfiguration;
     }
@@ -289,7 +290,7 @@ public class InformationMemory implements Serializable {
 
     /**
      * Method returning the all available approval profiles id to name.
-     * 
+     *
      * @return the approvalprofiles-id-to-name-map (HashMap)
      */
     public Map<Integer, String> getApprovalProfileIdToNameMap() {
@@ -297,12 +298,12 @@ public class InformationMemory implements Serializable {
         approvalProfileMap.put(-1, ejbcaWebBean.getText("NONE"));
         return approvalProfileMap;
     }
-    
-    public List<Integer> getSortedApprovalProfileIds() {    
+
+    public List<Integer> getSortedApprovalProfileIds() {
         List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
         Collections.sort(sortedProfiles, new Comparator<ApprovalProfile>() {
             @Override
-            public int compare(ApprovalProfile o1, ApprovalProfile o2) {               
+            public int compare(ApprovalProfile o1, ApprovalProfile o2) {
                 return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
             }
         });
@@ -313,10 +314,10 @@ public class InformationMemory implements Serializable {
         }
         return result;
     }
-        
+
     /**
      * Method returning the all available publishers id to name.
-     * 
+     *
      * @return the publisheridtonamemap (HashMap)
      */
     public Map<Integer, String> getPublisherIdToNameMap() {
@@ -325,10 +326,10 @@ public class InformationMemory implements Serializable {
         }
         return publisheridtonamemap;
     }
-    
+
     /**
      * Method returning the all available publishers id to name.
-     * 
+     *
      * @return the publisheridtonamemap (HashMap) sorted by value
      */
     public Map<Integer, String> getPublisherIdToNameMapByValue() {
@@ -337,6 +338,7 @@ public class InformationMemory implements Serializable {
         }
         List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
         Collections.sort(publisherIdToNameMapList, new Comparator<Map.Entry<Integer, String>>() {
+            @Override
             public int compare(Map.Entry<Integer, String> o1, Map.Entry<Integer, String> o2) {
                 return (o1.getValue()).compareToIgnoreCase(o2.getValue());
             }
@@ -354,6 +356,7 @@ public class InformationMemory implements Serializable {
     public TreeMap<String, Integer> getAuthorizedPublisherNames() {
         if (publishernames == null) {
             publishernames = new TreeMap<String, Integer>(new Comparator<String>() {
+                @Override
                 public int compare(String o1, String o2) {
                     int result = o1.compareToIgnoreCase(o2);
                     if (result == 0) {
@@ -362,16 +365,16 @@ public class InformationMemory implements Serializable {
                     return result;
                 }
             });
-            
+
             Map<Integer, String> idtonamemap = getPublisherIdToNameMap();
             for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
                 publishernames.put(idtonamemap.get(id), id);
             }
         }
-        
+
         return publishernames;
     }
-    
+
     /**
      * Returns all authorized key validators names as a TreeMap of name (String) -> id (Integer).
      */
@@ -380,7 +383,7 @@ public class InformationMemory implements Serializable {
             keyvalidatornames = new TreeMap<String, Integer>();
             final Map<Integer, String> map = keyValidatorSession.getKeyValidatorIdToNameMap();
             for(Integer id : caAdminSession.getAuthorizedKeyValidatorIds(administrator)) {
-                if (null != map.get(id)) { // Otherwise NPE when key validators are deleted and references remain in CA. 
+                if (null != map.get(id)) { // Otherwise NPE when key validators are deleted and references remain in CA.
                     keyvalidatornames.put(map.get(id), id);
                 }
             }
@@ -391,14 +394,14 @@ public class InformationMemory implements Serializable {
     /**
      * Method that calculates the available CAs to an end entity. Used in add/edit end entity pages. It calculates a set of available CAs as an
      * intersection of: - The administrator's authorized CAs, the end entity profile's available CAs and the certificate profile's available CAs.
-     * 
+     *
      * @param endentityprofileid the EE profile of the end entity
      * @returns a HashMap of CertificateProfileIds mapped to Lists if CA IDs. It returns a set of available CAs per end entity profile.
      */
 
     public Map<Integer, List<Integer>> getCasAvailableToEndEntity(int endentityprofileid, final String endentityAccessRule) {
         if (endentityavailablecas == null) {
-            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();        
+            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
             //Create a TreeMap to get a sorted list.
             TreeMap<CAInfo, Integer> sortedMap = new TreeMap<CAInfo, Integer>(new Comparator<CAInfo>() {
                 @Override
@@ -410,9 +413,9 @@ public class InformationMemory implements Serializable {
             for(CAInfo caInfo : caSession.getAuthorizedAndNonExternalCaInfos(administrator)) {
                 sortedMap.put(caInfo, caInfo.getCAId());
             }
-            Collection<Integer> authorizedCas = sortedMap.values(); 
+            Collection<Integer> authorizedCas = sortedMap.values();
             //Cache certificate profiles to save on database transactions
-            HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();        
+            HashMap<Integer, CertificateProfile> certificateProfiles = new HashMap<Integer, CertificateProfile>();
             // 2. Retrieve a list of all authorized end entity profile IDs
             for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, endentityAccessRule)) {
                 EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(nextendentityprofileid.intValue());
@@ -453,7 +456,7 @@ public class InformationMemory implements Serializable {
                     if (!allCasDefineInEndEntityProfile) {
                         //If ALL wasn't defined in the EE profile, only keep the intersection
                         authorizedCasClone.retainAll(casDefineInEndEntityProfile);
-                    }             
+                    }
                     certificateProfileMap.put(certificateProfileId, authorizedCasClone);
                 }
                 endentityavailablecas.put(nextendentityprofileid, certificateProfileMap);
@@ -511,7 +514,7 @@ public class InformationMemory implements Serializable {
         publisheridtonamemap = null;
         publishernames = null;
     }
-    
+
     /**
      * Method that should be called every time a key validator has been edited.
      */
@@ -535,12 +538,12 @@ public class InformationMemory implements Serializable {
         caauthorization.clear();
         hardtokenauthorization.clear();
     }
-    
-    
+
+
     public void availableExtendedKeyUsagesConfigEdited(AvailableExtendedKeyUsagesConfiguration ekuConfig) {
         this.availableExtendedKeyUsagesConfiguration = ekuConfig;
     }
-    
+
     public void availableCustomCertExtensionsConfigEdited(AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         this.availableCustomCertExtensionsConfiguration = cceConfig;
     }

@@ -1,7 +1,7 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <% 
-  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
-  List<Integer> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
+  TreeMap<String,String> profiles = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
+  List<String> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
   boolean authorizedToEdit = ejbcarabean.authorizedToEditEndEntityProfiles();
 
 %>
@@ -63,9 +63,9 @@
     <tr> 
       <td width="40%">
         <select name="<%=SELECT_PROFILE%>" style="width: 50em" size="15"  >
-          <% for (Entry<String,Integer> entry : profiles.entrySet()) {
+          <% for (Entry<String, String> entry : profiles.entrySet()) {
                String profilename = entry.getKey();
-               int profileid = entry.getValue();
+               String profileid = entry.getValue();
                String displayname = profilename + (withMissingCAs.contains(profileid) ? " "+ejbcawebbean.getText("MISSINGCAIDS") : "");
                %>
             <option value="<c:out value="<%= profilename %>"/>"> 
