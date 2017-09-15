@@ -37,7 +37,7 @@ import org.ejbca.core.model.era.RaRequestsSearchResponse;
 
 /**
  * Backing bean for Manage Requests page (for a list of requests)
- * 
+ *
  * @see RaManageRequestBean
  * @version $Id$
  */
@@ -54,7 +54,7 @@ public class RaManageRequestsBean implements Serializable {
     @ManagedProperty(value="#{raAccessBean}")
     private RaAccessBean raAccessBean;
     public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
-    
+
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
@@ -64,9 +64,9 @@ public class RaManageRequestsBean implements Serializable {
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
 
     private RaRequestsSearchResponse lastExecutedResponse = null;
-    
+
     private List<ApprovalRequestGUIInfo> resultsFiltered = new ArrayList<>();
-    
+
     private enum ViewTab { TO_APPROVE, PENDING, PROCESSED, CUSTOM_SEARCH };
     private ViewTab viewTab = ViewTab.TO_APPROVE;
     private boolean customSearchingWaiting = true;
@@ -75,15 +75,15 @@ public class RaManageRequestsBean implements Serializable {
     private String customSearchStartDate;
     private String customSearchEndDate;
     private String customSearchExpiresDays;
-    
+
     private enum SortBy { ID, REQUEST_DATE, CA, TYPE, DISPLAY_NAME, REQUESTER_NAME, STATUS };
     private SortBy sortBy = SortBy.REQUEST_DATE;
     private boolean sortAscending = true;
-    
+
     public String getTab() {
         return viewTab != null ? viewTab.name().toLowerCase(Locale.ROOT) : null;
     }
-    
+
     public void setTab(final String value) {
         try {
             viewTab = !StringUtils.isBlank(value) ? ViewTab.valueOf(value.toUpperCase(Locale.ROOT)) : ViewTab.TO_APPROVE;
@@ -94,11 +94,11 @@ public class RaManageRequestsBean implements Serializable {
             viewTab = ViewTab.TO_APPROVE;
         }
     }
-    
+
     public boolean isViewingNeedsApproval() {
         return viewTab == ViewTab.TO_APPROVE;
     }
-    
+
     public boolean isViewingPendingApproval() {
         return viewTab == ViewTab.PENDING;
     }
@@ -106,12 +106,12 @@ public class RaManageRequestsBean implements Serializable {
     public boolean isViewingProcessed() {
         return viewTab == ViewTab.PROCESSED;
     }
-    
+
     public boolean isViewingCustom() {
         return viewTab == ViewTab.CUSTOM_SEARCH;
     }
-    
-    
+
+
     public void searchAndFilter() {
         final RaRequestsSearchRequest searchRequest = new RaRequestsSearchRequest();
         switch (viewTab) {
@@ -161,12 +161,16 @@ public class RaManageRequestsBean implements Serializable {
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
-            guiInfos.add(new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean));
+            final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
+            if (isCustomSearchingWaiting() && !approvalRequestGuiInfo.isCanApprove()) {
+                continue;
+            }
+            guiInfos.add(approvalRequestGuiInfo);
         }
         resultsFiltered = guiInfos;
         sort();
     }
-    
+
     public boolean isCustomSearchingWaiting() { return customSearchingWaiting; }
     public void setCustomSearchingWaiting(final boolean customSearchingWaiting) { this.customSearchingWaiting = customSearchingWaiting; }
     public boolean isCustomSearchingProcessed() { return customSearchingProcessed; }
@@ -179,15 +183,15 @@ public class RaManageRequestsBean implements Serializable {
     public void setCustomSearchEndDate(final String endDate) { this.customSearchEndDate = StringUtils.trim(endDate); }
     public String getCustomSearchExpiresDays() { return customSearchExpiresDays; }
     public void setCustomSearchExpiresDays(final String customSearchExpiresDays) { this.customSearchExpiresDays = StringUtils.trim(customSearchExpiresDays); }
-    
+
     public List<ApprovalRequestGUIInfo> getFilteredResults() {
         return resultsFiltered;
     }
-    
+
     public boolean isMoreResultsAvailable() {
         return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
     }
-    
+
     // Sorting
     private void sort() {
         Collections.sort(resultsFiltered, new Comparator<ApprovalRequestGUIInfo>() {
@@ -210,7 +214,7 @@ public class RaManageRequestsBean implements Serializable {
             }
         });
     }
-    
+
     public String getSortedByRequestDate() { return getSortedBy(SortBy.REQUEST_DATE); }
     public void sortByRequestDate() { sortBy(SortBy.REQUEST_DATE, viewTab == ViewTab.PROCESSED || viewTab == ViewTab.CUSTOM_SEARCH); }
     public String getSortedByID() { return getSortedBy(SortBy.ID); }
@@ -225,11 +229,11 @@ public class RaManageRequestsBean implements Serializable {
     public void sortByRequesterName() { sortBy(SortBy.REQUESTER_NAME, true); }
     public String getSortedByStatus() { return getSortedBy(SortBy.STATUS); }
     public void sortByStatus() { sortBy(SortBy.STATUS, true); }
-    
+
     public String getSortColumn() {
         return sortBy.name();
     }
-    
+
     public void setSortColumn(final String value) {
         try {
             sortBy = !StringUtils.isBlank(value) ? SortBy.valueOf(value.toUpperCase(Locale.ROOT)) : SortBy.REQUEST_DATE;
@@ -240,14 +244,14 @@ public class RaManageRequestsBean implements Serializable {
             sortBy = SortBy.REQUEST_DATE;
         }
     }
-    
+
     private String getSortedBy(final SortBy sortBy) {
         if (this.sortBy.equals(sortBy)) {
             return isSortAscending() ? "\u25bc" : "\u25b2";
         }
         return "";
     }
-    
+
     /** Set current sort column. Flip the order if the column was already selected. */
     private void sortBy(final SortBy sortBy, final boolean defaultAscending) {
         if (this.sortBy.equals(sortBy)) {
@@ -258,13 +262,13 @@ public class RaManageRequestsBean implements Serializable {
         this.sortBy = sortBy;
         sort();
     }
-    
+
     public boolean isSortAscending() {
         return sortAscending;
     }
-    
+
     public void setSortAscending(final boolean value) {
         sortAscending = value;
     }
-    
+
 }
