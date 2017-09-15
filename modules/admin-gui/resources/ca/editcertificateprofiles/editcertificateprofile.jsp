@@ -715,7 +715,7 @@
 
 		<%-- CA Issuers URIs part of Authority Information Access (AIA) extension --%>		
 		
-		<h:outputLabel for="checkusedefaultcaissuergroup" value="#{web.text.EXT_PKIX_AIA_CA_ISSUER_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
+		<h:outputLabel for="checkusedefaultcaissuergroup" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_CADEFINED}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}"
 			 styleClass="subItem"/>
 		<h:panelGroup id="checkusedefaultcaissuergroup" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useDefaultCAIssuer}" rendered="#{!web.legacyInternetExplorer}"
