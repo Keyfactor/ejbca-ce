@@ -521,7 +521,7 @@ For example 'http://ca.example.xy/cacert.cer'. Multiple URIs are specified as a 
 </p>
 </subsubsection>
 
-<subsubsection name="Default user certificate AIA extension">
+<subsubsection name="Default CA defined validation data">
 <p>
 The values of the semi-colon separated list for the 'CA issuer' and 'OCSP Service Locator' (only one URL possible) are used for the certificates Authority Information Access extension as specified in <a href="http://tools.ietf.org/rfc/rfc5280.txt">RFC5280</a> (section 4.2.2.1).<br/>
 Certificate profiles used to issue end entity certificates with that CA must have the "Authority Information Access", as well as the "Use CA defined CA issuer" and/or the "Use CA defined OCSP locator" options enabled.<br/>
