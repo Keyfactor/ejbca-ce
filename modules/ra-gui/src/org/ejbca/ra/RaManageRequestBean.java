@@ -57,7 +57,7 @@ import org.ejbca.util.KeyValuePair;
 
 /**
  * Backing bean for Manage Request page (for individual requests).
- *  
+ *
  * @see RaManageRequestsBean
  * @version $Id$
  */
@@ -67,14 +67,14 @@ public class RaManageRequestBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaManageRequestBean.class);
-    
+
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     @ManagedProperty(value="#{raAccessBean}")
     private RaAccessBean raAccessBean;
     public void setRaAccessBean(final RaAccessBean raAccessBean) { this.raAccessBean = raAccessBean; }
-    
+
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
@@ -82,7 +82,7 @@ public class RaManageRequestBean implements Serializable {
     @ManagedProperty(value="#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
-    
+
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
     private boolean editing = false;
@@ -90,15 +90,15 @@ public class RaManageRequestBean implements Serializable {
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
     List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
     Set<Integer> partitionsAuthorizedToApprove = null;
-    
+
     public String idParam;
     public String aidParam;
-    
+
     public String getIdParam() { return idParam; }
     public void setIdParam(final String value) { idParam = value; }
     public String getAidParam() { return aidParam; }
     public void setAidParam(final String value) { aidParam = value; }
-    
+
     private void loadRequest(final int id) {
         requestData = raMasterApiProxyBean.getApprovalRequest(raAuthenticationBean.getAuthenticationToken(), id);
         if (requestData == null) {
@@ -113,7 +113,7 @@ public class RaManageRequestBean implements Serializable {
         }
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
     }
-    
+
     public void initializeRequestInfo() {
         if (requestInfo == null) {
             if (!StringUtils.isBlank(idParam)) {
@@ -123,7 +123,7 @@ public class RaManageRequestBean implements Serializable {
                 final int approvalId = Integer.parseInt(aidParam);
                 loadRequestByApprovalId(approvalId);
             } else {
-                // JBoss EAP 6 can call this method from preRenderView event, even from the listing page. In that case there's no ID parameter.    
+                // JBoss EAP 6 can call this method from preRenderView event, even from the listing page. In that case there's no ID parameter.
                 log.debug("No request ID passed in parameter. Will not initialize request info.");
                 return;
             }
@@ -136,31 +136,31 @@ public class RaManageRequestBean implements Serializable {
             }
         }
     }
-    
+
     private void reloadRequest() {
         loadRequest(requestData.getId());
         // Make sure we don't use the approvalId (the hash) after we have edited a request
         idParam = String.valueOf(requestData.getId());
         aidParam = null;
     }
-    
+
     public ApprovalRequestGUIInfo getRequest() {
         return requestInfo;
     }
-    
+
     public String getPageTitle() {
         return raLocaleBean.getMessage("view_request_page_title", requestInfo.getDisplayName());
     }
-    
+
     public boolean isViewDataVisible() { return !editing; }
     public boolean isEditDataVisible() { return editing; }
     public boolean isStatusVisible() { return !editing; }
     public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
-    
+
     public String getExtendDays() { return extendDays; }
     public void setExtendDays(final String extendDays) { this.extendDays = extendDays; }
-    
+
     public String getPartitionName(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
             // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
@@ -176,7 +176,7 @@ public class RaManageRequestBean implements Serializable {
         }
         return "";
     }
-    
+
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
             // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
@@ -188,7 +188,7 @@ public class RaManageRequestBean implements Serializable {
         final ApprovalPartition partition = step.getPartition(guiPartition.getPartitionId());
         return getPartitionProperties(approvalProfile, partition);
     }
-    
+
     /** Returns partitions in the current step */
     public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> getPartitions() {
         if (partitionsAuthorizedToView == null) {
@@ -200,9 +200,9 @@ public class RaManageRequestBean implements Serializable {
                 for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                     try {
                         if (approvalProfile.canViewPartition(raAuthenticationBean.getAuthenticationToken(), approvalPartition)) {
-                            ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject = 
+                            ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partitionGuiObject =
                                     new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepIdentifier(),
-                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition), 
+                                    approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalProfile, approvalPartition),
                                     getPartitionApproval(approvalPartition.getPartitionIdentifier(), step.getStepIdentifier()));
                             authorizedPartitions.add(partitionGuiObject);
                         }
@@ -211,7 +211,8 @@ public class RaManageRequestBean implements Serializable {
                         }
                     } catch (AuthenticationFailedException e) {
                         //We shouldn't have gotten here in the UI with an invalid token
-                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token: " + raAuthenticationBean.getAuthenticationToken(), e);
+                        throw new IllegalStateException("Trying to perform an approval with an invalid authentication token: "
+                                + raAuthenticationBean.getAuthenticationToken(), e);
                     }
                 }
             }
@@ -219,7 +220,7 @@ public class RaManageRequestBean implements Serializable {
 
         }
         return partitionsAuthorizedToView;
-        
+
     }
 
     private List<Approval> getPartitionApproval(final int partitionId, final int stepId) {
@@ -233,9 +234,9 @@ public class RaManageRequestBean implements Serializable {
         }
         return partitionApprovals;
     }
-     
-    /** 
-     * @return true if there already exists an approval for this partition 
+
+    /**
+     * @return true if there already exists an approval for this partition
      */
     public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
         return getPartitionApproval(partition.getPartitionId(), partition.getStepId()).size() > 0;
@@ -252,22 +253,22 @@ public class RaManageRequestBean implements Serializable {
     /** @return true if subject DN override by CSR is allowed */
     public boolean isDnOverrideRendered() {
         // In case of another request type than user generated enrollment, we do not want to show warning.
-        if (!requestInfo.getType().equals(raLocaleBean.getMessage("manage_requests_type_add_end_entity")) || 
+        if (!requestInfo.getType().equals(raLocaleBean.getMessage("manage_requests_type_add_end_entity")) ||
             requestInfo.getEndEntityInformation().getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             return false;
         }
         CertificateProfile certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
         return certificateProfile.getAllowDNOverride();
     }
-    
+
     /**
      * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
-     * 
-     * @return a list of dynamic properties 
+     *
+     * @return a list of dynamic properties
      */
     private List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalProfile approvalProfile, ApprovalPartition approvalPartition) {
         if (currentPartitionsProperties == null || !currentPartitionsProperties.containsKey(approvalPartition.getPartitionIdentifier())) {
-            Set<String> hiddenPropertyNames = approvalProfile.getHiddenProperties();    
+            Set<String> hiddenPropertyNames = approvalProfile.getHiddenProperties();
             List<DynamicUiProperty<? extends Serializable>> propertyList = new ArrayList<>();
             for (String propertyName : approvalPartition.getPropertyList().keySet()) {
                 if (!hiddenPropertyNames.contains(propertyName)) {
@@ -276,7 +277,7 @@ public class RaManageRequestBean implements Serializable {
                     propertyList.add(propertyClone);
                 }
             }
-            
+
             if (currentPartitionsProperties == null) {
                 currentPartitionsProperties = new HashMap<>();
             }
@@ -284,7 +285,7 @@ public class RaManageRequestBean implements Serializable {
         }
         return currentPartitionsProperties.get(approvalPartition.getPartitionIdentifier());
     }
-    
+
     /** Creates a list of partitions that can be used with the approvalmetadata component */
     public List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsToGuiPartitions(final ApprovalRequestGUIInfo.Step step, final Iterable<ApprovalPartition> partitions) {
         if (partitions == null) {
@@ -295,21 +296,21 @@ public class RaManageRequestBean implements Serializable {
         final List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> ret = new ArrayList<>();
         for (final ApprovalPartition partition : partitions) {
             ret.add(new ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject(step.getStepId(),
-                    partition.getPartitionIdentifier(), getPartitionProperties(requestData.getApprovalProfile(), partition), 
+                    partition.getPartitionIdentifier(), getPartitionProperties(requestData.getApprovalProfile(), partition),
                     getPartitionApproval(partition.getPartitionIdentifier(), step.getStepId())));
         }
         return ret;
     }
-    
+
     public List<KeyValuePair> getHandledPartitionData(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
         if (guiPartition == null) {
             // JBoss EAP 6.4 seems to make calls EL method calls one time extra, with a null parameter, once per page rendering
             log.debug("Ignored call to partitionsToGuiPartitions with null parameter");
             return new ArrayList<>();
         }
-        
+
         ArrayList<KeyValuePair> kvp = new ArrayList<>();
-        
+
         List<DynamicUiProperty<? extends Serializable>> properties = getPartitionProperties(guiPartition);
         for (DynamicUiProperty<? extends Serializable> property : properties) {
             kvp.add(new KeyValuePair(property.getName(), property.getValueAsString()));
@@ -323,8 +324,8 @@ public class RaManageRequestBean implements Serializable {
             kvp.add(new KeyValuePair("Approval comment", approvalView.getComment()));
         }
         return kvp;
-    }   
-    
+    }
+
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         if (!roles.isEmpty()) {
@@ -334,7 +335,7 @@ public class RaManageRequestBean implements Serializable {
             return raLocaleBean.getMessage("view_request_page_step_of", requestInfo.getCurrentStepOrdinal(), requestInfo.getStepCount());
         }
     }
-    
+
     public String getCantApproveReason() {
         if (requestInfo.isExpired()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_expired");
@@ -353,7 +354,7 @@ public class RaManageRequestBean implements Serializable {
         } else if (requestInfo.isApprovedByMe()) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_approved_by_me");
         } else if (requestInfo.isRequestedByMe()) {
-            return raLocaleBean.getMessage("view_request_page_cannot_approve_requested_by_me");  
+            return raLocaleBean.getMessage("view_request_page_cannot_approve_requested_by_me");
         } else if (requestInfo.isPending(raAuthenticationBean.getAuthenticationToken())) {
             return raLocaleBean.getMessage("view_request_page_cannot_approve_pending");
         } else if (!requestInfo.hasNextApprovalStep()) {
@@ -362,16 +363,16 @@ public class RaManageRequestBean implements Serializable {
             return raLocaleBean.getMessage("view_request_page_cannot_approve");
         }
     }
-    
-    
-    private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action, ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiParition, 
+
+
+    private RaApprovalResponseRequest buildApprovalResponseRequest(final Action action, ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiParition,
                 ApprovalProfile storedApprovalProfile, ApprovalDataVO advo) {
         ApprovalStep step = storedApprovalProfile.getStep(guiParition.getStepId());
         ApprovalPartition partition = step.getPartition(guiParition.getPartitionId());
-        
+
         List<DynamicUiProperty<? extends Serializable>> updatedProperties =  getPartitionProperties(storedApprovalProfile, partition);
         storedApprovalProfile.addPropertiesToPartition(step.getStepIdentifier(), partition.getPartitionIdentifier(), updatedProperties);
-        
+
         ApprovalRequest request = advo.getApprovalRequest();
         request.setApprovalProfile(storedApprovalProfile);
 
@@ -381,11 +382,11 @@ public class RaManageRequestBean implements Serializable {
         final RaApprovalResponseRequest approval = new RaApprovalResponseRequest(id, stepId, partitionId, request, "", action); // TODO comment field. should it be here for partitioned approvals also?
         return approval;
     }
-    
+
     public void approve() throws AuthorizationDeniedException, AuthenticationFailedException {
         final ApprovalDataVO advo = requestInfo.request.getApprovalData();
         final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
-        
+
         for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
             if (partitionsAuthorizedToApprove.contains(guiPartition.getPartitionId())) {
                 final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.APPROVE, guiPartition, approvalProfile, advo);
@@ -416,11 +417,11 @@ public class RaManageRequestBean implements Serializable {
 
         reloadRequest();
     }
-    
+
     public void reject() throws AuthorizationDeniedException, AuthenticationFailedException {
         final ApprovalDataVO advo = requestInfo.request.getApprovalData();
         final ApprovalProfile approvalProfile = advo.getApprovalRequest().getApprovalProfile();
-        
+
         for (ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition : partitionsAuthorizedToView) {
             if (partitionsAuthorizedToApprove.contains(guiPartition.getPartitionId())) {
                 final RaApprovalResponseRequest responseReq = buildApprovalResponseRequest(Action.REJECT, guiPartition, approvalProfile, advo);
@@ -429,7 +430,7 @@ public class RaManageRequestBean implements Serializable {
                         raLocaleBean.addMessageInfo("view_request_page_success_reject");
                     } else {
                         raLocaleBean.addMessageError("generic_unexpected_no_backend");
-                    } 
+                    }
                 } catch (ApprovalException e) {
                     raLocaleBean.addMessageError("view_request_page_error_approval_generic_reject");
                     logException("reject", e);
@@ -448,34 +449,34 @@ public class RaManageRequestBean implements Serializable {
                 }
             }
         }
-        
+
         reloadRequest();
     }
-    
+
     public void editRequestData() {
         editing = true;
     }
-    
+
     public void saveRequestData() throws AuthorizationDeniedException {
         if (!editing) {
             throw new IllegalStateException();
         }
-        
+
         final RaEditableRequestData editData = requestData.getEditableData();
         final RaEndEntityDetails endEntityDetails = requestInfo.getEndEntityDetails();
         if (endEntityDetails != null) {
             final SubjectDn sdn = endEntityDetails.getSubjectDistinguishedName();
             sdn.update();
             editData.setSubjectDN(sdn.getValue());
-            
+
             final SubjectAlternativeName san = endEntityDetails.getSubjectAlternativeName();
             san.update();
             editData.setSubjectAltName(san.getValue());
-            
+
             final SubjectDirectoryAttributes sda = endEntityDetails.getSubjectDirectoryAttributes();
             sda.update();
             editData.setSubjectDirAttrs(sda.getValue());
-            
+
             editData.setEmail(endEntityDetails.getEmail());
         } else {
             for (final RequestDataRow dataRow : requestInfo.getRequestData()) {
@@ -496,11 +497,11 @@ public class RaManageRequestBean implements Serializable {
                     break;
                 }
             }
-            
+
             // Check that the end entity profile is fulfilled
             // TODO: ECA-5235
         }
-        
+
         // TODO error handling
         final RaApprovalEditRequest editReq = new RaApprovalEditRequest(requestData.getId(), editData);
         final RaApprovalRequestInfo newReqData = raMasterApiProxyBean.editApprovalRequest(raAuthenticationBean.getAuthenticationToken(), editReq);
@@ -512,7 +513,7 @@ public class RaManageRequestBean implements Serializable {
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
         editing = false;
     }
-    
+
     public void cancelEdit() {
         if (!editing) {
             throw new IllegalStateException();
@@ -522,13 +523,13 @@ public class RaManageRequestBean implements Serializable {
         requestInfo = new ApprovalRequestGUIInfo(requestData, raLocaleBean, raAccessBean);
         editing = false;
     }
-    
+
     public String extendRequest() throws AuthorizationDeniedException {
         if (StringUtils.isBlank(extendDays)) {
             raLocaleBean.addMessageError("view_request_page_error_extend_missing_days");
             return "";
         }
-        
+
         final long extendForMillis = Long.valueOf(extendDays.trim()) * 24*60*60*1000;
         final long maxExtensionTime = requestInfo.request.getMaxExtensionTime();
         if (extendForMillis > maxExtensionTime) {
@@ -538,26 +539,26 @@ public class RaManageRequestBean implements Serializable {
         raMasterApiProxyBean.extendApprovalRequest(raAuthenticationBean.getAuthenticationToken(), requestData.getId(), extendForMillis);
         return "managerequest.xhtml?faces-redirect=true&includeViewParams=true";
     }
-    
+
     public int getMaxExtensionDays() {
         long days = requestInfo.request.getMaxExtensionTime() / (24*60*60*1000);
         return (int) days;
     }
-    
+
     public String getExtendDaysPart2Text() {
         return raLocaleBean.getMessage("view_request_page_extend_days_2", getMaxExtensionDays());
     }
-    
+
     public String getDN(final RequestDataRow dataRow) {
         // TODO validation (ECA-5235)
         return (String) dataRow.getEditValue();
     }
-    
+
     /** Logs the message of an exception, which usually contains some message. For example: "You may not approve an action which you requested yourself" */
     private void logException(final String action, final Throwable t) {
         if (log.isDebugEnabled()) {
             log.debug("Got exception while trying to " + action + " an approval request: " + t.getMessage());
         }
     }
-    
+
 }
