@@ -1322,11 +1322,17 @@ You can then use cmpforopenssl (as an RA):</p>
 </source>
 <p>or, with other version of cmpforopenssl:</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert ManagementCA.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --srvcert ManagementCA.cacert.crt --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
 </p>
+<p><strong>RA mode, Server generated keys</strong></p>
+<p>
+You can request server generated keys by omitting the public key in the certificate request, same request as an ir, but without public key. There is however no cmpclient parameters to leave out key, so cmpclient can not be used for this.
+There is example Java code in the test class CrmfRequestTest.test12ServerGeneratedKeys().
+</p>
+
 <p><strong>Client mode, HMAC password authentication</strong></p>
 <p>
 Cmpforopenssl works with with EJBCA in client mode, with HMAC password authentication, using the following EJBCA configuration with alias tex. "opensslclient" (unmentioned configurations = default):</p>
@@ -1348,7 +1354,7 @@ You can then use cmpforopenssl (as a client):</p>
 </source>
 <p>or, with other version of cmpforopenssl:</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert ManagementCA.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=user1;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --srvcert ManagementCA.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=user1;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
