@@ -1008,12 +1008,12 @@ function toggleCANameChange(){
         <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
            <% } %>
         <% } %>
-        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></br><%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %></p>
+        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %>. <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>.</p>
       </td>
     </tr>
     <% } %>
 
-   <% if(catype == CAInfo.CATYPE_X509){ 
+    <% if (catype == CAInfo.CATYPE_X509) { 
 	     X509CAInfo x509cainfo = (X509CAInfo) cainfo;
         %>
 
@@ -1028,10 +1028,10 @@ function toggleCANameChange(){
               } else { %>
                 <c:out value="<%= x509cainfo.getSubjectAltName() %>"/>
               <% }
-            } else{%>  
+            } else { %>
          <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255"
-             value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>" <%= (hasEditRights ? "" : "disabled") %>>
-         <% } %>   
+             value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>" <%= (hasEditRights ? "" : "disabled") %> />
+         <% } %>
       </td>
     </tr> 
 
@@ -1078,8 +1078,9 @@ function toggleCANameChange(){
       </td>
     </tr> 
 
-    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
-    <% if(!isexternal){ %>
+    <!-- NOTE: External CAs does not have any settings at all basically, we just import the certificate. -->
+    <% if (!isexternal) { %>
+
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EXT_PKIX_CP_UTF8NOTICETEXT") %>
@@ -1091,9 +1092,7 @@ function toggleCANameChange(){
             <label for="<%=CHECKBOX_USEUTF8POLICYTEXT%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>       
       </td>
     </tr>
-    <% } %>
 
-    <% if (!isexternal) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CERT_SUBJECTDN_PRINTABLESTR") %>
@@ -1145,7 +1144,8 @@ function toggleCANameChange(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>" /></p>
       </td>
     </tr>
-    <% } %>
+
+    <% } // if (!isexternal) %>
 
     <%-- ---------- CRL Specific Data -------------------- --%>
 
@@ -1158,24 +1158,25 @@ function toggleCANameChange(){
       </td>
     </tr>
 
-   <% if (isexternal && catype==CAInfo.CATYPE_X509) { %>
+    <% if (isexternal && catype==CAInfo.CATYPE_X509) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">
-         <%= ejbcawebbean.getText("CRLDISTPOINT_EXTERNAL") %>
+         <%= ejbcawebbean.getText("CRL_CA_CRLDP_EXTERNAL") %>
       </td>
       <td width="50%">
          <input type="text" name="<%=TEXTFIELD_EXTERNALCDP%>" size="40" maxlength="255"
         	 <% if (editca) {%>value="<c:out value="<%= x509cainfo.getExternalCdp() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> >
       </td>
     </tr>
-   <% } %>
+    <% } %>
 
-    <!--  external CAs does not have any settings at all basically, we just import the certificate -->
-    <!--  if we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA -->
-   <% if(!isexternal){ %>
+    <!-- NOTE: External CAs does not have any settings at all basically, we just import the certificate. -->
+    <!--       If we are processing a request we are issuing certificate to an external CA and we can not set CRL stuff for that CA. -->
+    <% if (!isexternal) { %>
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYKEYID") %>
+         <%= ejbcawebbean.getText("CRL_EXT_AUTHORITYKEYID") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
@@ -1225,7 +1226,7 @@ function toggleCANameChange(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("CRLDISTPOINTONCRL") %>
+         <%= ejbcawebbean.getText("CRL_EXT_ISSUINGDISTPOINT") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Issuing%20Distribution%20Point%20on%20CRLs") %>
       </td>
       <td width="50%">
@@ -1250,142 +1251,9 @@ function toggleCANameChange(){
       </td>
     </tr>
 
-   <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("KEEPEXPIREDONCRL") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Keep%20expired%20certificates%20on%20CRL") %>
-      </td>
-      <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_KEEPEXPIREDONCRL %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if (editca && x509cainfo.getKeepExpiredCertsOnCRL()) {
-                 out.write("CHECKED");
-              }
-              if(isexternal) out.write(" disabled "); 
-           %> id="<%=CHECKBOX_KEEPEXPIREDONCRL%>">
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("CRL_CA_DEFAULTCRLURI") %></strong>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){%>
-                <c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>
-              <%}else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="40" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%>  <%= (hasEditRights ? "" : "disabled") %> />
-         <% } %> 
-           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
-           	<%= (hasEditRights ? "" : "disabled") %> />
-		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRL_CA_DEFAULTCRLISSUER") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){%>
-                <c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>
-             <% }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> >
-           <% } %> 
-           <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
-           	<%= (hasEditRights ? "" : "disabled") %>>
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRL_CA_DEFAULTFCRLURI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){%>
-                <c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>
-              <%}else{ %>
-         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%> 
-         	<%= (hasEditRights ? "" : "disabled") %>/>
-           <% } %>
-           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
-           	<%= (hasEditRights ? "" : "disabled") %>/>
-           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
-      </td>
-    </tr>
-
-   <tr id="Row<%=row%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-             } else { %>
-        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
-          <% } %>
-          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
-
-   <tr id="Row<%=row%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
-          <% } %> 
-          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
-
-   <tr id="Row<%=row%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
-             } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else {out.write(" value='10"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
-          <% } %> 
-          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
-     </td>
-   </tr>
-
-   <tr id="Row<%=row++%2%>"> 
-     <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
-     </td>
-     <td width="50%">
-          <% if (isexternal) {
-               out.write("" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
-             } else { %>
-        <input type="obligatory" name="<%=TEXTFIELD_DELTACRLPERIOD%>" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
-          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'");} %> <%= (hasEditRights ? "" : "disabled") %> />
-          <% } %> 
-          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>
-          <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" /></p>
-     </td>
-   </tr>
-
-   <tr id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %>
+        <%= ejbcawebbean.getText("CRL_EXT_CAISSUERS_URI") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20CA%20Issuer%20URI") %>
       </td>
       <td width="50%">
@@ -1405,6 +1273,86 @@ function toggleCANameChange(){
            
       </td>
     </tr>
+
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+         <%= ejbcawebbean.getText("KEEPEXPIREDONCRL") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Keep%20expired%20certificates%20on%20CRL") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_KEEPEXPIREDONCRL %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if (editca && x509cainfo.getKeepExpiredCertsOnCRL()) {
+                 out.write("CHECKED");
+              }
+              if(isexternal) out.write(" disabled "); 
+           %> id="<%=CHECKBOX_KEEPEXPIREDONCRL%>">
+           <label for="<%=CHECKBOX_KEEPEXPIREDONCRL%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+      </td>
+    </tr>
+
+   <tr id="Row<%=row%2%>"> 
+     <td width="50%"  align="right"> 
+       <strong><%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
+        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='1"+SimpleTime.TYPE_DAYS+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+          <% } %>
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr id="Row<%=row%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+          <% } %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr id="Row<%=row%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write(SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
+        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else {out.write(" value='10"+SimpleTime.TYPE_MINUTES+"'"); } %> <%= (hasEditRights ? "" : "disabled") %>>
+          <% } %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %> 
+     </td>
+   </tr>
+
+   <tr id="Row<%=row++%2%>"> 
+     <td width="50%"  align="right"> 
+       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+     </td>
+     <td width="50%">
+          <% if (isexternal) {
+               out.write("" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES));
+             } else { %>
+        <input type="obligatory" name="<%=TEXTFIELD_DELTACRLPERIOD%>" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+          <%   if (editca) { out.write(" value='" + SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES) + "'"); }
+               else { out.write(" value='0"+SimpleTime.TYPE_MINUTES+"'");} %> <%= (hasEditRights ? "" : "disabled") %> />
+          <% } %> 
+          &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>
+          <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" /></p>
+     </td>
+   </tr>
 
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
@@ -1427,20 +1375,96 @@ function toggleCANameChange(){
        </select>
      </td>
    </tr>
-   
+    <% } // if (!isexternal) %>
+
+    <%-- ---------- Default CA defined validation data --- --%>
+
+    <% if (!isexternal) { %>
+
     <tr id="Row<%=row%2%>" class="section"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("DEFAULT_USER_CERTIFICATE_AIA") %></strong>
+        <strong><%= ejbcawebbean.getText("DEFAULT_VALIDATION_DATA") %></strong>
       </td>
       <td width="50%"> 
-        &nbsp;
+        <small><%= ejbcawebbean.getText("DEFAULT_VALIDATION_DATA_HELP") %></small>
       </td>
     </tr>
-    
+
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <strong><%= ejbcawebbean.getText("EXT_PKIX_CDP_DEFAULTURI") %></strong>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>
+              <%}else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="40" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%>  <%= (hasEditRights ? "" : "disabled") %> />
+         <% } %> 
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %> />
+		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DEFAULTVALUES_HELP\") %>" /></p>
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("EXT_PKIX_CDP_DEFAULTCRLISSUER") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>
+             <% }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> >
+           <% } %> 
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %>/>
+		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DEFAULTVALUES_HELP\") %>" /></p>
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("EXT_PKIX_FCRL_DEFAULTURI") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>
+              <%}else{ %>
+         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
+         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%> 
+         	<%= (hasEditRights ? "" : "disabled") %>/>
+           <% } %>
+           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" 
+           	<%= (hasEditRights ? "" : "disabled") %>/>
+		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DEFAULTVALUES_HELP\") %>" /></p>
+      </td>
+    </tr>
+
+     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <strong><%= ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_DEFAULTURI") %></strong>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20CA%20defined%20validation%20data") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>
+             <% }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
+         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> />
+           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" 
+           	value="<%= ejbcawebbean.getText("GENERATE") %>" <%= (hasEditRights ? "" : "disabled") %> />
+      </td>
+    </tr>
+
     <tr  id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20user%20certificate%20AIA%20extension") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_DEFAULTURI") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20CA%20defined%20validation%20data") %>
       </td>
         <% String certificateAiaDefaultCaIssuerUri = "";
        	   if(x509cainfo != null) {
@@ -1457,80 +1481,25 @@ function toggleCANameChange(){
            		<% } %> 
            		<%= (hasEditRights ? "" : "disabled") %> />
            <% } %>
-           <br/>
-           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
 
-     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OCSPSERVICE_DEFAULTURI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20user%20certificate%20AIA%20extension") %>
-      </td>
-      <td width="50%">
-           <% if(isexternal){%>
-                <c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>
-             <% }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%> <%= (hasEditRights ? "" : "disabled") %> />
-           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" 
-           	value="<%= ejbcawebbean.getText("GENERATE") %>" <%= (hasEditRights ? "" : "disabled") %> />
-           <br />
-           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
-      </td>
-    </tr>
-     
-    <%-- ---------- Services -------------------- --%>
+    <% } // if (!isexternal) %>
 
-    <tr id="Row<%=row%2%>" class="section"> 
-      <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("SERVICES") %></strong>
-      </td>
-      <td width="50%"> 
-        &nbsp;
-      </td>
-    </tr>
+    <% } // if (catype == CAInfo.CATYPE_X509) %>
 
-    <% if(!editca || (editca && cmscainfo != null)){ %>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CMSSERVICE") %>
-      </td>
-      <td width="50%">
-        <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
-            <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
-                 <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" 
-         	<%= (hasEditRights ? "" : "disabled") %>>
-         <%   if(cmscert != null){ %> &nbsp;&nbsp;         
-         <br />
-         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-         <a style="cursor:pointer;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
-         <%   } %>
-         <% } %>
-      </td>
-    </tr>    
-    <% } %>
-
-   <%
-     }
-   } // if(catype == CAInfo.CATYPE_X509){ %>
-
-
-
-   <% if (!isexternal) { %>
-   <!-- this last part with approvals and finishuser is not user for external CAs -->
+    <% if (!isexternal) { %>
+    <!-- This last part with Approvals and Other data (Validators, FinishUser, etc.) is not used for external CAs. -->
 
 	<%-- ---------- Approvals -------------------- --%>
+
     <tr id="Row<%=row%2%>" class="section">
         <td width="50%" align="right">
         <strong><%= ejbcawebbean.getText("APPROVALSETTINGS") %></strong>
         </td>
         <td width="50%">&nbsp;</td>
     </tr>
+
     <% for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) { %>
     <tr id="Row<%=row%2%>"> 
     	<td width="50%"  align="right"> <c:out value="<%= ejbcawebbean.getText(approvalRequestType.getLanguageString()) %>"/></td>
@@ -1553,7 +1522,7 @@ function toggleCANameChange(){
        </select>
     	</td>
     </tr>
-     <% } %>
+    <% } %>
 
     <%-- ---------- Other data -------------------- --%>
 
@@ -1563,6 +1532,7 @@ function toggleCANameChange(){
         </td>
         <td width="50%">&nbsp;</td>
     </tr>
+
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
        <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
@@ -1585,7 +1555,34 @@ function toggleCANameChange(){
        </select>
      </td>
    </tr>    
-   <tr id="Row<%=row++%2%>"> 
+
+    <% if (catype == CAInfo.CATYPE_X509) { %>
+    <% if (!editca || (editca && cmscainfo != null)) { %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CMSSERVICE") %>
+      </td>
+      <td width="50%">
+        <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
+            <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
+                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
+                 <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
+         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
+         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" 
+         	<%= (hasEditRights ? "" : "disabled") %>>
+         <%   if(cmscert != null){ %> &nbsp;&nbsp;         
+         <br />
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+         <a style="cursor:pointer;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
+         <%   } %>
+         <% } %>
+      </td>
+    </tr>    
+    <% } %>
+    <% } // if (catype == CAInfo.CATYPE_X509) %>
+
+    <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>
         </td>
@@ -1609,6 +1606,7 @@ function toggleCANameChange(){
       </td>
     </tr>
     <% } %>
+
     <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Monitoring%20and%20healthcheck") %>
@@ -1621,7 +1619,7 @@ function toggleCANameChange(){
         </td>
     </tr>
 
-   <% } %>
+    <% } // if (!isexternal) %>
 
 
     <%-- ---------- Form buttons -------------------- --%>
@@ -1651,13 +1649,13 @@ function toggleCANameChange(){
                 <% } %>
         <%  } else if (hasCreateRights){ %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
-                &nbsp;&nbsp;&nbsp;
         <%  } %>     
+            &nbsp;&nbsp;&nbsp;
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <% } else { %>
-        &nbsp;&nbsp;&nbsp;
         <%  if (catype==CAInfo.CATYPE_X509 && hasEditRights) {  %>
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE_EXTERNALCA %>"  value="<%= ejbcawebbean.getText("SAVE") %>">
+            &nbsp;&nbsp;&nbsp;
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <%  } else { %>
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
