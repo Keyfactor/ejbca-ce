@@ -616,6 +616,15 @@ function checkallfields() {
       </td>
     </tr> 
     
+	<tr  id="Row<%=row++%2%>" class="section"> 
+      <td width="40%" valign="top" align="left"> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPSERVERGENKEYS\") %>" /></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;   
+      </td> 
+    </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWSERVERGENERATEDKEYS\") %>"/>
