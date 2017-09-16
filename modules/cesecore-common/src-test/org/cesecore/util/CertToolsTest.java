@@ -2435,6 +2435,16 @@ public class CertToolsTest {
         assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
     }
     
+    @Test
+    public void testEscapeFieldValue() {
+        assertEquals(null, CertTools.escapeFieldValue(null));
+        assertEquals("", CertTools.escapeFieldValue(""));
+        assertEquals("CN=", CertTools.escapeFieldValue("CN="));
+        assertEquals("DIRECTORYNAME=DESCRIPTION=Test\\\\test\\,O=PrimeKey", CertTools.escapeFieldValue("DIRECTORYNAME=DESCRIPTION=Test\\test,O=PrimeKey"));
+        assertEquals("CN=123\\+456", CertTools.escapeFieldValue("CN=123+456"));
+        assertEquals("CN=abc\\\"def", CertTools.escapeFieldValue("CN=abc\"def"));
+    }
+    
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
             CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
