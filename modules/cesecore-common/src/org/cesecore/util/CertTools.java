@@ -2437,9 +2437,9 @@ public abstract class CertTools {
                         continue;
                     }
                     if (altName == null) {
-                        altName = LDAPDN.escapeRDN(str);
+                        altName = escapeFieldValue(str);
                     } else {
-                        altName += ", " + LDAPDN.escapeRDN(str);
+                        altName += ", " + escapeFieldValue(str);
                     }
                 }
             } catch (IOException e) {
@@ -2464,6 +2464,17 @@ public abstract class CertTools {
         }
         return null;
     }
+    
+    /**
+     * Escapes a value of a field in a DN, SAN or directory attributes.
+     * Unlike LDAPDN.escapeRDN, this method allows empty values (e.g. DNSNAME=)
+     * @param value Value to escape, with or without the XX=
+     * @return Escaped string
+     */
+    protected static String escapeFieldValue(final String value) {
+        return value != null ? value.replaceAll("([,\\\\+])", "\\\\$1") : null;
+    }
+
     
     /**
      * SubjectAltName ::= GeneralNames
@@ -2576,7 +2587,7 @@ public abstract class CertTools {
                 }
                 if (rdn != null) {
                     // The rdn might contain commas, so escape it.
-                    result += append + LDAPDN.escapeRDN(rdn);
+                    result += append + escapeFieldValue(rdn);
                 }
             }
             if (log.isTraceEnabled()) {
