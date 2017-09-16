@@ -2623,8 +2623,7 @@ public abstract class CertTools {
 
         final String directoryName = getDirectoryStringFromAltName(altName);
         if (directoryName != null) {
-            //final X500Name x500DirectoryName = new X500Name(directoryName);
-            final X500Name x500DirectoryName = new X500Name(LDAPDN.unescapeRDN(directoryName));
+            final X500Name x500DirectoryName = new X500Name(CeSecoreNameStyle.INSTANCE, LDAPDN.unescapeRDN(directoryName));
             final GeneralName gn = new GeneralName(4, x500DirectoryName);
             vec.add(gn);
         }

@@ -58,6 +58,11 @@ public class CeSecoreNameStyle extends BCStyle {
     public static final ASN1ObjectIdentifier ORGANIZATION_IDENTIFIER = new ASN1ObjectIdentifier("2.5.4.97");
 
     /**
+     * 
+     */
+    public static final ASN1ObjectIdentifier DESCRIPTION = new ASN1ObjectIdentifier("2.5.4.13");
+    
+    /**
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
      */
@@ -110,6 +115,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(JURISDICTION_STATE, "JurisdictionState");
         DefaultSymbols.put(JURISDICTION_COUNTRY, "JurisdictionCountry");
         DefaultSymbols.put(ORGANIZATION_IDENTIFIER, "organizationIdentifier");
+        DefaultSymbols.put(DESCRIPTION, "description");
 
         DefaultLookUp.put("c", C);
         DefaultLookUp.put("o", O);
@@ -149,6 +155,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("jurisdictionstate", JURISDICTION_STATE);
         DefaultLookUp.put("jurisdictioncountry", JURISDICTION_COUNTRY);
         DefaultLookUp.put("organizationidentifier", ORGANIZATION_IDENTIFIER);
+        DefaultLookUp.put("description", DESCRIPTION);
 
         DefaultStringStringLookUp.put("C", C.getId());
         DefaultStringStringLookUp.put("O", O.getId());
@@ -188,6 +195,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("JURISDICTIONSTATE", JURISDICTION_STATE.getId());
         DefaultStringStringLookUp.put("JURISDICTIONCOUNTRY", JURISDICTION_COUNTRY.getId());
         DefaultStringStringLookUp.put("ORGANIZATIONIDENTIFIER", ORGANIZATION_IDENTIFIER.getId());
+        DefaultStringStringLookUp.put("DESCRIPTION", DESCRIPTION.getId());
     }
 
     /**
@@ -242,6 +250,12 @@ public class CeSecoreNameStyle extends BCStyle {
             return new DERPrintableString(value);
         }
         return super.stringToValue(oid, value);
+    }
+
+    @Override
+    public ASN1ObjectIdentifier attrNameToOID(String attrName)
+    {
+        return IETFUtils.decodeAttrName(attrName, DefaultLookUp);
     }
 
 }
