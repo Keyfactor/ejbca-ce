@@ -2472,7 +2472,7 @@ public abstract class CertTools {
      * @return Escaped string
      */
     protected static String escapeFieldValue(final String value) {
-        return value != null ? value.replaceAll("([,\\\\+])", "\\\\$1") : null;
+        return value != null ? value.replaceAll("([,\\\\+\"])", "\\\\$1") : null;
     }
 
     
