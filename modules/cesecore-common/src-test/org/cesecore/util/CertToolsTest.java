@@ -1247,6 +1247,11 @@ public class CertToolsTest {
         assertTrue(CertTools.getPartsFromDN(dn2, CertTools.URI1).contains("http://www.a.se"));
         assertTrue(CertTools.getPartsFromDN(dn2, CertTools.URI1).contains("http://www.b.se"));
 
+        String dn3 = "CN=test\\\"test, dNSName=, dNSName=";
+        assertEquals(2, CertTools.getPartsFromDN(dn3, "dNSName").size());
+        assertEquals("", CertTools.getPartsFromDN(dn3, "dNSName").get(0));
+        assertEquals("", CertTools.getPartsFromDN(dn3, "dNSName").get(1));
+        
         log.trace("<test12GetPartsFromDN()");
     }
 

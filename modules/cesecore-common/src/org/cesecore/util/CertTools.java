@@ -761,7 +761,7 @@ public abstract class CertTools {
                         currentStartPosition++;
                     }
                     // Only return the inner value if the part is quoted
-                    if (dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
+                    if (currentStartPosition != dn.length() && dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
                         currentStartPosition++;
                         endPosition--;
                     }
