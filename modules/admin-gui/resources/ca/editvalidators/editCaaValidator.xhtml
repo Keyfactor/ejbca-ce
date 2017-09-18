@@ -32,7 +32,15 @@
 	<h:outputLabel for="dnsResolver" value="#{web.text.CAA_VALIDATOR_DNS_RESOLVER}" styleClass="subItem" />
 	<h:inputText id="dnsResolver" value="#{validatorBean.validator.dnsResolver}" disabled="#{validatorsBean.viewOnly}" />
 	<h:outputLabel for="validateDnsSec" value="#{web.text.CAA_VALIDATOR_VALIDATE_DNSSEC}" styleClass="subItem" />
-	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}" />
+	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}">
+		<f:ajax execute="validateDnsSec" render="customTrustAnchor" event="change"/>
+	</h:selectBooleanCheckbox>
+	<h:outputLabel for="customTrustAnchor" value="#{web.text.CAA_VALIDATOR_DNSSEC_TRUST_ANCHOR}" styleClass="subItem" />
+	<h:panelGroup>
+		<h:inputTextarea id="customTrustAnchor" value="#{validatorBean.validator.trustAnchor}" disabled="#{!validatorBean.validator.validateDnsSec}" cols="45" rows="3" required="false"/>
+		<br></br>
+		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_DNSSEC_HELP}"/>
+	</h:panelGroup>
 	<h:outputLabel for="iodef_settings" value="#{web.text.CAA_VALIDATOR_IODEF_SETTINGS}" style="font-weight: bold;" />
 	<h:panelGroup id="iodef_settings" />
 	<h:outputLabel for="useIodefEmail" value="#{web.text.CAA_VALIDATOR_IODEF_USE_EMAIL}" styleClass="subItem" />
