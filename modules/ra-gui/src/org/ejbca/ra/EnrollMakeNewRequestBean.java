@@ -899,15 +899,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param event
      */
     public void updateOtherEmailFields(AjaxBehaviorEvent event) {
-        EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
-        if(rfc822Name !=null && rfc822Name.isUsed()){
-            rfc822Name.setValue(getEndEntityInformation().getEmail());
-        }
+        updateRfcAltName();
         EndEntityProfile.FieldInstance dnEmailAddress = subjectDn.getFieldInstancesMap().get(DnComponents.DNEMAILADDRESS).get(0);
-        if(dnEmailAddress !=null && dnEmailAddress.isUsed()){
+        if (dnEmailAddress != null && dnEmailAddress.isUsed()) {
             dnEmailAddress.setValue(getEndEntityInformation().getEmail());
         }
+    }
 
+    private void updateRfcAltName() {
+        EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
+        if (rfc822Name != null && rfc822Name.getRfcEmailUsed()) {
+            String email = getEndEntityInformation().getEmail();
+            if (email != null) {
+                rfc822Name.setValue(email);
+                return;
+            }
+        }
+        rfc822Name.setValue("");
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -1552,7 +1560,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (isRenderNonModifiableFields()) {
                 return true;
             }
-            if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size()>1)) {
+            if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size() > 1)
+                    || (!fieldInstance.isModifiable() && (fieldInstance.getName().equals("RFC822NAME") || fieldInstance.getName().equals("UPN")))) {
                 return true;
             }
         }
@@ -1641,5 +1650,39 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void setValidityInputComponent(final UIComponent validityInputComponent) {
         this.validityInputComponent = validityInputComponent;
+    }
+    
+    public void upnRfcText(AjaxBehaviorEvent event) {
+        upnRfc(event, "upnRfcEmailText", "upnRfcDomainText");
+    }
+
+    public void upnRfcMenu(AjaxBehaviorEvent event) {
+        upnRfc(event, "upnRfcEmailMenu", "upnRfcDomainMenu");
+    }
+
+    private void upnRfc(AjaxBehaviorEvent event, String emailComponent, String domainComponent) {
+        UIComponent components = event.getComponent();
+        UIInput emailInput = (UIInput) components.findComponent(emailComponent);
+        UIInput domainInput = (UIInput) components.findComponent(domainComponent);
+        int index = -1;
+        String email = "";
+        if (emailInput != null) {
+            email = emailInput.getValue().toString();
+            // Split the clientId on ':', the second to last substring is the loop index
+            String[] split = emailInput.getClientId().split(":");
+            index = Integer.parseInt(split[split.length - 2]);
+        }
+        String domain = "";
+        if (domainInput != null) {
+            domain = domainInput.getValue().toString();
+        }
+        String concatenated = "";
+        if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
+            concatenated = email + "@" + domain;
+        }
+        List<EndEntityProfile.FieldInstance> fieldInstances = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getFieldInstances();
+        if (index >= 0 && index < fieldInstances.size()) {
+            fieldInstances.get(index).setValue(concatenated);
+        }
     }
 }
