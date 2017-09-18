@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
@@ -100,15 +101,18 @@ public abstract class RaAbstractDn {
     public void update() {
         StringBuilder dn = new StringBuilder();
         for (EndEntityProfile.FieldInstance fieldInstance : fieldInstances) {
-            final String value = fieldInstance.getValue().trim();
-            if (!value.isEmpty()) {
-                int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
-                String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + value;
-                nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
-                if (dn.length() != 0) {
-                    dn.append(", ");
+            if (fieldInstance != null) {
+                String value = fieldInstance.getValue();
+                if (!StringUtils.isBlank(value)) {
+                    value = value.trim();
+                    int dnId = DnComponents.profileIdToDnId(fieldInstance.getProfileId());
+                    String nameValueDnPart = DNFieldExtractor.getFieldComponent(dnId, getAbstractDnFieldExtractorType()) + value;
+                    nameValueDnPart = org.ietf.ldap.LDAPDN.escapeRDN(nameValueDnPart);
+                    if (dn.length() != 0) {
+                        dn.append(", ");
+                    }
+                    dn.append(nameValueDnPart);
                 }
-                dn.append(nameValueDnPart);
             }
         }
         value = reorder(dn.toString());
