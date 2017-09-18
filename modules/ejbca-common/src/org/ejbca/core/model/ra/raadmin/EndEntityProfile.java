@@ -2205,6 +2205,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String value;
         private String defaultValue;
         private int profileId;
+        private boolean rfcEmailUsed;
         String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
@@ -2212,6 +2213,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.defaultValue = EndEntityProfile.this.getValue(name, number);
             this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
             this.profileId = EndEntityProfile.dataConstants.get(name);
+            this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
             if(temp != null){
                 this.regexPattern =  (String)temp.get(RegexFieldValidator.class.getName());
@@ -2221,6 +2223,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
         public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
         public boolean isRegexPatternRequired() {return getRegexPattern() != null;}
+        public boolean isUnModifiableUpnRfcAltName() {
+            return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN"));
+        }
+        public boolean isRfcUseEmail() {
+            return name.equals("RFC822NAME") && isUsed();
+        }
+        public boolean getRfcEmailUsed() {return rfcEmailUsed;}
+        public void setRfcEmailUsed(boolean rfcEmailUsed) {this.rfcEmailUsed = rfcEmailUsed;}
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
         public String getDefaultValue(){return defaultValue;}
