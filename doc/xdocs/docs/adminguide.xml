@@ -5168,6 +5168,11 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is recommended
 							to run DNSSEC, albeit be aware that some issuance may fail due to resolvers not working with DNSSEC as expected, so thread carefully.
 						</p>
+                    <li>Trust Anchor</li>
+                        <p>
+                            In order to obtain secure answers from the root zone of the DNS using DNSSEC, a trust anchor must be configured. By default IANA
+                            root anchor is used. This value may be modified but should remain unchanged unless the records is signed by another trust anchor.
+                        </p>
 					<li>Use IODEF E-mail</li>
 						<p>
 							Checking this box enables sending e-mails to any mailto-links registered on the DNA as CAA IODEF records. Doing so enables the 
