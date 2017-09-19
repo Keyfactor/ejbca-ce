@@ -41,6 +41,12 @@
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_DNSSEC_HELP}"/>
 	</h:panelGroup>
+	<h:outputLabel for="ignoreTld" value="#{web.text.CAA_VALIDATOR_IGNORE_TLD}" styleClass="subItem" />
+	<h:panelGroup>
+		<h:inputText id="ignoreTld" value="#{validatorBean.validator.tldIgnore}" disabled="#{validatorsBean.viewOnly}" />
+		<br></br>
+		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_TLD_IGNORE_HELP}"/>
+	</h:panelGroup>
 	<h:outputLabel for="iodef_settings" value="#{web.text.CAA_VALIDATOR_IODEF_SETTINGS}" style="font-weight: bold;" />
 	<h:panelGroup id="iodef_settings" />
 	<h:outputLabel for="useIodefEmail" value="#{web.text.CAA_VALIDATOR_IODEF_USE_EMAIL}" styleClass="subItem" />
