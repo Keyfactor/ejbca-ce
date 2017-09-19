@@ -389,9 +389,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
                     String subjectAltName = endEntityInformation.getSubjectAltName();
                     List<String> dnsNames = new ArrayList<>();
-                    for (String split : subjectAltName.split(", ")) {
+                    for (String split : subjectAltName.split(",")) {
                         if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
-                            dnsNames.add(split.substring(CertTools.DNS.length() + 1));
+                            dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                         }
                     }
                     //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
@@ -401,9 +401,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
                             if (extension != null) {
                                 String extendedSubjectAltName = CertTools.getAltNameStringFromExtension(extension);
-                                for (String split : extendedSubjectAltName.split(", ")) {
+                                for (String split : extendedSubjectAltName.split(",")) {
                                     if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
-                                        dnsNames.add(split.substring(CertTools.DNS.length() + 1));
+                                        dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                                     }
                                 }
                             }
