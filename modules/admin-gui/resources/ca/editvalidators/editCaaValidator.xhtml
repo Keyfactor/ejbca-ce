@@ -43,7 +43,7 @@
 	</h:panelGroup>
 	<h:outputLabel for="ignoreTld" value="#{web.text.CAA_VALIDATOR_IGNORE_TLD}" styleClass="subItem" />
 	<h:panelGroup>
-		<h:inputText id="ignoreTld" value="#{validatorBean.validator.tldIgnore}" disabled="#{validatorsBean.viewOnly}" />
+		<h:inputText id="ignoreTld" value="#{validatorBean.validator.tldIgnoreString}" disabled="#{validatorsBean.viewOnly}" />
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_TLD_IGNORE_HELP}"/>
 	</h:panelGroup>
