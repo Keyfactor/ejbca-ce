@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.cesecore.keys.validation;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.cesecore.profiles.Profile;
@@ -61,7 +63,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
-    public List<String> validate(String... domainNames) {
+    public Entry<Boolean,List<String>> validate(String... domainNames) {
         //Return all domain names that overlap with those preset in this validator.
         List<String> result = new ArrayList<>();
         for(String domainName : domainNames) {
@@ -72,7 +74,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
         if(result.size() != getDomainNames().size()) {
             throw new IllegalStateException("Test failed, wrong set of domain names was sent in.");
         }
-        return new ArrayList<String>();
+        return new AbstractMap.SimpleImmutableEntry<Boolean, List<String>>(Boolean.TRUE, new ArrayList<String>());
     }
 
     @Override
