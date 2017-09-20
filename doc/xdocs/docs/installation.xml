@@ -574,8 +574,9 @@ Logging can be configured using the CLI:
 
 <subsubsection name="JBoss 7/EAP 6 PKCS11">
 <p>
-JBoss 7/EAP 6 by default isolates away most sun classes. EJBCA configures JBoss to expose these classes (sun/security/pkcs11/wrapper)by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
-<i>modules/sun/jdk/main/module.xml</i> (JBoss 7.1/EAP6.0) or <i>modules/system/layers/base/sun/jdk/main/module.xml</i> (JBoss EAP 6.1 and later and WildFly) not needed.
+JBoss 7/EAP 6 by default isolates away most sun classes. Since version 6.6.3 EJBCA configures JBoss to expose these classes (sun/security/pkcs11/wrapper)by using a <i>jboss-deployment-structure.xml</i>. This makes configuration in  
+<i>modules/sun/jdk/main/module.xml</i> (JBoss 7.1/EAP6.0) or <i>modules/system/layers/base/sun/jdk/main/module.xml</i> (JBoss EAP 6.1 and later and WildFly) not needed. 
+For previous versions of EJBCA, look in the documentation for older releases for detailed information.
 </p>
 </subsubsection>
 
