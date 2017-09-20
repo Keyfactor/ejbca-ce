@@ -410,19 +410,24 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                     }
                     
-                    List<String> messages = dnsNameValidator.validate(dnsNames.toArray(new String[dnsNames.size()]));
+                    Entry<Boolean,List<String>> result = dnsNameValidator.validate(dnsNames.toArray(new String[dnsNames.size()]));
+                    
                     final String validatorName = dnsNameValidator.getProfileName();
-                    if (messages.size() > 0) { // Evaluation has failed.
+                    final List<String> messages = result.getValue();
+                    if (!result.getKey()) { 
+                    	// Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen. 
+                    	// We want thorough logging in order to trouble shoot though 
                         final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName, dnsNameValidator.getIssuer(), messages);
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                        details.put("msg", message);
-                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE, authenticationToken.toString(),
-                                String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+                        log.info(EventTypes.VALIDATOR_VALIDATION_FAILED+";"+EventStatus.FAILURE+";"+ModuleTypes.VALIDATOR+";"+ServiceTypes.CORE+";msg="+message);
                         final int index = dnsNameValidator.getFailedAction();
                         performValidationFailedActions(index, message);
-                    } else {
-                        final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, dnsNameValidator.getIssuer());
-                        log.info(message);
+                    } else { 
+                    	// Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
+                        final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, dnsNameValidator.getIssuer(), messages);
+                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        details.put("msg", message);
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, authenticationToken.toString(),
+                                String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
                     }
 
                 }

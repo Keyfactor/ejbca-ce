@@ -5204,6 +5204,27 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 					<li>EJBCA currently only supports e-mail IODEF records. WebService IODEF calls (RFC 5070) are not yet supported.</li>
 				</ul>			 
 			</p>
+			<p><strong>CAA Validator Logging</strong></p>
+			<p>The CAA validator will log both success and failure. Since success can be considered a security event, to be shown as evidence, this is logged in the security audit log. 
+			Failures are not security events per se and logged to the standard server log at info level.</p>
+			<p>Example failure:</p>
+			<source>
+15:49:07,017 INFO  [org.cesecore.keys.validation.KeyValidatorSessionBean] (default task-24) VALIDATOR_VALIDATION_FAILED;FAILURE;VALIDATOR;CORE;msg=CAA Validator 'CAA Validator' failed issuance of certificates 
+to issuer primekey.com, with messages: 
+[Not allowed to issue certificate for dnsName *.allow.klaan.nu. Result type was: Issuance of wildcard certificates for this domain is prohibited. Parameters: {} Message: 
+, Allowed to issue certificate for dnsName *.klaan.nu. Result type was: May issue, no CAA results for domain. Parameters: {} Message: 
+, Not allowed to issue certificate for dnsName allow.klaan.nu. Result type was: Rejected due to issuer not having a CAA record at domain's DNS, or issuance being prohibited. Parameters: {} Message: ].			
+			</source>
+			<p>Example success:</p>
+			<source>
+15:50:58,930 INFO  [org.cesecore.audit.impl.log4j.Log4jDevice] (default task-8) 2017-09-20 15:50:58+02:00;VALIDATOR_VALIDATION_SUCCESS;SUCCESS;VALIDATOR;CORE;ejbca;1865017768;;caaklaan1;msg=CAA Validator 'CAA Validator' 
+has permitted issuance of certificates to issuer primekey.com, with messages: 
+[Allowed to issue certificate for dnsName *.klaan.nu. Result type was: May issue, no CAA results for domain. Parameters: {} Message: 
+, Allowed to issue certificate for dnsName a.allow.klaan.nu. Result type was: May issue. Parameters: {} Message: primekey.com
+, Allowed to issue certificate for dnsName b.allow.klaan.nu. Result type was: May issue. Parameters: {} Message: primekey.com].			
+</source>
+			<p>There is also debug logging available, debug logging DNS lookup results. This can amount to large volumes however and is therefore set at debug level which is disabled by default.
+			If you want to have a separate DNS lookup log, you can send the DEBUG log for the class CaaDnsLookup to a separate log, similar to how you can do that for OCSP Transaction and Audit logging. See the <a href="#Logging">Logging section</a> for more information.</p>
 		</subsubsection>
 	</subsection>
 	<subsection name="Common Validator Settings">
