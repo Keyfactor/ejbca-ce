@@ -1185,6 +1185,7 @@ Using the Issuer Alternative Name extension simply copies the Subject Alternativ
 certificate profile used to issue end entity (or sub CA) certificates, the end entity certificates will get Issuer Alternative Name "rfc822Name=ca@org.org". 
 The end entity certificates can have a totally different Subject Alternative Name, as this is registered for the specific end entity.
 </p>
+<p>Another example to add subject and issuer alternative name with a DirectoryName to a Root CA is to set the value for Subject Alternative Name to "DirectoryName=L=SWE\,ST=FOO", i.e. with the comma escaped.</p>
 </subsubsection>
 
 <subsubsection name="CRL Distribution Points">
