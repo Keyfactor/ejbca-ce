@@ -13,6 +13,7 @@
 package org.cesecore.keys.validation;
 
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * Base interface for DNS name validators. All DNS name validators must implement this interface.
@@ -29,7 +30,7 @@ public interface DnsNameValidator extends Validator {
      * 
      * @return the error messages or an empty list if all input was validated successfully 
      */
-    List<String> validate(String ... domainNames);
+    Entry<Boolean,List<String>> validate(String ... domainNames);
     
     String getIssuer();
 }

@@ -105,6 +105,8 @@ public enum EventTypes implements EventType {
     VALIDATOR_RENAME,
     /** Validation failed. */
     VALIDATOR_VALIDATION_FAILED,
+    /** Validation succeeded. */
+    VALIDATOR_VALIDATION_SUCCESS,
     /** Removal of persisted audit log records. */
     LOG_DELETE,
     /** Export of audit log records. */
