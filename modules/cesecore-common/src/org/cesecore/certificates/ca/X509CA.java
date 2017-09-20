@@ -287,6 +287,10 @@ public class X509CA extends CA implements Serializable {
         return (String) data.get(SUBJECTALTNAME);
     }
 
+    public void setSubjectAltName(final String altName) {
+        data.put(SUBJECTALTNAME, altName);
+    }
+
     public boolean getUseAuthorityKeyIdentifier() {
         return ((Boolean) data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue();
     }
@@ -520,6 +524,7 @@ public class X509CA extends CA implements Serializable {
         setNameConstraintsPermitted(info.getNameConstraintsPermitted());
         setNameConstraintsExcluded(info.getNameConstraintsExcluded());
         setExternalCdp(info.getExternalCdp());
+        setSubjectAltName(info.getSubjectAltName());
     }
     
     /**
