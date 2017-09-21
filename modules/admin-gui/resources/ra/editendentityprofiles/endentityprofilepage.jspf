@@ -59,7 +59,7 @@
 <script type="text/javascript">
 
   <!-- // Method to check all textfields for valid input -->
-<!--  
+<!--
     var numbersubjectdnfields = <%= profiledata.getSubjectDNFieldOrderLength()%>
     var dnfieldtypes = new Array(<%= profiledata.getSubjectDNFieldOrderLength()%>);
     <% for(int i=0; i < profiledata.getSubjectDNFieldOrderLength(); i++){ %>
@@ -71,7 +71,12 @@
     <% for(int i=0; i < profiledata.getSubjectAltNameFieldOrderLength(); i++){ %>
     altnamesfieldtypes[<%=i %>] = <%=profiledata.getSubjectAltNameFieldsInOrder(i)[EndEntityProfile.FIELDTYPE]%>
     <%}%>
-  
+
+    var dirattrfieldtypes = new Array(<%= profiledata.getSubjectDirAttrFieldOrderLength() %>);
+    <% for (int i=0; i < profiledata.getSubjectDirAttrFieldOrderLength(); i++) { %>
+    dirattrfieldtypes[<%= i %>] = <%= profiledata.getSubjectDirAttrFieldsInOrder(i)[EndEntityProfile.FIELDTYPE] %>;
+    <% } %>
+
 function checkallfields(){
     var illegalfields = 0;
     var fieldname;
@@ -81,23 +86,23 @@ function checkallfields(){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
-      }    
-    } 
+      }
+    }
 
     for(var i=0; i < numbersubjectaltnamesfields; i++){
       if(altnamesfieldtypes[i] != <%= DnComponents.dnIdToProfileId(DNFieldExtractor.RFC822NAME) %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTALTNAME%>"+i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
-      }    
-    } 
-  
+      }
+    }
 
     if(!checkfieldforlegalemailcharswithoutatwithchangeable("document.editprofile.<%=TEXTFIELD_EMAIL%>","<%= ejbcawebbean.getText("ONLYEMAILCHARSNOAT") %>"))
       illegalfields++;
  
     illegalfields += checkNonModifiableEmptyEmail();
     illegalfields += checkDefaultAmongAvailable();
+    illegalfields += checkNonModifiableRequiredEmptyAttributes(dnfieldtypes, altnamesfieldtypes, dirattrfieldtypes);
 
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
@@ -114,7 +119,7 @@ function checkallfields(){
     	if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.value) == ""){
 	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER", true) %>");
 	        illegalfields++;
-	      } 
+	      }
 	
 	      if(!checkfieldforlegalemailchars("document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>","<%= ejbcawebbean.getText("NOTIFICATIONSENDERNOTVALID") %>")) {
 	      	illegalfields++;
@@ -123,22 +128,20 @@ function checkallfields(){
 	      if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.value) == ""){
 	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT", true) %>");
 	        illegalfields++;
-	      } 
+	      }
 	      if(trim(document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.value) == ""){
 	        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE", true) %>");
 	        illegalfields++;
-	      } 
-  <% } %>	    	    	
+	      }
+  <% } %>
   }
 
-    
     if(document.editprofile.<%=CHECKBOX_USE_PRINTING%>.checked){            
       if(trim(document.editprofile.<%=SELECT_PRINTINGPRINTERNAME%>.value) == "-1"){
         alert("<%=  ejbcawebbean.getText("ERRORNOPRINTERISAVAIL", true) %>");
         illegalfields++;
       }            
     }
-
 
     if(illegalfields == 0){
       document.editprofile.<%= CHECKBOX_CLEARTEXTPASSWORD %>.disabled = false;
