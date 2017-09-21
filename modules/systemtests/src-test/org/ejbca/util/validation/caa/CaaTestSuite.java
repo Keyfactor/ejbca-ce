@@ -60,10 +60,6 @@ public class CaaTestSuite {
         return lookup(domain, "test", false);
     }
 
-    private CaaDnsLookupResult unauthorizedLookup(final String domain, boolean dnssecEnabled) throws UnknownHostException, MalformedURLException {
-        return lookup(domain, "test", dnssecEnabled);
-    }
-
     @Test
     public void testEmptyBasic() throws Exception {
         // There are no CAA records here, no point in attempting an authorised lookup
@@ -198,12 +194,6 @@ public class CaaTestSuite {
     public void testDnssecRefused() throws Exception {
         final CaaDnsLookupResult authorizedLookupResult = authorizedLookup("refused.caatestsuite-dnssec.com", true);
         assertEquals(ResultType.DNSSEC_VALIDATION_FAILED, authorizedLookupResult.getResult());
-    }
-
-    @Test
-    public void testDnsCaaCrossSiteScripting() throws Exception {
-        final CaaDnsLookupResult xssLookupResult = lookup("xss.caatestsuite.com", "<script>alert('Wheeeeee')</script>", false);
-        assertEquals(ResultType.ISSUANCE_PROHIBITED, xssLookupResult.getResult());
     }
 
     @Test
