@@ -1,3 +1,12 @@
+EJBCA 6.9.0.6, 2017-09-21
+---
+
+Bug
+    [ECA-6107] - CAA validation allows issuance of wildcard certificates for subdomains, even though issuance is prohibited.
+    [ECA-6124] - CAA max recursion count is triggering for other checks than CNAMES
+    [ECA-6125] - KeyValidatorSession splits DNSNames incorrectly for CAA lookups
+    [ECA-6126] - CAA Validator fails for a SocketTimeoutException
+
 EJBCA 6.9.0.5, 2017-09-08
 ---
 
