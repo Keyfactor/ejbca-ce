@@ -4,9 +4,18 @@
 
 <%! // Declarations
 static final String TEXTFIELD_EMAIL                       = "textfieldemail";
+static final String TEXTFIELD_SUBJECTDN                   = "textfieldsubjectdn";
+static final String TEXTFIELD_SUBJECTALTNAME              = "textfieldsubjectaltname";
+static final String TEXTFIELD_SUBJECTDIRATTR              = "textfieldsubjectdirattr";
 
 static final String CHECKBOX_USE_EMAIL                    = "checkboxuseemail";
 static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
+static final String CHECKBOX_REQUIRED_SUBJECTDN           = "checkboxrequiredsubjectdn";
+static final String CHECKBOX_REQUIRED_SUBJECTALTNAME      = "checkboxrequiredsubjectaltname";
+static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR      = "checkboxrequiredsubjectdirattr";
+static final String CHECKBOX_MODIFIABLE_SUBJECTDN         = "checkboxmodifyablesubjectdn";
+static final String CHECKBOX_MODIFIABLE_SUBJECTALTNAME    = "checkboxmodifyablesubjectaltname";
+static final String CHECKBOX_MODIFIABLE_SUBJECTDIRATTR    = "checkboxmodifyablesubjectdirattr";
 
 static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
 static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
@@ -61,5 +70,41 @@ function checkDefaultAmongAvailable() {
     }
 
     return illegalfields;
+}
+
+function checkNonModifiableRequiredEmptyAttribute(index, textName, requiredName, modifiableName) {
+    var text = new String(eval("document.editprofile." + textName + index).value);
+    var required = eval("document.editprofile." + requiredName + index).checked;
+    var modifiable = eval("document.editprofile." + modifiableName + index).checked;
+    return required && !modifiable && text.length === 0;
+}
+
+function checkNonModifiableRequiredEmptyAttributes(dnFieldTypes, altNameFieldTypes, dirAttrFieldTypes) {
+    var illegalFields = 0;
+    // Check Subject DN Attributes
+    for (var i = 0; i < dnFieldTypes.length; i++) {
+        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDN %>",
+                "<%= CHECKBOX_REQUIRED_SUBJECTDN %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDN %>")) {
+            illegalFields++;
+        }
+    }
+    // Check Subject Alternative Names
+    for (var i = 0; i < altNameFieldTypes.length; i++) {
+        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTALTNAME %>",
+                "<%= CHECKBOX_REQUIRED_SUBJECTALTNAME %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTALTNAME %>")) {
+            illegalFields++;
+        }
+    }
+    // Check Subject Directory Attributes
+    for (var i = 0; i < dirAttrFieldTypes.length; i++) {
+        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDIRATTR %>",
+                "<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDIRATTR %>")) {
+            illegalFields++;
+        }
+    }
+    if (illegalFields > 0) {
+        alert("<%= ejbcawebbean.getText("ILLEGALATTRIBUTE", true) %>");
+    }
+    return illegalFields;
 }
 </script>
