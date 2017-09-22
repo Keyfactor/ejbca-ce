@@ -47,6 +47,14 @@
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_TLD_IGNORE_HELP}"/>
 	</h:panelGroup>
+	
+	<h:outputLabel for="ignoreDomains" value="#{web.text.CAA_VALIDATOR_IGNORE_DOMAINS}" styleClass="subItem" />
+    <h:panelGroup>
+        <h:inputTextarea id="ignoreDomains" value="#{validatorBean.validator.domainIgnoreString}" cols="45" rows="10" required="false" disabled="#{validatorsBean.viewOnly}" />
+        <br></br>
+        <h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_DOMAIN_IGNORE_HELP}"/>
+    </h:panelGroup>
+	
 	<h:outputLabel for="timeoutLimit" value="#{web.text.CAA_VALIDATOR_RETRY_DELAY}" styleClass="subItem" />
 	<h:panelGroup>
 		<h:inputText id="timeoutLimit" value="#{validatorBean.validator.dnsRetryDelay}" disabled="#{validatorsBean.viewOnly}" />
