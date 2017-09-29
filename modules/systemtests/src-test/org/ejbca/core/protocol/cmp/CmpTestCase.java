@@ -455,7 +455,9 @@ public abstract class CmpTestCase extends CaTestCase {
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
         pkiHeaderBuilder.setProtectionAlg(pAlg);
-        pkiHeaderBuilder.setSenderKID(senderKID);
+        if (senderKID != null) {
+            pkiHeaderBuilder.setSenderKID(senderKID);
+        }
         PKIBody pkiBody = new PKIBody(PKIBody.TYPE_REVOCATION_REQ, revReqContent);
         PKIMessage pkiMessage = new PKIMessage(pkiHeaderBuilder.build(), pkiBody);
         return pkiMessage;
@@ -680,11 +682,11 @@ public abstract class CmpTestCase extends CaTestCase {
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false);
+        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg, false, null);
     }
 
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+            boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
         boolean pbe = (pbeSecret != null);
@@ -734,10 +736,18 @@ public abstract class CmpTestCase extends CaTestCase {
             }
         }
         if (pbe) {
+            String keyId;
             ASN1OctetString os = header.getSenderKID();
-            assertNotNull(os);
-            String keyId = CmpMessageHelper.getStringFromOctets(os);
-            log.debug("Found a sender keyId: " + keyId);
+            if (os != null) {
+                assertNotNull(os);
+                keyId = CmpMessageHelper.getStringFromOctets(os);
+                log.debug("Found a sender keyId: " + keyId);
+                if (requiredKeyId != null) {
+                    assertEquals("KeyId should be the required one: ", requiredKeyId, keyId);
+                }
+            } else if (requiredKeyId != null) {
+                assertTrue("RequiredKey should be "+requiredKeyId+" but was null", false);
+            }
             // Verify the PasswordBased protection of the message
             byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
             DERBitString protection = respObject.getProtection();

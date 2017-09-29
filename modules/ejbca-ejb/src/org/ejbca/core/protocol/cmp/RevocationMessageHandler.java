@@ -222,7 +222,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		}
 		
 		if (LOG.isDebugEnabled()) {
-		    LOG.debug("Creating a PKI revocation message response");
+		    LOG.debug("Creating a PKI revocation message response: "+responseProtection);
 		}
 		final CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 		rresp.setRecipientNonce(msg.getSenderNonce());
@@ -241,7 +241,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    final int iterationCount = 1024;
 		    final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
 		    
-		    if (owfAlg != null && macAlg != null && keyId != null && cmpRaAuthSecret != null) {
+		    if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
 		        // Set all protection parameters
 		        if (LOG.isDebugEnabled()) {
 		            LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);

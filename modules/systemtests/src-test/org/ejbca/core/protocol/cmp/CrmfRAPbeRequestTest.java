@@ -293,6 +293,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     }
 
+    /** Tests a revocation without revocation reasons and without KeyId */
     @Test
     public void test01CrmfHttpOkUser2NoRevocationReason() throws Exception {
         try {
@@ -323,7 +324,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
             // Now revoke without any reason code extension, will result in revocation reason unspecified!
             PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
-            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, null, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
             out = new DEROutputStream(bao);

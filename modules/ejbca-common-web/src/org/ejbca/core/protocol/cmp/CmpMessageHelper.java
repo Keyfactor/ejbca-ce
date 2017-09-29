@@ -257,8 +257,11 @@ public class CmpMessageHelper {
         }
         // Create the PasswordBased protection of the message
         PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
-        byte[] keyIdBytes = keyId.getBytes(StandardCharsets.UTF_8);
-        head.setSenderKID(new DEROctetString(keyIdBytes));
+        if (keyId != null) {
+            // Only add senderKeyId of the client used it, it's not needed to create the actual protection
+            byte[] keyIdBytes = keyId.getBytes(StandardCharsets.UTF_8);
+            head.setSenderKID(new DEROctetString(keyIdBytes));
+        }
         // SHA1
         AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlgId));
         // iterations, usually something like 1024
@@ -423,7 +426,7 @@ public class CmpMessageHelper {
             final String pbeMacAlg = verifyer.getMacOid();
             final int pbeIterationCount = verifyer.getIterationCount();
             final String raAuthSecret = verifyer.getLastUsedRaSecret();
-            if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (keyId != null) && (raAuthSecret != null)) {
+            if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (raAuthSecret != null)) {
                 cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
             }
         }
