@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -516,7 +517,20 @@ public class ApplyBean implements Serializable {
     public boolean isCertificateProfileListShown() throws Exception {
         return getAvailableCertificateProfiles().length != 1;
     }
-	
+
+    /**
+     * Returns true if the user has status "Key Recovery".
+     * @return true if user status is "Key Recovery"
+     * @throws AuthorizationDeniedException if the admin is not authorized to the user
+     */
+    public boolean isKeyRecovery() throws AuthorizationDeniedException {
+        EndEntityInformation user = endEntityInformation;
+        if (user == null || !user.getUsername().equals(defaultUsername)) {
+            user = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, defaultUsername);
+        }
+        return user != null && user.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY;
+    }
+
 	/** Returns the certificate profile the user is registered with
 	 * 
 	 * @return certificate profile name
