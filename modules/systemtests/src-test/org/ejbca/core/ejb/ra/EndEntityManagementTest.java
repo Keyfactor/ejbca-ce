@@ -139,8 +139,8 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data2.getStatus() == EndEntityConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType().isType(EndEntityTypes.INVALID));
-        assertTrue("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123") == false);
-        assertTrue("wrong pwd " + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd));
+        assertTrue("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false) == false);
+        assertTrue("wrong pwd " + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false));
 
         // Change DN
         EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,O=AnaTom,OU=Engineering,CN=" + username,
@@ -167,8 +167,8 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
-        assertTrue("wrong pwd foo123", endEntityManagementSession.verifyPassword(admin, username, "foo123"));
-        assertTrue("wrong pwd (" + pwd + " works)" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd) == false);
+        assertTrue("wrong pwd foo123", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
+        assertTrue("wrong pwd (" + pwd + " works)" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
         EndEntityInformation user = new EndEntityInformation(username,  "C=SE,O=AnaTom,CN=" + username,
@@ -194,9 +194,9 @@ public class EndEntityManagementTest extends CaTestCase {
         assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
-        assertTrue("wrong pwd foo234", endEntityManagementSession.verifyPassword(admin, username, "foo234"));
+        assertTrue("wrong pwd foo234", endEntityManagementSession.verifyPassword(admin, username, "foo234", false));
         assertEquals("wrong clear pwd foo234", data.getPassword(), "foo234");
-        assertTrue("wrong pwd (" + pwd + " works)", endEntityManagementSession.verifyPassword(admin, username, pwd) == false);
+        assertTrue("wrong pwd (" + pwd + " works)", endEntityManagementSession.verifyPassword(admin, username, pwd, false) == false);
 
         endEntityManagementSession.setPassword(admin, username, "foo234");
         log.trace("<test03LookupChangedUser2()");
