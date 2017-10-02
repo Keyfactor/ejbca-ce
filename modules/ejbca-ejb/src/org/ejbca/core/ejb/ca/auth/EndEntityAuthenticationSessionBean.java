@@ -84,7 +84,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
             ExtendedInformation ei = data.getExtendedInformation();
-           	eichange = decRemainingLoginAttempts(data, ei);
+           	eichange = EndEntityAuthenticationSessionBean.decRemainingLoginAttempts(data, ei);
            	boolean authenticated = false;
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
@@ -153,7 +153,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
      * @return true if the value was decremented or the status was changed, false if not
      * @throws NoSuchEndEntityException if the entity does not exist
      */
-    private boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) throws NoSuchEndEntityException {
+    public static boolean decRemainingLoginAttempts(UserData user, ExtendedInformation ei) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + user.getUsername()+ ")");
         }

@@ -109,7 +109,7 @@ public class AddEndEntityCommandTest {
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertNull("getPassword returns "+eei.getPassword(), eei.getPassword());
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123", false));
             
             command1.execute(HAPPY_PATH_SETPWD_ARGS);
             col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
@@ -117,8 +117,8 @@ public class AddEndEntityCommandTest {
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertNull("getPassword returns "+eei.getPassword(), eei.getPassword());
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "bar123"));
-            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "bar123", false));
+            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123", false));
 
             command2.execute(HAPPY_PATH_SETCLEARPWD_ARGS);
             col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
@@ -126,8 +126,8 @@ public class AddEndEntityCommandTest {
             eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertEquals("foo123bar", eei.getPassword());
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123bar"));
-            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "bar123"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123bar", false));
+            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "bar123", false));
         } finally {
             try {
                 eeSession.deleteUser(admin, USER_NAME);
@@ -151,7 +151,7 @@ public class AddEndEntityCommandTest {
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertNull("getPassword returns "+eei.getPassword(), eei.getPassword());
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123", false));
 
             // Append our test appender to the commands logger, so we can check the output of the command 
             // after running
@@ -165,8 +165,8 @@ public class AddEndEntityCommandTest {
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertNull("getPassword returns "+eei.getPassword(), eei.getPassword());
             // Password should not have changed
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
-            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "bar123"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123", false));
+            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "bar123", false));
             // Verify that we had a nice error message that the user did not exist
             List<LoggingEvent> log = appender1.getLog();
             assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
@@ -183,8 +183,8 @@ public class AddEndEntityCommandTest {
             assertEquals("CN="+USER_NAME, eei.getDN());
             assertNull("getPassword returns "+eei.getPassword(), eei.getPassword());
             // Password should not have changed
-            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123"));
-            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123bar"));
+            assertTrue(eeSession.verifyPassword(admin, USER_NAME, "foo123", false));
+            assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123bar", false));
             // Verify that we had a nice error message that the user did not exist
             log = appender2.getLog();
             assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
