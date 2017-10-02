@@ -383,16 +383,17 @@ public interface EndEntityManagementSession {
     void setClearTextPassword(AuthenticationToken admin, String username, String password) throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException;
 
     /**
-     * Verifies a password for a user.
+     * Verifies a password for a user, decreasing the remaining login attempts if verification fails and if caller wants (and it is not set to unlimited).
      * 
      * @param admin the administrator performing the action
      * @param username the unique username.
      * @param password the password to be verified.
+     * @param decRemainingLoginAttemptsOnFailure if true and password verification fails, will try to decrease remaining login attempts (which can be unlimited)
      * @return true if password was correct, false otherwise
      * 
      * @throws NoSuchEndEntityException if the end entity was not found
      */
-    boolean verifyPassword(AuthenticationToken admin, String username, String password)
+    boolean verifyPassword(AuthenticationToken admin, String username, String password, boolean decRemainingLoginAttemptsOnFailure)
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException;
 
     /**

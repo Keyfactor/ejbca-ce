@@ -99,6 +99,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionBean;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
@@ -1410,7 +1411,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public boolean verifyPassword(AuthenticationToken admin, String username, String password) throws EndEntityProfileValidationException,
+    public boolean verifyPassword(AuthenticationToken admin, String username, String password, boolean decRemainingLoginAttemptsOnFailure) throws EndEntityProfileValidationException,
             AuthorizationDeniedException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">verifyPassword(" + username + ", hiddenpwd)");
@@ -1429,6 +1430,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         assertAuthorizedToCA(admin, caid);
         try {
             ret = data.comparePassword(password);
+            if (!ret) {
+                // If verification fails, and the caller want to, try to decrease remaining login attempts
+                final ExtendedInformation ei = data.getExtendedInformation();
+                if (EndEntityAuthenticationSessionBean.decRemainingLoginAttempts(data, ei)) {
+                    data.setTimeModified(new Date().getTime());
+                    data.setExtendedInformation(ei);
+                }
+            }
         } catch (NoSuchAlgorithmException nsae) {
             log.debug("NoSuchAlgorithmException while verifying password for user " + username);
             throw new EJBException(nsae);

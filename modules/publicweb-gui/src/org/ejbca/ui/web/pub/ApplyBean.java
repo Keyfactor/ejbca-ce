@@ -264,7 +264,7 @@ public class ApplyBean implements Serializable {
     public void setUserOk(String username, String password) throws Exception {
         if(!username.equals(this.username) || this.endEntityInformation == null){
             try {
-                this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password);
+                this.userOk = ejbLocalHelper.getEndEntityManagementSession().verifyPassword(administrator, username, password, true);
             } catch (NoSuchEndEntityException e) {
                 // Username does not exist
                 this.userOk = false;
