@@ -61,6 +61,13 @@
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_RETRY_DELAY_HELP}"/>
 	</h:panelGroup>
+	<h:outputLabel for="maxRecursions" value="#{web.text.CAA_VALIDATOR_MAX_RECURSION}" styleClass="subItem" />
+	<h:panelGroup>
+		<h:inputText id="maxRecursions" value="#{validatorBean.validator.maximumRecursions}" disabled="#{validatorsBean.viewOnly}" />
+		<br></br>
+		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_MAX_RECURSION_HELP}"/>
+	</h:panelGroup>
+	
 	<h:outputLabel for="iodef_settings" value="#{web.text.CAA_VALIDATOR_IODEF_SETTINGS}" style="font-weight: bold;" />
 	<h:panelGroup id="iodef_settings" />
 	<h:outputLabel for="useIodefEmail" value="#{web.text.CAA_VALIDATOR_IODEF_USE_EMAIL}" styleClass="subItem" />
