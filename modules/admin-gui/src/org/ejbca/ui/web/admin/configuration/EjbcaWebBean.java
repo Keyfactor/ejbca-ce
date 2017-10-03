@@ -77,6 +77,7 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -139,6 +140,8 @@ public class EjbcaWebBean implements Serializable {
     private GlobalConfiguration globalconfiguration;
     private CmpConfiguration cmpconfiguration = null;
     private CmpConfiguration cmpConfigForEdit = null;
+    private EstConfiguration estconfiguration = null;
+    private EstConfiguration estConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ServletContext servletContext = null;
@@ -716,12 +719,27 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
+     * Save the given EST configuration.
+     * 
+     * @param estconfiguration A EstConfiguration
+     * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
+     */
+    public void saveEstConfiguration(EstConfiguration estconfiguration) throws AuthorizationDeniedException {
+        this.estconfiguration = estconfiguration;
+        globalConfigurationSession.saveConfiguration(administrator, estconfiguration);
+    }
+
+    /**
      * Reload the current configuration from the database.
      */
     public void reloadCmpConfiguration() {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
+    public void reloadEstConfiguration() {
+        estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+    }
+    
     public boolean existsAdminPreference() {
         return adminspreferences.existsAdminPreference(certificatefingerprint);
     }
@@ -1237,6 +1255,165 @@ public class EjbcaWebBean implements Serializable {
         } else {
             return (TreeMap<String, Integer>) informationmemory.getCANames();
         }
+    }
+
+    //**********************
+    //     EST
+    //**********************
+
+    public EstConfiguration getEstConfiguration() {
+        if (estconfiguration == null) {
+            reloadEstConfiguration();
+        }
+        
+        //Clear EST config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
+        return clearEstConfigurationFromUnauthorizedAliases(estconfiguration);
+    }
+
+    /** 
+     * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally. 
+     * 
+     * @param alias a EST config alias
+     * @return a clone of the current EstConfiguration containing only the given alias. Will return an alias with only default values if the EstConfiguration doesn't
+     *          contain that alias.
+     */
+    public EstConfiguration getEstConfigForEdit(String alias) {
+        if (estConfigForEdit != null) {
+            return estConfigForEdit;
+        }
+        reloadEstConfiguration();
+        estConfigForEdit = new EstConfiguration();
+        estConfigForEdit.setAliasList(new LinkedHashSet<String>());
+        estConfigForEdit.addAlias(alias);
+        for(String key : EstConfiguration.getAllAliasKeys(alias)) {
+            String value = estconfiguration.getValue(key, alias);
+            estConfigForEdit.setValue(key, value, alias);
+        }
+        return estConfigForEdit;
+    }
+    
+    /**
+     * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
+     * 
+     * @param alias a EST config alias. 
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    public void updateEstConfigFromClone(String alias) throws AuthorizationDeniedException {
+        if (estconfiguration.aliasExists(alias) && estConfigForEdit.aliasExists(alias)) {
+            for(String key : EstConfiguration.getAllAliasKeys(alias)) {
+                String value = estConfigForEdit.getValue(key, alias);
+                estconfiguration.setValue(key, value, alias);
+            }
+        }
+        saveEstConfiguration(estconfiguration);
+    }
+
+    /**
+     * Adds an alias to the database.
+     * 
+     * @param alias the name of a EST alias. 
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    public void addEstAlias(final String alias) throws AuthorizationDeniedException {
+        estconfiguration.addAlias(alias);
+        saveEstConfiguration(estconfiguration);
+    }
+    
+    /**
+     * Makes a copy of a given alias
+     * 
+     * @param oldName the name of the alias to copy
+     * @param newName the name of the new alias
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    public void cloneEstAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        estconfiguration.cloneAlias(oldName, newName);
+        saveEstConfiguration(estconfiguration);
+    }
+    
+    /**
+     * Deletes a CMP alias from the database.
+     * 
+     * @param alias the name of the alias to delete.
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    public void removeEstAlias(final String alias) throws AuthorizationDeniedException {
+        estconfiguration.removeAlias(alias);
+        saveEstConfiguration(estconfiguration);
+    }
+    
+    /**
+     * Renames a CMP alias
+     * 
+     * @param oldName the old alias name
+     * @param newName the new alias name
+     * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
+     */
+    public void renameEstAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
+        estconfiguration.renameAlias(oldName, newName);
+        saveEstConfiguration(estconfiguration);
+    }
+    
+    public void clearEstConfigClone() {
+        estConfigForEdit = null;
+    }
+
+    public void clearEstCache() {
+        globalConfigurationSession.flushConfigurationCache(EstConfiguration.EST_CONFIGURATION_ID);
+        reloadEstConfiguration();
+    }
+    
+    /**
+     * 
+     * Note that this method modifies the parameter, which is has to due to the design of UpgradableHashMap. 
+     * 
+     * @param estConfiguration the full CMP configuration
+     * @return the modified estConfiguration, same as the parameter. 
+     */
+    private EstConfiguration clearEstConfigurationFromUnauthorizedAliases(final EstConfiguration estConfiguration) {
+        //Copy the configuration, because modifying parameters is nasty
+        EstConfiguration returnValue = new EstConfiguration(estConfiguration);
+        //Build a lookup map due to the fact that default CA is stored as a SubjectDNs 
+        Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
+        for(int caId : caSession.getAllCaIds()) {           
+            try {
+                CAInfo caInfo = caSession.getCAInfoInternal(caId);
+                subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+            } catch (CADoesntExistsException e) {
+                throw new IllegalStateException("Newly retrieved CA not found.", e);
+            }
+            
+        }
+        Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
+        //Exclude all aliases which refer to CAs that current admin doesn't have access to
+        aliasloop: for (String alias : new ArrayList<>(estConfiguration.getAliasList())) {
+            //Collect CA names
+            Set<String> caNames = new HashSet<>();
+            String defaultCaSubjectDn = estConfiguration.getDefaultCA(alias);
+            if (!StringUtils.isEmpty(defaultCaSubjectDn)) {
+                caNames.add(subjectDnToCaNameMap.get(defaultCaSubjectDn));
+            }
+
+            TreeMap<String, Integer> caNameToIdMap = getInformationMemory().getAllCANames();
+            for (String caName : caNames) {
+                if(caName != null) { //CA might have been removed
+                    Integer caId = caNameToIdMap.get(caName);
+                    if (caId != null) {
+                        if (!caSession.authorizedToCANoLogging(administrator, caId)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("EST alias " + alias + " hidden because admin lacks access to CA rule: " + StandardRules.CAACCESS.resource()
+                                        + caNameToIdMap.get(caName));
+                            }
+                            returnValue.removeAlias(alias);
+                            //Our work here is done, skip to the next alias. 
+                            continue aliasloop;
+                        }
+                    }
+                }
+            }
+        }
+
+        return returnValue;
     }
 
     //*************************************************

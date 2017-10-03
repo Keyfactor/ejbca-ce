@@ -58,6 +58,8 @@ org.cesecore.keybind.InternalKeyBindingRules
        
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.jsf";
        
+       final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfiguration.jsp";
+       
 	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
        
@@ -368,6 +370,16 @@ org.cesecore.keybind.InternalKeyBindingRules
          configheaderprinted=true;
          }  %>
 				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
+<% } %>
+
+<%
+// If authorized to edit EST Configuration then display related links.
+  if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
+      if(!configheaderprinted){      
+    out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+    configheaderprinted = true;
+      } %>
+    <li><a href="<%= ESTCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ESTCONFIGURATION") %></a></li>
 <% } %>
 
 <%

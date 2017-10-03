@@ -503,6 +503,7 @@
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
                 <include name="scep.war" />
+                <include name="est.war" />
                 <include name="healthcheck.war" />
                 <include name="clearcache.war" />
                 <include name="webdist.war" />
@@ -1190,6 +1191,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
 
     <target name="scep.war">
     	<ant dir="modules" target="scep-war" />
+    </target>
+
+    <target name="est.war">
+    	<ant dir="modules" target="est-war" />
     </target>
 
     <target name="status.war">
