@@ -1430,7 +1430,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         assertAuthorizedToCA(admin, caid);
         try {
             ret = data.comparePassword(password);
-            if (!ret) {
+            if (!ret && decRemainingLoginAttemptsOnFailure) {
                 // If verification fails, and the caller want to, try to decrease remaining login attempts
                 final ExtendedInformation ei = data.getExtendedInformation();
                 if (EndEntityAuthenticationSessionBean.decRemainingLoginAttempts(data, ei)) {
