@@ -26,9 +26,9 @@ public interface DnsNameValidator extends Validator {
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension
      * 
-     * @param domainNames an array of domain names 
-     * 
-     * @return the error messages or an empty list if all input was validated successfully 
+     * @param domainNames one or several domain names (Varargs)
+     * @return an Entry where key is the final validation result, true or false, and the value is a list is messages corresponding to 
+     * domain names passed as varargs, messages can include both success and failure messages, one failure will result in the key returned being false.
      */
     Entry<Boolean,List<String>> validate(String ... domainNames);
     
