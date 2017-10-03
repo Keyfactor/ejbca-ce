@@ -37,7 +37,7 @@
 	</h:selectBooleanCheckbox>
 	<h:outputLabel for="customTrustAnchor" value="#{web.text.CAA_VALIDATOR_DNSSEC_TRUST_ANCHOR}" styleClass="subItem" />
 	<h:panelGroup>
-		<h:inputTextarea id="customTrustAnchor" value="#{validatorBean.validator.trustAnchor}" disabled="#{!validatorBean.validator.validateDnsSec}" cols="45" rows="3" required="false"/>
+		<h:inputTextarea id="customTrustAnchor" value="#{validatorBean.validator.trustAnchor}" disabled="#{!validatorBean.validator.validateDnsSec}" cols="85" rows="1" required="false"/>
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_DNSSEC_HELP}"/>
 	</h:panelGroup>
