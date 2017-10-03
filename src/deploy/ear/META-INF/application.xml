@@ -56,6 +56,12 @@
     </module>
     <module>
         <web>
+            <web-uri>est.war</web-uri>
+            <context-root>/.well-known/</context-root>
+        </web>
+    </module>
+    <module>
+        <web>
             <web-uri>healthcheck.war</web-uri>
             <context-root>/ejbca/publicweb/healthcheck</context-root>
         </web>

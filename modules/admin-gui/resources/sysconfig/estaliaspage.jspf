@@ -1,0 +1,142 @@
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
+<%
+   java.util.Map<String, Integer> canames = ejbcawebbean.getInformationMemory().getCANames();
+   java.util.TreeMap<String, Integer> vendorcas = ejbcawebbean.getVendorCAOptions();
+   int row = 0;
+%>
+
+<script type="text/javascript">
+<!--  
+
+function reload() {
+	document.estconfiguration.<%= BUTTON_RELOAD %>.click();
+}
+
+function enableFormItems() {
+	var authorizedToEdit = <%=authorizedToEdit%>;
+}
+
+if (window.addEventListener) {
+    window.addEventListener("load", enableFormItems, false);
+} else if (document.attachEvent) {
+    window.attachEvent("onload", enableFormItems);
+}
+
+function checkallfields() {
+    var ok = true;    
+    return ok;
+}
+
+-->
+</script>
+
+<div align="center"> 
+  <h2><c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"ESTEDITALIAS\": \"EST_VIEW_ALIAS\")) %>" /></h2>
+  <h3><c:out value="<%= ejbcawebbean.getText(\"ESTALIAS\")+ \" : \" + alias %>" /></h3>
+</div>
+
+<form name="estconfiguration" method="post" action="<%=THIS_FILENAME %>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIAS%>'>
+  <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<c:out value="<%=alias %>"/>'>
+  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="left"> 
+          &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"ESTBACKTOALIASES\") %>" /></a>
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTDEFAULTCA\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTDEFAULTCA_HELP\") %>" /></p>
+      </td>
+      <td width="50%"> 
+        <select name="<%=LIST_ESTDEFAULTCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+           <%  String currentCA = estConfigClone.getDefaultCA(alias); %>
+           <option <% if(currentCA.equals("")) { %> selected <% } %>
+                 	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"ESTDEFAULTCA_DISABLED\") %>"/></option>
+           <%         	  
+           	for( String caname : canames.keySet() ) {
+           %>     <option <% if(currentCA.equals(caname)) { %> selected <% } %>
+                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
+           <% } %>
+        </select>
+      </td>
+    </tr>
+    
+    <% String ceep = null; %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTEEPROFILE\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTEEPROFILE_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <select name="<%= LIST_ESTEEPROFILES %>" onchange="reload()" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+          <% String currentEndEntityProfileId = estConfigClone.getEndEntityProfile(alias); %>
+          <% ceep = currentEndEntityProfileId; %>
+          <% boolean eepselected = false; %>
+          <% 
+          	Map<String, String> nameToIdMap = ejbcawebbean.getAuthorizedEEProfileNamesAndIds(AccessRulesConstants.CREATE_END_ENTITY);
+            for(String endEntityProfileName : nameToIdMap.keySet()) { 
+                String endEntityProfileId = nameToIdMap.get(endEntityProfileName);
+          %>   <option <% if(endEntityProfileId.equals(currentEndEntityProfileId)){ eepselected=true; %> selected <% } %> value='<c:out value="<%=endEntityProfileId %>"/>'>
+          			<c:out value="<%= endEntityProfileName %>"/>
+          		</option>
+          <% } %>
+          <% if(!eepselected) { %> <option selected value='<c:out value="-1"/>'><c:out value="Non-existing End Entity Profile with ID: "/><c:out value="<%= currentEndEntityProfileId %>"/></option> <% } %>
+        </select>
+        <noscript>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
+		</noscript>
+      </td>
+    </tr>
+
+
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTCERTPROFILE\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTCERTPROFILE_HELP\") %>"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTCERTPROFILE_HELP1\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <select name="<%= LIST_ESTCERTPROFILES %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
+          <% String defcp = estConfigClone.getCertProfile(alias); %>
+          <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
+          <% 
+          	if(ceep != null) {
+            	for(String cp : ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep)) {  %>
+            		<option <% if(cp.equals(defcp)){ %> selected <% } %>
+                  		value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
+          <% 	} 
+             }%>
+        </select>
+      </td>
+    </tr>
+    <%-- Form buttons --%>
+	
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top">
+        &nbsp;
+      </td>
+      <td width="50%" valign="top"> 
+        <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+        &nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+      </td>
+    </tr>
+
+  </table>
+</form>
