@@ -545,7 +545,25 @@ public class RequestHelper {
             log.debug("Sent " + bytes.length + " bytes to client");
         }
     } // sendBinaryBytes
-    
+
+        /**
+     * Sends back a number of bytes first encoded as base64
+     *
+     * @param bytes Data to be encoded
+     * @param out output stream to send to
+     * @param contentType mime type to send back bytes as
+     * @param fileName to call the file in a Content-disposition, can be null to leave out this header
+     *
+     * @throws Exception on error
+     */
+    public static void sendB64BinaryBytes(final byte[] bytes, final HttpServletResponse out, final String contentType, final String filename)
+    throws IOException {
+        final byte[] b64bytes = Base64.encode(bytes);
+
+        out.setHeader("Content-Transfer-Encoding", "base64");
+        sendBinaryBytes(b64bytes, out, contentType, filename);
+} // sendB64BinaryBytes
+
     /**
      * Sends a page with certificate information and an automatic redirect to the
      * download page. The issuer must not be a "throw away" CA.

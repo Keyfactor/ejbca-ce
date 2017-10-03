@@ -1,0 +1,97 @@
+<%@page import="org.cesecore.authorization.control.StandardRules"%>
+<%
+  List<String> aliases = estconfig.getSortedAliasList();
+
+%>
+
+
+<h1><%= (ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) ? ejbcawebbean.getText("ESTMANAGEALIASES") : ejbcawebbean.getText("EST_VIEW_ALIASES"))%></h1>
+
+<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
+
+<form name="editestaliases" method="post"  action="<%= THIS_FILENAME%>">
+  <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
+
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIASES %>'>
+
+  <table class="list">
+
+  <% if(triedtoaddexistingalias){ %> 
+    <tr> 
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("ESTALIASEXISTS") %></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(triedrenametoexistingalias || triedclonetoexistingalias){ %> 
+    <tr> 
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("ESTCOULDNOTRENAMEORCLONE") %></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(aliasDeletionFailed){ %>
+     <tr> 
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("ESTCOULDNOTDELETEALIAS") %> </td>      
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  
+ 
+    <tr> 
+      <td width="40%"><h3><%= ejbcawebbean.getText("ESTLISTOFALIASES") %></h3></td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%">
+        <select name="<%=SELECT_ALIASES%>" style="width: 50em" size="15"  >
+          <%for(String currentalias : aliases) { %>     
+            	<option value="<c:out value="<%= currentalias %>"/>"> 
+                <c:out value="<%= currentalias %>"/>
+             </option>
+          <%}%>
+        </select>
+      </td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%"> 
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="left">
+              <input type="submit" name="<%= BUTTON_VIEW_ALIAS %>" value="<%= ejbcawebbean.getText("EST_VIEW_ALIAS") %>">
+              <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) { %>
+              <input type="submit" name="<%= BUTTON_EDIT_ALIAS %>" value="<%= ejbcawebbean.getText("ESTEDITALIAS") %>">
+              <% } %>
+            </td>
+            <td align="center">
+              &nbsp;
+            </td>
+            <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) { %>
+            <td align="right">
+              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_ALIAS %>" value="<%= ejbcawebbean.getText("ESTDELETEALIAS") %>">
+            </td>
+            <% } %>
+          </tr>
+        </table> 
+      </td>
+      <td width="60%"></td>
+    </tr>
+  </table>
+  <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) { %>
+  <table class="actions">
+    <tr> 
+      <td width="100%"><h3><%= ejbcawebbean.getText("ESTADDALIAS") %></h3></td>
+    </tr>
+    <tr> 
+      <td width="100%">     	
+        <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>"> 
+        <input type="submit" name="<%= BUTTON_ADD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_RENAME_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAME") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_CLONE_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
+      </td>
+    </tr>
+  </table>
+  <% } %>
+
+</form>
+
