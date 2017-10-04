@@ -62,11 +62,14 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -112,6 +115,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private IdNameHashMap<CAInfo> authorizedCAInfos;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private boolean isCsrChanged;
+    private boolean isKeyRecovery;
 
     @PostConstruct
     protected void postConstruct() {
@@ -154,6 +158,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                     KeyRecoveryApprovalRequest keyRecoveryApprovalRequest = (KeyRecoveryApprovalRequest) approvalRequest;
                     requestUsername = keyRecoveryApprovalRequest.getUsername();
+                    isKeyRecovery = true;
                 } else {
                     requestUsername = raApprovalRequestInfo.getEditableData().getUsername();
                 }
@@ -312,7 +317,15 @@ public class EnrollWithRequestIdBean implements Serializable {
         reset();
     }
 
-    protected void generateKeyStore(){
+    protected void generateKeyStore() {
+        if (isKeyRecovery) {
+            try {
+                raMasterApiProxyBean.checkUserStatus(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
+            } catch (NoSuchEndEntityException | AuthStatusException | AuthLoginException e) {
+                raLocaleBean.addMessageError("enrollwithusername_user_not_found_or_wrongstatus_or_invalid_enrollmentcode", endEntityInformation.getUsername());
+                return;
+            }
+        }
         // If key algorithm is missing from EEI, we need to fetch it from CSR / select list first
         if (!isKeyAlgorithmPreSet()) {
             if (StringUtils.isEmpty(selectedAlgorithm)) {
