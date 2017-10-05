@@ -908,14 +908,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private void updateRfcAltName() {
         EndEntityProfile.FieldInstance rfc822Name = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME).get(0);
-        if (rfc822Name != null && rfc822Name.getRfcEmailUsed()) {
-            String email = getEndEntityInformation().getEmail();
-            if (email != null) {
-                rfc822Name.setValue(email);
-                return;
+        if (rfc822Name != null) {
+            if (rfc822Name.getRfcEmailUsed()) {
+                String email = getEndEntityInformation().getEmail();
+                if (email != null) {
+                    rfc822Name.setValue(email);
+                    return;
+                }
             }
+            rfc822Name.setValue("");
         }
-        rfc822Name.setValue("");
     }
 
     //-----------------------------------------------------------------------------------------------
