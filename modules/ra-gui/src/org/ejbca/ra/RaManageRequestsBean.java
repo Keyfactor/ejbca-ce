@@ -158,15 +158,17 @@ public class RaManageRequestsBean implements Serializable {
             break;
         }
         lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
+
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
+        
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
             final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
-            if (isCustomSearchingWaiting() && !approvalRequestGuiInfo.isCanApprove()) {
-                continue;
+            if (isCustomSearchingWaiting()) {
+                guiInfos.add(approvalRequestGuiInfo);
             }
-            guiInfos.add(approvalRequestGuiInfo);
         }
+        
         resultsFiltered = guiInfos;
         sort();
     }
