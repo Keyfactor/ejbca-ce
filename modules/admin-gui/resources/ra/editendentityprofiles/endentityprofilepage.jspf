@@ -102,7 +102,7 @@ function checkallfields(){
  
     illegalfields += checkNonModifiableEmptyEmail();
     illegalfields += checkDefaultAmongAvailable();
-    illegalfields += checkNonModifiableRequiredEmptyAttributes(dnfieldtypes, altnamesfieldtypes, dirattrfieldtypes);
+    illegalfields += checkNonModifiableEmptyAttributes(dnfieldtypes, altnamesfieldtypes, dirattrfieldtypes);
 
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
