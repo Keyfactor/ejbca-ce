@@ -2223,7 +2223,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
         public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
         public boolean isRegexPatternRequired() {return getRegexPattern() != null;}
-        public boolean isUnModifiableUpnRfcAltName() {
+        public boolean isUnModifiableUpnRfc() {
             return !isModifiable() && (name.equals("RFC822NAME") || name.equals("UPN"));
         }
         public boolean isRfcUseEmail() {
@@ -2243,6 +2243,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public List<String> getSelectableValues(){
             return isSelectable() ? Arrays.asList(defaultValue.split(";")) : null;
+        }
+        public List<String> getSelectableValuesUpnRfc(){
+            return Arrays.asList(defaultValue.split(";"));
         }
         @Override
         public int hashCode(){return name.hashCode();}
