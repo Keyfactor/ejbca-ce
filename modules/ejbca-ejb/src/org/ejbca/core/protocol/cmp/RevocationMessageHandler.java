@@ -112,16 +112,10 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             int caId = 0;
             if (StringUtils.isEmpty(caDN)) {
                 LOG.debug("Empty DN in header.recipient, get CA from CMP configuration");
-                try {
-                    int eeProfileId = getUsedEndEntityProfileId(keyId);
-                    caId = getUsedCaId(keyId, eeProfileId);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("caId from CMP Profile is "+caId+", with eeProfileId "+eeProfileId);
-                    }
-                } catch (EndEntityProfileNotFoundException e) {
-                    final String errMsg = (INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()));
-                    LOG.info(errMsg, e);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
+                int eeProfileId = getUsedEndEntityProfileId(keyId);
+                caId = getUsedCaId(keyId, eeProfileId);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("caId from CMP Profile is "+caId+", with eeProfileId "+eeProfileId);
                 }
             } else {
                 if (LOG.isDebugEnabled()) {
@@ -133,6 +127,10 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                 }
             }
             ca = caSession.getCA(admin, caId);
+        } catch (EndEntityProfileNotFoundException e) {
+            final String errMsg = (INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()));
+            LOG.info(errMsg, e);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
             LOG.info(errMsg);
