@@ -1337,6 +1337,23 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public int getMaximumAvailableBitLength() {
         return ((Integer) data.get(MAXIMUMAVAILABLEBITLENGTH)).intValue();
     }
+    
+    /**
+     * Returns true if the given combination of keyAlgorithm/keySpecification is allowed by this certificate profile.
+     */
+    public boolean isKeyTypeAllowed(final String keyAlgorithm, final String keySpecification) {
+        final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
+        final List<Integer> availableBitLengths = getAvailableBitLengthsAsList();
+        final List<String> availableEcCurves = getAvailableEcCurvesAsList();
+        if (!availableKeyAlgorithms.contains(keyAlgorithm)) { return false; }
+        if (StringUtils.isNumeric(keySpecification)) {
+            // keySpecification is a bit length (RSA)
+            return availableBitLengths.contains(Integer.parseInt(keySpecification));
+        } else {
+            // keySpecification is a curve name (EC)
+            return availableEcCurves.contains(keySpecification) || availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE);
+        }
+    }
 
     /**
      * Returns the chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
