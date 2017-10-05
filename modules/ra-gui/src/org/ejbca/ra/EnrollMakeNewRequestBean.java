@@ -1657,18 +1657,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.validityInputComponent = validityInputComponent;
     }
     
-    public void upnRfcText(AjaxBehaviorEvent event) {
-        upnRfc(event, "upnRfcEmailText", "upnRfcDomainText");
-    }
-
-    public void upnRfcMenu(AjaxBehaviorEvent event) {
-        upnRfc(event, "upnRfcEmailMenu", "upnRfcDomainMenu");
-    }
-
-    private void upnRfc(AjaxBehaviorEvent event, String emailComponent, String domainComponent) {
+    /**
+     * Finds the UPN/RFC822 email and domain in an Ajax event, concatenates them and
+     * sets the value of the appropriate FieldInstance.
+     * 
+     * @param event the Ajax event
+     */
+    public void upnRfc(AjaxBehaviorEvent event) {
         UIComponent components = event.getComponent();
-        UIInput emailInput = (UIInput) components.findComponent(emailComponent);
-        UIInput domainInput = (UIInput) components.findComponent(domainComponent);
+        UIInput emailInput = (UIInput) components.findComponent("upnRfcEmail");
+        UIInput domainInput = (UIInput) components.findComponent("upnRfcDomain");
         int index = -1;
         String email = "";
         if (emailInput != null) {
