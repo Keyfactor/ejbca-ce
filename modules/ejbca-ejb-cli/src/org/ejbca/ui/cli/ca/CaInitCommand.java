@@ -572,7 +572,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 log.error("CA " + caname + " already exists.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             } catch (InvalidAlgorithmException e) {
-                log.error("Algirithm was not valid: " + e.getMessage());
+                log.error("Algorithm was not valid: " + e.getMessage());
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             try {
