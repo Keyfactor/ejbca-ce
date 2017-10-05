@@ -261,7 +261,7 @@
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
                                         <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].rfcEmailUsed}">
                                             <f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateOtherEmailFields}"
-                                                execute="this" render=":requestInfoForm:requestPreviewOuterPanel" />
+                                                execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                                         </h:selectBooleanCheckbox>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{!instance.unModifiableUpnRfcAltName and !instance.rfcUseEmail}">
