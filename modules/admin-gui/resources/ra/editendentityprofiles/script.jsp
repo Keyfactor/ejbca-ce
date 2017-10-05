@@ -9,10 +9,8 @@ static final String TEXTFIELD_SUBJECTALTNAME              = "textfieldsubjectalt
 static final String TEXTFIELD_SUBJECTDIRATTR              = "textfieldsubjectdirattr";
 
 static final String CHECKBOX_USE_EMAIL                    = "checkboxuseemail";
+static final String CHECKBOX_USE_SUBJECTALTNAME           = "checkboxusesubjectaltname";
 static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
-static final String CHECKBOX_REQUIRED_SUBJECTDN           = "checkboxrequiredsubjectdn";
-static final String CHECKBOX_REQUIRED_SUBJECTALTNAME      = "checkboxrequiredsubjectaltname";
-static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR      = "checkboxrequiredsubjectdirattr";
 static final String CHECKBOX_MODIFIABLE_SUBJECTDN         = "checkboxmodifyablesubjectdn";
 static final String CHECKBOX_MODIFIABLE_SUBJECTALTNAME    = "checkboxmodifyablesubjectaltname";
 static final String CHECKBOX_MODIFIABLE_SUBJECTDIRATTR    = "checkboxmodifyablesubjectdirattr";
@@ -72,33 +70,34 @@ function checkDefaultAmongAvailable() {
     return illegalfields;
 }
 
-function checkNonModifiableRequiredEmptyAttribute(index, textName, requiredName, modifiableName) {
+function checkNonModifiableEmptyAttribute(index, textName, modifiableName) {
     var text = new String(eval("document.editprofile." + textName + index).value);
-    var required = eval("document.editprofile." + requiredName + index).checked;
     var modifiable = eval("document.editprofile." + modifiableName + index).checked;
-    return required && !modifiable && text.length === 0;
+    var rfcCheckbox = eval("document.editprofile." + "<%= CHECKBOX_USE_SUBJECTALTNAME %>" + index);
+    if (rfcCheckbox && rfcCheckbox.checked) {
+        // Not illegal if the RFC822 checkbox 'Use entity e-mail field' is checked
+        return false;
+    }
+    return !modifiable && text.length === 0;
 }
 
-function checkNonModifiableRequiredEmptyAttributes(dnFieldTypes, altNameFieldTypes, dirAttrFieldTypes) {
+function checkNonModifiableEmptyAttributes(dnFieldTypes, altNameFieldTypes, dirAttrFieldTypes) {
     var illegalFields = 0;
     // Check Subject DN Attributes
     for (var i = 0; i < dnFieldTypes.length; i++) {
-        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDN %>",
-                "<%= CHECKBOX_REQUIRED_SUBJECTDN %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDN %>")) {
+        if (checkNonModifiableEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDN %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDN %>")) {
             illegalFields++;
         }
     }
     // Check Subject Alternative Names
     for (var i = 0; i < altNameFieldTypes.length; i++) {
-        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTALTNAME %>",
-                "<%= CHECKBOX_REQUIRED_SUBJECTALTNAME %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTALTNAME %>")) {
+        if (checkNonModifiableEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTALTNAME %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTALTNAME %>")) {
             illegalFields++;
         }
     }
     // Check Subject Directory Attributes
     for (var i = 0; i < dirAttrFieldTypes.length; i++) {
-        if (checkNonModifiableRequiredEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDIRATTR %>",
-                "<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDIRATTR %>")) {
+        if (checkNonModifiableEmptyAttribute(i, "<%= TEXTFIELD_SUBJECTDIRATTR %>", "<%= CHECKBOX_MODIFIABLE_SUBJECTDIRATTR %>")) {
             illegalFields++;
         }
     }
