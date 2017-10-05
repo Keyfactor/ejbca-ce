@@ -108,25 +108,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
         CA ca = null;
         try {
-            final String caDN = msg.getRecipient().getName().toString();
-            int caId = 0;
-            if (StringUtils.isEmpty(caDN)) {
-                LOG.debug("Empty DN in header.recipient, get CA from CMP configuration");
-                int eeProfileId = getUsedEndEntityProfileId(keyId);
-                caId = getUsedCaId(keyId, eeProfileId);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("caId from CMP Profile is "+caId+", with eeProfileId "+eeProfileId);
-                }
-            } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Get recipient CA from recipient: "+caDN);
-                }
-                caId = CertTools.stringToBCDNString(caDN).hashCode();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
-                }
-            }
-            ca = caSession.getCA(admin, caId);
+            ca = getRecipientCA(msg, keyId);
         } catch (EndEntityProfileNotFoundException e) {
             final String errMsg = (INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()));
             LOG.info(errMsg, e);
@@ -293,5 +275,30 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    LOG.error(INTRES.getLocalizedMessage("cmp.errorgeneral"), e);
         }
 		return rresp;
-	}  
+	}
+
+    private CA getRecipientCA(final BaseCmpMessage msg, final String keyId)
+            throws EndEntityProfileNotFoundException, CADoesntExistsException, AuthorizationDeniedException {
+        CA ca;
+        final String caDN = msg.getRecipient().getName().toString();
+        int caId = 0;
+        if (StringUtils.isEmpty(caDN)) {
+            LOG.debug("Empty DN in header.recipient, get CA from CMP configuration");
+            int eeProfileId = getUsedEndEntityProfileId(keyId);
+            caId = getUsedCaId(keyId, eeProfileId);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("caId from CMP Profile is "+caId+", with eeProfileId "+eeProfileId);
+            }
+        } else {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Get recipient CA from recipient: "+caDN);
+            }
+            caId = CertTools.stringToBCDNString(caDN).hashCode();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
+            }
+        }
+        ca = caSession.getCA(admin, caId);
+        return ca;
+    }  
 }
