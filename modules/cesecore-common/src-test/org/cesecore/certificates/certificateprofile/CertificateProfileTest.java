@@ -751,6 +751,37 @@ public class CertificateProfileTest {
                 fail("Key algorithm and spec should have been allowed by certificate profile.");
             }
         }
-    }    
+    }
+    
+    @Test
+    public void testIsKeyTypeAllowed() {
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA});
+        certificateProfile.setAvailableEcCurves(new String[] {});
+        certificateProfile.setAvailableBitLengths(new int[] {2048});
+        assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+        
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
+        certificateProfile.setAvailableEcCurves(new String[] {"secp256r1"});
+        certificateProfile.setAvailableBitLengths(new int[] {});
+        assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+        
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
+        certificateProfile.setAvailableEcCurves(new String[] {CertificateProfile.ANY_EC_CURVE});
+        certificateProfile.setAvailableBitLengths(new int[] {});
+        assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+    }
   
 }

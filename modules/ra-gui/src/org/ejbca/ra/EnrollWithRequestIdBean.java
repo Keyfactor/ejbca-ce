@@ -558,16 +558,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             // If we have an End Entity, use this to verify that the algorithm and keyspec are allowed
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (certificateProfile != null) {
-                final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-                final List<String> availableEcCurves = certificateProfile.getAvailableEcCurvesAsList(); 
-                final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-                try {
-                    if ( !availableKeyAlgorithms.contains(keyAlgorithm) || 
-                            (!availableEcCurves.contains(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ) {
-                        throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
-                    }
-                } catch (NumberFormatException e) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));                    
+                if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
+                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
                 }
             } else {
                 if (log.isDebugEnabled()) {

@@ -1001,13 +1001,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
             final CertificateProfile certificateProfile = getCertificateProfile();
-            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            final List<String> availableEcCurves = certificateProfile.getAvailableEcCurvesAsList();
-            // Take care to handle both RSA and EC key specifications
-            if ( !availableKeyAlgorithms.contains(keyAlgorithm) ||
-                    (StringUtils.isNumeric(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ||
-                    (!StringUtils.isNumeric(keySpecification) && (!availableEcCurves.contains(keySpecification) && !availableEcCurves.contains("ANY_EC_CURVE"))) ) {
+            if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
