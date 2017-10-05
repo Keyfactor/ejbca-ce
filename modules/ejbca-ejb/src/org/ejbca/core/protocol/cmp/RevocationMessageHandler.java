@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -32,6 +33,7 @@ import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
@@ -59,6 +61,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -101,12 +104,33 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 			LOG.trace(">handleMessage");
 		}
 		
+        // Try to find a HMAC/SHA1 protection key
+        final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
         CA ca = null;
         try {
-            final String caDN = msg.getHeader().getRecipient().getName().toString();
-            final int caId = CertTools.stringToBCDNString(caDN).hashCode();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
+            final String caDN = msg.getRecipient().getName().toString();
+            int caId = 0;
+            if (StringUtils.isEmpty(caDN)) {
+                LOG.debug("Empty DN in header.recipient, get CA from CMP configuration");
+                try {
+                    int eeProfileId = getUsedEndEntityProfileId(keyId);
+                    caId = getUsedCaId(keyId, eeProfileId);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("caId from CMP Profile is "+caId+", with eeProfileId "+eeProfileId);
+                    }
+                } catch (EndEntityProfileNotFoundException e) {
+                    final String errMsg = (INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()));
+                    LOG.info(errMsg, e);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, FailInfo.INCORRECT_DATA, errMsg);
+                }
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Get recipient CA from recipient: "+caDN);
+                }
+                caId = CertTools.stringToBCDNString(caDN).hashCode();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
+                }
             }
             ca = caSession.getCA(admin, caId);
         } catch (CADoesntExistsException e) {
@@ -119,8 +143,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         }
 		
 		// if version == 1 it is cmp1999 and we should not return a message back
-		// Try to find a HMAC/SHA1 protection key
-		final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
 		ResponseStatus status = ResponseStatus.FAILURE;
 		FailInfo failInfo = FailInfo.BAD_MESSAGE_CHECK;
 		String failText = null;
@@ -227,7 +249,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		final CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 		rresp.setRecipientNonce(msg.getSenderNonce());
 		rresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-		rresp.setSender(msg.getRecipient());
+		// The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
+		if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
+		    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
+		    final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
+		    rresp.setSender(sender);
+		} else {
+	        rresp.setSender(msg.getRecipient());		    
+		}
 		rresp.setRecipient(msg.getSender());
 		rresp.setTransactionId(msg.getTransactionId());
 		rresp.setFailInfo(failInfo);

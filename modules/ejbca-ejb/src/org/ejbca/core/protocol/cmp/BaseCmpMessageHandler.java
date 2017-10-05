@@ -27,6 +27,7 @@ import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Base class for CMP message handlers that require RA mode secret verification.
@@ -115,6 +116,22 @@ public class BaseCmpMessageHandler {
 		}
 		return ret;
 	}
+
+    /** 
+     * @param keyId the keyId from the request, if there is any
+     * @return the end entity profile name to use for a request based on the current configuration and keyId. 
+     */
+	protected int getUsedEndEntityProfileId(final String keyId) throws EndEntityProfileNotFoundException {
+        final int eeProfileId;
+        final String eeProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
+        if (StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfile)) {
+            eeProfileId = endEntityProfileSession.getEndEntityProfileId(keyId);
+        } else {
+            eeProfileId = Integer.parseInt(eeProfile);
+        }
+        return eeProfileId;
+    }
+    
 
 	/** 
 	 * @return the certificate profile name to use for a request based on the current configuration and keyId. 
