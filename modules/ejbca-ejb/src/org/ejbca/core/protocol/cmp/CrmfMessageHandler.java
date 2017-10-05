@@ -316,12 +316,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         final String keyId = CmpMessageHelper.getStringFromOctets(crmfreq.getHeader().getSenderKID());
         int caId = 0; // The CA to user when adding users in RA mode
         try {
-            final String eeProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
-            if (StringUtils.equals(CmpConfiguration.PROFILE_USE_KEYID, eeProfile)) {
-                eeProfileId = endEntityProfileSession.getEndEntityProfileId(keyId);
-            } else {
-                eeProfileId = Integer.parseInt(eeProfile);
-            }
+            eeProfileId = getUsedEndEntityProfileId(keyId);
             caId = getUsedCaId(keyId, eeProfileId);
             certProfileName = getUsedCertProfileName(keyId, eeProfileId);
             certProfileId = getUsedCertProfileId(certProfileName);

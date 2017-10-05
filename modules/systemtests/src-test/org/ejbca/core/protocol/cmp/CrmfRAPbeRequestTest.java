@@ -56,6 +56,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -323,7 +324,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Ignore sending a confirm message to the CA, it will not care anyhow
 
             // Now revoke without any reason code extension, will result in revocation reason unspecified!
-            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
+            // Also leave out (set it to null) the header.recipient field, as that can be empty according to RFC4210 section D.1 
+            // (we do that by leaving out cacert when calling genRevReq). We test in other places with a proper recipient.
+            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), null, nonce, transid, true, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, null, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
@@ -516,10 +519,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);
-            fileHandles.addAll(BatchCreateTool.createAllNew(ADMIN, new File(P12_FOLDER_NAME)));
+            fileHandles.add(BatchCreateTool.createUser(ADMIN, new File(P12_FOLDER_NAME), username));
             Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-            assertTrue(userCerts.size() == 1);
+            assertEquals("Wrong number of certs returned", 1, userCerts.size());
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();
             // revoke via CMP and verify response
             byte[] nonce = CmpMessageHelper.createSenderNonce();
