@@ -1007,7 +1007,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Take care to handle both RSA and EC key specifications
             if ( !availableKeyAlgorithms.contains(keyAlgorithm) ||
                     (StringUtils.isNumeric(keySpecification) && !availableBitLengths.contains(Integer.parseInt(keySpecification))) ||
-                    (!StringUtils.isNumeric(keySpecification) && !availableEcCurves.contains(keySpecification)) ) {
+                    (!StringUtils.isNumeric(keySpecification) && (!availableEcCurves.contains(keySpecification) && !availableEcCurves.contains("ANY_EC_CURVE"))) ) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
