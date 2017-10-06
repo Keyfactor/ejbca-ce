@@ -71,14 +71,18 @@ function checkDefaultAmongAvailable() {
 }
 
 function checkNonModifiableEmptyAttribute(index, textName, modifiableName) {
-    var text = new String(eval("document.editprofile." + textName + index).value);
-    var modifiable = eval("document.editprofile." + modifiableName + index).checked;
+    var text = eval("document.editprofile." + textName + index);
+    var modifiable = eval("document.editprofile." + modifiableName + index);
+    if (!text || !modifiable) {
+        // Attribute 'E-mail address in DN' is missing text/modifiable, not illegal
+        return false;
+    }
     var rfcCheckbox = eval("document.editprofile." + "<%= CHECKBOX_USE_SUBJECTALTNAME %>" + index);
     if (rfcCheckbox && rfcCheckbox.checked) {
         // Not illegal if the RFC822 checkbox 'Use entity e-mail field' is checked
         return false;
     }
-    return !modifiable && text.length === 0;
+    return !modifiable.checked && (new String(text.value)).length === 0;
 }
 
 function checkNonModifiableEmptyAttributes(dnFieldTypes, altNameFieldTypes, dirAttrFieldTypes) {
