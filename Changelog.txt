@@ -1,3 +1,39 @@
+
+EJBCA 6.9.1, 2017-10-06
+---
+
+Bug
+    [ECA-6103] - importcert command fails in some instances for DirectoryName SAN values
+    [ECA-6104] - DNAME records are not followed correctly by CAA Validator
+    [ECA-6115] - CMP: error verifying extraCerts in RA mode when more than the EE cert is present in a chain longer than two
+    [ECA-6117] - Certificate with empty attribute can not be imported
+    [ECA-6121] - CAA Validator doesn't fail for nonsense domains. 
+    [ECA-6135] - Regression: Key WS Key recovery requires call to edituser() before enrollment
+    [ECA-6148] - Remaining login attempts counter not decreased using public web
+    [ECA-6152] - Regression: Uploading EC CSRs in RA result in exception
+
+New Feature
+    [ECA-6063] - Make Trust Anchor for CAA Validators configurable 
+    [ECA-6116] - Add TTL information to CAA Tool output
+    [ECA-6133] - Add whitelist possibility to CAA Validator
+
+Improvement
+    [ECA-6064] - Optimize issuance by minimizing EndEntity XML encoding/decoding
+    [ECA-6093] - Optimize ConfigurationHolder.getPrefixedPropertyNames
+    [ECA-6105] - Raw subject DN extended information should be base64 encoded
+    [ECA-6118] - Ability to use "description" attribute in directoryName fields
+    [ECA-6122] - Add additional logging to CAA Validator
+    [ECA-6123] - Make recursion depth configurable for CAA Validators
+    [ECA-6127] - CAA Validator should only lookup CAA records instead of ANY
+    [ECA-6128] - Make querying top level domains (TLDs) for CAA lookups optional 
+    [ECA-6129] - Introduce DNS lookup caching for multiple SANs in the CAA Validator 
+    [ECA-6136] - DNSSEC should be enabled by default in the CAA validator
+    [ECA-6137] - Issue if CAA lookup failed more than once and there is no DNSSEC chain to the ICANN root
+    [ECA-6145] - Support CNAME discovery as in Errata 5065
+    [ECA-6149] - Fill in default CAA Validator timout in the UI
+    [ECA-6150] - Stop writing complete stack traces for expected validation failures
+    [ECA-6161] - Make DNAME lookups in CAA validator optional
+
 EJBCA 6.9.0.6, 2017-09-21
 ---
 

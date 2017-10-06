@@ -1,3 +1,15 @@
+EJBCA 6.9.1
+-----------
+
+For the first time in a while we're releasing a standard minor release, mainly concentrating on bug fixes and feedback from implements of our CAA 
+Validator. All in all we've made the CAA Validator far more configurable, allowing features such as whitelisting some domains (excluding them from 
+CAA checks), allowing the validator to ignore specific Top Level Domains and making recursion depth configurable. We've also added caching and 
+robustness to DNS lookups in order to deal with the results query throttling from the resolvers. Add to that, we've also included a couple of minor
+performance improvements in connection to certificate issuance. 
+
+As the CAA standard is still involving we're not counting on our work in this field being finished quite yet, but for the moment we're hoping that 
+you're all looking forward to all the neat new features coming in EJBCA 6.10 in a few weeks. 
+
 EJBCA 6.9.0.6
 -----------
 
