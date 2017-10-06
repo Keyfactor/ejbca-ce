@@ -988,10 +988,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final String valueStr = value.toString();
         if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
             log.info("CSR uploaded was too large: "+valueStr.length());
+            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
         if (pkcs10CertificateRequest == null) {
+            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
 
@@ -1002,12 +1004,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
+                raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            raLocaleBean.addMessageError("enroll_unknown_key_algorithm");            
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
