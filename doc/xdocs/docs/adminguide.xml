@@ -5162,11 +5162,13 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 					<li>DNS Resolver</li>
 						<p>Non-mandatory field where you may specify a DNS Resolver (such as 8.8.8.8 or 8.8.4.4). Should be an IP adress. If left 
 						blank, the system default responder will be used</p>
+					<li>Lookup DNAMEs</li>
+					    <p>Check this box if you want to lookup and follow any DNAME records found during CAA processing. To comply with RFC 6844, it is recommended
+					    to keep this option enabled.</p>
 					<li>Validate DNSSEC</li>
 						<p>
-							Check this box if you want DNSSEC to be validated. If this box is checked and your DNS either has faulty DNSSEC records or 
-							lacks DNSSEC records altogether (suggesting a possible MitM attack), CAA validation will fail. It is recommended
-							to run DNSSEC, albeit be aware that some issuance may fail due to resolvers not working with DNSSEC as expected, so thread carefully.
+							Check this box if you want DNSSEC to be validated. If this box is checked, your DNS is signed with DNSSEC and your DNS presents a faulty set of records 
+							(suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended to enable DNSSEC checks to ensure the authenticity of DNS responses.
 						</p>
                     <li>Trust Anchor</li>
                         <p>
