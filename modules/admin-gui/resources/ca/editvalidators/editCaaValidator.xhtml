@@ -35,6 +35,8 @@
 	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}">
 		<f:ajax execute="validateDnsSec" render="customTrustAnchor" event="change"/>
 	</h:selectBooleanCheckbox>
+	<h:outputLabel for="lookupDnames" value="#{web.text.CAA_VALIDATOR_LOOKUP_DNAMES}" styleClass="subItem" />
+    <h:selectBooleanCheckbox id="lookupDnames" value="#{validatorBean.validator.lookupDnames}" disabled="#{validatorsBean.viewOnly}" />
 	<h:outputLabel for="customTrustAnchor" value="#{web.text.CAA_VALIDATOR_DNSSEC_TRUST_ANCHOR}" styleClass="subItem" />
 	<h:panelGroup>
 		<h:inputTextarea id="customTrustAnchor" value="#{validatorBean.validator.trustAnchor}" disabled="#{!validatorBean.validator.validateDnsSec}" cols="85" rows="1" required="false"/>
