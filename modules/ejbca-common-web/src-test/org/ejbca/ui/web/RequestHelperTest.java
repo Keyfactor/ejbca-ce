@@ -27,9 +27,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
@@ -115,9 +113,9 @@ public class RequestHelperTest {
         lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name("CN=foo"),
                 new java.math.BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(signedCertDn), pkinfo);
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caKeys
-                .getPrivate()), 20480);
-        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        ContentSigner contentSigner = CertTools.getContentSigner(caKeys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
+                BouncyCastleProvider.PROVIDER_NAME);
+        final X509CertificateHolder certHolder = certbuilder.build(contentSigner);
         final X509Certificate signedCert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
         //Setup mocks

@@ -57,9 +57,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSEnvelopedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.keys.token.CachingKeyStoreWrapper;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
@@ -573,8 +571,8 @@ public class HSMKeyTool extends ClientToolBox {
                 }
 
                 // Sign the certificate
-                final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(linkSigAlg).setProvider(signProviderName).build(oldPrivKey), 20480);
-                final X509CertificateHolder certHolder = certbuilder.build(signer);
+                ContentSigner contentSigner = CertTools.getContentSigner(oldPrivKey, linkSigAlg, signProviderName);
+                final X509CertificateHolder certHolder = certbuilder.build(contentSigner);
                 baos.write(certHolder.getEncoded());
                 
                 // Save to output file

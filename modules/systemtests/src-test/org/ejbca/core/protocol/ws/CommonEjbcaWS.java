@@ -93,7 +93,6 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
@@ -1344,7 +1343,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
              * The signature field is computed over the DER-encoded certificate
              * template structure.
              */
-            ContentSigner contentSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(privateKey);
+            ContentSigner contentSigner = CertTools.getContentSigner(privateKey, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             crmb.setProofOfPossessionSigningKeySigner(contentSigner);
             if (publicKeyMacPassword!=null) {
                 /*
@@ -2440,12 +2439,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             }
             if(cert2 != null) {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
-            }
-            try {
-                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, testCaName).getCAId());
-            } catch (CADoesntExistsException e) {
-                log.debug("Clean up failed: " + e.getMessage());
-            }
+            }            
+            CaTestCase.removeTestCA(testCaName);
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
         }
