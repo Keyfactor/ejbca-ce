@@ -6558,11 +6558,12 @@ it.</p>
 
 <section name="Logging">
 <subsection name="Security Audit log vs System log">
-<p>A PKI system have two different type of log:
+<p>A PKI system have three different type of log:
 </p>
 <ul>
 <li>Security Audit Log  - Use for PKI auditors to audit important security PKI events that the system performed.</li>
 <li>System Log - Used to monitor daily operations in the system, debug and track down errors etc.</li>
+<li>Transaction Log - Used for accounting of specific functions, mainly validation (OCSP).</li>
 </ul>
 <p>
 The Security Audit Log is specified in detail what it does log, and it does not log other things. 
@@ -6580,6 +6581,9 @@ but is not so interested in what the system did not do.
 </p>
 <p>
 The Security Audit Log is stored in the database and the System Log is stored in log files. By default the System Log also contains the Security Audit Log, but this can be configured.
+</p>
+<p>
+The OCSP Transaction Log is described in the <a href="installation-ocsp.html#Audit%20and%20Account%20Logging">OCSP install guide</a>. The WS Transaction Log is described in <a href="#WS%20transaction%20logging">Web Service chapter</a>.
 </p>
 </subsection>
 <subsection name="Security Audit Log">
