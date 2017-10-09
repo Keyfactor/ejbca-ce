@@ -324,10 +324,10 @@
 	                </h:panelGroup>
 		            
 		            <h:panelGroup id="pageButtons" layout="block" style="margin-top: 10px;">
-		                <h:commandButton id="previousPageButton" rendered="#{raSearchCertsBean.showPreviousPageButton}" value="#{msg.search_certs_page_previous_page}" styleClass="pure-button ra-button float-left">
+		                <h:commandButton id="previousPageButton" rendered="#{raSearchCertsBean.showPreviousPageButton}" value="#{msg.search_previous_page}" styleClass="pure-button ra-button float-left">
 	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryPreviousPage}" />
 	                     </h:commandButton>
-	                    <h:commandButton id="nextPageButton" rendered="#{raSearchCertsBean.showNextPageButton}" value="#{msg.search_certs_page_next_page}" styleClass="pure-button ra-button float-right">
+	                    <h:commandButton id="nextPageButton" rendered="#{raSearchCertsBean.showNextPageButton}" value="#{msg.search_next_page}" styleClass="pure-button ra-button float-right">
 	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryNextPage}" />
 	                    </h:commandButton>
                     </h:panelGroup>
