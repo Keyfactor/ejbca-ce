@@ -720,7 +720,7 @@ public class EjbcaWebBean implements Serializable {
 
     /**
      * Save the given EST configuration.
-     * 
+     *
      * @param estconfiguration A EstConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
@@ -739,7 +739,7 @@ public class EjbcaWebBean implements Serializable {
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
     }
-    
+
     public boolean existsAdminPreference() {
         return adminspreferences.existsAdminPreference(certificatefingerprint);
     }
@@ -1184,6 +1184,13 @@ public class EjbcaWebBean implements Serializable {
         return returnValue;
     }
 
+    /**
+     * Retrieve a mapping between authorized end entity profile names and their ids which can be displayed in the GUI.
+     * The returned map will contain an additional "KeyID" entry which allows the end user to specify the end entity
+     * in the CMP request.
+     * @param endentityAccessRule the access rule used for authorization
+     * @return a map {end entity name} => {end entity id} with authorized end entities
+     */
     public Map<String, String> getAuthorizedEEProfileNamesAndIds(final String endentityAccessRule) {
         final TreeMap<String, String> authorizedEEProfileNamesAndIds = new TreeMap<>(
                 informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule));
@@ -1194,6 +1201,15 @@ public class EjbcaWebBean implements Serializable {
         return authorizedEEProfileNamesAndIds;
     }
 
+    /**
+     * Retrieve a collection of available certificate authority ids based on end entity profile id. The returned list may
+     * contain an additional "KeyID" option which allows the end user to specify the CA in the CMP request.
+     * @param endEntityProfileId the id of an end entity profile
+     * @return a sorted list of certificate authorities for the specified end entity profile
+     * @throws NumberFormatException if the end entity profile id is not a number
+     * @throws CADoesntExistsException if the certificate authority pointed to by an end entity profile does not exist
+     * @throws AuthorizationDeniedException if we were denied access control
+     */
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
@@ -1218,6 +1234,12 @@ public class EjbcaWebBean implements Serializable {
         return addKeyIdAndSort(certificateAuthorities);
     }
 
+    /**
+     * Retrieve a list of certificate profile ids based on an end entity profile id. The returned list may contain
+     * an additional "KeyID" option which allows the end user to specify the certificate profile in the CMP request.
+     * @param endEntityProfileId the end entity profile id for which we want to fetch certificate profiles
+     * @return a sorted list of certificate profile ids
+     */
     public Collection<String> getAvailableCertProfilessOfEEProfile(final String endEntityProfileId) {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, 0);
@@ -1265,14 +1287,14 @@ public class EjbcaWebBean implements Serializable {
         if (estconfiguration == null) {
             reloadEstConfiguration();
         }
-        
+
         //Clear EST config of unauthorized aliases (aliases referring to CA, EEP or CPs that the current admin doesn't have access to)
         return clearEstConfigurationFromUnauthorizedAliases(estconfiguration);
     }
 
-    /** 
-     * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally. 
-     * 
+    /**
+     * Returns a clone of the current EstConfiguration containing only the given alias. Also caches the clone locally.
+     *
      * @param alias a EST config alias
      * @return a clone of the current EstConfiguration containing only the given alias. Will return an alias with only default values if the EstConfiguration doesn't
      *          contain that alias.
@@ -1291,11 +1313,11 @@ public class EjbcaWebBean implements Serializable {
         }
         return estConfigForEdit;
     }
-    
+
     /**
      * Merges together an alias from the editing clone into the proper configuration cache and saves it to the database.
-     * 
-     * @param alias a EST config alias. 
+     *
+     * @param alias a EST config alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
     public void updateEstConfigFromClone(String alias) throws AuthorizationDeniedException {
@@ -1310,18 +1332,18 @@ public class EjbcaWebBean implements Serializable {
 
     /**
      * Adds an alias to the database.
-     * 
-     * @param alias the name of a EST alias. 
+     *
+     * @param alias the name of a EST alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
     public void addEstAlias(final String alias) throws AuthorizationDeniedException {
         estconfiguration.addAlias(alias);
         saveEstConfiguration(estconfiguration);
     }
-    
+
     /**
      * Makes a copy of a given alias
-     * 
+     *
      * @param oldName the name of the alias to copy
      * @param newName the name of the new alias
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
@@ -1330,10 +1352,10 @@ public class EjbcaWebBean implements Serializable {
         estconfiguration.cloneAlias(oldName, newName);
         saveEstConfiguration(estconfiguration);
     }
-    
+
     /**
      * Deletes a CMP alias from the database.
-     * 
+     *
      * @param alias the name of the alias to delete.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
@@ -1341,10 +1363,10 @@ public class EjbcaWebBean implements Serializable {
         estconfiguration.removeAlias(alias);
         saveEstConfiguration(estconfiguration);
     }
-    
+
     /**
      * Renames a CMP alias
-     * 
+     *
      * @param oldName the old alias name
      * @param newName the new alias name
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
@@ -1353,7 +1375,7 @@ public class EjbcaWebBean implements Serializable {
         estconfiguration.renameAlias(oldName, newName);
         saveEstConfiguration(estconfiguration);
     }
-    
+
     public void clearEstConfigClone() {
         estConfigForEdit = null;
     }
@@ -1362,27 +1384,27 @@ public class EjbcaWebBean implements Serializable {
         globalConfigurationSession.flushConfigurationCache(EstConfiguration.EST_CONFIGURATION_ID);
         reloadEstConfiguration();
     }
-    
+
     /**
-     * 
-     * Note that this method modifies the parameter, which is has to due to the design of UpgradableHashMap. 
-     * 
+     *
+     * Note that this method modifies the parameter, which is has to due to the design of UpgradableHashMap.
+     *
      * @param estConfiguration the full CMP configuration
-     * @return the modified estConfiguration, same as the parameter. 
+     * @return the modified estConfiguration, same as the parameter.
      */
     private EstConfiguration clearEstConfigurationFromUnauthorizedAliases(final EstConfiguration estConfiguration) {
         //Copy the configuration, because modifying parameters is nasty
         EstConfiguration returnValue = new EstConfiguration(estConfiguration);
-        //Build a lookup map due to the fact that default CA is stored as a SubjectDNs 
+        //Build a lookup map due to the fact that default CA is stored as a SubjectDNs
         Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
-        for(int caId : caSession.getAllCaIds()) {           
+        for(int caId : caSession.getAllCaIds()) {
             try {
                 CAInfo caInfo = caSession.getCAInfoInternal(caId);
                 subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
             } catch (CADoesntExistsException e) {
                 throw new IllegalStateException("Newly retrieved CA not found.", e);
             }
-            
+
         }
         Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
@@ -1405,7 +1427,7 @@ public class EjbcaWebBean implements Serializable {
                                         + caNameToIdMap.get(caName));
                             }
                             returnValue.removeAlias(alias);
-                            //Our work here is done, skip to the next alias. 
+                            //Our work here is done, skip to the next alias.
                             continue aliasloop;
                         }
                     }

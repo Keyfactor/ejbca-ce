@@ -1211,7 +1211,7 @@ pbuilder.setSenderNonce(senderNonce);
 // TransactionId
 pbuilder.setTransactionID(transactionId);
 // Key Id used (required) by the recipient to do a lot of stuff
-pbuilder.setSenderKID("P ocnfigurat
+pbuilder.setSenderKID("KeyID".getBytes());
 pbuilder.setBody(pkibody);
 JcePKMACValuesCalculator jcePkmacCalc = new JcePKMACValuesCalculator();
 final AlgorithmIdentifier digAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26")); // SHA1
