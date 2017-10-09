@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +54,10 @@ import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
@@ -102,6 +106,7 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -130,6 +135,10 @@ import org.bouncycastle.cms.CMSAbsentContent;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.dsa.DSAUtil;
+import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.PKIXNameConstraintValidator;
@@ -138,7 +147,12 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcContentSignerBuilder;
+import org.bouncycastle.operator.bc.BcDSAContentSignerBuilder;
+import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
+import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -150,6 +164,7 @@ import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -1892,7 +1907,7 @@ public abstract class CertTools {
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
                 firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
 
-        // Basic constranits is always critical and MUST be present at-least in CA-certificates.
+        // Basic constraint is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);
 
@@ -1937,7 +1952,9 @@ public abstract class CertTools {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
+        final ContentSigner signer;
+        
+        signer = getContentSigner(privKey, sigAlg, provider);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate selfcert;
         try {
@@ -1947,7 +1964,62 @@ public abstract class CertTools {
         }
 
         return selfcert;
-    } // genselfCertForPurpose
+    } 
+
+    /**
+     * Produce a content signer, depending on the private key type. Supports RSA, EC and DSA keys. Uses the BC provider. 
+     * 
+     * @param privateKey a private key
+     * @param sigAlg a signature algorithm 
+     * @return the correct type of content signer
+     * @throws OperatorCreationException if an error was encountered with the keytype
+     */
+    public static ContentSigner getContentSigner(final PrivateKey privateKey, final String sigAlg) throws OperatorCreationException {
+        return getContentSigner(privateKey, sigAlg, BouncyCastleProvider.PROVIDER_NAME);
+    }
+    
+    /**
+     * Produce a content signer, depending on the private key type. Supports RSA, EC and DSA keys.
+     * 
+     * @param privateKey a private key
+     * @param sigAlg a signature algorithm 
+     * @param provider the crypto provider. Only BouncyCastle supports keys other than RSA
+     * @return the correct type of content signer
+     * @throws OperatorCreationException if an error was encountered with the keytype
+     */
+    public static ContentSigner getContentSigner(final PrivateKey privateKey, final String sigAlg, final String provider)
+            throws OperatorCreationException {
+        ContentSigner contentSigner;
+        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find(sigAlg);
+        AlgorithmIdentifier digAlgId = new AlgorithmIdentifier(new ASN1ObjectIdentifier(AlgorithmTools.getDigestFromSigAlg(sigAlg)));
+        if(provider.equals(BouncyCastleProvider.PROVIDER_NAME)) {
+            BcContentSignerBuilder contentSignerBuilder;
+            AsymmetricKeyParameter asymmetricKeyParameter;
+            try {
+                if (privateKey instanceof RSAPrivateKey) {
+                    contentSignerBuilder = new BcRSAContentSignerBuilder(sigAlgId, digAlgId);
+                    RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) privateKey;
+                    asymmetricKeyParameter = new RSAKeyParameters(true, rsaPrivateKey.getModulus(), rsaPrivateKey.getPrivateExponent());
+                } else if (privateKey instanceof ECPrivateKey) {
+                    contentSignerBuilder = new BcECContentSignerBuilder(sigAlgId, digAlgId);
+                    asymmetricKeyParameter = ECUtil.generatePrivateKeyParameter(privateKey);
+                } else if (privateKey instanceof DSAPrivateKey) {
+                    contentSignerBuilder = new BcDSAContentSignerBuilder(sigAlgId, digAlgId);
+                    asymmetricKeyParameter = DSAUtil.generatePrivateKeyParameter(privateKey);
+                } else {
+                    throw new OperatorCreationException("Unexpected keytype encountered: " + privateKey.getClass().toString());
+                }
+            } catch (InvalidKeyException e) {
+                throw new OperatorCreationException("Unexpected keytype encountered.", e);
+            }
+            contentSigner = contentSignerBuilder.build(asymmetricKeyParameter);
+        } else {
+            contentSigner = new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privateKey);
+        }
+        return new BufferingContentSigner(contentSigner, 20480);        
+    }
+    
+    
 
     /**
      * Get the authority key identifier from a certificate extensions
@@ -4186,11 +4258,10 @@ public abstract class CertTools {
         try {
             SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publickey.getEncoded());
             reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
-
             if (provider == null) {
                 provider = BouncyCastleProvider.PROVIDER_NAME;
             }
-            signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(privateKey), 20480);
+            signer = CertTools.getContentSigner(privateKey, signatureAlgorithm, provider);
             signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
             signer.getOutputStream().flush();
         } catch (IOException e) {
