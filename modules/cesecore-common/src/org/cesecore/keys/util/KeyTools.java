@@ -937,7 +937,7 @@ public final class KeyTools {
                 return x509ExtensionUtils.createSubjectKeyIdentifier(SubjectPublicKeyInfo.getInstance(keyASN1Sequence));
             }
         } catch (Exception e) {
-            final RuntimeException e2 = new RuntimeException("error creating key"); // NOPMD
+            final IllegalStateException e2 = new IllegalStateException("error creating key"); // NOPMD
             e2.initCause(e);
             throw e2;
         }

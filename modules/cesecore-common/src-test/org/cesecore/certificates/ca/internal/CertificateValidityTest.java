@@ -35,6 +35,7 @@ import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
@@ -391,7 +392,7 @@ public class CertificateValidityTest {
 		
     	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
     			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
-    			null, null, "BC", true, null);
+    			null, null, BouncyCastleProvider.PROVIDER_NAME, true, null);
 
         final EndEntityInformation subject = new EndEntityInformation();
     	final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
