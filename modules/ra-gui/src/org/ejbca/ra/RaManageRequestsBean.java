@@ -157,6 +157,7 @@ public class RaManageRequestsBean implements Serializable {
             searchRequest.setSearchingHistorical(true);
             break;
         }
+ 
         lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
 
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
@@ -164,8 +165,14 @@ public class RaManageRequestsBean implements Serializable {
         
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
             final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
-            if (isCustomSearchingWaiting()) {
-                guiInfos.add(approvalRequestGuiInfo);
+            if (searchRequest.isSearchingWaitingForMe()) {
+                if (isCustomSearchingWaiting() && approvalRequestGuiInfo.isCanApprove()) {
+                    guiInfos.add(approvalRequestGuiInfo);
+                }
+            } else {
+                if (isCustomSearchingWaiting()) {
+                    guiInfos.add(approvalRequestGuiInfo);
+                }
             }
         }
         
