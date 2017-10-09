@@ -67,6 +67,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -309,17 +310,13 @@ public class OcspKeyRenewalTest {
         
         // Delete CA
         final String caName = CertTools.getPartFromDN(CA_DN, "CN");
-        try {
-            while (true) {
-                CAInfo info = caSession.getCAInfo(authenticationToken, caName);
-                caSession.removeCA(authenticationToken, info.getCAId());
-            }
-        } catch (Exception e) {
-            // Get out of loop and ignore
-            log.debug(e.getMessage());
-        }
-        cleanupCryptoToken(caName);
+        CaTestCase.removeTestCA(caName);
+        
         final String caEccName = CertTools.getPartFromDN(CA_ECC_DN, "CN");
+        CaTestCase.removeTestCA(caEccName);
+        
+        
+        
         try {
             while (true) {
                 CAInfo info = caSession.getCAInfo(authenticationToken, caEccName);
@@ -397,7 +394,9 @@ public class OcspKeyRenewalTest {
         try {
             while (true) {
                 Integer id = cryptoTokenManagementSession.getIdFromName(name); 
-                if (id == null) break;
+                if (id == null) {
+                    break;
+                }
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
             }
         } catch (Exception e) {
