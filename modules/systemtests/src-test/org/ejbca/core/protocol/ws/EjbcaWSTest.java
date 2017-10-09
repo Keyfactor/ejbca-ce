@@ -1722,7 +1722,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 if (!e.getFaultInfo().getErrorCode().getInternalErrorCode().equals(ErrorCode.CA_ALREADY_EXISTS.getInternalErrorCode())) {
                     throw e;
                 }
-                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, existingTestCA).getCAId());
+                CaTestCase.removeTestCA(existingTestCA);
             }
             // Try to create a CA. It should succeed (Happy path test)
             ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, null);
