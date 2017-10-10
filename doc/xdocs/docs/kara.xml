@@ -37,6 +37,9 @@ This document describes the first, new, Registration Authority.</p>
 In many cases, for security reasons, is it preferable to deny all inbound traffic to the CA installation and instead let the CA 
 fetch and process information from an external RA. The EJBCA RA does this using <a href="adminguide.html#Peer%20Systems%20(Enterprise%20only)">Peer Connectors</a>.
 </p>
+    <p>
+    <img src="images/external-ra-peer.png" title="PKI solutions Peer Connector External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with Peer Connector External RA, not allowing incoming connections to the CA." />
+    </p>
 </section>
 
 <section name="Security Features">

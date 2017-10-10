@@ -57,10 +57,29 @@
   </subsection>
   <subsection name="External RA, only outgoing connections (EJBCA Enterprise only)">
     <p>
-    	One way of insulating the CA, for security reasons, while still allowing flexible enrollment from entities, is to use the <a href="externalra.html">External RA</a>.
-    	Using this architecture an external RA server receives certificate (and revocation) requests, which are stored in a separate database. 
+    	One way of insulating the CA, for security reasons, while still allowing flexible enrollment from entities, is to use an External RA, either the <a href="kara.html">Peer Connector based RA</a>, or the legacy <a href="externalra.html">External RA</a>.
+    </p>
+    <subsubsection name="Peer Connector RA">
+    <p>
+    	Using the Peer Connector RA an external RA server receives certificate (and revocation) requests, which are picked up by the CA using the Peer Connector protocol. 
+    	The request are immediately processed by the CA and responses returned to the RA and sent back to the client. 
+    	No incoming network traffic is allowed from the CA, only outgoing standard TLS connections are allowed through the CA firewall. The External RA can support multiple protocols such as:
+    </p>
+    <ul>
+    <li><a href="adminguide.html#CMP">CMP</a></li>
+    <li>EST</li>
+    <li>Web GUI enrollment using the <a href="kara.html">RA GUI</a></li>
+    <li><a href="adminguide.html#MS%20Autoenrollment%20(Enterprise%20Edition%20only)">MS Autoenrollment</a></li>
+    </ul>
+    <p>
+    <img src="images/external-ra-peer.png" title="PKI solutions Peer Connector External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with Peer Connector External RA, not allowing incoming connections to the CA." />
+    </p>
+    </subsubsection>
+    <subsubsection name="Legacy External RA">
+    <p>
+    	Using the legacy external RA an external RA server receives certificate (and revocation) requests, which are stored in a separate database. 
     	The request are periodically pulled by the CA and responses returned to the External RA database where they are picked up by the external RA server. 
-    	No incoming network traffic is allowed from the CA, only outgoing connections are allowed through the CA firewall for polling. The External RA can still support multiple protocols such as:
+    	No incoming network traffic is allowed from the CA, only outgoing database connections are allowed through the CA firewall for polling. The External RA can still support multiple protocols such as:
     </p>
     <ul>
     <li>CMP using an external RA backend of the <a href="adminguide.html#CMP%20Proxy%20(EJBCA%20Enterprise%20only)">CMP Proxy</a>.</li>
@@ -71,6 +90,7 @@
     <p>
     <img src="images/external-ra.png" title="PKI solutions External RA that handle multiple protocols, not allowing incoming connections to the CA." alt="EJBCA PKI setup with External RA, not allowing incoming connections to the CA." />
     </p>
+    </subsubsection>
     <p>The External RA is available in <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a>.</p>
   </subsection>
   <subsection name="Off-line Root CA and multiple Sub CAs">
