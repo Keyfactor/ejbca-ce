@@ -62,8 +62,8 @@
     <subsubsection name="Peer Connector RA">
     <p>
     	Using the Peer Connector RA an external RA server receives certificate (and revocation) requests, which are picked up by the CA using the Peer Connector protocol. 
-    	The request are immediately processed by the CA and responses returned to the RA and sent back to the client. 
-    	No incoming network traffic is allowed from the CA, only outgoing standard TLS connections are allowed through the CA firewall. The External RA can support multiple protocols such as:
+    	The requests are immediately processed by the CA and responses are returned to the RA and sent back to the client. 
+    	No incoming network traffic is allowed to the CA, only outgoing standard TLS connections are allowed out through the CA's firewall. The External RA can support multiple protocols such as:
     </p>
     <ul>
     <li><a href="adminguide.html#CMP">CMP</a></li>
