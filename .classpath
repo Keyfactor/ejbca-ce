@@ -54,6 +54,8 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/est/src"/>
+	<classpathentry kind="src" path="modules/est/src-interface"/>	
+	<classpathentry kind="src" path="modules/est/src-war"/>
 	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src-test"/>
