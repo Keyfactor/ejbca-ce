@@ -99,9 +99,11 @@ import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
@@ -587,7 +589,7 @@ public class X509CA extends CA implements Serializable {
             }
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privateKey.getAlgorithm());
             try {
-                ContentSigner contentSigner = CertTools.getContentSigner(privateKey, signatureAlgorithmName);
+                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 gen.addSignerInfoGenerator(builder.build(contentSigner, cacert));
@@ -648,7 +650,7 @@ public class X509CA extends CA implements Serializable {
             }
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privateKey.getAlgorithm());
             try {
-                final ContentSigner contentSigner = CertTools.getContentSigner(privateKey, signatureAlgorithmName, cryptoToken.getSignProviderName());
+                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 gen.addSignerInfoGenerator(builder.build(contentSigner, (X509Certificate) getCACertificate()));
@@ -1212,7 +1214,8 @@ public class X509CA extends CA implements Serializable {
                  *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
                  *  and should not have any other key usages.
                  */
-                final ContentSigner signer = CertTools.getContentSigner(caPrivateKey, sigAlg, provider);
+                final ContentSigner signer = new BufferingContentSigner(
+                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
 
@@ -1267,8 +1270,8 @@ public class X509CA extends CA implements Serializable {
 
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
-        }  
-        final ContentSigner signer = CertTools.getContentSigner(caPrivateKey, sigAlg, provider);
+        }
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
@@ -1617,8 +1620,8 @@ public class X509CA extends CA implements Serializable {
         }
         final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         try {
-            final ContentSigner contentSigner = CertTools.getContentSigner(cryptoToken.getPrivateKey(alias), sigAlg, cryptoToken.getSignProviderName());
-            crl = crlgen.build(contentSigner);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), 20480);
+            crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error
             throw new RuntimeException("Can not create Jca content signer: ", e);

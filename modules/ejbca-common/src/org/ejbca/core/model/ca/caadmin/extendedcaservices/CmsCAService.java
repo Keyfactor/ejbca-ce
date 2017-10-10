@@ -51,6 +51,7 @@ import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.DecoderException;
@@ -283,7 +284,8 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, privKey.getAlgorithm());
                 String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
-                ContentSigner contentSigner = CertTools.getContentSigner(privKey, signatureAlgorithmName);
+                JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+                ContentSigner contentSigner = signerBuilder.build(privKey);
                 gen1.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
                 final CMSTypedData msg = new CMSProcessableByteArray(resp);
                 final CMSSignedData s = gen1.generate(msg, true);

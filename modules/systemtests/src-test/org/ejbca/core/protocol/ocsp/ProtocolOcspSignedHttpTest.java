@@ -37,6 +37,9 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -59,7 +62,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -205,7 +207,9 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             chain[0] = new JcaX509CertificateHolder(ocspTestCert);
             chain[1] = new JcaX509CertificateHolder(cacert);
             gen.setRequestorName(chain[0].getSubject());
-            OCSPReq req = gen.build(CertTools.getContentSigner(keys.getPrivate(), "SHA1withRSA"), chain);
+            OCSPReq req = gen.build(
+                    new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(
+                            keys.getPrivate()), 20480), chain);
             // Send the request and receive a singleResponse
             SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
             assertEquals("Number of of SingResps should be 1.", 1, singleResps.length);
@@ -230,7 +234,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             chain[0] = new JcaX509CertificateHolder((X509Certificate)certs[0]);
             chain[1] = new JcaX509CertificateHolder((X509Certificate)certs[1]);
             PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
-            req = gen.build(CertTools.getContentSigner(pk, "SHA1withRSA"), chain);
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(pk), 20480), chain);
             // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED (6)
             singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.UNAUTHORIZED, 200);
             assertNull(singleResps);

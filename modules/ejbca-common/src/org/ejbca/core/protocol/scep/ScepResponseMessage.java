@@ -52,6 +52,7 @@ import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.CollectionStore;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -368,7 +369,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(cacert));
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
             try {
-                ContentSigner contentSigner = CertTools.getContentSigner(signKey, signatureAlgorithmName, provider);
+                ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
                 JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 builder.setSignedAttributeGenerator(new DefaultSignedAttributeTableGenerator(new AttributeTable(attributes)));
