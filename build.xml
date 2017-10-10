@@ -441,6 +441,13 @@
 				replacement-web-uri="acme.war"
 				replacement-context-root="/ejbca/acme"
 		/>
+		<war-replacement-in-module
+						replacement-tag="!--@est.war@-->"
+						replacement-file="${eardd.src}/META-INF/application.xml"
+						replacement-enabled="${mod.est.exists}"
+						replacement-web-uri="est.war"
+						replacement-context-root="/.well-known"
+				/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
