@@ -22,12 +22,14 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
@@ -157,25 +159,26 @@ public class RaManageRequestsBean implements Serializable {
             searchRequest.setSearchingHistorical(true);
             break;
         }
- 
+        
+        Map<Integer, String> raInfoMap = raMasterApiProxyBean
+                .getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
+        
         lastExecutedResponse = raMasterApiProxyBean.searchForApprovalRequests(raAuthenticationBean.getAuthenticationToken(), searchRequest);
 
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
-        
+
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
             final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
-            if (searchRequest.isSearchingWaitingForMe()) {
-                if (isCustomSearchingWaiting() && approvalRequestGuiInfo.isCanApprove()) {
-                    guiInfos.add(approvalRequestGuiInfo);
-                }
-            } else {
-                if (isCustomSearchingWaiting()) {
-                    guiInfos.add(approvalRequestGuiInfo);
-                }
+            if (searchRequest.isSearchingWaitingForMe() && approvalRequestGuiInfo.isCanApprove() && !raInfoMap.isEmpty()) {
+                guiInfos.add(approvalRequestGuiInfo);
+            } else if (searchRequest.isSearchingPending() && approvalRequestGuiInfo.isRequestedByMe()) {
+                guiInfos.add(approvalRequestGuiInfo);
+            } else if (searchRequest.isSearchingHistorical() && !approvalRequestGuiInfo.isCanApprove()) {
+                guiInfos.add(approvalRequestGuiInfo);                
             }
         }
-        
+
         resultsFiltered = guiInfos;
         sort();
     }
