@@ -32,16 +32,16 @@ function check()
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
-			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_CANAME") %></td>
+			<td width="45%" valign="top" align="right"><strong><%= ejbcawebbean.getText("IMPORTCA_CANAME") %></strong></td>
 			<td width="55%" valign="top">
-					<input type="text" name='<%= TEXTFIELD_IMPORTCA_NAME %>' value=''>
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_NAME %>' value='' size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>" />
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_CERTIFICATEFILE") %></td>
 			<td width="55%" valign="top">
-					<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORTCACERT %>'>
-					<input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">
+					<input type="hidden" name='<%= ACTION %>' value='<%= ACTION_IMPORTCACERT %>' />
+					<input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>" />
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
@@ -49,9 +49,9 @@ function check()
 				&nbsp;
 			</td>
 			<td width="55%" valign="top">
-				<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE") %>" >
+				<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE") %>" />
 				&nbsp;&nbsp;&nbsp;
-				<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
+				<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>" />     
 			</td>
 		</tr>
 	</table>
