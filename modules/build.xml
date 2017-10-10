@@ -548,8 +548,11 @@
 		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-	<target name="est-war" depends="ejbca-common-web" description="Build the EST WAR">
-		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="est-war" depends="ejbca-common-web" description="Build the EST WAR" if="${mod.est.exists}">
+		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="false">
+				<property name="runoncesetup.hasrun" value="true"/>
+				<property name="external-deps-satfisfied" value="isset"/>
+		</ant>
 	</target>
     
 	

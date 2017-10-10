@@ -392,6 +392,10 @@
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
+	
+    <condition property="mod.est.exists">
+        <available file="${mod.est-war.path}/build.xml" />
+    </condition>
 
     <condition property="mod.acme.exists">
         <and>
