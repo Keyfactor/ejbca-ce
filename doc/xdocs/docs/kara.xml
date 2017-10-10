@@ -48,7 +48,7 @@ fetch and process information from an external RA. The EJBCA RA does this using 
 <li>JSF 2.0 based Web UI, including Content Security Policy, protection against CSS, CSRF and other attacks.</li>
 <li>Filtered error messages from the CA, only shows non-sensitive information in the RA UI.</li>
 <li>Secure object transfer between RA and CA.</li>
-<li>Location aware authorization. The authorization towards the CA is a combination of the Users authorization, and the RA servers so you can limit what RAs in different groups can be used for.</li>
+<li>Location aware authorization. The authorization on the CA is a combination of the Users authorization, and the RA servers authorization. You can limit what is accessible through specific RA servers.</li>
 </ul>
 </section>
 
