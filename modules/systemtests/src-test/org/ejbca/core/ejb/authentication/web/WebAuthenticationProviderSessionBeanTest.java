@@ -53,8 +53,11 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
 import org.cesecore.audit.enums.EventTypes;
@@ -305,8 +308,9 @@ public class WebAuthenticationProviderSessionBeanTest {
             DERSequence seq = new DERSequence(pi);
             certbuilder.addExtension(Extension.certificatePolicies, false, seq);
         }
-        ContentSigner contentSigner = CertTools.getContentSigner(privKey, "SHA1withRSA");
-        final X509CertificateHolder certHolder = certbuilder.build(contentSigner);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(
+                BouncyCastleProvider.PROVIDER_NAME).build(privKey), 20480);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate selfcert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
     
         return selfcert;

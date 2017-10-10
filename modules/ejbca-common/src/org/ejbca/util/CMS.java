@@ -45,9 +45,9 @@ import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.util.CertTools;
 
 /**
  * CMS utils.
@@ -127,7 +127,7 @@ public class CMS {
         JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
         final String digest = CMSSignedGenerator.DIGEST_SHA256;
         String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digest, key.getAlgorithm());
-        ContentSigner contentSigner = CertTools.getContentSigner(key, signatureAlgorithmName, BouncyCastleProvider.PROVIDER_NAME);
+        ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(providerName).build(key);
         if ( cert!=null ) {      
             gen.addSignerInfoGenerator(builder.build(contentSigner, cert));          
         } else {

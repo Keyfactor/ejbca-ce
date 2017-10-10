@@ -55,9 +55,11 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.jcajce.provider.asymmetric.util.ECUtil;
 import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -164,7 +166,7 @@ public class KeyStoreTools {
             log.debug("Keystore signing algorithm " + sigAlg);
             final ContentSigner signer;
             try {
-                signer = CertTools.getContentSigner(this.privateKey, sigAlg, provider.getName());
+                signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider.getName()).build(this.privateKey), 20480);
             } catch (OperatorCreationException e) {
                 throw new TaskWithSigningException(String.format("Signing certificate failed: %s", e.getMessage()), e);
             }
