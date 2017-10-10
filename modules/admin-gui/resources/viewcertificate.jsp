@@ -579,7 +579,7 @@ function confirmrepublish(){
        </tr>
        
        <tr id="Row<%=(row++)%2%>">
-         <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYINFOACCESS") %></td>
+         <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_AUTHORITYINFOACCESS") %></td>
          <td><% StringBuilder builder = new StringBuilder();
          		final List<String> aiaOcspServiceLocators = certificatedata.getAuthorityInformationAccessOcspUrls();
          		if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
