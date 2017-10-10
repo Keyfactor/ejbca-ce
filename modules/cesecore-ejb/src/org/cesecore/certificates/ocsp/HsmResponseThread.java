@@ -22,8 +22,10 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.util.CertTools;
 
@@ -69,8 +71,8 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
              * 
              * Lowering this allocation from 20480 to 4096 bytes under ECA-4084 which should still be plenty.
              */
-            final ContentSigner contentSigner = CertTools.getContentSigner(signerKey, signingAlgorithm, provider);
-            return basicRes.build(contentSigner, chain, producedAt!=null? producedAt : new Date());
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey), 20480);
+            return basicRes.build(signer, chain, producedAt!=null? producedAt : new Date());
         } catch (OperatorCreationException e) {
             throw new OcspFailureException(e);
         }

@@ -31,7 +31,10 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -276,8 +279,8 @@ public class CaInitCommandTest {
             certbuilder.addExtension(Extension.basicConstraints, true, bc);
             X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
             certbuilder.addExtension(Extension.keyUsage, true, ku);
-            ContentSigner contentSigner = CertTools.getContentSigner(keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            final X509CertificateHolder certHolder = certbuilder.build(contentSigner);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(keys.getPrivate()), 20480);
+            final X509CertificateHolder certHolder = certbuilder.build(signer);
             final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
             fp2 = CertTools.getFingerprintAsString(cert);
             // Now we have issued a certificate, import it
