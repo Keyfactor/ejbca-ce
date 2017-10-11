@@ -6804,7 +6804,7 @@ All installations have their specific requirements how audit logs should be hand
 <subsection name="Log Monitoring">
 <p>
 When monitoring logs from EJBCA the common trigger to monitor for are ERROR events in the System Log.
-Example where there is a error to initialize an (this is a specific exampe and not applicable to all HSMs) HSM during startup:
+Example where there is a error to initialize an (this is a specific example and not applicable to all HSMs) HSM during startup:
 </p>
 <source>
 10:46:53,099 ERROR [org.cesecore.keys.token.p11.Pkcs11Wrapper] (default task-9) Wrong arguments were passed to sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance threw an exception
