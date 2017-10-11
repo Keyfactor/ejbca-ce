@@ -95,6 +95,22 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private void nonAjaxPostRedirectGet() {
         super.nonAjaxPostRedirectGet("?roleId="+roleIdParam);
     }
+    
+    /**
+     * Get the appropriate Access match type based on the access match value.
+     * @param accessMatchValue
+     * @return Equal Case sensitive unless access match value forces something else.
+     */
+    private AccessMatchType getAccessMatchType(AccessMatchValue accessMatchValue) {
+        if (accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_COUNTRY)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_DNEMAILADDRESS)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_STATEORPROVINCE)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_RFC822NAME)){
+            return AccessMatchType.TYPE_EQUALCASEINS;
+        }
+        return AccessMatchType.TYPE_EQUALCASE;
+    }
 
     /** @return true when admin is authorized to edit members of this role */
     public boolean isAuthorizedToEditRole() {
@@ -279,9 +295,9 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             if (accessMatchValue.getAvailableAccessMatchTypes().isEmpty()) {
                 accessMatchType = AccessMatchType.TYPE_UNUSED;
             } else {
-                // Just grab the first one, since we according to ECA-3164 only will have a single allowed match operator for each match key
-                accessMatchType = accessMatchValue.getAvailableAccessMatchTypes().get(0);
+                accessMatchType = getAccessMatchType(accessMatchValue);
             }
+
             if (AccessMatchType.TYPE_UNUSED.equals(accessMatchType)) {
                 tokenMatchValue = "";
             } else {
