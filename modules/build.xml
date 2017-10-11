@@ -85,7 +85,6 @@
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
@@ -100,6 +99,7 @@
 		<antcall target="peerconnectorclean"/>
 		<antcall target="acmeclean"/>
 		<antcall target="caaclean"/>
+		<antcall target="estclean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -149,18 +149,16 @@
 		<echo message="Cleaning validationtool"/>
 		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
-	<condition property="mod.ct.exists">
-		<available file="${mod.ct.path}/build.xml" />
-    </condition>
+
     <target name="ctclean" if="${mod.ct.exists}">
         <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
-	<condition property="mod.caa.exists">
-		<available file="${mod.caa.path}/build.xml" />
-    </condition>
     <target name="caaclean" if="${mod.caa.exists}">
         <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
+    <target name="estclean" if="${mod.est.exists}">
+		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>	
 	<condition property="mod.certsafe.exists">
 		<available file="${mod.certsafe.path}/build.xml" />
 	</condition>

@@ -404,5 +404,13 @@
 	    	<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
         </and>
     </condition>
+	
+	<condition property="mod.caa.exists">
+		<available file="${mod.caa.path}/build.xml" />
+    </condition>
+	
+	<condition property="mod.ct.exists">
+		<available file="${mod.ct.path}/build.xml" />
+    </condition>
 
 </project>
