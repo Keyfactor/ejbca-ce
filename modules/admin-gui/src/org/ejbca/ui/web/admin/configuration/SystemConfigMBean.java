@@ -1313,7 +1313,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 continue;
             }
             // Extract bytes from this entry
-            byte[] filebytes = new byte[10240];
+            byte[] filebytes = new byte[(int) ze.getSize()];
             int i = 0;
             while ((zis.available() == 1) && (i < filebytes.length)) {
                 filebytes[i++] = (byte) zis.read();
