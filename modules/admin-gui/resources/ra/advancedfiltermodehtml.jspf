@@ -1,5 +1,5 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
-<% TreeMap endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY); 
+<% TreeMap<String, String> endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY); 
    TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    Map caids = ejbcawebbean.getInformationMemory().getCANames();
  
@@ -43,7 +43,7 @@
       while(iter.hasNext()){
         String next = (String) iter.next(); %>
       profilenames[<%=index %>] = new Array(2);
-      profilenames[<%=index %>][ID] = <%= ((Integer) endentityprofileids.get(next)).intValue() %>; 
+      profilenames[<%=index %>][ID] = <%= Integer.valueOf(endentityprofileids.get(next)) %>; 
       profilenames[<%=index %>][NAME] = "<c:out value="<%= next %>"/>";
     <% index++; 
       } %>
@@ -304,7 +304,7 @@ function changematchfields(row){
                 <% iter = endentityprofileids.keySet().iterator();
                    while(iter.hasNext()){
                      String next = (String) iter.next();
-                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
+                     int id = Integer.valueOf(endentityprofileids.get(next));%>
           <option <% if(oldmatchvaluerow1!= null){
                        if(Integer.parseInt(oldmatchvaluerow1) == id)
                          out.write(" selected ");
@@ -455,7 +455,7 @@ function changematchfields(row){
                 <% iter = endentityprofileids.keySet().iterator();
                    while(iter.hasNext()){
                      String next = (String) iter.next();
-                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
+                     int id = Integer.valueOf(endentityprofileids.get(next));%>
           <option <% if(oldmatchvaluerow2!= null){
                        if(Integer.parseInt(oldmatchvaluerow2) == id)
                          out.write(" selected ");
@@ -607,7 +607,7 @@ function changematchfields(row){
                 <% iter = endentityprofileids.keySet().iterator();
                    while(iter.hasNext()){
                      String next = (String) iter.next();
-                     int id = ((Integer) endentityprofileids.get(next)).intValue();%>
+                     int id = Integer.valueOf(endentityprofileids.get(next));%>
           <option <% if(oldmatchvaluerow3!= null){
                        if(Integer.parseInt(oldmatchvaluerow3) == id)
                          out.write(" selected ");
