@@ -123,10 +123,10 @@ public class HardTokenInformation implements Serializable, Comparable<HardTokenI
 	 */
 	@Override
 	public int compareTo(HardTokenInformation o) {
-		if ( this.createtime.equals(o)) {
+		if ( this.createtime.equals(o.getCreateTime())) {
 			return 0;
 		}
-		return this.createtime.after(o.createtime) ? -1 : 1;
+		return this.createtime.after(o.getCreateTime()) ? -1 : 1;
 	}
 
 }
