@@ -915,7 +915,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param authenticationToken the authentication token being used
      * @param endEntity the end entity involved
      * @param ca the relevant CA
-     * @param certificate the newly created Certificate
+     * @param certificateWrapper the newly created Certificate
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
     private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca, final CertificateDataWrapper certificateWrapper) throws AuthorizationDeniedException {
