@@ -37,6 +37,6 @@ public class ModuleTypeHolder implements ModuleType {
 		if (value == null) {
 			return false;
 		}
-		return this.value.toString().equals(value);
+		return this.value.equals(value.toString());
 	}
 }
