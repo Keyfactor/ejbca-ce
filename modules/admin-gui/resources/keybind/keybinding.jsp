@@ -67,7 +67,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h:message for="internalKeyBindingId"/>
 		<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
 		<h:panelGroup id="name">
-			<h:inputText rendered="#{internalKeyBindingMBean.inEditMode}" value="#{internalKeyBindingMBean.currentName}" />
+			<h:inputText rendered="#{internalKeyBindingMBean.inEditMode}" value="#{internalKeyBindingMBean.currentName}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" />
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode}" value="#{internalKeyBindingMBean.currentName}"/>
 		</h:panelGroup>
 		<h:message for="name"/>
@@ -123,7 +123,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
 			</h:selectOneMenu>
-			</h:panelGroup>
+			</h:panelGroup>New
 			<h:panelGroup rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}">
 				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
 					value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
@@ -167,6 +167,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<f:facet name="footer">
 				<h:inputText id="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
 					value="#{internalKeyBindingMBean.currentCertificateSerialNumber}"
+					size="26" maxlength="255"
 					title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
 					<f:validator validatorId="optionalHexSerialNumberValidator"/>
    				</h:inputText>
@@ -185,7 +186,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
 	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
 		<h:column>
-			<h:outputText value="#{internalKeyBindingMBean.propertyNameTranslated}:"/>
+			<h:outputText value="#{internalKeyBindingMBean.propertyNameTranslated}"/>
 		</h:column>
 		<h:column>
    			<h:panelGroup rendered="#{!property.multiValued}">

@@ -140,13 +140,17 @@ org.cesecore.keybind.InternalKeyBindingRules
 	</h:form>
 	<h:form id="uploadCertificate" enctype="multipart/form-data" rendered="#{not empty internalKeyBindingMBean.uploadTargets and internalKeyBindingMBean.allowedToEdit}">
 		<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_UPLOADHEADER}"/></h3>
-		<h:panelGrid columns="5">
-			<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_UPLOAD_TARGET} #{internalKeyBindingMBean.selectedInternalKeyBindingType}:"/>
-			<h:selectOneMenu id="certificateUploadTarget" value="#{internalKeyBindingMBean.uploadTarget}">
-				<f:selectItems value="#{internalKeyBindingMBean.uploadTargets}"/>
-			</h:selectOneMenu>
-			<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}:"/>
-			<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}" size="20"/>
+		<h:panelGrid columns="3">
+			<h:panelGroup>
+				<h:outputLabel for="certificateUploadTarget" value="#{web.text.INTERNALKEYBINDING_UPLOAD_TARGET} #{internalKeyBindingMBean.selectedInternalKeyBindingType}: "/>
+				<h:selectOneMenu id="certificateUploadTarget" value="#{internalKeyBindingMBean.uploadTarget}">
+					<f:selectItems value="#{internalKeyBindingMBean.uploadTargets}"/>
+				</h:selectOneMenu>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:outputLabel for="certificateUploadInput" value="#{web.text.INTERNALKEYBINDING_UPLOAD_CERTIFICATE}: "/>
+				<t:inputFileUpload id="certificateUploadInput" value="#{internalKeyBindingMBean.uploadToTargetFile}"/>
+			</h:panelGroup>
 			<h:commandButton action="#{internalKeyBindingMBean.uploadToTarget}" value="#{web.text.INTERNALKEYBINDING_UPLOAD}"/>
 		</h:panelGrid>
 	</h:form>
@@ -156,7 +160,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
 			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %>
 		</h3>
-		<h:panelGrid columns="3">
+		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
 				<f:selectItems value="#{internalKeyBindingMBean.defaultResponderTargets}"/>
 			</h:selectOneMenu>
@@ -170,8 +174,11 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Enabling%20Nonce%20Extension%20On%20CAs") %>		
 			</h3>
 		<h:panelGrid columns="2">
-		<h:selectBooleanCheckbox disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableNonce}"/>
-		<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="globallyEnableNonce" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" value="#{internalKeyBindingMBean.globallyEnableNonce}"/>
+				<h:outputLabel for="globallyEnableNonce" value="#{web.text.USE}"/>
+			</h:panelGroup>
+			<h:commandButton action="#{internalKeyBindingMBean.saveNonceEnabled}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SAVE}"/>
 		</h:panelGrid>	
 	</h:form>
 	
@@ -181,7 +188,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
 			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Responder%20ID%20Type%20for%20CAs") %>
 		</h3>
-		<h:panelGrid columns="3">
+		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderId" value="#{internalKeyBindingMBean.responderIdType}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
 				<f:selectItems value="#{internalKeyBindingMBean.responderIdTargets}"/>
 			</h:selectOneMenu>
