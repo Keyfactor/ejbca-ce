@@ -1176,30 +1176,29 @@
 
 	</h:panelGrid>
 
-	<%-- Approvals --%>
+
 	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+		<%-- Approvals --%>
+
 		<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}" style="font-weight: bold;"/>
 		<h:panelGroup id="approvals"/>		
-				
-		<h:panelGroup>
-			&nbsp;
-		</h:panelGroup>	
-		<h:panelGroup id="requestTypeRow">
-			<h:dataTable value="#{certProfileBean.approvalRequestItems}" var="requestItem" headerClass="subheader" columnClasses="editColumnSystem1,editColumnSystem2"
-					 style="text-align: left; width: 100%" rowClasses="Row0,Row1">
-				<h:column>	
-					<h:outputText value="#{requestItem.getDisplayText()}:"/>
-				</h:column>
-				<h:column>	
-				<h:selectOneMenu id="approvalProfile" value="#{requestItem.approvalProfileId}" converter="javax.faces.Integer"
-					disabled="#{certProfilesBean.viewOnly}">
-					<f:selectItems value="#{certProfileBean.availableApprovalProfiles}"/>
-				</h:selectOneMenu>
-				</h:column>
-			</h:dataTable>	
-		</h:panelGroup>
 
 	</h:panelGrid>
+
+	<h:dataTable value="#{certProfileBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
+		border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" style="padding-right: 4px;">
+		<h:column>	
+			<h:outputText value="#{requestItem.getDisplayText()}"/>
+		</h:column>
+		<h:column>	
+		<h:selectOneMenu id="approvalProfile" value="#{requestItem.approvalProfileId}" converter="javax.faces.Integer"
+			disabled="#{certProfilesBean.viewOnly}">
+			<f:selectItems value="#{certProfileBean.availableApprovalProfiles}"/>
+		</h:selectOneMenu>
+		</h:column>
+	</h:dataTable>	
+
 
 	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
