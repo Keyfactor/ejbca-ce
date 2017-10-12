@@ -29,7 +29,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaApprovalRequestInfo;
@@ -167,7 +166,12 @@ public class RaManageRequestsBean implements Serializable {
 
         final List<RaApprovalRequestInfo> reqInfos = lastExecutedResponse.getApprovalRequests();
         final List<ApprovalRequestGUIInfo> guiInfos = new ArrayList<>();
-
+        
+        /** Based on the tabs in the GUI we have different criteria to show requests: 
+         *  TO_APPROVE tab: Check if user is authorized to approve and also if she has proper EEP.
+         *  PENDING FOR APROVAL: Only those request issued by me should be shown!
+         *  PROCESSED & CUSTOM_SEARCH: Basically all the request minus those which the user doesn't have power to approve.
+        **/
         for (final RaApprovalRequestInfo reqInfo : reqInfos) {
             final ApprovalRequestGUIInfo approvalRequestGuiInfo = new ApprovalRequestGUIInfo(reqInfo, raLocaleBean, raAccessBean);
             if (searchRequest.isSearchingWaitingForMe() && approvalRequestGuiInfo.isCanApprove() && !raInfoMap.isEmpty()) {
