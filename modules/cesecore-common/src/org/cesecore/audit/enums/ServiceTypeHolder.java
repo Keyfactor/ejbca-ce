@@ -25,6 +25,6 @@ public class ServiceTypeHolder implements ServiceType {
         if (value == null) {
             return false;
         }
-        return this.value.toString().equals(value);
+        return this.value.toString().equals(value.toString());
     }
 }
