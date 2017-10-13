@@ -54,7 +54,7 @@
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws-cli/src-gen"/>
 	<classpathentry kind="src" path="modules/est/src"/>
-	<classpathentry kind="src" path="modules/est/src-interface"/>	
+	<classpathentry kind="src" path="modules/est/src-interface"/>
 	<classpathentry kind="src" path="modules/est/src-war"/>
 	<classpathentry kind="src" path="modules/externalra-gui/src"/>
 	<classpathentry kind="src" path="modules/externalra-scep/src"/>
@@ -153,7 +153,7 @@
 	<classpathentry kind="lib" path="lib/ext/slf4j-log4j12-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.10.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-158.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-158.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-158.jar" sourcepath="/Users/mikek/Sources/BouncyCastle 1.58 Source/bcprov-jdk15on-158/src.zip"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-impl-2.2.12.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javaee-api-6.0-6.jar"/>
