@@ -14,10 +14,11 @@ package org.cesecore.keys.validation;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Base interface for DNS name validators. All DNS name validators must implement this interface.
- * 
+ *
  * @version $Id$
  *
  */
@@ -25,12 +26,13 @@ public interface DnsNameValidator extends Validator {
 
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension
-     * 
+     *
+     * @param executorService a thread pool facilitating parallel lookups
      * @param domainNames one or several domain names (Varargs)
-     * @return an Entry where key is the final validation result, true or false, and the value is a list is messages corresponding to 
+     * @return an Entry where key is the final validation result, true or false, and the value is a list is messages corresponding to
      * domain names passed as varargs, messages can include both success and failure messages, one failure will result in the key returned being false.
      */
-    Entry<Boolean,List<String>> validate(String ... domainNames);
-    
+    Entry<Boolean, List<String>> validate(final ExecutorService executorService, String... domainNames);
+
     String getIssuer();
 }
