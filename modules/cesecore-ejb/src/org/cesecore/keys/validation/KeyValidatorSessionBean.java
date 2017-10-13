@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -60,12 +62,14 @@ import org.cesecore.util.CertTools;
 
 /**
  * Handles management of key validators.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
+    // NOTE: Should be replaced by a ManagedExecutorService when we drop support for JEE 6
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(128);
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorSessionBean.class);
@@ -123,12 +127,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             log.trace("<addKeyValidator()");
         }
     }
-    
+
     @Override
     public void changeKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
         assertIsAuthorizedToEditValidators(admin);
-        ProfileData data = profileSession.findById(validator.getProfileId());   
+        ProfileData data = profileSession.findById(validator.getProfileId());
         final String message;
         final String name = validator.getProfileName();
         if (data != null) {
@@ -157,7 +161,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         assertIsAuthorizedToEditValidators(admin);
         String message;
-       
+
             ProfileData data = profileSession.findById(validatorId);
             if (data == null) {
                 if (log.isDebugEnabled()) {
@@ -177,7 +181,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
                         null, null, null, details);
             }
-   
+
         if (log.isTraceEnabled()) {
             log.trace("<removeKeyValidator()");
         }
@@ -210,7 +214,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", message);
                 auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
-                        null, null, null, details);                    
+                        null, null, null, details);
             }
         }
 
@@ -244,7 +248,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             throws  AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
         cloneKeyValidator(admin, getKeyValidatorInternal(validatorId, true), newName);
     }
-    
+
     @Override
     public void cloneKeyValidator(final AuthenticationToken admin, final Validator validator, final String newName)
             throws  AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
@@ -266,9 +270,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             final String message = intres.getLocalizedMessage("validator.error.clone_validator", newName, validator.getProfileName());
             log.info(message);
             throw e;
-        }   
+        }
     }
-    
+
     @Override
     public void renameKeyValidator(AuthenticationToken admin, final int validatorId, String newName)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
@@ -318,7 +322,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         if (log.isDebugEnabled()) {
             for (Integer id: result.keySet()) {
-                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getProfileName());                
+                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getProfileName());
             }
         }
         return result;
@@ -333,7 +337,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         if (log.isDebugEnabled()) {
             for (Integer id: result.keySet()) {
-                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getProfileName());                
+                log.debug("Key validators found in datastore: " + id+":"+result.get(id).getProfileName());
             }
         }
         return result;
@@ -367,7 +371,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     @Override
     public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
             final RequestMessage requestMessage) throws ValidationException {
-        if (!CollectionUtils.isEmpty(ca.getValidators())) { 
+        if (!CollectionUtils.isEmpty(ca.getValidators())) {
             Validator validator;
             DnsNameValidator dnsNameValidator;
             for (Integer id : ca.getValidators()) {
@@ -409,19 +413,19 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             }
                         }
                     }
-                    
-                    Entry<Boolean,List<String>> result = dnsNameValidator.validate(dnsNames.toArray(new String[dnsNames.size()]));
-                    
+
+                    Entry<Boolean, List<String>> result = dnsNameValidator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
+
                     final String validatorName = dnsNameValidator.getProfileName();
                     final List<String> messages = result.getValue();
-                    if (!result.getKey()) { 
-                    	// Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen. 
-                    	// We want thorough logging in order to trouble shoot though 
+                    if (!result.getKey()) {
+                    	// Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
+                    	// We want thorough logging in order to trouble shoot though
                         final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName, dnsNameValidator.getIssuer(), messages);
                         log.info(EventTypes.VALIDATOR_VALIDATION_FAILED+";"+EventStatus.FAILURE+";"+ModuleTypes.VALIDATOR+";"+ServiceTypes.CORE+";msg="+message);
                         final int index = dnsNameValidator.getFailedAction();
                         performValidationFailedActions(index, message);
-                    } else { 
+                    } else {
                     	// Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
                         final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, dnsNameValidator.getIssuer(), messages);
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -438,7 +442,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             }
         }
     }
-    
+
     @Override
     public boolean validatePublicKey(final AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws ValidationException, IllegalValidityException {
@@ -531,7 +535,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             log.error(message);
         } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == index) {
             if (log.isDebugEnabled()) {
-                log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);                    
+                log.debug("Action ABORT_CERTIFICATE_ISSUANCE: "+ message);
             }
             throw new ValidationException(message);
         } else {
@@ -597,7 +601,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
 
-    /** Adds a key validator or throws an exception. 
+    /** Adds a key validator or throws an exception.
      * @return the profile ID
      */
     private int addKeyValidatorInternal(AuthenticationToken admin, Validator keyValidator)
@@ -626,7 +630,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
             final ProfileData data = profileSession.findById(id);
-            
+
             if (data != null) {
                 result = (Validator) data.getProfile();
                 final int digest = data.getProtectString(0).hashCode();

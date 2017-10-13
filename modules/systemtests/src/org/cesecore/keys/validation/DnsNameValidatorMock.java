@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.cesecore.profiles.Profile;
 
@@ -33,22 +34,22 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     private static final long serialVersionUID = 1L;
 
     private static final String DOMAIN_NAMES_KEY = "domainNames";
-    
+
     private transient Set<String> domainNames;
-    
-    
+
+
     public DnsNameValidatorMock() {
         super();
         setDomainNames(new HashSet<String>());
     }
-    
+
     public DnsNameValidatorMock(String name, String... domainNames) {
         super(name);
         setDomainNames(new HashSet<>(Arrays.asList(domainNames)));
     }
-    
+
     @Override
-    public String getValidatorTypeIdentifier() {        
+    public String getValidatorTypeIdentifier() {
         return null;
     }
 
@@ -63,7 +64,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
-    public Entry<Boolean,List<String>> validate(String... domainNames) {
+    public Entry<Boolean, List<String>> validate(final ExecutorService executorService, final String... domainNames) {
         //Return all domain names that overlap with those preset in this validator.
         List<String> result = new ArrayList<>();
         for(String domainName : domainNames) {
@@ -100,7 +101,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
         this.domainNames = domainNames;
         saveTransientObjects();
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected void loadTransientObjects() {
@@ -112,14 +113,14 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     @Override
     protected void saveTransientObjects() {
         super.saveTransientObjects();
-        //Here we return all sequences to be persisted. 
+        //Here we return all sequences to be persisted.
         Map<Object, Object> transientObjects = new HashMap<>();
         if (getDomainNames() != null) {
             transientObjects.put(DOMAIN_NAMES_KEY, getDomainNames());
         }
-   
+
          data.putAll(transientObjects);
     }
 
-    
+
 }
