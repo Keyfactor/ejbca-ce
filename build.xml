@@ -510,9 +510,7 @@
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
                 <include name="scep.war" />
-             <!--
-                	<include name="est.war" />
-                -->
+                <include name="est.war" />
             	<include name="est-ejb.jar" />
                 <include name="healthcheck.war" />
                 <include name="clearcache.war" />
