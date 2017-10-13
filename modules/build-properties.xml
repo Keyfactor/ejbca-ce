@@ -160,9 +160,9 @@
 	<property name="mod.dist.caa-cli.dir" location="${ejbca.dist.path}/caa-cli"/>
 	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
     <property name="mod.est-war.path" location="${mod.path}/est" />
-    <property name="mod.est-war.war" location="${mod.dist.path}/est.war" />
-
-
+    <property name="mod.est.war" location="${mod.dist.path}/est.war" />
+	<property name="mod.est.lib" location="${mod.dist.path}/est.jar" />
+	<property name="mod.est-interface.lib" location="${mod.dist.path}/est-interface.jar" />
 
 	
     <!-- Variables of global interest -->
