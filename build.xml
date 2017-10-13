@@ -510,7 +510,10 @@
                 <include name="cmp.war" />
                 <include name="publicweb.war" />
                 <include name="scep.war" />
-                <include name="est.war" />
+             <!--
+                	<include name="est.war" />
+                -->
+            	<include name="est-ejb.jar" />
                 <include name="healthcheck.war" />
                 <include name="clearcache.war" />
                 <include name="webdist.war" />
@@ -555,7 +558,7 @@
         		<include name="peerconnector-entity.jar" />
         		<include name="va-publisher.jar" />
         	    <include name="caa.jar" />
-				<include name="est.jar" />
+				<include name="est-ejb.jar" />
 				<include name="est-interface.jar" />
                 <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
 				<include name="${in-test-mode-include}acme-common.jar" />
