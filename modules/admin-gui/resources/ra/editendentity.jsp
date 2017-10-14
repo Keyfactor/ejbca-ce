@@ -1633,7 +1633,10 @@ function checkUseInBatch(){
      <% } %>
      
      <% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0) ) {
-        ExtendedInformation ei = userdata.getExtendedInformation(); %>
+        ExtendedInformation ei = userdata.getExtendedInformation(); 
+        if (ei == null) {
+            ei = new ExtendedInformation(); // create empty one if it doens't exist, to avoid NPEs
+        } %>
         <tr id="Row<%=(row)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
@@ -1648,7 +1651,10 @@ function checkUseInBatch(){
         </tr>
     <% } %>
     <% if( profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0) ) {
-        ExtendedInformation ei = userdata.getExtendedInformation(); %>
+        ExtendedInformation ei = userdata.getExtendedInformation(); 
+        if (ei == null) {
+            ei = new ExtendedInformation(); // create empty one if it doens't exist, to avoid NPEs
+        } %>
         <tr id="Row<%=(row++)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
