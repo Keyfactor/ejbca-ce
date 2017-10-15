@@ -30,7 +30,21 @@ public enum AccessMatchType {
     @Deprecated
     TYPE_NOT_EQUALCASEINS(1003),
     @Deprecated
-    TYPE_NONE(1999);
+    TYPE_NONE(1999),
+    /** Type 2000-2005 are old types used from before EJBCA 4, we must expect to find these in the database in old installations, even though we don't want to use them. 
+     * These have no meaning whatsoever in newer installations of EJBCA, and can safely be removed from the database if found (unless we need to run an old installation in parallel). */
+    @Deprecated
+    SPECIALADMIN_PUBLICWEBUSER(2000),
+    @Deprecated
+    SPECIALADMIN_CACOMMANDLINEADMIN(2001),
+    @Deprecated
+    SPECIALADMIN_RAADMIN(2002),
+    @Deprecated
+    SPECIALADMIN_BATCHCOMMANDLINEADMIN(2003),
+    @Deprecated
+    SPECIALADMIN_INTERNALUSER(2004),
+    @Deprecated
+    SPECIALADMIN_NOUSER(2005);
 
     private AccessMatchType(int numericValue) {
         this.numericValue = numericValue;
