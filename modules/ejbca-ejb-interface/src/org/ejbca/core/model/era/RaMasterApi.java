@@ -29,7 +29,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.config.RaCssInfo;
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -118,19 +118,21 @@ public interface RaMasterApi {
     List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken);
     
     /**
-     * Retrieves a list of all custom CSS archives 
+     * Retrieves a list of all custom style archives 
      * @param authenticationToken of the requesting administrator
-     * @return List of all CSS archives or null if no CSS was found
-     * @throws AuthorizationDeniedException if requesting administrator is unauthorized to CSS archives
+     * @return List of all style archives or null if no styles were found
+     * @throws AuthorizationDeniedException if requesting administrator is unauthorized to style archives
      */
-    LinkedHashMap<Integer, RaCssInfo> getAllCustomRaCss(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
+    LinkedHashMap<Integer, RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException;
     
     /**
-     * Returns a list of all CSS archives associated to roles which the requesting administrator is member of.
+     * Returns a list of all style archives associated to roles which the requesting administrator is member of.
      * @param authenticationToken of the requesting administrator
-     * @return list of associated CSS archives. Null if administrator is not a member of any role or if role has no custom CSS applied.
+     * @param hashCodeOfCurrentList will be compared with RaStyleInfos. If equal, null is returned to avoid heavy network traffic. Set 0 to ignore.
+     * @return list of associated style archives. Empty list if administrator is not a member of any role or if role has no custom styles applied. Null if 
+     * hashCodeOfCurrentList matched, hence doesn't require an update
      */
-    List<RaCssInfo> getAvailableCustomRaCss(AuthenticationToken authenticationToken);
+    List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList);
     
     /**
      * @return a list with roles that the caller is authorized to see.
