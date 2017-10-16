@@ -322,7 +322,10 @@ table.grid td {
 	padding: 2px 3px;
 	border: 1px solid #2E5A94;
 }
-
+/* nested table */
+table.grid table td {
+    border: none;
+}
 .numberCell {
 	display: block;
 	text-align: right;
@@ -398,6 +401,15 @@ table.grid tfoot tr:active {
 	text-align: center;
 }
 
+.gridColoumRight {
+	text-align: right;
+	width: 50%;
+}
+
+.gridColumnLeft {
+	text-align: left;
+	vertical-align: middle;
+}
 
 /* --- Forms: List/Actions */
 table.list,

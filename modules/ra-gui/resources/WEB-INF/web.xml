@@ -97,12 +97,13 @@
 	</filter-mapping>
 	
 	<filter>
-		<filter-name>RaCssRequestFilter</filter-name>
-		<filter-class>org.ejbca.ra.jsfext.RaCssRequestFilter</filter-class>
+		<filter-name>RaStyleRequestFilter</filter-name>
+		<filter-class>org.ejbca.ra.jsfext.RaStyleRequestFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>RaCssRequestFilter</filter-name>
+		<filter-name>RaStyleRequestFilter</filter-name>
 		<url-pattern>/css/*</url-pattern>
+		<url-pattern>/img/*</url-pattern>
 	</filter-mapping>
 	
     <servlet>

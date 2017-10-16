@@ -60,7 +60,8 @@ import org.cesecore.certificates.certificatetransparency.CertificateTransparency
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
-import org.cesecore.config.RaCssInfo;
+import org.cesecore.config.RaStyleInfo;
+import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -743,7 +744,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         currentConfig = null;
         nodesInCluster = null;
         ctLogs = null;
-        raCssInfos = null;
+        raStyleInfos = null;
         excludeActiveCryptoTokensFromClearCaches = true;
         availableExtendedKeyUsages = null;
         availableExtendedKeyUsagesConfig = null;
@@ -1247,14 +1248,18 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     // ----------------------------------------------------
-    //               Custom Style Sheets
+    //               Custom RA Styles
     // ----------------------------------------------------
     
     private GlobalCustomCssConfiguration globalCustomCssConfiguration = null;
-    private ListDataModel<RaCssInfo> raCssInfos = null;
-    private List<RaCssInfo> raCssInfosList;
+    private ListDataModel<RaStyleInfo> raStyleInfos = null;
+    private List<RaStyleInfo> raStyleInfosList;
     private UploadedFile raCssFile = null;
-
+    private UploadedFile raLogoFile = null;
+    private List<RaCssInfo> importedRaCssInfos = null;
+    private String archiveName = null;
+    private String logoName = null;
+    private byte[] logoBytes = null;
     
     public GlobalCustomCssConfiguration getGlobalCustomCssConfiguration() {
         if (globalCustomCssConfiguration == null) {
@@ -1264,25 +1269,62 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return globalCustomCssConfiguration;
     }
     
-    public void actionImportRaCss() {
-        if (raCssFile == null) {
+    public void actionImportRaStyle() {
+        // Basic checks
+        if (raCssFile == null && raLogoFile == null) {
             addErrorMessage("NOFILESELECTED");
             return;
         }
+        if (archiveName == null || archiveName.equals("")) {
+            addErrorMessage("STYLENONAME");
+            return;
+        }
         try {
+            // Authorazation check
             if (!authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
                 addErrorMessage("CSS_NOT_AUTH");
-                log.info("Administrator '" + getAdmin() + "' attempted to import css files. Authorazation denied: Insufficient privileges");
+                log.info("Administrator '" + getAdmin() + "' attempted to import css / logo files. Authorazation denied: Insufficient privileges");
                 return;
             }
-            importCssFromZip(getRaCssFile().getBytes());
+            if (raCssFile != null) {
+                // File is selected but something went wrong. Import nothing!
+                importCssFromFile();
+                if (importedRaCssInfos == null) {
+                    return;
+                }
+            }
+            if (raLogoFile != null) {
+                importLogoFromImageFile();
+                // File is selected but something went wrong. Import nothing!
+                if (logoBytes == null) {
+                    return;
+                }
+            }
+            
+            RaStyleInfo importedRaStyleInfo = new RaStyleInfo(archiveName, importedRaCssInfos, logoBytes, logoName);
+            importedRaStyleInfo.setLogoContentType(raCssFile.getContentType());
+            raStyleInfosList.add(importedRaStyleInfo);
+            raStyleInfos = new ListDataModel<>(raStyleInfosList);
+            saveCustomCssConfiguration();
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
-            addErrorMessage("CSSIMPORTFAIL", e.getLocalizedMessage());
-            log.info("Failed to read .zip file", e);
+            addErrorMessage("STYLEIMPORTFAIL", e.getLocalizedMessage());
+            log.info("Failed to import style files", e);
         }
     }
     
-    private void importCssFromZip(byte[] fileBuffer) throws IOException, IllegalArgumentException, IllegalStateException {
+    private void importLogoFromImageFile() throws IOException {
+        String contentType = raLogoFile.getContentType();
+        if (!contentType.equals("image/jpeg") && !contentType.equals("image/png")) {
+            addErrorMessage("LOGOIMPORTIGNORE", raLogoFile.getName());
+            return;
+        }
+        logoName = raLogoFile.getName();
+        logoBytes = raLogoFile.getBytes();
+        addInfoMessage("LOGOIMPORTSUCCESS", logoName);
+    }
+    
+    private void importCssFromFile() throws IOException, IllegalArgumentException, IllegalStateException {
+        byte[] fileBuffer = raCssFile.getBytes();
         if (fileBuffer.length == 0) {
             throw new IllegalArgumentException("Empty input file");
         }
@@ -1291,7 +1333,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         int numberOfZipEntries = 0;
         int numberOfImportedFiles = 0;
         int numberOfignoredFiles = 0;
-        List<RaCssInfo> raCssInfosList = getRaCssInfosList();
+        List<RaCssInfo> raCssInfosList = new ArrayList<>();
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer));
         ZipEntry ze;
         // Read each zip entry
@@ -1324,28 +1366,31 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             numberOfImportedFiles++;
         }
         zis.close();
-        if (numberOfZipEntries == 0) {
+        if (numberOfZipEntries == 0 && raCssFile.getName().endsWith(".css")) {
+            // Single file selected (not zip)
+            raCssInfosList.add(new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
+            numberOfImportedFiles++;
+            importedFiles = raCssFile.getName();
+        } else if (numberOfZipEntries == 0) {
             addErrorMessage("ISNOTAZIPFILE");
             return;
+            
         }
-        setRaCssInfosList(raCssInfosList);
-        raCssInfos = new ListDataModel<>(raCssInfosList);
-        saveCustomCssConfiguration();
         if (numberOfignoredFiles == 0) {
             addInfoMessage("CSSIMPORTSUCCESS", numberOfImportedFiles, importedFiles);
         } else {
             addInfoMessage("CSSIMPORTIGNORED", numberOfImportedFiles, importedFiles, numberOfignoredFiles, ignoredFiles);
         }
-
+        importedRaCssInfos = raCssInfosList;
     }
     
-    public void removeRaCssInfo() {
-        final RaCssInfo cssToRemove = raCssInfos.getRowData();
+    public void removeRaStyleInfo() {
+        final RaStyleInfo styleToRemove = raStyleInfos.getRowData();
         // TODO Check if used by any CA / Namespace / Role or whatever we decide to apply it to
-        List<RaCssInfo> raCssInfosList = getRaCssInfosList();
-        raCssInfosList.remove(cssToRemove);
-        setRaCssInfosList(raCssInfosList);
-        raCssInfos = new ListDataModel<>(raCssInfosList);
+        List<RaStyleInfo> raCssInfosList = getRaStyleInfosList();
+        raCssInfosList.remove(styleToRemove);
+        setRaStyleInfosList(raCssInfosList);
+        raStyleInfos = new ListDataModel<>(raCssInfosList);
         saveCustomCssConfiguration();
     }
     
@@ -1356,27 +1401,44 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void setRaCssFile(final UploadedFile raCssFile) {
         this.raCssFile = raCssFile;
     }
-    // Necessary for front end row handling etc.
-    public ListDataModel<RaCssInfo> getRaCssInfos() {
-        if (raCssInfos == null) {
-            List<RaCssInfo> raCssInfosList = getRaCssInfosList();
-            raCssInfos = new ListDataModel<>(raCssInfosList);
-        }
-        return raCssInfos;   
+    
+    public UploadedFile getRaLogoFile() {
+        return raLogoFile;
     }
     
-    public List<RaCssInfo> getRaCssInfosList() {
-        raCssInfosList = new ArrayList<>(getGlobalCustomCssConfiguration().getRaCssInfo().values());
-        return raCssInfosList;
+    public void setRaLogoFile(final UploadedFile raLogoFile) {
+        this.raLogoFile = raLogoFile;
     }
-    public void setRaCssInfosList(List<RaCssInfo> raCssInfos) {raCssInfosList = raCssInfos;}
+    
+    public String getArchiveName() {
+        return archiveName;
+    }
+    
+    public void setArchiveName(String archiveName) {
+        this.archiveName = archiveName;
+    }
+    
+    // Necessary for front end row handling etc.
+    public ListDataModel<RaStyleInfo> getRaStyleInfos() {
+        if (raStyleInfos == null) {
+            List<RaStyleInfo> raCssInfosList = getRaStyleInfosList();
+            raStyleInfos = new ListDataModel<>(raCssInfosList);
+        }
+        return raStyleInfos;   
+    }
+    
+    public List<RaStyleInfo> getRaStyleInfosList() {
+        raStyleInfosList = new ArrayList<>(getGlobalCustomCssConfiguration().getRaStyleInfo().values());
+        return raStyleInfosList;
+    }
+    public void setRaStyleInfosList(List<RaStyleInfo> raStyleInfos) {raStyleInfosList = raStyleInfos;}
     
     private void saveCustomCssConfiguration() {
-        LinkedHashMap<Integer, RaCssInfo> raCssMap = new LinkedHashMap<>();
-        for(RaCssInfo raCssInfo : raCssInfosList) {
-            raCssMap.put(raCssInfo.getCssId(), raCssInfo);
+        LinkedHashMap<Integer, RaStyleInfo> raStyleMap = new LinkedHashMap<>();
+        for(RaStyleInfo raStyleInfo : raStyleInfosList) {
+            raStyleMap.put(raStyleInfo.getArchiveId(), raStyleInfo);
         }
-        globalCustomCssConfiguration.setRaCss(raCssMap);
+        globalCustomCssConfiguration.setRaStyle(raStyleMap);
         try {
             getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCustomCssConfiguration);
         } catch (AuthorizationDeniedException e) {
@@ -1653,7 +1715,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             availableTabs.add("Custom Certificate Extensions");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
-            availableTabs.add("Custom Style Sheets");
+            availableTabs.add("Custom RA Styles");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
             availableTabs.add("Statedump");

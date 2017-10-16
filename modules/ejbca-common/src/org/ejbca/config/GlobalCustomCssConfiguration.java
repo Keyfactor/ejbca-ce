@@ -17,7 +17,7 @@ package org.ejbca.config;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.config.RaCssInfo;
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 
 /**
@@ -30,24 +30,28 @@ public class GlobalCustomCssConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
 
     // Default custom RA CSS
-    private static final LinkedHashMap<Integer, RaCssInfo> RA_CUSTOM_CSS_DEFAULT   = new LinkedHashMap<>();
+    private static final LinkedHashMap<Integer, RaStyleInfo> RA_CUSTOM_CSS_DEFAULT   = new LinkedHashMap<>();
 
     private static final String RA_CUSTOM_CSS_REFERENCE = "racustomcss";
     
     
-    public void setRaCss(LinkedHashMap<Integer, RaCssInfo> raCssInfo) {
-        data.put(RA_CUSTOM_CSS_REFERENCE, raCssInfo);
+    public void setRaStyle(LinkedHashMap<Integer, RaStyleInfo> raStyleInfo) {
+        data.put(RA_CUSTOM_CSS_REFERENCE, raStyleInfo);
     }
     
-    public void updateRaCss(RaCssInfo raCssInfo) {
-        Map<Integer, RaCssInfo> mapToUpdate = getRaCssInfo();
-        mapToUpdate.put(raCssInfo.getCssId(), raCssInfo);
+    /** 
+     * Updates a RaStyleInfo archive referenced by Id of raStyleInfo
+     * @param style info to update
+     */
+    public void updateRaStyle(RaStyleInfo raStyleInfo) {
+        Map<Integer, RaStyleInfo> mapToUpdate = getRaStyleInfo();
+        mapToUpdate.put(raStyleInfo.getArchiveId(), raStyleInfo);
         data.put(RA_CUSTOM_CSS_REFERENCE, mapToUpdate);
     }
     
     @SuppressWarnings("unchecked")
-    public LinkedHashMap<Integer, RaCssInfo> getRaCssInfo() {
-        final Map<Integer, RaCssInfo> ret = (Map<Integer,RaCssInfo>)data.get(RA_CUSTOM_CSS_REFERENCE);
+    public LinkedHashMap<Integer, RaStyleInfo> getRaStyleInfo() {
+        final Map<Integer, RaStyleInfo> ret = (Map<Integer,RaStyleInfo>)data.get(RA_CUSTOM_CSS_REFERENCE);
         return ret == null ? RA_CUSTOM_CSS_DEFAULT : new LinkedHashMap<>(ret);
     }
     
