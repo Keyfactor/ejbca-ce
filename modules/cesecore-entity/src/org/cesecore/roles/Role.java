@@ -195,11 +195,11 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         return true;
     }
     
-    public void setCssId(int Id) {
+    public void setStyleId(int Id) {
         data.put(KEY_ASSOCIATED_CSS, (Integer)Id);
     }
     
-    public int getCssId() {
+    public int getStyleId() {
         Integer ret =  (Integer) data.get(KEY_ASSOCIATED_CSS);
         if (ret == null) {
             ret = 0;

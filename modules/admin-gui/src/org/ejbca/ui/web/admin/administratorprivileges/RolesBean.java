@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.config.RaCssInfo;
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
@@ -63,8 +63,8 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     private String editNameSpaceSelected;
     private String editNameSpace;
     private String editRoleName;
-    private int selectedCss;
-    private List<SelectItem> raCssList;
+    private int selectedStyle;
+    private List<SelectItem> raStyleList;
     private ListDataModel<Role> rolesAvailable;
     private List<String> nameSpacesAvailable;
     private boolean onlyEmptyNameSpaceInUse = true;
@@ -159,39 +159,39 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     /** Set the free-text role name when adding or renaming a role */
     public void setEditRoleName(String editRoleName) { this.editRoleName = editRoleName.trim(); }
     
-    public int getSelectedCss() {
+    public int getSelectedStyle() {
         Role roleToSelect = rolesAvailable.getRowData();
-        selectedCss = roleToSelect.getCssId();
-        return selectedCss;
+        selectedStyle = roleToSelect.getStyleId();
+        return selectedStyle;
     }
     
-    public void setSelectedCss(int selectedCss) {
-        this.selectedCss = selectedCss;
-        saveCss();
+    public void setSelectedStyle(int selectedStyle) {
+        this.selectedStyle = selectedStyle;
+        saveStyle();
     }
     
-    public boolean isCssSelectable() {
-        boolean authorizedToCssArchives = authorizationSession.isAuthorizedNoLogging(getAdmin(), 
+    public boolean isStyleSelectable() {
+        boolean authorizedToStyleArchives = authorizationSession.isAuthorizedNoLogging(getAdmin(), 
                 StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.EDITROLES.resource(), StandardRules.VIEWROLES.resource());
-        if (authorizedToCssArchives && raCssList != null && raCssList.size() > 1) {
+        if (authorizedToStyleArchives && raStyleList != null && raStyleList.size() > 1) {
             return true;
         }
         return false;
     }
     
-    public List<SelectItem> getAvailableCssList() throws AuthorizationDeniedException {
+    public List<SelectItem> getAvailableStylesList() throws AuthorizationDeniedException {
         GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
-        raCssList = new ArrayList<>();
-        raCssList.add(new SelectItem(0, "Default"));
-        for (RaCssInfo raCssInfo : globalCustomCssConfiguration.getRaCssInfo().values()) {
-            raCssList.add(new SelectItem(raCssInfo.getCssId(), raCssInfo.getFileName()));
+        raStyleList = new ArrayList<>();
+        raStyleList.add(new SelectItem(0, "Default"));
+        for (RaStyleInfo raStyleInfo : globalCustomCssConfiguration.getRaStyleInfo().values()) {
+            raStyleList.add(new SelectItem(raStyleInfo.getArchiveId(), raStyleInfo.getArchiveName()));
         }
-        return raCssList;
+        return raStyleList;
     }
     
-    private void saveCss() {
+    private void saveStyle() {
         Role roleToSave = rolesAvailable.getRowData();
-        roleToSave.setCssId(selectedCss);
+        roleToSave.setStyleId(selectedStyle);
         try {
             roleSession.persistRole(getAdmin(), roleToSave);
         } catch (RoleExistsException e) {
