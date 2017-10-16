@@ -103,16 +103,18 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
-import org.cesecore.config.RaCssInfo;
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberData;
+import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -237,6 +239,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private RoleSessionLocal roleSession;
     @EJB
+    private RoleDataSessionLocal roleDataSession;
+    @EJB
     private RoleMemberSessionLocal roleMemberSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -301,14 +305,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
     }
 
-    private LinkedHashMap<Integer, RaCssInfo> getAllCustomRaCss() {
+    private LinkedHashMap<Integer, RaStyleInfo> getAllCustomRaCss() {
         GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
         // Returns an empty map if no CSS was found
-        return globalCustomCssConfiguration.getRaCssInfo();
+        return globalCustomCssConfiguration.getRaStyleInfo();
     }
     
     @Override
-    public LinkedHashMap<Integer,RaCssInfo> getAllCustomRaCss(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+    public LinkedHashMap<Integer,RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         boolean authorizedToCssArchives = isAuthorizedNoLogging(authenticationToken, 
                 StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource());
         if (!authorizedToCssArchives) {
@@ -318,17 +322,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public List<RaCssInfo> getAvailableCustomRaCss(AuthenticationToken authenticationToken) {
-        List<RaCssInfo> associatedCss = new ArrayList<>();
-        LinkedHashMap<Integer, RaCssInfo> allCssInfos = getAllCustomRaCss();
+    public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
+        List<RaStyleInfo> associatedCss = new ArrayList<>();
+        LinkedHashMap<Integer, RaStyleInfo> allCssInfos = getAllCustomRaCss();
+        roleDataSession.forceCacheExpire();
         List<Role> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         for (Role role : isMemberOf) {
-            RaCssInfo cssToAdd = allCssInfos.get(role.getCssId());
+            RaStyleInfo cssToAdd = allCssInfos.get(role.getStyleId());
             if (cssToAdd != null) {
-                associatedCss.add(allCssInfos.get(role.getCssId()));
+                associatedCss.add(allCssInfos.get(role.getStyleId()));
             }
         }
-        return associatedCss;
+        if (associatedCss.hashCode() == hashCodeOfCurrentList) {
+            return null;
+        } else {
+            return associatedCss;
+            
+        }
     }
     
     @Override
