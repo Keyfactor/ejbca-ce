@@ -1,4 +1,5 @@
 @echo off
+SetLocal EnableDelayedExpansion 
 
 rem Check that JAVA_HOME is set
 if "%JAVA_HOME%" == "" (
@@ -22,25 +23,11 @@ For /f "tokens=1,2 delims==" %%a in ("%EJBCA_HOME%\conf\ejbca.properties") Do (
 
 rem Fixup arguments, we have to do this since windows normally only 
 rem supports %1-%9 as command line arguments
-set a=%1
-set b=%2
-set c=%3
-set d=%4
-set e=%5
-set f=%6
-set g=%7
-set h=%8
-set i=%9
-shift
-set j=%9
-shift
-set k=%9
-shift
-set l=%9
-shift
-set m=%9
-rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+FOR %%A IN (%*) DO (
+    set args=!args! %%A
+) 
+rem echo %args%
 
-"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+"%JAVA_HOME%\bin\java" -jar "%EJBCA_HOME%\dist\ejbca-ejb-cli\ejbca-ejb-cli.jar" %args%
 
 :end
