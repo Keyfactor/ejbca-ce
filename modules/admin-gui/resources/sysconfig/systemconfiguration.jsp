@@ -660,28 +660,52 @@ org.cesecore.authorization.AuthorizationDeniedException
 		</h:dataTable>
 	</h:form>
 
-	<%-- Custom Style Sheets --%>
+	<%-- Custom RA Styles --%>
 
-	<h:form id="stylesheetform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Custom Style Sheets'}">
+	<h:form id="stylesheetform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Custom RA Styles'}">
 	
 		<h:panelGroup>
 			<h3><h:outputText value="#{web.text.CSS_LIST_TITLE}"/></h3>
-			<h:dataTable value="#{systemConfigMBean.raCssInfos}" var="raCssInfo" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+			<h:dataTable value="#{systemConfigMBean.raStyleInfos}" var="raStyleInfo" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 				<h:column headerClass="gridColumn1">
-					<f:facet name="header"><h:outputText value="Name"/></f:facet>
-					<h:outputText value="#{raCssInfo.fileName}"/>
+					<f:facet name="header"><h:outputText value="#{web.text.COLUMNNAMETITLE}"/></f:facet>
+					<h:outputText value="#{raStyleInfo.archiveName}"/>
 				</h:column>
-				<h:column headerClass="gridColumn2">
+				<h:column headerClass="gridColumn1">
+					<f:facet name="header"><h:outputText value="#{web.text.CSSCOLUMNTITLE}"/></f:facet>
+				 	<h:dataTable value="#{raStyleInfo.raCssInfos}" var="raCssInfo">
+            			<h:column>
+             		  		<h:outputText value="#{raCssInfo.cssName}"/>
+            			</h:column>
+        			</h:dataTable>
+				</h:column>
+				<h:column headerClass="gridColumn1">
+					<f:facet name="header"><h:outputText value="#{web.text.LOGOCOLUMNTITLE}"/></f:facet>
+					<h:outputText value="#{raStyleInfo.logoName}"/>
+				</h:column>
+				<h:column headerClass="gridColumn1">
 					<f:facet name="header"><h:outputText value="#{web.text.CSS_ACTION}"/></f:facet>
-					<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaCssInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
+					<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaStyleInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
 				</h:column>
 			</h:dataTable>
 		</h:panelGroup>
+		<br/>
 		<h3><h:outputText value="#{web.text.IMPORT}"/></h3>
-		<h:panelGrid columns="3" >
-			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}:"/>
+		
+		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColoumRight">
+			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
 			<t:inputFileUpload id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
-			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaCss}"/>
+		</h:panelGrid>
+		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColoumRight">
+			<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
+			<t:inputFileUpload id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
+		</h:panelGrid>
+		<h:panelGrid columns="1" columnClasses="gridColumnLeft">
+			<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
+		</h:panelGrid>
+		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColoumRight">
+			<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}"/>
+			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaStyle}"/>
 		</h:panelGrid>
 			
 	</h:form>
