@@ -22,11 +22,6 @@
                         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     <description><![CDATA[CMP TCP server]]></description>
-
-	<!-- We don't want JBoss to start applying its faces implementation to this simple WAR (we only use it for start and stop of the TCP service). -->    
-    <context-param>
-        <param-name>org.jboss.jbossfaces.WAR_BUNDLES_JSF_IMPL</param-name><param-value>true</param-value>
-    </context-param>
     
     <servlet>
         <description><![CDATA[Used to handle CMP (RFC4210) protocol messages]]></description>
