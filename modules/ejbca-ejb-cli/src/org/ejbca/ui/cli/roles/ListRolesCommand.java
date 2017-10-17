@@ -49,14 +49,14 @@ public class ListRolesCommand extends BaseRolesCommand {
             List<RoleMember> roleMembers;
             try {
                 roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
-                final String roleMembersString = " (" + roleMembers.size() + " admin"+(roleMembers.size()==1?"":"s")+")";
+                final String roleMembersString = " (" + roleMembers.size() + " member"+(roleMembers.size()==1?"":"s")+")";
                 if (StringUtils.isEmpty(role.getNameSpace())) {
                     getLogger().info("'" + role.getRoleName() + "' " + roleMembersString);
                 } else {
                     getLogger().info("["+role.getNameSpace()+"] '" + role.getRoleName() + "' " + roleMembersString + " (Not modifyable from CLI due to namespace.)");
                 }
             } catch (AuthorizationDeniedException e) {
-                getLogger().info(role.getRoleName() + " (? admins)");
+                getLogger().info(role.getRoleName() + " (? members)");
             }
         }
         return CommandResult.SUCCESS;
