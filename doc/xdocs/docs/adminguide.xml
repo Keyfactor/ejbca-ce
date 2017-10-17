@@ -4502,19 +4502,20 @@ to protect your RSA and ECC keys.
 The 'user PIN' is what you will use to activate the token in EJBCA.</p>
 <source>
 sudo apt-get install softhsm2
-softhsm2-util --init-token --free --label myslot
+sudo softhsm2-util --init-token --free --label myslot
 </source>
 <p>It turns out that the Ubuntu package for SoftHSM2 is not always initializing properly (depending on Ubuntu verion you are running on) so you may have to create missing directories etc. 
 If you get an "ERROR: Could not initialize the library" when running the above there is a directory missing, and a token not initialized.</p>
 <source>
-mkdir /var/lib/softhsm/tokens
-softhsm2-util --init-token --slot 0 --label softhsm2
+sudo mkdir /var/lib/softhsm/tokens
+sudo softhsm2-util --init-token --slot 0 --label softhsm2
 </source>
 <p>After initializing slot 0 above, you can go on and initialize other slots, such as above. Note that if you provide the --slot parameter to SoftHSM2 it will most likely not actually become the slotnumber you specify.
 You can list the slots with:</p>
 <source>
-softhsm2-util --show-slots
+sudo softhsm2-util --show-slots
 </source>
+<p>If you want to be able to do it without sudo, you have to make /var/lib/softhsm/tokens available to your normal user.</p>
 </subsection>
 <subsection name="PKCS11 Spy">
 <p>You can debug PKCS11 sessions, all calls made, using OpenSC's P11Spy. From EJBCA 6.8.0 it is included by default in known P11 implementation in con/web.properties.</p>
