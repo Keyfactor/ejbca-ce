@@ -18,9 +18,13 @@
  */
 package org.cesecore.keys.validation;
 
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +32,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Assert;
@@ -203,6 +209,46 @@ public class RsaKeyValidatorTest {
         log.trace("<test03RsaParameterValidations()");
     }
 
+    /** Tests public key validation for the ROCA vulnerable key generation. CVE-2017-15361
+     */
+    @Test
+    public void testRocaWeakKeys() throws CertificateParsingException, InstantiationException, IllegalAccessException, ValidatorNotApplicableException, ValidationException {
+        log.trace(">testRocaWeakKeys()");
+        X509Certificate noroca = CertTools.getCertfromByteArray(noRocaCert, X509Certificate.class);
+        X509Certificate roca = CertTools.getCertfromByteArray(rocaCert, X509Certificate.class);
+        
+        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+                "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
+        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
+
+        // Do not enable validation of ROCA, everything should pass
+        List<String> bitLengths = new ArrayList<String>();
+        bitLengths.add("1024");
+        bitLengths.add("2048");
+        bitLengths.add("2050"); // The positive sample ROCA cert is 2050 bits
+        keyValidator.setBitLengths(bitLengths);
+        List<String> messages = keyValidator.validate(noroca.getPublicKey(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key validation should have been successful: "+messages, 0, messages.size());
+        messages = keyValidator.validate(roca.getPublicKey(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key validation should have been successful: "+messages, 0, messages.size());
+
+        // Check for ROCA weak keys
+        keyValidator.setPublicKeyModulusDontAllowRocaWeakKeys(true);
+        messages = keyValidator.validate(noroca.getPublicKey(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key validation should have been successful: "+messages, 0, messages.size());
+        messages = keyValidator.validate(roca.getPublicKey(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key validation should have failes", 1, messages.size());
+        assertEquals("It should have been a ROCA failure.",
+                "Invalid: RSA public key modulus is a weak key according to CVE-2017-15361.", messages.get(0));
+        
+        log.trace("<testRocaWeakKeys()");
+
+    }
+    
     private void profileHasSmallerFactor(final int factor, final BigInteger... modulus) {
         log.trace(">profileHasSmallerFactor()");
 
@@ -218,4 +264,48 @@ public class RsaKeyValidatorTest {
 
         log.trace("<profileHasSmallerFactor()");
     }
+    
+    private static byte[] noRocaCert = Base64
+            .decode(("MIIEdDCCA1ygAwIBAgIIVjkVCQFZomowDQYJKoZIhvcNAQEFBQAwNTEWMBQGA1UE"
+                    +"AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"
+                    +"DTE2MDkyMjE1MDgxM1oXDTE2MDkyNDE1MDgxM1owMDEOMAwGA1UEAwwFeG1wcDIx"
+                    +"ETAPBgNVBAoMCFByaW1lS2V5MQswCQYDVQQGEwJBRTCBnzANBgkqhkiG9w0BAQEF"
+                    +"AAOBjQAwgYkCgYEAlYenj6Yh6/WGDyxpSIFu4p8JUn8Gs0+p8jYwNsdwut0n2jRs"
+                    +"92u0ekrmao5C0sdOF3EgVojOAWMGbqA32Q/3skXQqKwapgVlJGJXpNeMm47EwB4z"
+                    +"HTFKDwHNrnUOU3EB4kf4Z3leZU1KsDppVyt3he9M1gPHwnhSMKRkdPg64AkCAwEA"
+                    +"AaOCAg8wggILMBkGB2eBCAEBBgIEDjAMAgEAMQcTAVATAklEMAwGA1UdEwEB/wQC"
+                    +"MAAwHwYDVR0jBBgwFoAUu2ifcFjWKrS4wThm+sPPj8GYatowagYDVR0RBGMwYYgD"
+                    +"KQECoBgGCisGAQQBgjcUAgOgCgwIZm9vQGEuc2WgIwYIKwYBBQUHCAWgFwwVdG9t"
+                    +"YXNAeG1wcC5kb21haW4uY29toBsGCCsGAQUFBwgHoA8WDV9TZXJ2aWNlLk5hbWUw"
+                    +"ggEDBgNVHSAEgfswgfgwKAYDKQECMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpi"
+                    +"Y2Eub3JnLzIwKAYDKQEDMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpiY2Eub3Jn"
+                    +"LzMwBQYDKQEBMD0GAykBBDA2MDQGCCsGAQUFBwICMCgeJgBNAHkAIABVAHMAZQBy"
+                    +"ACAATgBvAHQAaQBjAGUAIABUAGUAeAB0MFwGAykBBTBVMDAGCCsGAQUFBwICMCQe"
+                    +"IgBFAEoAQgBDAEEAIABVAHMAZQByACAATgBvAHQAaQBjAGUwIQYIKwYBBQUHAgEW"
+                    +"FWh0dHBzOi8vZWpiY2Eub3JnL0NQUzAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB"
+                    +"BQUHAwQwHQYDVR0OBBYEFMUFBPXfQktUn7WTMUxTHnYSXk8TMA4GA1UdDwEB/wQE"
+                    +"AwIF4DANBgkqhkiG9w0BAQUFAAOCAQEAQ1K6zjPjCNFT1+KJ/E959khU/Hg5dObK"
+                    +"p4LsS+LpPmFu4M9DjS2vwr48lLh+eBB65U+6/WMTO7/3fEeD3AaoD2+f9pnG6pq9"
+                    +"tC3GlfQfuSWELIhebg+73+GcvEpGRqQIKQ0qguTZEJiGK6i7714ECRE+xVD81Hez"
+                    +"BE3M3tBSK1Q6zJ36DdgSx99hz0p8IutMX6ntYDWbA1DJ+V3zzCc5zF3ZSogWv3+T"
+                    +"CJG3EfrGDJ91eVUlGyfDpHRr9a3WOWbypLjh1Q92xxHOJbvgnS9J6mybaOpQYyCn"
+                    +"MVWCdyTMTi9Ik0eybpeVMZYaSEO4xIqwoGbvuBgE2WKm+RuMnMOkfA==").getBytes());
+
+    private static byte[] rocaCert = Base64
+            .decode(("MIICpTCCAYwCCQC2u0PIfFaGMjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls"
+                    +"b2NhbGhvc3QwHhcNMTcxMDE2MTkzODIxWhcNMTgxMDE2MTkzODIxWjAUMRIwEAYD"
+                    +"VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQJZ"
+                    +"J7UrpeaMjJJou5IY83ZzYUymVBj0dFsUPNTuU/lJHJoOHC8jqVFjBq/784ZnuHG8"
+                    +"DMguYPW7Gp+hWlZxp2XJ8huVh9gBFZZDcqODyIOw3L9sd1cGsx6v8+P9SIVZoIze"
+                    +"og+al8TFm2uKjuykV9SoINSVCfdZM2MCvKGjaQsICRgR+Fjy6M6lpiNVrW4EHRk1"
+                    +"7aWSibWXaDtz4mV650v/x2Dk1RPMh9uTVZGOqgjTmLvl9oNdyHElIRubNrOgvHC5"
+                    +"k6bLP30stAYd5z25cslCrfmVW2/kzZDwDQiK7ASvH17/kfIa9e1EYXx9uAk/lTZt"
+                    +"smWAxK85neuU+bFBMFvhAgMBAAEwDQYJKoZIhvcNAQELBQADggECAAG7W49CYRUk"
+                    +"YAFRGXu3M85MKOISyc/kkJ8nbHdV6GxJ05FkoDKbcbZ7nncJiIp2VMAMEIP4bRTJ"
+                    +"5U4g4vSZlmCs8BDmV3Ts/tbDCM6eqK+2hwjhUnCnmmsLt4xVUeAAsWUHl9AVtjzd"
+                    +"oYlm1Kk20QBzNpsvM/gFS5B+duHvTSfELfoq9Pdfvmn2gEXJHe9scO8bfT3fm15z"
+                    +"R6AUYsSsxAhup2Rix6jgJ14KGsh6uVm6jhz9aBTBcgx7iMuuP8zUbUE6nryHYXnR"
+                    +"cSvuYSesTCoFfnL7elrZDak/n0jLfwUD80aWnReJfu9QQGdqdDnSG8lSQ1XPOC7O"
+                    +"/hFW9l0TCzOE").getBytes());
+
 }

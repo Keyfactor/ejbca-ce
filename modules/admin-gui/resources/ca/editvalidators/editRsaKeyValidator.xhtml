@@ -46,6 +46,8 @@
 <h:selectBooleanCheckbox id="rsaPublicKeyModulusOnlyAllowOdd" value="#{validatorBean.validator.publicKeyModulusOnlyAllowOdd}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSDONTALLOWPOWEROFPRIME}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{validatorBean.validator.publicKeyModulusDontAllowPowerOfPrime}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="rsaPublicKeyModulusDontAllowRocaWeakKeys" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSDONTALLOWROCAWEAKKEYS}" styleClass="subItem"/>
+<h:selectBooleanCheckbox id="rsaPublicKeyModulusDontAllowRocaWeakKeys" value="#{validatorBean.validator.publicKeyModulusDontAllowRocaWeakKeys}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusMinFactor" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMINFACTOR}" styleClass="subItem"/>
 <h:inputText id="rsaPublicKeyModulusMinFactor" value="#{validatorBean.validator.publicKeyModulusMinFactor}" required="false" maxlength="10" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusMin" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMIN}" styleClass="subItem"/>
