@@ -4502,20 +4502,28 @@ to protect your RSA and ECC keys.
 The 'user PIN' is what you will use to activate the token in EJBCA.</p>
 <source>
 sudo apt-get install softhsm2
-sudo softhsm2-util --init-token --free --label myslot
+</source>
+<p>In order to use it as a normal user you have to make /var/lib/softhsm/tokens available to your normal user (for writing in order to create keys), and /etc/softhsm/* readable by the user.
+After setting privileges, you can use softhsm as normal user.</p>
+<source>
+softhsm2-util --init-token --free --label myslot
 </source>
 <p>It turns out that the Ubuntu package for SoftHSM2 is not always initializing properly (depending on Ubuntu verion you are running on) so you may have to create missing directories etc. 
 If you get an "ERROR: Could not initialize the library" when running the above there is a directory missing, and a token not initialized.</p>
 <source>
 sudo mkdir /var/lib/softhsm/tokens
-sudo softhsm2-util --init-token --slot 0 --label softhsm2
+sudo chmod a+rwx /var/lib/softhsm
+sudo chmod a+rwx /var/lib/softhsm/tokens
+sudo chmod a+rx /etc/softhsm
+sudo chmod a+r /etc/softhsm/*
+softhsm2-util --init-token --free --label myslot
 </source>
-<p>After initializing slot 0 above, you can go on and initialize other slots, such as above. Note that if you provide the --slot parameter to SoftHSM2 it will most likely not actually become the slotnumber you specify.
+<note>The above commands give write privileges to all users in the system, you may wish to tune that to your security policy. Of course, for real security a real Hardware Security Module should be used anyhow.</note>
+<p>Now you can go on and initialize other slots as well. Note that if you provide the --slot parameter to SoftHSM2 it will most likely not actually become the slotnumber you specify.
 You can list the slots with:</p>
 <source>
-sudo softhsm2-util --show-slots
+softhsm2-util --show-slots
 </source>
-<p>In order to use it as a normal user you have to make /var/lib/softhsm/tokens available to your normal user (for writing in order to create keys), and /etc/softhsm/* readable by the user.</p>
 </subsection>
 <subsection name="PKCS11 Spy">
 <p>You can debug PKCS11 sessions, all calls made, using OpenSC's P11Spy. From EJBCA 6.8.0 it is included by default in known P11 implementation in con/web.properties.</p>
