@@ -80,9 +80,9 @@ import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * 
- * Backing bean for the various system configuration pages. 
- * 
+ *
+ * Backing bean for the various system configuration pages.
+ *
  * @version $Id$
  *
  */
@@ -118,22 +118,22 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableCommandLineDefaultUser;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
-        
+
         //Admin Preferences
         private int preferedLanguage;
         private int secondaryLanguage;
         private String theme;
         private int entriesPerPage;
-        
+
         //Database preferences
         private int maximumQueryCount;
         private long maximumQueryTimeout;
-        
+
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
                 globalConfig = getEjbcaWebBean().getGlobalConfiguration();
             }
-            
+
             try {
                 this.title = globalConfig.getEjbcaTitle();
                 this.headBanner = globalConfig.getHeadBanner();
@@ -167,16 +167,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.secondaryLanguage = adminPreference.getSecondaryLanguage();
                 this.theme = adminPreference.getTheme();
                 this.entriesPerPage = adminPreference.getEntriesPerPage();
-                
+
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
-                this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout(); 
+                this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
             } catch (CADoesntExistsException e) {
                 log.error(e.getLocalizedMessage(), e);
             } catch (Exception e) {
                 log.error(e.getLocalizedMessage(), e);
             }
         }
-        
+
         public String getTitle() { return this.title; }
         public void setTitle(String title) { this.title=title; }
         public String getHeadBanner() { return this.headBanner; }
@@ -225,7 +225,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
-        
+
         // Admin Preferences
         public int getPreferedLanguage() { return this.preferedLanguage; }
         public void setPreferedLanguage(int preferedLanguage) { this.preferedLanguage=preferedLanguage; }
@@ -235,13 +235,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setTheme(String theme) { this.theme=theme; }
         public int getEntriesPerPage() { return this.entriesPerPage; }
         public void setEntriesPerPage(int entriesPerPage) { this.entriesPerPage=entriesPerPage; }
-        
+
         public int getMaximumQueryCount() { return maximumQueryCount; }
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
         public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
         public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
     }
-    
+
     public class EKUInfo {
         private String oid;
         private String name;
@@ -254,14 +254,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getName() { return this.name; }
         public void setName(String name) { this.name=name; }
     }
-    
+
     public class CustomCertExtensionInfo {
         private int id;
         private String oid;
         private String displayName;
         private boolean critical;
         private String encoding;
-        
+
         public CustomCertExtensionInfo(CertificateExtension extension) {
             this.id = extension.getId();
             this.oid = extension.getOID();
@@ -279,7 +279,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public boolean isCritical() { return this.critical; }
         public String getEncoding() { return this.encoding; }
     }
-    
+
     private String selectedTab = null;
     private GlobalConfiguration globalConfig = null;
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
@@ -293,6 +293,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String currentCTLogURL = null;
     private String editedCTLogURL;
     private int currentCTLogTimeout = 5000;
+    private boolean isCurrentCtLogMandatory = false;
     private int editedCTLogTimeout;
     private UploadedFile currentCTLogPublicKeyFile = null;
     private UploadedFile editedCTLogPublicKeyFile;
@@ -302,7 +303,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private UploadedFile statedumpFile = null;
     private String statedumpDir = null;
     private boolean statedumpLockdownAfterImport = false;
-    
+
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
@@ -310,11 +311,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
 
-    
+
     public SystemConfigMBean() {
         super();
     }
-    
+
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
         if (globalCesecoreConfiguration == null) {
             globalCesecoreConfiguration = (GlobalCesecoreConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
@@ -322,21 +323,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return globalCesecoreConfiguration;
     }
-    
+
     public GlobalConfiguration getGlobalConfiguration() {
         if(globalConfig == null) {
             globalConfig = getEjbcaWebBean().getGlobalConfiguration();
         }
         return globalConfig;
     }
-    
+
     public AdminPreference getAdminPreference() throws Exception {
         if(adminPreference == null) {
             adminPreference = getEjbcaWebBean().getDefaultAdminPreference();
         }
         return adminPreference;
     }
-    
+
     /** @return cached or populate a new system configuration GUI representation for view or edit */
     public GuiInfo getCurrentConfig() {
         if(this.currentConfig == null) {
@@ -350,7 +351,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return this.currentConfig;
     }
-    
+
     public String getSelectedTab() {
         final String tabHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("tab");
         // First, check if the user has requested a valid tab
@@ -366,30 +367,30 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return selectedTab;
     }
-    
+
     public String getCurrentNode() {
         return this.currentNode;
     }
     public void setCurrentNode(String node) {
         this.currentNode = node;
     }
-    
+
     public String getCurrentCTLogURL() {
         return currentCTLogURL;
     }
-    
+
     public void setCurrentCTLogURL(String url) {
         this.currentCTLogURL = url;
     }
-    
+
     public int getCurrentCTLogTimeout() {
         return this.currentCTLogTimeout;
     }
-    
+
     public void setCurrentCTLogTimeout(int timeout) {
         this.currentCTLogTimeout = timeout;
     }
-    
+
     public UploadedFile getCurrentCTLogPublicKeyFile() {
         return this.currentCTLogPublicKeyFile;
     }
@@ -397,7 +398,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void setCurrentCTLogPublicKeyFile(UploadedFile publicKeyFile) {
         this.currentCTLogPublicKeyFile = publicKeyFile;
     }
-    
+
     public boolean getExcludeActiveCryptoTokensFromClearCaches() {
         return this.excludeActiveCryptoTokensFromClearCaches;
     }
@@ -414,36 +415,36 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
     }
-    
+
     public String getStatedumpDir() {
         return statedumpDir;
     }
-    
+
     public void setStatedumpDir(final String statedumpDir) {
         this.statedumpDir = statedumpDir;
     }
-    
+
     public UploadedFile getStatedumpFile() {
         return statedumpFile;
     }
-    
+
     public void setStatedumpFile(final UploadedFile statedumpFile) {
         this.statedumpFile = statedumpFile;
     }
-    
+
     public boolean getStatedumpLockdownAfterImport() {
         return statedumpLockdownAfterImport;
     }
-    
+
     public void setStatedumpLockdownAfterImport(final boolean statedumpLockdownAfterImport) {
         this.statedumpLockdownAfterImport = statedumpLockdownAfterImport;
     }
-    
+
     /** Returns true if EJBCA was built with Statedump (from EJBCA 6.5.0 or later) and it hasn't been locked down in the user interface. */
     public boolean isStatedumpAvailable() {
         return statedumpSession != null && !getGlobalConfiguration().getStatedumpLockedDown();
     }
-    
+
     public List<SelectItem> getStatedumpAvailableTemplates() {
         final List<SelectItem> templates = new ArrayList<>();
         try {
@@ -458,7 +459,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         templates.add(0, new SelectItem("", getEjbcaWebBean().getText("NONE")));
         return templates;
     }
-    
+
     public boolean isStatedumpTemplatesVisible() {
         try {
             final String basedir = statedumpSession.getTemplatesBasedir(getAdmin());
@@ -467,14 +468,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return false;
         }
     }
-    
+
     private void importStatedump(final File path, final boolean lockdown) throws IOException, AuthorizationDeniedException {
         final StatedumpImportOptions options = new StatedumpImportOptions();
         options.setLocation(path);
         // Since we currently don't give the user any option to upload an overrides file, we look for an overrides file in the .zip file
         options.setOverridesFile(new File(path, "overrides.properties"));
         options.setMergeCryptoTokens(true);
-        
+
         StatedumpImportResult result = statedumpSession.performDryRun(getAdmin(), options);
         for (final StatedumpObjectKey key : result.getConflicts()) {
             log.info("Will overwrite "+key);
@@ -484,11 +485,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.info("Will use dummy 'foo123' password for "+key+", please disable or change it!");
             options.addPassword(key, "foo123");
         }
-        
+
         log.info("Performing statedump import");
         result = statedumpSession.performImport(getAdmin(), options);
         log.info("Statedump successfully imported.");
-        
+
         // Lock down after import
         if (lockdown) {
             log.info("Locking down Statedump in the Admin Web.");
@@ -496,25 +497,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } else {
             log.debug("Not locking down statedump.");
         }
-        
+
         // Done, add result messages
         for (String msg : result.getNotices()) {
             super.addNonTranslatedInfoMessage(msg);
         }
         super.addNonTranslatedInfoMessage("State dump was successfully imported.");
     }
-    
+
     private void importStatedump(byte[] zip, boolean lockdown) throws IOException, AuthorizationDeniedException {
         // Check that it's a ZIP file
         if (zip.length < 2 || zip[0] != 'P' || zip[1] != 'K') {
             throw new IOException("File is not a valid zip file.");
         }
-        
+
         // Create temporary directory
         final Path tempdirPath = Files.createTempDirectory("ejbca_statedump_gui");
         final File tempdir = tempdirPath.toFile();
         log.info("Importing " + zip.length + " byte statedump zip file, using temporary directory " + tempdir);
-        
+
         // Unpack the zip file
         try (final ZipInputStream zipStream = new ZipInputStream(new ByteArrayInputStream(zip))) {
             boolean empty = true;
@@ -526,19 +527,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     zipStream.closeEntry();
                     continue;
                 }
-                
+
                 final String name = entry.getName().replaceFirst("^.*/([^/]+)$", "$1");
                 if (name.matches("([a-z0-9_-]+\\.xml|replacements.properties)")) {
                     if (log.isDebugEnabled()) {
                         log.debug("Extracting zip file entry " + name + " into temporary directory");
                     }
-                    
+
                     if (entry.getSize() == 0) {
                         log.debug("Ignoring empty file");
                         zipStream.closeEntry();
                         continue;
                     }
-                    
+
                     // Create file exclusively (don't overwrite, and don't write to special devices or operating system special files)
                     final Path filepath = Files.createFile(new File(tempdir, name).toPath());
                     try (final FileOutputStream fos = new FileOutputStream(filepath.toFile())) {
@@ -554,21 +555,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     log.debug("Ignoring zip file entry " + name);
                 }
             }
-            
+
             if (empty) {
                 throw new IOException("Zip file didn't contain any statedump xml files.");
             }
-            
+
             // Import statedump
             importStatedump(tempdir, lockdown);
-            
+
         } finally {
             // Clean up
             log.debug("Removing temporary directory for statedump XML files");
             FileUtils.deleteDirectory(tempdir);
         }
     }
-    
+
     private void lockDownStatedump() throws AuthorizationDeniedException {
         getGlobalConfiguration(); // sets globalConfig
         globalConfig.setStatedumpLockedDown(true);
@@ -578,10 +579,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.debug("Statedump lockdown state changed to "+state);
         }
     }
-    
+
     public void importStatedump() {
         final boolean importFromDir = (statedumpDir != null && !statedumpDir.isEmpty());
-        
+
         if (!importFromDir && statedumpFile == null) {
             if (statedumpLockdownAfterImport) {
                 try {
@@ -596,12 +597,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             return;
         }
-        
+
         if (importFromDir && statedumpFile != null) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Please import from either a directory or an uploaded ZIP file, but not both.", null));
             return;
         }
-        
+
         if (getGlobalConfiguration().getStatedumpLockedDown()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Statedump has been locked down on this EJBCA installation and is not available.", null));
             return;
@@ -620,7 +621,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.info(msg, e);
             super.addNonTranslatedErrorMessage(msg);
         }
-        
+
         // Clear GUI caches
         try {
             getEjbcaWebBean().clearClusterCache(true); // exclude crypto tokens
@@ -630,7 +631,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
     }
-    
+
     public boolean validateCurrentConfig() {
         if (!currentConfig.getEnableKeyRecovery()) {
             currentConfig.setLocalKeyRecovery(false);
@@ -650,11 +651,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return true;
     }
-    
+
     private Integer zeroToNull(int value) {
         return value == 0 ? null : value;
     }
-    
+
     /** Invoked when admin saves the configurations */
     public void saveCurrentConfig() {
         if(currentConfig != null) {
@@ -692,24 +693,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setCTLogs(ctlogsMap);
 
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
-                
+
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
-             
-                
+
+
             } catch (AuthorizationDeniedException | InvalidConfigurationException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
-            } 
-        
+            }
+
             try {
                 adminPreference.setPreferedLanguage(currentConfig.getPreferedLanguage());
                 adminPreference.setSecondaryLanguage(currentConfig.getSecondaryLanguage());
                 adminPreference.setTheme(currentConfig.getTheme());
                 adminPreference.setEntriesPerPage(currentConfig.getEntriesPerPage());
-                
+
                 getEjbcaWebBean().saveDefaultAdminPreference(adminPreference);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save Administrator Preferences. " + e.getLocalizedMessage();
@@ -727,7 +728,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 adminPreference.setSecondaryLanguage(currentConfig.getSecondaryLanguage());
                 adminPreference.setTheme(currentConfig.getTheme());
                 adminPreference.setEntriesPerPage(currentConfig.getEntriesPerPage());
-                
+
                 getEjbcaWebBean().saveDefaultAdminPreference(adminPreference);
             } catch (Exception e) {
                 String msg = "Cannot save Administrator Preferences. " + e.getLocalizedMessage();
@@ -737,7 +738,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    
+
     public void flushCache() {
         globalConfig = null;
         adminPreference = null;
@@ -752,11 +753,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableCustomCertExtensionsConfig = null;
         selectedCustomCertExtensionID = 0;
     }
-    
+
     public void toggleUseAutoEnrollment() { currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment()); }
     public void toggleEnableKeyRecovery() { currentConfig.setEnableKeyRecovery(!currentConfig.getEnableKeyRecovery()); }
     public void toggleLocalKeyRecovery() { currentConfig.setLocalKeyRecovery(!currentConfig.getLocalKeyRecovery()); }
-    
+
     public List<SelectItem> getAvailableCryptoTokens() {
         if (availableCryptoTokens == null) {
             availableCryptoTokens = new ArrayList<>();
@@ -773,17 +774,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return availableCryptoTokens;
     }
-    
+
     public void selectLocalKeyRecoveryCryptoToken() {
         availableKeyAliases = null; // force reload
         currentConfig.setLocalKeyRecoveryKeyAlias(null);
         getAvailableKeyAliases();
     }
-    
+
     public boolean getHasSelectedCryptoToken() {
         return currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0;
     }
-    
+
     public List<SelectItem> getAvailableKeyAliases() {
         if (availableKeyAliases == null) {
             availableKeyAliases = new ArrayList<>();
@@ -792,7 +793,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     final List<String> aliases = new ArrayList<>(cryptoTokenManagementSession.getKeyPairAliases(getEjbcaWebBean().getAdminObject(), currentConfig.getLocalKeyRecoveryCryptoTokenId()));
                     Collections.sort(aliases);
                     for (final String keyAlias : aliases) {
-                        if (currentConfig.getLocalKeyRecoveryKeyAlias() == null && keyAlias != null && 
+                        if (currentConfig.getLocalKeyRecoveryKeyAlias() == null && keyAlias != null &&
                                 (keyAlias.startsWith("default") || keyAlias.startsWith("privatedec"))) {
                             currentConfig.setLocalKeyRecoveryKeyAlias(keyAlias);
                         }
@@ -806,7 +807,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return availableKeyAliases;
     }
-    
+
     /** @return a list of all currently connected nodes in a cluster */
     public ListDataModel<String> getNodesInCluster() {
         if (nodesInCluster == null) {
@@ -819,7 +820,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** Invoked when the user wants to a add a new node to the cluster */
     public void addNode() {
         final String nodeToAdd = getCurrentNode();
-        Set<String> nodes = currentConfig.getNodesInCluster(); 
+        Set<String> nodes = currentConfig.getNodesInCluster();
         nodes.add(nodeToAdd);
         currentConfig.setNodesInCluster(nodes);
         nodesInCluster = new ListDataModel<String>(getListFromSet(nodes));
@@ -827,13 +828,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** Invoked when the user wants to remove a node from the cluster */
     public void removeNode() {
-        final String nodeToRemove = (String) nodesInCluster.getRowData();
-        Set<String> nodes = currentConfig.getNodesInCluster(); 
+        final String nodeToRemove = nodesInCluster.getRowData();
+        Set<String> nodes = currentConfig.getNodesInCluster();
         nodes.remove(nodeToRemove);
         currentConfig.setNodesInCluster(nodes);
         nodesInCluster = new ListDataModel<String>(getListFromSet(nodes));
     }
-    
+
     private List<String> getListFromSet(Set<String> set) {
         List<String> list = new ArrayList<String>();
         if(set!=null && !set.isEmpty()) {
@@ -843,24 +844,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return list;
     }
-    
-    
+
+
     // -------------------------------------------
     //                 CTLogs
     // -------------------------------------------
-    
+
     public String getCtLogUrl() {
         return ctLogs.getRowData().getUrl();
     }
-    
+
     public int getCtLogTimeout() {
         return ctLogs.getRowData().getTimeout();
     }
-    
+
     public String getCtLogPublicKeyID() {
         return ctLogs.getRowData().getLogKeyIdString();
     }
-    
+
     public ListDataModel<CTLogInfo> getCtLogs() {
         if (ctLogs == null) {
             List<CTLogInfo> logs = getCurrentConfig().getCtLogs();
@@ -868,7 +869,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ctLogs;
     }
-    
+
     public void addCTLog() {
         if (currentCTLogURL == null || !currentCTLogURL.contains("://")) {
             addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
@@ -883,13 +884,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return;
         }
-        
+
         final byte[] keybytes = getCTPubKeyUploadBytes(currentCTLogPublicKeyFile);
         if (keybytes == null) {
             // Error already reported
             return;
         }
-        final CTLogInfo ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes);
+        final CTLogInfo ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes, isCurrentCtLogMandatory);
         ctlogToAdd.setTimeout(timeout);
 
         for (CTLogInfo existing : currentConfig.getCtLogs()) {
@@ -898,12 +899,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 return;
             }
         }
-        
-        List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
+
+        List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
         ctlogs.add(ctlogToAdd);
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel<>(ctlogs);
-        
+
         saveCurrentConfig();
         // Saved and well, clear field for next input
         currentCTLogURL = null;
@@ -926,7 +927,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return null;
         }
     }
-    
+
+    /**
+     * Sets a value indicating whether the current active CT log entry is mandatory.
+     * @param isCurrentCtLogMandatory true iff the current entry is chosen as mandatory by the user
+     */
+    public void setIsCurrentCtLogMandatory(final boolean isCurrentCtLogMandatory) {
+        this.isCurrentCtLogMandatory = isCurrentCtLogMandatory;
+    }
+
+    /**
+     * Gets a value indicating whether the current active CT log entry is mandatory. The default
+     * option is false (not mandatory).
+     * @return true iff the current CT log entry is marked as mandatory
+     */
+    public boolean getIsCurrentCtLogMandatory() {
+        return isCurrentCtLogMandatory;
+    }
+
     public void removeCTLog() {
         final CTLogInfo ctlogToRemove = ctLogs.getRowData();
         // Check if it's in use by certificate profiles
@@ -939,50 +957,50 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 usedByProfiles.add(idToName.get(certProfId));
             }
         }
-        
+
         if (!usedByProfiles.isEmpty()) {
             addErrorMessage("CTLOGTAB_INUSEBYPROFILES", StringUtils.join(usedByProfiles, ", "));
             return;
         }
-        
-        List<CTLogInfo> ctlogs = currentConfig.getCtLogs(); 
+
+        List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
         ctlogs.remove(ctlogToRemove);
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel<>(ctlogs);
         saveCurrentConfig();
     }
-    
+
     public boolean isFirstCTLog() {
         final int index = ctLogs.getRowIndex();
         return index == 0;
     }
-    
+
     public boolean isLastCTLog() {
         final int index = ctLogs.getRowIndex();
         final int last = ctLogs.getRowCount() - 1;
         return index == last;
     }
-    
+
     public void moveCTLogUp() {
         moveCTLog(-1);
     }
-    
+
     public void moveCTLogDown() {
         moveCTLog(1);
     }
-    
+
     public void moveCTLog(final int direction) {
         final int index = ctLogs.getRowIndex();
         final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
         Collections.swap(ctlogs, index, index + direction);
-        
+
         currentConfig.setCtLogs(ctlogs);
         ctLogs = new ListDataModel<>(ctlogs);
         saveCurrentConfig();
-        
+
         addInfoMessage("CTLOGTAB_MOVEDCTLOGS");
     }
-    
+
     public String editCTLog() {
         editedCTLog = ctLogs.getRowData();
         editedCTLogURL = editedCTLog.getUrl();
@@ -990,7 +1008,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         editedCTLogPublicKeyFile = null; // nothing will change unless a new file is uploaded
         return "editCTLog";
     }
-    
+
     public String getEditedCTLogDisplayName() {
         try {
             return new URL(editedCTLog.getUrl()).getHost();
@@ -998,15 +1016,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return editedCTLog.getUrl() + " (malformed URL)";
         }
     }
-    
+
     public String getEditedCTLogURL() {
         return editedCTLogURL;
     }
-    
+
     public void setEditedCTLogURL(final String url) {
         editedCTLogURL = url;
     }
-    
+
     public String getEditedCTLogPublicKeyID() {
         return editedCTLog.getLogKeyIdString();
     }
@@ -1014,11 +1032,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public int getEditedCTLogTimeout() {
         return editedCTLogTimeout;
     }
-    
+
     public void setEditedCTLogTimeout(final int timeout) {
         this.editedCTLogTimeout = timeout;
     }
-    
+
     public UploadedFile getEditedCTLogPublicKeyFile() {
         return editedCTLogPublicKeyFile;
     }
@@ -1026,7 +1044,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void setEditedCTLogPublicKeyFile(final UploadedFile publicKeyFile) {
         this.editedCTLogPublicKeyFile = publicKeyFile;
     }
-    
+
     public String saveEditedCTLog() {
         log.trace(">saveEditedCTLog");
         // Get and validate input
@@ -1035,13 +1053,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return "";
         }
         editedCTLogURL = CTLogInfo.fixUrl(editedCTLogURL);
-        
+
         final int timeout = getEditedCTLogTimeout();
         if (timeout <= 0) {
             addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return "";
         }
-        
+
         for (final CTLogInfo existing : currentConfig.getCtLogs()) {
             if (existing.getLogId() != editedCTLog.getLogId() && StringUtils.equals(existing.getUrl(), editedCTLogURL)) {
                 addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
@@ -1077,49 +1095,49 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         log.trace("<saveEditedCTLog [failure]");
         throw new IllegalStateException("Log was not found. Can not save");
     }
-    
-    
+
+
     // --------------------------------------------
     //               Extended Key Usage
     // --------------------------------------------
-    
+
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private ListDataModel<EKUInfo> availableExtendedKeyUsages = null;
     private String currentEKUOid = "";
     private String currentEKUName = "";
-    
+
     public String getCurrentEKUOid() { return currentEKUOid; }
     public void setCurrentEKUOid(String oid) { currentEKUOid=oid; }
     public String getCurrentEKUReadableName() { return currentEKUName; }
     public void setCurrentEKUReadableName(String readableName) { currentEKUName=readableName; }
-    
+
     private void flushNewEKUCache() {
         currentEKUOid = "";
         currentEKUName = "";
     }
-    
+
     private AvailableExtendedKeyUsagesConfiguration getAvailableEKUConfig() {
         if(availableExtendedKeyUsagesConfig == null) {
             availableExtendedKeyUsagesConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         }
         return availableExtendedKeyUsagesConfig;
     }
-    
+
     public String getEKUOid() {
-        return ((EKUInfo) availableExtendedKeyUsages.getRowData()).getOid();
+        return availableExtendedKeyUsages.getRowData().getOid();
     }
-    
+
     public String getEKUName() {
-        return ((EKUInfo) availableExtendedKeyUsages.getRowData()).getName();
+        return availableExtendedKeyUsages.getRowData().getName();
     }
-    
+
     public ListDataModel<EKUInfo> getAvailableExtendedKeyUsages() {
         if(availableExtendedKeyUsages == null) {
             availableExtendedKeyUsages = new ListDataModel<EKUInfo>(getNewAvailableExtendedKeyUsages());
         }
         return availableExtendedKeyUsages;
     }
-    
+
     private ArrayList<EKUInfo> getNewAvailableExtendedKeyUsages() {
         availableExtendedKeyUsagesConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
         ArrayList<EKUInfo> ekus = new ArrayList<EKUInfo>();
@@ -1145,19 +1163,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 } catch(NumberFormatException e) {
                     log.error("OID contains non-numerical values. This should not happen at this point");
                 }
-                
+
                 if(oidFirst.length !=oidSecond.length) {
                     return oidFirst.length < oidSecond.length ? -1 : 1;
                 }
-                
+
                 return 0;
             }
         });
         return ekus;
     }
-    
+
     public void addEKU() {
-        
+
         if (StringUtils.isEmpty(currentEKUOid)) {
             FacesContext.getCurrentInstance()
                     .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage OID is set.", null));
@@ -1172,7 +1190,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No ExtendedKeyUsage Name is set.", null));
             return;
         }
-        
+
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
         try {
@@ -1186,7 +1204,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public void removeEKU() {
-        final EKUInfo ekuToRemove = ((EKUInfo) availableExtendedKeyUsages.getRowData());
+        final EKUInfo ekuToRemove = (availableExtendedKeyUsages.getRowData());
         final String oid = ekuToRemove.getOid();
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         ekuConfig.removeExtKeyUsage(oid);
@@ -1197,15 +1215,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         availableExtendedKeyUsages = new ListDataModel<EKUInfo>(getNewAvailableExtendedKeyUsages());
-        
+
         ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
         if(!cpNamesUsingEKU.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamesUsingEKU);
             final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certitifcate profiles: " +  cpNamesMessage;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));            
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
-    
+
     private ArrayList<String> getCertProfilesUsingEKU(final String oid) {
         ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -1219,11 +1237,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     private String getCertProfilesNamesMessage(final ArrayList<String> certProfileNames) {
         int nrOfProfiles = certProfileNames.size();
         int nrOfdisplayedProfiles = nrOfProfiles>10? 10 : nrOfProfiles;
-        
+
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<nrOfdisplayedProfiles; i++) {
             sb.append(" " + certProfileNames.get(i) + ",");
@@ -1234,7 +1252,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return sb.toString();
     }
-    
+
     private boolean isOidNumericalOnly(String oid) {
         String[] oidParts = oid.split("\\.");
         for(int i=0; i<oidParts.length ; i++) {
@@ -1246,11 +1264,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return true;
     }
-    
+
     // ----------------------------------------------------
     //               Custom RA Styles
     // ----------------------------------------------------
-    
+
     private GlobalCustomCssConfiguration globalCustomCssConfiguration = null;
     private ListDataModel<RaStyleInfo> raStyleInfos = null;
     private List<RaStyleInfo> raStyleInfosList;
@@ -1260,7 +1278,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private String archiveName = null;
     private String logoName = null;
     private byte[] logoBytes = null;
-    
+
     public GlobalCustomCssConfiguration getGlobalCustomCssConfiguration() {
         if (globalCustomCssConfiguration == null) {
             globalCustomCssConfiguration = (GlobalCustomCssConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
@@ -1268,7 +1286,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return globalCustomCssConfiguration;
     }
-    
+
     public void actionImportRaStyle() {
         // Basic checks
         if (raCssFile == null && raLogoFile == null) {
@@ -1300,7 +1318,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     return;
                 }
             }
-            
+
             RaStyleInfo importedRaStyleInfo = new RaStyleInfo(archiveName, importedRaCssInfos, logoBytes, logoName);
             importedRaStyleInfo.setLogoContentType(raCssFile.getContentType());
             raStyleInfosList.add(importedRaStyleInfo);
@@ -1311,7 +1329,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.info("Failed to import style files", e);
         }
     }
-    
+
     private void importLogoFromImageFile() throws IOException {
         String contentType = raLogoFile.getContentType();
         if (!contentType.equals("image/jpeg") && !contentType.equals("image/png")) {
@@ -1322,7 +1340,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         logoBytes = raLogoFile.getBytes();
         addInfoMessage("LOGOIMPORTSUCCESS", logoName);
     }
-    
+
     private void importCssFromFile() throws IOException, IllegalArgumentException, IllegalStateException {
         byte[] fileBuffer = raCssFile.getBytes();
         if (fileBuffer.length == 0) {
@@ -1374,7 +1392,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } else if (numberOfZipEntries == 0) {
             addErrorMessage("ISNOTAZIPFILE");
             return;
-            
+
         }
         if (numberOfignoredFiles == 0) {
             addInfoMessage("CSSIMPORTSUCCESS", numberOfImportedFiles, importedFiles);
@@ -1383,7 +1401,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         importedRaCssInfos = raCssInfosList;
     }
-    
+
     public void removeRaStyleInfo() {
         final RaStyleInfo styleToRemove = raStyleInfos.getRowData();
         // TODO Check if used by any CA / Namespace / Role or whatever we decide to apply it to
@@ -1393,46 +1411,46 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         raStyleInfos = new ListDataModel<>(raCssInfosList);
         saveCustomCssConfiguration();
     }
-    
+
     public UploadedFile getRaCssFile() {
         return raCssFile;
     }
-    
+
     public void setRaCssFile(final UploadedFile raCssFile) {
         this.raCssFile = raCssFile;
     }
-    
+
     public UploadedFile getRaLogoFile() {
         return raLogoFile;
     }
-    
+
     public void setRaLogoFile(final UploadedFile raLogoFile) {
         this.raLogoFile = raLogoFile;
     }
-    
+
     public String getArchiveName() {
         return archiveName;
     }
-    
+
     public void setArchiveName(String archiveName) {
         this.archiveName = archiveName;
     }
-    
+
     // Necessary for front end row handling etc.
     public ListDataModel<RaStyleInfo> getRaStyleInfos() {
         if (raStyleInfos == null) {
             List<RaStyleInfo> raCssInfosList = getRaStyleInfosList();
             raStyleInfos = new ListDataModel<>(raCssInfosList);
         }
-        return raStyleInfos;   
+        return raStyleInfos;
     }
-    
+
     public List<RaStyleInfo> getRaStyleInfosList() {
         raStyleInfosList = new ArrayList<>(getGlobalCustomCssConfiguration().getRaStyleInfo().values());
         return raStyleInfosList;
     }
     public void setRaStyleInfosList(List<RaStyleInfo> raStyleInfos) {raStyleInfosList = raStyleInfos;}
-    
+
     private void saveCustomCssConfiguration() {
         LinkedHashMap<Integer, RaStyleInfo> raStyleMap = new LinkedHashMap<>();
         for(RaStyleInfo raStyleInfo : raStyleInfosList) {
@@ -1447,43 +1465,43 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
     }
-    
+
     // ----------------------------------------------------
     //               Custom Certificate Extensions
     // ----------------------------------------------------
-   
+
     private final String DEFAULT_EXTENSION_CLASSPATH = "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension";
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ListDataModel<CustomCertExtensionInfo> availableCustomCertExtensions = null;
     private int selectedCustomCertExtensionID = 0;
     private String newOID = "";
     private String newDisplayName = "";
- 
+
     public int getSelectedCustomCertExtensionID() { return selectedCustomCertExtensionID; }
     public void setSelectedCustomCertExtensionID(int id) { selectedCustomCertExtensionID=id; }
-    
+
     public String getNewOID() { return newOID; }
     public void setNewOID(String oid) { newOID=oid; }
     public String getNewDisplayName() { return newDisplayName; }
     public void setNewDisplayName(String label) { newDisplayName=label; }
- 
+
     private void flushNewExtensionCache() {
         newOID = "";
         newDisplayName = "";
     }
-    
+
     private AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfig() {
         if(availableCustomCertExtensionsConfig == null) {
             availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         }
         return availableCustomCertExtensionsConfig;
     }
-    
+
     public ListDataModel<CustomCertExtensionInfo> getAvailableCustomCertExtensions() {
         availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
         return availableCustomCertExtensions;
     }
-    
+
     private ArrayList<CustomCertExtensionInfo> getNewAvailableCustomCertExtensions() {
         availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
         ArrayList<CustomCertExtensionInfo> extensionsInfo = new ArrayList<CustomCertExtensionInfo>();
@@ -1491,19 +1509,19 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         for(CertificateExtension extension : allExtensions) {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
         }
-        
+
         Collections.sort(extensionsInfo, new Comparator<CustomCertExtensionInfo>() {
             @Override
             public int compare(CustomCertExtensionInfo first, CustomCertExtensionInfo second) {
                 return Integer.compare(first.getId(), second.getId());
             }
         });
-        
+
         return extensionsInfo;
     }
 
     public void removeCustomCertExtension() {
-        final CustomCertExtensionInfo extensionToRemove = (CustomCertExtensionInfo) availableCustomCertExtensions.getRowData();
+        final CustomCertExtensionInfo extensionToRemove = availableCustomCertExtensions.getRowData();
         final int extID = extensionToRemove.getId();
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
         cceConfig.removeCustomCertExtension(extID);
@@ -1514,7 +1532,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return;
         }
         availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
-        
+
         final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extID);
         if(!cpNamedUsingExtension.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
@@ -1522,7 +1540,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
-    
+
     public void addCustomCertExtension() {
         String newOID = getNewOID();
         if (StringUtils.isEmpty(newOID)) {
@@ -1535,7 +1553,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
             return;
         }
-        
+
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableCustomCertExtensionsConfig();
 
         int newID = generateNewExtensionID(cceConfig);
@@ -1544,7 +1562,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot add more extensions. There are already " + cceConfig.getAllAvailableCustomCertificateExtensions().size() + " extensions.", null));
             return;
         }
-        
+
         if (StringUtils.isEmpty(getNewDisplayName())) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Label is set.", null));
             return;
@@ -1554,7 +1572,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             cceConfig.addCustomCertExtension(newID, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
         } catch(Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Failed to add Custom Certificate Extension. " + e.getLocalizedMessage() , e.getLocalizedMessage()));
             return;
         }
@@ -1562,28 +1580,28 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         flushNewExtensionCache();
         flushCache();
     }
-    
+
     public String actionEdit() {
         selectCurrentRowData();
         customCertificateExtensionViewMode = false;
         return "edit";   // Outcome is defined in faces-config.xml
     }
-    
+
     public String actionView() {
         selectCurrentRowData();
         customCertificateExtensionViewMode = true;
         return "view";   // Outcome is defined in faces-config.xml
     }
-    
+
     public boolean getCustomCertificateExtensionViewMode() {
         return customCertificateExtensionViewMode;
     }
-    
+
     private void selectCurrentRowData() {
-        final CustomCertExtensionInfo cceInfo = (CustomCertExtensionInfo) availableCustomCertExtensions.getRowData();
+        final CustomCertExtensionInfo cceInfo = availableCustomCertExtensions.getRowData();
         selectedCustomCertExtensionID = cceInfo.getId();
     }
-    
+
     private int generateNewExtensionID(AvailableCustomCertificateExtensionsConfiguration cceConfig) {
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
@@ -1594,7 +1612,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return i;
     }
-    
+
     private boolean isExtensionUsedInCertProfiles(final int id, final Map<Integer, CertificateProfile> allCertProfiles) {
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
             final CertificateProfile cp = entry.getValue();
@@ -1605,7 +1623,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-    
+
     private ArrayList<String> getCertProfilesUsingExtension(final int id) {
         ArrayList<String> ret = new ArrayList<String>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
@@ -1619,22 +1637,22 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     /** @return true if admin may create new or modify System Configuration. */
     public boolean isAllowedToEditSystemConfiguration() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
-    
+
     /** @return true if admin may create new or modify existing Extended Key Usages. */
     public boolean isAllowedToEditExtendedKeyUsages() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_EDIT.resource());
     }
-    
+
     /** @return true if admin may create new or modify existing Custom Certificate Extensions. */
     public boolean isAllowedToEditCustomCertificateExtension() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_EDIT.resource());
     }
-    
+
     // ------------------------------------------------
     //             Drop-down menu options
     // ------------------------------------------------
@@ -1644,7 +1662,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem(0, "No encryption"));
         return ret;
     }
-    
+
     /** @return a list of all CA names and caids */
     public List<SelectItem> getAvailableCAs() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
@@ -1660,7 +1678,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<SelectItem> getAvailableLanguages() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final String[] availableLanguages = getEjbcaWebBean().getAvailableLanguages();
@@ -1680,7 +1698,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<SelectItem> getAvailableThemes() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final String[] themes = globalConfig.getAvailableThemes();
@@ -1689,7 +1707,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<SelectItem> getPossibleEntriesPerPage() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
@@ -1698,7 +1716,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<String> getAvailableTabs() {
         final List<String> availableTabs = new ArrayList<String>();
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
@@ -1722,5 +1740,5 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return availableTabs;
     }
-    
+
 }

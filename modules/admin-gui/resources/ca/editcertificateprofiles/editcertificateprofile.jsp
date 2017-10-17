@@ -1004,6 +1004,16 @@
 			<f:selectItems value="#{certProfileBean.enabledCTLogsAvailable}"/>
 		</h:selectManyListbox>
 
+        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_MINMANDATORYSCTS}" styleClass="subItem"/>
+        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
+            <h:inputText id="textfieldCtMinMandatoryScts" value="#{certProfileBean.certificateProfile.ctMinMandatoryScts}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+                disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}"/>
+            <h:outputLabel for="textfieldCtMinMandatoryScts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
+            <h:inputText  id="textfieldCtMinMandatorySctsOcsp" value="#{certProfileBean.certificateProfile.ctMinMandatorySctsOcsp}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+                disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfilesBean.viewOnly}"/>
+            <h:outputLabel for="textfieldCtMinMandatorySctsOcsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
+        </h:panelGroup>
+        
 		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
 		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
     		<h:inputText id="textfieldctminscts" value="#{certProfileBean.certificateProfile.CTMinSCTs}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
