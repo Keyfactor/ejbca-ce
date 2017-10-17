@@ -4515,7 +4515,7 @@ You can list the slots with:</p>
 <source>
 sudo softhsm2-util --show-slots
 </source>
-<p>If you want to be able to do it without sudo, you have to make /var/lib/softhsm/tokens available to your normal user.</p>
+<p>In order to use it as a normal user you have to make /var/lib/softhsm/tokens available to your normal user (for writing in order to create keys), and /etc/softhsm/* readable by the user.</p>
 </subsection>
 <subsection name="PKCS11 Spy">
 <p>You can debug PKCS11 sessions, all calls made, using OpenSC's P11Spy. From EJBCA 6.8.0 it is included by default in known P11 implementation in con/web.properties.</p>
