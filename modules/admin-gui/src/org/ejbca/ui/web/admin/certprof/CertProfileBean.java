@@ -68,7 +68,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * JSF MBean backing the certificate profile pages.
- *  
+ *
  * @version $Id$
  */
 // Declarations in faces-config.xml
@@ -77,11 +77,11 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
-    
+
     // Declarations in faces-config.xml
     //@javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
     private CertProfilesBean certProfilesBean;
-    
+
     private int currentCertProfileId = -1;
     private CertificateProfile certificateProfile = null;
     private ListDataModel<CertificatePolicy> certificatePoliciesModel = null;
@@ -110,7 +110,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public CertProfilesBean getCertProfilesBean() { return certProfilesBean; }
     public void setCertProfilesBean(CertProfilesBean certProfilesBean) { this.certProfilesBean = certProfilesBean; }
 
-   
+
     public Integer getSelectedCertProfileId() {
         return certProfilesBean.getSelectedCertProfileId();
     }
@@ -176,6 +176,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     prof.getCTMinSCTsOCSP() > prof.getCTMaxSCTsOCSP()) {
                     addErrorMessage("INCORRECTMINMAXSCTS");
                     success = false;
+                } else if (countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMinMandatoryScts()
+                        || countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMinMandatorySctsOcsp()) {
+                    addErrorMessage("INCORRECTNUMBEROFMANDATORYSCTS");
+                    success = false;
+                } else if (prof.getCtMinMandatoryScts() > prof.getCTMinSCTs() || prof.getCtMinMandatorySctsOcsp() > prof.getCTMinSCTsOCSP()) {
+                    addErrorMessage("INCORRECTMINMANDANDATORYSCTS");
+                    success = false;
                 }
             }
             if (prof.getUseExpirationRestrictionForWeekdays()) {
@@ -224,9 +231,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 if (!certificateProfile.getUseFreshestCRL() || certificateProfile.getUseCADefinedFreshestCRL()) {
                     certificateProfile.setFreshestCRLURI("");
                 }
-                
+
                 applyExpirationRestrictionForValidityWithFixedDate( certificateProfile);
-                
+
                 final List<PKIDisclosureStatement> pdsList = certificateProfile.getQCEtsiPds();
                 if (pdsList != null) {
                     final List<PKIDisclosureStatement> pdsCleaned = new ArrayList<>();
@@ -242,7 +249,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
                 }
                 certificateProfile.setApprovals(approvals);
-                
+
                 // Modify the profile
                 getEjbcaWebBean().getEjb().getCertificateProfileSession().changeCertificateProfile(getAdmin(), getSelectedCertProfileName(), certificateProfile);
                 getEjbcaWebBean().getInformationMemory().certificateProfilesEdited();
@@ -255,7 +262,18 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return "";
     }
-    
+
+    private int countNumberOfMandatoryLogsAvailable(Set<Integer> ctLogIds) {
+        int numberOfMandatoryLogsAvailable = 0;
+        for (final Integer ctLogId : ctLogIds) {
+            CTLogInfo ctLogInfo = getEjbcaWebBean().getGlobalConfiguration().getCTLogs().get(ctLogId);
+            if (ctLogInfo.isMandatory()) {
+                numberOfMandatoryLogsAvailable++;
+            }
+        }
+        return numberOfMandatoryLogsAvailable;
+    }
+
     private final void applyExpirationRestrictionForValidityWithFixedDate(final CertificateProfile profile) {
         final String encodedValidty = profile.getEncodedValidity();
         if (profile.getUseExpirationRestrictionForWeekdays()) {
@@ -268,7 +286,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             if (null != endDate) { // for fixed end dates.
                 log.info("Applying expiration restrictions for weekdays with fixed end date: " + encodedValidty + " days " + Arrays.toString(profile.getExpirationRestrictionWeekdays()));
                 try {
-                    final Date appliedDate = ValidityDate.applyExpirationRestrictionForWeekdays(endDate, 
+                    final Date appliedDate = ValidityDate.applyExpirationRestrictionForWeekdays(endDate,
                         profile.getExpirationRestrictionWeekdays(), profile.getExpirationRestrictionForWeekdaysExpireBefore());
                     if (!appliedDate.equals(endDate)) {
                         final String newEncodedValidity = ValidityDate.formatAsISO8601ServerTZ(appliedDate.getTime(), ValidityDate.TIMEZONE_SERVER);
@@ -286,7 +304,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isTypeCA() throws AuthorizationDeniedException {
         return isTypeRootCa() || isTypeSubCa();
     }
-    
+
     public boolean isTypeEndEntityAvailable() { return true; }
     public boolean isTypeSubCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
     public boolean isTypeRootCaAvailable() { return isAuthorizedTo(StandardRules.ROLE_ROOT.resource()); }
@@ -296,7 +314,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isTypeSubCa() throws AuthorizationDeniedException { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_SUBCA; }
     public boolean isTypeRootCa() throws AuthorizationDeniedException { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_ROOTCA; }
     public boolean isTypeHardToken() throws AuthorizationDeniedException { return getCertificateProfile().getType()==CertificateConstants.CERTTYPE_HARDTOKEN; }
-    
+
     public void setTypeEndEntity() throws AuthorizationDeniedException { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ENDENTITY); }
     public void setTypeSubCa() throws AuthorizationDeniedException { getCertificateProfile().setType(CertificateConstants.CERTTYPE_SUBCA); }
     public void setTypeRootCa() throws AuthorizationDeniedException { getCertificateProfile().setType(CertificateConstants.CERTTYPE_ROOTCA); }
@@ -305,7 +323,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isUniqueCertificateSerialNumberIndex() {
         return getEjbcaWebBean().getEjb().getCertificateCreateSession().isUniqueCertificateSerialNumberIndex();
     }
-    
+
     public List<SelectItem/*<String,String>*/> getAvailableKeyAlgorithmsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
@@ -333,7 +351,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<SelectItem> getAvailableApprovalProfiles() {
         List<SelectItem> ret = new ArrayList<SelectItem>();
         ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
@@ -342,7 +360,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         for(Entry<Integer, String> entry : entries) {
             ret.add(new SelectItem(entry.getKey(), entry.getValue()));
         }
-        
+
         // Sort list by name
         Collections.sort(ret, new Comparator<SelectItem>() {
             @Override
@@ -350,10 +368,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 return a.getLabel().compareToIgnoreCase(b.getLabel());
             }
         });
-        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));   
+        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
         return ret;
     }
-    
+
     public List<SelectItem/*<String,String*/> getSignatureAlgorithmAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         // null becomes ""-value.
@@ -373,7 +391,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         getCertificateProfile().setSignatureAlgorithm(signatureAlgorithm);
     }
-    
+
     /**
      * Gets the validity.
      * @return the validity as ISO8601 date or relative time.
@@ -400,7 +418,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             getCertificateProfile().setEncodedValidity(value);
         }
     }
-    
+
     /**
      * Gets the validity offset.
      * @return the offset as relative time.
@@ -409,7 +427,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public String getCertificateValidityOffset() throws AuthorizationDeniedException {
         return certificateProfile.getCertificateValidityOffset();
     }
-    
+
     /**
      * Sets the validity offset.
      * @param value the offset as relative time.
@@ -423,12 +441,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseCertificateValidityOffset(!getCertificateProfile().getUseCertificateValidityOffset());
         redirectToComponent("checkusecertificatevalidityoffsetgroup");
     }
-    
+
     public void toggleUseExpirationRestrictionForWeekdays() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseExpirationRestrictionForWeekdays(!getCertificateProfile().getUseExpirationRestrictionForWeekdays());
         redirectToComponent("checkuseexpirationtrestrictionforweekdaysgroup");
     }
-    
+
     public boolean isExpirationRestrictionMonday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.MONDAY); }
     public boolean isExpirationRestrictionTuesday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.TUESDAY); }
     public boolean isExpirationRestrictionWednesday() throws AuthorizationDeniedException { return getCertificateProfile().getExpirationRestrictionWeekday(Calendar.WEDNESDAY); }
@@ -450,12 +468,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         result.add(new SelectItem(Boolean.FALSE, getEjbcaWebBean().getText("CERT_EXPIRATION_RESTRICTION_AFTER")));
         return result;
     }
-    
+
     public void toggleUseBasicConstraints() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseBasicConstraints(!getCertificateProfile().getUseBasicConstraints());
         redirectToComponent("header_x509v3extensions");
     }
-    
+
     public void toggleUsePathLengthConstraint() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePathLengthConstraint(!getCertificateProfile().getUsePathLengthConstraint());
         if (getCertificateProfile().getUsePathLengthConstraint()) {
@@ -465,12 +483,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         redirectToComponent("header_x509v3extensions");
     }
-    
+
     public void toggleUseKeyUsage() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseKeyUsage(!getCertificateProfile().getUseKeyUsage());
         redirectToComponent("header_x509v3extensions_usages");
     }
-    
+
     public boolean isKeyUsageDigitalSignature() throws AuthorizationDeniedException { return getCertificateProfile().getKeyUsage(CertificateConstants.DIGITALSIGNATURE); }
     public boolean isKeyUsageNonRepudiation() throws AuthorizationDeniedException { return getCertificateProfile().getKeyUsage(CertificateConstants.NONREPUDIATION); }
     public boolean isKeyUsageKeyEncipherment() throws AuthorizationDeniedException { return getCertificateProfile().getKeyUsage(CertificateConstants.KEYENCIPHERMENT); }
@@ -489,10 +507,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void setKeyUsageKeyCrlSign(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.CRLSIGN, enabled); }
     public void setKeyUsageEncipherOnly(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.ENCIPHERONLY, enabled); }
     public void setKeyUsageDecipherOnly(final boolean enabled) throws AuthorizationDeniedException { getCertificateProfile().setKeyUsage(CertificateConstants.DECIPHERONLY, enabled); }
-    public boolean isNonOverridableExtensionOIDs() { return !getCertificateProfile().getNonOverridableExtensionOIDs().isEmpty(); } 
+    public boolean isNonOverridableExtensionOIDs() { return !getCertificateProfile().getNonOverridableExtensionOIDs().isEmpty(); }
     /** Toggles which Set is populated, the one for overridable, or the one for non-overridable
-     * @param true to populate non-overridable extension list, false for overridable 
-     */ 
+     * @param true to populate non-overridable extension list, false for overridable
+     */
     public void toggleAllowExtensionOverride() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setAllowExtensionOverride(!getCertificateProfile().getAllowExtensionOverride());
         redirectToComponent("checkallowextensionoverridegroup");
@@ -505,16 +523,16 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             profile.setOverridableExtensionOIDs(new LinkedHashSet<String>());
         } else {
             profile.setOverridableExtensionOIDs(extensions);
-            profile.setNonOverridableExtensionOIDs(new LinkedHashSet<String>());            
+            profile.setNonOverridableExtensionOIDs(new LinkedHashSet<String>());
         }
-    } 
+    }
     public Set<String> getOverridableExtensionOIDs() {
         final CertificateProfile profile = getCertificateProfile();
         if (isNonOverridableExtensionOIDs()) {
             return profile.getNonOverridableExtensionOIDs();
         } else {
             return profile.getOverridableExtensionOIDs();
-        }        
+        }
     }
     public void setOverridableExtensionOIDs(Set<String> oids) {
         final CertificateProfile profile = getCertificateProfile();
@@ -523,7 +541,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         } else {
             profile.setOverridableExtensionOIDs(oids);
         }
-            
+
     }
 
     public void toggleUseExtendedKeyUsage() throws AuthorizationDeniedException, IOException {
@@ -548,7 +566,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         } else {
             for (Entry<String, String> eku : ekus.entrySet()) {
                 ret.add(new SelectItem(eku.getKey(), getEjbcaWebBean().getText(eku.getValue())));
-            }           
+            }
             for (String oid : usedEKUs) {
                 if (!ekus.containsKey(oid)) {
                     ret.add(new SelectItem(oid, oid));
@@ -560,18 +578,18 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             public int compare(SelectItem first, SelectItem second) {
                 return first.getLabel().compareTo(second.getLabel());
             }
-            
+
         });
         return ret;
     }
-    
+
     public void toggleUseSubjectAlternativeName() throws IOException {
         getCertificateProfile().setUseSubjectAlternativeName(!getCertificateProfile().getUseSubjectAlternativeName());
         // Default store to enabled when extension is first enabled and vice versa
         getCertificateProfile().setStoreSubjectAlternativeName(getCertificateProfile().getUseSubjectAlternativeName());
         redirectToComponent("header_x509v3extensions_names");
     }
-    
+
     public void toggleUseIssuerAlternativeName() throws IOException {
         getCertificateProfile().setUseIssuerAlternativeName(!getCertificateProfile().getUseIssuerAlternativeName());
         redirectToComponent("header_x509v3extensions_names");
@@ -581,32 +599,32 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseNameConstraints(!getCertificateProfile().getUseNameConstraints());
         redirectToComponent("header_x509v3extensions_names");
     }
-    
+
     public void toggleUseCRLDistributionPoint() throws IOException {
         getCertificateProfile().setUseCRLDistributionPoint(!getCertificateProfile().getUseCRLDistributionPoint());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseDefaultCRLDistributionPoint() throws IOException {
         getCertificateProfile().setUseDefaultCRLDistributionPoint(!getCertificateProfile().getUseDefaultCRLDistributionPoint());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseCADefinedFreshestCRL() throws IOException {
         getCertificateProfile().setUseCADefinedFreshestCRL(!getCertificateProfile().getUseCADefinedFreshestCRL());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseFreshestCRL() throws IOException {
         getCertificateProfile().setUseFreshestCRL(!getCertificateProfile().getUseFreshestCRL());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseCertificatePolicies() throws IOException {
         getCertificateProfile().setUseCertificatePolicies(!getCertificateProfile().getUseCertificatePolicies());
         redirectToComponent("header_x509v3extensions_usages");
     }
-    
+
     public ListDataModel<CertificatePolicy> getCertificatePolicies() {
         if (certificatePoliciesModel==null) {
             final List<CertificatePolicy> certificatePolicies = getCertificateProfile().getCertificatePolicies();
@@ -618,15 +636,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return certificatePoliciesModel;
     }
-    
+
     public boolean isCurrentCertificatePolicyQualifierIdNone() throws AuthorizationDeniedException {
-        return "".equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+        return "".equals(getCertificatePolicies().getRowData().getQualifierId());
     }
     public boolean isCurrentCertificatePolicyQualifierIdCpsUri() throws AuthorizationDeniedException {
-        return CertificatePolicy.id_qt_cps.equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+        return CertificatePolicy.id_qt_cps.equals(getCertificatePolicies().getRowData().getQualifierId());
     }
     public boolean isCurrentCertificatePolicyQualifierIdUserNotice() throws AuthorizationDeniedException {
-        return CertificatePolicy.id_qt_unotice.equals(((CertificatePolicy)getCertificatePolicies().getRowData()).getQualifierId());
+        return CertificatePolicy.id_qt_unotice.equals(getCertificatePolicies().getRowData().getQualifierId());
     }
 
     public CertificatePolicy getNewCertificatePolicy() {
@@ -670,7 +688,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
 
     public String deleteCertificatePolicy() throws AuthorizationDeniedException, IOException {
-        final CertificatePolicy certificatePolicy = (CertificatePolicy) getCertificatePolicies().getRowData();
+        final CertificatePolicy certificatePolicy = getCertificatePolicies().getRowData();
         getCertificateProfile().removeCertificatePolicy(certificatePolicy);
         newCertificatePolicy = certificatePolicy;
         certificatePoliciesModel = null;
@@ -694,17 +712,17 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseAuthorityInformationAccess(!getCertificateProfile().getUseAuthorityInformationAccess());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseDefaultCAIssuer() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultCAIssuer(!getCertificateProfile().getUseDefaultCAIssuer());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public void toggleUseDefaultOCSPServiceLocator() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseDefaultOCSPServiceLocator(!getCertificateProfile().getUseDefaultOCSPServiceLocator());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public String getNewCaIssuer() { return newCaIssuer; }
     public void setNewCaIssuer(String newCaIssuer) { this.newCaIssuer = newCaIssuer.trim(); }
 
@@ -717,14 +735,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
 
     public String deleteCaIssuer() throws AuthorizationDeniedException, IOException {
-        final String caIssuer = (String) getCaIssuers().getRowData();
+        final String caIssuer = getCaIssuers().getRowData();
         getCertificateProfile().removeCaIssuer(caIssuer);
         newCaIssuer = caIssuer;
         caIssuersModel = null;
         redirectToComponent("header_x509v3extensions_valdata");
         return "";
     }
-    
+
     public void toggleUsePrivateKeyUsagePeriodNotBefore() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotBefore(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotBefore());
         redirectToComponent("header_x509v3extensions_valdata");
@@ -751,7 +769,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUsePrivateKeyUsagePeriodNotAfter(!getCertificateProfile().isUsePrivateKeyUsagePeriodNotAfter());
         redirectToComponent("header_x509v3extensions_valdata");
     }
-    
+
     public String getPrivateKeyUsagePeriodLength() throws AuthorizationDeniedException {
         final CertificateProfile certificateProfile = getCertificateProfile();
         if (certificateProfile.isUsePrivateKeyUsagePeriodNotAfter()) {
@@ -773,7 +791,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseQCStatement(!getCertificateProfile().getUseQCStatement());
         redirectToComponent("header_qcStatements");
     }
-    
+
     private List<PKIDisclosureStatement> getQCEtsiPdsList() {
         List<PKIDisclosureStatement> pdsList = getCertificateProfile().getQCEtsiPds();
         if (pdsList == null) {
@@ -784,7 +802,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return pdsList;
     }
-    
+
     public ListDataModel<PKIDisclosureStatement> getQCEtsiPds() {
         if (pdsListModel == null) {
             final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
@@ -804,7 +822,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return pdsListModel;
     }
-    
+
     /** Called when the user presses the "Add" button to add a new PDS URL field */
     public String addQCEtsiPds() throws IOException {
         final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
@@ -824,7 +842,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_qcStatements");
         return "";
     }
-    
+
     /** Returns true if there's a PDS URL filled in that can be deleted */
     public boolean isAbleToDeletePDSUrl() {
         final List<PKIDisclosureStatement> pdsList = getQCEtsiPdsList();
@@ -839,22 +857,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             return true;
         }
     }
-    
+
     public void toggleUseQCEtsiValueLimit() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseQCEtsiValueLimit(!getCertificateProfile().getUseQCEtsiValueLimit());
         redirectToComponent("header_qcStatements");
     }
-    
+
     public void toggleUseQCEtsiRetentionPeriod() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseQCEtsiRetentionPeriod(!getCertificateProfile().getUseQCEtsiRetentionPeriod());
         redirectToComponent("header_qcStatements");
     }
-    
+
     public void toggleUseQCCustomString() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseQCCustomString(!getCertificateProfile().getUseQCCustomString());
         redirectToComponent("header_qcStatements");
     }
-    
+
     public void toggleUseCertificateTransparencyInCerts() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificateTransparencyInCerts(!getCertificateProfile().isUseCertificateTransparencyInCerts());
         redirectToComponent("header_certificatetransparency");
@@ -864,29 +882,29 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseCertificateTransparencyInOCSP(!getCertificateProfile().isUseCertificateTransparencyInOCSP());
         redirectToComponent("header_certificatetransparency");
     }
-    
+
     public void toggleUseCertificateTransparencyInPublishers() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCertificateTransparencyInPublishers(!getCertificateProfile().isUseCertificateTransparencyInPublishers());
         redirectToComponent("header_certificatetransparency");
     }
-    
+
     public boolean isCtAvailable() { return CertificateTransparencyFactory.isCTAvailable(); }
     public boolean isCtEnabled() throws AuthorizationDeniedException {
         return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
             getCertificateProfile().isUseCertificateTransparencyInOCSP() ||
             getCertificateProfile().isUseCertificateTransparencyInPublishers();
     }
-    
+
     public boolean isCtInCertsOrOCSPEnabled() throws AuthorizationDeniedException {
         return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
             getCertificateProfile().isUseCertificateTransparencyInOCSP();
     }
-    
+
     public boolean isCtInOCSPOrPublishersEnabled() throws AuthorizationDeniedException {
         return getCertificateProfile().isUseCertificateTransparencyInOCSP() ||
             getCertificateProfile().isUseCertificateTransparencyInPublishers();
     }
-    
+
     public List<SelectItem/*<String,String*/> getEnabledCTLogsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final CTLogInfo current : getEjbcaWebBean().getGlobalConfiguration().getCTLogs().values()) {
@@ -894,7 +912,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    /** @returns the size of the select box */  
+    /** @returns the size of the select box */
     public int getEnabledCTLogsAvailableSize() { return Math.max(3, Math.min(6, getEnabledCTLogsAvailable().size())); }
     public List<String> getEnabledCTLogs() throws AuthorizationDeniedException {
         final List<String> ret = new ArrayList<String>();
@@ -915,7 +933,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseMicrosoftTemplate(!getCertificateProfile().getUseMicrosoftTemplate());
         redirectToComponent("otherextensions");
     }
-    
+
     public List<SelectItem/*<String,String*/> getMicrosoftTemplateAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         for (final String current : CertificateProfile.AVAILABLE_MSTEMPLATES) {
@@ -928,12 +946,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseDocumentTypeList(!getCertificateProfile().getUseDocumentTypeList());
         redirectToComponent("cvc_epassport");
     }
-    
+
     public String getDocumentTypeListNew() { return documentTypeListNew; }
     public void setDocumentTypeListNew(String documentTypeListNew) { this.documentTypeListNew = documentTypeListNew.trim(); }
 
     public void documentTypeListRemove() throws AuthorizationDeniedException, IOException {
-        final String current = (String) getDocumentTypeList().getRowData();
+        final String current = getDocumentTypeList().getRowData();
         ArrayList<String> documentTypeListValue = getCertificateProfile().getDocumentTypeList();
         documentTypeListValue.remove(current);
         getCertificateProfile().setDocumentTypeList(documentTypeListValue);
@@ -961,7 +979,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public boolean isCvcAvailable() {
         return CvcCA.getImplementationClasses().iterator().hasNext();
     }
-    
+
     public boolean isCvcTerminalTypeIs() throws AuthorizationDeniedException { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_IS; }
     public boolean isCvcTerminalTypeAt() throws AuthorizationDeniedException { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_AT; }
     public boolean isCvcTerminalTypeSt() throws AuthorizationDeniedException { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_ST; }
@@ -984,7 +1002,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setCVCLongAccessRights(null);
         redirectToComponent("cvc_epassport");
     }
-    
+
     public List<SelectItem/*<Integer,String*/> getCvcSignTermDVTypeAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ret.add(new SelectItem(CertificateProfile.CVC_SIGNTERM_DV_AB, getEjbcaWebBean().getText("CVCACCREDITATIONBODY")));
@@ -1075,12 +1093,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseCNPostfix(!getCertificateProfile().getUseCNPostfix());
         redirectToComponent("otherdata");
     }
-    
+
     public void toggleUseSubjectDNSubSet() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseSubjectDNSubSet(!getCertificateProfile().getUseSubjectDNSubSet());
         redirectToComponent("otherdata");
     }
-    
+
     public List<SelectItem/*<Integer,String*/> getSubjectDNSubSetAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final Integer[] useSubjectDNFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
@@ -1094,7 +1112,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().setUseSubjectAltNameSubSet(!getCertificateProfile().getUseSubjectAltNameSubSet());
         redirectToComponent("otherdata");
     }
-    
+
     public List<SelectItem/*<Integer,String*/> getSubjectAltNameSubSetAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         final Integer[] useSubjectANFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
@@ -1106,9 +1124,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableCertificateExtensionsAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        
+
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
-        
+
         List<Integer> usedExtensions = getCertificateProfile().getUsedCertificateExtensions();
         if (certProfilesBean.getViewOnly()) {
             //If in view mode, only display used values.
@@ -1124,7 +1142,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         } else {
             for (final CertificateExtension current : cceConfig.getAllAvailableCustomCertificateExtensions()) {
                 ret.add(new SelectItem(current.getId(), getEjbcaWebBean().getText(current.getDisplayName())));
-            }            
+            }
             for (int id : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(id)) {
                     String note = id + " (No longer used. Please unselect this option)";
@@ -1138,12 +1156,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 return first.getLabel().compareToIgnoreCase(second.getLabel());
             }
         });
-        
+
         return ret;
     }
-    
+
     public static class ApprovalRequestItem {
-        private final ApprovalRequestType requestType; 
+        private final ApprovalRequestType requestType;
         private int approvalProfileId;
 
         public ApprovalRequestItem(final ApprovalRequestType requestType, final int approvalProfileId) {
@@ -1154,7 +1172,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         public ApprovalRequestType getRequestType() {
             return requestType;
         }
-        
+
         public int getApprovalProfileId() {
             return approvalProfileId;
         }
@@ -1162,24 +1180,24 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         public void setApprovalProfileId(int approvalProfileId) {
             this.approvalProfileId = approvalProfileId;
         }
-        
+
         public String getDisplayText() {
             return EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(requestType.getLanguageString());
         }
-        
+
     }
-    
+
     public List<ApprovalRequestItem> getApprovalRequestItems() {
         if (approvalRequestItems == null) {
             approvalRequestItems = new ArrayList<>();
             Map<ApprovalRequestType, Integer> approvals = certificateProfile.getApprovals();
             for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 int approvalProfileId;
-                if (approvals.containsKey(approvalRequestType)) { 
-                    approvalProfileId = approvals.get(approvalRequestType); 
-                } else { 
-                    approvalProfileId = -1; 
-                } 
+                if (approvals.containsKey(approvalRequestType)) {
+                    approvalProfileId = approvals.get(approvalRequestType);
+                } else {
+                    approvalProfileId = -1;
+                }
                 approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
         }
@@ -1195,8 +1213,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         final List<Integer> allCAs = getEjbcaWebBean().getEjb().getCaSession().getAllCaIds();
         final List<Integer> authorizedCAs = getEjbcaWebBean().getEjb().getCaSession().getAuthorizedCaIds(getAdmin());
         final Map<Integer, String> caIdToNameMap = getEjbcaWebBean().getEjb().getCaSession().getCAIdToNameMap();
-    
-        //If in view mode, add only authorized CA's 
+
+        //If in view mode, add only authorized CA's
         if (certProfilesBean.getViewOnly()) {
             for(final Integer caId : authorizedCAs) {
                 ret.add(new SelectItem(caId, caIdToNameMap.get(caId), "", true));
@@ -1213,10 +1231,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             }
         });
         ret. add(0, new SelectItem(String.valueOf(CertificateProfile.ANYCA), getEjbcaWebBean().getText("ANYCA")));
-        
+
         return ret;
     }
-    
+
     public int getAvailableCAsAvailableSize() { return Math.max(1, Math.min(7, getAvailableCAsAvailable().size())); };
 
     public List<SelectItem/*<Integer,String*/> getPublisherListAvailable() {
