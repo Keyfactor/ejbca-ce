@@ -593,6 +593,15 @@ org.cesecore.authorization.AuthorizationDeniedException
 					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 				</f:facet>
 			</h:column>
+			<h:column>
+			    <f:facet name="header">
+			        <h:outputText value="#{web.text.MANDATORY}" />
+			    </f:facet>
+			    <h:outputText value="#{ctlog.isMandatory() ? web.text.YES : web.text.NO}" />
+			    <f:facet name="footer">
+			        <h:selectBooleanCheckbox id="isMandatoryCtLog" value="#{systemConfigMBean.isCurrentCtLogMandatory}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+			    </f:facet>
+			</h:column>
 		</h:dataTable>
 	</h:form>
 	
