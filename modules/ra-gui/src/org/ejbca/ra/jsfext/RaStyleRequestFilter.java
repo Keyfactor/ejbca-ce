@@ -91,7 +91,6 @@ public class RaStyleRequestFilter implements Filter {
         String requestPath = httpRequest.getRequestURI();
         String resource = requestPath.substring(requestPath.lastIndexOf('/') + 1, requestPath.length());
         authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
-        
         if (cssCache.containsKey(authenticationToken)) {
             List<RaStyleInfo> cachedStyles = cssCache.get(authenticationToken);
             // Check for changes
@@ -99,6 +98,8 @@ public class RaStyleRequestFilter implements Filter {
             if (availableRaStyles == null) {
                 // No changes, use cache
                 availableRaStyles = cachedStyles;
+            } else {
+                cssCache.put(authenticationToken, availableRaStyles);
             }
         } else {
             // Full reload of styles
