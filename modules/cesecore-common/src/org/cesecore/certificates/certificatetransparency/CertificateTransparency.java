@@ -76,8 +76,9 @@ public interface CertificateTransparency {
      * @param chain Certificate chain including any CT signer and the leaf pre-certificate
      * @param logs The logs to connect to.
      * @param minMandatorySCTs the number of mandatory SCTs required
-     * @param minSCTs The number of SCTs required
-     * @param maxSCTs the maximum number of SCTs to fetch concurrently
+     * @param maxMandatorySCTs the maximum number of mandatory SCTs to fetch in parallel
+     * @param minSCTs The minimum number of SCTs required in total
+     * @param maxSCTs the maximum number of SCTs to fetch in parallel in total
      * @param maxRetries Maximum number of retries
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
