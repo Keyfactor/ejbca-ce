@@ -50,11 +50,6 @@
                         <h:outputText value="#{role.roleName}"/>
                     </h:column>
                     <h:column>
-                       	<f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_CSS}"/></f:facet>
-                        <h:selectOneMenu id="selectCustomStyle" value="#{rolesBean.selectedStyle}" disabled="#{!rolesBean.styleSelectable}">
-							<f:selectItems value="#{rolesBean.availableStylesList}"/>
-                            <f:ajax event="change" execute="@this"/>
-						</h:selectOneMenu>
                         <h:outputLink value="rolemembers.xhtml" styleClass="commandLink" title="#{web.text.EDITROLEMEMBERS}">
                             <f:param name="roleId" value="#{role.roleId}"/>
                             <h:outputText value="#{web.text.ROLEMEMBERS}"/>
@@ -65,6 +60,11 @@
                         </h:outputLink>
                     </h:column>
                     <h:column rendered="#{rolesBean.authorizedToEditRoles}">
+						<f:facet name="header"><h:outputText value="#{web.text.ROLES_LABEL_RASTYLES}"/></f:facet>
+                        <h:selectOneMenu id="selectCustomStyle" value="#{rolesBean.selectedStyle}" disabled="#{!rolesBean.styleSelectable}">
+							<f:selectItems value="#{rolesBean.availableStylesList}"/>
+                            <f:ajax event="change" execute="@this"/>
+						</h:selectOneMenu>   
                         <f:facet name="header"></f:facet>
                         <h:commandButton action="#{rolesBean.actionRenameRoleStart}" value="#{web.text.RENAME}">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
