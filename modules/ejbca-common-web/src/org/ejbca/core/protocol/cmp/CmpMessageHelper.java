@@ -625,7 +625,7 @@ public class CmpMessageHelper {
         String str = null;
         if (octets != null) {
             str = new String(octets.getOctets(), StandardCharsets.UTF_8);
-            if (StringUtils.isAsciiPrintable(str)) {
+            if (StringUtils.isAlphanumericSpace(str)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Found string: " + str);
                 }
