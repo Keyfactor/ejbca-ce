@@ -176,12 +176,16 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     prof.getCTMinSCTsOCSP() > prof.getCTMaxSCTsOCSP()) {
                     addErrorMessage("INCORRECTMINMAXSCTS");
                     success = false;
-                } else if (countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMinMandatoryScts()
-                        || countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMinMandatorySctsOcsp()) {
+                } else if (countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMaxMandatoryScts()
+                        || countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMaxMandatorySctsOcsp()) {
                     addErrorMessage("INCORRECTNUMBEROFMANDATORYSCTS");
                     success = false;
                 } else if (prof.getCtMinMandatoryScts() > prof.getCTMinSCTs() || prof.getCtMinMandatorySctsOcsp() > prof.getCTMinSCTsOCSP()) {
                     addErrorMessage("INCORRECTMINMANDANDATORYSCTS");
+                    success = false;
+                } else if (prof.getCtMinMandatoryScts() > prof.getCtMaxMandatoryScts()
+                        || prof.getCtMinMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp()) {
+                    addErrorMessage("INCORRECTMINMAXMANDATORYSCTS");
                     success = false;
                 }
             }

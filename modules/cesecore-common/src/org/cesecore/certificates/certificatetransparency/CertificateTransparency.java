@@ -82,7 +82,8 @@ public interface CertificateTransparency {
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minMandatorySCTs, int minSCTs, int maxSCTs, int maxRetries)
+    byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minMandatorySCTs, int maxMandatorySCTs, int minSCTs, int maxSCTs,
+            int maxRetries)
             throws CTLogException;
 
     /**
