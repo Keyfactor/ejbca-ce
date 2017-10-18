@@ -632,7 +632,7 @@ public class CmpMessageHelper {
             } else {
                 str = new String(Hex.encode(octets.getOctets()));
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("DEROCtetString content is not asciiPrintable, converting to hex: " + str);
+                    LOG.debug("DEROCtetString content is not alphaNumeric (including space), converting to hex: " + str);
                 }
             }
         }
