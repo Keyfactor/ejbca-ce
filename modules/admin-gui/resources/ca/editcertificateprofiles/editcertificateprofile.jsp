@@ -1014,6 +1014,16 @@
             <h:outputLabel for="textfieldCtMinMandatorySctsOcsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
         </h:panelGroup>
         
+        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_MAXMANDATORYSCTS}" styleClass="subItem"/>
+        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
+            <h:inputText id="textfieldCtMaxMandatoryScts" value="#{certProfileBean.certificateProfile.ctMaxMandatoryScts}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+                disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}"/>
+            <h:outputLabel for="textfieldCtMaxMandatoryScts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
+            <h:inputText  id="textfieldCtMaxMandatorySctsOcsp" value="#{certProfileBean.certificateProfile.ctMaxMandatorySctsOcsp}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
+                disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInOCSP or certProfilesBean.viewOnly}"/>
+            <h:outputLabel for="textfieldCtMaxMandatorySctsOcsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
+        </h:panelGroup>
+        
 		<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_MINSCTS}" styleClass="subItem"/>
 		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
     		<h:inputText id="textfieldctminscts" value="#{certProfileBean.certificateProfile.CTMinSCTs}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"

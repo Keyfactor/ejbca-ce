@@ -304,6 +304,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CTMINSCTS = "ctminscts";
     protected static final String CTMINMANDATORYSCTS = "ctminmandatoryscts";
     protected static final String CTMINMANDATORYSCTSOCSP = "ctminmandatorysctsocsp";
+    protected static final String CTMAXMANDATORYSCTS = "ctmaxmandatoryscts";
+    protected static final String CTMAXMANDATORYSCTSOCSP = "ctmaxmandatorysctsocsp";
     protected static final String CTMAXSCTS = "ctmaxscts";
     protected static final String CTMINSCTSOCSP = "ctminsctsocsp";
     protected static final String CTMAXSCTSOCSP = "ctmaxsctsocsp";
@@ -2562,6 +2564,47 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setCtMinMandatoryScts(final int value) {
         data.put(CTMINMANDATORYSCTS, value);
+    }
+
+    /**
+     * Get a number indicating how many mandatory SCTs we need before successful
+     * certificate issuance. This number also controls the number of SCTs fetched
+     * in parallel.
+     * @return the maximum number of mandatory SCTs mandated by this certificate profile
+     */
+    public int getCtMaxMandatoryScts() {
+        if (data.get(CTMAXMANDATORYSCTS) == null) {
+            return getCtMinMandatoryScts();
+        }
+        return (Integer) data.get(CTMAXMANDATORYSCTS);
+    }
+
+    /**
+     * Set a number indicating the maximum number of SCTs required for successful issuance.
+     * @param value the maximum number of mandatory SCTs
+     */
+    public void setCtMaxMandatoryScts(int value) {
+        data.put(CTMAXMANDATORYSCTS, value);
+    }
+
+    /**
+     * Get a number indicating how many mandatory SCTs needed in OCSP responses.
+     * This number also controls the number of SCTs fetched in parallel.
+     * @return the maximum number of mandatory SCTs in OCSP responses mandated by this certificate profile
+     */
+    public int getCtMaxMandatorySctsOcsp() {
+        if (data.get(CTMAXMANDATORYSCTSOCSP) == null) {
+            return getCtMinMandatorySctsOcsp();
+        }
+        return (Integer) data.get(CTMAXMANDATORYSCTSOCSP);
+    }
+
+    /**
+     * Set a number indicating the maximum number of SCTs required for successful issuance.
+     * @param value the maximum number of mandatory SCTs
+     */
+    public void setCtMaxMandatorySctsOcsp(int value) {
+        data.put(CTMAXMANDATORYSCTSOCSP, value);
     }
 
     /**
