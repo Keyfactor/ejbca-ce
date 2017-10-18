@@ -68,9 +68,7 @@ public class RaStyleRequestFilter implements Filter {
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     
     private RaAuthenticationHelper raAuthenticationHelper = null;
-    private AuthenticationToken authenticationToken = null;
     private Map<AuthenticationToken, List<RaStyleInfo>> cssCache;
-    private List<RaStyleInfo> availableRaStyles;
     
     @Override
     public void destroy() {
@@ -90,7 +88,10 @@ public class RaStyleRequestFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestPath = httpRequest.getRequestURI();
         String resource = requestPath.substring(requestPath.lastIndexOf('/') + 1, requestPath.length());
+        List<RaStyleInfo> availableRaStyles;
+        AuthenticationToken authenticationToken = null;
         authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
+        
         if (cssCache.containsKey(authenticationToken)) {
             List<RaStyleInfo> cachedStyles = cssCache.get(authenticationToken);
             // Check for changes
@@ -157,7 +158,7 @@ public class RaStyleRequestFilter implements Filter {
     private AuthenticationToken getAuthenticationToken(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         // TODO This instantiated for every non-cached request for w_e_styles.css. Improvements  ? 
         raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
-        authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpRequest, httpResponse);
+        AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpRequest, httpResponse);
         return authenticationToken;
     }
     
