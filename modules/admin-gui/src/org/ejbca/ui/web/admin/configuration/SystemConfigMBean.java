@@ -295,6 +295,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private int currentCTLogTimeout = 5000;
     private boolean isCurrentCtLogMandatory = false;
     private int editedCTLogTimeout;
+    private boolean isEditedCtLogMandatory;
     private UploadedFile currentCTLogPublicKeyFile = null;
     private UploadedFile editedCTLogPublicKeyFile;
     private CTLogInfo editedCTLog;
@@ -1023,6 +1024,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setEditedCTLogURL(final String url) {
         editedCTLogURL = url;
+    }
+
+    public void setIsEditedCtLogMandatory(final boolean isEditedCtLogMandatory) {
+        this.editedCTLog.setIsMandatory(isEditedCtLogMandatory);
+    }
+
+    public boolean getIsEditedCtLogMandatory() {
+        return this.editedCTLog.isMandatory();
     }
 
     public String getEditedCTLogPublicKeyID() {
