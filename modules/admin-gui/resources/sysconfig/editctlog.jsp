@@ -66,7 +66,11 @@ org.cesecore.authorization.control.StandardRules
                                     title="#{web.text.FORMAT_MILLISECONDS}"
                                     size="10"/>
         </h:panelGrid>
-    <h:commandButton action="#{systemConfigMBean.saveEditedCTLog}" value="#{web.text.SAVE}" />
+        <div>
+            <h:selectBooleanCheckbox id="isCtLogMandatory" value="#{systemConfigMBean.isEditedCtLogMandatory}" />
+            <h:outputLabel for="isCtLogMandatory" value="#{web.text.MANDATORY}" />
+        </div>
+        <h:commandButton action="#{systemConfigMBean.saveEditedCTLog}" value="#{web.text.SAVE}" />
     </h:form>
     <%  // Include Footer 
     String footurl = globalconfiguration.getFootBanner(); %>

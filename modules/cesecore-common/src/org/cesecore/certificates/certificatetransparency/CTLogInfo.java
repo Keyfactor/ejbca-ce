@@ -36,7 +36,7 @@ public final class CTLogInfo implements Serializable {
     private byte[] publicKeyBytes;
     private String url; // base URL, without "add-chain" or "add-pre-chain"
     private int timeout = 5000; // milliseconds
-    private final boolean isMandatory;
+    private boolean isMandatory;
 
     private transient PublicKey publicKey;
 
@@ -149,4 +149,7 @@ public final class CTLogInfo implements Serializable {
         return url;
     }
 
+    public void setIsMandatory(final boolean isMandatory) {
+        this.isMandatory = isMandatory;
+    }
 }
