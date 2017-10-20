@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -91,29 +92,34 @@ public class RaStyleRequestFilter implements Filter {
         List<RaStyleInfo> availableRaStyles;
         AuthenticationToken authenticationToken = null;
         authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
-        
-        if (cssCache.containsKey(authenticationToken)) {
-            List<RaStyleInfo> cachedStyles = cssCache.get(authenticationToken);
-            // Check for changes
-            availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, cachedStyles.hashCode());
-            if (availableRaStyles == null) {
-                // No changes, use cache
-                availableRaStyles = cachedStyles;
+        try {
+            if (cssCache.containsKey(authenticationToken)) {
+                List<RaStyleInfo> cachedStyles = cssCache.get(authenticationToken);
+                // Check for changes
+                availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, cachedStyles.hashCode());
+                if (availableRaStyles == null) {
+                    // No changes, use cache
+                    availableRaStyles = cachedStyles;
+                } else {
+                    cssCache.put(authenticationToken, availableRaStyles);
+                }
             } else {
+                // Full reload of styles
+                availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, 0);
                 cssCache.put(authenticationToken, availableRaStyles);
             }
-        } else {
-            // Full reload of styles
-            availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, 0);
-            cssCache.put(authenticationToken, availableRaStyles);
+        } catch (Exception e) {
+            // In any case of error loading the styles, display default style rather than no styles at all.
+            chain.doFilter(httpRequest, httpResponse);
+            return;
         }
+        
         // TODO pure/base.css is currently unsupported for injection since it can't be differentiated from /css/base.css by name
         if (availableRaStyles.isEmpty() || requestPath.equals("/ejbca/ra/css/pure/base.css")) {
             // Stop here and pass on request (default CSS will be used)
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
-
         // TODO This has to handle multiple styles in the case where the authToken belongs to multiple roles
         // once a 'Preferences' page is introduced to the RA-Web
         RaStyleInfo customResponse = availableRaStyles.get(0);
