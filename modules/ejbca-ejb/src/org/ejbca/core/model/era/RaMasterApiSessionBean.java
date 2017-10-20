@@ -325,7 +325,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
         List<RaStyleInfo> associatedCss = new ArrayList<>();
         LinkedHashMap<Integer, RaStyleInfo> allCssInfos = getAllCustomRaCss();
-        roleDataSession.forceCacheExpire();
         List<Role> isMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
         for (Role role : isMemberOf) {
             RaStyleInfo cssToAdd = allCssInfos.get(role.getStyleId());
