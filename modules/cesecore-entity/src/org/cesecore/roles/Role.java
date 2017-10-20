@@ -151,6 +151,7 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         result = prime * result + ((roleName == null) ? 0 : roleName.hashCode());
         final LinkedHashMap<String, Boolean> accessRules = getAccessRules();
         result = prime * result + ((accessRules == null) ? 0 : accessRules.hashCode());
+        result = prime * result + getStyleId();
         return result;
     }
 
@@ -183,6 +184,9 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
             return false;
         }
         if (roleId != other.roleId) {
+            return false;
+        }
+        if (getStyleId() != other.getStyleId()) {
             return false;
         }
         if (roleName == null) {
