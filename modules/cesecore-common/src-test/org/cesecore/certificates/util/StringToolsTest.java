@@ -484,4 +484,14 @@ public class StringToolsTest {
 
         ConfigurationHolder.restoreConfiguration();
     }
+    
+    @Test
+    public void testIsAlphaOrAsciiPrintable() {
+        assertTrue(StringTools.isAlphaOrAsciiPrintable("foobar123"));
+        assertTrue(StringTools.isAlphaOrAsciiPrintable("foobar123-_()?<>"));
+        assertTrue(StringTools.isAlphaOrAsciiPrintable("foobar123\u00e5")); // Swedish a-ring
+        assertFalse(StringTools.isAlphaOrAsciiPrintable("foobar123\r"));
+        assertFalse(StringTools.isAlphaOrAsciiPrintable("foobar123\0"));
+        assertFalse(StringTools.isAlphaOrAsciiPrintable("foobar123\n"));
+    }
 }
