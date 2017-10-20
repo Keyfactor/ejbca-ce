@@ -29,6 +29,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -90,6 +91,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -624,8 +626,14 @@ public class CmpMessageHelper {
     public static String getStringFromOctets(final ASN1OctetString octets) {
         String str = null;
         if (octets != null) {
-            str = new String(octets.getOctets(), StandardCharsets.UTF_8);
-            if (StringUtils.isAlphanumericSpace(str)) {
+            byte[] bytes = octets.getOctets();
+            if (bytes.length > 128) { // arbitrary limitation on octet string size
+                LOG.info("Truncating octet string longer than 128 bytes");
+                byte[] newbytes = Arrays.copyOf(bytes, 128);
+                bytes = newbytes;
+            }
+            str = new String(bytes, StandardCharsets.UTF_8);
+            if (StringTools.isAlphaOrAsciiPrintable(str)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Found string: " + str);
                 }
