@@ -65,11 +65,12 @@ org.cesecore.authorization.control.StandardRules
                                     value="#{systemConfigMBean.editedCTLogTimeout}"
                                     title="#{web.text.FORMAT_MILLISECONDS}"
                                     size="10"/>
+            <h:panelGroup />
+            <h:panelGrid columns="2">
+                <h:selectBooleanCheckbox id="isCtLogMandatory" value="#{systemConfigMBean.isEditedCtLogMandatory}" />
+                <h:outputLabel for="isCtLogMandatory" value="#{web.text.MANDATORY}" />
+            </h:panelGrid>
         </h:panelGrid>
-        <div>
-            <h:selectBooleanCheckbox id="isCtLogMandatory" value="#{systemConfigMBean.isEditedCtLogMandatory}" />
-            <h:outputLabel for="isCtLogMandatory" value="#{web.text.MANDATORY}" />
-        </div>
         <h:commandButton action="#{systemConfigMBean.saveEditedCTLog}" value="#{web.text.SAVE}" />
     </h:form>
     <%  // Include Footer 
