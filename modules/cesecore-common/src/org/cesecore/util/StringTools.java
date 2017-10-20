@@ -988,4 +988,18 @@ public final class StringTools {
         final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
         return Pattern.matches(blackList, value);
     }
+    
+    /** @return false of if the string contains any characters that are neither a letter (unicode) or an asciiPrintable character */ 
+    public static boolean isAlphaOrAsciiPrintable(String str) {
+        if (str == null) {
+            return false;
+        }
+        int sz = str.length();
+        for (int i = 0; i < sz; i++) {
+            if ( !Character.isLetter(str.charAt(i)) && !CharUtils.isAsciiPrintable(str.charAt(i)) ) {
+                return false;
+            }
+        }
+        return true;
+    } 
 }
