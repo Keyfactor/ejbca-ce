@@ -29,11 +29,11 @@ import org.junit.Test;
 
 /**
  * Sanity checks of the CompressedCollection that provides memory efficient Iterable object storage.
- * 
+ *
  * @version $Id$
  */
 public class CompressedCollectionTest {
-    
+
     private static final Logger log = Logger.getLogger(CompressedCollectionTest.class);
 
     @Test
@@ -48,12 +48,14 @@ public class CompressedCollectionTest {
         logMemUnreliably();
         log.trace("Iterating once..");
         // Test that .iterator is used in for each and not .toArray
-        for (final RevokedCertInfo x : compressedCollection) {
+        for (@SuppressWarnings("unused")
+        final RevokedCertInfo x : compressedCollection) {
             //log.info("  " + x.toString());
         }
         logMemUnreliably();
         log.trace("Iterating twice..");
-        for (final RevokedCertInfo x : compressedCollection) {
+        for (@SuppressWarnings("unused")
+        final RevokedCertInfo x : compressedCollection) {
             //log.info("  " + x.toString());
         }
         logMemUnreliably();
@@ -75,7 +77,7 @@ public class CompressedCollectionTest {
         compressedCollection.clear();
         log.trace("<testEmpty");
     }
-    
+
     @Test
     public void testNoAddAfterClose() {
         final CompressedCollection<Integer> compressedCollection = new CompressedCollection<Integer>();

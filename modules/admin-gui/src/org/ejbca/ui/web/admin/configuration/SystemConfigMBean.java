@@ -295,7 +295,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private int currentCTLogTimeout = 5000;
     private boolean isCurrentCtLogMandatory = false;
     private int editedCTLogTimeout;
-    private boolean isEditedCtLogMandatory;
     private UploadedFile currentCTLogPublicKeyFile = null;
     private UploadedFile editedCTLogPublicKeyFile;
     private CTLogInfo editedCTLog;
