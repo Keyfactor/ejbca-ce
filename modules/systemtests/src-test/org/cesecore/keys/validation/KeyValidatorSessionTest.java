@@ -20,9 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -77,7 +74,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -873,18 +869,4 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 //            }
 //        }
 //    }
-    
-    private byte[] getProfileBytes(UpgradeableDataHashMap profile) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder encoder = new XMLEncoder(baos);
-        encoder.writeObject(profile.saveData());
-        encoder.close();
-        byte[] ba = baos.toByteArray();
-        baos.close();
-        return ba;
-    }
-    
-    private byte[] getProfileBytes(Validator profile) throws IOException {
-        return getProfileBytes(profile.getUpgradableHashmap());
-    }
 }

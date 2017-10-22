@@ -1406,7 +1406,6 @@ public class EjbcaWebBean implements Serializable {
             }
 
         }
-        Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
         aliasloop: for (String alias : new ArrayList<>(estConfiguration.getAliasList())) {
             //Collect CA names

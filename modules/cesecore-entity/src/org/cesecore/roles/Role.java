@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
@@ -38,7 +37,6 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(Role.class);
 
     public static final float LATEST_VERSION = 1;
     public static final int ROLE_ID_UNASSIGNED = 0;
@@ -200,7 +198,7 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
     }
     
     public void setStyleId(int Id) {
-        data.put(KEY_ASSOCIATED_CSS, (Integer)Id);
+        data.put(KEY_ASSOCIATED_CSS, Id);
     }
     
     public int getStyleId() {
@@ -209,7 +207,7 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
             ret = 0;
             data.put(KEY_ASSOCIATED_CSS, ret);
         }
-        return (int)ret;
+        return ret;
     }
 
     /**

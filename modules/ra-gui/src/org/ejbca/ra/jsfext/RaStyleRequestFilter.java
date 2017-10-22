@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -172,6 +171,7 @@ public class RaStyleRequestFilter implements Filter {
     private class ResponseOutputStream extends ServletOutputStream {
         private ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
+        @Override
         public void write(int writeByte) throws IOException {
             outStream.write(writeByte);
         }

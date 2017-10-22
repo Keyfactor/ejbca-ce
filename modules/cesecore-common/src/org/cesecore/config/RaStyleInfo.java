@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
-
 /**
  * Represents an individual RA Style Archive. May or may not contain logo files, mulitple CSS files
  * and identifiers. 
@@ -29,7 +27,6 @@ import org.apache.log4j.Logger;
 public class RaStyleInfo implements Serializable {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(RaStyleInfo.class);
     private static final Random random = new Random();
     
     private int archiveId;
@@ -156,15 +153,19 @@ public class RaStyleInfo implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         RaStyleInfo other = (RaStyleInfo) obj;
-        if (archiveId != other.archiveId)
+        if (archiveId != other.archiveId) {
             return false;
+        }
         return true;
     }
     
