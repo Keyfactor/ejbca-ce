@@ -3,10 +3,10 @@
  *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
  *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
+ *  The use of the Proprietary Modules are subject to specific           *
  *  commercial license terms.                                            *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.ejbca.core.model;
 
 import java.io.IOException;
@@ -68,22 +68,22 @@ import org.json.simple.parser.ParseException;
 
 /**
  * A publisher that sends certificate issuance and life cycle events (revoke and unrevoke)
- * to a HTTPS server. The HTTPS request content (aka. the certificate and other related 
+ * to a HTTPS server. The HTTPS request content (aka. the certificate and other related
  * data) is sent inside a JSON object.
- * 
+ *
  * @version $Id$
  */
 public class CertSafePublisher extends CustomPublisherContainer implements ICustomPublisher, CustomPublisherUiSupport {
 
     private static final long serialVersionUID = 1L;
-    private static Logger log = Logger.getLogger(CertSafePublisher.class);    
-    
+    private static Logger log = Logger.getLogger(CertSafePublisher.class);
+
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private CertificateStoreSessionLocal certificateStoreSession;
-    
+
     private final int DEFAULT_CONNECTIONTIMEOUT = 10000; // 10 000 milliseconds = 10 seconds
-    
+
     /** The URL to the HTTPS server. Should be in the format https://HOST:PORT/RELATIVEURL */
     public static final String certSafeUrlPropertyName = "certsafe.url";
     /** The name of the Authentication Key Binding that will be used for authentication with the HTTPS server */
@@ -100,15 +100,15 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
 
     private HashMap<String, String> revocationReasons = new HashMap<String, String>();
 
-    
+
     public CertSafePublisher(){}
-    
+
     /**
      * Load used properties.
-     * 
+     *
      * @param properties
      *            The properties to load.
-     * 
+     *
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     @Override
@@ -116,7 +116,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         if (log.isTraceEnabled()) {
             log.trace(">init");
         }
-        
+
         EjbLocalHelper localHelper = new EjbLocalHelper();
         internalKeyBindingMgmtSession = localHelper.getInternalKeyBindingMgmtSession();
         cryptoTokenManagementSession = localHelper.getCryptoTokenManagementSession();
@@ -125,11 +125,11 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         // Extract system properties
         urlstr = (properties.getProperty(certSafeUrlPropertyName));
         authKeyBindingName = properties.getProperty(certSafeAuthKeyBindingPropertyName);
-        timeout = properties.containsKey(certSafeConnectionTimeOutPropertyName)? 
-                        Integer.parseInt(properties.getProperty(certSafeConnectionTimeOutPropertyName)) : 
+        timeout = properties.containsKey(certSafeConnectionTimeOutPropertyName)?
+                        Integer.parseInt(properties.getProperty(certSafeConnectionTimeOutPropertyName)) :
                         DEFAULT_CONNECTIONTIMEOUT;
 
-        // This map translates the revocation reasons in CertificateConstants.reasontext to more readable 
+        // This map translates the revocation reasons in CertificateConstants.reasontext to more readable
         // text strings (according to CertSafe REST API specifications)
         revocationReasons.put("REV_UNSPECIFIED", "unspecified");
         revocationReasons.put("REV_KEYCOMPROMISE", "keyComprimise");
@@ -142,9 +142,9 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         revocationReasons.put("REV_REMOVEFROMCRL", "removeFromCrl");
         revocationReasons.put("REV_PRIVILEGEWITHDRAWN", "privilegeWithdrawn");
         revocationReasons.put("REV_AACOMPROMISE", "aaComprimise");
-        
-    } // init  
-    
+
+    } // init
+
     private URL getURL() throws MalformedURLException {
         if((url==null) && (urlstr!=null)) {
             url = new URL(urlstr.trim());
@@ -155,9 +155,9 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
     @Override
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
         List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();
-        // Make selection of the remote CertSafe server configurable 
+        // Make selection of the remote CertSafe server configurable
         ret.add(new CustomPublisherProperty(certSafeUrlPropertyName, CustomPublisherProperty.UI_TEXTINPUT, urlstr));
-        
+
         // Authentication key binding we use to authenticate against the remove remote CertSafe server
         if (internalKeyBindingMgmtSession==null) {
             internalKeyBindingMgmtSession = new EjbLocalHelper().getInternalKeyBindingMgmtSession();
@@ -178,27 +178,27 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
 
     /**
      * Sends the certificate in a JSON object to Cert Safe server through HTTPS.
-     * 
+     *
      * @param incert
      *            The certificate
      * @param status
      *            The certificate status
      * @param revocationReason
      *            The certificate revocation reason if it was revoked
-     * 
+     *
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin,
      *      java.security.cert.Certificate, java.lang.String, java.lang.String,
      *      int, int)
      */
     @Override
-    public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, 
-            String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, 
+    public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN,
+            String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
         }
-        
-       
+
+
         // Construct the SSL context for the HTTPS exchange
         SSLSocketFactory sslSocketFactory;
         try {
@@ -209,25 +209,25 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             log.error(msg, e1);
             throw new PublisherException(msg);
         }
-        
+
         final String jsonObject = getJSONString(incert, status, revocationReason);
-                
+
         // Make the HTTPS connection and send the request
         HttpsURLConnection con = null;
         try {
-            
+
             if (log.isDebugEnabled()) {
                 log.debug("CertSafe https URL: " + urlstr);
             }
 
             con = (HttpsURLConnection) getURL().openConnection();
             con.setSSLSocketFactory(sslSocketFactory);
-            
+
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestMethod("POST");
             con.setDoOutput(true);
             con.setConnectTimeout(timeout);
-        
+
             // POST it
             final OutputStream os = con.getOutputStream();
             os.write(jsonObject.getBytes());
@@ -262,17 +262,17 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
                 con.disconnect();
             }
         }
-        
+
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificate()");
         }
         return true;
     }
-    
-    
+
+
     /**
      * Does nothing for CertSafe, only certificates are published.
-     * 
+     *
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
      */
@@ -290,9 +290,9 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             log.trace("testConnection, Testing connection");
         }
         checkProperties();
-        
+
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Test CertSafe Connection"));
-        
+
         SSLSocketFactory sslSocketFactory = getSSLSocketFactory(admin);
         try {
             if (log.isDebugEnabled()) {
@@ -300,7 +300,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             }
             HttpsURLConnection con = (HttpsURLConnection) getURL().openConnection();
             con.setSSLSocketFactory(sslSocketFactory);
-            
+
             con.setDoOutput(true);
             con.setRequestMethod("GET");
             con.setConnectTimeout(timeout);
@@ -311,11 +311,11 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         } catch (UnknownHostException e) {
             String msg = "Unknown host: "+e.getLocalizedMessage();
             log.info(msg, e);
-            throw new PublisherConnectionException(msg); 
+            throw new PublisherConnectionException(msg);
         } catch (MalformedURLException e) {
             String msg = e.getLocalizedMessage();
             log.info(msg, e);
-            throw new PublisherConnectionException(msg); 
+            throw new PublisherConnectionException(msg);
         } catch (ProtocolException e) {
             String msg = e.getLocalizedMessage();
             log.info(msg, e);
@@ -326,16 +326,16 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             throw new PublisherConnectionException(msg);
         }
     }
-    
-    
+
+
     private void checkProperties() throws PublisherConnectionException {
         if (isEmptyString(urlstr) || isEmptyString(authKeyBindingName)) {
-            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" + 
+            String msg = "Either the property '" + certSafeUrlPropertyName + "' or the property '" +
                     certSafeAuthKeyBindingPropertyName + "' is not set.";
             log.info(msg);
             throw new PublisherConnectionException(msg);
         }
-        
+
         URL uurl = null;
         try {
             uurl = getURL();
@@ -344,21 +344,21 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             log.info(msg + ". " + e.getMessage());
             throw new PublisherConnectionException(msg);
         }
-        
+
         String protocol = uurl.getProtocol();
         if(!protocol.equalsIgnoreCase("https")) {
             String msg = "The URL must be a HTTPS address";
             log.info(msg);
             throw new PublisherConnectionException(msg);
         }
-        
+
         if(isEmptyString(uurl.getHost())) {
             String msg = "The URL is missing the hostname";
             log.info(msg);
             throw new PublisherConnectionException(msg);
         }
     }
-    
+
     private SSLSocketFactory getSSLSocketFactory(AuthenticationToken authenticationToken) throws PublisherConnectionException {
         Integer keyBindingID = internalKeyBindingMgmtSession.getIdFromName(authKeyBindingName);
         if (keyBindingID == null) {
@@ -372,7 +372,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             log.error(msg, e);
             throw new PublisherConnectionException(msg);
         }
-        
+
         if (authenticationKeyBinding == null) {
             String msg = "AuthenticationKeyBinding '" + authKeyBindingName + "' was not found";
             log.info(msg);
@@ -383,7 +383,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             log.info(msg);
             throw new PublisherConnectionException(msg);
         }
-        
+
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(authenticationKeyBinding.getCryptoTokenId());
         final X509Certificate sslCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(authenticationKeyBinding.getCertificateId());
         final List<X509Certificate> chain = new ArrayList<X509Certificate>();
@@ -418,7 +418,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             throw new PublisherConnectionException(msg);
         }
     }
-    
+
     // TODO: This method also exists in OcspResponseGenSSB.. merge! to method call in certificateStoreSession
     private List<X509Certificate> getCaCertificateChain(final X509Certificate leafCertificate) {
         final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
@@ -435,25 +435,26 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         }
         return caCertificateChain;
     }
-    
+
     /**
      * Returns the input in a String of JSON format:
-     * 
+     *
      *          {
      *              "status" : STATUS
      *              "revocationReason" : REVOCATION_REASON_IF_ANY
      *              "pem" : THE_CERTIFICATE
      *          }
-     *          
-     *          
+     *
+     *
      * @param incert
      * @param status
      * @param revocationReason
      * @return
      * @throws PublisherException
      */
+    @SuppressWarnings("unchecked") // JsonSimple is not parameterised
     private String getJSONString(Certificate incert, int status, int revocationReason) throws PublisherException {
-        
+
         JSONObject json = new JSONObject();
         String stat = "";
         if (status == CertificateConstants.CERT_REVOKED) {
@@ -470,7 +471,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
             stat = "active";
         }
         json.put("status", stat);
-        
+
         //Add the certificate to the JSON object
         ArrayList<Certificate> certs =  new ArrayList<Certificate>();
         certs.add(incert);
@@ -489,18 +490,18 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         if(log.isDebugEnabled()) {
             log.debug("Sending the JSON String: " + ret);
         }
-        
+
         return ret;
     }
-    
+
     /**
      * Obtaining a JSON object from the InputStream and returns the error message inside the JSON object.
-     * 
+     *
      * The JSON object format is:
      *          {
      *              "error" : ERROR_MESSAGE
      *          }
-     *          
+     *
      * @param errins
      * @return the error message if found. Empty string otherwise
      * @throws IOException
@@ -523,7 +524,7 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         if (log.isDebugEnabled()) {
             log.debug("Received JSON response: " + response);
         }
-        
+
         JSONParser parser = new JSONParser();
         JSONObject json=null;
         try {
@@ -534,14 +535,14 @@ public class CertSafePublisher extends CustomPublisherContainer implements ICust
         }
         return (String) json.get("error");
     }
-    
+
     private boolean isEmptyString(String str) {
         return str==null || str.length()==0;
     }
-    
+
     @Override
     public boolean isReadOnly() {
         return false;
     }
-    
+
 }

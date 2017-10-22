@@ -35,7 +35,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -89,11 +88,6 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     /** Error text */
     private String errorText = null;
-
-    /** Private key used for signing/encrypting response, if needed */
-    private PrivateKey responsePrivateKey;
-    /** Security provider used for the responsePrivateKey */
-    private String responseProvider = BouncyCastleProvider.PROVIDER_NAME;
 
     /**
      * Constructs a new empty PKCS#10 message handler object.
@@ -518,10 +512,7 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-        this.responsePrivateKey = key;
-        if (provider != null) {
-            this.responseProvider = provider;
-        }
+        // NOOP
     }
 
 }

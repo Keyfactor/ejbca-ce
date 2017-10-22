@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.math.ec.ECPoint;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.profiles.Profile;
@@ -81,6 +80,7 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
     /**
      * Initializes uninitialized data fields.
      */
+    @Override
     public void init() {
         super.init();
         if (null == data.get(CURVES)) {

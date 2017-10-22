@@ -24,10 +24,9 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -69,11 +68,6 @@ public class CVCRequestMessage implements RequestMessage {
     
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
-
-    /** Private key used for signing/encrypting response, if needed */
-    private PrivateKey responsePrivateKey;
-    /** Security provider used for the responsePrivateKey */
-    private String responseProvider = BouncyCastleProvider.PROVIDER_NAME;
 
     /**
      * Constructs a new empty message handler object.
@@ -179,6 +173,7 @@ public class CVCRequestMessage implements RequestMessage {
      *
      * @return null.
      */
+    @Override
     public BigInteger getSerialNo() {
     	//CardVerifiableCertificate cc = getCardVerifiableCertificate()
         //return CertTools.getSerialNumber(cc);
@@ -331,10 +326,7 @@ public class CVCRequestMessage implements RequestMessage {
     
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
-        this.responsePrivateKey = key;
-        if (provider != null) {
-            this.responseProvider = provider;
-        }
+        // NOOP
     }
 
     /** Specific to CVC request messages, EAC requests contains a sequence */

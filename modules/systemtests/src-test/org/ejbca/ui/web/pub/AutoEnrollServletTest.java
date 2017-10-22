@@ -58,7 +58,7 @@ public class AutoEnrollServletTest {
 
 	private static Logger log = Logger.getLogger(AutoEnrollServletTest.class);
 
-	private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
+	private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 	private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 	private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
 
@@ -91,7 +91,7 @@ public class AutoEnrollServletTest {
 
 	private static final String CERTREQ_USER2_TEMPLATE =
 		"-----BEGIN NEW CERTIFICATE REQUEST-----" +
-		"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 
+		"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" +
 		"-----END NEW CERTIFICATE REQUEST-----";
 
 	//GUID = 8274021d2b2fba42877e054397c77060
@@ -146,7 +146,7 @@ public class AutoEnrollServletTest {
 	}
 
 	/**
-	 * Test if a User-template certificate request is handled ok. 
+	 * Test if a User-template certificate request is handled ok.
 	 */
 	@Test
 	public void test01TestUserRequest() throws Exception {
@@ -173,7 +173,7 @@ public class AutoEnrollServletTest {
 	}
 
 	/**
-	 * Test if a User-template certificate request is handled ok. 
+	 * Test if a User-template certificate request is handled ok.
 	 */
 	@Test
     public void test02TestMachineRequest() throws Exception {
@@ -199,7 +199,7 @@ public class AutoEnrollServletTest {
 	}
 
 	/**
-	 * Test if a DomainController-template certificate request is handled ok. 
+	 * Test if a DomainController-template certificate request is handled ok.
 	 */
 	@Test
     public void test03TestDomainControllerRequest() throws Exception {
@@ -225,7 +225,7 @@ public class AutoEnrollServletTest {
     }
 
 	/**
-	 * Test if a SmartcardLogon-template certificate request is handled ok. 
+	 * Test if a SmartcardLogon-template certificate request is handled ok.
 	 */
 	/*public void test04TestSmartcardLogonRequest() throws Exception {
 		log.trace(">test04TestSmartcardLogonRequest");
@@ -234,7 +234,7 @@ public class AutoEnrollServletTest {
 	}*/
 
 	/**
-	 * Post Certificate request to Servlet 
+	 * Post Certificate request to Servlet
 	 */
 	private X509Certificate doRequest(String remoteUser, String requestData)  throws Exception {
         final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
@@ -262,7 +262,7 @@ public class AutoEnrollServletTest {
 		byte[] responseData = Base64.decode(response.getBytes());
 		X509Certificate returnCertificate= null;
 		CMSSignedData p7b = new CMSSignedData(responseData);
-		Store certStore = p7b.getCertificates();
+        Store<X509CertificateHolder> certStore = p7b.getCertificates();
 		SignerInformationStore  signers = p7b.getSignerInfos();
         Iterator<SignerInformation> iter = signers.getSigners().iterator();
 		JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
@@ -286,7 +286,7 @@ public class AutoEnrollServletTest {
 	}
 
 	/**
-	 * Get status from Servlet 
+	 * Get status from Servlet
 	 */
 	private String getStatus(String remoteUser, String certificateTemplate)  throws Exception {
         final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");

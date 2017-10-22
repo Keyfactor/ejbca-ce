@@ -57,7 +57,7 @@ import org.junit.Test;
 
 /**
  * Tests the CMS Extended CA Service
- * 
+ *
  * @version $Id$
  */
 public class CmsCAServiceTest extends CaTestCase {
@@ -75,16 +75,19 @@ public class CmsCAServiceTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    @Override
     public String getRoleName() {
         return "CmsCAServiceTest";
     }
-    
+
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -103,7 +106,7 @@ public class CmsCAServiceTest extends CaTestCase {
                 assertNull("No CMS certificate should have been generated until it has been activated", signinfo.getCertificatePath());
             }
         }
-        
+
         // First try a request when the service is not active
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         try {
@@ -138,10 +141,10 @@ public class CmsCAServiceTest extends CaTestCase {
 
     @Test
     public void testCmsCAServiceActive() throws Exception {
-    	
+
     	// Activate the service first
     	testActivateCmsCAService();
-    	
+
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         CmsCAServiceResponse resp = null;
         // Try the request again
@@ -172,7 +175,7 @@ public class CmsCAServiceTest extends CaTestCase {
             assertNotNull(issuer);
             assertEquals("CN=TEST", issuer.toString());
         }
-        Store store = csd.getCertificates();
+        Store<X509CertificateHolder> store = csd.getCertificates();
         @SuppressWarnings("unchecked")
         Collection<X509CertificateHolder> certs = store.getMatches(null);
         assertEquals(2, certs.size());
@@ -187,7 +190,7 @@ public class CmsCAServiceTest extends CaTestCase {
     public void testCmsCAEncryptDecrypt() throws Exception {
     	// Activate the service first
     	testActivateCmsCAService();
-    	
+
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_ENCRYPT);
         CmsCAServiceResponse resp = null;
         // Try the request again

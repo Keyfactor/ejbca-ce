@@ -661,7 +661,6 @@ public final class StringTools {
             log.warn("Decryption not possible due to weak crypto policy.");
             return in;
         }
-        String version = getEncryptionVersion();
         final byte[] salt;
         String data = in;
         int count;
@@ -672,7 +671,6 @@ public final class StringTools {
                 log.warn("Input contains : but is not an encryption string from EJBCA (with 4 fields).");
                 return in;                
             }
-            version = strs[0];
             salt = Hex.decode(strs[1].getBytes(StandardCharsets.UTF_8));
             count = Integer.valueOf(strs[2]);
             data = strs[3];

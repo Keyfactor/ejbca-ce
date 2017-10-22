@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.cesecore.internal;
 
 import java.io.Serializable;
@@ -43,12 +43,12 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      *
      */
 	private static final long serialVersionUID = -1766329888474901945L;
-	
+
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
     public static final String VERSION = "version";
-	
+
 	/**
      * Creates a new UpgradeableDataHashMap object.
      */
@@ -60,11 +60,13 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     /**
      * @see IUpgradeableData#getLatestVersion()
      */
+    @Override
     public abstract float getLatestVersion();
 
     /**
      * @see IUpgradeableData#getVersion()
      */
+    @Override
     public float getVersion() {
         return ((Float) data.get(VERSION)).floatValue();
     }
@@ -72,6 +74,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     /**
      * @see IUpgradeableData#saveData()
      */
+    @Override
     public Object saveData() {
         return data.clone();
     }
@@ -83,19 +86,21 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     /**
      * @see IUpgradeableData#loadData(Object)
      */
+    @Override
+    @SuppressWarnings("unchecked")
     public void loadData(final Object data) {
     	// By creating a new LinkedHashMap (Base64GetHashMap) here we slip through a possible upgrade issue when upgrading
-    	// from older implementation that used a plain HashMap instead. 
-    	// Both newer and older versions can be casted to HashMap. 
+    	// from older implementation that used a plain HashMap instead.
+    	// Both newer and older versions can be casted to HashMap.
     	this.data = new Base64GetHashMap((HashMap<?, ?>)data);
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
-    		upgrade();     
+    		upgrade();
     		upgraded = true;
     	}
     }
 
     /** So you can poll to see if the data has been upgraded
-     * 
+     *
      * @return true if data has been upgraded, false otherwise
      */
     public boolean isUpgraded() {
@@ -106,6 +111,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * Function that should handle the update if of the data in the class so it's up to date with
      * the latest version. An update is only done when needed.
      */
+    @Override
     public abstract void upgrade();
 
     /** Create a Map with the differences between the current object and the parameter object.
@@ -115,7 +121,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * remove:key, removedvalue
      * added:key, addedvalue
      * </pre>
-     * 
+     *
      * @param newobj The "changed" object for which we want to get the changes compared to this object
      * @return Map object with difference as described above
      */
@@ -124,7 +130,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         Map<Object, Object> newmap = (Map<Object, Object>)newobj.saveData();
     	return diffMaps(data, newmap);
     }
-    
+
     /** Create a Map with the differences between the two input objects.
      * Puts the result in a new Map with keys:
      * <pre>
@@ -132,7 +138,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * remove:key, removedvalue
      * added:key, addedvalue
      * </pre>
-     * 
+     *
 	 * @param oldmap
 	 * @param newmap
 	 * @return Map<Object, Object> with difference
@@ -145,12 +151,12 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 				Object value = oldmap.get(key);
 				if (value == null) {
 					if (newmap.get(key) != null) {
-						result.put("addedvalue:"+key, newmap.get(key));						
+						result.put("addedvalue:"+key, newmap.get(key));
 					}
 				} else if (!value.equals(newmap.get(key))) {
 					Object val = newmap.get(key);
 					if (val == null) {
-						val = ""; 
+						val = "";
 					}
 					result.put("changed:"+key, getVal(val));
 				}
@@ -158,7 +164,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 				// Value removed
 				Object val = oldmap.get(key);
 				if (val == null) {
-					val = ""; 
+					val = "";
 				}
 				result.put("removed:"+key, getVal(val));
 			}
@@ -168,15 +174,15 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     		if (!oldmap.containsKey(key)) {
 				Object val = newmap.get(key);
 				if (val == null) {
-					val = ""; 
+					val = "";
 				}
-				result.put("added:"+key, getVal(val));    			
+				result.put("added:"+key, getVal(val));
     		}
     	}
     	return result;
 	}
-    
-	/** helper method to get nice output from types that do 
+
+	/** helper method to get nice output from types that do
 	 * not work nicely with Object.toString()
 	 */
 	private static String getVal(Object o) {
@@ -188,7 +194,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
                 if (b.length() > 1) {
                     b.append(", ");
                 }
-                b.append(s); 
+                b.append(s);
             }
             b.append(']');
         } else {
@@ -196,7 +202,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
         }
 	    return b.toString();
 	}
-	
+
 	// Helper methods for interacting with the stored data
 
 	/** @return the value for the specified key as a primitive (never null) boolean */
@@ -209,7 +215,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
     protected void putBoolean(final String key, final boolean value) {
         data.put(key, Boolean.valueOf(value));
     }
-    
+
     /**
      * @return a deep copy of this hashmap's data object, for cloning purposes.
      */
@@ -225,7 +231,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
                 clonedData.put(entry.getKey(), value);
         }
         return clonedData;
-    }   
+    }
 
 
 }
