@@ -65,6 +65,7 @@ public class RaLocaleBean implements Serializable {
     }
     /** Set this sessions Locale */
     public void setLocale(final Locale locale) {
+
         this.locale = locale;
         directionLeftToRight = isDirectionLeftToRight(locale);
     }

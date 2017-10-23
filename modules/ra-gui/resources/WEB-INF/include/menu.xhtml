@@ -118,6 +118,8 @@
                                 <h:outputLink value="cas.xhtml" styleClass="pure-menu-link cas-menu-link"><h:outputText value="#{msg.menu_pagetitle_cas}"/></h:outputLink>
                             </li>
                         </ui:fragment>
+                        
+                        
                         <hr class="web-express tablet"/>
                         <ui:remove>
                         <!-- Language change is enabled, but there are no translations yet and left-to-right is not
@@ -161,7 +163,17 @@
                                 </ul>
                             </li>
                         </ui:fragment>
-                        <ui:remove>
+
+
+						<ui:fragment rendered="#{raAccessBean.authorizedToCas}">
+							<li class="pure-menu-item">
+							<h:outputLink value="preferences.xhtml" styleClass="pure-menu-link role-menu-link">
+									<h:outputText value="#{msg.menu_pagetitle_preferences}" />
+							</h:outputLink></li>
+						</ui:fragment>
+
+
+						<ui:remove>
                         <!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
                         <li class="pure-menu-item pure-menu-allow-hover"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_documentation}"/></h:outputLink></li>
                         -->
