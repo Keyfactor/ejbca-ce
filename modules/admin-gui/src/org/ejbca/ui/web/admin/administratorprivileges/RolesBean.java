@@ -192,7 +192,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         Role roleToSave = rolesAvailable.getRowData();
         roleToSave.setStyleId(selectedStyle);
         try {
-            roleSession.persistRole(getAdmin(), roleToSave);
+            roleSession.persistRole(getAdmin(), roleToSave, false);
         } catch (RoleExistsException e) {
             super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "ROLEEXISTS");
         } catch (AuthorizationDeniedException e) {
