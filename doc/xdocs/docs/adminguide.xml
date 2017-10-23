@@ -2549,6 +2549,63 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
 </subsection>
 </section>
 
+<section name="Custom RA Styles">
+    <p>
+    Custom RA Styles allows CA administrators to upload and apply their own logos and style sheets (CSS) for the RA web. In practice this introduces a way to change the appearaand layout of the menus, buttons, background etc. for the RA-web. An uploaded style may be bound to one or many administrator roles. Members of this role will automatically the applied styles when logging in to the RA-web on any EJBCA instance connected to the CA. 
+    </p>
+    <subsection name="Uploading Modified CSS And Logo">
+        <p>
+        RA Style content is uploaded from the 'System Configuration' menu in the adminweb. Go to 'System Configuration -&gt; 'Custom RA Styles'. The page will display a list of previously uploaded styles or an empty list if no content has been added yet.
+        </p>
+        <p>
+        To upload RA logo: Browse for a single .png or .jpg file to replace the RA logo with.
+        </p>
+        <p>
+        To upload CSS files: Browse for either a single .css file or a .zip containing multiple .css files. The uploaded files must have the same name as the file they're replacing. Most of the RA appearance can be modified in w_e_styles.css, however, any CSS can be replaced. Below is a list of currently replaceable CSS files:
+        </p>
+        <source>
+            base-context.css
+            base.css
+            base-min.css
+            buttons-core.css
+            buttons.css
+            forms.css
+            forms-nr.css
+            grids-core.css
+            grids.css
+            grids-responsive.css
+            grids-responsive-old-ie.css
+            grids-units.css
+            menus-core.css
+            menus.css
+            menus-dropdown.css
+            menus-horizontal.css
+            menus-scrollable.css
+            menus-skin.css
+            pure.css
+            pure-nr.css
+            tables.css
+            pure.css
+            ra.css
+            w_e_style.css
+        </source>
+        <p>
+        It is not necessary to upload both logo and CSS. Only upload what you intend to replace. Finally, give the uploaded styles a name and press 'Import'.
+        </p>
+        <p>
+        In order to upload custom RA Syles, the following access rules are required:
+        </p>
+        <ul>
+            <li>/administrator/</li>
+            <li>/system_functionality/edit_systemconfiguration/</li>
+        </ul>
+    </subsection>
+    <subsection name="Applying Styles To Administrator Roles">
+        <p>
+        Once styles are uploaded, it has to be bound to a role to take effect. This is done from the adminweb in 'Administrator Roles'. In order to apply a custom style to a role, go to 'Administrator Roles' and select the desired style from the drop down menu under the label 'RA Styles'. The next time members of this role login to the RA-web, their new style will be applied. Keep in mind that images and CSS files are browser cached, hence the changes might not appear until the browser cache is invalidated or cleared manually.
+        </p>
+    </subsection>
+</section>
 
 <section name="ePassport PKI">
 
