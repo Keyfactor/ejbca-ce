@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.security.Security;
 import java.util.Properties;
@@ -23,6 +24,7 @@ import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,6 +38,13 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+
+    @Before
+    public void checkPkcs11DriverAvailable() {
+        // Skip test if no PKCS11 driver is installed
+        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
+        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
     }
 
     @After
@@ -93,7 +102,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         PKCS11CryptoToken token5 = (PKCS11CryptoToken) createPKCS11Token("token5", false);
         Assert.assertNotSame("Differen token was expected!", token3.getP11slot(), token5.getP11slot());
     }
-    
+
     @SuppressWarnings("deprecation") //This test will be removed when the deprecated methods it tests are.
     @Test
     public void testUpgradePropertiesFileFrom5_0_x() {
@@ -107,9 +116,9 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         Properties newIndexNumber = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(indexProperties);
         assertEquals("i7", newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
         assertEquals(Pkcs11SlotLabelType.SLOT_INDEX.getKey(), newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
-        
+
     }
-    
+
     @SuppressWarnings("deprecation")
     @Test
     public void testUpgradePropertiesFileFrom5_0_11() {
