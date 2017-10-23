@@ -1307,7 +1307,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         try {
             // Authorazation check
-            if (!authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource())) {
+            if (!isAllowedToEditSystemConfiguration()) {
                 addErrorMessage("CSS_NOT_AUTH");
                 log.info("Administrator '" + getAdmin() + "' attempted to import css / logo files. Authorazation denied: Insufficient privileges");
                 return;
