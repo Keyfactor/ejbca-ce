@@ -13,6 +13,8 @@
 package org.cesecore.certificates.ca.catoken;
 
 
+import static org.junit.Assume.assumeTrue;
+
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
@@ -20,17 +22,25 @@ import org.cesecore.keys.token.PKCS11CryptoTokenTest;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
- * 
+ *
  * @version $Id$
  */
 public class PKCS11CATokenTest extends CATokenTestBase {
 
     public PKCS11CATokenTest() {
         CryptoProviderTools.installBCProvider();
+    }
+
+    @Before
+    public void checkPkcs11DriverAvailable() {
+        // Skip test if no PKCS11 driver is installed
+        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
+        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
     }
 
     @Test
@@ -73,7 +83,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
         cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;
 	}
-	
+
 	private Properties getCaTokenProperties(String signAlias) {
 	    Properties caTokenProperties = new Properties();
 	    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
@@ -82,6 +92,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
         return caTokenProperties;
 	}
 
+    @Override
     String getProvider() {
     	return PKCS11TestUtils.getHSMProvider();
     }
