@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -32,6 +33,7 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -62,6 +64,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private RaStyleCacheBean raStyleCacheBean;
 
     @Override
     public AdminPreference getAdminPreference(final String certificatefingerprint) {
@@ -137,6 +141,16 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         return ret;
     }
 
+    @Override
+    public List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin) {
+        return raStyleCacheBean.getAvailableRaStyles(admin);
+    }
+    
+    @Override
+    public void invalidateRaStyleCache() {
+        raStyleCacheBean.invalidateCache();
+    }
+    
     @Override
     public AdminPreference getDefaultAdminPreference() {
         if (log.isTraceEnabled()) {

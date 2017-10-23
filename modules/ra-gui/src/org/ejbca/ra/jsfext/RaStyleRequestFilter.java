@@ -17,9 +17,7 @@ import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.servlet.Filter;
@@ -39,7 +37,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.ra.RaAuthenticationHelper;
 
 
@@ -63,12 +61,11 @@ public class RaStyleRequestFilter implements Filter {
     private static Logger log = Logger.getLogger(RaStyleRequestFilter.class);
 
     @EJB
-    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    private AdminPreferenceSessionLocal adminPreferenceSessionLocal;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
     
     private RaAuthenticationHelper raAuthenticationHelper = null;
-    private Map<AuthenticationToken, List<RaStyleInfo>> cssCache;
     
     @Override
     public void destroy() {
@@ -77,9 +74,9 @@ public class RaStyleRequestFilter implements Filter {
 
     @Override
     public void init(FilterConfig arg0) throws ServletException {
-        // TODO Probably not necessary to query proxybean for every resource request in a page load (even though it is cached)
-        cssCache = new HashMap<>();
-        log.info(this.getClass().getName() + " initialized");        
+        if (log.isDebugEnabled()) {
+            log.debug(this.getClass().getName() + " initialized");        
+        }
     }
     
     @Override
@@ -92,21 +89,7 @@ public class RaStyleRequestFilter implements Filter {
         AuthenticationToken authenticationToken = null;
         authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
         try {
-            if (cssCache.containsKey(authenticationToken)) {
-                List<RaStyleInfo> cachedStyles = cssCache.get(authenticationToken);
-                // Check for changes
-                availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, cachedStyles.hashCode());
-                if (availableRaStyles == null) {
-                    // No changes, use cache
-                    availableRaStyles = cachedStyles;
-                } else {
-                    cssCache.put(authenticationToken, availableRaStyles);
-                }
-            } else {
-                // Full reload of styles
-                availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, 0);
-                cssCache.put(authenticationToken, availableRaStyles);
-            }
+            availableRaStyles = adminPreferenceSessionLocal.getAvailableRaStyleInfos(authenticationToken);
         } catch (Exception e) {
             // In any case of error loading the styles, display default style rather than no styles at all.
             chain.doFilter(httpRequest, httpResponse);
