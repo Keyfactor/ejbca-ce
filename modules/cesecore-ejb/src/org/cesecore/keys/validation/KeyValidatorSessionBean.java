@@ -69,7 +69,7 @@ import org.cesecore.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
     // NOTE: Should be replaced by a ManagedExecutorService when we drop support for JEE 6
-    private static final ExecutorService executorService = Executors.newCachedThreadPool();
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(64);
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorSessionBean.class);
