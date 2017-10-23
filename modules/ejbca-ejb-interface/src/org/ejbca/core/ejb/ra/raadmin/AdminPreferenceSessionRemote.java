@@ -20,4 +20,7 @@ import javax.ejb.Remote;
 @Remote
 public interface AdminPreferenceSessionRemote extends AdminPreferenceSession {
 
+    /** Invalidates all cached RA Styles */
+    void invalidateRaStyleCache();
+
 }
