@@ -399,7 +399,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                     }
                     //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
-                    if (certificateProfile.getAllowExtensionOverride()) {
+                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
                         Extensions extensions = requestMessage.getRequestExtensions();
                         if (extensions != null) {
                             Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
