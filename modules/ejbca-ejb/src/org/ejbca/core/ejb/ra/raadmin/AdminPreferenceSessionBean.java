@@ -269,4 +269,28 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         }
         return ret;
     }
+
+    @Override
+    public LinkedHashMap<String, Object> getCurrentRaStyleInfoAndLocale(AuthenticationToken admin) {
+        
+        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
+
+        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
+
+        return adminPreference.getRaPreferences();        
+
+    }
+
+    @Override
+    public void setCurrentRaStyleInfo(LinkedHashMap<String, Object> info, AuthenticationToken admin) {
+        
+        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
+        
+        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
+        
+        adminPreference.setRaPreferences(info);
+        
+        updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
+        
+    }
 }
