@@ -40,12 +40,11 @@
             var messagehidemore = '#{msg.preferences_details_hide}';
 		</script>
 
-
 		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned">
 			<h:panelGroup layout="block" id="preferenceContentBody"
 				styleClass="content-body">
 
-				<h:panelGroup layout="block" styleClass="internal-frame">
+ 				<h:panelGroup layout="block" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
 
 						<h:outputLabel for="selectPreferedLanguage"
@@ -69,10 +68,10 @@
 						<h:outputText value="#{msg.preferences_page_language_info}" />
 					</h:panelGroup>
 					<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestLang'), messageshowmore, messagehidemore);</script>
-				</h:panelGroup>
+				</h:panelGroup> 
 
-				<h:panelGroup layout="block" styleClass="internal-frame">
-					<fieldset>
+
+  				<h:panelGroup layout="block" styleClass="internal-frame">
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="selectPreferedTheme"
 								value="#{msg.preferences_page_theme_select}" />
@@ -82,9 +81,9 @@
 								value="#{raPreferencesBean.currentStyle}"
 								disabled="#{raPreferencesBean.styles.size()==1}">
 
-								<f:selectItems value="#{raPreferencesBean.styles}" var="style"
-									itemLabel="#{style.getArchiveName()}" />
-								<f:converter converterId="themeConverter" />
+								<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
+									itemLabel="#{theme.getArchiveName()}" />
+ 								<f:converter binding="#{raPreferencesBean}" />
 							</h:selectOneMenu>
 							<h:commandButton
 								onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);"
@@ -97,20 +96,20 @@
 						</h:panelGroup>
 
 						<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestTheme'), messageshowmore, messagehidemore);</script>
-					</fieldset>
-				</h:panelGroup>
+				</h:panelGroup> 
+
 
 				<h:panelGroup layout="block" id="navigationButtonGroup"
 					styleClass="navigation-button-group">
 
 					<h:commandButton id="resetButton" value="#{msg.generic_cancel}"
-						styleClass="pure-button ra-button"
-						action="#{raPreferencesBean.reset}" immediate="true">
+						styleClass="pure-button ra-button" immediate="true"
+						action="#{raPreferencesBean.reset}"> 
 					</h:commandButton>
 
 					<h:commandButton id="applyButton" value="#{msg.generic_apply}"
 						styleClass="pure-button ra-button"
-						action="#{raPreferencesBean.updatePreferences(supportedLocale, style)}" />
+						action="#{raPreferencesBean.updatePreferences()}" /> 
 
 				</h:panelGroup>
 			</h:panelGroup>

@@ -16,7 +16,9 @@ package org.ejbca.core.model.ra.raadmin;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
+import org.cesecore.config.RaStyleInfo;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.config.GlobalConfiguration;
 
@@ -56,7 +58,21 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     }
 
     public int getPreferedLanguage() {return ((Integer) data.get(PREFEREDLANGUAGE)).intValue();}
+    
+    public int getRaPreferedLanguage() {return ((Integer) data.get(PREFEREDLANGUAGE)).intValue();}
+    
     public void setPreferedLanguage(int language){ data.put(PREFEREDLANGUAGE, Integer.valueOf(language));}
+    
+    public void setRaPreferences(LinkedHashMap<String, Object> preferences) {
+        data.put(RASTYLEINFO, preferences);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public LinkedHashMap<String, Object> getRaPreferences() {
+        return (LinkedHashMap<String, Object>) data.get(RASTYLEINFO);
+    }
+    
+    
     /** Method taking a string, needs as input the available languages.
      * 
      * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
@@ -164,6 +180,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     private static final String LASTLOGFILTERMODE = "lastlogfiltermode";    
     private static final String FRONTPAGECASTATUS   			= "frontpagecastatus";
     private static final String FRONTPAGEPUBQSTATUS   			= "frontpagepubqstatus";
+    private static final String RASTYLEINFO = "rastyleinfo";
     
     public static final boolean DEFAULT_FRONTPAGECASTATUS	= true;
     public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS	= true;

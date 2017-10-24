@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.ejb.Local;
@@ -33,5 +34,19 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
      * @return List of custom RA styles available for the requesting administrator
      */
     List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin);
-
+   
+    /**
+     * Returns the currently set RA style for the requesting administrator.
+     * @param admin Administrator saving its data to the database.
+     * @return Custom RA style and locale currently set in the RA GUI for the administrator @admin.
+     */
+    LinkedHashMap<String, Object> getCurrentRaStyleInfoAndLocale(AuthenticationToken admin);
+    
+    /**
+     * Sets the current RA Style and locale for the requesting administrator to RA style info.
+     * @param info is the map containing the currently set locale and style for the admin
+     * @param admin is the admin who is saving its preferences in database.
+     */
+    void setCurrentRaStyleInfo(LinkedHashMap<String, Object> info, AuthenticationToken admin);
+    
 }
