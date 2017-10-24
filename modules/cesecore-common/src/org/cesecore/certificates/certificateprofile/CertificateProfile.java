@@ -2544,8 +2544,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Get a number indicating the number of CT logs marked as "mandatory"
-     * for which retrieval of SCTs is a requirement for successful issuance.
+     * Get a number indicating the amount of CT logs marked as "mandatory"
+     * from which we need to retrieve SCTs before successful issuance.
      * <p>
      * The default setting is zero mandatory logs, i.e. this option will be disabled.
      * </p>
