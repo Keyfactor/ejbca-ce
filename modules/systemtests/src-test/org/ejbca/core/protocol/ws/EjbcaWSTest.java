@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -524,7 +525,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         
         // Add key validator to CA.
         final CAInfo caInfo = caSession.getCAInfo(intAdmin, CA1);
-        final Collection<Integer> keyValidatorIds = new ArrayList<Integer>();
+        final Collection<Integer> keyValidatorIds = new ArrayList<>();
         keyValidatorIds.add(keyValidatorId);
         caInfo.setValidators(keyValidatorIds);
         caSession.editCA(intAdmin, caInfo);
@@ -745,9 +746,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
     
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(certificate.getSubjectX500Principal());
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         return new AuthenticationSubject(principals, credentials);
     }
@@ -2318,7 +2319,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private String readPemFile(final String filename) throws IOException {
         final InputStream stream = getClass().getResourceAsStream(filename);
         final StringWriter writer = new StringWriter();
-        IOUtils.copy(stream, writer);
+        IOUtils.copy(stream, writer, StandardCharsets.UTF_8);
         IOUtils.closeQuietly(stream);
         return writer.toString();
     }
