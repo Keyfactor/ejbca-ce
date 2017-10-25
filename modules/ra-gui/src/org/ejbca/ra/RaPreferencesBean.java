@@ -1,7 +1,6 @@
 package org.ejbca.ra;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,9 +23,6 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaPreferencesBean.class);
-
-    private static final String CURRENTRALOCALE = "currentRaLocale";
-    private static final String CURRENTRASTYLE = "currentRaStyle";
 
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
@@ -51,16 +47,8 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     @PostConstruct
     public void init() {
-
-        LinkedHashMap<String, Object> raStyleInfoHash = adminPreferenceSession
-                .getCurrentRaStyleInfoAndLocale(raAuthenticationBean.getAuthenticationToken());
-
-        if (raStyleInfoHash != null) {
-            currentLocale = (Locale) raStyleInfoHash.get(CURRENTRALOCALE);
-            currentStyle = (RaStyleInfo) raStyleInfoHash.get(CURRENTRASTYLE);
-        } else {
-            currentLocale = raLocaleBean.getLocale();
-        }
+        initLocale();
+        initRaStyle();
     }
 
     public RaStyleInfo getCurrentStyle() {
@@ -76,7 +64,6 @@ public class RaPreferencesBean implements Converter, Serializable {
     }
 
     public void setCurrentLocale(final Locale locale) {
-
         this.currentLocale = locale;
         raLocaleBean.setLocale(locale);
     }
@@ -89,14 +76,13 @@ public class RaPreferencesBean implements Converter, Serializable {
         return adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
     }
 
+    /**
+     * Updates ra admin preferences data in database.
+     * Does nothings in case the current data is equal to the data going to be set.
+     */
     public void updatePreferences() {
-
-        LinkedHashMap<String, Object> infoToUpdate = new LinkedHashMap<>();
-
-        infoToUpdate.put(CURRENTRALOCALE, currentLocale);
-        infoToUpdate.put(CURRENTRASTYLE, currentStyle);
-
-        adminPreferenceSession.setCurrentRaStyleInfo(infoToUpdate, raAuthenticationBean.getAuthenticationToken());
+        adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+        adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
     }
 
     /**
@@ -132,6 +118,32 @@ public class RaPreferencesBean implements Converter, Serializable {
     public String reset() {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
         return viewId + "?faces-redirect=true";
+    }
+
+    private void initLocale() {
+        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
+
+        if (localeFromDB != null) {
+            currentLocale = localeFromDB;
+        } else {
+            currentLocale = raLocaleBean.getLocale();
+        }
+
+    }
+
+    private void initRaStyle() {
+
+        int raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+
+        List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+        
+        for (RaStyleInfo raStyleInfo : raStyleInfos) {
+            if (raStyleInfo.getArchiveId() == raStyleFromDB) {
+                currentStyle = raStyleInfo;
+                return;
+            }
+        }
+
     }
 
 }
