@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
-import org.cesecore.config.RaStyleInfo;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.config.GlobalConfiguration;
 
