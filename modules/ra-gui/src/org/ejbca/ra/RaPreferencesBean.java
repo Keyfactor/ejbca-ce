@@ -30,39 +30,39 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
-    
+
     @ManagedProperty(value = "#{raLocaleBean}")
     private RaLocaleBean raLocaleBean;
-    
+
     public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
         this.raLocaleBean = raLocaleBean;
     }
 
-    @ManagedProperty(value="#{raAuthenticationBean}")
+    @ManagedProperty(value = "#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
-    
+
     public void setRaAuthenticationBean(RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
-    
+
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
-    
+
     @PostConstruct
     public void init() {
 
-        LinkedHashMap<String, Object> raStyleInfoHash = adminPreferenceSession.getCurrentRaStyleInfoAndLocale(raAuthenticationBean.getAuthenticationToken());
-        
-        if(raStyleInfoHash != null) {
-            currentLocale = (Locale)raStyleInfoHash.get(CURRENTRALOCALE);
-            currentStyle = (RaStyleInfo)raStyleInfoHash.get(CURRENTRASTYLE);
-            raLocaleBean.setLocale(currentLocale);
+        LinkedHashMap<String, Object> raStyleInfoHash = adminPreferenceSession
+                .getCurrentRaStyleInfoAndLocale(raAuthenticationBean.getAuthenticationToken());
+
+        if (raStyleInfoHash != null) {
+            currentLocale = (Locale) raStyleInfoHash.get(CURRENTRALOCALE);
+            currentStyle = (RaStyleInfo) raStyleInfoHash.get(CURRENTRASTYLE);
         } else {
             currentLocale = raLocaleBean.getLocale();
         }
     }
-    
+
     public RaStyleInfo getCurrentStyle() {
         return currentStyle;
     }
@@ -80,40 +80,40 @@ public class RaPreferencesBean implements Converter, Serializable {
         this.currentLocale = locale;
         raLocaleBean.setLocale(locale);
     }
-    
+
     public List<Locale> getLocales() {
         return raLocaleBean.getSupportedLocales();
     }
-    
+
     public List<RaStyleInfo> getStyles() {
         return adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
     }
-    
+
     public void updatePreferences() {
 
         LinkedHashMap<String, Object> infoToUpdate = new LinkedHashMap<>();
-        
+
         infoToUpdate.put(CURRENTRALOCALE, currentLocale);
         infoToUpdate.put(CURRENTRASTYLE, currentStyle);
 
         adminPreferenceSession.setCurrentRaStyleInfo(infoToUpdate, raAuthenticationBean.getAuthenticationToken());
     }
-    
+
     /**
      * The following two methods are used in converting RaStyleInfo to String and vice versa.
      * Required by JSF.
      */
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
-        
+
         List<RaStyleInfo> styleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-        
-        for (RaStyleInfo raStyleInfo: styleInfos) {
+
+        for (RaStyleInfo raStyleInfo : styleInfos) {
             if (raStyleInfo.getArchiveName().equals(value)) {
                 return raStyleInfo;
             }
         }
-        
+
         return null;
     }
 
@@ -121,7 +121,7 @@ public class RaPreferencesBean implements Converter, Serializable {
     public String getAsString(FacesContext context, UIComponent component, Object value) {
 
         RaStyleInfo raStyleInfo = (RaStyleInfo) value;
-        
+
         return raStyleInfo.getArchiveName();
     }
 
@@ -131,8 +131,7 @@ public class RaPreferencesBean implements Converter, Serializable {
      */
     public String reset() {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
-        return viewId+"?faces-redirect=true";
+        return viewId + "?faces-redirect=true";
     }
-
 
 }
