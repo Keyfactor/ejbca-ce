@@ -30,6 +30,7 @@ public class RaStyleInfo implements Serializable {
     private static final Random random = new Random();
     
     private int archiveId;
+    
     private List<RaCssInfo> raCssInfos;
     private byte[] logoBytes;
     private String logoName;
@@ -86,6 +87,11 @@ public class RaStyleInfo implements Serializable {
     /** @return unique id for RaCssInfo object*/
     public int getArchiveId() {
         return archiveId;
+    }
+
+    /** Should not be used normally! */
+    public void setArchiveId(int archiveId) {
+        this.archiveId = archiveId;
     }
     
     /** @param raCssInfo CSS info added to archive */

@@ -279,7 +279,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
         
         if (adminPreference == null) {
-            return 0;
+            return null;
         }
         
         return adminPreference.getPreferedRaStyleId();        

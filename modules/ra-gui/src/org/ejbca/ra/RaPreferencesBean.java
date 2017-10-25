@@ -17,6 +17,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.config.RaStyleInfo;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 
+
+
 @ManagedBean
 @ViewScoped
 public class RaPreferencesBean implements Converter, Serializable {
@@ -73,7 +75,19 @@ public class RaPreferencesBean implements Converter, Serializable {
     }
 
     public List<RaStyleInfo> getStyles() {
-        return adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+
+        List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+
+        RaStyleInfo dummStyleInfo = new RaStyleInfo("Default", null, null, "");
+
+        dummStyleInfo.setArchiveId(0);
+
+        if (raStyleInfos.contains(dummStyleInfo)) {
+            return raStyleInfos;
+        } else {
+            raStyleInfos.add(0, dummStyleInfo);
+            return raStyleInfos;
+        }
     }
 
     /**
@@ -133,14 +147,17 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private void initRaStyle() {
 
-        int raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
 
-        List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-        
-        for (RaStyleInfo raStyleInfo : raStyleInfos) {
-            if (raStyleInfo.getArchiveId() == raStyleFromDB) {
-                currentStyle = raStyleInfo;
-                return;
+        if (raStyleFromDB != null) {
+
+            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+
+            for (RaStyleInfo raStyleInfo : raStyleInfos) {
+                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
+                    currentStyle = raStyleInfo;
+                    return;
+                }
             }
         }
 
