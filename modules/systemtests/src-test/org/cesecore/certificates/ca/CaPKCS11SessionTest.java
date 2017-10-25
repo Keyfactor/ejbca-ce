@@ -18,7 +18,6 @@ import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
-import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,8 +51,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     @Before
     public void checkPkcs11DriverAvailable() {
         // Skip test if no PKCS11 driver is installed
-        assumeTrue(PKCS11TestUtils.getHSMLibrary() != null);
-        assumeTrue(PKCS11TestUtils.getHSMProvider() != null);
+        assumeTrue(CryptoTokenTestUtils.getHSMLibrary() != null);
     }
 
     @AfterClass
