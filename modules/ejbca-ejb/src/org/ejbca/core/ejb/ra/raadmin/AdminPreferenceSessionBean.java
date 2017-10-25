@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -271,26 +272,78 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public LinkedHashMap<String, Object> getCurrentRaStyleInfoAndLocale(AuthenticationToken admin) {
+    public Integer getCurrentRaStyleId(AuthenticationToken admin) {
         
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
 
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-
-        return adminPreference.getRaPreferences();        
-
+        
+        if (adminPreference == null) {
+            return 0;
+        }
+        
+        return adminPreference.getPreferedRaStyleId();        
     }
 
     @Override
-    public void setCurrentRaStyleInfo(LinkedHashMap<String, Object> info, AuthenticationToken admin) {
+    public void setCurrentRaStyleId(int currentStyleId, AuthenticationToken admin) {
+        
+        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
+
+        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
+        
+        if (adminPreference == null) {
+            
+            AdminPreference defaultAdminPreference = getDefaultAdminPreference(); 
+            defaultAdminPreference.setPreferedRaStyleId(currentStyleId);
+            try {
+                saveDefaultAdminPreference(admin, defaultAdminPreference);
+            } catch (AuthorizationDeniedException e) {
+                log.error("Admin with the id " + admin.getUniqueId() + "is not authorized to update the default preferences!" );
+            }
+            return;
+        }
+        
+        adminPreference.setPreferedRaStyleId(currentStyleId);
+        updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
+        
+    }
+
+    @Override
+    public Locale getCurrentRaLocale(AuthenticationToken admin) {
+        
+        String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
+
+        AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
+        
+        if (adminPreference == null) {
+            return getDefaultAdminPreference().getPreferedRaLanguage();
+        }
+        
+        return adminPreference.getPreferedRaLanguage();
+    }
+
+    @Override
+    public void setCurrentRaLocale(Locale locale, AuthenticationToken admin) {
         
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
         
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
         
-        adminPreference.setRaPreferences(info);
+        if (adminPreference == null) {
+            AdminPreference defaultAdminPreference = getDefaultAdminPreference(); 
+            defaultAdminPreference.setPreferedRaLanguage(locale);
+            try {
+                saveDefaultAdminPreference(admin, defaultAdminPreference);
+            } catch (AuthorizationDeniedException e) {
+                log.error("Admin with the id " + admin.getUniqueId() + "is not authorized to update the default preferences!" );
+            }
+            return;
+        }
         
+        adminPreference.setPreferedRaLanguage(locale);
         updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
         
     }
+
 }

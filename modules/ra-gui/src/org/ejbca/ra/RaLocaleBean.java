@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -50,8 +49,6 @@ public class RaLocaleBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaLocaleBean.class);
     
-    private static final String CURRENTRALOCALE = "currentRaLocale";
-    
     private Locale locale = null;
     private boolean directionLeftToRight = true;
 
@@ -68,13 +65,11 @@ public class RaLocaleBean implements Serializable {
     /** @return this sessions Locale */
     public Locale getLocale() {
 
-        LinkedHashMap<String, Object> raStyleInfoHash = adminPreferenceSession
-                .getCurrentRaStyleInfoAndLocale(raAuthenticationBean.getAuthenticationToken());
+        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
 
-        if (raStyleInfoHash != null) {
-            locale = (Locale) raStyleInfoHash.get(CURRENTRALOCALE);
+        if (localeFromDB != null) {
+            locale = localeFromDB;
         } else {
-
             if (locale == null) {
                 final FacesContext facesContext = FacesContext.getCurrentInstance();
                 final Locale requestLocale = facesContext.getExternalContext().getRequestLocale();
