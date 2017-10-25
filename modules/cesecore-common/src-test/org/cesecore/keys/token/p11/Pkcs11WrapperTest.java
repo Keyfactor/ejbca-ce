@@ -52,9 +52,6 @@ public class Pkcs11WrapperTest {
     @Test
     public void testInstantiatePkcs11Wrapper() {
         String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
-        if (pkcs11Library == null) {
-            throw new RuntimeException("No known PKCS11 installed, test can't continue.");
-        }
         try {
             Pkcs11Wrapper.getInstance(new File(pkcs11Library));
         } catch (Exception e) {
