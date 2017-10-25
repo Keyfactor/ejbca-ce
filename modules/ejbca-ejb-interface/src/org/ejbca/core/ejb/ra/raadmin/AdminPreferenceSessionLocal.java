@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ejb.Local;
 
@@ -36,17 +36,32 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
     List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin);
    
     /**
-     * Returns the currently set RA style for the requesting administrator.
+     * Returns the currently set RA style id for the requesting administrator.
      * @param admin Administrator saving its data to the database.
-     * @return Custom RA style and locale currently set in the RA GUI for the administrator @admin.
+     * @return Custom RA style id currently set in the RA GUI for the administrator @admin.
      */
-    LinkedHashMap<String, Object> getCurrentRaStyleInfoAndLocale(AuthenticationToken admin);
+    Integer getCurrentRaStyleId(AuthenticationToken admin);
     
     /**
-     * Sets the current RA Style and locale for the requesting administrator to RA style info.
-     * @param info is the map containing the currently set locale and style for the admin
+     * Sets the current RA Style id the requesting administrator.
+     * @param current style id for the admin.
      * @param admin is the admin who is saving its preferences in database.
      */
-    void setCurrentRaStyleInfo(LinkedHashMap<String, Object> info, AuthenticationToken admin);
+    void setCurrentRaStyleId(int currentStyleId, AuthenticationToken admin);
     
+    /**
+     * Returns the currently set locale for the requesting administrator.
+     * @param admin Administrator saving its data to the database.
+     * @return Currently set Locale in the RA GUI for the administrator @admin.
+     */
+    Locale getCurrentRaLocale(AuthenticationToken admin);
+    
+    /**
+     * Sets the current locale for the requesting administrator.
+     * @param current locale for this admin.
+     * @param admin is the admin who is saving its preferences in database.
+     */
+    void setCurrentRaLocale(Locale locale, AuthenticationToken admin);
+
+
 }
