@@ -151,7 +151,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             return availableRaStyles.get(0);
         }
         // Default style will be used
-        if (preferedStyleId == 0 || availableRaStyles.isEmpty()) {
+        if (availableRaStyles.isEmpty() || preferedStyleId == 0) {
             return null;
         }
         
