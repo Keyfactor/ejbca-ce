@@ -117,7 +117,7 @@ public class RaPreferencesBean implements Converter, Serializable {
             
             Map<String, RaCssInfo> cssMap = raStyle.getRaCssInfos();             
             for(String entry : cssMap.keySet()) {
-                log.info("The current css style for the current ra style " + raStyle.getArchiveName() + " is " + entry);
+                //log.info("The current css style for the current ra style " + raStyle.getArchiveName() + " is " + entry);
                 
             }
         }
@@ -178,8 +178,6 @@ public class RaPreferencesBean implements Converter, Serializable {
         Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
 
         if (raStyleFromDB != null) {
-
-            log.info("The style id read from db is " + raStyleFromDB.intValue());
 
             List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
 
