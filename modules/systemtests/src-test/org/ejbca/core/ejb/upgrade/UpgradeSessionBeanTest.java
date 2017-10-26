@@ -502,7 +502,7 @@ public class UpgradeSessionBeanTest {
         final String roleName = TESTCLASS + " upgradeTo680RoleMembers";
         final List<AccessUserAspectData> oldAccessUserAspectDatas = Arrays.asList(
                 new AccessUserAspectData(roleName, 4711, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"),
-                new AccessUserAspectData(roleName, 4712, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "123abcDEF")
+                new AccessUserAspectData(roleName, 4712, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "0123abcDEF")
                 );
         upgradeTestSession.createRole(roleName, null, oldAccessUserAspectDatas);
         try {
