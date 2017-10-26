@@ -13,7 +13,6 @@
 
 package org.ejbca.ra;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +28,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -146,9 +144,10 @@ public class RaPreferencesBean implements Converter, Serializable {
         String certificatefingerprint = CertTools
                 .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
 
-        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint))
+        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint)) {
             adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
                     new AdminPreference());
+        }
 
         adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
         adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
