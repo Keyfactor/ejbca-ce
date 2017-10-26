@@ -314,19 +314,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
 
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
-        if (adminPreference == null) {
-            
-            AdminPreference defaultAdminPreference = getDefaultAdminPreference(); 
-            defaultAdminPreference.setPreferedRaStyleId(currentStyleId);
-            try {
-                saveDefaultAdminPreference(admin, defaultAdminPreference);
-            } catch (AuthorizationDeniedException e) {
-                log.error("Admin with the id " + admin.getUniqueId() + "is not authorized to update the default preferences!" );
-            }
-            return;
-        }
-        
+                
         adminPreference.setPreferedRaStyleId(currentStyleId);
         updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);
         
@@ -352,17 +340,6 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
         
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
-        if (adminPreference == null) {
-            AdminPreference defaultAdminPreference = getDefaultAdminPreference(); 
-            defaultAdminPreference.setPreferedRaLanguage(locale);
-            try {
-                saveDefaultAdminPreference(admin, defaultAdminPreference);
-            } catch (AuthorizationDeniedException e) {
-                log.error("Admin with the id " + admin.getUniqueId() + "is not authorized to update the default preferences!" );
-            }
-            return;
-        }
         
         adminPreference.setPreferedRaLanguage(locale);
         updateAdminPreference((X509CertificateAuthenticationToken) admin, adminPreference, false);

@@ -35,7 +35,7 @@
 				<h:outputText value="#{msg.preferences_page_title}" />
 			</h1>
 		</h:panelGroup>
-		<script>
+		<script type="text/javascript">
             var messageshowmore = '#{msg.preferences_details_show}';
             var messagehidemore = '#{msg.preferences_details_hide}';
 		</script>
@@ -104,12 +104,15 @@
 
 					<h:commandButton id="resetButton" value="#{msg.generic_cancel}"
 						styleClass="pure-button ra-button" immediate="true"
-						action="#{raPreferencesBean.reset}"> 
+						action="#{raPreferencesBean.reset}"
+						partialSubmit="true"> 
 					</h:commandButton>
 
 					<h:commandButton id="applyButton" value="#{msg.generic_apply}"
 						styleClass="pure-button ra-button"
-						action="#{raPreferencesBean.updatePreferences()}" /> 
+						action="#{raPreferencesBean.updatePreferences()}">
+					<f:ajax execute="@form" render="@all" />
+					</h:commandButton> 
 
 				</h:panelGroup>
 			</h:panelGroup>
