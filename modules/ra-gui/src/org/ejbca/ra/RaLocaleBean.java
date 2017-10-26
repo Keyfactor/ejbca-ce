@@ -69,6 +69,7 @@ public class RaLocaleBean implements Serializable {
 
         if (localeFromDB != null) {
             locale = localeFromDB;
+            directionLeftToRight = isDirectionLeftToRight(locale);
         } else {
             if (locale == null) {
                 final FacesContext facesContext = FacesContext.getCurrentInstance();
