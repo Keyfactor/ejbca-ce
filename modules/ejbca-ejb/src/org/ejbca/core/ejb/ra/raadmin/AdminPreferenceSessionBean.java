@@ -143,10 +143,33 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
+    public RaStyleInfo getPreferedRaStyleInfo(AuthenticationToken admin) {
+        List<RaStyleInfo> availableRaStyles = getAvailableRaStyleInfos(admin);
+        Integer preferedStyleId = getCurrentRaStyleId(admin);
+        // Administrator hasn't set a preferred style. Use first available
+        if (preferedStyleId == null && !availableRaStyles.isEmpty()) {
+            return availableRaStyles.get(0);
+        }
+        // Default style will be used
+        if (preferedStyleId == 0 || availableRaStyles.isEmpty()) {
+            return null;
+        }
+        
+        // Return the style preferred by administrator
+        for (RaStyleInfo rastyle : availableRaStyles) {
+            if (preferedStyleId == rastyle.getArchiveId()) {
+                return rastyle;
+            }
+        }
+        // Shouldn't happen
+        return null;
+    }
+    
+    @Override
     public List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin) {
         return raStyleCacheBean.getAvailableRaStyles(admin);
     }
-    
+
     @Override
     public void invalidateRaStyleCache() {
         raStyleCacheBean.invalidateCache();

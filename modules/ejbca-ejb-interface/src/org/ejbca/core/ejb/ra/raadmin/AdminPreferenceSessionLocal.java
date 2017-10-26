@@ -62,6 +62,14 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
      * @param admin is the admin who is saving its preferences in database.
      */
     void setCurrentRaLocale(Locale locale, AuthenticationToken admin);
-
+    
+    /**
+     * Returns the RaStyleInfo which will be used by the requesting administrator. If there are multiple
+     * styles available and no preferences has been by the administrator, the first one available will be
+     * returned.
+     * @param admin Authentication token of the requesting administrator
+     * @return RaStyleInfo containing resources to be used the the administrators RA-page
+     */
+    RaStyleInfo getPreferedRaStyleInfo(AuthenticationToken admin);
 
 }
