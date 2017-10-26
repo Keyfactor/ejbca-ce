@@ -44,7 +44,7 @@
 			<h:panelGroup layout="block" id="preferenceContentBody"
 				styleClass="content-body">
 
- 				<h:panelGroup layout="block" styleClass="internal-frame">
+				<h:panelGroup layout="block" styleClass="internal-frame">
 					<h:panelGroup layout="block" styleClass="pure-control-group">
 
 						<h:outputLabel for="selectPreferedLanguage"
@@ -68,35 +68,35 @@
 						<h:outputText value="#{msg.preferences_page_language_info}" />
 					</h:panelGroup>
 					<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestLang'), messageshowmore, messagehidemore);</script>
-				</h:panelGroup> 
+				</h:panelGroup>
 
 
-  				<h:panelGroup layout="block" styleClass="internal-frame">
-						<h:panelGroup layout="block" styleClass="pure-control-group">
-							<h:outputLabel for="selectPreferedTheme"
-								value="#{msg.preferences_page_theme_select}" />
+				<h:panelGroup layout="block" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="pure-control-group">
+						<h:outputLabel for="selectPreferedTheme"
+							value="#{msg.preferences_page_theme_select}" />
 
-							<h:selectOneMenu id="selectPreferedTheme"
-								styleClass="jsAutoFocusLast" var="currentTheme"
-								value="#{raPreferencesBean.currentStyle}"
-								disabled="#{raPreferencesBean.styles.size()==0}">
+						<h:selectOneMenu id="selectPreferedTheme"
+							styleClass="jsAutoFocusLast" var="currentTheme"
+							value="#{raPreferencesBean.currentStyle}"
+							disabled="#{raPreferencesBean.styles.size()==0}">
 
-								<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
-									itemLabel="#{theme.getArchiveName()}" />
- 								<f:converter binding="#{raPreferencesBean}" />
-							</h:selectOneMenu>
-							<h:commandButton
-								onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);"
-								id="expandRequestTheme" value="#{msg.preferences_details_hide}"
-								type="button" styleClass="toggleMoreButton" />
-						</h:panelGroup>
-						<h:panelGroup id="expandRequestThemeDetails" layout="block"
-							style="display: block" styleClass="pure-control-group">
-							<h:outputText value="#{msg.preferences_page_theme_info}" />
-						</h:panelGroup>
+							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
+								itemLabel="#{theme.getArchiveName()}" />
+							<f:converter binding="#{raPreferencesBean}" />
+						</h:selectOneMenu>
+						<h:commandButton
+							onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);"
+							id="expandRequestTheme" value="#{msg.preferences_details_hide}"
+							type="button" styleClass="toggleMoreButton" />
+					</h:panelGroup>
+					<h:panelGroup id="expandRequestThemeDetails" layout="block"
+						style="display: block" styleClass="pure-control-group">
+						<h:outputText value="#{msg.preferences_page_theme_info}" />
+					</h:panelGroup>
 
-						<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestTheme'), messageshowmore, messagehidemore);</script>
-				</h:panelGroup> 
+					<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestTheme'), messageshowmore, messagehidemore);</script>
+				</h:panelGroup>
 
 
 				<h:panelGroup layout="block" id="navigationButtonGroup"
@@ -104,15 +104,16 @@
 
 					<h:commandButton id="resetButton" value="#{msg.generic_cancel}"
 						styleClass="pure-button ra-button" immediate="true"
-						action="#{raPreferencesBean.reset}"
-						partialSubmit="true"> 
+						action="#{raPreferencesBean.reset}" partialSubmit="true">
 					</h:commandButton>
 
 					<h:commandButton id="applyButton" value="#{msg.generic_apply}"
 						styleClass="pure-button ra-button"
 						action="#{raPreferencesBean.updatePreferences()}">
-					<f:ajax execute="@form" render="@all" />
-					</h:commandButton> 
+						<f:ajax execute="@form" render="@all" />
+					</h:commandButton>
+					
+					<h:graphicImage value="/img/pk_logo.png?v#{raPreferencesBean.myVersion}" />
 
 				</h:panelGroup>
 			</h:panelGroup>
