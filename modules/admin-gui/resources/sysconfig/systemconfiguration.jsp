@@ -682,7 +682,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 				</h:column>
 				<h:column headerClass="gridColumn1">
 					<f:facet name="header"><h:outputText value="#{web.text.CSSCOLUMNTITLE}"/></f:facet>
-				 	<h:dataTable value="#{raStyleInfo.raCssInfos}" var="raCssInfo">
+				 	<h:dataTable value="#{raStyleInfo.raCssValues}" var="raCssInfo">
             			<h:column>
              		  		<h:outputText value="#{raCssInfo.cssName}"/>
             			</h:column>

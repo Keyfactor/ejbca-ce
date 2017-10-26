@@ -85,26 +85,24 @@ public class RaStyleRequestFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestPath = httpRequest.getRequestURI();
         String resource = requestPath.substring(requestPath.lastIndexOf('/') + 1, requestPath.length());
-        List<RaStyleInfo> availableRaStyles;
+        RaStyleInfo customResponse;
         AuthenticationToken authenticationToken = null;
         authenticationToken = getAuthenticationToken(httpRequest, httpResponse);
         try {
-            availableRaStyles = adminPreferenceSessionLocal.getAvailableRaStyleInfos(authenticationToken);
+            customResponse = adminPreferenceSessionLocal.getPreferedRaStyleInfo(authenticationToken);
         } catch (Exception e) {
             // In any case of error loading the styles, display default style rather than no styles at all.
+            e.printStackTrace();
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
         
         // TODO pure/base.css is currently unsupported for injection since it can't be differentiated from /css/base.css by name
-        if (availableRaStyles.isEmpty() || requestPath.equals("/ejbca/ra/css/pure/base.css")) {
-            // Stop here and pass on request (default CSS will be used)
+        if (customResponse == null || requestPath.equals("/ejbca/ra/css/pure/base.css")) {
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
-        // TODO This has to handle multiple styles in the case where the authToken belongs to multiple roles
-        // once a 'Preferences' page is introduced to the RA-Web
-        RaStyleInfo customResponse = availableRaStyles.get(0);
+        
         if (requestPath.equals(RA_LOGO_PATH) && customResponse.getLogoBytes() != null) {
             OutputStream clientPrintWriter = response.getOutputStream();
             try {
@@ -121,23 +119,23 @@ public class RaStyleRequestFilter implements Filter {
             return;
         }
         
-        for (RaCssInfo raCssInfo : customResponse.getRaCssInfos()) {
-            if (raCssInfo.getCssName().equals(resource)) {
-                PrintWriter clientPrintWriter = response.getWriter();
-                try {
-                    ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
-                    chain.doFilter(httpRequest, responseWrapper);
-                    String newCssContent = new String(raCssInfo.getCssBytes());
-                    httpResponse.setContentType("text/css");
-                    httpResponse.setContentLength(newCssContent.length());
-                    clientPrintWriter.write(newCssContent);
-                } finally {
-                    clientPrintWriter.close();
-                    
-                }
-                return;
+        RaCssInfo cssResponse = customResponse.getRaCssInfos().get(resource);
+        if (cssResponse != null) {
+            PrintWriter clientPrintWriter = response.getWriter();
+            try {
+                ResponseWrapper responseWrapper = new ResponseWrapper((HttpServletResponse) response);
+                chain.doFilter(httpRequest, responseWrapper);
+                String newCssContent = new String(cssResponse.getCssBytes());
+                httpResponse.setContentType("text/css");
+                httpResponse.setContentLength(newCssContent.length());
+                clientPrintWriter.write(newCssContent);
+            } finally {
+                clientPrintWriter.close();
+                
             }
+            return;
         }
+
         // No match. Pass on request
         chain.doFilter(httpRequest, httpResponse);
     }

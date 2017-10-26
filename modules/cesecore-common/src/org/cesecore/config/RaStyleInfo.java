@@ -15,7 +15,9 @@ package org.cesecore.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -30,8 +32,7 @@ public class RaStyleInfo implements Serializable {
     private static final Random random = new Random();
     
     private int archiveId;
-    
-    private List<RaCssInfo> raCssInfos;
+    private Map<String, RaCssInfo> raCssInfos;
     private byte[] logoBytes;
     private String logoName;
     private String logoContentType;
@@ -45,10 +46,10 @@ public class RaStyleInfo implements Serializable {
      * @param logoBytes Byte array of custom logo. May be null
      * @param logoName Name of custom logo. May be null
      */
-    public RaStyleInfo(String fileName, List<RaCssInfo> raCssInfos, final byte[] logoBytes, String logoName) {
+    public RaStyleInfo(String fileName, Map<String, RaCssInfo> raCssInfos, final byte[] logoBytes, String logoName) {
         this.archiveId = random.nextInt();
         if (raCssInfos == null) {
-            this.raCssInfos = new ArrayList<>();
+            this.raCssInfos = new HashMap<>();
         } else {
             this.raCssInfos = raCssInfos;
         }
@@ -96,16 +97,20 @@ public class RaStyleInfo implements Serializable {
     
     /** @param raCssInfo CSS info added to archive */
     public void addRaCssInfo(RaCssInfo raCssInfo) {
-        this.raCssInfos.add(raCssInfo);
+        this.raCssInfos.put(raCssInfo.getCssName(), raCssInfo);
     }
     
     /** @return List of all CSS infos in archive*/
-    public List<RaCssInfo> getRaCssInfos() {
+    public Map<String, RaCssInfo> getRaCssInfos() {
         return raCssInfos;
     }
     
+    public List<RaCssInfo> getRaCssValues() {
+        return new ArrayList<RaCssInfo>(getRaCssInfos().values());
+    }
+    
     /** @param raCssInfos sets a list of CSS infos to archive */
-    public void setRaCssInfos(List<RaCssInfo> raCssInfos) {
+    public void setRaCssInfos(HashMap<String, RaCssInfo> raCssInfos) {
         this.raCssInfos = raCssInfos;
     }
 

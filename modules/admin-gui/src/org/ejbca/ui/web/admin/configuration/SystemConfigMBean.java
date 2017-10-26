@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1282,7 +1283,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private List<RaStyleInfo> raStyleInfosList;
     private UploadedFile raCssFile = null;
     private UploadedFile raLogoFile = null;
-    private List<RaCssInfo> importedRaCssInfos = null;
+    private Map<String, RaCssInfo> importedRaCssInfos = null;
     private String archiveName = null;
     private String logoName = null;
     private byte[] logoBytes = null;
@@ -1359,7 +1360,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         int numberOfZipEntries = 0;
         int numberOfImportedFiles = 0;
         int numberOfignoredFiles = 0;
-        List<RaCssInfo> raCssInfosList = new ArrayList<>();
+        Map<String, RaCssInfo> raCssInfosMap = new HashMap<String, RaCssInfo>();
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer));
         ZipEntry ze;
         // Read each zip entry
@@ -1387,14 +1388,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 filebytes[i++] = (byte) zis.read();
             }
             RaCssInfo raCssInfo = new RaCssInfo(filebytes, fileName);
-            raCssInfosList.add(raCssInfo);
+            raCssInfosMap.put(fileName, raCssInfo);
             importedFiles += fileName + ", ";
             numberOfImportedFiles++;
         }
         zis.close();
         if (numberOfZipEntries == 0 && raCssFile.getName().endsWith(".css")) {
             // Single file selected (not zip)
-            raCssInfosList.add(new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
+            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
             numberOfImportedFiles++;
             importedFiles = raCssFile.getName();
         } else if (numberOfZipEntries == 0) {
@@ -1407,7 +1408,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         } else {
             addInfoMessage("CSSIMPORTIGNORED", numberOfImportedFiles, importedFiles, numberOfignoredFiles, ignoredFiles);
         }
-        importedRaCssInfos = raCssInfosList;
+        importedRaCssInfos = raCssInfosMap;
     }
 
     public void removeRaStyleInfo() {
