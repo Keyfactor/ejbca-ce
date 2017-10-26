@@ -17,14 +17,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.ViewHandler;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.ExternalContext;
+import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
+import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -69,6 +72,17 @@ public class RaPreferencesBean implements Converter, Serializable {
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
+    
+    public int getMyVersion() {
+        return myVersion;
+    }
+
+    public void setMyVersion(int myVersion) {
+        this.myVersion = myVersion;
+    }
+
+    private int myVersion;
+    
 
     @PostConstruct
     public void init() {
@@ -100,6 +114,16 @@ public class RaPreferencesBean implements Converter, Serializable {
     public List<RaStyleInfo> getStyles() {
 
         List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+        
+        for(RaStyleInfo raStyle : raStyleInfos) {
+            
+            Map<String, RaCssInfo> cssMap = raStyle.getRaCssInfos();             
+            for(String entry : cssMap.keySet()) {
+                log.info("The current css style for the current ra style " + raStyle.getArchiveName() + " is " + entry);
+                
+            }
+        }
+        
 
         RaStyleInfo dummStyleInfo = new RaStyleInfo("Default", null, null, "");
 
@@ -128,13 +152,15 @@ public class RaPreferencesBean implements Converter, Serializable {
 
         adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
         adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
-        
-        try {
+
+        reload();
+
+        /*        try {
             reload();
         } catch (IOException e) {
             log.error("Some unexpected IO exception happened while reloading the page!");
-
-        }
+        
+        }*/
     }
 
     private void initLocale() {
@@ -204,10 +230,38 @@ public class RaPreferencesBean implements Converter, Serializable {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
         return viewId + "?faces-redirect=true";
     }
-    
-    public void reload() throws IOException {
-        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-        ec.redirect(((HttpServletRequest) ec.getRequest()).getRequestURI());
-    }
+
+    public void reload() {
+
+/*        this.setMyVersion(myVersion + 1);
+
+        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+        return viewId + "?faces-redirect=true";*/
+        
+        
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        String viewId = context.getViewRoot().getViewId();
+        ViewHandler handler = context.getApplication().getViewHandler();
+        UIViewRoot root = handler.createView(context, viewId);
+        root.setViewId(viewId);
+        context.setViewRoot(root);
+        
+        
+        
+/*        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest origRequest = (HttpServletRequest) context.getExternalContext().getRequest();
+        String contextPath = origRequest.getContextPath();
+        
+        log.info("Context path is " + contextPath);
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(contextPath + "/preferences.xhtml?rv=3");
+        } catch (IOException e) {
+            log.info("The path not found in the context path!!!!");
+        }
+
+        return;
+*/    }
 
 }
