@@ -13,6 +13,7 @@
 
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
@@ -23,12 +24,17 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
  * 
@@ -59,7 +65,7 @@ public class RaPreferencesBean implements Converter, Serializable {
     public void setRaAuthenticationBean(RaAuthenticationBean raAuthenticationBean) {
         this.raAuthenticationBean = raAuthenticationBean;
     }
-    
+
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
@@ -112,8 +118,56 @@ public class RaPreferencesBean implements Converter, Serializable {
      * Does nothings in case the current data is equal to the data going to be set.
      */
     public void updatePreferences() {
+
+        String certificatefingerprint = CertTools
+                .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
+
+        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint))
+            adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
+                    new AdminPreference());
+
         adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
         adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+        
+        try {
+            reload();
+        } catch (IOException e) {
+            log.error("Some unexpected IO exception happened while reloading the page!");
+
+        }
+    }
+
+    private void initLocale() {
+        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
+
+        if (localeFromDB != null) {
+            currentLocale = localeFromDB;
+        } else {
+            currentLocale = raLocaleBean.getLocale();
+        }
+
+    }
+
+    private void initRaStyle() {
+
+        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+
+        if (raStyleFromDB != null) {
+
+            log.info("The style id read from db is " + raStyleFromDB.intValue());
+
+            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+
+            for (RaStyleInfo raStyleInfo : raStyleInfos) {
+                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
+                    currentStyle = raStyleInfo;
+                    return;
+                }
+            }
+        } else {
+            currentStyle = null;
+        }
+
     }
 
     /**
@@ -150,34 +204,10 @@ public class RaPreferencesBean implements Converter, Serializable {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
         return viewId + "?faces-redirect=true";
     }
-
-    private void initLocale() {
-        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
-
-        if (localeFromDB != null) {
-            currentLocale = localeFromDB;
-        } else {
-            currentLocale = raLocaleBean.getLocale();
-        }
-
-    }
-
-    private void initRaStyle() {
-
-        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
-
-        if (raStyleFromDB != null) {
-
-            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-
-            for (RaStyleInfo raStyleInfo : raStyleInfos) {
-                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
-                    currentStyle = raStyleInfo;
-                    return;
-                }
-            }
-        }
-
+    
+    public void reload() throws IOException {
+        ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        ec.redirect(((HttpServletRequest) ec.getRequest()).getRequestURI());
     }
 
 }
