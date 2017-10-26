@@ -123,7 +123,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<f:selectItem itemValue="" itemLabel="#{web.text.INTERNALKEYBINDING_FIELD_NONE}"/>
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
 			</h:selectOneMenu>
-			</h:panelGroup>New
+			</h:panelGroup>
 			<h:panelGroup rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}">
 				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
 					value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
