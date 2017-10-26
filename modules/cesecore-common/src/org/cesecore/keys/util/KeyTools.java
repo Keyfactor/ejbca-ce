@@ -961,10 +961,11 @@ public final class KeyTools {
      * @param data
      *            the data to sign
      * @return the signature
+     * @throws NoSuchProviderException if BouncyCastleProvider is not installed 
      */
     public static byte[] signData(final PrivateKey privateKey, final String signatureAlgorithm, final byte[] data) throws SignatureException,
-            NoSuchAlgorithmException, InvalidKeyException {
-        final Signature signer = Signature.getInstance(signatureAlgorithm);
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        final Signature signer = Signature.getInstance(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
         signer.initSign(privateKey);
         signer.update(data);
         return (signer.sign());
@@ -981,10 +982,11 @@ public final class KeyTools {
      * @param signature
      *            the signature
      * @return true if the signature is ok
+     * @throws NoSuchProviderException if BouncyCastleProvider is not installed 
      */
     public static boolean verifyData(final PublicKey publicKey, final String signatureAlgorithm, final byte[] data, final byte[] signature)
-            throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        final Signature signer = Signature.getInstance(signatureAlgorithm);
+            throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        final Signature signer = Signature.getInstance(signatureAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
         signer.initVerify(publicKey);
         signer.update(data);
         return (signer.verify(signature));
