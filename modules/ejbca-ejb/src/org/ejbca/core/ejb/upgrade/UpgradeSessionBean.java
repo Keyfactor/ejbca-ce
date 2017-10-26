@@ -1334,10 +1334,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         continue;
                     }
                     if (tokenMatchKey == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()) {
-                        final String serialNumberUppercase = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT);
+                        final String serialNumberUppercase = StringUtils.defaultString(tokenMatchValue).toUpperCase(Locale.ROOT).replaceFirst("^0+", "");
                         if (!serialNumberUppercase.equals(tokenMatchValue)) {
                             log.info("Admin in role '" + roleName + "' of type " + tokenType + " has serial number match value '" + tokenMatchValue +
-                                    "'. In 6.8.0 all serial numbers are converted to uppercase and match as case sensitive.");
+                                    "'. In 6.8.0 all serial numbers are converted to uppercase without leading zeros and match as case sensitive.");
                         } else if (log.isDebugEnabled() && tokenMatchOperator == AccessMatchType.TYPE_EQUALCASEINS.getNumericValue()) {
                             log.debug("Admin in role '" + roleName + "' of type " + tokenType + " has case insensitive serial number match value '" + tokenMatchValue +
                                     "'. In 6.8.0 all serial numbers are converted to uppercase and match as case sensitive.");
