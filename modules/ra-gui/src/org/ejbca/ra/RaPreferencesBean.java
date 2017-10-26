@@ -29,7 +29,6 @@ import javax.faces.convert.Converter;
 import org.apache.log4j.Logger;
 import org.cesecore.config.RaStyleInfo;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
-import org.ejbca.ui.web.admin.administratorprivileges.RolesBean;
 
 /**
  * 
