@@ -39,8 +39,6 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.ra.RaAuthenticationHelper;
 
-
-
 /**
  * 
  * Filter used to intercept the resource requests while loading RA-web. If the requesting administrator
@@ -78,6 +76,7 @@ public class RaStyleRequestFilter implements Filter {
         }
     }
     
+    /** Called once for every requested resource on a RA page load. If modified resources are available, the response will be intercept */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -102,6 +101,8 @@ public class RaStyleRequestFilter implements Filter {
             return;
         }
         
+        // When logo is requested and a custom logo is applied to the administrators role, the response is intercept with
+        // the replaced logo.
         if (requestPath.equals(RA_LOGO_PATH) && customResponse.getLogoBytes() != null) {
             OutputStream clientPrintWriter = response.getOutputStream();
             try {
@@ -118,6 +119,8 @@ public class RaStyleRequestFilter implements Filter {
             return;
         }
         
+        // When a CSS resource is requested, the response is intercept with a modified CSS if the administrators role
+        // has one applied
         RaCssInfo cssResponse = customResponse.getRaCssInfos().get(resource);
         if (cssResponse != null) {
             PrintWriter clientPrintWriter = response.getWriter();
@@ -141,7 +144,6 @@ public class RaStyleRequestFilter implements Filter {
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     private AuthenticationToken getAuthenticationToken(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        // TODO This instantiated for every non-cached request for w_e_styles.css. Improvements  ? 
         raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
         AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpRequest, httpResponse);
         return authenticationToken;
