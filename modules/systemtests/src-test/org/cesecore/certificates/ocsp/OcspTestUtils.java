@@ -19,6 +19,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -168,9 +169,18 @@ public class OcspTestUtils {
         return createOcspSigningCertificate(authenticationToken, username, signerDN, internalKeyBindingId, caId,
                 CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
     }
-
+    
     public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN,
             int internalKeyBindingId, int caId, int certificateProfileId) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
+            IllegalKeyException, CADoesntExistsException, CertificateCreateException, CertificateExtensionException, CryptoTokenOfflineException,
+            SignRequestSignatureException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
+        return createOcspSigningCertificate(authenticationToken, username, signerDN, internalKeyBindingId, caId, certificateProfileId, null);
+        
+    }
+    
+    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN,
+            int internalKeyBindingId, int caId, int certificateProfileId, Date expirationTime) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
             IllegalKeyException, CADoesntExistsException, CertificateCreateException, CertificateExtensionException, CryptoTokenOfflineException,
             SignRequestSignatureException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
@@ -187,7 +197,7 @@ public class OcspTestUtils {
                 EndEntityTypes.ENDUSER.toEndEntityType(), 1, certificateProfileId,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
-        RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
+        RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword(), expirationTime);
         X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
                 authenticationToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
         return ocspSigningCertificate;
