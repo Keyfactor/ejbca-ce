@@ -163,32 +163,32 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 success = false;
             }
             if (isCtEnabled()) {
-                int numEnabledLogs = prof.getEnabledCTLogs().size();
+                final int numEnabledLogs = prof.getEnabledCTLogs().size();
+                final int numMandatoryLogs = countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs());
+                final int numNonMandatoryLogs = numEnabledLogs - numMandatoryLogs;
                 if (numEnabledLogs == 0) {
                     addErrorMessage("NOCTLOGSSELECTED");
                     success = false;
-                } else if (prof.getCTMinSCTs() < 0 || prof.getCTMinSCTsOCSP() < 0 ||
-                    prof.getCTMinSCTs() > numEnabledLogs ||
-                    prof.getCTMinSCTsOCSP() > numEnabledLogs ||
-                    prof.getCTMaxSCTs() < 1 || prof.getCTMaxSCTsOCSP() < 1 ||
-                    prof.getCTMaxSCTs() > numEnabledLogs || prof.getCTMaxSCTsOCSP() > numEnabledLogs ||
-                    prof.getCTMinSCTs() > prof.getCTMaxSCTs() ||
-                    prof.getCTMinSCTsOCSP() > prof.getCTMaxSCTsOCSP()) {
+                } else if (prof.getCtMinTotalScts() < 0 || prof.getCtMinTotalSctsOcsp() < 0 ||
+                        prof.getCtMinMandatoryScts() < 0 || prof.getCtMinMandatorySctsOcsp() < 0 ||
+                        prof.getCtMinNonMandatoryScts() < 0 || prof.getCtMinNonMandatorySctsOcsp() < 0 ||
+                        prof.getCtMinTotalScts() > numEnabledLogs || prof.getCtMinTotalSctsOcsp() > numEnabledLogs ||
+                        prof.getCtMaxMandatoryScts() + prof.getCtMaxNonMandatoryScts() < 1 ||
+                        prof.getCtMaxMandatorySctsOcsp() + prof.getCtMaxNonMandatorySctsOcsp() < 1 ||
+                        prof.getCtMaxMandatoryScts() + prof.getCtMaxNonMandatoryScts() > numEnabledLogs ||
+                        prof.getCtMaxMandatorySctsOcsp() + prof.getCtMaxNonMandatorySctsOcsp() > numEnabledLogs) {
                     addErrorMessage("INCORRECTMINMAXSCTS");
                     success = false;
                 } else if (countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMaxMandatoryScts()
                         || countNumberOfMandatoryLogsAvailable(prof.getEnabledCTLogs()) < prof.getCtMaxMandatorySctsOcsp()) {
                     addErrorMessage("INCORRECTNUMBEROFMANDATORYSCTS");
                     success = false;
-                } else if (prof.getCtMinMandatoryScts() > prof.getCTMinSCTs() || prof.getCtMinMandatorySctsOcsp() > prof.getCTMinSCTsOCSP()) {
-                    addErrorMessage("INCORRECTMINMANDANDATORYSCTS");
+                } else if (numNonMandatoryLogs < prof.getCtMaxNonMandatoryScts()
+                        || numNonMandatoryLogs < prof.getCtMaxNonMandatorySctsOcsp()) {
+                    addErrorMessage("INCORRECTNUMBEROFNONMANDATORYSCTS");
                     success = false;
-                } else if (prof.getCtMaxMandatoryScts() > prof.getCTMaxSCTs()
-                        || prof.getCtMaxMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp()) {
-                    addErrorMessage("INCORRECTMAXMANDANDATORYSCTS");
-                    success = false;
-                } else if (prof.getCtMinMandatoryScts() > prof.getCtMaxMandatoryScts()
-                        || prof.getCtMinMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp()) {
+                } else if (prof.getCtMinMandatoryScts() > prof.getCtMaxMandatoryScts() || prof.getCtMinMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp() ||
+                        prof.getCtMinNonMandatoryScts() > prof.getCtMaxNonMandatoryScts() || prof.getCtMinNonMandatorySctsOcsp() > prof.getCtMaxNonMandatorySctsOcsp()) {
                     addErrorMessage("INCORRECTMINMAXMANDATORYSCTS");
                     success = false;
                 }

@@ -77,14 +77,16 @@ public interface CertificateTransparency {
      * @param logs The logs to connect to.
      * @param minMandatorySCTs the number of mandatory SCTs required
      * @param maxMandatorySCTs the maximum number of mandatory SCTs to fetch in parallel
-     * @param minSCTs The minimum number of SCTs required in total
-     * @param maxSCTs the maximum number of SCTs to fetch in parallel in total
+     * @param minNonMandatorySCTs the minimum number of non-mandatory SCTs
+     * @param maxNonMandatorySCTs the maximum number of non-mandatory SCTs
+     * @param minTotalSCTs the minimum number of SCTs in total
      * @param maxRetries Maximum number of retries
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minMandatorySCTs, int maxMandatorySCTs, int minSCTs, int maxSCTs,
-            int maxRetries)
+    byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minMandatorySCTs, int maxMandatorySCTs, int minNonMandatorySCTs,
+            int maxNonMandatorySCTs,
+            int minTotalSCTs, int maxRetries)
             throws CTLogException;
 
     /**

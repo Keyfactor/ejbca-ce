@@ -299,17 +299,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
     protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
+
+    /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
-    protected static final String CTMINSCTS = "ctminscts";
-    protected static final String CTMINMANDATORYSCTS = "ctminmandatoryscts";
-    protected static final String CTMINMANDATORYSCTSOCSP = "ctminmandatorysctsocsp";
-    protected static final String CTMAXMANDATORYSCTS = "ctmaxmandatoryscts";
-    protected static final String CTMAXMANDATORYSCTSOCSP = "ctmaxmandatorysctsocsp";
-    protected static final String CTMAXSCTS = "ctmaxscts";
-    protected static final String CTMINSCTSOCSP = "ctminsctsocsp";
-    protected static final String CTMAXSCTSOCSP = "ctmaxsctsocsp";
+    protected static final String CT_MIN_TOTAL_SCTS = "ctMinTotalScts";
+    protected static final String CT_MIN_TOTAL_SCTS_OCSP = "ctMinTotalSctsOcsp";
+    protected static final String CT_MIN_MANDATORY_SCTS = "ctMinMandatoryScts";
+    protected static final String CT_MAX_MANDATORY_SCTS = "ctMaxMandatoryScts";
+    protected static final String CT_MIN_MANDATORY_SCTS_OCSP = "ctMinMandatorySctsOcsp";
+    protected static final String CT_MAX_MANDATORY_SCTS_OCSP = "ctMaxMandatorySctsOcsp";
+    protected static final String CT_MIN_NONMANDATORY_SCTS = "ctMinNonMandatoryScts";
+    protected static final String CT_MAX_NONMANDATORY_SCTS = "ctMaxNonMandatoryScts";
+    protected static final String CT_MIN_NONMANDATORY_SCTS_OCSP = "ctMinNonMandatorySctsOcsp";
+    protected static final String CT_MAX_NONMANDATORY_SCTS_OCSP = "ctMaxNonMandatorySctsOcsp";
     protected static final String CTMAXRETRIES = "ctmaxretries";
+
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
     protected static final String USECUSTOMDNORDER = "usecustomdnorder";
     protected static final String CUSTOMDNORDER = "customdnorder";
@@ -2514,149 +2519,163 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Number of CT logs to require an SCT from, or it will be considered an error.
-     * If zero, CT is completely optional and ignored if no log servers can be contacted.
-     * This value is used for certificates and publishers. For OCSP responses, see CertificateProfile#getCTMinSCTsOCSP
-     */
-    public int getCTMinSCTs() {
-        if (data.get(CTMINSCTS) == null) {
-            return 1;
-        }
-        return (Integer)data.get(CTMINSCTS);
-    }
-
-    public void setCTMinSCTs(int minSCTs) {
-        data.put(CTMINSCTS, minSCTs);
-    }
-
-    /**
-     * @see CertificateProfile#getCTMinSCTs
-     */
-    public int getCTMinSCTsOCSP() {
-        if (data.get(CTMINSCTSOCSP) == null) {
-            return getCTMinSCTs();
-        }
-        return (Integer)data.get(CTMINSCTSOCSP);
-    }
-
-    public void setCTMinSCTsOCSP(int minSCTsOCSP) {
-        data.put(CTMINSCTSOCSP, minSCTsOCSP);
-    }
-
-    /**
-     * Get a number indicating the amount of CT logs marked as "mandatory"
-     * from which we need to retrieve SCTs before successful issuance.
+     * <p>Number of CT logs to require an SCT from, or it will be considered an error. If zero, CT is completely optional and
+     * ignored if no log servers can be contacted.</p>
+     * <p>This value is used for certificates and publishers. For OCSP responses, @see CertificateProfile#getCtMinTotalSctsOcsp
      * <p>
-     * The default setting is zero mandatory logs, i.e. this option will be disabled.
+     * @return the total number of SCTs required
+     */
+    public int getCtMinTotalScts() {
+        if (data.get(CT_MIN_TOTAL_SCTS) == null) {
+            // Make sure the issuance fails unless the user has explicitly set this value
+            // by providing an invalid (negative) default. This prevents old non-compliant
+            // certificate profiles from issuing certificates with too few SCTs.
+            return -1;
+        }
+        return (Integer) data.get(CT_MIN_TOTAL_SCTS);
+    }
+
+    /** @param value minimum number of SCTs required in total */
+    public void setCtMinTotalScts(int value) {
+        data.put(CT_MIN_TOTAL_SCTS, value);
+    }
+
+    /** @see CertificateProfile#getCtMinTotalScts */
+    public int getCtMinTotalSctsOcsp() {
+        if (data.get(CT_MIN_TOTAL_SCTS_OCSP) == null) {
+            return getCtMinTotalScts();
+        }
+        return (Integer) data.get(CT_MIN_TOTAL_SCTS_OCSP);
+    }
+
+    /** @param value minimum number of SCTs for OCSP responses required in total */
+    public void setCtMinTotalSctsOcsp(int value) {
+        data.put(CT_MIN_TOTAL_SCTS_OCSP, value);
+    }
+
+    /**
+     * <p>Number of CT logs marked as "mandatory" to require an SCT from, or it will be considered an error. Default is one log.
      * </p>
-     * @return the number of mandatory CT logs we have to publish to
+     * <p>For publishers, certificates are submitted to all enabled logs.</p>
+     * @return the number of mandatory SCTs
      */
     public int getCtMinMandatoryScts() {
-        if (data.get(CTMINMANDATORYSCTS) == null) {
-            return 0;
+        if (data.get(CT_MIN_MANDATORY_SCTS) == null) {
+            return 1;
         }
-        return (Integer) data.get(CTMINMANDATORYSCTS);
+        return (Integer) data.get(CT_MIN_MANDATORY_SCTS);
+    }
+
+    /** @param value minimum number of mandatory SCTs */
+    public void setCtMinMandatoryScts(int value) {
+        data.put(CT_MIN_MANDATORY_SCTS, value);
     }
 
     /**
-     * Set the minimum number of SCTs enforced by this certificate profile.
-     * @param value a number indicating the number of mandatory SCTs
-     */
-    public void setCtMinMandatoryScts(final int value) {
-        data.put(CTMINMANDATORYSCTS, value);
-    }
-
-    /**
-     * Get a number indicating how many mandatory SCTs we need before successful
-     * certificate issuance. This number also controls the number of SCTs fetched
-     * in parallel.
-     * @return the maximum number of mandatory SCTs mandated by this certificate profile
+     * <p>Number of SCTs retrieved after which we will stop contacting mandatory log servers.</p>
+     * @return the maximum number of mandatory SCTs
      */
     public int getCtMaxMandatoryScts() {
-        if (data.get(CTMAXMANDATORYSCTS) == null) {
+        if (data.get(CT_MAX_MANDATORY_SCTS) == null) {
             return getCtMinMandatoryScts();
         }
-        return (Integer) data.get(CTMAXMANDATORYSCTS);
+        return (Integer) data.get(CT_MAX_MANDATORY_SCTS);
     }
 
-    /**
-     * Set a number indicating the maximum number of SCTs required for successful issuance.
-     * @param value the maximum number of mandatory SCTs
-     */
+    /** @param value the maximum number of mandatory SCTs */
     public void setCtMaxMandatoryScts(int value) {
-        data.put(CTMAXMANDATORYSCTS, value);
+        data.put(CT_MAX_MANDATORY_SCTS, value);
     }
 
-    /**
-     * Get a number indicating how many mandatory SCTs needed in OCSP responses.
-     * This number also controls the number of SCTs fetched in parallel.
-     * @return the maximum number of mandatory SCTs in OCSP responses mandated by this certificate profile
-     */
+    /** @see CertificateProfile#getCtMaxMandatoryScts */
     public int getCtMaxMandatorySctsOcsp() {
-        if (data.get(CTMAXMANDATORYSCTSOCSP) == null) {
+        if (data.get(CT_MAX_MANDATORY_SCTS_OCSP) == null) {
             return getCtMinMandatorySctsOcsp();
         }
-        return (Integer) data.get(CTMAXMANDATORYSCTSOCSP);
+        return (Integer) data.get(CT_MAX_MANDATORY_SCTS_OCSP);
     }
 
-    /**
-     * Set a number indicating the maximum number of SCTs required for successful issuance.
-     * @param value the maximum number of mandatory SCTs
-     */
+    /** @param value the maximum number of mandatory SCTs for OCSP responses */
     public void setCtMaxMandatorySctsOcsp(int value) {
-        data.put(CTMAXMANDATORYSCTSOCSP, value);
+        data.put(CT_MAX_MANDATORY_SCTS_OCSP, value);
     }
 
     /**
-     * Retrieve the number of mandatory SCTs for OCSP requests. The default number is the
-     * same as the number of mandatory SCTs for certificates.
      * @see CertificateProfile#getCtMinMandatoryScts
      * @return the number of mandatory SCTs for OCSP responses
      */
     public int getCtMinMandatorySctsOcsp() {
-        if (data.get(CTMINMANDATORYSCTSOCSP) == null) {
+        if (data.get(CT_MIN_MANDATORY_SCTS_OCSP) == null) {
             return getCtMinMandatoryScts();
         }
-        return (Integer) data.get(CTMINMANDATORYSCTSOCSP);
+        return (Integer) data.get(CT_MIN_MANDATORY_SCTS_OCSP);
     }
 
     /**
-     * Set the minimum number of SCTs for OCSP responses enforced by this certificate profile.
+     * Set the minimum number of SCTs for OCSP responses.
      * @see CertificateProfile#getCtMinMandatorySctsOcsp
      * @param value a number indicating the number of mandatory SCTs for OCSP responses
      */
     public void setCtMinMandatorySctsOcsp(final int value) {
-        data.put(CTMINMANDATORYSCTSOCSP, value);
+        data.put(CT_MIN_MANDATORY_SCTS_OCSP, value);
     }
 
     /**
-     * After the maximum number of SCTs have been received EJBCA will stop contacting log servers.
-     * This value is for certificates. For OCSP responses, see CertificateProfile#getCTMaxSCTsOCSP.
-     * For publishers, certificates are submitted to all enabled logs.
+     * <p>Number of SCTs retrieved after which we will stop contacting non-mandatory log servers.</p>
+     * @return the maximum number of non-mandatory SCTs
      */
-    public int getCTMaxSCTs() {
-        if (data.get(CTMAXSCTS) == null) {
-            return 1;
+    public int getCtMaxNonMandatoryScts() {
+        if (data.get(CT_MAX_NONMANDATORY_SCTS) == null) {
+            return getCtMinNonMandatoryScts();
         }
-        return (Integer)data.get(CTMAXSCTS);
+        return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS);
     }
 
-    public void setCTMaxSCTs(int maxSCTs) {
-        data.put(CTMAXSCTS, maxSCTs);
+    /** @param value the maximum number of non-mandatory SCTs */
+    public void setCtMaxNonMandatoryScts(int value) {
+        data.put(CT_MAX_NONMANDATORY_SCTS, value);
+    }
+
+    /** @see CertificateProfile#getCtMaxNonMandatoryScts */
+    public int getCtMaxNonMandatorySctsOcsp() {
+        if (data.get(CT_MAX_NONMANDATORY_SCTS_OCSP) == null) {
+            return getCtMaxNonMandatoryScts();
+        }
+        return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS_OCSP);
+    }
+
+    /** @param value maximum value number of non-mandatory SCTs for OCSP responses */
+    public void setCtMaxNonMandatorySctsOcsp(int value) {
+        data.put(CT_MAX_NONMANDATORY_SCTS_OCSP, value);
     }
 
     /**
-     * @see CertificateProfile#getCTMaxSCTs
+     * <p>Number of CT logs marked as "not mandatory" to require an SCT from, or it will be considered an error. Default is zero logs.</p>
+     * <p>For publishers, certificates are submitted to all enabled logs.</p>
      */
-    public int getCTMaxSCTsOCSP() {
-        if (data.get(CTMAXSCTSOCSP) == null) {
-            return getCTMaxSCTs();
+    public int getCtMinNonMandatoryScts() {
+        if (data.get(CT_MIN_NONMANDATORY_SCTS) == null) {
+            return 0;
         }
-        return (Integer)data.get(CTMAXSCTSOCSP);
+        return (Integer) data.get(CT_MIN_NONMANDATORY_SCTS);
     }
 
-    public void setCTMaxSCTsOCSP(int maxSCTsOCSP) {
-        data.put(CTMAXSCTSOCSP, maxSCTsOCSP);
+    /** @param value minimum number of non-mandatory SCTs */
+    public void setCtMinNonMandatoryScts(int value) {
+        data.put(CT_MIN_NONMANDATORY_SCTS, value);
+    }
+
+    /** @see CertificateProfile#getCtMinNonMandatoryScts */
+    public int getCtMinNonMandatorySctsOcsp() {
+        if (data.get(CT_MIN_NONMANDATORY_SCTS_OCSP) == null) {
+            return getCtMinNonMandatoryScts();
+        }
+        return (Integer) data.get(CT_MIN_NONMANDATORY_SCTS_OCSP);
+    }
+
+    /** @param minimum number of non-mandatory SCTs */
+    public void setCtMinNonMandatorySctsOcsp(int value) {
+        data.put(CT_MIN_NONMANDATORY_SCTS_OCSP, value);
     }
 
     /** Number of times to retry connecting to a Certificate Transparency log */

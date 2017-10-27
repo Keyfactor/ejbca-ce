@@ -2378,26 +2378,27 @@ The following parameters have to be configured in a log:</p>
 <li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate
 issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.
 Note that zero is not a valid value for the timeout.</li>
-<li>Mandatory : Should be enabled if the log belongs to the group of logs, to which publication is a requirement for successful issuance.</li>
+<li>Mandatory : Mark the log as 'Mandatory', see below.</li>
 </ul>
 
 <p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
 
 <p>For redundancy, it's recommended to add more logs than the minimum required in the certificate profile. That way certificate issuance will not fail if a single log is down.
 It is also a good idea to specify a short timeout value and/or enable the "ct.fastfail.enabled" option in conf/cesecore.properties, so a failing log does not slow down all requests.</p>
-<p>Regarding performance, EJBCA will connect to the logs in the order they have been added and in parallel, with the number of concurrent connections controlled by the 'Maximum number of SCTs' and 'Maximum number of mandatory SCTs' value.
-It will also keep fetching SCTs until this number is reached (the "Minimum SCTs" value is currently only a limit for when EJBCA will consider the request failed).
-If you have more logs than the "Maximum SCTs" value, it's recommended to put slow (e.g. geographically distant) or unreliable logs at the end of the list, so they are only contacted as a last resort.</p>
+<p>Regarding performance, EJBCA will connect to the logs in the order they have been added and in parallel, with the number of concurrent connections controlled by the 'Maximum number of mandatory SCTs' 
+and 'Maximum number of non-mandatory SCTs' value. It will also keep fetching SCTs until this number is reached (the 'Minimum number of mandatory SCTs', 'Minimum number of non-mandatory SCTs' and 
+'Minimum number of SCTs in total' value is currently only a limit for when EJBCA will consider the request failed). If you have more logs than the 'Maximum number of mandatory SCTs' or 'Maximum number of 
+non-mandatory SCTs' value, it's recommended to put slow (e.g. geographically distant) or unreliable logs at the end of the list, so they are only contacted as a last resort.</p>
 
-<p>You may change the order the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use the moved CT logs.</p>
+<p>You may change the order the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use 
+the moved CT logs.</p>
+
 </subsection>
 <subsubsection name="Mandatory CT logs">
-<p>It may be a requirement to publish to certain logs before issuing a certificate. For example, Google Chrome requires that all EV certificates issued after 1st of 
-January 2015 must be published to at least one CT log operated by Google. This is achieved by marking on or more logs as 'Mandatory' in the 'System Configuration' page and adjusting the 
-'Minimum number of mandatory SCTs' and 'Maximum number of mandatory SCTs' for the approprite certificate profile.</p>
-
-<p>The 'Minimum number of mandatory SCTs' defines to how many mandatory logs we need to publish in order to sucessfully issue a certificate. If you need to publish to at least one of say Google's logs and 
-at least three logs in total, you should set 'Minimum number of mandatory SCTs' to 1 and 'Minimum number of SCTs' to 3.</p>
+<p>It may be a requirement to publish to certain logs and a certain number of logs before issuing a certificate. For example, Google Chrome requires that all EV certificates issued after 1st of 
+January 2015 must be published to at least one CT log operated by Google, at least one log not operated by Google, and to a certain number of logs in total, where the total amount of logs depends on the lifetime
+of the certificate. This is achieved by marking on or more Google logs as 'Mandatory' in the 'System Configuration' page and adjusting the 'Minimum number of mandatory SCTs', 'Minimum number of non-mandatory SCTs' 
+and 'Minimum number of SCTs in total' for the approprite certificate profile.</p>
 
 </subsubsection>
 <subsection name="EJBCA audit logging">
