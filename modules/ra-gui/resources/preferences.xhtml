@@ -80,7 +80,6 @@
 							styleClass="jsAutoFocusLast" var="currentTheme"
 							value="#{raPreferencesBean.currentStyle}"
 							disabled="#{raPreferencesBean.styles.size()==0}">
-
 							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
 								itemLabel="#{theme.getArchiveName()}" />
 							<f:converter binding="#{raPreferencesBean}" />
@@ -112,9 +111,6 @@
 						action="#{raPreferencesBean.updatePreferences()}">
 						<f:ajax execute="@form" render="@all" />
 					</h:commandButton>
-					
-					<!--<h:graphicImage value="/img/pk_logo.png?v#{raPreferencesBean.myVersion}" />-->
-
 				</h:panelGroup>
 			</h:panelGroup>
 		</h:form>

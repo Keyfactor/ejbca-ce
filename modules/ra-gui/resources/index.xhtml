@@ -32,9 +32,9 @@
                 <h1><h:outputText value="#{msg.welcome_page_header}"/></h1>
             </h:panelGroup> 
             <script>
-    		var messageshowmore = '#{msg.enroll_render_non_modifiable_button_show}';
-    		var messagehidemore = '#{msg.enroll_render_non_modifiable_button_hide}';
-			</script>
+    			var messageshowmore = '#{msg.enroll_render_non_modifiable_button_show}';
+    			var messagehidemore = '#{msg.enroll_render_non_modifiable_button_hide}';
+    		</script>
             <h:panelGroup layout="block" class="content-body" id="content-body-request" rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
                 <h2><h:outputText value="Request new certificate"/></h2>
                 <h:panelGroup layout="block" styleClass="internal-frame">
@@ -90,7 +90,18 @@
 					<script>ejbca.ra.toggleDetails(document.getElementById("expandSearch"), messageshowmore, messagehidemore);</script>
 				</h:panelGroup>
 	        </h:panelGroup>
-        
+
+<!-- This function is used to force a page reload after applying the custom admin preferences.
+     This way the changes will take effect without the need for user to press Ctrl+F5. -->
+	<script type="text/javascript">
+	        window.onload = function() {
+	            if(!window.location.hash) {
+	                window.location = window.location + '#loaded';
+	                window.location.reload(true);
+	            }
+	        }
+     </script>
+
         <!-- Testing stuff below -->
         <ui:remove>
         	<h:panelGroup layout="block" class="header">
