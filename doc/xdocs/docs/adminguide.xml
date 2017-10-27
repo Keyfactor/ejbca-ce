@@ -2614,6 +2614,9 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
         <p>
         Once styles are uploaded, it has to be bound to a role to take effect. This is done from the adminweb in 'Administrator Roles'. In order to apply a custom style to a role, go to 'Administrator Roles' and select the desired style from the drop down menu under the label 'RA Styles'. The next time members of this role login to the RA-web, their new style will be applied. Keep in mind that images and CSS files are browser cached, hence the changes might not appear until the browser cache is invalidated or cleared manually.
         </p>
+        <p>
+        If an administrator belongs to multiple roles with RA Styles applied, the desired style can be changed from the 'Preferences' menu in the RA-web.
+        </p>
     </subsection>
 </section>
 
