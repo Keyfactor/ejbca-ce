@@ -151,7 +151,16 @@ public class RaPreferencesBean implements Converter, Serializable {
             reset();
         }
     }
-
+    
+    /**
+     * Used to reset the preferences page
+     * @return
+     */
+    public String reset() {
+        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+        return viewId + "?faces-redirect=true";
+    }
+    
     /**
      * The following two methods are used in converting RaStyleInfo to String and vice versa.
      * Required by JSF.
@@ -177,21 +186,6 @@ public class RaPreferencesBean implements Converter, Serializable {
 
         return raStyleInfo.getArchiveName();
     }
-
-    /**
-     * Used to reset the preferences page
-     * @return
-     */
-    public String reset() {
-        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
-        return viewId + "?faces-redirect=true";
-    }
-
-    public void redirect() throws IOException {
-        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
-        context.redirect(context.getRequestContextPath());
-    }
-
 
     /**
      * Private helpers
@@ -233,5 +227,10 @@ public class RaPreferencesBean implements Converter, Serializable {
 
         return dummyStyle;
         
+    }
+
+    private void redirect() throws IOException {
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        context.redirect(context.getRequestContextPath() + "/preferences.xhtml");
     }
 }

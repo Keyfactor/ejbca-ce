@@ -167,11 +167,23 @@
 
 						<ui:fragment rendered="#{raAccessBean.authorizedToCas}">
 							<li class="pure-menu-item">
-							<h:outputLink value="preferences.xhtml" styleClass="pure-menu-link role-menu-link">
+							<h:outputLink
+									value="preferences.xhtml"
+									styleClass="pure-menu-link role-menu-link">
 									<h:outputText value="#{msg.menu_pagetitle_preferences}" />
-							</h:outputLink></li>
+							</h:outputLink>
+							</li>
+							<!-- This function is used to force a page reload after applying the custom admin preferences.
+                                 This way the changes will take effect without the need for user to press Ctrl+F5. -->
+							<script type="text/javascript">
+								window.onload = function() {
+									if (!window.location.hash) {
+											window.location = window.location + '#loaded';
+											window.location.reload(true);
+									}
+								}
+							</script>
 						</ui:fragment>
-
 
 						<ui:remove>
                         <!-- Not yet implemented for 6.6.0, but put here as a placeholder. 
