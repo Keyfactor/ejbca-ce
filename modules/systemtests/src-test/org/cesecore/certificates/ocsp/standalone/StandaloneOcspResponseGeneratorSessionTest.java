@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -28,6 +29,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -376,6 +378,55 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     }
     
     /** 
+     * Tests the case of a standalone OCSP responder with an expired certificate
+     */
+    @Test
+    public void testResponseWithExpiredResponder() throws Exception {
+        final String profileName = "testResponseWithExpiredResponder";
+        final List<Integer> authorizedCaIds = Arrays.asList(new Integer[]{Integer.valueOf(x509ca.getCAId())});
+
+        certificateProfileSession.cloneCertificateProfile(authenticationToken, "OCSPSIGNER", profileName, authorizedCaIds);
+        final int certificateProfileId = certificateProfileSession.getCertificateProfileId(profileName);
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(profileName);
+        certificateProfile.setExtendedKeyUsageCritical(true);
+        certificateProfile.setExtendedKeyUsageOids(new ArrayList<String>(Arrays.asList(new String[] { KeyPurposeId.id_kp_OCSPSigning.getId() })));
+        certificateProfile.setAllowValidityOverride(true);
+        certificateProfileSession.changeCertificateProfile(authenticationToken, profileName, certificateProfile);
+
+        String signerDN = "CN=ocspTestSigner";
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken,
+                OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId(), certificateProfileId,
+                new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 12));
+        try {
+            CertTools.checkValidity(ocspSigningCertificate, new Date(System.currentTimeMillis() + 1000 * 60 * 60));
+            fail("Certificate is not expired, test cannot continue.");
+        } catch (CertificateExpiredException e) {
+            // NOPMD: As it should be
+        }
+        //Set as default responder as well. 
+        String originalResponder = setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        try {
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
+            // Do the OCSP request
+            final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+            final OCSPResp response = sendRequest(ocspRequest);           
+            assertEquals("Response status not OCSPRespBuilder.UNAUTHORIZED.", response.getStatus(), OCSPRespBuilder.UNAUTHORIZED);
+            assertNull("Response should not have contained a response object.", response.getResponseObject());
+        } finally {
+            certificateProfileSession.removeCertificateProfile(authenticationToken, profileName);
+            setOcspDefaultResponderReference(originalResponder);
+           /* try {
+                internalCertificateStoreSession.removeCertificate(expiredSigningCertificate);
+            } catch (Exception e) {
+                //Ignore any failures.
+            }*/
+        }
+    }
+    
+    /** 
      * Tests the case of a stand-alone OCSP responder with a revoked certificate issuer using the keyCompromise reason code.
      * 
      * This should respond revoked, as from the RFC:
@@ -708,7 +759,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     @Test
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
         // Make sure that a default responder is set
-        setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
+        String originalResponder = setOcspDefaultResponderReference(CertTools.getIssuerDN(ocspSigningCertificate));
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
         try {
               //Now delete the original CA, making this test completely standalone.
@@ -733,6 +784,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+            setOcspDefaultResponderReference(originalResponder);
         }
     }
     

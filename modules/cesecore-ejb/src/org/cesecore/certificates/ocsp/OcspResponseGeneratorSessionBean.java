@@ -528,6 +528,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     CertTools.getSubjectDN(leafCertificate)  + "' and Issuer DN " + CertTools.getIssuerDN(leafCertificate) +
                     "' using the latest CA certificate(s) in the database. Trying to recover from exception: " + e.getMessage());
             final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(leafCertificate));
+            if(certificateInfo == null) {
+                return null;
+            }
             final List<Certificate> chainByFingerPrints = certificateStoreSession.getCertificateChain(certificateInfo);
             if (chainByFingerPrints.size()>0) {
                 // Remove the leaf certificate itself
