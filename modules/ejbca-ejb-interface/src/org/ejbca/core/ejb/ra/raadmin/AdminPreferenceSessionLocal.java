@@ -36,9 +36,9 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
     List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin);
    
     /**
-     * Returns the currently set RA style id for the requesting administrator.
-     * @param admin Administrator saving its data to the database.
-     * @return Custom RA style id currently set in the RA GUI for the administrator @admin.
+     * Returns the currently set RA style id for the requested administrator.
+     * @param admin AuthenticationToken the administrators holding the preferences.
+     * @return RA style id currently set in the RA GUI for the administrator @admin. Null if @admin has no preferences set.
      */
     Integer getCurrentRaStyleId(AuthenticationToken admin);
     
@@ -65,10 +65,11 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
     
     /**
      * Returns the RaStyleInfo which will be used by the requesting administrator. If there are multiple
-     * styles available and no preferences has been by the administrator, the first one available will be
+     * styles available and no preferences has been set by the administrator, the first one available will be
      * returned.
      * @param admin Authentication token of the requesting administrator
-     * @return RaStyleInfo containing resources to be used the the administrators RA-page
+     * @return Preferred RaStyleInfo for the requested administrator. Null if 'Default' (Id 0) is selected or 
+     * if no styles are available
      */
     RaStyleInfo getPreferedRaStyleInfo(AuthenticationToken admin);
 

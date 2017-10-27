@@ -100,11 +100,12 @@ public class RaStyleInfo implements Serializable {
         this.raCssInfos.put(raCssInfo.getCssName(), raCssInfo);
     }
     
-    /** @return List of all CSS infos in archive*/
+    /** @return Map of all CSS infos in archive*/
     public Map<String, RaCssInfo> getRaCssInfos() {
         return raCssInfos;
     }
     
+    /** @return List of all CSS infos in the archive*/
     public List<RaCssInfo> getRaCssValues() {
         return new ArrayList<RaCssInfo>(getRaCssInfos().values());
     }
