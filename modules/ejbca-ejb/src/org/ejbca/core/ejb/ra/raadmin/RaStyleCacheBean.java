@@ -32,6 +32,10 @@ import org.cesecore.config.RaStyleInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
+ * Global cache of RaStyleInfos fetched via Peers. Each entry is mapped to an administrator, containing its available custom RA Styles (CSS files and logo).
+ * This cache prevents multiple requests over the Peers protocol when an administrator loads the RA page and style resources are requested by the servlet filter
+ * (RaStyleRequestFilter). Since style archives may be very heavy to transfer, a check for changes is sent via Peers before reloading the styles.
+ * 
  * @version $Id$
  */
 @Singleton
@@ -96,7 +100,7 @@ public class RaStyleCacheBean {
             // Check for changes
             availableRaStyles = raMasterApiProxyBean.getAvailableCustomRaStyles(authenticationToken, cachedStyles.hashCode());
             if (availableRaStyles == null) {
-                // No changes, use cache
+                // No changes, use cached styles
                 availableRaStyles = cachedStyles;
             } else {
                 raStyleCache.put(authenticationToken, availableRaStyles);
@@ -115,7 +119,7 @@ public class RaStyleCacheBean {
         return raStyleCache;
     }
     
-    /**@return last time the administrator requested styles from this cache */
+    /** @return last time the administrator requested styles from this cache */
     public long getLastUpdate(AuthenticationToken authenticationToken) {
         Long lastUpdate = lastUpdateMap.get(authenticationToken);
         return lastUpdate == null ? -1 : lastUpdate;
