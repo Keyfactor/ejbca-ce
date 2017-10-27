@@ -13,26 +13,24 @@
 
 package org.ejbca.ra;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.application.ViewHandler;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIViewRoot;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
-import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -49,6 +47,8 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaPreferencesBean.class);
+    private static final int DUMMY_STYLE_ARCHIVE_ID = 0;
+    
 
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
@@ -70,17 +70,6 @@ public class RaPreferencesBean implements Converter, Serializable {
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
-    
-    public int getMyVersion() {
-        return myVersion;
-    }
-
-    public void setMyVersion(int myVersion) {
-        this.myVersion = myVersion;
-    }
-
-    private int myVersion;
-    
 
     @PostConstruct
     public void init() {
@@ -112,20 +101,8 @@ public class RaPreferencesBean implements Converter, Serializable {
     public List<RaStyleInfo> getStyles() {
 
         List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-        
-        for(RaStyleInfo raStyle : raStyleInfos) {
-            
-            Map<String, RaCssInfo> cssMap = raStyle.getRaCssInfos();             
-            for(String entry : cssMap.keySet()) {
-                //log.info("The current css style for the current ra style " + raStyle.getArchiveName() + " is " + entry);
-                
-            }
-        }
-        
 
-        RaStyleInfo dummStyleInfo = new RaStyleInfo("Default", null, null, "");
-
-        dummStyleInfo.setArchiveId(0);
+        RaStyleInfo dummStyleInfo = buildDummyStyleInfo();
 
         if (raStyleInfos.contains(dummStyleInfo)) {
             return raStyleInfos;
@@ -148,49 +125,31 @@ public class RaPreferencesBean implements Converter, Serializable {
             adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
                     new AdminPreference());
         }
-
-        adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
-        adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
-
-        reload();
-
-        /*        try {
-            reload();
-        } catch (IOException e) {
-            log.error("Some unexpected IO exception happened while reloading the page!");
         
-        }*/
-    }
+        Locale previousLocale = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
+        int previousRaStyleId = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
 
-    private void initLocale() {
-        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
-
-        if (localeFromDB != null) {
-            currentLocale = localeFromDB;
-        } else {
-            currentLocale = raLocaleBean.getLocale();
+        
+        // No change in the preferences so ignore and simply reset.
+        if (currentLocale.equals(previousLocale) && currentStyle.getArchiveId() == previousRaStyleId) {
+            reset();
+            return;
+        }
+        
+        if (!currentLocale.equals(previousLocale)) {
+            adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());            
+        }
+        
+        if (currentStyle.getArchiveId() != previousRaStyleId) {
+            adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());            
         }
 
-    }
-
-    private void initRaStyle() {
-
-        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
-
-        if (raStyleFromDB != null) {
-
-            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-
-            for (RaStyleInfo raStyleInfo : raStyleInfos) {
-                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
-                    currentStyle = raStyleInfo;
-                    return;
-                }
-            }
-        } else {
-            currentStyle = null;
+        try {
+            redirect();
+        } catch (IOException e) {
+            log.warn("Unexpected error happened while redirecting to index page!");
+            reset();
         }
-
     }
 
     /**
@@ -208,7 +167,7 @@ public class RaPreferencesBean implements Converter, Serializable {
             }
         }
 
-        return null;
+        return buildDummyStyleInfo();
     }
 
     @Override
@@ -228,37 +187,51 @@ public class RaPreferencesBean implements Converter, Serializable {
         return viewId + "?faces-redirect=true";
     }
 
-    public void reload() {
+    public void redirect() throws IOException {
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        context.redirect(context.getRequestContextPath());
+    }
 
-/*        this.setMyVersion(myVersion + 1);
 
-        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
-        return viewId + "?faces-redirect=true";*/
-        
-        
-        
-        FacesContext context = FacesContext.getCurrentInstance();
-        String viewId = context.getViewRoot().getViewId();
-        ViewHandler handler = context.getApplication().getViewHandler();
-        UIViewRoot root = handler.createView(context, viewId);
-        root.setViewId(viewId);
-        context.setViewRoot(root);
-        
-        
-        
-/*        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest origRequest = (HttpServletRequest) context.getExternalContext().getRequest();
-        String contextPath = origRequest.getContextPath();
-        
-        log.info("Context path is " + contextPath);
-        
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(contextPath + "/preferences.xhtml?rv=3");
-        } catch (IOException e) {
-            log.info("The path not found in the context path!!!!");
+    /**
+     * Private helpers
+     */
+    
+    private void initLocale() {
+        Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
+
+        if (localeFromDB != null) {
+            currentLocale = localeFromDB;
+        } else {
+            currentLocale = raLocaleBean.getLocale();
         }
+    }
 
-        return;
-*/    }
+    private void initRaStyle() {
 
+        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+
+        if (raStyleFromDB != null) {
+            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+
+            for (RaStyleInfo raStyleInfo : raStyleInfos) {
+                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
+                    currentStyle = raStyleInfo;
+                    return;
+                }
+            }
+        } else {
+
+            currentStyle = buildDummyStyleInfo();
+        }
+    }
+
+    private RaStyleInfo buildDummyStyleInfo() {
+        
+        RaStyleInfo dummyStyle = new RaStyleInfo("Default", null, null, "");
+        dummyStyle.setArchiveId(DUMMY_STYLE_ARCHIVE_ID);
+
+        return dummyStyle;
+        
+    }
 }
