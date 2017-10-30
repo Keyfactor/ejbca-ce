@@ -164,7 +164,6 @@
                             </li>
                         </ui:fragment>
 
-
 						<ui:fragment rendered="#{raAccessBean.authorizedToCas}">
 							<li class="pure-menu-item">
 							<h:outputLink
@@ -175,14 +174,16 @@
 							</li>
 							<!-- This function is used to force a page reload after applying the custom admin preferences.
                                  This way the changes will take effect without the need for user to press Ctrl+F5. -->
-							<script type="text/javascript">
-								window.onload = function() {
-									if (!window.location.hash) {
-											window.location = window.location + '#loaded';
-											window.location.reload(true);
-									}
-								}
-							</script>
+  							<script type="text/javascript">
+										window.onload = function() {
+											if ((window.location.href.indexOf("preferences.xhtml") > -1) ) {
+												if (!window.location.hash) {
+												window.location = window.location + '#loaded';
+												window.location.reload(true)
+												}
+											}
+										}
+									</script>  
 						</ui:fragment>
 
 						<ui:remove>

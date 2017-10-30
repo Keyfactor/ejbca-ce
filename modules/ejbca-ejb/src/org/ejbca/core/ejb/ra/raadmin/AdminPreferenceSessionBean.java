@@ -306,7 +306,14 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             return null;
         }
         
-        return adminPreference.getPreferedRaStyleId();        
+        Integer adminPref = adminPreference.getPreferedRaStyleId();
+        
+        if (adminPref != null) {
+            return adminPref;
+        } else {
+            return null;
+        }
+        
     }
 
     @Override
@@ -332,7 +339,13 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             return getDefaultAdminPreference().getPreferedRaLanguage();
         }
         
-        return adminPreference.getPreferedRaLanguage();
+        Locale locale = adminPreference.getPreferedRaLanguage();
+        
+        if (locale != null) {
+            return locale;
+        } else {
+            return getDefaultAdminPreference().getPreferedRaLanguage();
+        }
     }
 
     @Override
