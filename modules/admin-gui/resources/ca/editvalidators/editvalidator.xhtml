@@ -30,11 +30,11 @@
 	<ui:define name="content">
 		<div align="center">
 			<h2>
-				<h:outputText value="#{web.text.EDITVALIDATOR}" rendered="#{not validatorsBean.viewOnly}" />
-				<h:outputText value="#{web.text.VIEWVALIDATOR}" rendered="#{validatorsBean.viewOnly}" />
+				<h:outputText value="#{web.text.EDITVALIDATOR_TITLE}" rendered="#{not validatorsBean.viewOnly}" />
+				<h:outputText value="#{web.text.VIEWVALIDATOR_TITLE}" rendered="#{validatorsBean.viewOnly}" />
 			</h2>
 			<h3>
-				<h:outputText value="#{web.text.VALIDATORS}: #{validatorBean.validator.profileName}"/>
+				<h:outputText value="#{web.text.VALIDATOR} : #{validatorBean.validator.profileName}"/>
 			</h3>
 		</div>
 		<!--div class="message">
