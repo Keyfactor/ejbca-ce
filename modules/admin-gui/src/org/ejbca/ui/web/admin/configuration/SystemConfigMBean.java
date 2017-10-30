@@ -1329,10 +1329,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
 
             RaStyleInfo importedRaStyleInfo = new RaStyleInfo(archiveName, importedRaCssInfos, logoBytes, logoName);
-            importedRaStyleInfo.setLogoContentType(raCssFile.getContentType());
+            if (raLogoFile != null) {
+                importedRaStyleInfo.setLogoContentType(raLogoFile.getContentType());
+            }
             raStyleInfosList.add(importedRaStyleInfo);
             raStyleInfos = new ListDataModel<>(raStyleInfosList);
             saveCustomCssConfiguration();
+            importedRaCssInfos = null;
+            logoBytes = null;
+            logoName = null;
+            
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
             addErrorMessage("STYLEIMPORTFAIL", e.getLocalizedMessage());
             log.info("Failed to import style files", e);
