@@ -69,23 +69,19 @@ public class RaPreferencesBean implements Converter, Serializable {
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
-    
+
     private boolean applyDisabled = true;
 
     public boolean isApplyDisabled() {
         return applyDisabled;
     }
 
-/*    public void setApplyDisabled(boolean applyDisabled) {
-        this.applyDisabled = applyDisabled;
-    }*/
-
     @PostConstruct
     public void init() {
-        
+
         String certificatefingerprint = CertTools
                 .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
-        
+
         if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint)) {
             adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
                     new AdminPreference());
@@ -130,20 +126,20 @@ public class RaPreferencesBean implements Converter, Serializable {
     }
 
     public void localeChanged(final Locale locale) {
-        
-        if(raLocaleBean.getLocale().equals(locale)) {
+
+        if (raLocaleBean.getLocale().equals(locale)) {
             this.applyDisabled = true;
             return;
-        } 
+        }
 
         this.applyDisabled = false;
     }
-    
+
     public void themeChanged(final RaStyleInfo styleInfo) {
 
         Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
-        
-        if(raStyleFromDB != null) {
+
+        if (raStyleFromDB != null) {
             if (raStyleFromDB == styleInfo.getArchiveId()) {
                 this.applyDisabled = true;
                 return;
@@ -185,8 +181,6 @@ public class RaPreferencesBean implements Converter, Serializable {
         }
     }
 
-
-    
     /**
      * Used to reset the preferences page
      * @return
@@ -195,7 +189,7 @@ public class RaPreferencesBean implements Converter, Serializable {
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
         return viewId + "?faces-redirect=true";
     }
-    
+
     /**
      * The following two methods are used in converting RaStyleInfo to String and vice versa.
      * Required by JSF.
@@ -238,25 +232,12 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private void initRaStyle() {
 
-        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
-        List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
+        RaStyleInfo preferedRaStyle = adminPreferenceSession.getPreferedRaStyleInfo(raAuthenticationBean.getAuthenticationToken());
 
-        if (raStyleFromDB != null) {
-            for (RaStyleInfo raStyleInfo : raStyleInfos) {
-                if (raStyleInfo.getArchiveId() == raStyleFromDB) {
-                    currentStyle = raStyleInfo;
-                    return;
-                }
-            }
+        if (preferedRaStyle == null) {
+            currentStyle = buildDummyStyleInfo();
         } else {
-            
-            if (raStyleInfos.isEmpty()) {
-                currentStyle = buildDummyStyleInfo();
-                adminPreferenceSession.setCurrentRaStyleId(DUMMY_STYLE_ARCHIVE_ID, raAuthenticationBean.getAuthenticationToken());
-            } else {
-                currentStyle = raStyleInfos.get(0);
-                adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
-            }
+            currentStyle = preferedRaStyle;
         }
     }
 
