@@ -303,16 +303,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
-    protected static final String CT_MIN_TOTAL_SCTS = "ctMinTotalScts";
-    protected static final String CT_MIN_TOTAL_SCTS_OCSP = "ctMinTotalSctsOcsp";
-    protected static final String CT_MIN_MANDATORY_SCTS = "ctMinMandatoryScts";
-    protected static final String CT_MAX_MANDATORY_SCTS = "ctMaxMandatoryScts";
-    protected static final String CT_MIN_MANDATORY_SCTS_OCSP = "ctMinMandatorySctsOcsp";
-    protected static final String CT_MAX_MANDATORY_SCTS_OCSP = "ctMaxMandatorySctsOcsp";
-    protected static final String CT_MIN_NONMANDATORY_SCTS = "ctMinNonMandatoryScts";
-    protected static final String CT_MAX_NONMANDATORY_SCTS = "ctMaxNonMandatoryScts";
-    protected static final String CT_MIN_NONMANDATORY_SCTS_OCSP = "ctMinNonMandatorySctsOcsp";
-    protected static final String CT_MAX_NONMANDATORY_SCTS_OCSP = "ctMaxNonMandatorySctsOcsp";
+    protected static final String CT_MIN_TOTAL_SCTS = "ctminscts"; // This key is the same as in previous versions
+    protected static final String CT_MIN_TOTAL_SCTS_OCSP = "ctminsctsocsp"; // This key is also the same as in previous versions
+    protected static final String CT_MIN_MANDATORY_SCTS = "ctminmandatoryscts";
+    protected static final String CT_MAX_MANDATORY_SCTS = "ctmaxmandatoryscts";
+    protected static final String CT_MIN_MANDATORY_SCTS_OCSP = "ctminmandatorysctsocsp";
+    protected static final String CT_MAX_MANDATORY_SCTS_OCSP = "ctmaxmandatorysctsocsp";
+    protected static final String CT_MIN_NONMANDATORY_SCTS = "ctminnonmandatoryscts";
+    protected static final String CT_MAX_NONMANDATORY_SCTS = "ctmaxnonmandatoryscts";
+    protected static final String CT_MIN_NONMANDATORY_SCTS_OCSP = "ctminnonmandatorysctsocsp";
+    protected static final String CT_MAX_NONMANDATORY_SCTS_OCSP = "ctmaxnonmandatorysctsocsp";
     protected static final String CTMAXRETRIES = "ctmaxretries";
 
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
@@ -2527,10 +2527,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public int getCtMinTotalScts() {
         if (data.get(CT_MIN_TOTAL_SCTS) == null) {
-            // Make sure the issuance fails unless the user has explicitly set this value
-            // by providing an invalid (negative) default. This prevents old non-compliant
-            // certificate profiles from issuing certificates with too few SCTs.
-            return -1;
+            return 0; // setting is OFF
         }
         return (Integer) data.get(CT_MIN_TOTAL_SCTS);
     }
@@ -2554,14 +2551,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * <p>Number of CT logs marked as "mandatory" to require an SCT from, or it will be considered an error. Default is one log.
+     * <p>Number of CT logs marked as "mandatory" to require an SCT from, or it will be considered an error. Default is zero logs.
      * </p>
      * <p>For publishers, certificates are submitted to all enabled logs.</p>
      * @return the number of mandatory SCTs
      */
     public int getCtMinMandatoryScts() {
         if (data.get(CT_MIN_MANDATORY_SCTS) == null) {
-            return 1;
+            return 0;
         }
         return (Integer) data.get(CT_MIN_MANDATORY_SCTS);
     }
@@ -2577,7 +2574,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public int getCtMaxMandatoryScts() {
         if (data.get(CT_MAX_MANDATORY_SCTS) == null) {
-            return getCtMinMandatoryScts();
+            // Ensure we attempt to fetch at least minTotalScts before giving up
+            return getCtMinTotalScts();
         }
         return (Integer) data.get(CT_MAX_MANDATORY_SCTS);
     }
@@ -2590,7 +2588,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** @see CertificateProfile#getCtMaxMandatoryScts */
     public int getCtMaxMandatorySctsOcsp() {
         if (data.get(CT_MAX_MANDATORY_SCTS_OCSP) == null) {
-            return getCtMinMandatorySctsOcsp();
+            // Ensure we attempt to fetch at least minTotalScts before giving up
+            return getCtMinTotalSctsOcsp();
         }
         return (Integer) data.get(CT_MAX_MANDATORY_SCTS_OCSP);
     }
@@ -2626,7 +2625,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public int getCtMaxNonMandatoryScts() {
         if (data.get(CT_MAX_NONMANDATORY_SCTS) == null) {
-            return getCtMinNonMandatoryScts();
+            // Ensure we attempt to fetch at least minTotalScts before giving up
+            return getCtMinTotalScts();
         }
         return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS);
     }
@@ -2639,7 +2639,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** @see CertificateProfile#getCtMaxNonMandatoryScts */
     public int getCtMaxNonMandatorySctsOcsp() {
         if (data.get(CT_MAX_NONMANDATORY_SCTS_OCSP) == null) {
-            return getCtMaxNonMandatoryScts();
+            // Ensure we attempt to fetch at least minTotalScts before giving up
+            return getCtMinTotalSctsOcsp();
         }
         return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS_OCSP);
     }
