@@ -161,8 +161,9 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
                 return rastyle;
             }
         }
-        // Shouldn't happen
-        return null;
+        
+        // Previously set preference is no longer available, return first available.
+        return availableRaStyles.get(0);
     }
     
     @Override
