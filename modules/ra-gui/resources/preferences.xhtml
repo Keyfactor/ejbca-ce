@@ -40,7 +40,7 @@
             var messagehidemore = '#{msg.preferences_details_hide}';
 		</script>
 
-		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned">
+		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned" >
 			<h:panelGroup layout="block" id="preferenceContentBody"
 				styleClass="content-body">
 
@@ -53,6 +53,7 @@
 							styleClass="jsAutoFocusLast" var="currentLocale"
 							value="#{raPreferencesBean.currentLocale}"
 							disabled="#{raPreferencesBean.locales.size()==1}">
+							<f:ajax event="valueChange" listener="#{raPreferencesBean.localeChanged(raPreferencesBean.currentLocale)}" render="applyButton"/>
 							<f:selectItems value="#{raPreferencesBean.locales}"
 								var="supportedLocale"
 								itemLabel="#{supportedLocale.getDisplayLanguage(supportedLocale)}" />
@@ -80,6 +81,8 @@
 							styleClass="jsAutoFocusLast" var="currentTheme"
 							value="#{raPreferencesBean.currentStyle}"
 							disabled="#{raPreferencesBean.styles.size()==0}">
+							<f:ajax event="valueChange" listener="#{raPreferencesBean.themeChanged(raPreferencesBean.currentStyle)}" render="applyButton"/>
+		
 							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
 								itemLabel="#{theme.getArchiveName()}" />
 							<f:converter binding="#{raPreferencesBean}" />
@@ -108,8 +111,9 @@
 
 					<h:commandButton id="applyButton" value="#{msg.generic_apply}"
 						styleClass="pure-button ra-button"
-						action="#{raPreferencesBean.updatePreferences()}">
-						<f:ajax execute="@form" render="@all" />
+						action="#{raPreferencesBean.updatePreferences()}"
+						disabled="#{raPreferencesBean.applyDisabled}">
+  						<f:ajax execute="@form" render="@all" /> 
 					</h:commandButton>
 				</h:panelGroup>
 			</h:panelGroup>

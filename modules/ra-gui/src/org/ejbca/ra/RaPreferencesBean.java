@@ -48,7 +48,6 @@ public class RaPreferencesBean implements Converter, Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaPreferencesBean.class);
     private static final int DUMMY_STYLE_ARCHIVE_ID = 0;
-    
 
     @EJB
     private AdminPreferenceSessionLocal adminPreferenceSession;
@@ -70,9 +69,27 @@ public class RaPreferencesBean implements Converter, Serializable {
     private Locale currentLocale;
 
     private RaStyleInfo currentStyle;
+    
+    private boolean applyDisabled = true;
+
+    public boolean isApplyDisabled() {
+        return applyDisabled;
+    }
+
+/*    public void setApplyDisabled(boolean applyDisabled) {
+        this.applyDisabled = applyDisabled;
+    }*/
 
     @PostConstruct
     public void init() {
+        
+        String certificatefingerprint = CertTools
+                .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
+        
+        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint)) {
+            adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
+                    new AdminPreference());
+        }
         initLocale();
         initRaStyle();
     }
@@ -112,36 +129,52 @@ public class RaPreferencesBean implements Converter, Serializable {
         }
     }
 
+    public void localeChanged(final Locale locale) {
+        
+        if(raLocaleBean.getLocale().equals(locale)) {
+            this.applyDisabled = true;
+            return;
+        } 
+
+        this.applyDisabled = false;
+    }
+    
+    public void themeChanged(final RaStyleInfo styleInfo) {
+
+        Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+        
+        if(raStyleFromDB != null) {
+            if (raStyleFromDB == styleInfo.getArchiveId()) {
+                this.applyDisabled = true;
+                return;
+            }
+
+            this.applyDisabled = false;
+        }
+    }
+
     /**
      * Updates ra admin preferences data in database.
      * Does nothings in case the current data is equal to the data going to be set.
      */
     public void updatePreferences() {
 
-        String certificatefingerprint = CertTools
-                .getFingerprintAsString(((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken()).getCertificate());
-
-        if (!adminPreferenceSession.existsAdminPreference(certificatefingerprint)) {
-            adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken) raAuthenticationBean.getAuthenticationToken(),
-                    new AdminPreference());
-        }
-        
         Locale previousLocale = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
         int previousRaStyleId = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
 
-        
-        // No change in the preferences so ignore and simply reset.
-        if (currentLocale.equals(previousLocale) && currentStyle.getArchiveId() == previousRaStyleId) {
-            reset();
+        if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
+            adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+            adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+            this.applyDisabled = true;
+        } else if (currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
+            adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+            this.applyDisabled = true;
+        } else if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() == previousRaStyleId)) {
+            adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+            this.applyDisabled = true;
             return;
-        }
-        
-        if (!currentLocale.equals(previousLocale)) {
-            adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());            
-        }
-        
-        if (currentStyle.getArchiveId() != previousRaStyleId) {
-            adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());            
+        } else {
+            return;
         }
 
         try {
@@ -151,6 +184,8 @@ public class RaPreferencesBean implements Converter, Serializable {
             reset();
         }
     }
+
+
     
     /**
      * Used to reset the preferences page
@@ -190,7 +225,7 @@ public class RaPreferencesBean implements Converter, Serializable {
     /**
      * Private helpers
      */
-    
+
     private void initLocale() {
         Locale localeFromDB = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
 
@@ -204,10 +239,9 @@ public class RaPreferencesBean implements Converter, Serializable {
     private void initRaStyle() {
 
         Integer raStyleFromDB = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+        List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
 
         if (raStyleFromDB != null) {
-            List<RaStyleInfo> raStyleInfos = adminPreferenceSession.getAvailableRaStyleInfos(raAuthenticationBean.getAuthenticationToken());
-
             for (RaStyleInfo raStyleInfo : raStyleInfos) {
                 if (raStyleInfo.getArchiveId() == raStyleFromDB) {
                     currentStyle = raStyleInfo;
@@ -215,18 +249,24 @@ public class RaPreferencesBean implements Converter, Serializable {
                 }
             }
         } else {
-
-            currentStyle = buildDummyStyleInfo();
+            
+            if (raStyleInfos.isEmpty()) {
+                currentStyle = buildDummyStyleInfo();
+                adminPreferenceSession.setCurrentRaStyleId(DUMMY_STYLE_ARCHIVE_ID, raAuthenticationBean.getAuthenticationToken());
+            } else {
+                currentStyle = raStyleInfos.get(0);
+                adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+            }
         }
     }
 
     private RaStyleInfo buildDummyStyleInfo() {
-        
+
         RaStyleInfo dummyStyle = new RaStyleInfo("Default", null, null, "");
         dummyStyle.setArchiveId(DUMMY_STYLE_ARCHIVE_ID);
 
         return dummyStyle;
-        
+
     }
 
     private void redirect() throws IOException {
