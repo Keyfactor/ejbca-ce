@@ -313,23 +313,21 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
     @Override
     public Integer getCurrentRaStyleId(AuthenticationToken admin) {
-        
+
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
 
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
+
         if (adminPreference == null) {
             return null;
         }
-        
-        Integer adminPref = adminPreference.getPreferedRaStyleId();
-        
-        if (adminPref != null) {
-            return adminPref;
-        } else {
-            return null;
-        }
-        
+
+        Integer currentStyleId = adminPreference.getPreferedRaStyleId();
+
+        if (currentStyleId != null)
+            return currentStyleId;
+        return null;
+
     }
 
     @Override
@@ -346,22 +344,21 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
     @Override
     public Locale getCurrentRaLocale(AuthenticationToken admin) {
-        
+
         String certificatefingerprint = CertTools.getFingerprintAsString(((X509CertificateAuthenticationToken) admin).getCertificate());
 
         AdminPreference adminPreference = getAdminPreference(certificatefingerprint);
-        
+
         if (adminPreference == null) {
             return getDefaultAdminPreference().getPreferedRaLanguage();
         }
-        
-        Locale locale = adminPreference.getPreferedRaLanguage();
-        
-        if (locale != null) {
-            return locale;
-        } else {
-            return getDefaultAdminPreference().getPreferedRaLanguage();
-        }
+
+        Locale currentLocale = adminPreference.getPreferedRaLanguage();
+
+        if (currentLocale != null)
+            return currentLocale;
+
+        return getDefaultAdminPreference().getPreferedRaLanguage();
     }
 
     @Override
