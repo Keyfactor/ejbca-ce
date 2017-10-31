@@ -309,6 +309,9 @@ public class RaPreferencesBean implements Converter, Serializable {
         } else {
             currentLocale = raLocaleBean.getLocale();
         }
+        
+        adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+
     }
 
     private void initRaStyle() {
