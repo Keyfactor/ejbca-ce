@@ -84,6 +84,8 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private String styleInfoButtonText = ""; 
     
+    
+    //TODO: improve code here to become DRY!
     public String initShowHideButtonLocale(final String show, final String hide) {
         
         if (!this.localeInfoButtonText.isEmpty()) {
@@ -119,8 +121,6 @@ public class RaPreferencesBean implements Converter, Serializable {
     public boolean isShowStyleInfo() {
         return showStyleInfo;
     }
-
-    
     
     public void toggleShowLocaleInfo(final String show, final String hide) {
         
