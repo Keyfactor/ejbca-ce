@@ -75,6 +75,72 @@ public class RaPreferencesBean implements Converter, Serializable {
     public boolean isApplyDisabled() {
         return applyDisabled;
     }
+    
+    private boolean showLocaleInfo = false;
+
+    private boolean showStyleInfo = false;
+    
+    private String localeInfoButtonText = ""; 
+
+    private String styleInfoButtonText = ""; 
+    
+    public String initShowHideButtonLocale(final String show, final String hide) {
+        
+        if (!this.localeInfoButtonText.isEmpty()) {
+            if (this.localeInfoButtonText.equals(show)) {
+                return show;
+            } else {
+                return hide;
+            }
+        } else {
+            localeInfoButtonText = show;
+            return localeInfoButtonText;
+        }
+    }
+
+    public String initShowHideButtonStyle(final String show, final String hide) {
+        
+        if (!this.styleInfoButtonText.isEmpty()) {
+            if (this.styleInfoButtonText.equals(show)) {
+                return show;
+            } else {
+                return hide;
+            }
+        } else {
+            styleInfoButtonText = show;
+            return styleInfoButtonText;
+        }
+    }
+    
+    public boolean isShowLocaleInfo() {
+        return showLocaleInfo;
+    }
+
+    public boolean isShowStyleInfo() {
+        return showStyleInfo;
+    }
+
+    
+    
+    public void toggleShowLocaleInfo(final String show, final String hide) {
+        
+        if (this.localeInfoButtonText.equals(show)) {
+            this.localeInfoButtonText = hide;
+        } else {
+            this.localeInfoButtonText = show;
+        }
+        this.showLocaleInfo = !showLocaleInfo;
+    }
+    
+    
+    public void toggleShowStyleInfo(final String show, final String hide) {
+        if (this.styleInfoButtonText.equals(show)) {
+            this.styleInfoButtonText = hide;
+        } else {
+            this.styleInfoButtonText = show;
+        }
+        this.showStyleInfo = !showStyleInfo;
+    }
 
     @PostConstruct
     public void init() {
@@ -104,7 +170,7 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     public void setCurrentLocale(final Locale locale) {
         this.currentLocale = locale;
-        raLocaleBean.setLocale(locale);
+        //raLocaleBean.setLocale(locale);
     }
 
     public List<Locale> getLocales() {
@@ -146,6 +212,9 @@ public class RaPreferencesBean implements Converter, Serializable {
             }
 
             this.applyDisabled = false;
+        } else if (styleInfo.getArchiveId() != currentStyle.getArchiveId()) {
+            this.applyDisabled = false;
+            return;
         }
     }
 
@@ -156,21 +225,33 @@ public class RaPreferencesBean implements Converter, Serializable {
     public void updatePreferences() {
 
         Locale previousLocale = adminPreferenceSession.getCurrentRaLocale(raAuthenticationBean.getAuthenticationToken());
-        int previousRaStyleId = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
+        Integer previousRaStyleId = adminPreferenceSession.getCurrentRaStyleId(raAuthenticationBean.getAuthenticationToken());
 
-        if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
+        if (previousLocale == null) {
             adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+            raLocaleBean.setLocale(currentLocale);
+            this.applyDisabled = true;
+        } else if (previousRaStyleId == null) {
             adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
             this.applyDisabled = true;
-        } else if (currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
-            adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
-            this.applyDisabled = true;
-        } else if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() == previousRaStyleId)) {
-            adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
-            this.applyDisabled = true;
-            return;
         } else {
-            return;
+
+            if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
+                adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+                raLocaleBean.setLocale(currentLocale);
+                adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+                this.applyDisabled = true;
+            } else if (currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() != previousRaStyleId)) {
+                adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+                this.applyDisabled = true;
+            } else if (!currentLocale.equals(previousLocale) && (currentStyle.getArchiveId() == previousRaStyleId)) {
+                adminPreferenceSession.setCurrentRaLocale(currentLocale, raAuthenticationBean.getAuthenticationToken());
+                raLocaleBean.setLocale(currentLocale);
+                this.applyDisabled = true;
+                return;
+            } else {
+                return;
+            }
         }
 
         try {
@@ -239,6 +320,8 @@ public class RaPreferencesBean implements Converter, Serializable {
         } else {
             currentStyle = preferedRaStyle;
         }
+        adminPreferenceSession.setCurrentRaStyleId(currentStyle.getArchiveId(), raAuthenticationBean.getAuthenticationToken());
+
     }
 
     private RaStyleInfo buildDummyStyleInfo() {

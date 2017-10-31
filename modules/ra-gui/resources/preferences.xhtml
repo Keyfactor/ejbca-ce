@@ -35,10 +35,10 @@
 				<h:outputText value="#{msg.preferences_page_title}" />
 			</h1>
 		</h:panelGroup>
-		<script type="text/javascript">
+<!--  		<script type="text/javascript">
             var messageshowmore = '#{msg.preferences_details_show}';
             var messagehidemore = '#{msg.preferences_details_hide}';
-		</script>
+		</script>  -->
 
 		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned" >
 			<h:panelGroup layout="block" id="preferenceContentBody"
@@ -60,16 +60,16 @@
 							<f:converter converterId="localeConverter" />
 						</h:selectOneMenu>
 						<h:commandButton
-							onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);"
-							id="expandRequestLang" value="#{msg.preferences_details_hide}"
-							type="button" styleClass="toggleMoreButton" />
+							value="#{raPreferencesBean.initShowHideButtonLocale(msg.preferences_details_show, msg.preferences_details_hide)}"
+							type="button" styleClass="toggleMoreButton" >
+							<f:ajax event="click" listener="#{raPreferencesBean.toggleShowLocaleInfo(msg.preferences_details_show, msg.preferences_details_hide)}" render="@this expandRequestLangDetails"/>
+						</h:commandButton>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestLangDetails" layout="block"
 						style="display: block" styleClass="pure-control-group">
-						<h:outputText value="#{msg.preferences_page_language_info}" />
+						<h:outputText value="#{msg.preferences_page_language_info}" rendered="#{raPreferencesBean.showLocaleInfo}"/>
 					</h:panelGroup>
-					<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestLang'), messageshowmore, messagehidemore);</script>
-				</h:panelGroup>
+    				</h:panelGroup>
 
 
 				<h:panelGroup layout="block" styleClass="internal-frame">
@@ -88,16 +88,15 @@
 							<f:converter binding="#{raPreferencesBean}" />
 						</h:selectOneMenu>
 						<h:commandButton
-							onclick="ejbca.ra.toggleDetails(this, messageshowmore, messagehidemore);"
-							id="expandRequestTheme" value="#{msg.preferences_details_hide}"
-							type="button" styleClass="toggleMoreButton" />
+							value="#{raPreferencesBean.initShowHideButtonStyle(msg.preferences_details_show, msg.preferences_details_hide)}"
+							type="button" styleClass="toggleMoreButton" >
+							<f:ajax event="click" listener="#{raPreferencesBean.toggleShowStyleInfo(msg.preferences_details_show, msg.preferences_details_hide)}" render="@this expandRequestThemeDetails"/>
+						</h:commandButton>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestThemeDetails" layout="block"
 						style="display: block" styleClass="pure-control-group">
-						<h:outputText value="#{msg.preferences_page_theme_info}" />
+						<h:outputText value="#{msg.preferences_page_theme_info}" rendered="#{raPreferencesBean.showStyleInfo}"/>
 					</h:panelGroup>
-
-					<script>ejbca.ra.toggleDetails(document.getElementById('preferencesForm:expandRequestTheme'), messageshowmore, messagehidemore);</script>
 				</h:panelGroup>
 
 
