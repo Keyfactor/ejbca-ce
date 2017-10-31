@@ -463,29 +463,42 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 // Ensure that current admin is authorized to all access rules implied by the template
                 final List<String> allowedResources = new ArrayList<>();
                 // Ensure that there is no access rule in role that is not covered by template to check for a match
-                final HashMap<String, Boolean> remainingAccessRulesInRole = new HashMap<>(getRole().getAccessRules());
-                AccessRulesHelper.normalizeResources(remainingAccessRulesInRole);
-                AccessRulesHelper.minimizeAccessRules(remainingAccessRulesInRole);
-                filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesCa());
-                filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesEep());
-                filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesKeyValidators());
-                for (final Entry<String,Boolean> entry : accessRulesTemplate.getAccessRules().entrySet()) {
-                    if (entry.getValue().booleanValue()) {
-                        final String resource = entry.getKey();
-                        allowedResources.add(resource);
-                        remainingAccessRulesInRole.remove(AccessRulesHelper.normalizeResource(resource));
-                    }
-                }
-                if (authorizationSession.isAuthorizedNoLogging(getAdmin(), allowedResources.toArray(new String[0]))) {
-                    availableAccessRulesTemplates.add(new SelectItem(accessRulesTemplate.getName(), super.getEjbcaWebBean().getText(accessRulesTemplate.getName())));
-                    // Check if this template matches the Role's current access rules
-                    if (remainingAccessRulesInRole.isEmpty()) {
-                        accessRulesTemplateSelected = accessRulesTemplate.getName();
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Role '" + getRole().getRoleNameFull() + "' does not qualify as a '" + accessRulesTemplate.getName() + "'. Extra rules: " +
-                                    Arrays.toString(remainingAccessRulesInRole.keySet().toArray()));
+                if (getRole() != null) {
+                    if (getRole().getAccessRules() != null) {
+                        final HashMap<String, Boolean> remainingAccessRulesInRole = new HashMap<>(getRole().getAccessRules());
+                        AccessRulesHelper.normalizeResources(remainingAccessRulesInRole);
+                        AccessRulesHelper.minimizeAccessRules(remainingAccessRulesInRole);
+                        filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesCa());
+                        filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesEep());
+                        filterOutSelectItems(remainingAccessRulesInRole, getAvailableResourcesKeyValidators());
+                        for (final Entry<String, Boolean> entry : accessRulesTemplate.getAccessRules().entrySet()) {
+                            if (entry.getValue().booleanValue()) {
+                                final String resource = entry.getKey();
+                                allowedResources.add(resource);
+                                remainingAccessRulesInRole.remove(AccessRulesHelper.normalizeResource(resource));
+                            }
                         }
+                        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), allowedResources.toArray(new String[0]))) {
+                            availableAccessRulesTemplates.add(
+                                    new SelectItem(accessRulesTemplate.getName(), super.getEjbcaWebBean().getText(accessRulesTemplate.getName())));
+                            // Check if this template matches the Role's current access rules
+                            if (remainingAccessRulesInRole.isEmpty()) {
+                                accessRulesTemplateSelected = accessRulesTemplate.getName();
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Role '" + getRole().getRoleNameFull() + "' does not qualify as a '" + accessRulesTemplate.getName()
+                                            + "'. Extra rules: " + Arrays.toString(remainingAccessRulesInRole.keySet().toArray()));
+                                }
+                            }
+                        }
+                    } else {
+                        if(log.isDebugEnabled()) {
+                            log.debug("Role with name " + role.getRoleName() + " returned a null access rule list.");
+                        }
+                    }
+                } else {
+                    if(log.isDebugEnabled()) {
+                        log.debug("Role with ID " + roleIdParam + " could not be retrieved from the database.");
                     }
                 }
             }
