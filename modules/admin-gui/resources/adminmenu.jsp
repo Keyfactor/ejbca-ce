@@ -374,7 +374,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 
 <%
 // If authorized to edit EST Configuration then display related links.
-  if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
+  if(ejbcawebbean.isEstConfigurationPresent() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
       if(!configheaderprinted){      
     out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
     configheaderprinted = true;
