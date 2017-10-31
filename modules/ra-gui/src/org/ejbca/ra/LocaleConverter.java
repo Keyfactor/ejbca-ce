@@ -20,9 +20,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 
 /**
- * Used in preferences section of RA GUI to convert selected locally and make it digestible by server and vice versa.
+ * Used in preferences section of RA GUI to convert selected locale and make it digestible by Preferences.xhtml and vice versa.
  *
- * @version $Id: LocaleConverter.java 26057 2017-06-22 08:08:34Z anatom $
+ * @version $Id$
  *
  */
 @FacesConverter("localeConverter")
