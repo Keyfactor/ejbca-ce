@@ -12,18 +12,38 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 </p>
     </section>
 
-<section name="Contributors">
+<section name="PrimeKey Contributors">
+	<ul>
+	<!--  email obfuscation tool http://www.seowebsitepromotion.com/obfuscate_email.asp -->
+		<li>Tomas Gustavsson, <!-- tomas.gustavsson@primekey.com -->Project founder.</li>
+		<li>Philip Vendil, Core developer (- 2010).</li>
+		<li>Anna Diruba Christensen, <!-- dilnet@hotmail.com -->First project homepage design, until EJBCA 3.5.</li>
+		<li>Lars Silven, <!-- lars.silven@primekey.com -->Core developer</li>
+		<li>Tham Wickenberg, Core developer (2008 - 2010)</li>
+		<li>Johan Eklund, <!-- johan.eklund@primekey.com -->Core developer (2009 - ) and Senior Architect (2015 - )</li>
+		<li>Anders Rundgren, Contributing developer (2009 - 2014)</li>
+		<li>Markus Kilås,  <!-- markus.kilas@primekey.com -->Contributing Developer (2009 - )</li>
+		<li>Aveen Ismail, <!-- aveen.ismail@primekey.com  -->Core developer (2010 - )</li>
+		<li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer (2010 - ) and Product Owner (2015 - )</li>
+		<li>Samuel Liden Borell, <!-- samuel.borell@primekey.com -->Core developer (2010 - )</li>
+		<li>Marcus Lundblad, <!-- marcus.lundblad@primekey.com -->Contributing developer (2011 - )</li>
+		<li>Marko Prvulovic, Core Developer ( - 2017)</li>
+		<li>Ebrahim Shirvanian, <!-- ebrahim.shirvanian@primekey.com -->QA Manager (2015 - )</li>		
+		<li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer (2017 - )</li>		
+		<li>Bastian Fredriksson, <!-- bastian@primekey.com -->Core Developer (2017 - )</li>
+		<li>Oskar Eriksson, <!-- oskar.eriksson@primekey.com -->Favorite Intern (2017 - )</li>
+		<li>Amin Khorsandi, <!-- amin.khorsandi@primekey.com -->Core Developer (2017 - )</li>
+		<li>Annica Waltersson, <!-- <annica.waltersson@primekey.com> -->Tech Writer (2017 - )</li>	
+	</ul>
+</section>
+<section name="External Contributors">
 <p>
  We encourage and appreciate all contributions.
  Here is the list of people who have donated their valuable time to produce code included in EJBCA.
  Many others have contributed with bug reports, feature suggestions etc etc.
 </p>
 
-<!--  email obfuscation tool http://www.seowebsitepromotion.com/obfuscate_email.asp -->
 <ul>
-<li>Tomas Gustavsson, <!-- tomas.gustavsson@primekey.com -->Project founder.</li>
-<li>Philip Vendil, Core developer (- 2010).</li>
-<li>Anna Diruba Christensen, <!-- dilnet@hotmail.com -->First project homepage design, until EJBCA 3.5.</li>
 <li>Nathan Phelps, <!-- nphelps@solarc.com -->Testing, bugfinding and suggestions.</li>
 <li>Leo Tai, <!--hkleo@users.sourceforge.net  -->Oracle database configuration.</li>
 <li>Timothy Fisher, <!-- timothyf@users.sourceforge.net -->Architecture overview.</li>
@@ -33,7 +53,6 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Slava Sklarewski, <!-- slava.sklarewski@de.gi-de.com -->Data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, <!-- isbueno@users.sourceforge.net -->Patch for request template path.</li>
 <li>Jean Ye, <!-- zhjeanye@pub.zhuhai.gd.cn -->Support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA. Improved internationalization support. Chinese translation.</li>
-<li>Lars Silven, <!-- lars.silven@primekey.com -->Core developer</li>
 <li>Gösta Bäckström, <!-- gosta.backstrom@goyada.com -->Initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, <!-- ville.skytta@secgo.com -->AdminCertReqServlet, Various patches, LDAP publisher advice</li>
 <li>Koen Serry, <!-- koen@serry.org -->Many small improvements.</li>
@@ -65,13 +84,11 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Alexander Horvath, <!-- alex@gekom.biz -->Patch to make OCSP compatible with Thunderbird/Firefox.</li>
 <li>Henrik Anreasson, <!-- han@han.pp.se -->Debian package, installer and documentation improvements, lots of testing and suggestions.</li>
 <li>Michael Rieken, <!-- michael.rieken@atosorigin.com -->Updates to german translation.</li>
-<li>Johan Eklund, <!-- johan.eklund@primekey.com -->Core developer and Senior Architect (2015 - )</li>
 <li>Rolf Staflin, <!-- rolf@piro.se -->New public web for EJBCA 3.5.</li>
-<li>Joakim Bågnert, <!-- joakim.bagnert@primekey.com -->Core Technician.</li>
 <li>Munteanu Olimpiu Andrei, <!-- moa3333@gmail.com -->Jasper reports functionality.</li>
 <li>Lee, <!-- coregps@yahoo.com.cn -->updates to Chinese translation.</li>
 <li>Yuji, <!-- yistoneriver@users.sourceforge.net -->patch for deadlock problem.</li>
-<li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->Portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
+<li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->Portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediate nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
 <li>Nicolas Coudene, <!-- nicolas.coudene@linagora.com -->completing the DB2 support, updates to french translation.</li>
 <li>Sebastien Levesque, <!-- slevesque@linagora.com -->WS-API calls for listing CAs and profiles.</li>
 <li>Abbas Razam, <!-- abbasrazam@yahoo.com -->fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
@@ -83,7 +100,6 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Liam Kian Shin, <!-- kianshin.lim@gemalto.com -->Howto for using GEMSafe with EJBCA.</li>
 <li>Koichi Sugimoto, <!-- ko-sugimoto@users.sf.net -->initial patch for creating certificate request from any CA.</li>
 <li>Keijo Kurkinen, National Swedish Police Board, <!-- keijo.kurkinen@diversify.se -->Cert-CVC library for handling CV certificates for EU EAC ePassports.</li>
-<li>Tham Wickenberg, Core developer (- 2015)</li>
 <li>Kelly Hayashi, <!-- kelly@evaltec.com.br -->patch for PKCS12 ExtRA requests not working with approvals.</li>
 <li>Jakob Jenkov, <!-- jakob@jenkov.com -->advice on fair thread locking for ProtectedLog synchronization.</li>
 <li>David Galichet, <!-- david.galichet@linagora.com -->add error code on web services. WS user creation uses profile informations</li>
@@ -97,11 +113,6 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Kevin Dean, <!-- kevin.dean@datadevelopment.com -->sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
 <li>Rafal Parzych, <!-- r.parzych@pwpw.pl -->fix IAIK provider usage with multiple CAs.</li>
 <li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation, proper key sequence incrementation, and other CVC fixes.</li>
-<li>Samuel Liden Borell, <!-- samuel.borell@primekey.com -->Core developer.</li>
-<li>Aveen Ismail, <!-- aveen.ismail@primekey.com  -->Core developer.</li>
-<li>Mike Agrenius Kushner, <!-- mike.kushner@primekey.com -->Core developer (2010 - ) and Product Owner (2015 - )</li>
-<li>Anders Rundgren, Core developer (- 2014)</li>
-<li>Marcus Lundblad, <!-- marcus.lundblad@primekey.com -->Core developer</li>
 <li>Toru Tanaka, OGIS-RI Co. Ltd.,  Japaneese translation.</li>
 <li>Vlad, Exim Bank, <!-- VStepin@hq.eximb.com -->Fix for IE provider selection in External RA GUI.</li>
 <li>Matthias Knoll, BRZ, <!-- matthias.knoll@brz.gv.at -->Fix for automatic OCSP renewal using ECC.</li>
@@ -113,11 +124,8 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Andres Jakobs, <!-- AndresJakobs@web.de -->Admin GUI support for eIDAS QC extension (type and PDS url), Default "CA issuer URI" for CA. WS CA cert update. Validators.</li>
 <li>Mauricio Giacomini Penteado, <!-- mauricio.penteado@lcmtec.com.br -->Overridable and Non-overridable OIDs extension list limitations (ECA-5139).</li>
 <li>Jean-Sébastien Bevilacqua, <!-- realitix@gmail.com -->Patch for not removing end entity profile in legacy script based auto enrollment.</li>
-<li>Markus Kilås,  <!-- markus.kilas@primekey.com -->Core Developer</li>
-<li>Henrik Sunmark,  <!-- henrik.sunmark@primekey.com -->Core Developer (2017 - )</li>
 <li>Jaime Hablutzel, <!-- hablutzel1@gmail.com -->Ability to modify the built-in password encryption/obfuscation key.</li>
 <li>Christian Felsing, <!-- pug@felsing.net -->ejbca-setup install script for easier setup</li>
-<li>Bastian Fredriksson, <!-- bastian@primekey.com -->Core Developer (2017 - )</li>
 </ul>
     </section>
   </body>
