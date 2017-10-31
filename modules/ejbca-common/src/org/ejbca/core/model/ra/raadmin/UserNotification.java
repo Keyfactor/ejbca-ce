@@ -30,7 +30,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
  * 
  * @version $Id$
  */
-// TODO: Don't worry about the warning below, a fix is in the pipeline -mikek
+@SuppressWarnings("rawtypes")
 public class UserNotification extends HashMap implements Serializable, Cloneable {
 
 	/** This is the data stored in this object.
