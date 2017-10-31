@@ -1283,6 +1283,21 @@ public class EjbcaWebBean implements Serializable {
     //     EST
     //**********************
 
+    private Boolean estConfigurationPresent = null;
+
+    /** @return true if the EST implementation is present. */
+    public boolean isEstConfigurationPresent() {
+        if (estConfigurationPresent == null) {
+            try {
+                Class.forName("org.ejbca.core.protocol.est.EstOperationsSession");
+                estConfigurationPresent = Boolean.TRUE;
+            } catch (ClassNotFoundException e) {
+                estConfigurationPresent = Boolean.FALSE;
+            }
+        }
+        return estConfigurationPresent.booleanValue();
+    }
+    
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();
