@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -173,12 +173,15 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
         // For some reason Default ends up in style cache. Here we remove it manually.
         // TODO: find the actual cause.
-        for (Iterator<RaStyleInfo> iter = raStyleInfos.listIterator(); iter.hasNext();) {
-            RaStyleInfo raStyleInfo = iter.next();
+        List<RaStyleInfo> listContainingDefault = new ArrayList<>();
+        
+        for (RaStyleInfo raStyleInfo : raStyleInfos) {
             if (raStyleInfo.getArchiveName().equals("Default")) {
-                iter.remove();
+                listContainingDefault.add(raStyleInfo);
             }
         }
+        
+        raStyleInfos.removeAll(listContainingDefault);
 
         return raStyleInfos;
     }
