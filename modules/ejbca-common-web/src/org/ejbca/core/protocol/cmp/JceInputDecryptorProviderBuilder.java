@@ -37,6 +37,9 @@ public class JceInputDecryptorProviderBuilder
     {
     }
 
+    /**
+     *  @deprecated Copied from BCPKIX 1.59b03, can be removed when we use BC 1.59
+     */
     public JceInputDecryptorProviderBuilder setProvider(Provider provider)
     {
         this.helper = new ProviderJcaJceHelper(provider);
@@ -44,6 +47,9 @@ public class JceInputDecryptorProviderBuilder
         return this;
     }
 
+    /**
+     *  @deprecated Copied from BCPKIX 1.59b03, can be removed when we use BC 1.59
+     */
     public JceInputDecryptorProviderBuilder setProvider(String providerName)
     {
         this.helper = new NamedJcaJceHelper(providerName);
