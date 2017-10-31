@@ -36,6 +36,8 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
+ * This is the backing bean supporting the preferences.xhtml page in RA web.
+ * Together with preferrences.xhtml it is used to produce the Preferrences menu in RA web GUI.
  * 
  * @version $Id$
  *
@@ -85,15 +87,13 @@ public class RaPreferencesBean implements Converter, Serializable {
     private String styleInfoButtonText = ""; 
     
     
-    //TODO: improve code here to become DRY!
+    //TODO: improve code here to follow DRY principle!
     public String initShowHideButtonLocale(final String show, final String hide) {
         
         if (!this.localeInfoButtonText.isEmpty()) {
-            if (this.localeInfoButtonText.equals(show)) {
+            if (this.localeInfoButtonText.equals(show))
                 return show;
-            } else {
-                return hide;
-            }
+            return hide;
         } else {
             localeInfoButtonText = show;
             return localeInfoButtonText;
@@ -101,13 +101,11 @@ public class RaPreferencesBean implements Converter, Serializable {
     }
 
     public String initShowHideButtonStyle(final String show, final String hide) {
-        
+
         if (!this.styleInfoButtonText.isEmpty()) {
-            if (this.styleInfoButtonText.equals(show)) {
+            if (this.styleInfoButtonText.equals(show))
                 return show;
-            } else {
-                return hide;
-            }
+            return hide;
         } else {
             styleInfoButtonText = show;
             return styleInfoButtonText;
@@ -263,15 +261,6 @@ public class RaPreferencesBean implements Converter, Serializable {
     }
 
     /**
-     * Used to reset the preferences page
-     * @return
-     */
-    public String reset() {
-        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
-        return viewId + "?faces-redirect=true";
-    }
-
-    /**
      * The following two methods are used in converting RaStyleInfo to String and vice versa.
      * Required by JSF.
      */
@@ -289,6 +278,13 @@ public class RaPreferencesBean implements Converter, Serializable {
         return buildDummyStyleInfo();
     }
 
+    /**
+     * Returns the string representation of style items to which are used (and required) by
+     * the preferences.xhtml page.
+     * It returns the archive name of the style info object to be displayed in the 
+     * select preferred theme dropdown in Preferences page in RA-WEB.
+     * 
+     */
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) {
 
@@ -327,6 +323,15 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     }
 
+    
+    /**
+     * This method is used to create a dummy style info object.
+     * Since we don't have any item in the styles list to represent the 
+     * Default style (which is needed by Preferences page) hence this method
+     * is used to create that dummy style when required. Example use in initRaStyle 
+     * function above. 
+     * @return
+     */
     private RaStyleInfo buildDummyStyleInfo() {
 
         RaStyleInfo dummyStyle = new RaStyleInfo("Default", null, null, "");
@@ -336,6 +341,19 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     }
 
+    /**
+     * Used to reset the preferences page
+     * @return
+     */
+    public String reset() {
+        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+        return viewId + "?faces-redirect=true";
+    }
+    
+    /**
+     * Redirects to the pereferences.xhtml. Triggers the java script reload.
+     * @throws IOException
+     */
     private void redirect() throws IOException {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         context.redirect(context.getRequestContextPath() + "/preferences.xhtml");
