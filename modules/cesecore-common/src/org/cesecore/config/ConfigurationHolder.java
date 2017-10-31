@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.ConfigurationRuntimeException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
@@ -147,17 +146,18 @@ public final class ConfigurationHolder {
     }
     
     private static synchronized void addConfiguration(final PropertiesConfiguration pc) {
-        try {
+        // The try/catch is needed with commons-configuration 1.10 (but not with 1.06)
+//        try {
             final CompositeConfiguration cfgClone = (CompositeConfiguration) config.clone();
             cfgClone.addConfiguration(pc);
             config = cfgClone; // atomic replacement, since we don't want to require all the get*() methods to be synchronized
-        } catch (ConfigurationRuntimeException e) {
-            // Appears to happen due to some bug in MapConfiguration (on certain systems only)
-            if (log.isDebugEnabled()) {
-                log.debug("Configuration class " + config.getClass().getName() + " is not cloneable. Falling back to not fully thread safe code.", e);
-            }
-            config.addConfiguration(pc);
-        }
+//        } catch (ConfigurationRuntimeException e) {
+//            // Appears to happen due to some bug in MapConfiguration (on certain systems only)
+//            if (log.isDebugEnabled()) {
+//                log.debug("Configuration class " + config.getClass().getName() + " is not cloneable. Falling back to not fully thread safe code.", e);
+//            }
+//            config.addConfiguration(pc);
+//        }
     }
 
     /**
