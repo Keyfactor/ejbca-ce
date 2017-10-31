@@ -2562,11 +2562,11 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
 
 <section name="Custom RA Styles">
     <p>
-    Custom RA Styles allows CA administrators to upload and apply their own logos and style sheets (CSS) for the RA web. In practice this introduces a way to change the appearaand layout of the menus, buttons, background etc. for the RA-web. An uploaded style may be bound to one or many administrator roles. Members of this role will automatically the applied styles when logging in to the RA-web on any EJBCA instance connected to the CA. 
+    Custom RA Styles allows CA administrators to upload and apply their own logos and style sheets (CSS) for the RA web. In practice this introduces a way to change the appearance of the menus, buttons, background etc. for the RA Web. An uploaded style may be bound to one or many administrator roles. Members of this role will automatically receive applied styles when logging in to the RA Web on any EJBCA instance connected to the CA. 
     </p>
     <subsection name="Uploading Modified CSS And Logo">
         <p>
-        RA Style content is uploaded from the 'System Configuration' menu in the adminweb. Go to 'System Configuration -&gt; 'Custom RA Styles'. The page will display a list of previously uploaded styles or an empty list if no content has been added yet.
+        RA Style content is uploaded from the 'System Configuration' menu in the Admin GUI. Go to 'System Configuration -&gt; 'Custom RA Styles'. The page will display a list of previously uploaded styles or an empty list if no content has been added yet.
         </p>
         <p>
         To upload RA logo: Browse for a single .png or .jpg file to replace the RA logo with.
@@ -2601,7 +2601,7 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
             w_e_style.css
         </source>
         <p>
-        It is not necessary to upload both logo and CSS. Only upload what you intend to replace. Finally, give the uploaded styles a name and press 'Import'.
+        It is not necessary to upload both logo and CSS. Only upload what you intend to replace. Finally, give the uploaded styles a name and click 'Import'.
         </p>
         <p>
         In order to upload custom RA Syles, the following access rules are required:
@@ -2613,10 +2613,10 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
     </subsection>
     <subsection name="Applying Styles To Administrator Roles">
         <p>
-        Once styles are uploaded, it has to be bound to a role to take effect. This is done from the adminweb in 'Administrator Roles'. In order to apply a custom style to a role, go to 'Administrator Roles' and select the desired style from the drop down menu under the label 'RA Styles'. The next time members of this role login to the RA-web, their new style will be applied. Keep in mind that images and CSS files are browser cached, hence the changes might not appear until the browser cache is invalidated or cleared manually.
+        Once styles are uploaded, it has to be bound to a role to take effect. This is done from the Admin GUI in 'Administrator Roles'. In order to apply a custom style to a role, go to 'Administrator Roles' and select the desired style from the drop down menu under the label 'RA Styles'. The next time members of this role login to the RA Web, their new style will be applied. Keep in mind that images and CSS files are browser cached, hence the changes might not appear until the browser cache is invalidated or cleared manually.
         </p>
         <p>
-        If an administrator belongs to multiple roles with RA Styles applied, the desired style can be changed from the 'Preferences' menu in the RA-web.
+        If an administrator belongs to multiple roles with RA Styles applied, the desired style can be changed from the 'Preferences' menu in the RA Web.
         </p>
     </subsection>
 </section>
