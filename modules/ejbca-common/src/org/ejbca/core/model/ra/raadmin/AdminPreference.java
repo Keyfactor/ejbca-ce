@@ -65,11 +65,9 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     public Locale getPreferedRaLanguage() {
         Locale locale = ((Locale) data.get(PREFEREDRALANGUAGE));
 
-        if (locale == null) {
+        if (locale == null)
             return null;
-        } else {
-            return locale;
-        }
+        return locale;
     }
 
     public void setPreferedRaLanguage(Locale language) {
@@ -80,11 +78,9 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
 
         Integer raStyleId = ((Integer) data.get(PREFEREDRASTYLEID));
 
-        if (raStyleId == null) {
+        if (raStyleId == null)
             return null;
-        } else {
-            return raStyleId;
-        }
+        return raStyleId;
     }
 
     public void setPreferedRaStyleId(int preferedRaStyleId) {
