@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -169,7 +170,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     
     @Override
     public List<RaStyleInfo> getAvailableRaStyleInfos(AuthenticationToken admin) {
-        List<RaStyleInfo> raStyleInfos = raStyleCacheBean.getAvailableRaStyles(admin);
+        List<RaStyleInfo> raStyleInfos = Collections.synchronizedList(raStyleCacheBean.getAvailableRaStyles(admin));
 
         // For some reason Default ends up in style cache. Here we remove it manually.
         // TODO: find the actual cause.
