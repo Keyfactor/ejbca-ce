@@ -76,7 +76,7 @@
 						<h:selectOneMenu id="selectPreferedTheme"
 							styleClass="jsAutoFocusLast" var="currentTheme"
 							value="#{raPreferencesBean.currentStyle}"
-							disabled="#{raPreferencesBean.styles.size()==0}">
+							disabled="#{raPreferencesBean.styles.size()==1}">
 							<f:ajax event="valueChange" listener="#{raPreferencesBean.themeChanged(raPreferencesBean.currentStyle)}" render="applyButton"/>
 		
 							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
