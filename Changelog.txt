@@ -1,3 +1,86 @@
+EJBCA 6.10.0, 2017-11-01
+---
+
+Bug
+    [ECA-5959] - Disabling OcspKeyBinding doesn't take effect until restart
+    [ECA-6004] - RA Web: The field SAN MS-UPN is broken in Make New Request
+    [ECA-6042] - Forbid non-modifiable empty Subject DN/Alt Name/Directory Attributes in EEP
+    [ECA-6043] - Public Web: Create Keystore for Key Recovery displays Key specification drop-down menu
+    [ECA-6101] - Disabling authorization cache, with value -1, gives error
+    [ECA-6102] - Possible NPE when looking for database error to display
+    [ECA-6119] - Regression: Role Members normalizes serial numbers with leading zeros 
+    [ECA-6143] - Regression: RA web can't process CSR
+    [ECA-6147] - CMP Revocation with PBE responseProtection where KeyId is missing gives NPE
+    [ECA-6151] - Misplaced "invalid certificate request" message
+    [ECA-6153] - Regression: Processed approvals not listed in RA web
+    [ECA-6157] - NPE in RA enrollment page when there's an end entity e-mail but no SAN
+    [ECA-6158] - EST checkin causes Community build to fail
+    [ECA-6159] - CMP: revocation should handle empty header.recipient
+    [ECA-6163] - CAA Validator outputs stacktrace for expired DNSSEC protected records
+    [ECA-6164] - Regression: ClassCastException when visiting "Search End Entities" in /ejbca/adminweb
+    [ECA-6181] - NPE editing end entity with name constraints in profile, but no ExtendedInformation in entity
+    [ECA-6183] - ServiceTypeHolder and ModuleTypeHolder.equals compares the wrong type
+    [ECA-6184] - HardTokenInformation.equals compares the wrong type
+    [ECA-6185] - RaRoleMemberBean compares the wrong type in getAvailableMatchKeys
+    [ECA-6186] - PeerRaMasterServiceThreadBean compares the wrong type in keepServingRaPeer
+    [ECA-6188] - GUI: Certificate Profiles form visually broken
+    [ECA-6190] - EJBCA 6.x should handle legacy access match types from EJBCA 3.x
+    [ECA-6193] - ejbca.cmd on windows does not handle enough arguments for all commands
+    [ECA-6194] - CMP: enabling CMP over tcp causes deployment failure on modern Jboss
+    [ECA-6201] - CMP: CA by KeyId function should work with internaltionalized characters, but be limited in length
+    [ECA-6209] - CAA Validator seems to fail for gaps in DNSSEC domain records
+    [ECA-6214] - Fix warnings in CT code
+    [ECA-6216] - EJBCA's implementation of ValidatingResolver fails to receive an NSEC3 if CAA record set on domain is empty
+    [ECA-6218] - Regression: NPE when performing browser enrollment with "allow extension override" enabled
+    [ECA-6225] - Concurrent modifiation in ConfigurationHolder during startup with custom WS modifications
+    [ECA-6231] - OCSP Responder may crash the VA's default responder signing certificate has expired. 
+    [ECA-6232] - Upgrade seems to cause a ConcurrentModificationException since lib upgrade
+    [ECA-6233] - Correct upgrade guide in terms of obligatory versions
+    [ECA-6235] - Hide EST Configuration menu options if module is not present
+    [ECA-6240] - Roles upgraded from old (<4.0) installations may create a stacktrace in the UI
+    [ECA-6242] -  commons-configuration 1.10 breaks system tests
+
+
+New Feature
+    [ECA-5848] - Allow an RA Admin to request a shorter validity time than is set in the profile
+    [ECA-6024] - CMP Central Key Generation
+    [ECA-6095] - Rewrite EJBCA RA Web to be able to read CSS files from an archive stored on the database.
+    [ECA-6096] - Add to the peers protocol the ability to transmit stored CSS archives from the CA to the RA
+    [ECA-6097] - Define RA CSS by the role of the logged in user
+    [ECA-6100] - Add possibility to import and store custom RA CSS file
+    [ECA-6176] - Ability to upload custom logo images and multiple CSS files
+    [ECA-6177] - Enable injection of uploaded logo images
+    [ECA-6178] - Introduce 'Preferences' menu item in RA
+    [ECA-6191] - Mandatory SCT responses
+    [ECA-6195] - Add Infineon weak key checking to RSAKeyValidator (ROCA, 
+    [ECA-6197] - Document Custom RA Styles
+    [ECA-6213] - Apply RA Style selected from the 'Preference' menu in RA-web
+
+
+Improvement
+    [ECA-2723] - When deleting an End Entity Profile, list which end entities/authorization rules that actually use it.
+    [ECA-3222] - CMP: Add back the ability to use "KeyId" in AdminGUI
+    [ECA-5381] - Allow approval of other requests than Add End Entity in the RA if the admin is missing that privilege
+    [ECA-5383] - Upgrade external libraries
+    [ECA-5610] - Pagination during search exceeding max records
+    [ECA-5698] - Improve Certification Authorities usability
+    [ECA-5741] - All search pages appear to be case sensitive
+    [ECA-5927] - Review which Role Member match operators that should be case sensitive
+    [ECA-6108] - Move DnsNameValidatorMock to systemtests-common and log error for possible NPE when loading Profile
+    [ECA-6131] - Not possible to change CA subjectAltName using cli
+    [ECA-6138] - Parallelisation of CAA lookup for certificate with multiple SANs
+    [ECA-6150] - Stop writing complete stack traces for expected validation failures
+    [ECA-6167] - Add Peer Connector RA illustration to architecture documentation
+    [ECA-6168] - GUI: Internal Key Bindings form usability
+    [ECA-6169] - GUI: Certification Authorities form usability
+    [ECA-6170] - GUI: Crypto Token form usability
+    [ECA-6174] - Skip PKCS11-tests if no PKCS11 driver is installed
+    [ECA-6179] - Shorten AIA label in Certificate display popup
+    [ECA-6196] - Improve cache for custom RA styles
+    [ECA-6211] - Add Quirin's tests to CaaTestSuite
+    [ECA-6224] - Increase max length of Admin GUI altName input fields
+    [ECA-6228] - GUI: Validators form usability
+    [ECA-6245] - Remove EJBCA license headers from ValidatingResolver classes
 
 EJBCA 6.9.1, 2017-10-06
 ---
