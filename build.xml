@@ -840,8 +840,10 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<!-- Exclude ACME for 6.8.0 -->
+		    	<!-- Exclude ACME until 6.11 -->
 		    	<exclude name="modules/acme/**" />
+		    	<!-- Exclude EST for 6.11.0 -->
+		    	<exclude name="modules/est/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
