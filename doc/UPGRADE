@@ -44,6 +44,11 @@ If you are running a version previous to EJBCA 4, a multi step upgrade is needed
 For each version upgrade notes are provided below, if there are any considerations or behavioral changes in a version.
 When performing any upgrade, you should read through the upgrade notices below all the way down to the version you are upgrading from.
 
+From EJBCA 6.9.x to EJBCA 6.10.0
+-------------------------------
+
+There are no upgrade operations required when upgrading from 6.9.x to 6.10.
+
 From EJBCA 6.8.x to EJBCA 6.9.0
 -------------------------------
 
@@ -51,7 +56,7 @@ When upgrading to EJBCA 6.9.0, all changes are automatically performed and no po
 
 On the database, the only change is the creation of the table BlacklistData. This table is empty by default, but can be filled with data to validate 
 requests against a blacklist using the new Validators feature. If this table is expected to contain much data, there is a recommended index to apply 
-in the create-index-ejbca,sql file.
+in the create-index-ejbca.sql file.
 
 From EJBCA 6.7.x to EJBCA 6.8.0
 -------------------------------

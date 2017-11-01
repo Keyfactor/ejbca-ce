@@ -1,3 +1,29 @@
+EJBCA 6.10.0
+-----------
+
+Happy Halloween to all, we the Plucky Khobolds of PKI have been toiling away at another release. 
+
+Speaking of costumes and dressing up, EJBCA 6.10 introduces an extremely neat feature to the RA web: not only the ability to upload custom 
+stylesheets and logos on the CA web to be used in the RA, and not only setting these per role, but having these transmitted to a remote RA over the
+Peers protocol. This means that the look-and-feel of an RA placed in an entirely different country than the CA can be modified CA-side without even 
+requiring a restart of the RA, and it can be done for multiple users depending on their role. 
+
+On the theme of scares and frights, we're sure that nobody missed the ROCA vulnerability that was made public this month. While EJBCA has never used 
+Infineon libraries for key generation (and to the best of our knowledge, none of our supported HSM vendors do either), we've still been capable of 
+signing weak keys submitted from other sources. Fortunately since we introduced the RSA Key Validator back in EJBCA 6.9, adding a ROCA check there 
+as well was trivial. For those of you running or planning on running RSA Key validation, we strongly recommend activating checking for ROCA weak 
+keys.
+
+On the CMP side we've added the concept of Central Key Generation which allows for a request for a keypair generated CA side to be transmitted and
+returned over CMP. Certificate Transparency has been given the ability to specify, apart from the minimum number of required logs, which logs which 
+are considered mandatory to write to - this in anticipation of new requirements from Chrome coming in 2018. We've also kept working on our CAA 
+validator, hammering out various corner cases and parallelising DNS lookups for certificates containing multiple DNSNames.  
+
+From an upgrade perspective we're happy to see many legacy installations (EJBCA 4.0 and older) beginning to upgrade towards more modern versions of 
+EJBCA, and have received some bug reports specific to older deployments which we've fixed in this release. Currently we support upgrading directly 
+from EJBCA 5.0.16 or later. EJBCA 6.10 introduces no database changes, so upgrading from 6.9.x doesn't involve any automatic or manual upgrade steps. 
+
+
 EJBCA 6.9.1
 -----------
 
