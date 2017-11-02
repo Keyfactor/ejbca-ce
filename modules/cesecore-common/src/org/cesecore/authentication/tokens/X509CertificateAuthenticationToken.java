@@ -50,6 +50,8 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
 
     private final X509Certificate certificate;
+    // get the subjectDN from the certificate and keep it for caching (speed optimization)
+    private transient String adminSubjectDN;
 
     private final int adminCaId;
     private final DNFieldExtractor dnExtractor;
@@ -79,6 +81,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         }
         String certstring = CertTools.getSubjectDN(certificate).toString();
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
+        adminSubjectDN = CertTools.getSubjectDN(certificate);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
         final String altNameString = CertTools.getSubjectAlternativeName(certificate);
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -269,7 +272,11 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
     /** Override the default X500Principal.getName() when doing toString on this object. */
     @Override
     protected String toStringOverride() {
-        return CertTools.getSubjectDN(certificate);
+        // Return cached value to optimize, because this can be called multiple times during the tokens lifetime
+        if (adminSubjectDN == null) {
+            adminSubjectDN = CertTools.getSubjectDN(certificate);
+        }
+        return adminSubjectDN;
     }
 
     @Override
