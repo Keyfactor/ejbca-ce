@@ -516,7 +516,7 @@ class SCEPTest extends ClientToolBox {
             	//
             	// Check different message types
             	//        
-            	if ( responsestatus.equals(ResponseStatus.PENDING.getValue()) || !messageType.equals("3") ) {
+            	if ( responsestatus.equals(ResponseStatus.PENDING.getStringValue()) || !messageType.equals("3") ) {
             		return true;
             	}
             	// First we extract the encrypted data from the CMS enveloped data contained
@@ -618,7 +618,7 @@ class SCEPTest extends ClientToolBox {
             	}
             	final String altName = CertTools.getSubjectAlternativeName(usercert);
             	final String expectedAltName = CertTools.getGeneralNamesFromAltName("iPAddress=10.0.0.1, dNSName=foo.bar.com").toString();
-            	if (altName==null || CertTools.getGeneralNamesFromAltName(altName).equals(expectedAltName)) {
+            	if (altName==null || !CertTools.getGeneralNamesFromAltName(altName).toString().equals(expectedAltName)) {
                     StressTest.this.performanceTest.getLog().error("altName should be " + expectedAltName + " but was: " + altName);
                     return false;
             	}
