@@ -140,7 +140,12 @@ public abstract class AuthenticationToken implements Serializable {
         try {
             final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             for (final Object argument : arguments) {
-                messageDigest.update((String.valueOf(argument)+";").getBytes(StandardCharsets.UTF_8));
+                if (argument instanceof byte[]) {
+                    messageDigest.update((byte[]) argument);
+                    messageDigest.update((byte) ';');
+                } else {
+                    messageDigest.update((String.valueOf(argument)+";").getBytes(StandardCharsets.UTF_8));
+                }
             }
             return new String(Hex.encode(messageDigest.digest()));
         } catch (NoSuchAlgorithmException e) {
