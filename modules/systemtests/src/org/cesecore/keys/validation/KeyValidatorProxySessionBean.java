@@ -139,7 +139,7 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     @Override
     public void internalChangeValidatorNoFlushCache(Validator validator)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
-        ProfileData data = profileSession.findById(validator.getProfileId());   
+        ProfileData data = profileSession.findById(validator.getProfileId());
         if (data != null) {
             profileSession.changeProfile(validator);
         }
