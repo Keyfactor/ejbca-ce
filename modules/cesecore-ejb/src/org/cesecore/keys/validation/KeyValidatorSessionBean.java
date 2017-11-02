@@ -154,7 +154,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
-    public void removeKeyValidator(AuthenticationToken admin, final int validatorId)
+    public void removeKeyValidator(final AuthenticationToken admin, final int validatorId)
             throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
         if (log.isTraceEnabled()) {
             log.trace(">removeKeyValidator(id: " + validatorId + ")");
@@ -162,26 +162,26 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         assertIsAuthorizedToEditValidators(admin);
         String message;
 
-            ProfileData data = profileSession.findById(validatorId);
-            if (data == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Trying to remove a key validator that does not exist with ID: " + validatorId);
-                }
-                return;
-            } else {
-                if (caSession.existsKeyValidatorInCAs(data.getId())) {
-                    throw new CouldNotRemoveKeyValidatorException();
-                }
-                profileSession.removeProfile(data);
-                // Purge the cache here.
-                ValidatorCache.INSTANCE.removeEntry(data.getId());
-                message = intres.getLocalizedMessage("validator.removed_validator", data.getProfileName());
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", message);
-                auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(),
-                        null, null, null, details);
+        ProfileData data = profileSession.findById(validatorId);
+        if (data == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Trying to remove a key validator that does not exist with ID: " + validatorId);
             }
+            return;
+        }
 
+        if (caSession.existsKeyValidatorInCAs(data.getId())) {
+            throw new CouldNotRemoveKeyValidatorException();
+        }
+
+        profileSession.removeProfile(data);
+        // Purge the cache here.
+        ValidatorCache.INSTANCE.removeEntry(data.getId());
+        message = intres.getLocalizedMessage("validator.removed_validator", data.getProfileName());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", message);
+        auditSession.log(EventTypes.VALIDATOR_REMOVAL, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, admin.toString(), null, null,
+                null, details);
         if (log.isTraceEnabled()) {
             log.trace("<removeKeyValidator()");
         }
@@ -616,6 +616,16 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
 
+    @Override
+    public List<Integer> getConflictingKeyValidatorIds(final Validator validator) {
+        final List<ProfileData> conflicts = profileSession.findByNameAndType(validator.getProfileName(), Validator.TYPE_NAME);
+        final List<Integer> conflictingValidatorIds = new ArrayList<>();
+        for (final ProfileData conflict : conflicts) {
+            conflictingValidatorIds.add(conflict.getId());
+        }
+        return conflictingValidatorIds;
+    }
+
     /** Gets a key validator by cache or database, can return null. Puts it into the cache, if not already present. */
     private Validator getKeyValidatorInternal(int id, boolean fromCache) {
         Validator result = null;
@@ -654,5 +664,24 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             final String message = intres.getLocalizedMessage("store.editkeyvalidatornotauthorized", admin.toString());
             throw new AuthorizationDeniedException(message);
         }
+    }
+
+    @Override
+    public void replaceKeyValidator(final AuthenticationToken authenticationToken, final LinkedHashMap<Object, Object> data, final int id)
+            throws AuthorizationDeniedException {
+        assertIsAuthorizedToEditValidators(authenticationToken);
+
+        final Validator validatorToUpdate = getValidator(id);
+        if (validatorToUpdate == null) {
+            return;
+        }
+        validatorToUpdate.setDataMap(data);
+        ValidatorCache.INSTANCE.flush();
+
+        final String auditMessage = intres.getLocalizedMessage("validator.changed_validator", validatorToUpdate.getProfileName());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", auditMessage);
+        auditSession.log(EventTypes.VALIDATOR_CHANGE, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE, authenticationToken.toString(),
+                null, null, null, details);
     }
 }

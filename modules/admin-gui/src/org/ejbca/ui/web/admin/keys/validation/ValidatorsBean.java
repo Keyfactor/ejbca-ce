@@ -174,7 +174,7 @@ public class ValidatorsBean extends BaseManagedBean {
                 }
             });
             validatorItems = new ListDataModel<ValidatorItem>(items);
-           
+
         }
 
         return validatorItems;
@@ -247,7 +247,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * Selection changed event.
      */
     private void selectCurrentRowData() {
-        final ValidatorItem item = (ValidatorItem) getAvailableValidators().getRowData();
+        final ValidatorItem item = getAvailableValidators().getRowData();
         setSelectedKeyValidatorId(item.getId());
     }
 
@@ -268,7 +268,7 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * AddFromTemplate action. 
+     * AddFromTemplate action.
      */
     public void actionAddFromTemplate() {
         selectCurrentRowData();
@@ -276,7 +276,7 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     /**
-     * AddFromTemplate confirm action. 
+     * AddFromTemplate confirm action.
      */
     public void actionAddFromTemplateConfirm() {
         final String name = getKeyValidatorName();
@@ -376,7 +376,7 @@ public class ValidatorsBean extends BaseManagedBean {
         selectedKeyValidatorId = null;
         keyValidatorName = null;
     }
-    
+
     /**
      * Gets the selected key validator name.
      * @return the name.
