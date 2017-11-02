@@ -36,7 +36,7 @@
 			</h1>
 		</h:panelGroup>
 
-		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned" >
+		<h:form id="preferencesForm" styleClass="pure-form pure-form-aligned">
 			<h:panelGroup layout="block" id="preferenceContentBody"
 				styleClass="content-body">
 
@@ -49,7 +49,9 @@
 							styleClass="jsAutoFocusLast" var="currentLocale"
 							value="#{raPreferencesBean.currentLocale}"
 							disabled="#{raPreferencesBean.locales.size()==1}">
-							<f:ajax event="valueChange" listener="#{raPreferencesBean.localeChanged(raPreferencesBean.currentLocale)}" render="applyButton"/>
+							<f:ajax event="valueChange"
+								listener="#{raPreferencesBean.localeChanged(raPreferencesBean.currentLocale)}"
+								render="applyButton" />
 							<f:selectItems value="#{raPreferencesBean.locales}"
 								var="supportedLocale"
 								itemLabel="#{supportedLocale.getDisplayLanguage(supportedLocale)}" />
@@ -57,15 +59,18 @@
 						</h:selectOneMenu>
 						<h:commandButton
 							value="#{raPreferencesBean.initShowHideButtonLocale(msg.preferences_details_show, msg.preferences_details_hide)}"
-							type="button" styleClass="toggleMoreButton" >
-							<f:ajax event="click" listener="#{raPreferencesBean.toggleShowLocaleInfo(msg.preferences_details_show, msg.preferences_details_hide)}" render="@this expandRequestLangDetails"/>
+							type="button" styleClass="toggleMoreButton">
+							<f:ajax event="click"
+								listener="#{raPreferencesBean.toggleShowLocaleInfo(msg.preferences_details_show, msg.preferences_details_hide)}"
+								render="@this expandRequestLangDetails" />
 						</h:commandButton>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestLangDetails" layout="block"
 						style="display: block" styleClass="pure-control-group">
-						<h:outputText value="#{msg.preferences_page_language_info}" rendered="#{raPreferencesBean.showLocaleInfo}"/>
+						<h:outputText value="#{msg.preferences_page_language_info}"
+							rendered="#{raPreferencesBean.showLocaleInfo}" />
 					</h:panelGroup>
-    				</h:panelGroup>
+				</h:panelGroup>
 
 
 				<h:panelGroup layout="block" styleClass="internal-frame">
@@ -74,27 +79,29 @@
 							value="#{msg.preferences_page_theme_select}" />
 
 						<h:selectOneMenu id="selectPreferedTheme"
-							styleClass="jsAutoFocusLast" var="currentTheme"
+							styleClass="jsAutoFocusLast"
 							value="#{raPreferencesBean.currentStyle}"
 							disabled="#{raPreferencesBean.styles.size()==1}">
-							<f:ajax event="valueChange" listener="#{raPreferencesBean.themeChanged(raPreferencesBean.currentStyle)}" render="applyButton"/>
-		
+							<f:ajax event="valueChange" render="applyButton" />
+
 							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
 								itemLabel="#{theme.getArchiveName()}" />
 							<f:converter binding="#{raPreferencesBean}" />
 						</h:selectOneMenu>
 						<h:commandButton
 							value="#{raPreferencesBean.initShowHideButtonStyle(msg.preferences_details_show, msg.preferences_details_hide)}"
-							type="button" styleClass="toggleMoreButton" >
-							<f:ajax event="click" listener="#{raPreferencesBean.toggleShowStyleInfo(msg.preferences_details_show, msg.preferences_details_hide)}" render="@this expandRequestThemeDetails"/>
+							type="button" styleClass="toggleMoreButton">
+							<f:ajax event="click"
+								listener="#{raPreferencesBean.toggleShowStyleInfo(msg.preferences_details_show, msg.preferences_details_hide)}"
+								render="@this expandRequestThemeDetails" />
 						</h:commandButton>
 					</h:panelGroup>
 					<h:panelGroup id="expandRequestThemeDetails" layout="block"
 						style="display: block" styleClass="pure-control-group">
-						<h:outputText value="#{msg.preferences_page_theme_info}" rendered="#{raPreferencesBean.showStyleInfo}"/>
+						<h:outputText value="#{msg.preferences_page_theme_info}"
+							rendered="#{raPreferencesBean.showStyleInfo}" />
 					</h:panelGroup>
 				</h:panelGroup>
-
 
 				<h:panelGroup layout="block" id="navigationButtonGroup"
 					styleClass="navigation-button-group">
@@ -108,7 +115,7 @@
 						styleClass="pure-button ra-button"
 						action="#{raPreferencesBean.updatePreferences()}"
 						disabled="#{raPreferencesBean.applyDisabled}">
-  						<f:ajax execute="@form" render="@all" /> 
+						<f:ajax execute="@form" render="@all" />
 					</h:commandButton>
 				</h:panelGroup>
 			</h:panelGroup>
