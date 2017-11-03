@@ -69,6 +69,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -1105,7 +1106,79 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         throw new IllegalStateException("Log was not found. Can not save");
     }
 
-
+    // --------------------------------------------
+    //               Protocol Configuration
+    // --------------------------------------------
+    
+    private AvailableProtocolsConfiguration protocolsConfiguration = null;
+    private ListDataModel<ProtocolGuiInfo> availableProtocolInfos = null;
+    
+    public AvailableProtocolsConfiguration getAvailableProtocolsConfiguration() {
+        if (protocolsConfiguration == null) {
+            protocolsConfiguration = (AvailableProtocolsConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
+                    .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        }
+        return protocolsConfiguration;
+    }
+    
+    public ListDataModel<ProtocolGuiInfo> getAvailableProtocols() {
+        if (availableProtocolInfos == null) {
+            availableProtocolInfos = new ListDataModel<ProtocolGuiInfo>(getNewAvailableProtocolInfos());
+        }
+        return availableProtocolInfos;
+    }
+    
+    public void toggleProtocolStatus() {
+        ProtocolGuiInfo protocolToToggle = availableProtocolInfos.getRowData();
+        if (protocolToToggle.isEnabled()) {
+            protocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), false);
+        } else {
+            protocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), true);
+        }
+        // Save config
+        try {
+            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), protocolsConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
+            log.info("Administrator '" + getAdmin() + "' " + msg);
+            super.addNonTranslatedErrorMessage(msg);
+        }
+        // Reload view
+        availableProtocolInfos = null;
+        getAvailableProtocols();
+    }
+    
+    private ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
+        ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<ProtocolGuiInfo>();
+        LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
+        for (Entry<String, Boolean> entry : allPC.entrySet()) {
+            protocolInfos.add(new ProtocolGuiInfo(entry.getKey(), entry.getValue()));
+        }
+        return protocolInfos;
+    }
+    
+    public class ProtocolGuiInfo {
+        private String protocol;
+        private boolean enabled;
+         
+        public ProtocolGuiInfo(String protocol, boolean enabled) {
+            this.protocol = protocol;
+            this.enabled = enabled;
+        }
+        
+        public String getProtocol() {
+            return protocol;
+        }
+        public boolean isEnabled() {
+            return enabled;
+        }
+        public String getStatus() {
+            return enabled ? "Enabled" : "Disabled";
+        }
+    }
+    
+    
+    
     // --------------------------------------------
     //               Extended Key Usage
     // --------------------------------------------
@@ -1737,6 +1810,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");
+        }
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
+            availableTabs.add("Protocol Configuration");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");

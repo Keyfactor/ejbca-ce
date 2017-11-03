@@ -494,6 +494,36 @@ org.cesecore.authorization.AuthorizationDeniedException
 		</h:panelGrid>
 	</h:form>
 	
+	<%-- Protocol Configuration --%>
+	
+	<h:form id="protocolconfigform" rendered="#{systemConfigMBean.selectedTab eq 'Protocol Configuration'}">
+		<h:panelGroup>
+			<h4>
+			<h:outputText value="#{web.text.PC_EDIT_PC_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+			<h:outputText value="#{web.text.PC_VIEW_PC_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+			<%= ejbcawebbean.getHelpReference("/adminguide.html") %></h4> <!-- TODO link to actual documentation when available -->
+			</br>
+		</h:panelGroup>
+	
+		<h:dataTable value="#{systemConfigMBean.availableProtocols}" var="protocolinfos"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_PROTOCOL_TITLE}"/></f:facet>
+				<h:outputText value="#{protocolinfos.protocol}"/>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
+				<h:outputText value="#{protocolinfos.status}"/>
+			</h:column>
+			<h:column>
+   				<f:facet name="header">
+   					<h:outputText value="#{web.text.PC_TABLE_ACTION_TITLE}"/>
+   				</f:facet>
+				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
+					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+			</h:column>
+		</h:dataTable>
+	</h:form>
 	
 	<%-- Extended Key Usages --%>
 	
@@ -534,7 +564,6 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 		</h:dataTable>
 	</h:form>
-	
 	
 	<%-- Certificate Transparency Logs --%>
 
