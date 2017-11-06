@@ -52,7 +52,10 @@
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 
 <div align="center">
-  <h2><h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{certProfilesBean.viewOnly}" /></h2>
+  <h2>
+    <h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{!certProfilesBean.viewOnly}"/>
+    <h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{certProfilesBean.viewOnly}"/>
+  </h2>
   <h3><h:outputText value="#{web.text.CERTIFICATEPROFILE}: #{certProfileBean.selectedCertProfileName}"/></h3>
 </div>
 
