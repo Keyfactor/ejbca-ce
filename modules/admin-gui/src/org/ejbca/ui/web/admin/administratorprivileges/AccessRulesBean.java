@@ -502,10 +502,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     }
                 }
             }
-            if (!isAccessRulesTemplateCustom()) {
-                // Remove the CUSTOM template from the list of selectable templates since it is really configured in advanced mode
-                removeAccessRulesTemplateCustomOption();
-            }
             super.sortSelectItemsByLabel(availableAccessRulesTemplates);
         }
         return availableAccessRulesTemplates;
