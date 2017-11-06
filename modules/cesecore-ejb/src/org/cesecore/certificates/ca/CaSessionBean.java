@@ -53,6 +53,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
+import org.cesecore.certificates.ca.internal.CaIDCacheBean;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -98,7 +99,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    
+    @EJB
+    private CaIDCacheBean caIDCache;
+
     private CaSessionLocal caSession;
 
     @PostConstruct
@@ -113,6 +116,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushCACache() {
         CaCache.INSTANCE.flush();
+        caIDCache.forceCacheExpiration();
         if (log.isDebugEnabled()) {
             log.debug("Flushed CA cache.");
         }
@@ -420,7 +424,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getAllCaIds() {
-        return CAData.findAllCaIds(entityManager);
+        // We need a cache of these, to not list from the database all the time
+        return caIDCache.getCache();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -745,6 +750,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         caData = entityManager.merge(caData);
         // Since loading a CA is quite complex (populating CAInfo etc), we simple purge the cache here
         CaCache.INSTANCE.removeEntry(caId);
+        caIDCache.forceCacheExpiration();
         return caId;
     }
     
