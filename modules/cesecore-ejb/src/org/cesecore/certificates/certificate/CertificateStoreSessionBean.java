@@ -78,6 +78,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
 /**
@@ -788,6 +789,21 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     public CertificateInfo findFirstCertificateInfo(final String issuerDN, final BigInteger serno) {
         return CertificateData.findFirstCertificateInfo(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
+    }
+
+    @Override
+    public int getFirstStatusByIssuerAndSerno(final String issuerDN, final BigInteger serno) {
+        final Query query = entityManager.createQuery("SELECT a.status FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+        query.setParameter("issuerDN", CertTools.stringToBCDNString(issuerDN));
+        query.setParameter("serialNumber", serno.toString());
+        query.setMaxResults(1);
+        final int status;
+        if (query.getResultList().size() > 0) {
+            status = ValueExtractor.extractIntValue(query.getSingleResult());
+        } else {
+            status = -1;
+        }
+        return status;
     }
 
     @Override

@@ -255,4 +255,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return true if a Certificate exists, false otherwise
      */
     boolean existsByIssuerAndSerno(String issuerDN, BigInteger serno);
+
+    /** Gets the status of the certificate, or -1 if the certificate does not exist
+     * 
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno serial number of the desired certificate!
+     * @return on of the {@link CertificateConstants} statuses or -1 if the certificate does not exist in the database, if more than one certificate exists with the issuerDN/serialNumber, the first one is returned.
+     */
+    int getFirstStatusByIssuerAndSerno(String issuerDN, BigInteger serno);
 }
