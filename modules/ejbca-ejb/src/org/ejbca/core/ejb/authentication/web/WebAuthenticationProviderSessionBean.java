@@ -30,7 +30,6 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -93,10 +92,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             	return null;
             }
             // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
-            final CertificateInfo certificateInfo = certificateStoreSession.findFirstCertificateInfo(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-            if (certificateInfo != null) {
+            final int status = certificateStoreSession.getFirstStatusByIssuerAndSerno(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+            if (status != -1) {
                 // The certificate is present in the database.
-                if (!(certificateInfo.getStatus() == CertificateConstants.CERT_ACTIVE || certificateInfo.getStatus() == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                if (!(status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
                     // The certificate is neither active, nor active (but user is notified of coming revocation)
                     final String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
                     LOG.info(msg);
