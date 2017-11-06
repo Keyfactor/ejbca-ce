@@ -247,11 +247,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     private static final int RA_MASTER_API_VERSION = 1;
 
+    /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
+    private int activeCaIdCache = -1;
+    
     @Override
     public boolean isBackendAvailable() {
+        try {
+            if (activeCaIdCache != -1) {
+                if (caSession.getCAInfoInternal(activeCaIdCache).getStatus() == CAConstants.CA_ACTIVE) {
+                    return true;
+                }            
+            }
+        } catch (CADoesntExistsException e) {
+            activeCaIdCache = -1;
+            log.debug("Fail to get cached CA's info. " + e.getMessage());
+        }
+        // If the cached activeCaIdCache was not active, or didn't exist, we move on to check all in the list
         for (int caId : caSession.getAllCaIds()) {
             try {
                 if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
+                    activeCaIdCache = caId; // Remember this value for the next time
                     return true;
                 }
             } catch (CADoesntExistsException e) {
