@@ -59,18 +59,18 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         data.put(protocol, status);
     }
     
-    public boolean isDataInitialized() {
+    private boolean isDataInitialized() {
         return data != null && data.size() > 1;
     }
     
     @SuppressWarnings("unchecked")
     public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
-        Map<String, Boolean> ret = (Map<String, Boolean>) data.clone();
-        if (ret != null) {
-            if (ret.containsKey("version")) {
-                ret.remove("version");
+        Map<String, Boolean> protocolStatusMap = (Map<String, Boolean>) data.clone();
+        if (protocolStatusMap != null) {
+            if (protocolStatusMap.containsKey("version")) {
+                protocolStatusMap.remove("version");
             }
-            return new LinkedHashMap<>(ret);
+            return new LinkedHashMap<>(protocolStatusMap);
         }
         return new LinkedHashMap<>();
     }
