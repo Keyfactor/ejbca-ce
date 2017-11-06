@@ -257,13 +257,6 @@ public class CAData extends ProtectedData implements Serializable {
 		return query.getResultList();
 	}
 
-	/** @return return the query results as a List<Integer>. */
-	@SuppressWarnings("unchecked")
-    public static List<Integer> findAllCaIds(final EntityManager entityManager) {
-		final Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
-		return query.getResultList();
-	}
-	
 	//
 	// Start Database integrity protection methods
 	//
