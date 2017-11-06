@@ -82,10 +82,6 @@ public class RaPreferencesBean implements Converter, Serializable {
 
     private boolean showStyleInfo = false;
     
-    private String localeInfoButtonText = ""; 
-
-    private String styleInfoButtonText = ""; 
-    
     private boolean applyDisabled = true;
 
     @PostConstruct
@@ -98,31 +94,6 @@ public class RaPreferencesBean implements Converter, Serializable {
         return applyDisabled;
     }
     
-    //TODO: improve code here to follow DRY principle!
-    public String initShowHideButtonLocale(final String show, final String hide) {
-        
-        if (!this.localeInfoButtonText.isEmpty()) {
-            if (this.localeInfoButtonText.equals(show))
-                return show;
-            return hide;
-        } else {
-            localeInfoButtonText = show;
-            return localeInfoButtonText;
-        }
-    }
-
-    public String initShowHideButtonStyle(final String show, final String hide) {
-
-        if (!this.styleInfoButtonText.isEmpty()) {
-            if (this.styleInfoButtonText.equals(show))
-                return show;
-            return hide;
-        } else {
-            styleInfoButtonText = show;
-            return styleInfoButtonText;
-        }
-    }
-    
     public boolean isShowLocaleInfo() {
         return showLocaleInfo;
     }
@@ -131,22 +102,11 @@ public class RaPreferencesBean implements Converter, Serializable {
         return showStyleInfo;
     }
     
-    public void toggleShowLocaleInfo(final String show, final String hide) {
-        
-        if (this.localeInfoButtonText.equals(show)) {
-            this.localeInfoButtonText = hide;
-        } else {
-            this.localeInfoButtonText = show;
-        }
+    public void toggleShowLocaleInfo() {
         this.showLocaleInfo = !showLocaleInfo;
     }
     
-    public void toggleShowStyleInfo(final String show, final String hide) {
-        if (this.styleInfoButtonText.equals(show)) {
-            this.styleInfoButtonText = hide;
-        } else {
-            this.styleInfoButtonText = show;
-        }
+    public void toggleShowStyleInfo() {
         this.showStyleInfo = !showStyleInfo;
     }
 
