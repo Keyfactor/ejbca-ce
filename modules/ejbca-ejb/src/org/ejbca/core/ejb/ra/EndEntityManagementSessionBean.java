@@ -2250,11 +2250,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsUser(String username) {
-        boolean returnval = true;
-        if (UserData.findByUsername(entityManager, username) == null) {
-            returnval = false;
-        }
-        return returnval;
+        // Selecting an int column is optimal speed
+        final javax.persistence.Query query = entityManager.createQuery("SELECT a.type FROM UserData a WHERE a.username=:username");
+        query.setParameter("username", username);
+        return query.getResultList().size() > 0;
     }
     
     @Override
