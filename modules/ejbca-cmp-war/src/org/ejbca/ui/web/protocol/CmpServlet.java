@@ -25,6 +25,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
@@ -47,7 +49,8 @@ public class CmpServlet extends HttpServlet {
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     /**
      * Handles HTTP post
      * 
@@ -61,7 +64,13 @@ public class CmpServlet extends HttpServlet {
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("CMP");
         try {
+            if (!protocolEnabled) {
+                log.info("CMP Protocol is disabled");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "CMP is disabled");
+                return;
+            }
             final String alias = getAlias(request.getPathInfo());
             if(alias.length() > 32) {
                 log.info("Unaccepted alias more than 32 characters.");

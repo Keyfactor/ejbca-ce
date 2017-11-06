@@ -65,6 +65,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -254,7 +255,12 @@ public class ScepServlet extends HttpServlet {
     } // doGet
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
-
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("SCEP");
+        if (!protocolEnabled) {
+            log.info("SCEP Protocol is disabled");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP is disabled");
+            return;
+        }
         String alias = getAlias(pathInfo);
         if(alias == null) {
             log.info("Wrong URL format. The SCEP URL should look like: " +
