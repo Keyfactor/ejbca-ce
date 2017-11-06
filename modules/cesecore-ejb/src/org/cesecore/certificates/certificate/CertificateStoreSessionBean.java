@@ -714,9 +714,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
+        // Selecting an int column is optimal speed
+        final Query query = entityManager.createQuery("SELECT a.status FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
-        final boolean ret = CertificateData.existsByIssuerAndSerno(entityManager, dn, serno.toString());
+        query.setParameter("issuerDN", CertTools.stringToBCDNString(StringTools.strip(issuerDN)));
+        query.setParameter("serialNumber", serno.toString());
+        query.setMaxResults(1);
+        final boolean ret = query.getResultList().size() > 0;
+
         if (log.isTraceEnabled()) {
             log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret="+ret);
         }
