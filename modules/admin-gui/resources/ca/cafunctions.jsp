@@ -162,7 +162,6 @@ function getPasswordAndSubmit(formname) {
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
   </div> -->
 
-	<br />
 <% // Import CRLs of external CAs
   	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
 	 if(extCaNameList.size() > 0) {
@@ -173,19 +172,19 @@ function getPasswordAndSubmit(formname) {
   		 });
   		 %>
   	 
-  		 <h2>Import CRL</h2>  	 
+  		 <h2><%= ejbcawebbean.getText("IMPORTCRL_TITLE") %></h2>  	 
   	 
   		 <form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
   	 		<input type="hidden" name='action' value='<%=ACTION_IMPORT_CRL %>'>
 			<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
 				<tr> 
-					<td width="10%" valign="top" align="right">Import CRL</td>
+					<td width="20%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCRL_FUNCTION") %></td>
 					
-					<td width="55%" valign="top">
+					<td width="35%" valign="top">
 						<input TYPE="FILE" NAME="<%= FILE_IMPORTCRL %>">
 					</td>
 
-					<td width="20%" valign="top">
+					<td width="35%" valign="top">
 						<select name="<%=SELECT_CA_IMPORTCRL %>" size="1" >
             				<% for(String caNameForCrl : extCaNameList){ %>
            						<option  value='<c:out value="<%= caNameForCrl %>"/>'><c:out value="<%= caNameForCrl %>" /></option>
@@ -193,7 +192,7 @@ function getPasswordAndSubmit(formname) {
         				</select>
 					</td>
 			
-					<td width="15%" valign="top">
+					<td width="10%" valign="top">
 						<input type="submit" name="<%= BUTTON_IMPORT_CRL %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
 					</td>
 				</tr>
@@ -212,7 +211,7 @@ function getPasswordAndSubmit(formname) {
   	 });
   	 %>
   	 
-  	 <h2>Basic Functions</h2>
+  	 <h2><%= ejbcawebbean.getText("BASICFUNCTIONS_TITLE") %></h2>
   	 
   	 <%
      int number = 0;
