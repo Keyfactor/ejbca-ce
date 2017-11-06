@@ -58,10 +58,10 @@
 							<f:converter converterId="localeConverter" />
 						</h:selectOneMenu>
 						<h:commandButton
-							value="#{raPreferencesBean.initShowHideButtonLocale(msg.preferences_details_show, msg.preferences_details_hide)}"
+							value="#{raPreferencesBean.showLocaleInfo ? msg.preferences_details_hide : msg.preferences_details_show}"
 							type="button" styleClass="toggleMoreButton">
 							<f:ajax event="click"
-								listener="#{raPreferencesBean.toggleShowLocaleInfo(msg.preferences_details_show, msg.preferences_details_hide)}"
+								listener="#{raPreferencesBean.toggleShowLocaleInfo()}"
 								render="@this expandRequestLangDetails" />
 						</h:commandButton>
 					</h:panelGroup>
@@ -89,10 +89,10 @@
 							<f:converter binding="#{raPreferencesBean}" />
 						</h:selectOneMenu>
 						<h:commandButton
-							value="#{raPreferencesBean.initShowHideButtonStyle(msg.preferences_details_show, msg.preferences_details_hide)}"
+							value="#{raPreferencesBean.showStyleInfo ? msg.preferences_details_hide : msg.preferences_details_show}"
 							type="button" styleClass="toggleMoreButton">
 							<f:ajax event="click"
-								listener="#{raPreferencesBean.toggleShowStyleInfo(msg.preferences_details_show, msg.preferences_details_hide)}"
+								listener="#{raPreferencesBean.toggleShowStyleInfo()}"
 								render="@this expandRequestThemeDetails" />
 						</h:commandButton>
 					</h:panelGroup>
