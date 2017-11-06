@@ -803,8 +803,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         query.setParameter("serialNumber", serno.toString());
         query.setMaxResults(1);
         final int status;
-        if (query.getResultList().size() > 0) {
-            status = ValueExtractor.extractIntValue(query.getSingleResult());
+        @SuppressWarnings("rawtypes")
+        final List result = query.getResultList();
+        if (result.size() > 0) {
+            status = ValueExtractor.extractIntValue(result.get(0));
         } else {
             status = -1;
         }
