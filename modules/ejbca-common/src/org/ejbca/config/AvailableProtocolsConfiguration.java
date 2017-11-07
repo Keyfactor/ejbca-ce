@@ -27,9 +27,9 @@ import org.cesecore.configuration.ConfigurationBase;
  *
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
-
     private static final long serialVersionUID = 1L;
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
+    public final static String[] SUPPORTED_PROTOCOLS = {"ACME", "EST", "CMP", "OCSP", "SCEP", "WS"};
     
 
     /**
@@ -44,13 +44,16 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     
     /** All protocols will be enabled by default */
     private void initialize() {
-        setProtocolStatus("ACME", true);
-        setProtocolStatus("CMP", true);
-        setProtocolStatus("OCSP", true);
-        setProtocolStatus("SCEP", true);
-        setProtocolStatus("WS", true);
+        for (String protocol : SUPPORTED_PROTOCOLS) {
+            setProtocolStatus(protocol, true);
+        }
     }
     
+    /**
+     * Checks whether protocol is enabled / disabled
+     * @param protocol to check status of
+     * @return true if protocol is enabled, false otherwise
+     */
     public boolean getProtocolStatus(String protocol) {
         return (Boolean)data.get(protocol);
     }
@@ -60,7 +63,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
     
     private boolean isDataInitialized() {
-        return data != null && data.size() > 1;
+        boolean ret = data != null && data.size() > 1 && (getAllProtocolsAndStatus().size() == SUPPORTED_PROTOCOLS.length);
+        return ret;
     }
     
     @SuppressWarnings("unchecked")
