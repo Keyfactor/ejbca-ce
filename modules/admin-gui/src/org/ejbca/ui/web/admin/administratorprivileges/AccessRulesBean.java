@@ -176,7 +176,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private static final String TEMPLATE_NAME_CUSTOM = "CUSTOM";
 
     private static final List<AccessRulesTemplate> accessRulesTemplates = Arrays.asList(
-            new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM),
             new AccessRulesTemplate("SUPERVISOR",
                     new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW),
@@ -255,9 +254,10 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     // From legacy JS
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
                     ),
-            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW))
+            new AccessRulesTemplate("SUPERADMINISTRATOR", new AccessRule(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW)),
             // Ignore the legacy "HARDTOKENISSUER" template since it is rarely used
             //,new AccessRulesTemplate("HARDTOKENISSUER")
+            new AccessRulesTemplate(TEMPLATE_NAME_CUSTOM)
             );
 
     @EJB
