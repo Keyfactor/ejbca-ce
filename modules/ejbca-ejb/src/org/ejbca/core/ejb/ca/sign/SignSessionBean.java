@@ -405,7 +405,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             // See if we need some key material to decrypt request
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            decryptAndVerify(cryptoToken, req, ca);
+            setDecryptInfo(cryptoToken, req, ca);
             
             if (ca.isUseUserStorage() && req.getUsername() == null) {
                 String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
@@ -552,7 +552,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
-            decryptAndVerify(cryptoToken, req, ca);
+            setDecryptInfo(cryptoToken, req, ca);
             //Create the response message with all nonces and checks etc
             ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(),
                             cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
@@ -594,7 +594,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             // See if we need some key material to decrypt request
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            decryptAndVerify(cryptoToken, req, ca);
+            setDecryptInfo(cryptoToken, req, ca);
+            // Verify the request
+            if (req.verify() == false) {
+                String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                throw new SignRequestSignatureException(msg);
+            }
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -612,7 +617,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return req;
     }
 
-    /**
+    /** Sets information needed to decrypt a message, if such information is needed(i.e. CA private key for SCEP messages)
      * 
      * @param cryptoToken
      * @param req
@@ -622,10 +627,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws InvalidKeyException If the key from the request used for verification is invalid.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled algorithm
      * @throws NoSuchProviderException if there is an error with the Provider defined in the request
-     * @throws SignRequestSignatureException the the request couldn't be verified
      */
-    private void decryptAndVerify(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException,
-            InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestSignatureException {
+    private void setDecryptInfo(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException,
+            InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
@@ -638,11 +642,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                         cryptoToken.getSignProviderName());
             }
-        }
-        // Verify the request
-        if (req.verify() == false) {
-            String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-            throw new SignRequestSignatureException(msg);
         }
     }
 
