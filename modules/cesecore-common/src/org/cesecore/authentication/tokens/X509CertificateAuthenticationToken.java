@@ -12,8 +12,11 @@
  *************************************************************************/
 package org.cesecore.authentication.tokens;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -77,7 +80,21 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
             throw new InvalidAuthenticationTokenException("X509CertificateAuthenticationToken was containing " + certificateArray.length
                     + " credentials instead of 1.");
         } else {
-            certificate = certificateArray[0];
+            // Speed optimization, make it into a BC class, since we will want that many times later on
+            final String clazz = certificateArray[0].getClass().getName();
+            if (clazz.contains("org.bouncycastle")) {
+                certificate = certificateArray[0];
+            } else {
+                final CertificateFactory cf = CertTools.getCertificateFactory();
+                X509Certificate cert;
+                try {
+                    cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certificateArray[0].getEncoded()));
+                } catch (CertificateException e) {
+                    log.warn("Error encoding/decoding client TLS certificate in BC, just passing instead of optimizing: ", e);
+                    cert = certificateArray[0];
+                }
+                certificate = cert;
+            } 
         }
         String certstring = CertTools.getSubjectDN(certificate).toString();
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
