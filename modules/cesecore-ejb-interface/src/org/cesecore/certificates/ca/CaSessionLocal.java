@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Local;
@@ -45,6 +46,33 @@ public interface CaSessionLocal extends CaSession {
      * @return true if the token was authorized.
      */
     boolean authorizedToCA(final AuthenticationToken admin, final int caid);
+    
+    /**
+     * 
+     * @return a list of all CAData objects, or an empty list if none were found.
+     */
+    List<CAData> findAll();
+    
+    /** @return the found entity instance or null if the entity does not exist */
+    CAData findById(final Integer cAId);
+    /**
+     * @throws CADoesntExistsException if the entity does not exist
+     * @return the found entity instance
+     */
+    CAData findByIdOrThrow(final Integer cAId) throws CADoesntExistsException;
+    
+    /**
+     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
+     * @return the found entity instance or null if the entity does not exist
+     */
+    CAData findByName(final String name);
+
+    /**
+     * @throws CADoesntExistsException if the entity does not exist
+     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
+     * @return the found entity instance
+     */
+    CAData findByNameOrThrow(final String name) throws CADoesntExistsException;
     
     /**
      * Makes sure that no CAs are cached to ensure that we read from database

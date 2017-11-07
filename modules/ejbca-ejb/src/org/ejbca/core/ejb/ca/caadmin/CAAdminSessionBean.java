@@ -272,7 +272,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void initializeAndUpgradeCAs() {
-        final List<CAData> caDatas = CAData.findAll(entityManager);
+        final List<CAData> caDatas = caSession.findAll();
         // Sort CAs by name (to produce pretty table in log)
         Collections.sort(caDatas, new Comparator<CAData>() {
             @Override
@@ -600,13 +600,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, null, detailsMsg);
             throw new CAExistsException(detailsMsg);
         }
-        if (CAData.findById(entityManager, Integer.valueOf(caid)) != null) {
+        if (caSession.findById(Integer.valueOf(caid)) != null) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.caexistsid", Integer.valueOf(caid));
             auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
                     null, null, detailsMsg);
             throw new CAExistsException(detailsMsg);
         }
-        if (CAData.findByName(entityManager, cainfo.getName()) != null) {
+        if (caSession.findByName(cainfo.getName()) != null) {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());
             auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
                     null, null, detailsMsg);
@@ -1451,11 +1451,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info(msg);
             throw new CAExistsException(msg);
         }
-        oldcadata = CAData.findById(entityManager, Integer.valueOf(caid));
+        oldcadata = caSession.findById(Integer.valueOf(caid));
         // If it did not exist with a certain DN (caid) perhaps a CA with the
         // same CA name exists?
         if (oldcadata == null) {
-            oldcadata = CAData.findByName(entityManager, cainfo.getName());
+            oldcadata = caSession.findByName(cainfo.getName());
         }
         boolean processinternalca = false;
         if (oldcadata != null) {
