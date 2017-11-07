@@ -145,6 +145,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
             final CAData caData = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
             entityManager.persist(caData);
+            caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
             String msg = intres.getLocalizedMessage("caadmin.addedca", ca.getCAId(), cainfo.getName(), cainfo.getStatus());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
