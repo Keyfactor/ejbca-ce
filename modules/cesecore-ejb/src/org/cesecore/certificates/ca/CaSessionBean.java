@@ -425,7 +425,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public List<Integer> getAllCaIds() {
         // We need a cache of these, to not list from the database all the time
-        return caIDCache.getCache();
+        return caIDCache.getCacheContent();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

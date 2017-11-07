@@ -82,10 +82,6 @@ public class CaIDCacheBean {
         }
     }
 
-    public CaIDCacheBean() {
-
-    }
-
     /**
      * This method sets the update time back down to zero, effectively forcing the cache to be reloaded on next read. Required due to the fact that 
      * the cache can't reload until whatever transaction performing CRUD ops finishes.
@@ -97,7 +93,6 @@ public class CaIDCacheBean {
     /**
      * Fetch all CA IDs from the database, unless cache is enabled, valid and we do not force an update.
      * 
-     * @param entityManager is required for reading from the database if we need to update the cache
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
     public void updateCache(final boolean force) {
@@ -106,7 +101,7 @@ public class CaIDCacheBean {
         }
         final long cacheTime = CesecoreConfiguration.getCacheCaTimeInCaSession();
         final long now = System.currentTimeMillis();
-        // Check before acquiring lock
+        // Check before acquiring lock. Update cache if we force cache update or cache is disabled in config (cacheTime = 0) or cache expired
         if (!force && cacheTime != 0 && lastUpdate + cacheTime > now) {
             return; // We don't need to update cache
         }
@@ -119,10 +114,7 @@ public class CaIDCacheBean {
         } finally {
             lock.unlock();
         }
-        final List<Integer> idCacheTemp = new ArrayList<Integer>();
-        for (final Integer id : findAllCaIds()) {
-            idCacheTemp.add(id);
-        }
+        final List<Integer> idCacheTemp = findAllCaIds();
         idCache = idCacheTemp;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateCache");
@@ -138,7 +130,7 @@ public class CaIDCacheBean {
     
 
     /** @return the latest List from the cache, which will be refreshed if needed. */
-    public List<Integer> getCache() {
+    public List<Integer> getCacheContent() {
         updateCache(false);
         return idCache;
     }
