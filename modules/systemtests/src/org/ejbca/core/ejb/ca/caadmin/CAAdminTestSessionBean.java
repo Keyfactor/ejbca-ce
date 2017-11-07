@@ -30,6 +30,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -53,11 +54,13 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     
     @Override
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException {
-    	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
+    	CAData cadata = caSession.findByNameOrThrow(caname);
     	CA thisCa = cadata.getCA();//getCAFromDatabase(cadata.getCaId());
     	// Fetch keys
     	CAToken thisCAToken = thisCa.getCAToken();

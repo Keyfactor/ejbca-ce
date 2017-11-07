@@ -17,15 +17,12 @@ import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -35,7 +32,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.QueryResultWrapper;
 
 /**
  * Representation of a CA instance.
@@ -204,57 +200,6 @@ public class CAData extends ProtectedData implements Serializable {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-	}
-
-	//
-	// Search functions. 
-	//
-
-	/** @return the found entity instance or null if the entity does not exist */
-	public static CAData findById(final EntityManager entityManager, final Integer cAId) {
-		return entityManager.find(CAData.class, cAId);
-	}
-	
-	/**
-	 * @throws CADoesntExistsException if the entity does not exist
-	 * @return the found entity instance
-	 */
-	public static CAData findByIdOrThrow(final EntityManager entityManager, final Integer cAId) throws CADoesntExistsException {
-		final CAData ret = findById(entityManager, cAId);
-		if (ret == null) {
-			throw new CADoesntExistsException("CA id: " + cAId);
-		}
-		return ret;
-	}
-	
-	/**
-	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-	 * @return the found entity instance or null if the entity does not exist
-	 */
-	public static CAData findByName(final EntityManager entityManager, final String name) {
-		final Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.name=:name");
-		query.setParameter("name", name);
-		return (CAData) QueryResultWrapper.getSingleResult(query);
-	}
-
-	/**
-	 * @throws CADoesntExistsException if the entity does not exist
-	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-	 * @return the found entity instance
-	 */
-	public static CAData findByNameOrThrow(final EntityManager entityManager, final String name) throws CADoesntExistsException {
-		final CAData ret = findByName(entityManager, name);
-		if (ret == null) {
-			throw new CADoesntExistsException("CA name: " + name);
-		}
-		return ret;
-	}
-
-	/** @return return the query results as a List<CAData>. */
-	@SuppressWarnings("unchecked")
-    public static List<CAData> findAll(final EntityManager entityManager) {
-		final Query query = entityManager.createQuery("SELECT a FROM CAData a");
-		return query.getResultList();
 	}
 
 	//
