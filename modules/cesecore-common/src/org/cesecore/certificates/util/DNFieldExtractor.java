@@ -64,6 +64,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int PSEUDONYM = 37;
     public static final int STREET = 38;
     public static final int NAME = 55;
+    public static final int DESCRIPTION = 60;
     public static final int ORGANIZATIONIDENTIFIER = 106;
 
     // Subject Alternative Names.

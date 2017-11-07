@@ -33,13 +33,13 @@ public class DnFieldExtractorTest {
     public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
-    	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com";
+    	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,L=Stockholm,dc=PrimeKey,DC=com,description=Test DN";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(30, i.size());
+            assertEquals(31, i.size());
         } else {
-            assertEquals(27, i.size());
+            assertEquals(28, i.size());
         }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -57,6 +57,8 @@ public class DnFieldExtractorTest {
     	assertEquals("a street", street);
     	final String pseudo = extractor.getField(DNFieldExtractor.PSEUDONYM, 0);
     	assertEquals("pseudo", pseudo);
+    	final String description = extractor.getField(DNFieldExtractor.DESCRIPTION, 0);
+        assertEquals("Test DN", description);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.DC);
     	assertEquals(2, num);
     	num = extractor.getNumberOfFields(DNFieldExtractor.O);
