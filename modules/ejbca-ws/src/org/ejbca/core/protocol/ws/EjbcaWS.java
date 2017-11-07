@@ -121,6 +121,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -299,6 +300,8 @@ public class EjbcaWS implements IEjbcaWS {
      * Also checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
      * Does not check any other authorization though, other than that it is an administrator.
      * Also checks that the admin certificate is not revoked.
+     * 
+     * If Web Services is disabled globally, an UnsupportedOperationException will be thrown
      *
      * @param wsContext web service context that contains the SSL information
      * @return Admin object based on the SSL client certificate
@@ -312,6 +315,7 @@ public class EjbcaWS implements IEjbcaWS {
      * - Checks (through authenticationSession.authenticate) that the certificate is valid
      * - If (WebConfiguration.getRequireAdminCertificateInDatabase) checks (through authenticationSession.authenticate) that the admin certificate is not revoked.
      * - If (allowNonAdmin == false), checks that the admin have access to /administrator, i.e. really is an administrator with the certificate mapped in an admin role.
+     * - If (AvailableProtocolsConfiguration.getProtocolStatus('WS') == true), checks if Web Services is enabled globally. Otherwise throws UnsupportedOperationException.
      *   Does not check any other authorization though, other than that it is an administrator.
      *
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
@@ -322,8 +326,10 @@ public class EjbcaWS implements IEjbcaWS {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-
-        if ((certificates == null) || (certificates[0] == null)) {
+        final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("WS");
+        if (!isServiceEnabled) {
+            throw new UnsupportedOperationException("Web Services has been disabled");
+        } else if ((certificates == null) || (certificates[0] == null)) {
             throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
         }
         return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
