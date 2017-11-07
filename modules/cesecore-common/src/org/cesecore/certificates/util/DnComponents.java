@@ -80,6 +80,7 @@ public class DnComponents {
         oids.put("pseudonym", CeSecoreNameStyle.PSEUDONYM);
         oids.put("street", CeSecoreNameStyle.STREET);
         oids.put("name", CeSecoreNameStyle.NAME);
+        oids.put("description", CeSecoreNameStyle.DESCRIPTION);
         oids.put("jurisdictionlocality", CeSecoreNameStyle.JURISDICTION_LOCALITY);
         oids.put("jurisdictionstate", CeSecoreNameStyle.JURISDICTION_STATE);
         oids.put("jurisdictioncountry", CeSecoreNameStyle.JURISDICTION_COUNTRY);
@@ -89,7 +90,7 @@ public class DnComponents {
     /** Default values used when constructing DN strings that are put in the database
      * 
      */
-    private static String[] dNObjectsForward = { "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym",
+    private static String[] dNObjectsForward = { "description", "jurisdictioncountry", "jurisdictionstate", "jurisdictionlocality", "street", "pseudonym",
             "telephonenumber", "postaladdress", "businesscategory", "postalcode", "unstructuredaddress", "unstructuredname", "emailaddress", "e",
             "email", "dn", "uid", "cn", "name", "sn", "serialnumber", "gn", "givenname", "initials", "surname", "t", "ou", "organizationidentifier", "o", "l", "st", "dc", "c" };
     // Default values    
@@ -127,6 +128,7 @@ public class DnComponents {
     public static final String PSEUDONYM = "PSEUDONYM";
     public static final String STREETADDRESS = "STREETADDRESS";
     public static final String NAME = "NAME";
+    public static final String DESCRIPTION = "DESCRIPTION";
     public static final String JURISDICTIONLOCALITY = "JURISDICTIONLOCALITY";
     public static final String JURISDICTIONSTATE = "JURISDICTIONSTATE";
     public static final String JURISDICTIONCOUNTRY = "JURISDICTIONCOUNTRY";

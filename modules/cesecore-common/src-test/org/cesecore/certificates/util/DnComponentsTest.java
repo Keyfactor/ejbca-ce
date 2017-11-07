@@ -33,8 +33,9 @@ public class DnComponentsTest {
     @Test
     public void test01CheckObjects() throws Exception {
         String[] s = DnComponents.getDnObjects(true);
-        assertEquals(32, s.length);
+        assertEquals(33, s.length);
         int i = 0;
+        assertEquals("description", s[i++]);
         assertEquals("jurisdictioncountry", s[i++]);
         assertEquals("jurisdictionstate", s[i++]);
         assertEquals("jurisdictionlocality", s[i++]);
@@ -59,7 +60,8 @@ public class DnComponentsTest {
         assertEquals("c", s[i]);
 
         String[] s1 = DnComponents.getDnObjectsReverse();
-        assertEquals(32, s1.length);
+        assertEquals(33, s1.length);
+        assertEquals("description", s1[32]);
         assertEquals("jurisdictioncountry", s1[31]);
         assertEquals("jurisdictionstate", s1[30]);
         assertEquals("jurisdictionlocality", s1[29]);
@@ -77,19 +79,27 @@ public class DnComponentsTest {
         assertEquals("c", s1[0]);
 
         String[] s2 = DnComponents.getDnObjects(true);
-        assertEquals(32, s2.length);
-        assertEquals("businesscategory", s2[7]);
-        assertEquals("postalcode", s2[8]);
-        assertEquals("unstructuredaddress", s2[9]);
-        assertEquals("unstructuredname", s2[10]);
-        assertEquals("uid", s2[15]);
-        assertEquals("cn", s2[16]);
-        assertEquals("t", s2[24]);
-        assertEquals("c", s2[31]);
+        assertEquals(33, s2.length);
+        i = 0;
+        assertEquals("description", s[i++]);
+        i += 7;
+        assertEquals("businesscategory", s2[i++]);
+        assertEquals("postalcode", s2[i++]);
+        assertEquals("unstructuredaddress", s2[i++]);
+        assertEquals("unstructuredname", s2[i++]);
+        i += 4;
+        assertEquals("uid", s2[i++]);
+        assertEquals("cn", s2[i++]);
+        i += 7;
+        assertEquals("t", s2[i++]);
+        i += 6;
+        assertEquals("c", s2[i++]);
 
         assertEquals("2.5.4.6", DnComponents.getOid("c").toString());
         assertEquals("2.5.4.3", DnComponents.getOid("cn").toString());
         assertEquals("2.5.4.97", DnComponents.getOid("organizationidentifier").toString());
+        assertEquals("2.5.4.13", DnComponents.getOid("description").toString());
+        assertEquals("2.5.4.13", DnComponents.getOid("DeScRiPtIoN").toString()); // case insensitive
         assertEquals("1.3.6.1.4.1.311.60.2.1.3", DnComponents.getOid("jurisdictioncountry").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.2", DnComponents.getOid("jurisdictionstate").toString());
         assertEquals("1.3.6.1.4.1.311.60.2.1.1", DnComponents.getOid("jurisdictionlocality").toString());
@@ -124,15 +134,16 @@ public class DnComponentsTest {
         assertEquals(BCStyle.C, oids[3]);
         assertEquals("CN=oid,Name=name,SN=12345,C=se", dn);
 
-        String dn1 = CertTools.stringToBCDNString("SURNAME=Json,=fff,CN=oid,SN=12345,NAME=name,C=se");
+        String dn1 = CertTools.stringToBCDNString("SURNAME=Json,=fff,Description=test,CN=oid,SN=12345,NAME=name,C=se");
         final X500Name name1 = CertTools.stringToBcX500Name(dn1);
         ASN1ObjectIdentifier[] oids1 = name1.getAttributeTypes();
-        assertEquals(BCStyle.CN, oids1[0]);
-        assertEquals(BCStyle.NAME, oids1[1]);
-        assertEquals(BCStyle.SERIALNUMBER, oids1[2]);
-        assertEquals(BCStyle.SURNAME, oids1[3]);
-        assertEquals(BCStyle.C, oids1[4]);
-        assertEquals("CN=oid,Name=name,SN=12345,SURNAME=Json,C=se", dn1);
+        assertEquals(CeSecoreNameStyle.DESCRIPTION, oids1[0]);
+        assertEquals(BCStyle.CN, oids1[1]);
+        assertEquals(BCStyle.NAME, oids1[2]);
+        assertEquals(BCStyle.SERIALNUMBER, oids1[3]);
+        assertEquals(BCStyle.SURNAME, oids1[4]);
+        assertEquals(BCStyle.C, oids1[5]);
+        assertEquals("description=test,CN=oid,Name=name,SN=12345,SURNAME=Json,C=se", dn1);
 
         String dn2 = CertTools.stringToBCDNString("jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se");
         final X500Name name2 = CertTools.stringToBcX500Name(dn2);

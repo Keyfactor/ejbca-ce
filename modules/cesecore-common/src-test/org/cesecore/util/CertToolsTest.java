@@ -830,8 +830,10 @@ public class CertToolsTest {
         String dn31 = "CN=hexencoded SN,SN=#"+hex;
         assertEquals("CN=hexencoded SN,SN=foo", CertTools.stringToBCDNString(dn31));
 
-        String dn32 = "CN=eidas,O=MyOrg,ORGANIZATIONIDENTIFIER=12345,C=SE";
-        assertEquals("CN=eidas,organizationIdentifier=12345,O=MyOrg,C=SE", CertTools.stringToBCDNString(dn32));
+        String dn32a = "CN=eidas,O=MyOrg,ORGANIZATIONIDENTIFIER=12345,C=SE";
+        assertEquals("CN=eidas,organizationIdentifier=12345,O=MyOrg,C=SE", CertTools.stringToBCDNString(dn32a));
+        String dn32b = "CN=test,O=MyOrg,DESCRIPTION=Test Description,C=SE";
+        assertEquals("description=Test Description,CN=test,O=MyOrg,C=SE", CertTools.stringToBCDNString(dn32b));
 
         // Test spaces in the RDN value
         String dn33a = "CN=cn,O= the org ,C=SE";
