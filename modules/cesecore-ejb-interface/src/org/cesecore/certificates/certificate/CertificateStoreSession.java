@@ -162,7 +162,7 @@ public interface CertificateStoreSession {
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
-     * @return List of maximum 500 certificates (java.security.cert.Certificate), never null
+     * @return List of maximum 500 certificates, never null
      */
     List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
     
@@ -174,12 +174,8 @@ public interface CertificateStoreSession {
     * @param maxNumberOfResults The maximum number of certificates to be returned
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
-    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ENDENTITY
-    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
-    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
-    * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
-    * @return List of certificates (java.security.cert.Certificate), never null
+    * 
+    * @return a List of certificates or en empty list, never null
     */
     List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
 
@@ -189,7 +185,7 @@ public interface CertificateStoreSession {
      * 
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return Collection of String, never null
+     * @return a Collection of usernames or an empty list if not found, never null
      */
     Collection<String> findUsernamesByExpireTimeWithLimit(Date expiretime);
 
@@ -198,7 +194,7 @@ public interface CertificateStoreSession {
      * 
      * @param issuerDN issuer DN of the desired certificate.
      * @param serno serial number of the desired certificate!
-     * @return Certificate if found or null
+     * @return the sought certificate, or null if not found
      */
     Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno);
 
@@ -207,7 +203,7 @@ public interface CertificateStoreSession {
      * 
      * @param issuerDN issuer DN of the desired certificate.
      * @param serno serial number of the desired certificate!
-     * @return null when not found
+     * @return the sought certificate, or null if not found
      */
     CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerDN, BigInteger serno);
     
@@ -215,7 +211,7 @@ public interface CertificateStoreSession {
      * Find a certificate by its subject key ID
      * 
      * @param subjectKeyId subject key ID of the sought certificate
-     * @return Certificates if found, or null.
+     * @return the list Certificates if found, or an empty list (never null)
      */
     Collection<Certificate> findCertificatesBySubjectKeyId(byte[] subjectKeyId);
     
