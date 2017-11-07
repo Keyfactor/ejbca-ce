@@ -48,7 +48,7 @@
 						<h:selectOneMenu id="selectPreferedLanguage"
 							styleClass="jsAutoFocusLast" var="currentLocale"
 							value="#{raPreferencesBean.currentLocale}"
-							disabled="#{raPreferencesBean.locales.size()==1}">
+							disabled="#{fn:length(raPreferencesBean.locales) == 1}">
 							<f:ajax event="valueChange"
 								listener="#{raPreferencesBean.localeChanged(raPreferencesBean.currentLocale)}"
 								render="applyButton" />
@@ -81,7 +81,7 @@
 						<h:selectOneMenu id="selectPreferedTheme"
 							styleClass="jsAutoFocusLast"
 							value="#{raPreferencesBean.currentStyle}"
-							disabled="#{raPreferencesBean.styles.size()==1}">
+							disabled="#{fn:length(raPreferencesBean.styles) == 1}">
 							<f:ajax event="valueChange" render="applyButton" />
 
 							<f:selectItems value="#{raPreferencesBean.styles}" var="theme"
