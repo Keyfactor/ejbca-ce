@@ -871,8 +871,16 @@ public abstract class CertTools {
         if (cert instanceof X509Certificate) {
             // cert.getType=X.509
             try {
-                final CertificateFactory cf = CertTools.getCertificateFactory();
-                final X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+                final String clazz = cert.getClass().getName();
+                // The purpose of the below generateCertificate is to create a BC certificate object, because there we know how DN components
+                // are handled. If we already have a BC certificate however, we can save a lot of time to not have to encode/decode it.
+                final X509Certificate x509cert;
+                if (clazz.contains("org.bouncycastle")) {
+                    x509cert = (X509Certificate)cert;
+                } else {
+                    final CertificateFactory cf = CertTools.getCertificateFactory();
+                    x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));                    
+                }
                 String dn = null;
                 if (which == 1) {
                     dn = x509cert.getSubjectDN().toString();
