@@ -394,6 +394,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             entityManager.remove(cadata);
             // Invalidate CA cache to refresh information
             CaCache.INSTANCE.removeEntry(caid);
+            caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
             final String detailsMsg = intres.getLocalizedMessage("caadmin.removedca", Integer.valueOf(caid), cadata.getName());
             logSession.log(EventTypes.CA_DELETION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(caid), null, null, detailsMsg);
         }
@@ -415,6 +416,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // Invalidate CA cache to refresh information
             int caid = cadata.getCaId().intValue();
             CaCache.INSTANCE.removeEntry(caid);
+            caIDCache.forceCacheExpiration(); // Clear ID cache so this one will be reloaded as well.
             final String detailsMsg = intres.getLocalizedMessage("caadmin.renamedca", oldname, cadata.getCaId(), newname);
             logSession.log(EventTypes.CA_RENAMING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(caid), null, null, detailsMsg);
         } else {
