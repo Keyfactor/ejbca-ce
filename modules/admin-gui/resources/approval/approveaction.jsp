@@ -79,7 +79,7 @@ function viewcert(link){
    				<h:outputText value="#{approvalActionManagedBean.approveRequestData.remainingApprovals}" 
    					rendered="#{approvalActionManagedBean.approveRequestData.remainingApprovals > 0}"/>
    				<h:outputText value="#{web.text.REMAINING_APPROVALS_NONE}" 
-   					rendered="#{approvalActionManagedBean.approveRequestData.remainingApprovals < 0}"/>
+   					rendered="#{approvalActionManagedBean.approveRequestData.remainingApprovals <= 0}"/>
    			</td>
    		</tr>
    	</table>

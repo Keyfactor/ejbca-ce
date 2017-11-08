@@ -177,9 +177,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	}
 
     public List<ApprovalView> getApprovalViews() {
-        List<ApprovalView> approvalViews = new ArrayList<ApprovalView>();
+        List<ApprovalView> approvalViews = new ArrayList<>();
         if (approvalDataVOView != null && approvalDataVOView.getApproveActionDataVO().getApprovals() != null) {
-            for(Approval approval : approvalDataVOView.getApproveActionDataVO().getApprovals()) {
+            for (Approval approval : approvalDataVOView.getApproveActionDataVO().getApprovals()) {
                 approvalViews.add(new ApprovalView(approval));
             }
         }
@@ -502,13 +502,22 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     }
     
     /**
-     * 
      * @return true if the current admin has access to approve any partitions at all
      */
     public boolean canApproveAnyPartitions() {
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
-        //Check that there are are partitions to approve, and that the request didn't originate from the current admin. 
-        return !partitionsAuthorizedToApprove.isEmpty() && (approvalDataVO != null ? !approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin()) : true);
+        boolean hasAlreadyApproved = false;
+        for (ApprovalView approvalView : getApprovalViews()) {
+            if (approvalView.getApprovalAdmin().equals(getAdmin().toString())) {
+                hasAlreadyApproved = true;
+                break;
+            }
+        }
+        // Check that there are are partitions to approve, that the request didn't originate from the current admin and that
+        // the current admin hasn't previously approved any part of the request
+        return !partitionsAuthorizedToApprove.isEmpty()
+                && (approvalDataVO != null ? !approvalDataVO.getApprovalRequest().getRequestAdmin().equals(getAdmin()) : true)
+                && !hasAlreadyApproved;
     }
     
     /**

@@ -529,14 +529,16 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         int partitionApprovalsRequired = getNumberOfApprovalsRequired(stepIdentifier, partitionIdentifier);
         int partitionApprovalsPerformed = 0;
         for (Approval approval : approvalsPerformed) {
-            if(!approval.isApproved()) {
+            if (!approval.isApproved()) {
                 return ApprovalDataVO.STATUS_REJECTED;
             }
-            if (approval.getStepId()==stepIdentifier && approval.getPartitionId()==partitionIdentifier) {
+            if (approval.getStepId() == stepIdentifier && approval.getPartitionId() == partitionIdentifier) {
                 partitionApprovalsPerformed++;
             }
         }
-        return partitionApprovalsRequired - partitionApprovalsPerformed;
+        // Don't return a negative number, could happen if the partition has been approved multiple times
+        int diff = partitionApprovalsRequired - partitionApprovalsPerformed;
+        return diff < 0 ? 0 : diff;
     }
 
     @Override
