@@ -21,8 +21,8 @@ import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -47,7 +47,6 @@ import org.cesecore.config.CesecoreConfiguration;
 @Singleton
 @Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
-@TransactionManagement(TransactionManagementType.BEAN)
 public class CaIDCacheBean {
 
     private final Logger LOG = Logger.getLogger(CaIDCacheBean.class);
@@ -87,6 +86,7 @@ public class CaIDCacheBean {
      * the cache can't reload until whatever transaction performing CRUD ops finishes.
      */
     public void forceCacheExpiration() {
+        LOG.debug("Flushing CA ID cache by forceCacheExpiration");
         lastUpdate = 0;
     }
     
@@ -95,7 +95,7 @@ public class CaIDCacheBean {
      * 
      * @param force if true, this will force an update even if the cache is not yet invalid
      */
-    public void updateCache(final boolean force) {
+    private void updateCache(final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateCache");
         }
@@ -114,6 +114,9 @@ public class CaIDCacheBean {
         } finally {
             lock.unlock();
         }
+        if (LOG.isDebugEnabled()) {
+        	LOG.debug("Loading CA ID cache from database");
+        }
         final List<Integer> idCacheTemp = findAllCaIds();
         idCache = idCacheTemp;
         if (LOG.isTraceEnabled()) {
@@ -130,6 +133,7 @@ public class CaIDCacheBean {
     
 
     /** @return the latest List from the cache, which will be refreshed if needed. */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Integer> getCacheContent() {
         updateCache(false);
         return idCache;
