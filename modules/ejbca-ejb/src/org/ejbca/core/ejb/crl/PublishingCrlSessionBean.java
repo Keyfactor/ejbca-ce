@@ -574,7 +574,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
                     if (log.isDebugEnabled()) {
-                        log.debug("Gathering all revocation information published by this CA since its beggining. Important only if CA has gone undergone name change");
+                        log.debug("Gathering all revocation information published by this CA ("+ca.getName()+":"+ca.getCAId()+") since its beginning. Important only if CA has gone undergone name change");
                     }
                     Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
                     Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
@@ -586,7 +586,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
+                                    log.debug("Collecting revocation information for renewed certificate '" + renewedCertificateSubjectDN + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
