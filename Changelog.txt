@@ -1,3 +1,15 @@
+EJBCA 6.10.0.1, 2017-11-08
+---
+Bug
+    [ECA-6251] - Regression: "Custom" access rule template no longer shows up in the simple role page
+    [ECA-6267] - Regression: Don't issue for gazebear.org
+    [ECA-6269] - Regression: Preferences tab in RA gives error
+    [ECA-6273] - References to commons-logging upgrade not updated for CMP Proxy
+
+Improvement
+    [ECA-6244] - Issue for gazebear.info when DNSSEC enabled
+
+
 EJBCA 6.10.0, 2017-11-01
 ---
 

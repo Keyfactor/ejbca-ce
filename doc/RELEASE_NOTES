@@ -1,3 +1,9 @@
+EJBCA 6.10.0.1
+-----------
+
+This patch release fixes several corner cases in CAA issuing, a regression in the CMP Proxy where we forgot to update the name of an upgraded 
+library, as well as a minor regression where a newly created Role doesn't show up as 'Custom' by default. 
+
 EJBCA 6.10.0
 -----------
 
