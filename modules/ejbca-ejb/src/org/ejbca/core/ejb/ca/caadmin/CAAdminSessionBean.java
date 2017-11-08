@@ -2083,9 +2083,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
                 ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
-                caSession.addCA(authenticationToken, ca); //add new CA into database
                 caidBeforeNameChange = caid;
                 caid = CAData.calculateCAId(newSubjectDN).intValue(); // recalculate the caid to corresponds to new CA
+                ca.setCAId(caid); // it was set to 0 above
+                caSession.addCA(authenticationToken, ca); //add new CA into database
             } else {
                 ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caSession.editCA(authenticationToken, ca, true);
