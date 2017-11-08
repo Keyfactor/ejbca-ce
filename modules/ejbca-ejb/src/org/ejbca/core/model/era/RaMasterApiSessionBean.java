@@ -249,14 +249,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
-    
+
     @Override
     public boolean isBackendAvailable() {
         try {
             if (activeCaIdCache != -1) {
                 if (caSession.getCAInfoInternal(activeCaIdCache).getStatus() == CAConstants.CA_ACTIVE) {
                     return true;
-                }            
+                }
             }
         } catch (CADoesntExistsException e) {
             activeCaIdCache = -1;
@@ -324,17 +324,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Returns an empty map if no CSS was found
         return globalCustomCssConfiguration.getRaStyleInfo();
     }
-    
+
     @Override
     public LinkedHashMap<Integer,RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
-        boolean authorizedToCssArchives = isAuthorizedNoLogging(authenticationToken, 
+        boolean authorizedToCssArchives = isAuthorizedNoLogging(authenticationToken,
                 StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource());
         if (!authorizedToCssArchives) {
             throw new AuthorizationDeniedException(authenticationToken + " is not authorized to CSS archives");
         }
         return getAllCustomRaCss();
     }
-    
+
     @Override
     public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
         List<RaStyleInfo> associatedCss = new ArrayList<>();
@@ -350,10 +350,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return null;
         } else {
             return associatedCss;
-            
+
         }
     }
-    
+
     @Override
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
@@ -591,10 +591,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } else {
             certificateProfileName = null;
         }
-        ApprovalProfile approvalProfile = null;
-        if (advo.getApprovalProfile() != null) {
-            approvalProfile = approvalProfileSession.getApprovalProfile(advo.getApprovalProfile().getProfileId());
-        }
 
         // Get request data as text
         final List<ApprovalDataText> requestData = getRequestDataAsText(authenticationToken, advo);
@@ -602,7 +598,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
 
-        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalProfile, advo, requestData, editableData);
+        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, advo,
+                requestData, editableData);
 
     }
 
@@ -796,7 +793,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final RaEditableRequestData editableData = getRequestEditableData(authenticationToken, advo);
             // We don't pass the end entity profile or certificate profile details for each approval request, when searching.
             // That information is only needed when viewing the details or editing a request.
-            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null, null, advo, requestDataLite, editableData);
+            final RaApprovalRequestInfo ari = new RaApprovalRequestInfo(authenticationToken, caIdToNameMap.get(advo.getCAId()), null, null, null,
+                    advo, requestDataLite, editableData);
 
             // Check if this approval should be included in the search results
             boolean include = false;
