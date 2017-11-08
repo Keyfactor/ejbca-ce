@@ -44,6 +44,12 @@ If you are running a version previous to EJBCA 4, a multi step upgrade is needed
 For each version upgrade notes are provided below, if there are any considerations or behavioral changes in a version.
 When performing any upgrade, you should read through the upgrade notices below all the way down to the version you are upgrading from.
 
+From EJBCA 6.10.0 to EJBCA 6.10.1
+-------------------------------
+NOTE: If you are using the setting for "Custom Subject DN Order" in certificate profiles, there was an influence of the "LDAP DN Order" flag that could cause
+your custom order to be reversed as to what you input into the Custom Subject DN Order field. 
+This has been fixed in 6.10.1, but it means that if you relied on the order being reversed from what you input, it will no longer be.
+
 From EJBCA 6.9.x to EJBCA 6.10.0
 -------------------------------
 
