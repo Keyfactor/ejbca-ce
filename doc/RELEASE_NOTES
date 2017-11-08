@@ -1,3 +1,10 @@
+EJBCA 6.10.1
+-----------
+
+NOTE: If you are using the setting for "Custom Subject DN Order" in certificate profiles, there was an influence of the "LDAP DN Order" flag that could cause
+your custom order to be reversed as to what you input into the Custom Subject DN Order field. 
+This has been fixed in 6.10.1, but it means that if you relied on the order being reversed from what you input, it will no longer be.
+
 EJBCA 6.10.0.1
 -----------
 

@@ -3816,7 +3816,9 @@ public abstract class CertTools {
         // If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
         // order it as a X.500 DN. If we haven't specified our own ordering
         final List<ASN1ObjectIdentifier> ordering;
-        if ((order != null) && (order.length > 0)) {
+        final boolean useCustomOrder = (order != null) && (order.length > 0);  
+        if (useCustomOrder) {
+            log.debug("Using custom DN order, will ignore LDAP order flag");
             ordering = getX509FieldOrder(order);            
         } else {
             ordering = getX509FieldOrder(isLdapOrder);
@@ -3850,8 +3852,8 @@ public abstract class CertTools {
             }
         }
         // If the requested ordering was the reverse of the ordering the input string was in (by our guess in the beginning)
-        // we have to reverse the vectors
-        if (ldaporder != isLdapOrder) {
+        // we have to reverse the vectors. Unless we have specified a custom order, in which case we will not change the order from the custom
+        if (ldaporder != isLdapOrder && !useCustomOrder) {
             if (log.isDebugEnabled()) {
                 log.debug("Reversing order of DN, ldaporder=" + ldaporder + ", isLdapOrder=" + isLdapOrder);
             }
