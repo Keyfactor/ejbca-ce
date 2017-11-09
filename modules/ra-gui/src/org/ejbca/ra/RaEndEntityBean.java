@@ -63,6 +63,7 @@ public class RaEndEntityBean implements Serializable {
     private Map<Integer, String> cpIdToNameMap = null;
     private Map<Integer,String> caIdToNameMap = new HashMap<>();
     private boolean editEditEndEntityMode = false;
+    private List<RaCertificateDetails> issuedCerts = null;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -97,6 +98,7 @@ public class RaEndEntityBean implements Serializable {
                 raEndEntityDetails = new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap);
             }
         }
+        issuedCerts = null;
     }
 
     public String getUsername() { return username; }
@@ -114,5 +116,16 @@ public class RaEndEntityBean implements Serializable {
     }
     public void editEditEndEntitySave() {
         editEditEndEntityMode = false;
+    }
+
+    /**
+     * @return the End Entity's certificates
+     */
+    public List<RaCertificateDetails> getIssuedCerts() {
+        if (issuedCerts == null) {
+            issuedCerts = RaSearchEesBean.searchCertificatesByUsernameSorted(
+                    raMasterApiProxyBean, raAuthenticationBean, raLocaleBean, username);
+        }
+        return issuedCerts;
     }
 }

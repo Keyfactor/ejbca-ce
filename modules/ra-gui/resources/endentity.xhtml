@@ -48,7 +48,8 @@
                         </h:panelGroup>
                         <h:outputText styleClass="pure-u-1 pre" value=" " rendered="#{raAccessBean.authorizedToEditEndEntities}"/>
                         </ui:remove>
-                        <component:eedetails raEndEntityDetails="#{raEndEntityBean.endEntity}" editMode="#{raEndEntityBean.editEditEndEntityMode}"/>
+                        <component:eedetails raEndEntityDetails="#{raEndEntityBean.endEntity}" raEndEntityIssuedCerts="#{raEndEntityBean.issuedCerts}"
+                            editMode="#{raEndEntityBean.editEditEndEntityMode}" styleTable="ra-eeCertTableView" />
                     </h:form>
                 </h:panelGroup>
             </h:panelGroup>
