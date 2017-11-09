@@ -146,11 +146,23 @@ public class RaCertificateDetails {
         this.cdw = cdw;
         final CertificateData certificateData = cdw.getCertificateData();
         this.cpId = certificateData.getCertificateProfileId();
-        this.cpName = cpId==null ? null : cpIdToNameMap.get(cpId);
+        if (cpId != null && cpIdToNameMap != null) {
+            this.cpName = cpIdToNameMap.get(cpId);
+        } else {
+            this.cpName = null;
+        }
         this.eepId = certificateData.getEndEntityProfileIdOrZero();
-        this.eepName = eepIdToNameMap.get(Integer.valueOf(eepId));
+        if (eepIdToNameMap != null) {
+            this.eepName = eepIdToNameMap.get(Integer.valueOf(eepId));
+        } else {
+            this.eepName = null;
+        }
         this.issuerDn = certificateData.getIssuerDN();
-        this.caName = getCaNameFromIssuerDn(caSubjectToNameMap, issuerDn);
+        if (caSubjectToNameMap != null) {
+            this.caName = getCaNameFromIssuerDn(caSubjectToNameMap, issuerDn);
+        } else {
+            this.caName = null;
+        }
         this.status = certificateData.getStatus();
         this.revocationReason = certificateData.getRevocationReason();
         this.fingerprint = certificateData.getFingerprint();

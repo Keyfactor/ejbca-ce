@@ -36,17 +36,25 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.KeyToValueHolder;
+import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.core.model.era.RaEndEntitySearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
@@ -98,6 +106,7 @@ public class RaSearchEesBean implements Serializable {
 
     private IdNameHashMap<EndEntityProfile> endEntityProfileMap = null;
     private RaEndEntityDetails currentEndEntityDetails = null;
+    private List<RaCertificateDetails> currentIssuedCerts = null;
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -502,18 +511,22 @@ public class RaSearchEesBean implements Serializable {
 
     public void openEndEntityDetails(final RaEndEntityDetails selected) {
         currentEndEntityDetails = selected;
+        currentIssuedCerts = null;
     }
     public RaEndEntityDetails getCurrentEndEntityDetails() {
         return currentEndEntityDetails;
     }
     public void nextEndEntityDetails() {
         currentEndEntityDetails = currentEndEntityDetails.getNext();
+        currentIssuedCerts = null;
     }
     public void previousEndEntityDetails() {
         currentEndEntityDetails = currentEndEntityDetails.getPrevious();
+        currentIssuedCerts = null;
     }
     public void closeEndEntityDetails() {
         currentEndEntityDetails = null;
+        currentIssuedCerts = null;
     }
 
     /**
@@ -538,5 +551,72 @@ public class RaSearchEesBean implements Serializable {
 
     public boolean isShowPreviousPageButton() {
         return stagedRequest != null && stagedRequest.getPageNumber() > 0;
+    }
+
+    /**
+     * Performs a search for certificates belonging to an End Entity and returns a list of RaCertificateDetail objects.
+     * 
+     * @param raMasterApiProxyBean the RaMasterApiProxyBeanLocal to be used in the search
+     * @param raAuthenticationBean the RaAuthenticationBean to be used in the search
+     * @param raLocaleBean the RaLocaleBean to be used when creating the RaCertificateDetail objects
+     * @param username the username of the End Entity to be used in the search
+     * @return
+     */
+    public static List<RaCertificateDetails> searchCertificatesByUsernameSorted(RaMasterApiProxyBeanLocal raMasterApiProxyBean,
+            RaAuthenticationBean raAuthenticationBean, RaLocaleBean raLocaleBean, String username) {
+        // Perform a certificate search with the given beans and username
+        RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(
+                raAuthenticationBean.getAuthenticationToken(), username);
+        RaCertificateDetails.Callbacks raCertificateDetailsCallbacks = new RaCertificateDetails.Callbacks() {
+            @Override
+            public RaLocaleBean getRaLocaleBean() {
+                return raLocaleBean;
+            }
+            @Override
+            public UIComponent getConfirmPasswordComponent() {
+                return null;
+            }
+            @Override
+            public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason)
+                    throws ApprovalException, WaitingForApprovalException {
+                return false;
+            }
+            @Override
+            public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException,
+                    AuthorizationDeniedException, WaitingForApprovalException,NoSuchEndEntityException, EndEntityProfileValidationException {
+                return false;
+            }
+            @Override
+            public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
+                return false;
+            }
+        };
+        List<RaCertificateDetails> certificates = new ArrayList<>();
+        for (CertificateDataWrapper cdw : response.getCdws()) {
+            certificates.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, null, null, null));
+        }
+        // Sort by date created, descending
+        Collections.sort(certificates, new Comparator<RaCertificateDetails>() {
+            @Override
+            public int compare(RaCertificateDetails cert1, RaCertificateDetails cert2) {
+                return cert1.getCreated().compareTo(cert2.getCreated()) * -1;
+            }
+        });
+        return certificates;
+    }
+
+    /**
+     * @return the current End Entity's certificates
+     */
+    public List<RaCertificateDetails> getCurrentIssuedCerts() {
+        if (currentIssuedCerts == null) {
+            if (currentEndEntityDetails != null) {
+                currentIssuedCerts = searchCertificatesByUsernameSorted(
+                        raMasterApiProxyBean, raAuthenticationBean, raLocaleBean, currentEndEntityDetails.getUsername());
+            } else {
+                currentIssuedCerts = new ArrayList<>();
+            }
+        }
+        return currentIssuedCerts;
     }
 }

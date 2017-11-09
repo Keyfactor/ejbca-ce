@@ -14,6 +14,8 @@ package org.ejbca.core.model.era;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+
 /**
  * Interface for EJB access to the RaMasterApi proxy singleton
  * 
@@ -28,4 +30,7 @@ public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
      * @return returns true if an API of a certain type is available
      */
     boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
+
+    /** @return a RaCertificateSearchResponse from a search with a given username */
+    RaCertificateSearchResponse searchForCertificatesByUsername(AuthenticationToken authenticationToken, String username);
 }
