@@ -84,4 +84,9 @@
 	<h:inputTextarea id="emailContent" value="#{validatorBean.validator.emailContent}" cols="45" rows="3" required="false" 
 		disabled="#{validatorsBean.viewOnly or !validatorBean.validator.useIodefEmail}" />
 
+	<h:outputLabel for="useIodefWeb" value="#{web.text.CAA_VALIDATOR_IODEF_USE_WEB}" styleClass="subItem" />
+	<h:selectBooleanCheckbox id="useIodefWeb" value="#{validatorBean.validator.useIodefWeb}" disabled="#{validatorsBean.viewOnly}">
+		<f:ajax execute="useIodefWeb" render="useIodefWeb" event="change"/>
+	</h:selectBooleanCheckbox>
+
 </ui:composition>
