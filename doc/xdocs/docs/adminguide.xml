@@ -4579,7 +4579,7 @@ After setting privileges, you can use softhsm as normal user.</p>
 <source>
 softhsm2-util --init-token --free --label myslot
 </source>
-<p>It turns out that the Ubuntu package for SoftHSM2 is not always initializing properly (depending on Ubuntu verion you are running on) so you may have to create missing directories etc. 
+<p>It turns out that the Ubuntu package for SoftHSM2 is not always initializing properly (depending on Ubuntu version you are running on) so you may have to create missing directories etc. 
 If you get an "ERROR: Could not initialize the library" when running the above there is a directory missing, and a token not initialized.</p>
 <source>
 sudo mkdir /var/lib/softhsm/tokens
