@@ -260,12 +260,13 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.trx-log = true
 
 # Configure how time of logging in auditlog will be output
-# Default: yyyy-MM-dd:HH:mm:ss:z
-#ocsp.log-date = yyyy-MM-dd:HH:mm:ss:z
+# Reference: RFC 3339 - Date and Time on the Internet: Timestamps
+# Default: yyyy-MM-dd HH:mm:ss.SSSZ
+#ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSS:z
 
 # Configure which time zone will be used for logging
-# Default: GMT
-#ocsp.log-timezone = GMT
+# Default: UTC
+#ocsp.log-timezone = UTC
 
 # A pattern for use with ocsp.trx-log-order to replace constants with values during logging
 # Default: \\$\\{(.+?)\\}
