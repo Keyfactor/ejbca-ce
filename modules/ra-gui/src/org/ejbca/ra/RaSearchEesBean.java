@@ -555,15 +555,15 @@ public class RaSearchEesBean implements Serializable {
 
     /**
      * Performs a search for certificates belonging to an End Entity and returns a list of RaCertificateDetail objects.
-     * 
+     *
      * @param raMasterApiProxyBean the RaMasterApiProxyBeanLocal to be used in the search
      * @param raAuthenticationBean the RaAuthenticationBean to be used in the search
      * @param raLocaleBean the RaLocaleBean to be used when creating the RaCertificateDetail objects
      * @param username the username of the End Entity to be used in the search
      * @return
      */
-    public static List<RaCertificateDetails> searchCertificatesByUsernameSorted(RaMasterApiProxyBeanLocal raMasterApiProxyBean,
-            RaAuthenticationBean raAuthenticationBean, RaLocaleBean raLocaleBean, String username) {
+    public static List<RaCertificateDetails> searchCertificatesByUsernameSorted(final RaMasterApiProxyBeanLocal raMasterApiProxyBean,
+            final RaAuthenticationBean raAuthenticationBean, final RaLocaleBean raLocaleBean, final String username) {
         // Perform a certificate search with the given beans and username
         RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(
                 raAuthenticationBean.getAuthenticationToken(), username);
