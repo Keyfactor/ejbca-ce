@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -69,6 +70,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -224,7 +226,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
-	public EndEntityInformation convertUserDataVOWS(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid) throws EjbcaException {
+	public EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException {
         final ExtendedInformation ei = new ExtendedInformation();
         boolean useEI = false;
 
@@ -279,6 +281,12 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             useEI = true;
         }
 
+        if (useRawSubjectDN) {
+            // It could/should B64 encoded to avoid XML baddies, ExtendedInformation.getRawSubjectDn does encoding, if the string is encoded
+            final String value = StringTools.putBase64String(userdata.getSubjectDN());
+            ei.setMapData(ExtendedInformation.RAWSUBJECTDN, value);
+            useEI = true;
+        }
         useEI = setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
 
         final EndEntityInformation endEntityInformation = new EndEntityInformation(userdata.getUsername(),
@@ -326,6 +334,8 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
                 "Error Certificate profile " + userdata.getCertificateProfileName() + " does not exist.");
 		}
+        final CertificateProfile cp = certificateProfileSession.getCertificateProfile(certificateprofileid);
+        final boolean useRawSubjectDN = cp.getAllowDNOverrideByEndEntityInformation();
 		
 		final int hardtokenissuerid;
 		if (userdata.getHardTokenIssuerName() != null){
@@ -344,10 +354,15 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 "Error Token Type  " + userdata.getTokenType() + " does not exist.");
 		}
 
-		return convertUserDataVOWS(userdata, caid, endentityprofileid, certificateprofileid, hardtokenissuerid, tokenid);
+		return convertUserDataVOWSInternal(userdata, caid, endentityprofileid, certificateprofileid, hardtokenissuerid, tokenid, useRawSubjectDN);
 	}
 
-
+	/** Sets generic Custom ExtendedInformation from potential data in UserDataVOWS.
+	 * This is data from the field "Custom certificate extension data" in the EE profile.
+	 * @param userdata UserDataVOWS that we want to see if any ExtendedInformationWS is set
+	 * @param ei ExtendedInformation to populate with information.
+	 * @return true if some value was added, false if nothing was added
+	 */
 	private static boolean setExtendedInformationFromUserDataVOWS( UserDataVOWS userdata, ExtendedInformation ei ) {
 		// Set generic Custom ExtendedInformation from potential data in UserDataVOWS
 		final List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
