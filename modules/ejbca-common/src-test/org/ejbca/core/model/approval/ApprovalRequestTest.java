@@ -30,7 +30,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.junit.BeforeClass;

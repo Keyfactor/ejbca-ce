@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.approval.approvalrequests;
+package org.ejbca.core.ejb.approval;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -47,7 +47,8 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param approvalRequestType one of TYPE_ constants
      * @param numOfRequiredApprovals 
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
-     * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
+     * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable 
+     * to any end entity profile
      */
 	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, 
 	            boolean executable, final ApprovalProfile approvalProfile) {
@@ -63,7 +64,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, 
 		        steps, approvalProfile);	
 		this.executable = executable;
-	} 
+    }
 	
     /** Constructor used in externalization only */
     public DummyApprovalRequest() {
