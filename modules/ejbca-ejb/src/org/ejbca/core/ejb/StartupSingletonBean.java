@@ -260,7 +260,7 @@ public class StartupSingletonBean {
         // operation and avoid a performance hit for the first request where this is checked.
         final Boolean unique = DatabaseIndexUtil.isIndexPresentOverColumns(JDBCUtil.getDataSourceOrNull(), "CertificateData", Arrays.asList("serialNumber", "issuerDN"), true);
         if (unique==null) {
-            log.debug("Unable to read the index meta data from the database. Will detect presence of unique index using conflicting inserts to CertificateData.");
+            log.info("Unable to read the index meta data from the database. Will detect presence of unique index using conflicting inserts to CertificateData.");
             // Fall-back to testing for a unique index on CertificateData using conflicting INSERTs
             certCreateSession.isUniqueCertificateSerialNumberIndex();
         } else {
