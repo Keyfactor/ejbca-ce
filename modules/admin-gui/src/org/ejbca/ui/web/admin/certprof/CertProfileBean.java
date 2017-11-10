@@ -1109,9 +1109,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem/*<Integer,String*/> getSubjectDNSubSetAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        final Integer[] useSubjectDNFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
-        for (int i=0; i<useSubjectDNFields.length; i++) {
-            ret.add(new SelectItem(useSubjectDNFields[i], getEjbcaWebBean().getText(DnComponents.getDnLanguageTexts().get(i))));
+        final List<Integer> useSubjectDNFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+        for (int i=0; i<useSubjectDNFields.size(); i++) {
+            ret.add(new SelectItem(useSubjectDNFields.get(i), getEjbcaWebBean().getText(DnComponents.getDnLanguageTexts().get(i))));
         }
         return ret;
     }
@@ -1123,9 +1123,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem/*<Integer,String*/> getSubjectAltNameSubSetAvailable() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        final Integer[] useSubjectANFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
-        for (int i=0; i<useSubjectANFields.length; i++) {
-            ret.add(new SelectItem(useSubjectANFields[i], getEjbcaWebBean().getText(DnComponents.getAltNameLanguageTexts().get(i))));
+        final List<Integer> useSubjectANFields = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
+        for (int i=0; i<useSubjectANFields.size(); i++) {
+            ret.add(new SelectItem(useSubjectANFields.get(i), getEjbcaWebBean().getText(DnComponents.getAltNameLanguageTexts().get(i))));
         }
         return ret;
     }
