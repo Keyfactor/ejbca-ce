@@ -202,7 +202,8 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
             HashMap<Object, Object> a = new Base64PutHashMap();
             a.putAll((HashMap<Object, Object>) qd.saveData());
 
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            // typical size of XML is something like 250-400 chars
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(400); 
             java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
             encoder.writeObject(a);
             encoder.close();
