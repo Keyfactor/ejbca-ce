@@ -1083,7 +1083,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	checkIfFieldsMatch(subjectaltnames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email);
     	// Check contents of Subject Directory Attributes fields.
     	final HashMap<Integer,Integer> subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
-    	final Integer[] dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+    	final List<Integer> dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     	for (final Integer dirattrid : dirattrids) {
     		final int nof = subjectdirattrnumbers.get(dirattrid).intValue();
     		for (int j=0; j<nof; j++) {
@@ -1333,10 +1333,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final int REQUIRED_FIELD		= 2;
     	final int NONMODIFYABLE_FIELD	= 1;
     	final int MATCHED_FIELD			= -1;
-    	final Integer[] dnids = DNFieldExtractor.getUseFields(type);
+    	final List<Integer> dnids = DNFieldExtractor.getUseFields(type);
     	// For each type of field
-    	for ( int i=0; i<dnids.length; i++ ) {
-    		final int dnid = dnids[i].intValue();
+    	for ( int i=0; i<dnids.size(); i++ ) {
+    		final int dnid = dnids.get(i).intValue();
     		final int profileID = DnComponents.dnIdToProfileId(dnid);
     		final int dnFieldExtractorID = DnComponents.profileIdToDnId(profileID);
     		final int nof = fields.getNumberOfFields(dnFieldExtractorID);
