@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ws;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -1204,19 +1205,19 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
         userDataVoWs.setStartTime(oldTimeFormat);
         userDataVoWs.setEndTime(oldTimeFormat);
-        final EndEntityInformation endEntityInformation1 = ejbcaWSHelperSession.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+        final EndEntityInformation endEntityInformation1 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
         assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
         // Convert from UserDataVOWS with standard DateFormat to endEntityInformation
         userDataVoWs.setStartTime(newTimeFormatRequest);
         userDataVoWs.setEndTime(newTimeFormatRequest);
-        final EndEntityInformation endEntityInformation2 = ejbcaWSHelperSession.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+        final EndEntityInformation endEntityInformation2 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
         assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
         // Convert from UserDataVOWS with relative date format to endEntityInformation
         userDataVoWs.setStartTime(relativeTimeFormat);
         userDataVoWs.setEndTime(relativeTimeFormat);
-        final EndEntityInformation endEntityInformation3 = ejbcaWSHelperSession.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+        final EndEntityInformation endEntityInformation3 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
         assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
         // Convert from endEntityInformation with standard DateFormat to UserDataVOWS
@@ -1232,7 +1233,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         userDataVoWs.setStartTime("12:32 2011-02-28");  // Invalid
         userDataVoWs.setEndTime("2011-02-28 12:32:00+00:00");   // Valid
         try {
-            ejbcaWSHelperSession.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+            ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
             fail("Conversion of illegal time format did not generate exception.");
         } catch (EjbcaException e) {
             assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
@@ -1241,11 +1242,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00"); // Valid
         userDataVoWs.setEndTime("12:32 2011-02-28");    // Invalid
         try {
-            ejbcaWSHelperSession.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+            ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
             fail("Conversion of illegal time format did not generate exception.");
         } catch (EjbcaException e) {
             assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
         }
+        // Try a raw subjectDN
+        userDataVoWs.setStartTime(null); // Valid
+        userDataVoWs.setEndTime(null);    // Invalid
+        userDataVoWs.setSubjectDN("CN=User U,C=SE,O=Foo"); // not normal order
+        EndEntityInformation endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
+        assertNull(endEntityInformation4.getExtendedInformation().getRawSubjectDn());
+        endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, true);
+        assertEquals("Raw subject DN is not raw order", "CN=User U,C=SE,O=Foo" ,endEntityInformation4.getExtendedInformation().getRawSubjectDn());
+        assertEquals("Normal subject DN is not Normal order", "CN=User U,O=Foo,C=SE" ,endEntityInformation4.getDN());
+        
         log.trace("<test36EjbcaWsHelperTimeFormatConversion()");
     }
     

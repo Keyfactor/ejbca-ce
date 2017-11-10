@@ -25,16 +25,20 @@ public interface EjbcaWSHelperSession {
 
     /**
      * Low-level method to convert between a UserDataVOWS data structure from the web service to an EndEntityInformation.
+     * This method does not perform any verification and the method {@link #convertUserDataVOWS(AuthenticationToken, UserDataVOWS)}is preferred 
+     * as it performs sanity checks that profiles and CAs exist.
+     * 
      * @param userdata UserDataVOWS from the WS
      * @param caid CA ID
      * @param endentityprofileid End Entity Profile ID
      * @param certificateprofileid Certificate Profile ID
      * @param hardtokenissuerid Hard Token Issuer ID, or 0 to not use.
      * @param tokenid Token type, TOKEN_TYPE_* constant
+     * @param useRawSubjectDN if true ExtendedInformation in the returned EndEntityInformation will be populated with the Raw subject DN from the UserDataVOWS
      * @return New EndEntityInformation object
      * @throws EjbcaException if there are errors in the UserDataVOWS, such as incorrectly formatted validity dates.
      */
-    EndEntityInformation convertUserDataVOWS(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid) throws EjbcaException;
+    EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException;
     
     /**
      * Method to convert between a UserDataVOWS data structure from the web service to an EndEntityInformation.
