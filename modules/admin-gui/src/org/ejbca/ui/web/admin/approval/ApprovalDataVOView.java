@@ -17,8 +17,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,20 +30,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.ui.PropertyValidationException;
-import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.LinkView;
@@ -59,21 +51,10 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  */
 public class ApprovalDataVOView implements Serializable {
 
-    private static byte[] dummycert = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky" + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
-            + "A1UEChMJUHJpbWVUZXN0MQswCQYDVQQGEwJTRTCBnTANBgkqhkiG9w0BAQEFAAOB" + "iwAwgYcCgYEAnPAtfpU63/0h6InBmesN8FYS47hMvq/sliSBOMU0VqzlNNXuhD8a"
-            + "3FypGfnPXvjJP5YX9ORu1xAfTNao2sSHLtrkNJQBv6jCRIMYbjjo84UFab2qhhaJ" + "wqJgkQNKu2LHy5gFUztxD8JIuFPoayp1n9JL/gqFDv6k81UnDGmHeFcCARGjggEi"
-            + "MIIBHjAPBgNVHRMBAf8EBTADAQEAMA8GA1UdDwEB/wQFAwMHoAAwOwYDVR0lBDQw" + "MgYIKwYBBQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDBAYIKwYBBQUHAwUGCCsGAQUF"
-            + "BwMHMB0GA1UdDgQWBBTnT1aQ9I0Ud4OEfNJkSOgJSrsIoDAfBgNVHSMEGDAWgBRj" + "e/R2qFQkjqV0pXdEpvReD1eSUTAiBgNVHREEGzAZoBcGCisGAQQBgjcUAgOgCQwH"
-            + "Zm9vQGZvbzASBgNVHSAECzAJMAcGBSkBAQEBMEUGA1UdHwQ+MDwwOqA4oDaGNGh0" + "dHA6Ly8xMjcuMC4wLjE6ODA4MC9lamJjYS93ZWJkaXN0L2NlcnRkaXN0P2NtZD1j"
-            + "cmwwDQYJKoZIhvcNAQEFBQADgYEAU4CCcLoSUDGXJAOO9hGhvxQiwjGD2rVKCLR4" + "emox1mlQ5rgO9sSel6jHkwceaq4A55+qXAjQVsuy76UJnc8ncYX8f98uSYKcjxo/"
-            + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ" + "QUOBOvc=").getBytes());
-    
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalDataVOView.class);
 	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private ApprovalDataVO data;
-    private boolean initialized = false;
 
     // Table of the translation constants in languagefile.xx.properties
     private static final String CERTSERIALNUMBER = "CERTSERIALNUMBER";
@@ -82,31 +63,20 @@ public class ApprovalDataVOView implements Serializable {
 
     public ApprovalDataVOView(ApprovalDataVO data) {
         this.data = data;
-        initialized = true;
     }
 
-    /** Constructor used for initialization of dummy values. */
     public ApprovalDataVOView() { }
 
     public ApprovalRequest getApprovalRequest() {
-        if(initialized) {
-            return data.getApprovalRequest();
-        }
-        return null;
+        return data.getApprovalRequest();
     }
     
     public String getRequestDate() {
-        if (initialized) {
-            return fastDateFormat(data.getRequestDate());
-        }
-        return fastDateFormat(new Date());
+        return fastDateFormat(data.getRequestDate());
     }
 
     public String getExpireDate() {
-        if (initialized) {
-            return fastDateFormat(data.getExpireDate());
-        }
-        return fastDateFormat(new Date());
+        return fastDateFormat(data.getExpireDate());
     }
     
     private String fastDateFormat(final Date date) {
@@ -114,9 +84,6 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getCaName() {
-        if (!initialized) {
-            return "TestCA";
-        }
         EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
         if (data.getCAId() == ApprovalDataVO.ANY_CA) {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
@@ -132,9 +99,6 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getEndEntityProfileName() {
-        if (!initialized) {
-            return "TestProfile";
-        }
         EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
         if (data.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
             return helpBean.getEjbcaWebBean().getText("ANYENDENTITYPROFILE", true);
@@ -143,9 +107,6 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getRemainingApprovals() {
-        if (!initialized) {
-            return "1";
-        }
         return "" + data.getRemainingApprovals();
     }
     
@@ -154,18 +115,12 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getApproveActionName() {
-        if (!initialized) {
-            return "DummyAction";
-        }
         return EjbcaJSFHelper.getBean().getEjbcaWebBean()
                 .getText(ApprovalDataVO.APPROVALTYPENAMES[data.getApprovalRequest().getApprovalType()], true);
     }
 
     public String getRequestAdminName() {
         String retval;
-        if (!initialized) {
-            return "DummyAdmin";
-        }
         final Certificate cert = data.getApprovalRequest().getRequestAdminCert();
         final AuthenticationToken reqAdmin = data.getApprovalRequest().getRequestAdmin();
         if (cert != null) {
@@ -203,9 +158,6 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getStatus() {
-        if (!initialized) {
-            return "EXPIRED";
-        }
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
         ApproveActionManagedBean value = app.evaluateExpressionGet(context, "#{approvalActionManagedBean}", ApproveActionManagedBean.class);
@@ -213,30 +165,10 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public ApprovalDataVO getApproveActionDataVO() {
-        if (!initialized) {
-            try {
-            	X509Certificate certificate = CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert, X509Certificate.class);
-                AuthenticationToken token = new X509CertificateAuthenticationToken(certificate);
-                AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile("DummyApprovalProfile");
-                try {
-                    approvalProfile.setNumberOfApprovalsRequired(2);
-                } catch (PropertyValidationException e) {
-                    throw new IllegalStateException("AccumulativeApprovalProfile shouldn't have failed with a known good value (2).", e);
-                }
-                DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false, approvalProfile);
-                return new ApprovalDataVO(1, 1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0, 0, "", "", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                        new ArrayList<Approval>(), req, new Date(), new Date());
-            } catch (CertificateParsingException e) {
-                log.error(e);
-            }
-        }
         return data;
     }
 
     public int getApprovalId() {
-        if (!initialized) {
-            return 1;
-        }
         return data.getApprovalId();
     }
 
@@ -280,9 +212,6 @@ public class ApprovalDataVOView implements Serializable {
      * @return An array of Link-objects
      */
     public boolean isContainingLink() {
-        if (!initialized) {
-            return false;
-        }
         List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
         int size = newTextRows.size();
         for (int i = 0; i < size; i++) {
@@ -337,9 +266,6 @@ public class ApprovalDataVOView implements Serializable {
 
     public List<TextComparisonView> getTextListExceptLinks() {
         ArrayList<TextComparisonView> textComparisonList = new ArrayList<TextComparisonView>();
-        if (!initialized) {
-            return textComparisonList;
-        }
         List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
         int size = newTextRows.size();
         for (int i = 0; i < size; i++) {
@@ -360,9 +286,6 @@ public class ApprovalDataVOView implements Serializable {
 
     public List<TextComparisonView> getTextComparisonList() {
         ArrayList<TextComparisonView> textComparisonList = new ArrayList<TextComparisonView>();
-        if (!initialized) {
-            return textComparisonList;
-        }
         if (data.getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING) {
             List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
             List<ApprovalDataText> orgTextRows = getOldRequestDataAsText();
