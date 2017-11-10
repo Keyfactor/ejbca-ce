@@ -1770,7 +1770,6 @@ public class X509CA extends CA implements Serializable {
             if (o instanceof Integer) {
                 setDeltaCRLPeriod(((Integer) o).longValue() * SimpleTime.MILLISECONDS_PER_HOUR); // h to ms
             }
-            data.put(VERSION, new Float(LATEST_VERSION));
             // v20, remove XKMS CA service
             if (data.get(EXTENDEDCASERVICES) != null) {
                 @SuppressWarnings("unchecked")
@@ -1799,7 +1798,9 @@ public class X509CA extends CA implements Serializable {
             // v23 'keyValidators' new empty list.
             if (null == data.get(VALIDATORS)) {
                 setValidators(new ArrayList<Integer>());
-            }            
+            }
+            
+            data.put(VERSION, new Float(LATEST_VERSION));
         }
     }
 
