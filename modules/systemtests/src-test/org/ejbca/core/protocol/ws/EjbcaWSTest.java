@@ -2322,7 +2322,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         endEntityManagementSession.addUser(intAdmin, userdata, true);
         fileHandles.addAll(BatchCreateTool.createAllNew(intAdmin, new File(P12_FOLDER_NAME)));
         Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
-        assertTrue(userCerts.size() == 1);
+        assertEquals("Certificates for user with username " + username + " wasn't exactly one.", 1, userCerts.size());
         return (X509Certificate) userCerts.iterator().next();
     }
     
