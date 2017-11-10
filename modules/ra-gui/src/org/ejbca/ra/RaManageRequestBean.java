@@ -52,6 +52,7 @@ import org.ejbca.core.model.era.RaApprovalResponseRequest;
 import org.ejbca.core.model.era.RaApprovalResponseRequest.Action;
 import org.ejbca.core.model.era.RaEditableRequestData;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ra.ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject;
 import org.ejbca.ra.ApprovalRequestGUIInfo.RequestDataRow;
 import org.ejbca.util.KeyValuePair;
 
@@ -175,6 +176,28 @@ public class RaManageRequestBean implements Serializable {
             return (String) property.getValue();
         }
         return "";
+    }
+
+    /**
+     * Returns a boolean indicating whether the specified GUI object has any content. A GUI partition is considered
+     * to have no content if it contains no dynamic UI controls which can be rendered on the screen.
+     * @param guiObject a GUI object containing the graphical representation of an approval partition
+     * @return true if the GUI object given as input has content available, false otherwise
+     */
+    public boolean hasContent(final ApprovalPartitionProfileGuiObject guiObject) {
+        if (guiObject == null) {
+            return false;
+        }
+        // Retrieve the total number of dynamic UI controls
+        final int propertyCount = requestInfo.request.
+                getApprovalProfile().
+                getStep(guiObject.getStepId()).
+                getPartition(guiObject.getPartitionId()).
+                getPropertyList().
+                size();
+        return StringUtils.isEmpty(getPartitionName(guiObject)) ?
+                propertyCount > 2 : // There is more than can_view + can_approve
+                propertyCount > 3; // There is more than can_view + can_approve + title
     }
 
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
