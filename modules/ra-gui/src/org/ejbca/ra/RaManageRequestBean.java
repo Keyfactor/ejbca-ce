@@ -195,9 +195,7 @@ public class RaManageRequestBean implements Serializable {
                 getPartition(guiObject.getPartitionId()).
                 getPropertyList().
                 size();
-        return StringUtils.isEmpty(getPartitionName(guiObject)) ?
-                propertyCount > 2 : // There is more than can_view + can_approve
-                propertyCount > 3; // There is more than can_view + can_approve + title
+        return propertyCount > 3; // There is more than can_view + can_approve + title
     }
 
     public List<DynamicUiProperty<? extends Serializable>> getPartitionProperties(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject guiPartition) {
