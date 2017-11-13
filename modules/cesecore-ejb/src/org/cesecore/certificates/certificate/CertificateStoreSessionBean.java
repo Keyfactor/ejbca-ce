@@ -721,28 +721,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // First make a DN in our well-known format
         query.setParameter("issuerDN", CertTools.stringToBCDNString(StringTools.strip(issuerDN)));
         query.setParameter("serialNumber", serno.toString());
-        query.setMaxResults(1);
-        // We don't want to use query.getResultList because it seems to make inefficient queries on some databases...like this on Oracle:
-        // SELECT * FROM (SELECT certificat0_.status AS col_0_0_FROM CertificateData certificat0_WHERE certificat0_.issuerDN = ? AND certificat0_.serialNumber = ?) WHERE rownum <= ?
-        try {
-            query.getSingleResult();
-            if (log.isTraceEnabled()) {
-                log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret=true");
-            }
-            return true;
-        } catch (NonUniqueResultException e) {
-            log.info("existsByIssuerAndSerno - NonUniqueResultException");
-            // This should not be thrown, since we set maxresult to 1, but I don't trust JPA/Hibernate to work with this on all platforms
-            if (log.isTraceEnabled()) {
-                log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret=true (NonUniqueResultException)");
-            }
-            return true;
-        } catch (NoResultException e) {
-            if (log.isTraceEnabled()) {
-                log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret=false");
-            }
-            return false;
+        final boolean ret = query.getResultList().size() > 0;
+        if (log.isTraceEnabled()) {
+            log.trace("<existsByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16)+", ret="+ret);
         }
+        return ret;        
     }
     
 
@@ -818,24 +801,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final Query query = entityManager.createQuery("SELECT a.status FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
         query.setParameter("issuerDN", CertTools.stringToBCDNString(issuerDN));
         query.setParameter("serialNumber", serno.toString());
-        query.setMaxResults(1);
-        int status = -1;
-        query.setMaxResults(1);
-        // We don't want to use query.getResultList because it seems to make inefficient queries on some databases...like this on Oracle:
-        // SELECT * FROM (SELECT certificat0_.status AS col_0_0_FROM CertificateData certificat0_WHERE certificat0_.issuerDN = ? AND certificat0_.serialNumber = ?) WHERE rownum <= ?
-        try {
-            status = ValueExtractor.extractIntValue(query.getSingleResult());
-        } catch (NonUniqueResultException e) {
-            log.info("getFirstStatusByIssuerAndSerno - NonUniqueResultException");
-            // This should not be thrown, since we set maxresult to 1, but I don't trust JPA/Hibernate to work with this on all platforms
-            @SuppressWarnings("rawtypes")
-            final List result = query.getResultList();
-            if (result.size() > 0) {
-                status = ValueExtractor.extractIntValue(result.get(0));
-            }
-        } catch (NoResultException e) {
-            // NOPMD: result == -1, already set above
-        }        
+        final int status;
+        @SuppressWarnings("rawtypes")
+        final List result = query.getResultList();
+        if (result.size() > 0) {
+            status = ValueExtractor.extractIntValue(result.get(0));
+        } else {
+            status = -1;
+        }
         return status;
     }
 
