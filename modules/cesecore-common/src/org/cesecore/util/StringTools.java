@@ -82,7 +82,7 @@ public final class StringTools {
      * if this calue is changed in the properties file
      *
      */
-    protected static class CharSet {
+    public static class CharSet {
         public static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
         
         private Set<Character> charSet = null;
@@ -107,7 +107,7 @@ public final class StringTools {
         }
         
         /** Used to reset the value so we can JUnit test the class */
-        static void reset() {
+        public static void reset() {
             INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
         }
     }
