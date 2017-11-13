@@ -66,10 +66,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private static final Logger log = Logger.getLogger(ApprovalProfileMBean.class);
 
     /**
-     * This enum field represents the types of data fields that can be added to an approval partition dynamically.  
+     * This enum field represents the types of data fields that can be added to an approval partition dynamically.
      *
      */
-    private enum FieldType {        
+    private enum FieldType {
         CHECKBOX(intres.getLocalizedMessage("approval.profile.metadata.field.checkbox")),
         INTEGER(intres.getLocalizedMessage("approval.profile.metadata.field.integer")),
         LONG(intres.getLocalizedMessage("approval.profile.metadata.field.long")),
@@ -79,7 +79,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
        private static List<SelectItem> selectItems;
        private static Map<String, FieldType> nameLookupMap;
        private final String label;
-       
+
        static {
            selectItems = new ArrayList<>();
            nameLookupMap = new HashMap<>();
@@ -88,26 +88,26 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                nameLookupMap.put(action.name(), action);
            }
        }
-       
+
        private FieldType(final String label) {
            this.label = label;
-           
+
        }
-       
+
        public String getLabel() {
            return label;
        }
-       
+
        public static List<SelectItem> asSelectItems() {
            return selectItems;
        }
-       
+
        public static FieldType getFromName(String name) {
            return nameLookupMap.get(name);
        }
-        
+
     }
-    
+
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
     @EJB
@@ -124,9 +124,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private ApprovalProfile currentApprovalProfile = null;
 
     private ListDataModel<ApprovalStepGuiObject> steps = null;
-    
+
     /**
-     * The type of metadata field to add to a partition, if any. 
+     * The type of metadata field to add to a partition, if any.
      */
     private Map<Integer, String> fieldToAdd = new HashMap<>();
     private Map<Integer, String> fieldLabel = new HashMap<>();
@@ -166,9 +166,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public String getRequestExpirationPeriod() {
         final long millis = getApprovalProfile().getRequestExpirationPeriod();
         final SimpleTime time = SimpleTime.getInstance(millis);
-        return time.toString(SimpleTime.TYPE_DAYS);    
+        return time.toString(SimpleTime.TYPE_DAYS);
     }
-    
+
     public void setRequestExpirationPeriod(String expirationPeriod) {
         final SimpleTime time = SimpleTime.getInstance(expirationPeriod);
         getApprovalProfile().setRequestExpirationPeriod(time.getLong());
@@ -179,18 +179,18 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final SimpleTime time = SimpleTime.getInstance(millis);
         return time.toString(SimpleTime.TYPE_DAYS);
     }
-    
+
     public void setApprovalExpirationPeriod(String expirationPeriod) {
         final SimpleTime time = SimpleTime.getInstance(expirationPeriod);
         getApprovalProfile().setApprovalExpirationPeriod(time.getLong());
     }
-    
+
     public String getMaxExtensionTime() {
         final long millis = getApprovalProfile().getMaxExtensionTime();
         final SimpleTime time = SimpleTime.getInstance(millis);
         return time.toString(SimpleTime.TYPE_DAYS);
     }
-    
+
     public boolean getAllowSelfEdit() {
         return getApprovalProfile().getAllowSelfEdit();
     }
@@ -198,12 +198,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void setAllowSelfEdit(boolean allowSelfEdit) {
        getApprovalProfile().setAllowSelfEdit(allowSelfEdit);
     }
-    
+
     public void setMaxExtensionTime(final String maxExtensionTime) {
         final SimpleTime time = SimpleTime.getInstance(maxExtensionTime);
         getApprovalProfile().setMaxExtensionTime(time.getLong());
     }
-    
+
     @SuppressWarnings("unchecked")
     public String save() {
         try {
@@ -226,18 +226,42 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         return "";
     }
 
+    /**
+     * Saves the current approval profile to a temporary variable managed by this bean. Should be
+     * used to save the current state before the UI is refreshed. This prevents data entry in UI
+     * controls to be discarded, causing poor user experience. To permanently save the approval
+     * profile, see {@link #save}. In comparison, this method does not require any authorisation,
+     * and will not throw any exceptions, nor show any error messages to the user.
+     */
+    @SuppressWarnings("unchecked")
+    public void saveTemporary() {
+        final ApprovalProfile approvalProfile = getApprovalProfile();
+        final List<Integer> stepOrder = new ArrayList<>();
+        for (final ApprovalStepGuiObject step : steps) {
+            for (final ApprovalPartitionProfileGuiObject partition : step.getPartitionGuiObjects()) {
+                final int stepId = step.getIdentifier();
+                final int partitionId = partition.getPartitionId();
+                final Object guiObject = partition.getProfilePropertyList().getWrappedData();
+                approvalProfile.addPropertiesToPartition(stepId, partitionId, (List<DynamicUiProperty<? extends Serializable>>) guiObject);
+            }
+            stepOrder.add(step.getIdentifier());
+        }
+        steps = createStepListFromProfile(approvalProfile);
+    }
+
     public String cancel() {
         return "done";
     }
 
     /**
-     * Adds the currently selected field to the partition specified by the parameter. The step that the partition resides in is retrieved from 
+     * Adds the currently selected field to the partition specified by the parameter. The step that the partition resides in is retrieved from
      * the steps class member.
-     * 
+     *
      * @param partitionId the ID of the partition to add the field to
-     * @return an empty string to keep the scope. 
+     * @return an empty string to keep the scope.
      */
     public String addField(int partitionId) {
+        saveTemporary();
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         DynamicUiProperty<? extends Serializable> property;
         String fieldLabel = this.fieldLabel.get(partitionId);
@@ -250,7 +274,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             property = new DynamicUiProperty<>(fieldLabel, null, new ArrayList<RadioButton>());
             property.setType(RadioButton.class);
             break;
-        case CHECKBOX: 
+        case CHECKBOX:
             property = new DynamicUiProperty<>(fieldLabel, Boolean.FALSE);
             break;
         case INTEGER:
@@ -262,7 +286,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         default:
             return "";
         }
-      
+
         if (updatedApprovalProfile.getStep(steps.getRowData().getIdentifier()).getPartition(partitionId).getProperty(fieldLabel) != null) {
             addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
             return "";
@@ -274,14 +298,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             return "";
         }
     }
-    
+
     /**
      * A special method for adding rows to radio button arrays. The ID of the partition is required, but the step identity and the radio button
-     * field identity can be divined from class members.
-     * 
-     * @param partitionId the ID of the partition that the radio button resides in 
+     * field identity can be derived from class members.
+     *
+     * @param partitionId the ID of the partition that the radio button resides in
      * @param label the label for the new row
-     * @return an empty string to keep the scope. 
+     * @return an empty string to keep the scope.
      */
     public String addRowToRadioButton(int partitionId, String label) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
@@ -292,7 +316,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 @SuppressWarnings("unchecked")
                 DynamicUiProperty<RadioButton> radioButtonProperty = (DynamicUiProperty<RadioButton>) approvalPartitionProfileGuiObject
                         .getProfilePropertyList().getRowData();
-                Collection<RadioButton> possibleValues = new ArrayList<>(radioButtonProperty.getPossibleValues());
+                Collection<RadioButton> possibleValues = radioButtonProperty.getPossibleValues();
                 RadioButton newRadio = new RadioButton(label);
                 if(possibleValues.contains(newRadio)) {
                     addErrorMessage("APPROVAL_PROFILE_FIELD_RADIO_EXISTS");
@@ -303,6 +327,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 }
                 possibleValues.add(newRadio);
                 radioButtonProperty.setPossibleValues(possibleValues);
+                saveTemporary();
                 updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, radioButtonProperty);
                 steps = createStepListFromProfile(updatedApprovalProfile);
                 break;
@@ -310,13 +335,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         }
         return "";
     }
-    
+
     /**
      * Similar to the above, the below method removes a row from a radio button array.
-     * 
-     * @param partitionId the ID of the partition that the radio button resides in 
+     *
+     * @param partitionId the ID of the partition that the radio button resides in
      * @param encodedRadioButton the encoded radio button
-     * @return an empty string to keep the scope. 
+     * @return an empty string to keep the scope.
      */
     public String removeRowFromRadioButton(int partitionId, String encodedRadioButton) {
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
@@ -336,53 +361,61 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 }
                 if(radioButtonProperty.getDefaultValue().equals(radioButton) && !prunedValues.isEmpty()) {
                     radioButtonProperty.setDefaultValue(prunedValues.get(0));
-                }        
+                }
                 radioButtonProperty.setPossibleValues(prunedValues);
+                saveTemporary();
                 updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, radioButtonProperty);
                 steps = createStepListFromProfile(updatedApprovalProfile);
-                break;           
+                break;
             }
         }
         return "";
     }
-    
+
     public String removeField(int partitionId, String propertyName) {
+        saveTemporary();
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         updatedApprovalProfile.removePropertyFromPartition(steps.getRowData().getIdentifier(), partitionId, propertyName);
         steps = createStepListFromProfile(updatedApprovalProfile);
         return "";
     }
-    
+
     public void addStep() {
+        saveTemporary();
         getApprovalProfile().addStepLast();
         steps = null;
     }
-    
+
     public void moveStepDown() {
+        saveTemporary();
         getApprovalProfile().switchStepOrder(steps.getRowData().getIdentifier(), steps.getRowData().getNextStep());
         steps = null;
     }
-    
+
     public void moveStepUp() {
+        saveTemporary();
         getApprovalProfile().switchStepOrder(steps.getRowData().getPreviousStep(), steps.getRowData().getIdentifier());
         steps = null;
     }
-    
+
     public void deleteStep() {
+        saveTemporary();
         getApprovalProfile().deleteStep(steps.getRowData().getIdentifier());
         steps = null;
     }
-    
+
     public void addPartition() {
+        saveTemporary();
         getApprovalProfile().addPartition(steps.getRowData().getIdentifier());
         steps = null;
     }
-    
+
     public void deletePartition(int partitionId) {
+        saveTemporary();
         getApprovalProfile().deletePartition(steps.getRowData().getIdentifier(), partitionId);
         steps = null;
     }
-    
+
     public boolean isPropertyPredefined(int partitionId, String propertyName) {
         ApprovalProfile approvalProfile = getApprovalProfile();
         return approvalProfile.isPropertyPredefined(steps.getRowData().getIdentifier(), partitionId, propertyName);
@@ -420,12 +453,12 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         if (steps == null) {
             final ApprovalProfile approvalProfile = getApprovalProfile();
             if (approvalProfile!=null) {
-                steps = createStepListFromProfile(approvalProfile);   
+                steps = createStepListFromProfile(approvalProfile);
             }
         }
         return steps;
     }
-    
+
     private ListDataModel<ApprovalStepGuiObject> createStepListFromProfile(final ApprovalProfile approvalProfile) {
         List<ApprovalStepGuiObject> steps = new ArrayList<>();
         int ordinal = 1;
@@ -442,10 +475,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     /**
-     * Take an approval step and extract its partitions and respective properties, filling in with values from the database where required. 
-     * 
+     * Take an approval step and extract its partitions and respective properties, filling in with values from the database where required.
+     *
      * @param step an approval step
-     * @return a Map linking partitions IDs to lists of each partitions properties. 
+     * @return a Map linking partitions IDs to lists of each partitions properties.
      */
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>>> getPartitionProperties(ApprovalStep step) {
         Map<Integer, List<DynamicUiProperty<? extends Serializable>>> partitionProperties = new LinkedHashMap<>();
@@ -471,7 +504,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         }
                     }
                     if(!roleRepresentations.contains(propertyClone.getDefaultValue())) {
-                        //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
+                        //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else.
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
                     propertyClone.setPossibleValues(roleRepresentations);
@@ -482,25 +515,25 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     break;
                 }
                 propertyList.add(propertyClone);
-            }           
+            }
             partitionProperties.put(approvalPartition.getPartitionIdentifier(), propertyList);
         }
         return partitionProperties;
     }
-    
+
     /** @return true of the approval profile is of a type where sequences can be added  */
     public boolean isStepSizeFixed() {
         return ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName()).isStepSizeFixed();
     }
-    
+
     /**
      * @return true if it's possible to add fields to the partitions of this profile
      */
     public boolean arePartitionsFixed() {
         return ApprovalProfilesFactory.INSTANCE.getArcheType(getCurrentApprovalProfileTypeName()).arePartitionsFixed();
     }
-    
-    
+
+
     public List<SelectItem> getFieldsAvailable() {
         return FieldType.asSelectItems();
     }
@@ -508,13 +541,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public Map<Integer, String> getFieldToAdd() {
         return fieldToAdd;
     }
-    
+
 
     public Map<Integer, String> getFieldLabel() {
         return fieldLabel;
     }
 
-    
+
     // Notifications
 
     public boolean isNotificationEnabled(final int partitionIdentifier) {
@@ -525,6 +558,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void addNotification(final int partitionIdentifier) {
+        saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
@@ -544,15 +578,16 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void removeNotification(final int partitionIdentifier) {
+        saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeNotificationProperties(approvalPartition);
         steps = null;
     }
-    
+
     // User Notification
-    
+
     public boolean isUserNotificationEnabled(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
@@ -561,6 +596,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void addUserNotification(final int partitionIdentifier) {
+        saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
@@ -578,6 +614,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void removeUserNotification(final int partitionIdentifier) {
+        saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
