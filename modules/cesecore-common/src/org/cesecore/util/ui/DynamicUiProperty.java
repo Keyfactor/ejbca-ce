@@ -28,8 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.Base64;
 
 /**
- * Allows creation of dynamic properties for display in the UI. 
- * 
+ * Allows creation of dynamic properties for display in the UI.
+ *
  * @version $Id$
  */
 public class DynamicUiProperty<T extends Serializable> implements Serializable, Cloneable {
@@ -43,9 +43,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private DynamicUiPropertyCallback propertyCallback = DynamicUiPropertyCallback.NONE;
     private Class<? extends Serializable> type;
     private DynamicUiPropertyValidator<T> validator = null;
-    
+
     /**
-     * Denotes whether this property can have multiple values. 
+     * Denotes whether this property can have multiple values.
      */
     private boolean hasMultipleValues = false;
 
@@ -55,11 +55,11 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     /**
      * Constructor. Note the T must implement toString().
-     * 
+     *
      * @param name The name of this property, for display in the UI
      * @param defaultValue the default value, if any.
-     * @param possibleValues a Collection of possible values. If set to null no validation will be performed, if set to an empty list then values 
-     *        are presumed to be set at runtime. 
+     * @param possibleValues a Collection of possible values. If set to null no validation will be performed, if set to an empty list then values
+     *        are presumed to be set at runtime.
      */
     public DynamicUiProperty(final String name, final T defaultValue, final Collection<T> possibleValues) {
         this.name = name;
@@ -112,7 +112,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     /**
      * Returns a value of type T from a string. Limited to the basic java types {@link Integer}, {@link String}, {@link Boolean}, {@link Float},
      * {@link Long}
-     * 
+     *
      * @param value the value to translate
      * @return and Object instantiated as T, or null if value was not of a usable class or was invalid for T
      */
@@ -146,9 +146,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @return string representation of the value (for example the string '1' for the Int value 1. Value is retrieved inside as getValue().
      */
     public String getValueAsString() {
@@ -183,13 +183,13 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * 
+     *
      * @return the type class of this property, based on the default value. If the default was null, then the type has to be set explicitly.
      */
     public Class<? extends Serializable> getType() {
         return type;
     }
-    
+
     public void setType(final Class<? extends Serializable> type) {
         this.type = type;
     }
@@ -201,7 +201,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setDefaultValue(T defaultValue) {
         this.defaultValue = defaultValue;
     }
-    
+
     public List<T> getValues() {
         if (!hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw multiple values from a dynamic property with a single value.");
@@ -218,7 +218,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     public List<String> getPossibleValuesAsStrings() {
         List<String> pvs = new ArrayList<String>();
-        
+
         if(StringUtils.equals(type.getSimpleName(), RadioButton.class.getSimpleName())) {
             for(T pv : getPossibleValues()) {
                 RadioButton rb = (RadioButton) pv;
@@ -231,7 +231,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         return pvs;
     }
-    
+
     public Collection<T> getPossibleValues() {
         return possibleValues;
     }
@@ -246,9 +246,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * 
+     *
      * @param object a value for this property
-     * @throws PropertyValidationException if the value failed validation 
+     * @throws PropertyValidationException if the value failed validation
      */
     public void setValue(T object) throws PropertyValidationException {
         if (hasMultipleValues) {
@@ -262,7 +262,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             }
             if (possibleValues != null) {
                 for (final T possibleValue : possibleValues) {
-                    if (possibleValue.equals(object)) {                
+                    if (possibleValue.equals(object)) {
                         this.values = new ArrayList<>(Arrays.asList(object));
                         return;
                     }
@@ -275,7 +275,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * 
+     *
      * @param objects a list of values to set
      * @throws PropertyValidationException if any one of the values didn't pass validation
      */
@@ -306,7 +306,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             }
         }
     }
-    
+
 
 
     public String getEncodedValue() {
@@ -340,7 +340,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     @SuppressWarnings("unchecked")
     /**
-     * 
+     *
      * @param encodedValues a list of encoded values
      * @throws PropertyValidationException if any one of the values doesn't pass validation
      */
@@ -355,7 +355,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     @SuppressWarnings("unchecked")
     /**
      * @param object the value to set
-     * 
+     *
      */
     public void setValueGeneric(Serializable object) {
         if (object == null) {
@@ -374,9 +374,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     @SuppressWarnings("unchecked")
     /**
-     * 
+     *
      * @param list a list of objects
-     * 
+     *
      */
     public void setValuesGeneric(List<? extends Serializable> list) {
         if (list == null || list.isEmpty()) {
@@ -417,7 +417,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public static Serializable getAsObject(String encodedValue) {
         return getAsObject(Base64.decode(encodedValue.getBytes()));
     }
-    
+
     private static Serializable getAsObject(final byte[] bytes) {
         try (final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));) {
             return (Serializable) ois.readObject();
@@ -435,7 +435,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * @return true if this property can have multiple values. 
+     * @return true if this property can have multiple values.
      */
     public boolean getHasMultipleValues() {
         return hasMultipleValues;
@@ -444,7 +444,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setHasMultipleValues(boolean hasMultipleValues) {
         this.hasMultipleValues = hasMultipleValues;
     }
-    
+
     /** Returns the current value, like getValue, but has a workaround for JSF bug with ui:repeat and rendered. See ECA-5342 */
     @SuppressWarnings("unchecked")
     public T getJsfBooleanValue() {
@@ -455,18 +455,18 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             return getValue();
         }
     }
-    
-    /** Sets the value, by calling setValue. Needed for the getJsfBooleanValue workaround 
+
+    /** Sets the value, by calling setValue. Needed for the getJsfBooleanValue workaround
      * @throws PropertyValidationException if the value failed validation
      */
     public void setJsfBooleanValue(final T newValue) throws PropertyValidationException {
         setValue(newValue);
     }
-    
+
     public void setValidator(DynamicUiPropertyValidator<T> validator) {
         this.validator = validator;
     }
-    
+
     public String getValidatorType() {
         if (validator != null) {
             return validator.getValidatorType();
