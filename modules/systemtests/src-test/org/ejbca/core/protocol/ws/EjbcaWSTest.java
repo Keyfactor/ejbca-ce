@@ -1251,7 +1251,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         userDataVoWs.setStartTime(null); // Valid
         userDataVoWs.setEndTime(null);    // Invalid
         userDataVoWs.setSubjectDN("CN=User U,C=SE,O=Foo"); // not normal order
-        EndEntityInformation endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, false);
+        EndEntityInformation endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, true);
         assertNull(endEntityInformation4.getExtendedInformation().getRawSubjectDn());
         endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, true);
         assertEquals("Raw subject DN is not raw order", "CN=User U,C=SE,O=Foo" ,endEntityInformation4.getExtendedInformation().getRawSubjectDn());
