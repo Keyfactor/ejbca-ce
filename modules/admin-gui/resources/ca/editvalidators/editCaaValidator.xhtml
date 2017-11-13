@@ -35,7 +35,7 @@
     <h:selectBooleanCheckbox id="lookupDnames" value="#{validatorBean.validator.lookupDnames}" disabled="#{validatorsBean.viewOnly}" />
 	<h:outputLabel for="validateDnsSec" value="#{web.text.CAA_VALIDATOR_VALIDATE_DNSSEC}" styleClass="subItem" />
 	<h:selectBooleanCheckbox id="validateDnsSec" value="#{validatorBean.validator.validateDnsSec}" disabled="#{validatorsBean.viewOnly}">
-		<f:ajax execute="validateDnsSec" render="customTrustAnchor" event="change"/>
+		<f:ajax execute="validateDnsSec" render="customTrustAnchor failOnLookupError" event="change"/>
 	</h:selectBooleanCheckbox>
 	<h:outputLabel for="customTrustAnchor" value="#{web.text.CAA_VALIDATOR_DNSSEC_TRUST_ANCHOR}" styleClass="subItem" />
 	<h:panelGroup>
@@ -43,6 +43,12 @@
 		<br></br>
 		<h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_DNSSEC_HELP}"/>
 	</h:panelGroup>
+	<h:outputLabel for="failOnLookupError" value="#{web.text.CAA_VALIDATOR_FAIL_ON_LOOKUP_ERROR}" styleClass="subItem" />
+    <h:panelGroup>
+        <h:selectBooleanCheckbox id="failOnLookupError" value="#{validatorBean.validator.failOnLookupError}" disabled="#{validatorsBean.viewOnly or !validatorBean.validator.validateDnsSec}" />
+        <br/>
+        <h:outputText styleClass="help" value="#{web.text.CAA_VALIDATOR_FAIL_ON_LOOKUP_ERROR_HELP}"/>
+    </h:panelGroup>
 	<h:outputLabel for="ignoreTld" value="#{web.text.CAA_VALIDATOR_IGNORE_TLD}" styleClass="subItem" />
 	<h:panelGroup>
 		<h:inputText id="ignoreTld" value="#{validatorBean.validator.tldIgnoreString}" disabled="#{validatorsBean.viewOnly}" />

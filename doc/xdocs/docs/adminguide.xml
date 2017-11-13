@@ -5253,7 +5253,7 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 						<p>This value should match up to the value field in the CAA record of the DNS, i.e "ca.org" in the above example.</p>
 					<li>DNS Resolver</li>
 						<p>Non-mandatory field where you may specify a DNS Resolver (such as 8.8.8.8 or 8.8.4.4). Should be an IP adress. If left 
-						blank, the system default responder will be used</p>
+						blank, Google's Public DNS will be used.</p>
 					<li>Lookup DNAMEs</li>
 					    <p>Check this box if you want to lookup and follow any DNAME records found during CAA processing. To comply with RFC 6844, it is recommended
 					    to keep this option enabled.</p>
@@ -5267,6 +5267,9 @@ example.com. 243	IN	CAA	0 issue "ca.org"
                             In order to obtain secure answers from the root zone of the DNS using DNSSEC, a trust anchor must be configured. By default IANA
                             root anchor is used. This value may be modified but should remain unchanged unless the records is signed by another trust anchor.
                         </p>
+                    <li>Fail on lookup error</li>
+                        <p>The default behaviour is to permit issuance if a lookup error is encountered more than once and EJBCA can establish that the domain is not signed with DNSSEC. To always prohibit
+                        issuance when a lookup error is encountered, tick this option. To have this option enabled may be a compliance requirement if you are contacting your own DNS resolver for CAA lookups.</p>
 					<li>Use IODEF E-mail</li>
 						<p>
 							Checking this box enables sending e-mails to any mailto-links registered on the DNA as CAA IODEF records. Doing so enables the 
