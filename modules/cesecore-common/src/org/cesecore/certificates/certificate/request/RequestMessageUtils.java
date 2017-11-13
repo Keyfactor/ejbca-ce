@@ -113,35 +113,37 @@ public abstract class RequestMessageUtils {
 	 */
 	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
 		byte[] buffer = null;
-		try {
-			// A real PKCS10 PEM request
-			String beginKey = CertTools.BEGIN_CERTIFICATE_REQUEST;
-			String endKey = CertTools.END_CERTIFICATE_REQUEST;
-			buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-		} catch (IOException e) {	 	
-			try {
-				// Keytool PKCS10 PEM request
-				String beginKey = CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST;
-				String endKey = CertTools.END_KEYTOOL_CERTIFICATE_REQUEST;
-				buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-			} catch (IOException ioe) {
-				try {
-					// CSR can be a PEM encoded certificate instead of "certificate request"
-					String beginKey = CertTools.BEGIN_CERTIFICATE;
-					String endKey = CertTools.END_CERTIFICATE;
-					buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
-				} catch (IOException ioe2) {
-					// IE PKCS10 Base64 coded request
-					try {
-						buffer = Base64.decode(b64Encoded);
-						if (buffer == null) {
-							throw new IOException("Base64 decode of buffer returns null");
-						}					
-					} catch (DecoderException de) {
-						throw new IOException("Base64 decode fails, message not base64 encoded: "+de.getMessage());
-					}					
-				}
-			}
+		if (b64Encoded != null && b64Encoded.length > 0) {
+		    String str = new String(b64Encoded);
+            // A real PKCS10 PEM request
+            String beginKey = CertTools.BEGIN_CERTIFICATE_REQUEST;
+            String endKey = CertTools.END_CERTIFICATE_REQUEST;
+            if (!str.contains(beginKey)) {
+                // Keytool PKCS10 PEM request
+                beginKey = CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST;
+                endKey = CertTools.END_KEYTOOL_CERTIFICATE_REQUEST;
+                if (!str.contains(beginKey)) {
+                    // CSR can be a PEM encoded certificate instead of "certificate request"
+                    beginKey = CertTools.BEGIN_CERTIFICATE;
+                    endKey = CertTools.END_CERTIFICATE;
+                    if (!str.contains(beginKey)) {
+                        // IE PKCS10 Base64 coded request
+                        try {
+                            buffer = Base64.decode(b64Encoded);
+                            if (buffer == null) {
+                                throw new IOException("Base64 decode of buffer returns null");
+                            }
+                        } catch (DecoderException de) {
+                            throw new IOException("Base64 decode fails, message not base64 encoded: "+de.getMessage());
+                        }
+                    }
+                }
+            }
+            if (buffer == null) {
+                buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);                
+            }
+		} else {
+            throw new IOException("Base64 decode fails, message is empty");		    
 		}
 		return buffer;
 	}
