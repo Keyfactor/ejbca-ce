@@ -85,7 +85,9 @@ public class UserData extends ProtectedData implements Serializable {
     private String keyStorePassword;
     private int rowVersion = 0;
     private String rowProtection;
-
+    // Performance optimization within a transaction, to not have to hash the password when comparing internally in the same transaction, saving one BCrypt operation
+    private transient String transientPwd;
+    
     /**
      * Entity Bean holding info about a User. Create by sending in the instance, username, password and subject DN. SubjectEmail, Status and Type are
      * set to default values (null, STATUS_NEW, USER_INVALID). and should be set using the respective set-methods. Clear text password is not set at
@@ -119,6 +121,7 @@ public class UserData extends ProtectedData implements Serializable {
             setPasswordHash(CryptoTools.makePasswordHash(password));
             setClearPassword(null);
         }
+        transientPwd = password; // performance optimization within a transaction
         setSubjectDN(CertTools.stringToBCDNString(dn));
         setCaId(caid);
         setSubjectAltName(altname);
@@ -500,17 +503,22 @@ public class UserData extends ProtectedData implements Serializable {
         }
         boolean ret = false;
         if (password != null) {
-            final String hash = getPasswordHash();
-            // Check if it is a new or old style hashing
-            switch (findHashAlgorithm()) {
-            case SHA1_BCRYPT:
-                // new style with good salt
-                ret = BCrypt.checkpw(password, hash);
-                break;
-            case SHA1_OLD:
-            default:
-                ret = CryptoTools.makeOldPasswordHash(password).equals(getPasswordHash());
-                break;
+            if (transientPwd != null) {
+                // Performance optimization within a transaction, to not have to hash the password when comparing internally in the same transaction, saving one BCrypt operation
+                ret = transientPwd.equals(password);
+            } else {
+                final String hash = getPasswordHash();
+                // Check if it is a new or old style hashing
+                switch (findHashAlgorithm()) {
+                case SHA1_BCRYPT:
+                    // new style with good salt
+                    ret = BCrypt.checkpw(password, hash);
+                    break;
+                case SHA1_OLD:
+                default:
+                    ret = CryptoTools.makeOldPasswordHash(password).equals(getPasswordHash());
+                    break;
+                }
             }
         }
         if (log.isTraceEnabled()) {
