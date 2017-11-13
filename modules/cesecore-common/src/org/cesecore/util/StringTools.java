@@ -82,8 +82,8 @@ public final class StringTools {
      * if this calue is changed in the properties file
      *
      */
-    private static class CharSet {
-        public final static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
+    protected static class CharSet {
+        public static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
         
         private Set<Character> charSet = null;
         /**
@@ -104,6 +104,11 @@ public final class StringTools {
          */
         boolean contains(char c) {
             return this.charSet.contains(Character.valueOf(c));
+        }
+        
+        /** Used to reset the value so we can JUnit test the class */
+        static void reset() {
+            INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
         }
     }
 
