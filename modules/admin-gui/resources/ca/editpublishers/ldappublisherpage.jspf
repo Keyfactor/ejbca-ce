@@ -322,10 +322,10 @@
       <td width="55%" valign="top">   
         <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
-               Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+               List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
                String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
-               for(int i=0;i < usefieldsindn.length; i++){ %>                                  
-              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(usefieldsindn[i])) out.write(" selected "); %>> 
+               for(int i=0;i < usefieldsindn.size(); i++){ %>                                  
+              <option value="<%=usefieldsindn.get(i)%>" <% if(currentfields.contains(usefieldsindn.get(i))) out.write(" selected "); %>> 
                   <%= ejbcawebbean.getText(usefieldsindntexts[i]) %>
                </option>
             <%}%>
