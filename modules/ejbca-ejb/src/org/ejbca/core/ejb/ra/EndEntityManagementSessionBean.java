@@ -2251,8 +2251,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsUser(String username) {
-        // Selecting an int column is optimal speed
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a.type FROM UserData a WHERE a.username=:username");
+        // Selecting 1 column is optimal speed
+        final javax.persistence.Query query = entityManager.createQuery("SELECT 1 FROM UserData a WHERE a.username=:username");
         query.setParameter("username", username);
         return query.getResultList().size() > 0;
     }
