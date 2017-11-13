@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/ 
-package org.cesecore.certificates.util;
+package org.cesecore.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -110,6 +110,7 @@ public class StringToolsTest {
     final static String FORBIDDEN_CHARS_KEY = "forbidden.characters";
     private static void forbiddenTest( final String forbidden, final String input, final String output ) {
         ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, forbidden);
+        StringTools.CharSet.reset();
         final String stripped = StringTools.strip(input);
         if ( input.equals(output) ) {
             assertTrue("The string do NOT have chars that should be stripped!", StringTools.hasStripChars(input).isEmpty());
