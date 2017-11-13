@@ -104,6 +104,9 @@ certificate.validityoffset=-10m
 # The property value is a string with all forbidden characters concatenated
 # (without any space). Note that '\' is an escape character.
 # This will be the same as not defining the property:
+#
+# NOTE: this value can not be changed dynamically, but requires a restart of EJBCA after changing.
+#
 #forbidden.characters = \n\r;!\u0000%`?$~
 # And nothing forbidden will be:
 #forbidden.characters  =
