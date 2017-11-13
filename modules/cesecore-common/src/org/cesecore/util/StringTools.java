@@ -77,15 +77,20 @@ public final class StringTools {
 
     /**
      * Class that will be used to see if a character belong to a specific category.
+     * This is a singleton, with static initialization, meaning that it is thread safe. It also means that the 
+     * CesecoreConfiguration.getForbiddenCharacters() can not be changed dynamically, but a re-start of EJBCA is needed
+     * if this calue is changed in the properties file
      *
      */
     private static class CharSet {
-        private final Set<Character> charSet;
+        public final static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
+        
+        private Set<Character> charSet = null;
         /**
          * Create a set of characters from a char array.
          * @param array
          */
-        CharSet(char[] array) {
+        private CharSet(char[] array) {
             final Set<Character> set = new HashSet<Character>();
             for (final char c : array) {
                 set.add(Character.valueOf(c));
@@ -99,13 +104,6 @@ public final class StringTools {
          */
         boolean contains(char c) {
             return this.charSet.contains(Character.valueOf(c));
-        }
-        /**
-         * Construct a set with the forbidden characters.
-         * @return the set
-         */
-        static CharSet getForbidden() {
-            return new CharSet(CesecoreConfiguration.getForbiddenCharacters());
         }
     }
 
@@ -137,7 +135,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String strip(final String str) {
-    	return strip(str, CharSet.getForbidden());
+    	return strip(str, CharSet.INSTANCE);
     }
 
     /**
@@ -234,7 +232,7 @@ public final class StringTools {
      * @see #strip
      */
     public static  Set<String> hasStripChars(final String str) {
-    	return hasStripChars(str, CharSet.getForbidden());
+    	return hasStripChars(str, CharSet.INSTANCE);
     }
     
     /**
@@ -279,7 +277,7 @@ public final class StringTools {
      * @return true if char is an allowed escape character, false if now
      */
     private static boolean isAllowedEscape(final char ch) {
-        return allowedEscapeChars.contains(ch) && !CharSet.getForbidden().contains(ch);
+        return allowedEscapeChars.contains(ch) && !CharSet.INSTANCE.contains(ch);
     }
 
     /**
