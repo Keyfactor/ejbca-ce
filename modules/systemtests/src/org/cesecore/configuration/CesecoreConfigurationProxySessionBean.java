@@ -17,6 +17,7 @@ import javax.ejb.Stateless;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.StringTools;
 
 /**
  * @version $Id$
@@ -28,6 +29,7 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     @Override
     public void setConfigurationValue(String key, String value) {
         ConfigurationHolder.updateConfiguration(key, value);
+        StringTools.CharSet.reset(); // reset reading of forbidden characters of we changed that
         OcspConfigurationCache.INSTANCE.reloadConfiguration();
     }
 
