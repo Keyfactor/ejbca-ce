@@ -54,48 +54,54 @@ public abstract class FileTools {
      */
     public static byte[] getBytesFromPEM(final byte[] inbuf, final String beginKey, final String endKey)
         throws IOException {
-        if (log.isTraceEnabled()) {
-            log.trace(">getBytesFromPEM");
-        }
-
         final ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
-        final BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
-        final ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-        final PrintStream opstr = new PrintStream(ostr);
-        String temp;
-
-        while (((temp = bufRdr.readLine()) != null) && !temp.equals(beginKey)) {
-            continue;
-        }
-
-        if (temp == null) {
-            throw new IOException("Error in input buffer, missing " + beginKey + " boundary");
-        }
-
-        while (((temp = bufRdr.readLine()) != null) && !temp.equals(endKey)) {
-        	// Skip empty lines
-        	if (temp.trim().length() > 0) {
-                opstr.print(temp);
-        	}
-        }
-
-        if (temp == null) {
-            throw new IOException("Error in input buffer, missing " + endKey + " boundary");
-        }
-
-        opstr.close();
-
-        final byte[] bytes;
-        try {
-            bytes = Base64.decode(ostr.toByteArray());
-        } catch (Exception e) {
-            throw new IOException("Malformed PEM encoding or PEM of unknown type: " + e.getMessage());
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getBytesFromPEM");
-        }
-        return bytes;
+        return getBytesFromPEM(instream, beginKey, endKey);
     } // getBytesfromPEM
+
+    public static byte[] getBytesFromPEM(final InputStream instream, final String beginKey, final String endKey)
+            throws IOException {
+            if (log.isTraceEnabled()) {
+                log.trace(">getBytesFromPEM");
+            }
+
+            final BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
+            final ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+            final PrintStream opstr = new PrintStream(ostr);
+            
+            String temp;
+
+            while (((temp = bufRdr.readLine()) != null) && !temp.equals(beginKey)) {
+                continue;
+            }
+
+            if (temp == null) {
+                throw new IOException("Error in input buffer, missing " + beginKey + " boundary");
+            }
+
+            while (((temp = bufRdr.readLine()) != null) && !temp.equals(endKey)) {
+                // Skip empty lines
+                if (temp.trim().length() > 0) {
+                    opstr.print(temp);
+                }
+            }
+
+            if (temp == null) {
+                throw new IOException("Error in input buffer, missing " + endKey + " boundary");
+            }
+
+            opstr.close();
+
+            final byte[] bytes;
+            try {
+                bytes = Base64.decode(ostr.toByteArray());
+            } catch (Exception e) {
+                throw new IOException("Malformed PEM encoding or PEM of unknown type: " + e.getMessage());
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("<getBytesFromPEM");
+            }
+            return bytes;
+        } // getBytesfromPEM
 
     /**
      * Helpfunction to read a file to a byte array.
