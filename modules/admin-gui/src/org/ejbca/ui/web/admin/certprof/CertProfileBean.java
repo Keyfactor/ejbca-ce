@@ -1097,6 +1097,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("otherdata");
     }
 
+    public void toggleUseCustomDnOrderLdap() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setUseCustomDnOrderWithLdap(!getCertificateProfile().getUseCustomDnOrderWithLdap());
+        redirectToComponent("otherdata");
+    }
+
     public void toggleUseCNPostfix() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setUseCNPostfix(!getCertificateProfile().getUseCNPostfix());
         redirectToComponent("otherdata");

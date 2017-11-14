@@ -321,6 +321,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
     protected static final String USECUSTOMDNORDER = "usecustomdnorder";
+    protected static final String USECUSTOMDNORDERLDAP = "usecustomdnorderldap";
     protected static final String CUSTOMDNORDER = "customdnorder";
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
@@ -467,6 +468,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseLdapDnOrder(true);
         setUseCustomDnOrder(false);
+        setUseCustomDnOrderWithLdap(true);
 
         setUseMicrosoftTemplate(false);
         setMicrosoftTemplate("");
@@ -1521,6 +1523,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return ret;
     }
+
+    /** Set to true if we should apply the rules for LDAP DN Order (separate flag) 
+     * to the custom DN order
+     * @param useldap true or false
+     */
+    public void setUseCustomDnOrderWithLdap(boolean useldap) {
+        data.put(USECUSTOMDNORDERLDAP, Boolean.valueOf(useldap));
+    }
+
+    /** 
+     * @return true (default) if we should apply the rules for LDAP DN Order (separate flag) 
+     */
+    public boolean getUseCustomDnOrderWithLdap() {
+        boolean ret = true; // Default value is true here
+        Object o = data.get(USECUSTOMDNORDERLDAP);
+        if (o != null) {
+            ret = ((Boolean) o).booleanValue();
+        }
+        return ret;
+    }
+
 
     /** Custom DN order is an ArrayList of DN strings
      * @see DnComponents

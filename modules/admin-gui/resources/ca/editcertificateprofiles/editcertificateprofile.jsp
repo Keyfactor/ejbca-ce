@@ -1256,6 +1256,11 @@
 			<h:commandButton id="checkusecustomdnorder" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCustomDnOrder}"
 				value="#{certProfileBean.certificateProfile.useCustomDnOrder?web.text.BOOL_TRUE:web.text.BOOL_FALSE}" disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="checkusecustomdnorder" value="#{web.text.USE}…" styleClass="checkBoxOverlay"/>
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCustomDnOrderWithLdap}" rendered="#{!web.legacyInternetExplorer}" 
+				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:commandButton id="checkusecustomdnorderldap" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleUseCustomDnOrderLdap}"
+				value="#{certProfileBean.certificateProfile.useCustomDnOrderWithLdap?web.text.BOOL_TRUE:web.text.BOOL_FALSE}" disabled="#{certProfilesBean.viewOnly}"/>
+			<h:outputLabel for="checkusecustomdnorderldap" value="#{web.text.CERT_SUBJECTDN_CUSTOMORDER_LDAP}" styleClass="checkBoxOverlay"/>
 			<h:outputText value="#{web.text.VALUE} "/>
 			<h:inputText id="textfieldcustomdnorder" size="20" maxlength="500" title="#{web.text.FORMAT_STRING}" value="#{certProfileBean.certificateProfile.customDnOrder}"
 				disabled="#{!certProfileBean.certificateProfile.useCustomDnOrder or certProfilesBean.viewOnly}" converter="org.ejbca.DnObjectArrayListConverter"/>
