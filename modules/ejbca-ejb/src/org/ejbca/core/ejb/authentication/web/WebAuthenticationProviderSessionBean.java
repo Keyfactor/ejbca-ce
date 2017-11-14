@@ -92,6 +92,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             	return null;
             }
             // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
+            // Database integrity protection verification not performed running this query
             final int status = certificateStoreSession.getFirstStatusByIssuerAndSerno(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
             if (status != -1) {
                 // The certificate is present in the database.
