@@ -51,7 +51,6 @@ public class RaEndEntityTools {
             final String username, final RaLocaleBean raLocaleBean) {
         // Find certificates by username
         RaCertificateSearchResponse response = raMasterApiProxyBean.searchForCertificatesByUsername(authenticationToken, username);
-        // Create a list of RaCertificateDetails objects from the search result
         List<RaCertificateDetails> certificates = new ArrayList<>();
         RaCertificateDetails.Callbacks callbacks = new RaCertificateDetails.Callbacks() {
             @Override
