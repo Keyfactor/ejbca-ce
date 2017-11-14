@@ -119,12 +119,13 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
-     * @return the End Entity's certificates
+     * @return a list of the End Entity's certificates
      */
     public List<RaCertificateDetails> getIssuedCerts() {
         if (issuedCerts == null) {
-            issuedCerts = RaSearchEesBean.searchCertificatesByUsernameSorted(
-                    raMasterApiProxyBean, raAuthenticationBean, raLocaleBean, username);
+            issuedCerts = RaEndEntityTools.searchCertsByUsernameSorted(
+                    raMasterApiProxyBean, raAuthenticationBean.getAuthenticationToken(),
+                    username, raLocaleBean);
         }
         return issuedCerts;
     }
