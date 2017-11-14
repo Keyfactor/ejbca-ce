@@ -933,6 +933,8 @@ public class X509CA extends CA implements Serializable {
                 customDNOrder = order.toArray(new String[0]);
             }
         }
+        final boolean applyLdapToCustomOrder = certProfile.getUseCustomDnOrderWithLdap();
+
         final X500Name subjectDNName;
         if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestX500Name() != null)) {
             subjectDNName = request.getRequestX500Name();
@@ -952,10 +954,10 @@ public class X509CA extends CA implements Serializable {
                         log.debug("ExtendedInformation.getRawSubjectDn(): " + ei.getRawSubjectDn() + " will use: " + CeSecoreNameStyle.INSTANCE.toString(subjectDNName));
                     }
                 } else {
-                    subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder);
+                    subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
                 }
             } else {
-                subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder);
+                subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
             }
         }
         // Make sure the DN does not contain dangerous characters

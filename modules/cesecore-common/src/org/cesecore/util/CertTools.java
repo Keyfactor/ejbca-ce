@@ -330,12 +330,16 @@ public abstract class CertTools {
      * @return X500Name or null if input is null
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder, final String[] order) {
+        return stringToBcX500Name(dn, nameStyle, ldaporder, order, true);
+    }
+    
+    public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder, final String[] order, final boolean applyLdapToCustomOrder) {
         final X500Name x500Name = stringToUnorderedX500Name(dn, nameStyle);
         if (x500Name==null) {
             return null;
         }
         // -- Reorder fields
-        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, order, nameStyle);
+        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, order, applyLdapToCustomOrder, nameStyle);
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
         }
@@ -3804,7 +3808,7 @@ public abstract class CertTools {
      * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @return X500Name with ordered conmponents according to the orcering vector
      */
-    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, String[] order, final X500NameStyle nameStyle) {
+    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, String[] order, final boolean applyLdapToCustomOrder, final X500NameStyle nameStyle) {
         // -- New order for the X509 Fields
         final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<ASN1ObjectIdentifier>();
         final List<ASN1Encodable> newValues = new ArrayList<ASN1Encodable>();
@@ -3818,7 +3822,7 @@ public abstract class CertTools {
         final List<ASN1ObjectIdentifier> ordering;
         final boolean useCustomOrder = (order != null) && (order.length > 0);  
         if (useCustomOrder) {
-            log.debug("Using custom DN order, will ignore LDAP order flag");
+            log.debug("Using custom DN order");
             ordering = getX509FieldOrder(order);            
         } else {
             ordering = getX509FieldOrder(isLdapOrder);
@@ -3853,7 +3857,7 @@ public abstract class CertTools {
         }
         // If the requested ordering was the reverse of the ordering the input string was in (by our guess in the beginning)
         // we have to reverse the vectors. Unless we have specified a custom order, in which case we will not change the order from the custom
-        if (ldaporder != isLdapOrder && !useCustomOrder) {
+        if (ldaporder != isLdapOrder && applyLdapToCustomOrder) {
             if (log.isDebugEnabled()) {
                 log.debug("Reversing order of DN, ldaporder=" + ldaporder + ", isLdapOrder=" + isLdapOrder);
             }
