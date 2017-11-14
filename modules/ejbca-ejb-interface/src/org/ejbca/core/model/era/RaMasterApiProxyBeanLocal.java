@@ -32,5 +32,5 @@ public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
     boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
 
     /** @return a RaCertificateSearchResponse from a search with a given username */
-    RaCertificateSearchResponse searchForCertificatesByUsername(AuthenticationToken authenticationToken, String username);
+    RaCertificateSearchResponse searchForCertificatesByUsername(final AuthenticationToken authenticationToken, final String username);
 }
