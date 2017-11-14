@@ -697,7 +697,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public RaCertificateSearchResponse searchForCertificatesByUsername(AuthenticationToken authenticationToken, String username) {
+    public RaCertificateSearchResponse searchForCertificatesByUsername(
+            final AuthenticationToken authenticationToken, final String username) {
         RaCertificateSearchRequest request = new RaCertificateSearchRequest();
         request.setUsernameSearchString(username);
         request.setUsernameSearchExact(true);

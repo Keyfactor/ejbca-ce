@@ -606,13 +606,14 @@ public class RaSearchEesBean implements Serializable {
     }
 
     /**
-     * @return the current End Entity's certificates
+     * @return a list of the current End Entity's certificates
      */
     public List<RaCertificateDetails> getCurrentIssuedCerts() {
         if (currentIssuedCerts == null) {
             if (currentEndEntityDetails != null) {
-                currentIssuedCerts = searchCertificatesByUsernameSorted(
-                        raMasterApiProxyBean, raAuthenticationBean, raLocaleBean, currentEndEntityDetails.getUsername());
+                currentIssuedCerts = RaEndEntityTools.searchCertsByUsernameSorted(
+                        raMasterApiProxyBean, raAuthenticationBean.getAuthenticationToken(),
+                        currentEndEntityDetails.getUsername(), raLocaleBean);
             } else {
                 currentIssuedCerts = new ArrayList<>();
             }
