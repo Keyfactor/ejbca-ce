@@ -187,9 +187,21 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                         || numNonMandatoryLogs < prof.getCtMaxNonMandatorySctsOcsp()) {
                     addErrorMessage("INCORRECTNUMBEROFNONMANDATORYSCTS");
                     success = false;
-                } else if (prof.getCtMinMandatoryScts() > prof.getCtMaxMandatoryScts() || prof.getCtMinMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp() ||
-                        prof.getCtMinNonMandatoryScts() > prof.getCtMaxNonMandatoryScts() || prof.getCtMinNonMandatorySctsOcsp() > prof.getCtMaxNonMandatorySctsOcsp()) {
+                } else if (prof.getCtMinMandatoryScts() > prof.getCtMaxMandatoryScts()
+                        || prof.getCtMinMandatorySctsOcsp() > prof.getCtMaxMandatorySctsOcsp()) {
+                    log.info(String.format(
+                            "Cannot save certificate profile. Minimum number of mandatory SCTs (embedded: %d, OCSP %d) exceed maximum number of mandatory SCTs (embedded: %d, OCSP %d).",
+                            prof.getCtMinMandatoryScts(), prof.getCtMinMandatorySctsOcsp(), prof.getCtMaxMandatoryScts(),
+                            prof.getCtMaxMandatorySctsOcsp()));
                     addErrorMessage("INCORRECTMINMAXMANDATORYSCTS");
+                    success = false;
+                } else if (prof.getCtMinNonMandatoryScts() > prof.getCtMaxNonMandatoryScts()
+                        || prof.getCtMinNonMandatorySctsOcsp() > prof.getCtMaxNonMandatorySctsOcsp()) {
+                    log.info(String.format(
+                            "Cannot save certificate profile. Minimum number of non-mandatory SCTs (embedded: %d, OCSP %d) exceed maximum number of non-mandatory SCTs (embedded: %d, OCSP %d).",
+                            prof.getCtMinNonMandatoryScts(), prof.getCtMinNonMandatorySctsOcsp(), prof.getCtMaxNonMandatoryScts(),
+                            prof.getCtMaxNonMandatorySctsOcsp()));
+                    addErrorMessage("INCORRECTMINMAXNONMANDATORYSCTS");
                     success = false;
                 }
             }

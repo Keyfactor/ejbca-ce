@@ -2650,12 +2650,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public int getCtMaxNonMandatoryScts() {
         if (data.get(CT_MAX_NONMANDATORY_SCTS) == null) {
-            if (data.get(CT_MAX_NONMANDATORY_SCTS) == null) {
-                if (data.get(CT_MAX_SCTS) == null) {
-                    return 1;
-                }
-                return (Integer) data.get(CT_MAX_SCTS);
+            if (data.get(CT_MAX_SCTS) == null) {
+                log.info("CT_MAX_NON_MANDATORY_SCTS is null => legacy value is also null, using 1 log as default.");
+                return 1;
             }
+            log.info("CT_MAX_NON_MANDATORY_SCTS is null => using legacy value: " + data.get(CT_MAX_SCTS));
+            return (Integer) data.get(CT_MAX_SCTS);
         }
         return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS);
     }
@@ -2669,8 +2669,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public int getCtMaxNonMandatorySctsOcsp() {
         if (data.get(CT_MAX_NONMANDATORY_SCTS_OCSP) == null) {
             if (data.get(CT_MAX_SCTS_OCSP) == null) {
+                log.info("CT_MAX_NON_MANDATORY_SCTS_OCSP is null => legacy value is also null, using 1 log as default.");
                 return 1;
             }
+            log.info("CT_MAX_NON_MANDATORY_SCTS_OCSP is null => using legacy value: " + data.get(CT_MAX_SCTS_OCSP));
             return (Integer) data.get(CT_MAX_SCTS_OCSP);
         }
         return (Integer) data.get(CT_MAX_NONMANDATORY_SCTS_OCSP);
