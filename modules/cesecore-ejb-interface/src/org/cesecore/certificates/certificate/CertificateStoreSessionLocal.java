@@ -258,6 +258,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** Gets the status of the certificate, or -1 if the certificate does not exist. 
      * If more than one certificate exists with the issuerDN/serialNumber, the first one is returned.
+     * This query performs limited database read and thus will not verify database integrity protection.
      * 
      * @param issuerDN issuer DN of the desired certificate.
      * @param serno serial number of the desired certificate!
