@@ -1326,6 +1326,8 @@ This means that if both are true the DN will have last-to-first (LDAP) DN order,
 <p>
 For some references see <a href="http://www.ietf.org/rfc/rfc2253.txt">RFC2253</a> and <a href="http://www.ietf.org/rfc/rfc4514.txt">RFC4514</a>
 </p>
+<p>When using a <i>Custom DN Order</i> the LDAP DN order is also applied by default, defining which component comes first (CN or C for example), regardless of the exact order you specified in the text field.
+By unchecking the checkbox 'Apply LDAP DN Order' for the <i>Custom DN Order</i>, the exact order as specified will be used.</p>
 </subsubsection>
 
 <subsubsection name="Private Key Usage Period">
