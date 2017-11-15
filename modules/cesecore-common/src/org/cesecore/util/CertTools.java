@@ -3805,6 +3805,7 @@ public abstract class CertTools {
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
      * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
+     * @param applyLdapToCustomOrder specifies if the ldaporder setting should apply to an order (custom order) if this is not empty
      * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @return X500Name with ordered conmponents according to the orcering vector
      */
@@ -3856,13 +3857,16 @@ public abstract class CertTools {
             }
         }
         // If the requested ordering was the reverse of the ordering the input string was in (by our guess in the beginning)
-        // we have to reverse the vectors. Unless we have specified a custom order, in which case we will not change the order from the custom
-        if (ldaporder != isLdapOrder && applyLdapToCustomOrder) {
-            if (log.isDebugEnabled()) {
-                log.debug("Reversing order of DN, ldaporder=" + ldaporder + ", isLdapOrder=" + isLdapOrder);
+        // we have to reverse the vectors.
+        // Unless we have specified a custom order, and choose to not apply LDAP Order to this custom order, in which case we will not change the order from the custom
+        if ( (useCustomOrder && applyLdapToCustomOrder) || !useCustomOrder) {
+            if (ldaporder != isLdapOrder) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Reversing order of DN, ldaporder=" + ldaporder + ", isLdapOrder=" + isLdapOrder);
+                }
+                Collections.reverse(newOrdering);
+                Collections.reverse(newValues);
             }
-            Collections.reverse(newOrdering);
-            Collections.reverse(newValues);
         }
 
         X500NameBuilder nameBuilder = new X500NameBuilder(nameStyle);
