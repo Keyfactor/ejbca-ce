@@ -468,7 +468,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseLdapDnOrder(true);
         setUseCustomDnOrder(false);
-        setUseCustomDnOrderWithLdap(true);
 
         setUseMicrosoftTemplate(false);
         setMicrosoftTemplate("");
@@ -1533,13 +1532,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** 
-     * @return true (default) if we should apply the rules for LDAP DN Order (separate flag) 
+     * @return true if we should apply the rules for LDAP DN Order (separate flag), default to false for new usage, where no custom order exists, 
+     * and to true for old usage to be backward compatible 
      */
     public boolean getUseCustomDnOrderWithLdap() {
         boolean ret = true; // Default value is true here
         Object o = data.get(USECUSTOMDNORDERLDAP);
         if (o != null) {
             ret = ((Boolean) o).booleanValue();
+        } else if (getCustomDnOrder().isEmpty()) {
+            // We have not set a value for this checkbox, and we have no custom DN order defined
+            // in this case we default to false (new usage)
+            ret = false;
         }
         return ret;
     }
