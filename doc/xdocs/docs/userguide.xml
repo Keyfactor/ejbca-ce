@@ -368,7 +368,7 @@ the Admin GUI will not be very useful.
 The user data storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, user data storage be disabled to improve performance. See the 
+If EJBCA is used as a certificate factory, where the functionality of the Admin GUI is not required, user data storage can be disabled to improve performance. See the 
 <a href="adminguide.html#Throw%20away%20CA">Throw Away CA</a> section in the Admin Guide for more information about this mode.
 </p>
 </subsubsection>
