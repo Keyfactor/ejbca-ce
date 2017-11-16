@@ -1104,22 +1104,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    public void toggleUseCustomDnOrder() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCustomDnOrder() throws IOException {
         getCertificateProfile().setUseCustomDnOrder(!getCertificateProfile().getUseCustomDnOrder());
         redirectToComponent("otherdata");
     }
 
-    public void toggleUseCustomDnOrderLdap() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCustomDnOrderLdap() throws IOException {
         getCertificateProfile().setUseCustomDnOrderWithLdap(!getCertificateProfile().getUseCustomDnOrderWithLdap());
         redirectToComponent("otherdata");
     }
 
-    public void toggleUseCNPostfix() throws AuthorizationDeniedException, IOException {
+    public void toggleUseCNPostfix() throws IOException {
         getCertificateProfile().setUseCNPostfix(!getCertificateProfile().getUseCNPostfix());
         redirectToComponent("otherdata");
     }
 
-    public void toggleUseSubjectDNSubSet() throws AuthorizationDeniedException, IOException {
+    public void toggleUseSubjectDNSubSet() throws IOException {
         getCertificateProfile().setUseSubjectDNSubSet(!getCertificateProfile().getUseSubjectDNSubSet());
         redirectToComponent("otherdata");
     }
