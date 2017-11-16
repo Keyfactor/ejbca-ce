@@ -21,6 +21,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +40,10 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCVCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.CustomCVCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -59,8 +64,10 @@ import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.AuthorizationRoleSignTermEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
+import org.ejbca.cvc.CVCDiscretionaryDataTemplate;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
+import org.ejbca.cvc.CVCertificateExtensions;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.CertificateParser;
@@ -84,11 +91,12 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	
-	
+	@Override
 	public void init(CVCCAInfo cainfo) {
 	    super.init(cainfo);
 	}
 
+	@Override
 	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
 	    super.init(data, caId, subjectDN, name, status, updateTime);
 	}
@@ -278,7 +286,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage providedRequestMessage, PublicKey providedPublicKey,
             int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, 
             CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException, IllegalKeyException {
+            throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
         if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
@@ -333,7 +341,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         final boolean isRootCA = (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
         
         // Get CA reference
-        CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
+        final CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
         // Get certificate validity time notBefore and notAfter
         CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA, /*isLinkCertificate*/ false);
         final CAReferenceField caRef;
@@ -360,11 +368,29 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         final AuthorizationRole authRole = getAuthorizationRole(certProfile, caRef, holderRef);
         final AccessRights accessRights = getAccessRights(certProfile);
         
-        // Generate the CVC certificate using Keijos library
-        CAToken catoken = getCAToken();
-        String sigAlg = catoken.getSignatureAlgorithm();
+        // Get key from crypto token
+        final CAToken catoken = getCAToken();
+        final String sigAlg = catoken.getSignatureAlgorithm();
         final String provider = cryptoToken.getSignProviderName();
         final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final PublicKey caPublicKey = cryptoToken.getPublicKey(alias);
+        
+        // Build custom certificate extensions
+        Collection<CVCDiscretionaryDataTemplate> certExtensions = null;
+        for (final Integer certExtId : certProfile.getUsedCertificateExtensions()) {
+            final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(certExtId);
+            if (certExt instanceof CustomCVCertificateExtension) {
+                if (certExtensions == null) {
+                    certExtensions = new ArrayList<>();
+                }
+                final CustomCVCertificateExtension cvcExt = (CustomCVCertificateExtension) certExt;
+                final CVCDiscretionaryDataTemplate ddt =
+                            cvcExt.getValueCVC(subject, this, certProfile, publicKey, caPublicKey, val);
+                certExtensions.add(ddt);
+            }
+        }
+        
+        // Generate the CVC certificate using Keijos library
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(alias);
         if (log.isDebugEnabled()) {
             log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+provider+", public key algorithm from CVC request must match this algorithm.");
@@ -373,7 +399,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         CVCertificate cvc;
         try {
             cvc = CertificateGenerator.createCertificate(publicKey, caPrivateKey, sigAlg, caRef, holderRef, authRole, accessRights,
-                    val.getNotBefore(), val.getNotAfter(), provider);
+                    val.getNotBefore(), val.getNotAfter(), certExtensions, provider);
             if (log.isDebugEnabled()) {
                 log.debug("Certificate: " + cvc.toString());
                 try {
@@ -392,7 +418,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             if (log.isTraceEnabled()) {
                 log.trace("<generateCertificate()");
             }
-            return retCert;       
+            return retCert;
         } catch (InvalidKeyException e) {
             throw new CertificateCreateException("CA's public key was invalid,", e);
         } catch (NoSuchAlgorithmException e) {
