@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 
@@ -29,8 +30,27 @@ import org.cesecore.configuration.ConfigurationBase;
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
-    public final static String[] SUPPORTED_PROTOCOLS = {"ACME", "EST", "CMP", "OCSP", "SCEP", "WS"};
+
+    private static final Logger log = Logger.getLogger(AvailableProtocolsConfiguration.class);
     
+    /** Protocols currently supported by Ejbca */
+    public enum AvailableProtocols{
+        ACME("ACME"), 
+        CMP("CMP"), 
+        EST("EST"), 
+        OCSP("OCSP"), 
+        SCEP("SCEP"), 
+        WS("Web Service");
+        
+        private String resource;
+        private AvailableProtocols(String resource) {
+            this.resource = resource;
+        }
+        
+        public String getResource() {
+            return this.resource;
+        }
+    };
 
     /**
      * Initializes the configuration. All protocols will be enabled by default
@@ -44,18 +64,19 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     
     /** All protocols will be enabled by default */
     private void initialize() {
-        for (String protocol : SUPPORTED_PROTOCOLS) {
-            setProtocolStatus(protocol, true);
+        for (int i = 0; i < AvailableProtocols.values().length; i++) {
+            setProtocolStatus(AvailableProtocols.values()[i].getResource(), true);
         }
     }
     
-    /**
-     * Checks whether protocol is enabled / disabled
+    /** 
+     * Checks whether protocol is enabled / disabled locally and from incoming Peer connection. Disabled status
+     * from peer or local configuration will always override enable.
      * @param protocol to check status of
-     * @return true if protocol is enabled, false otherwise
+     * @return true if protocol is enabled and incoming peer allows the protocol, false otherwise
      */
     public boolean getProtocolStatus(String protocol) {
-        return (Boolean)data.get(protocol);
+        return (Boolean)data.get(protocol) && AvailableProtocolsPeerCache.INSTANCE.isProtocolEnabled(protocol);
     }
     
     public void setProtocolStatus(String protocol, boolean status) {
@@ -63,7 +84,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
     
     private boolean isDataInitialized() {
-        boolean ret = data != null && data.size() > 1 && (getAllProtocolsAndStatus().size() == SUPPORTED_PROTOCOLS.length);
+        boolean ret = data != null && data.size() > 1 && (getAllProtocolsAndStatus().size() == AvailableProtocols.values().length);
         return ret;
     }
     

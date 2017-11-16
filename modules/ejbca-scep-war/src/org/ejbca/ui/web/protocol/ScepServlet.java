@@ -68,6 +68,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -255,7 +256,8 @@ public class ScepServlet extends HttpServlet {
     } // doGet
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("SCEP");
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
+                getProtocolStatus(AvailableProtocols.SCEP.getResource());
         if (!protocolEnabled) {
             log.info("SCEP Protocol is disabled");
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP is disabled");

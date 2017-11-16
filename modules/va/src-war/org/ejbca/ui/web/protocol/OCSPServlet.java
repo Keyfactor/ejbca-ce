@@ -48,6 +48,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -78,7 +79,8 @@ public class OCSPServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("OCSP");
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
+                getProtocolStatus(AvailableProtocols.OCSP.getResource());
         try {
             if (log.isTraceEnabled()) {
                 log.trace(">doGet()");
@@ -178,7 +180,8 @@ public class OCSPServlet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus("OCSP");
+        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
+                getProtocolStatus(AvailableProtocols.OCSP.getResource());
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
