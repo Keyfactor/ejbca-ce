@@ -260,9 +260,14 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.trx-log = true
 
 # Configure how time of logging in auditlog will be output
-# Reference: RFC 3339 - Date and Time on the Internet: Timestamps
-# Default: yyyy-MM-dd HH:mm:ss.SSSZ
+# Default: yyyy-MM-dd:HH:mm:ss:z
+#
+# Almost standard example, but the time offset ':z' (e.g. ':EST') is not standard compliant:
 #ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSS:z
+#
+# Reference: RFC 3339 - Date and Time on the Internet: Timestamps
+# Standard compliant example, the final 'Z' means "time zone is UTC":
+#ocsp.log-date = yyyy-MM-dd HH:mm:ss.SSSZ
 
 # Configure which time zone will be used for logging
 # Default: UTC
