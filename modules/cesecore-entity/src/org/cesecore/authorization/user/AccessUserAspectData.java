@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.dbprotection.ProtectedData;
@@ -39,6 +40,8 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Entity
 @Table(name = "AdminEntityData")
 public class AccessUserAspectData extends ProtectedData implements AccessUserAspect, Comparable<AccessUserAspectData> {
+
+    private static final Logger log = Logger.getLogger(AccessUserAspectData.class);
 
     private static final long serialVersionUID = 2504191317243484124L;
     private int primaryKey;
@@ -153,7 +156,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     @Override
     public void setMatchValue(String matchValue) {
         if (matchValue == null) {
-            throw new InvalidParameterException("Invalid to set matchValue == null");
+            // We must allow null value in order to upgrade smoothly from very old versions. See ECA-6343
+            // We can log though, to say that there is something to clean out
+            log.info("Trying to set matchValue == null. Old records in the database with matchType 2000-2004 and matchValue should be deleted during post-upgrade but can be deleted manually as well.");
         }
         this.matchValue = matchValue;
     }
