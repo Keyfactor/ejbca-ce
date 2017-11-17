@@ -51,6 +51,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveE
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -1147,14 +1148,34 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     // We must have run upgrade on the extended CA services for this to work
                     String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
                     if (implClassname == null) {
-                    	log.error("implementation classname is null for extended service type: "+type+". Service not created.");
-                    } else {
-                    	if (log.isDebugEnabled()) {
-                    		log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
-                    	}
+                        // We need this hardcoded implementation classnames in order to be able to upgrade extended services from before
+                        // See ECA-6341 and UpgradeSessionBean.migrateDatabase500()
+                        log.info("implementation classname is null for extended service type: "+type+". Will try our known ones.");
+                        switch (type) {
+                        case 2: // Old XKMSCAService that should not be used anymore
+                            log.info("Found an XKMS CA service type. Will not create the deprecated service.");
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService";
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
+                            break;
+                        default: 
+                            log.error("implementation classname is null for extended service type: "+type+". Service not created.");
+                            break;
+                        }
+                    }
+                    if (implClassname != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
+                        }
                         Class<?> implClass = Class.forName(implClassname);
                         returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
-                        extendedcaservicemap.put(Integer.valueOf(type), returnval);                    	
+                        extendedcaservicemap.put(Integer.valueOf(type), returnval);                     
                     }
                 } else {
                 	log.error("Servicedata is null for extended CA service of type: "+type);                	
