@@ -670,7 +670,7 @@
     <!-- ========================================================================== -->
     <target name="base-upgrade" depends="ejbca-ejb-cli">
         <!-- Get input -->
-        <input message="Which version of EJBCA are you upgrading from (in the form x.y.z, i.e. 5.0.10, 6.2.0):" addproperty="ejbca.upgradefromversion"/> 
+        <input message="Which version of EJBCA are you upgrading from (in the form x.y.z, i.e. 6.3.2):" addproperty="ejbca.upgradefromversion"/> 
         <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
             <arg line="upgrade ${database.name} ${ejbca.upgradefromversion} ${upgrade.post}"/>
         </java>
