@@ -263,7 +263,7 @@ CREATE TABLE InternalKeyBindingData (
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(254) NOT NULL,
     issuerDN VARCHAR(254) NOT NULL,
-    cryptoTokenId INTEGER NOT NULL,
+    cryptoTokenId INTEGER DEFAULT 0 NOT NULL,
     keyAlias VARCHAR(254),
     keyData CLOB NOT NULL,
     markedAsRecoverable SMALLINT NOT NULL,

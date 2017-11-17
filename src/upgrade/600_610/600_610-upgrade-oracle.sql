@@ -1,6 +1,6 @@
 -- These columns are added by the JPA provider if there are sufficient privileges
--- ALTER TABLE KeyRecoveryData ADD cryptoTokenId NUMBER(10) NOT NULL;
+-- ALTER TABLE KeyRecoveryData ADD cryptoTokenId NUMBER(10) DEFAULT 0 NOT NULL;
 -- ALTER TABLE KeyRecoveryData ADD keyAlias VARCHAR2(255 byte) DEFAULT NULL;
 -- ALTER TABLE KeyRecoveryData ADD publicKeyId VARCHAR2(255 byte) DEFAULT NULL;
--- If there were existing data in the table, we need to set the value of cryptoTokenId to 0
+-- If there were existing data in the table, we set the value of cryptoTokenId to 0, even if it's default 0
 -- UPDATE KeyRecoveryData SET cryptoTokenId=0;

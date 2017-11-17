@@ -338,7 +338,7 @@
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="markedAsRecoverableInt"><column name="markedAsRecoverable" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyData"><column name="keyData" column-definition="LONG VARCHAR" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="cryptoTokenId"><column name="cryptoTokenId" column-definition="INT4" nullable="false"/></basic>
+            <basic fetch="EAGER" name="cryptoTokenId"><column name="cryptoTokenId" column-definition="INT4 DEFAULT 0" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyAlias"><column name="keyAlias" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="publicKeyId"><column name="publicKeyId" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
