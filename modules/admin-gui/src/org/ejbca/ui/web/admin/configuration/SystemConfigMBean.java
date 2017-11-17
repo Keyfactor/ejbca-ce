@@ -18,8 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,7 +64,6 @@ import org.cesecore.config.RaStyleInfo.RaCssInfo;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -82,13 +79,10 @@ import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- *
  * Backing bean for the various system configuration pages.
  *
  * @version $Id$
- *
  */
-
 public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
@@ -291,15 +285,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private List<SelectItem> availableKeyAliases;
     private ListDataModel<String> nodesInCluster = null;
     private String currentNode = null;
-    private ListDataModel<CTLogInfo> ctLogs = null;
-    private String currentCTLogURL = null;
-    private String editedCTLogURL;
-    private int currentCTLogTimeout = 5000;
-    private boolean isCurrentCtLogMandatory = false;
-    private int editedCTLogTimeout;
-    private UploadedFile currentCTLogPublicKeyFile = null;
-    private UploadedFile editedCTLogPublicKeyFile;
-    private CTLogInfo editedCTLog;
     private boolean excludeActiveCryptoTokensFromClearCaches = true;
     private boolean customCertificateExtensionViewMode = false;
     private UploadedFile statedumpFile = null;
@@ -312,10 +297,60 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
+    private SystemConfigurationCtLogManager ctLogManager;
 
 
     public SystemConfigMBean() {
         super();
+    }
+
+    /**
+     * Get an object which can be used to manage the CT log configuration. This will create a new CT log manager for
+     * the CT logs in the current configuration if no CT log manager has been created, or the old CT log manager
+     * was flushed.
+     * @return the CT log manager for this bean
+     */
+    public SystemConfigurationCtLogManager getCtLogManager() {
+        if (ctLogManager == null) {
+            ctLogManager = new SystemConfigurationCtLogManager(getCurrentConfig().getCtLogs(),
+                new SystemConfigurationCtLogManager.SystemConfigurationHelper() {
+                    @Override
+                    public void saveCtLogs(final List<CTLogInfo> ctLogs) {
+                        getCurrentConfig().setCtLogs(ctLogs);
+                        saveCurrentConfig();
+                    }
+
+                    @Override
+                    public void addInfoMessage(final String languageKey) {
+                        SystemConfigMBean.this.addInfoMessage(languageKey);
+                    }
+
+                    @Override
+                    public void addErrorMessage(final String languageKey, final Object... params) {
+                        SystemConfigMBean.this.addErrorMessage(languageKey, params);
+                    }
+
+                    @Override
+                    public void addErrorMessage(final String languageKey) {
+                        SystemConfigMBean.this.addErrorMessage(languageKey);
+                    }
+
+                    @Override
+                    public List<String> getCertificateProfileNamesByCtLog(final CTLogInfo ctLog) {
+                        final List<String> usedByProfiles = new ArrayList<>();
+                        final Map<Integer, String> idToName = certificateProfileSession.getCertificateProfileIdToNameMap();
+                        for (Entry<Integer, CertificateProfile> entry : certificateProfileSession.getAllCertificateProfiles().entrySet()) {
+                            final int certificateProfileId = entry.getKey();
+                            final CertificateProfile certificateProfile = entry.getValue();
+                            if (certificateProfile.getEnabledCTLogs().contains(ctLog.getLogId())) {
+                                usedByProfiles.add(idToName.get(certificateProfileId));
+                            }
+                        }
+                        return usedByProfiles;
+                    }
+                });
+        }
+        return ctLogManager;
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -375,30 +410,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
     public void setCurrentNode(String node) {
         this.currentNode = node;
-    }
-
-    public String getCurrentCTLogURL() {
-        return currentCTLogURL;
-    }
-
-    public void setCurrentCTLogURL(String url) {
-        this.currentCTLogURL = url;
-    }
-
-    public int getCurrentCTLogTimeout() {
-        return this.currentCTLogTimeout;
-    }
-
-    public void setCurrentCTLogTimeout(int timeout) {
-        this.currentCTLogTimeout = timeout;
-    }
-
-    public UploadedFile getCurrentCTLogPublicKeyFile() {
-        return this.currentCTLogPublicKeyFile;
-    }
-
-    public void setCurrentCTLogPublicKeyFile(UploadedFile publicKeyFile) {
-        this.currentCTLogPublicKeyFile = publicKeyFile;
     }
 
     public boolean getExcludeActiveCryptoTokensFromClearCaches() {
@@ -740,13 +751,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-
     public void flushCache() {
         globalConfig = null;
         adminPreference = null;
         currentConfig = null;
         nodesInCluster = null;
-        ctLogs = null;
+        ctLogManager = null;
         raStyleInfos = null;
         excludeActiveCryptoTokensFromClearCaches = true;
         availableExtendedKeyUsages = null;
@@ -847,272 +857,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return list;
     }
 
-
-    // -------------------------------------------
-    //                 CTLogs
-    // -------------------------------------------
-
-    public String getCtLogUrl() {
-        return ctLogs.getRowData().getUrl();
-    }
-
-    public int getCtLogTimeout() {
-        return ctLogs.getRowData().getTimeout();
-    }
-
-    public String getCtLogPublicKeyID() {
-        return ctLogs.getRowData().getLogKeyIdString();
-    }
-
-    public ListDataModel<CTLogInfo> getCtLogs() {
-        if (ctLogs == null) {
-            List<CTLogInfo> logs = getCurrentConfig().getCtLogs();
-            ctLogs = new ListDataModel<>(logs);
-        }
-        return ctLogs;
-    }
-
-    public void addCTLog() {
-        if (currentCTLogURL == null || !currentCTLogURL.contains("://")) {
-            addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
-            return;
-        }
-        if (currentCTLogPublicKeyFile == null) {
-            addErrorMessage("CTLOGTAB_UPLOADFAILED");
-            return;
-        }
-        final int timeout = getCurrentCTLogTimeout();
-        if (timeout <= 0) {
-            addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
-            return;
-        }
-
-        final byte[] keybytes = getCTPubKeyUploadBytes(currentCTLogPublicKeyFile);
-        if (keybytes == null) {
-            // Error already reported
-            return;
-        }
-        final CTLogInfo ctlogToAdd = new CTLogInfo(CTLogInfo.fixUrl(currentCTLogURL), keybytes, isCurrentCtLogMandatory);
-        ctlogToAdd.setTimeout(timeout);
-
-        for (CTLogInfo existing : currentConfig.getCtLogs()) {
-            if (StringUtils.equals(existing.getUrl(), ctlogToAdd.getUrl())) {
-                addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
-                return;
-            }
-        }
-
-        List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
-        ctlogs.add(ctlogToAdd);
-        currentConfig.setCtLogs(ctlogs);
-        ctLogs = new ListDataModel<>(ctlogs);
-
-        saveCurrentConfig();
-        // Saved and well, clear field for next input
-        currentCTLogURL = null;
-    }
-
-    private byte[] getCTPubKeyUploadBytes(final UploadedFile upload) {
-        if (log.isDebugEnabled()) {
-            log.debug("Received uploaded public key file file: " + upload.getName());
-        }
-        try {
-            byte[] uploadedFileBytes = upload.getBytes();
-            return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
-        } catch (IOException e) {
-            log.info("Could not parse the public key file", e);
-            addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName(), e.getLocalizedMessage());
-            return null;
-        } catch (Exception e) {
-            log.info("Failed to add CT Log", e);
-            addErrorMessage("CTLOGTAB_GENERICADDERROR", e.getLocalizedMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Sets a value indicating whether the current active CT log entry is mandatory.
-     * @param isCurrentCtLogMandatory true iff the current entry is chosen as mandatory by the user
-     */
-    public void setIsCurrentCtLogMandatory(final boolean isCurrentCtLogMandatory) {
-        this.isCurrentCtLogMandatory = isCurrentCtLogMandatory;
-    }
-
-    /**
-     * Gets a value indicating whether the current active CT log entry is mandatory. The default
-     * option is false (not mandatory).
-     * @return true iff the current CT log entry is marked as mandatory
-     */
-    public boolean getIsCurrentCtLogMandatory() {
-        return isCurrentCtLogMandatory;
-    }
-
-    public void removeCTLog() {
-        final CTLogInfo ctlogToRemove = ctLogs.getRowData();
-        // Check if it's in use by certificate profiles
-        final List<String> usedByProfiles = new ArrayList<>();
-        final Map<Integer,String> idToName = certificateProfileSession.getCertificateProfileIdToNameMap();
-        for (Entry<Integer,CertificateProfile> entry : certificateProfileSession.getAllCertificateProfiles().entrySet()) {
-            final int certProfId = entry.getKey();
-            final CertificateProfile certProf = entry.getValue();
-            if (certProf.getEnabledCTLogs().contains(ctlogToRemove.getLogId())) {
-                usedByProfiles.add(idToName.get(certProfId));
-            }
-        }
-
-        if (!usedByProfiles.isEmpty()) {
-            addErrorMessage("CTLOGTAB_INUSEBYPROFILES", StringUtils.join(usedByProfiles, ", "));
-            return;
-        }
-
-        List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
-        ctlogs.remove(ctlogToRemove);
-        currentConfig.setCtLogs(ctlogs);
-        ctLogs = new ListDataModel<>(ctlogs);
-        saveCurrentConfig();
-    }
-
-    public boolean isFirstCTLog() {
-        final int index = ctLogs.getRowIndex();
-        return index == 0;
-    }
-
-    public boolean isLastCTLog() {
-        final int index = ctLogs.getRowIndex();
-        final int last = ctLogs.getRowCount() - 1;
-        return index == last;
-    }
-
-    public void moveCTLogUp() {
-        moveCTLog(-1);
-    }
-
-    public void moveCTLogDown() {
-        moveCTLog(1);
-    }
-
-    public void moveCTLog(final int direction) {
-        final int index = ctLogs.getRowIndex();
-        final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
-        Collections.swap(ctlogs, index, index + direction);
-
-        currentConfig.setCtLogs(ctlogs);
-        ctLogs = new ListDataModel<>(ctlogs);
-        saveCurrentConfig();
-
-        addInfoMessage("CTLOGTAB_MOVEDCTLOGS");
-    }
-
-    public String editCTLog() {
-        editedCTLog = ctLogs.getRowData();
-        editedCTLogURL = editedCTLog.getUrl();
-        editedCTLogTimeout = editedCTLog.getTimeout();
-        editedCTLogPublicKeyFile = null; // nothing will change unless a new file is uploaded
-        return "editCTLog";
-    }
-
-    public String getEditedCTLogDisplayName() {
-        try {
-            return new URL(editedCTLog.getUrl()).getHost();
-        } catch (MalformedURLException e) {
-            return editedCTLog.getUrl() + " (malformed URL)";
-        }
-    }
-
-    public String getEditedCTLogURL() {
-        return editedCTLogURL;
-    }
-
-    public void setEditedCTLogURL(final String url) {
-        editedCTLogURL = url;
-    }
-
-    public void setIsEditedCtLogMandatory(final boolean isEditedCtLogMandatory) {
-        this.editedCTLog.setIsMandatory(isEditedCtLogMandatory);
-    }
-
-    public boolean getIsEditedCtLogMandatory() {
-        return this.editedCTLog.isMandatory();
-    }
-
-    public String getEditedCTLogPublicKeyID() {
-        return editedCTLog.getLogKeyIdString();
-    }
-
-    public int getEditedCTLogTimeout() {
-        return editedCTLogTimeout;
-    }
-
-    public void setEditedCTLogTimeout(final int timeout) {
-        this.editedCTLogTimeout = timeout;
-    }
-
-    public UploadedFile getEditedCTLogPublicKeyFile() {
-        return editedCTLogPublicKeyFile;
-    }
-
-    public void setEditedCTLogPublicKeyFile(final UploadedFile publicKeyFile) {
-        this.editedCTLogPublicKeyFile = publicKeyFile;
-    }
-
-    public String saveEditedCTLog() {
-        log.trace(">saveEditedCTLog");
-        // Get and validate input
-        if (editedCTLogURL == null || !editedCTLogURL.contains("://")) {
-            addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
-            return "";
-        }
-        editedCTLogURL = CTLogInfo.fixUrl(editedCTLogURL);
-
-        final int timeout = getEditedCTLogTimeout();
-        if (timeout <= 0) {
-            addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
-            return "";
-        }
-
-        for (final CTLogInfo existing : currentConfig.getCtLogs()) {
-            if (existing.getLogId() != editedCTLog.getLogId() && StringUtils.equals(existing.getUrl(), editedCTLogURL)) {
-                addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
-                return "";
-            }
-        }
-
-        // Only replace the key if a new one was selected
-        if (editedCTLogPublicKeyFile != null) {
-            final byte[] keybytes = getCTPubKeyUploadBytes(editedCTLogPublicKeyFile);
-            if (keybytes == null) {
-                // Error already reported
-                return "";
-            }
-            editedCTLog.setLogPublicKey(keybytes);
-        }
-        editedCTLog.setTimeout(timeout);
-        editedCTLog.setUrl(editedCTLogURL);
-
-        // Update the configuration
-        final List<CTLogInfo> ctlogs = currentConfig.getCtLogs();
-        for (int i = 0; i < ctlogs.size(); i++) {
-            if (ctlogs.get(i).getLogId() == editedCTLog.getLogId()) {
-                // Update and save
-                ctlogs.set(i, editedCTLog);
-                currentConfig.setCtLogs(ctlogs);
-                saveCurrentConfig();
-                editedCTLog = null;
-                log.trace("<saveEditedCTLog [success]");
-                return "saved";
-            }
-        }
-        log.trace("<saveEditedCTLog [failure]");
-        throw new IllegalStateException("Log was not found. Can not save");
-    }
-
     // --------------------------------------------
     //               Protocol Configuration
     // --------------------------------------------
-    
+
     private AvailableProtocolsConfiguration protocolsConfiguration = null;
     private ListDataModel<ProtocolGuiInfo> availableProtocolInfos = null;
-    
+
     public AvailableProtocolsConfiguration getAvailableProtocolsConfiguration() {
         if (protocolsConfiguration == null) {
             protocolsConfiguration = (AvailableProtocolsConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
@@ -1120,14 +871,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return protocolsConfiguration;
     }
-    
+
     public ListDataModel<ProtocolGuiInfo> getAvailableProtocols() {
         if (availableProtocolInfos == null) {
             availableProtocolInfos = new ListDataModel<ProtocolGuiInfo>(getNewAvailableProtocolInfos());
         }
         return availableProtocolInfos;
     }
-    
+
     public void toggleProtocolStatus() {
         ProtocolGuiInfo protocolToToggle = availableProtocolInfos.getRowData();
         if (protocolToToggle.isEnabled()) {
@@ -1147,7 +898,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableProtocolInfos = null;
         getAvailableProtocols();
     }
-    
+
     private ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
         ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<ProtocolGuiInfo>();
         LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
@@ -1156,16 +907,16 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return protocolInfos;
     }
-    
+
     public class ProtocolGuiInfo {
         private String protocol;
         private boolean enabled;
-         
+
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
         }
-        
+
         public String getProtocol() {
             return protocol;
         }
@@ -1176,9 +927,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return enabled ? "Enabled" : "Disabled";
         }
     }
-    
-    
-    
+
+
+
     // --------------------------------------------
     //               Extended Key Usage
     // --------------------------------------------
@@ -1411,7 +1162,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             importedRaCssInfos = null;
             logoBytes = null;
             logoName = null;
-            
+
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
             addErrorMessage("STYLEIMPORTFAIL", e.getLocalizedMessage());
             log.info("Failed to import style files", e);

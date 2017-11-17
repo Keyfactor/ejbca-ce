@@ -576,62 +576,131 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 		
-		
-		<h:dataTable value="#{systemConfigMBean.ctLogs}" var="ctlog"
-					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogUrl}" title="#{web.text.CTLOGCONFIGURATION_URL} #{ctlog.url}"/>
-				<f:facet name="footer">
-					<h:inputText id="currentURL" value="#{systemConfigMBean.currentCTLogURL}" size="45" title="#{web.text.FORMAT_URI}" 
-						rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogPublicKeyID}" styleClass="monospace"/>
-				<f:facet name="footer">
-					<h:panelGroup>
- 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE} " rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
- 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" value="#{systemConfigMBean.currentCTLogPublicKeyFile}"
- 	 	 	 					       title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
- 	 	 	 		</h:panelGroup>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/></f:facet>
-				<h:outputText value="#{systemConfigMBean.ctLogTimeout}" styleClass="numberCell"/>
-				<f:facet name="footer">
-					<h:inputText id="currentTimeout" required="false"
-									value="#{systemConfigMBean.currentCTLogTimeout}"
-									title="#{web.text.FORMAT_MILLISECONDS}"
-									size="10"
-									rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
-   					</h:inputText>
-				</f:facet>
-			</h:column>
-			<h:column>
-   				<f:facet name="header">
-   					<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
-   				</f:facet>
-   				<h:commandButton action="#{systemConfigMBean.moveCTLogUp}" value="↑" title="#{web.text.MOVEUP}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{systemConfigMBean.firstCTLog}"/>
-   				<h:commandButton action="#{systemConfigMBean.moveCTLogDown}" value="↓" title="#{web.text.MOVEDOWN}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{systemConfigMBean.lastCTLog}"/>
-				<h:commandButton action="#{systemConfigMBean.editCTLog}" value="#{web.text.EDIT}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:commandButton action="#{systemConfigMBean.removeCTLog}" value="#{web.text.REMOVE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<f:facet name="footer">
-					<h:commandButton  value="#{web.text.ADD}" action="#{systemConfigMBean.addCTLog}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				</f:facet>
-			</h:column>
-			<h:column>
-			    <f:facet name="header">
-			        <h:outputText value="#{web.text.MANDATORY}" />
-			    </f:facet>
-			    <h:outputText value="#{ctlog.isMandatory() ? web.text.YES : web.text.NO}" />
-			    <f:facet name="footer">
-			        <h:selectBooleanCheckbox id="isMandatoryCtLog" value="#{systemConfigMBean.isCurrentCtLogMandatory}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
-			    </f:facet>
+		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
+		    <h:column>
+				<h3>
+				    <h:outputText value="#{label}"/>
+				</h3>
+				<h:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}" 
+				    var="ctlog"
+				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+					<h:column>
+		   				<f:facet name="header">
+		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
+		   			    </f:facet>
+						<h:outputText value="#{ctlog.url}" 
+						    title="#{web.text.CTLOGCONFIGURATION_URL}"/>
+						<f:facet name="footer">
+							<h:inputText id="currentURL" 
+							    value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).ctLogUrl}" 
+							    size="45" 
+							    title="#{web.text.FORMAT_URI}" 
+								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+						</f:facet>
+					</h:column>
+					<h:column>
+		   				<f:facet name="header">
+		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/>
+		   				</f:facet>
+						<h:outputText value="#{ctlog.logKeyIdString}" 
+						    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"
+						    styleClass="monospace"/>
+						<f:facet name="footer">
+							<h:panelGroup>
+		 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
+		 	 	 	 			    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" 
+		 	 	 	 			    value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).publicKeyFile}"
+		 	 	 	 			    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
+		 	 	 	 			    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+		 	 	 	 		</h:panelGroup>
+						</f:facet>
+					</h:column>
+					<h:column>
+		   				<f:facet name="header">
+		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/>
+		   				</f:facet>
+						<h:outputText value="#{ctlog.timeout}" 
+					        styleClass="numberCell"/>
+						<f:facet name="footer">
+					        <h:inputText id="currentTimeout" 
+							required="true" 
+							value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).ctLogTimeout}" 
+							title="#{web.text.FORMAT_MILLISECONDS}" 
+							size="10"
+							rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+						</f:facet>
+					</h:column>
+					<h:column>
+					    <f:facet name="header">
+					        <h:outputText value="#{web.text.LABEL}"/>
+					    </f:facet>
+					    <h:selectOneMenu value="#{ctlog.label}"
+					         rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+					         onchange="this.form.submit()">
+					         <f:selectItems value="#{systemConfigMBean.ctLogManager.getAvailableLabels(ctlog)}" />
+					    </h:selectOneMenu>
+					</h:column>
+					<h:column>
+                        <f:facet name="header">
+                           <h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+                        </f:facet>
+                        <h:commandButton action="#{systemConfigMBean.ctLogManager.editCtLog(ctlog)}" 
+                            value="#{web.text.EDIT}" 
+                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                        <h:commandButton action="#{systemConfigMBean.ctLogManager.removeCtLog(ctlog)}" 
+                             value="#{web.text.REMOVE}"
+                             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                             <h:commandButton action="#{systemConfigMBean.ctLogManager.moveUp(ctlog)}" 
+                            value="↑" title="#{web.text.MOVEUP}" 
+                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" 
+                            disabled="#{systemConfigMBean.ctLogManager.isOnTop(ctlog)}"/>
+                        <h:commandButton action="#{systemConfigMBean.ctLogManager.moveDown(ctlog)}" 
+                            value="↓" 
+                            title="#{web.text.MOVEDOWN}" 
+                            rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" 
+                            disabled="#{systemConfigMBean.ctLogManager.isOnBottom(ctlog)}"/>
+                        <f:facet name="footer">
+                            <h:commandButton  value="#{web.text.ADD}" 
+                             action="#{systemConfigMBean.ctLogManager.addCtLog(label)}" 
+                             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                        </f:facet>
+                    </h:column>
+				</h:dataTable>
 			</h:column>
 		</h:dataTable>
+		<h:panelGrid styleClass="grid" columns="5" style="border-collapse: collapse; right: auto; left: auto; margin: 5px;">
+	        <f:facet name="header">
+                <h:outputText value="#{web.text.CTLOGCONFIGURATION_ADD_NEW}" 
+                    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            </f:facet>
+               <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogUrl}" 
+                   title="#{web.text.CTLOGCONFIGURATION_URL}"
+                   rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+                   size="45"/>
+		    <h:panelGroup>
+		        <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
+                       rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <t:inputFileUpload id="currentCTLogKeyFile" 
+                    value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.publicKeyFile}"
+                    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
+                    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+             </h:panelGroup>
+             <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogTimeout}"
+                 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+                 size="10" 
+                 required="true"/>
+	         <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogLabel}"
+	             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+	         <h:commandButton value="#{web.text.ADD}" 
+                 action="#{systemConfigMBean.ctLogManager.addCtLog}" 
+                 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+	         <f:facet name="footer">
+	             <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank">
+	                 <h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS}"/>
+	             </h:outputLink>
+	         </f:facet>
+        </h:panelGrid>
 	</h:form>
 	
 	
