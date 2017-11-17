@@ -16,7 +16,7 @@ import org.cesecore.keys.util.KeyTools;
 /**
  * This class is used to manage CT logs in EJBCA's system configuration. It adds some additional
  * functionality to the CtLogManager, such as loading and saving state from the database, editing of
- * new CT logs, checking whether a CT log is in use before removal and language awareness.
+ * new CT logs, checking whether a CT log is in use before removing it and language awareness.
  * @version $Id$
  */
 public class SystemConfigurationCtLogManager extends CtLogManager {
