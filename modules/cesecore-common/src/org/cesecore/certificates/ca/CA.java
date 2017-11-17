@@ -139,7 +139,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
     private static final String APPROVALS = "approvals";
 
-    private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
+    private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<>();
 
     private ArrayList<Certificate> certificatechain = null;
     private ArrayList<Certificate> renewedcertificatechain = null;
@@ -156,7 +156,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         init(cainfo);
     }
     public void init(CAInfo cainfo) {
-        data = new LinkedHashMap<Object, Object>();
+        data = new LinkedHashMap<>();
 
         this.cainfo = cainfo;
 
@@ -181,7 +181,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
 
-        ArrayList<Integer> extendedservicetypes = new ArrayList<Integer>();
+        ArrayList<Integer> extendedservicetypes = new ArrayList<>();
         for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
             createExtendedCAService(next);
             if (log.isDebugEnabled()) {
@@ -224,7 +224,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /** Constructor used when retrieving existing CA from database. */
     public void init(HashMap<Object, Object> data) {
         loadData(data);
-        extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
+        extendedcaservicemap = new HashMap<>();
     }
 
     public void setCAInfo(CAInfo cainfo) {
@@ -469,7 +469,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             @SuppressWarnings("unchecked")
             final Collection<String> storechain = (Collection<String>) data.get(REQUESTCERTCHAIN);
             if (storechain != null) {
-                this.requestcertchain = new ArrayList<Certificate>();
+                this.requestcertchain = new ArrayList<>();
                 for (final String b64Cert : storechain) {
                     try {
                         this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class));
@@ -484,7 +484,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setRequestCertificateChain(Collection<Certificate> requestcertificatechain) {
-        final ArrayList<String> storechain = new ArrayList<String>();
+        final ArrayList<String> storechain = new ArrayList<>();
         for (final Certificate cert : requestcertificatechain) {
             try {
                 storechain.add(new String(Base64.encode(cert.getEncoded())));
@@ -493,7 +493,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             }
         }
         data.put(REQUESTCERTCHAIN, storechain);
-        this.requestcertchain = new ArrayList<Certificate>();
+        this.requestcertchain = new ArrayList<>();
         this.requestcertchain.addAll(requestcertificatechain);
     }
 
@@ -510,10 +510,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             if (storechain == null) {
                 return null;
             }
-            Iterator<String> iter = storechain.iterator();
-            this.certificatechain = new ArrayList<Certificate>();
-            while (iter.hasNext()) {
-                String b64Cert = iter.next();
+            this.certificatechain = new ArrayList<>();
+            for (final String b64Cert : storechain) {
                 try {
                     Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
                     if (cert != null) {
@@ -527,7 +525,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                         throw new IllegalArgumentException("Can not create certificate object from: " + b64Cert);
                     }
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException(e);
                 }
             }
         }
@@ -535,7 +533,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setCertificateChain(final Collection<Certificate> certificatechain) {
-        final ArrayList<String> storechain = new ArrayList<String>();
+        final ArrayList<String> storechain = new ArrayList<>();
         for (final Certificate cert : certificatechain) {
             try {
                 storechain.add(new String(Base64.encode(cert.getEncoded())));
@@ -544,7 +542,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             }
         }
         data.put(CERTIFICATECHAIN, storechain);
-        this.certificatechain = new ArrayList<Certificate>(certificatechain);
+        this.certificatechain = new ArrayList<>(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
     }
 
@@ -558,10 +556,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             if (storechain == null) {
                 return null;
             }
-            Iterator<String> iter = storechain.iterator();
-            renewedcertificatechain = new ArrayList<Certificate>();
-            while (iter.hasNext()) {
-                String b64Cert = iter.next();
+            renewedcertificatechain = new ArrayList<>();
+            for (final String b64Cert : storechain) {
                 try {
                     Certificate cert = CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes()), Certificate.class);
                     if (log.isDebugEnabled()) {
@@ -583,7 +579,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param certificatechain collection of the renewed CA certificates to be stored
      */
     public void setRenewedCertificateChain(final List<Certificate> certificatechain) {
-        ArrayList<String> storechain = new ArrayList<String>();
+        ArrayList<String> storechain = new ArrayList<>();
         for (Certificate cert : certificatechain) {
             try {
                 String b64Cert = new String(Base64.encode(cert.getEncoded()));
@@ -594,14 +590,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         data.put(RENEWEDCERTIFICATECHAIN, storechain);
 
-        renewedcertificatechain = new ArrayList<Certificate>();
+        renewedcertificatechain = new ArrayList<>();
         renewedcertificatechain.addAll(certificatechain);
         cainfo.setRenewedCertificateChain(certificatechain);
     }
 
     public void setRolloverCertificateChain(Collection<Certificate> certificatechain) {
         Iterator<Certificate> iter = certificatechain.iterator();
-        ArrayList<String> storechain = new ArrayList<String>();
+        ArrayList<String> storechain = new ArrayList<>();
         while (iter.hasNext()) {
             Certificate cert = iter.next();
             try {
@@ -619,7 +615,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (storechain == null) {
             return null;
         }
-        final List<Certificate> chain = new ArrayList<Certificate>(storechain.size());
+        final List<Certificate> chain = new ArrayList<>(storechain.size());
         for (Object o : storechain) {
             final String b64Cert = (String)o;
             try {
@@ -651,7 +647,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (certificatechain.size() == 0) {
             return null;
         }
-        Certificate ret = (Certificate) certificatechain.get(0);
+        Certificate ret = certificatechain.get(0);
         if (log.isDebugEnabled()) {
             log.debug("CA certificate chain is " + certificatechain.size() + " levels deep.");
             log.debug("CA-cert subjectDN: " + CertTools.getSubjectDN(ret));
@@ -781,10 +777,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
-        if(approvals == null) {
-            approvals = new LinkedHashMap<>();
-        }
-        data.put(APPROVALS, new LinkedHashMap<ApprovalRequestType, Integer>(approvals));
+        data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
     }
     
     /**
@@ -796,7 +789,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
         if (data.get(APPROVALSETTINGS) == null) {
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
         return (Collection<Integer>) data.get(APPROVALSETTINGS);
     }
@@ -892,7 +885,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         // Update or create extended CA services
         final Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
-            final Collection<ExtendedCAServiceInfo> newInfos = new ArrayList<ExtendedCAServiceInfo>();
+            final Collection<ExtendedCAServiceInfo> newInfos = new ArrayList<>();
             Collection<Integer> extendedservicetypes = getExternalCAServiceTypes(); // Se we can add things to this
             for (ExtendedCAServiceInfo info : infos) {
                 ExtendedCAService service = this.getExtendedCAService(info.getType());
@@ -940,11 +933,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * 
-     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
-     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
-     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
-     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     * @param publicKey provided public key. Will not have any precedence over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
      * @param notBefore null or a custom date to use as notBefore date
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param encodedValidity requested validity as SimpleTime string or ISO8601 date string (see ValidityDate.java).
@@ -952,7 +942,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
      * @param cceConfig containing a list of available custom certificate extensions
-     * @return
+     * @return The newly created certificate
      * @throws Exception
      */
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore, String encodedValidity,
@@ -973,11 +963,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * 
      * @param cryptoToken 
-     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * @param request provided request message containing optional information, and will be set with the signing key and provider. 
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
-     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
-     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     * publicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param notBefore
      * @param notAfter
@@ -986,7 +976,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      *            profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
-     * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
+     * @param certGenParams Extra parameters for certificate generation, e.g. for the CT extension. May contain references to session beans.
      * @param cceConfig containing a list of available custom certificate extensions
      * @return the generated certificate
      * 
@@ -1009,11 +999,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * 
-     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * @param request provided request message containing optional information, and will be set with the signing key and provider. 
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Can be null. Its public key is going to be used if 
-     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null
-     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     * publicKey == null && subject.extendedInformation.certificateRequest == null
+     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
      */
     public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
@@ -1035,7 +1025,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param cryptoToken
      * @param cert
      * @param includeChain
-     * @return
+     * @return A DER-encoded PKCS#7 
      * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
      * @see CertTools#createCertsOnlyCMS(List) for how to craete a certs-only PKCS7/CMS
      */
@@ -1083,7 +1073,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * General encryption method used to decrypt using a CA
      * 
      * @param data the data to decrypt
-     * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
+     * @param cAKeyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
      * @return decrypted data
      * @throws CMSException In case parsing/decryption of CMS data fails. 
      * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
@@ -1149,7 +1139,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
-            returnval = (ExtendedCAService) extendedcaservicemap.get(Integer.valueOf(type));
+            returnval = extendedcaservicemap.get(Integer.valueOf(type));
             if (returnval == null) {
             	@SuppressWarnings("rawtypes")
                 HashMap serviceData = getExtendedCAServiceData(type);
@@ -1199,7 +1189,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     @SuppressWarnings("unchecked")
     public Collection<Integer> getExternalCAServiceTypes() {
         if (data.get(EXTENDEDCASERVICES) == null) {
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
         return (Collection<Integer>) data.get(EXTENDEDCASERVICES);
     }

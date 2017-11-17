@@ -231,8 +231,6 @@ public class X509CA extends CA implements Serializable {
 
     /**
      * Constructor used when retrieving existing X509CA from database.
-     * 
-     * @throws IllegalCryptoTokenException
      */
     @SuppressWarnings("deprecation")
     public X509CA(final HashMap<Object, Object> data, final int caId, final String subjectDN, final String name, final int status,
@@ -690,7 +688,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     /**
-     * @see CA#createRequest(Collection, String, Certificate, int)
+     * @see CA#createRequest(CryptoToken, Collection, String, Certificate, int)
      */
     @Override
     public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
@@ -699,10 +697,8 @@ public class X509CA extends CA implements Serializable {
         ASN1Set attrset = new DERSet();
         if (attributes != null) {
             log.debug("Adding attributes in the request");
-            Iterator<ASN1Encodable> iter = attributes.iterator();
             ASN1EncodableVector vec = new ASN1EncodableVector();
-            while (iter.hasNext()) {
-                ASN1Encodable o = (ASN1Encodable) iter.next();
+            for (final ASN1Encodable o : attributes) {
                 vec.add(o);
             }
             attrset = new DERSet(vec);
@@ -790,11 +786,11 @@ public class X509CA extends CA implements Serializable {
     
     
     /**
-     * @param providedRequestMessage provided request message containing optional information, and will be set with the signing key and provider. 
+     * @param request provided request message containing optional information, and will be set with the signing key and provider. 
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if 
-     * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
-     * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
+     * publicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
+     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
      */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
@@ -1502,9 +1498,7 @@ public class X509CA extends CA implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
             }
-            final Iterator<RevokedCertInfo> it = certs.iterator();
-            while (it.hasNext()) {
-                final RevokedCertInfo certinfo = (RevokedCertInfo) it.next();
+            for (final RevokedCertInfo certinfo : certs) {
                 crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
             }
             if (log.isDebugEnabled()) {
@@ -1603,8 +1597,7 @@ public class X509CA extends CA implements Serializable {
                 String crlFreshestDP = getCADefinedFreshestCRL();
                 List<DistributionPoint> freshestDistPoints = generateDistributionPoints(crlFreshestDP);
                 if (freshestDistPoints.size() > 0) {
-                    CRLDistPoint ext = new CRLDistPoint((DistributionPoint[]) freshestDistPoints.toArray(new DistributionPoint[freshestDistPoints
-                            .size()]));
+                    CRLDistPoint ext = new CRLDistPoint(freshestDistPoints.toArray(new DistributionPoint[freshestDistPoints.size()]));
 
                     // According to the RFC, the Freshest CRL extension on a
                     // CRL must not be marked as critical. Therefore it is
@@ -1672,14 +1665,9 @@ public class X509CA extends CA implements Serializable {
      * @return list of distribution points.
      */
     private List<DistributionPoint> generateDistributionPoints(String distPoints) {
-        if (distPoints == null) {
-            distPoints = "";
-        }
         // Multiple CDPs are separated with the ';' sign
-        Iterator<String> it = StringTools.splitURIs(distPoints).iterator();
-        ArrayList<DistributionPoint> result = new ArrayList<DistributionPoint>();
-        while (it.hasNext()) {
-            String uri = (String) it.next();
+        ArrayList<DistributionPoint> result = new ArrayList<>();
+        for (final String uri : StringTools.splitURIs(StringUtils.defaultString(distPoints))) {
             GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
             if (log.isDebugEnabled()) {
                 log.debug("Added CRL distpoint: " + uri);
@@ -1694,6 +1682,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
@@ -1701,6 +1690,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @Override
     @SuppressWarnings("deprecation")
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
@@ -1811,6 +1801,7 @@ public class X509CA extends CA implements Serializable {
      * instantiated in the regular upgrade.
      */
     @SuppressWarnings({ "rawtypes", "deprecation" })
+    @Override
     public boolean upgradeExtendedCAServices() {
         boolean retval = false;
         // call upgrade, if needed, on installed CA services
