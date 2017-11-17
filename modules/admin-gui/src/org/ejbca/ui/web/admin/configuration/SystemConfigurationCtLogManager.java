@@ -36,7 +36,10 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         private CTLogInfo ctLogBeingEdited;
 
         public String getCtLogUrl() {
-            return url;
+            if (StringUtils.isEmpty(url)) {
+                return null;
+            }
+            return CTLogInfo.fixUrl(url);
         }
 
         public UploadedFile getPublicKeyFile() {
@@ -210,7 +213,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return;
         }
 
-        final CTLogInfo newCtLog = new CTLogInfo(CTLogInfo.fixUrl(ctLogEditor.getCtLogUrl()), newCtLogPublicKey, label,
+        final CTLogInfo newCtLog = new CTLogInfo(ctLogEditor.getCtLogUrl(), newCtLogPublicKey, label,
                 ctLogEditor.getCtLogTimeout());
 
         if (!super.canAdd(newCtLog)) {
@@ -350,8 +353,8 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         for (final CTLogInfo existing : super.getAllCtLogs()) {
             // TODO Perhaps change this logic to something else
             final boolean isSameLog = existing.getLogId() == ctLogToUpdate.getLogId();
-            final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogToUpdate.getUrl());
-            final boolean inSameGroup = StringUtils.equals(existing.getLabel(), ctLogToUpdate.getLabel());
+            final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogEditorInEditMode.getCtLogUrl());
+            final boolean inSameGroup = StringUtils.equals(existing.getLabel(), ctLogEditorInEditMode.getCtLogLabel());
             if (!isSameLog && hasSameUrl && inSameGroup) {
                 systemConfigurationHelper.addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
                 return StringUtils.EMPTY;
