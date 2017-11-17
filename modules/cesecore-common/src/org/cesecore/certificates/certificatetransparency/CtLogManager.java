@@ -133,7 +133,7 @@ public class CtLogManager {
     }
 
     /**
-     * Determine whether the CT log given as argument can be added to this CT log manager. A CT log cannot be added
+     * Determine whether the CT log given as input can be added to this CT log manager. A CT log cannot be added
      * if the following condition holds for another CT log:
      * <ul>
      *   <li>The other log has an ID identical to the  CT log given as argument</li>
