@@ -37,6 +37,7 @@ public final class CTLogInfo implements Serializable {
     private String url; // base URL, without "add-chain" or "add-pre-chain"
     private int timeout = 5000; // milliseconds
     private boolean isMandatory;
+    private String label;
 
     private transient PublicKey publicKey;
 
@@ -52,7 +53,7 @@ public final class CTLogInfo implements Serializable {
      * @param publicKeyBytes  The ASN1 encoded public key of the log.
      * @param isMandatory a boolean indicating whether this is mandatory log
      */
-    public CTLogInfo(final String url, final byte[] publicKeyBytes, final boolean isMandatory) {
+    public CTLogInfo(final String url, final byte[] publicKeyBytes, final String label, final int timeout) {
         if (!url.endsWith("/")) {
             log.error("CT Log URL must end with a slash. URL: "+url); // EJBCA 6.4 didn't enforce this due to a regression
         }
@@ -65,6 +66,15 @@ public final class CTLogInfo implements Serializable {
             throw new IllegalArgumentException("publicKeyBytes is null");
         }
         this.publicKeyBytes = publicKeyBytes.clone();
+        this.label = label;
+        this.timeout = timeout;
+    }
+
+    /**
+     * TODO Remove this
+     */
+    public CTLogInfo(final String url, final byte[] publicKeyBytes, final boolean isMandatory) {
+        this(url, publicKeyBytes, null, 5000);
         this.isMandatory = isMandatory;
     }
 
@@ -85,6 +95,10 @@ public final class CTLogInfo implements Serializable {
     public PublicKey getLogPublicKey() {
         ensureParsed();
         return publicKey;
+    }
+
+    public byte[] getPublicKeyBytes() {
+        return publicKeyBytes;
     }
 
     public void setLogPublicKey(final byte[] publicKeyBytes) {
@@ -151,5 +165,33 @@ public final class CTLogInfo implements Serializable {
 
     public void setIsMandatory(final boolean isMandatory) {
         this.isMandatory = isMandatory;
+    }
+
+    public String getLabel() {
+        return label == null ? "Unlabeled" : label;
+    }
+
+    public void setLabel(final String label) {
+        this.label = label;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || o.getClass() != CTLogInfo.class) {
+            return false;
+        }
+
+        final CTLogInfo ctLogInfo = (CTLogInfo) o;
+        return this.getLogId() == ctLogInfo.getLogId();
+    }
+
+    @Override
+    public int hashCode() {
+        return logId;
+    }
+
+    @Override
+    public String toString() {
+        return getUrl();
     }
 }
