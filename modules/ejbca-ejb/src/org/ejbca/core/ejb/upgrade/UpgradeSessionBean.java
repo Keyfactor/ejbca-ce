@@ -739,7 +739,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					Collection<Integer> extendedServiceTypes = ca.getExternalCAServiceTypes();
 					for (Integer type : extendedServiceTypes) {
 						ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
-						if (info == null) {
+						if (info != null) {
 							@SuppressWarnings("rawtypes")
                             HashMap data = ca.getExtendedCAServiceData(type);
 							switch (type) {
