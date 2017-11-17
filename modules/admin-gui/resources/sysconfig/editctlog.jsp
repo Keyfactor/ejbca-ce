@@ -42,7 +42,7 @@ org.cesecore.authorization.control.StandardRules
 </head>
 <body>
     <h1>
-        <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDITLOG}: #{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.ctLogBeingEdited.url}"/>
+        <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDITLOG}: #{systemConfigMBean.ctLogManager.ctLogEditor.ctLogBeingEdited.url}"/>
         <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
     </h1>
     <div class="message">
@@ -56,26 +56,26 @@ org.cesecore.authorization.control.StandardRules
             <h:panelGroup id="placeholder1"/>
 
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
-            <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.ctLogUrl}" size="46"/>
+            <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}" size="46"/>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_CURRENT_PUBLICKEY}"/>
-            <h:outputText value="#{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.ctLogBeingEdited.logKeyIdString}" styleClass="monospace"/>
+            <h:outputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogBeingEdited.logKeyIdString}" styleClass="monospace"/>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_REPLACE_PUBLICKEY} "/>
             <t:inputFileUpload id="editedCTLogKeyFile" 
-                value="#{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.publicKeyFile}" 
+                value="#{systemConfigMBean.ctLogManager.ctLogEditor.publicKeyFile}" 
                 title="#{web.text.CTLOGCONFIGURATION_NEW_PUBLICKEYFILE}"/>
             
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/>
             <h:inputText id="editedCTLogTimeout" 
                 required="true"
-                value="#{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.ctLogTimeout}"
+                value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogTimeout}"
                 title="#{web.text.FORMAT_MILLISECONDS}"
                 size="10"/>
             <h:outputText value="#{web.text.LABEL}"/>
             <h:inputText id="editedCtLogLabel"
                 required="true"
-                value="#{systemConfigMBean.ctLogManager.ctLogEditorInEditMode.ctLogLabel}"
+                value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogLabel}"
                 size="46"/>
                 
         </h:panelGrid>

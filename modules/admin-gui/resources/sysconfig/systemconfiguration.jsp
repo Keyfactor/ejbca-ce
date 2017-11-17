@@ -576,27 +576,20 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 		
-		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
+		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label" style="width: 1080px;">
 		    <h:column>
 				<h3>
 				    <h:outputText value="#{label}"/>
 				</h3>
 				<h:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}" 
 				    var="ctlog"
-				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; width: 100%;">
 					<h:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
 		   			    </f:facet>
 						<h:outputText value="#{ctlog.url}" 
 						    title="#{web.text.CTLOGCONFIGURATION_URL}"/>
-						<f:facet name="footer">
-							<h:inputText id="currentURL" 
-							    value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).ctLogUrl}" 
-							    size="45" 
-							    title="#{web.text.FORMAT_URI}" 
-								rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
-						</f:facet>
 					</h:column>
 					<h:column>
 		   				<f:facet name="header">
@@ -605,16 +598,6 @@ org.cesecore.authorization.AuthorizationDeniedException
 						<h:outputText value="#{ctlog.logKeyIdString}" 
 						    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"
 						    styleClass="monospace"/>
-						<f:facet name="footer">
-							<h:panelGroup>
-		 	 	 	 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
-		 	 	 	 			    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-		 	 	 	 			<t:inputFileUpload id="currentCTLogKeyFile" 
-		 	 	 	 			    value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).publicKeyFile}"
-		 	 	 	 			    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
-		 	 	 	 			    rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-		 	 	 	 		</h:panelGroup>
-						</f:facet>
 					</h:column>
 					<h:column>
 		   				<f:facet name="header">
@@ -622,14 +605,6 @@ org.cesecore.authorization.AuthorizationDeniedException
 		   				</f:facet>
 						<h:outputText value="#{ctlog.timeout}" 
 					        styleClass="numberCell"/>
-						<f:facet name="footer">
-					        <h:inputText id="currentTimeout" 
-							required="true" 
-							value="#{systemConfigMBean.ctLogManager.getCtLogEditor(label).ctLogTimeout}" 
-							title="#{web.text.FORMAT_MILLISECONDS}" 
-							size="10"
-							rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-						</f:facet>
 					</h:column>
 					<h:column>
 					    <f:facet name="header">
@@ -660,37 +635,37 @@ org.cesecore.authorization.AuthorizationDeniedException
                             title="#{web.text.MOVEDOWN}" 
                             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" 
                             disabled="#{systemConfigMBean.ctLogManager.isOnBottom(ctlog)}"/>
-                        <f:facet name="footer">
-                            <h:commandButton  value="#{web.text.ADD}" 
-                             action="#{systemConfigMBean.ctLogManager.addCtLog(label)}" 
-                             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                        </f:facet>
                     </h:column>
 				</h:dataTable>
 			</h:column>
 		</h:dataTable>
-		<h:panelGrid styleClass="grid" columns="5" style="border-collapse: collapse; right: auto; left: auto; margin: 5px;">
+		<h:panelGrid styleClass="grid" columns="5" style="border-collapse: collapse; right: auto; left: auto; margin: 5px; width: 1070px;">
 	        <f:facet name="header">
                 <h:outputText value="#{web.text.CTLOGCONFIGURATION_ADD_NEW}" 
                     rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
             </f:facet>
-               <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogUrl}" 
-                   title="#{web.text.CTLOGCONFIGURATION_URL}"
-                   rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                   size="45"/>
+            <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
+            <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/>
+            <h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/>
+            <h:outputText value="#{web.text.LABEL}"/>
+            <h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+            <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}" 
+                title="#{web.text.FORMAT_URI}"
+                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
+                size="45"/>
 		    <h:panelGroup>
 		        <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
                        rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
                 <t:inputFileUpload id="currentCTLogKeyFile" 
-                    value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.publicKeyFile}"
-                    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
+                    value="#{systemConfigMBean.ctLogManager.ctLogEditor.publicKeyFile}"
+                    title="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}"
                     rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
              </h:panelGroup>
-             <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogTimeout}"
+             <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogTimeout}"
                  rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
                  size="10" 
                  required="true"/>
-	         <h:inputText value="#{systemConfigMBean.ctLogManager.defaultCtLogEditor.ctLogLabel}"
+	         <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogLabel}"
 	             rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 	         <h:commandButton value="#{web.text.ADD}" 
                  action="#{systemConfigMBean.ctLogManager.addCtLog}" 
