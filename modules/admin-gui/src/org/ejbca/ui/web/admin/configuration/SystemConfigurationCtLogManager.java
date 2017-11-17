@@ -2,9 +2,7 @@ package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -24,9 +22,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     private static final String CT_LOG_SAVED = "saved";
     private static final Logger log = Logger.getLogger(SystemConfigurationCtLogManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
-    private Map<String, CtLogEditor> ctLogEditors;
-    private CtLogEditor defaultCtLogEditor;
-    private CtLogEditor ctLogEditorInEditMode;
+    private final CtLogEditor ctLogEditor;
 
     public class CtLogEditor {
         private String url;
@@ -68,6 +64,10 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
 
         public void setCtLogTimeout(final int timeout) {
             this.timeout = timeout;
+        }
+
+        public boolean hasValidUrl() {
+            return url.contains("://");
         }
 
         /**
@@ -143,20 +143,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     public SystemConfigurationCtLogManager(final List<CTLogInfo> ctLogs, final SystemConfigurationHelper systemConfigurationHelper) {
         super(ctLogs);
         this.systemConfigurationHelper = systemConfigurationHelper;
-        this.ctLogEditors = getCtLogEditors();
-        this.defaultCtLogEditor = new CtLogEditor();
-    }
-
-    /**
-     * Creates one CT log editor per label and returns them in a map.
-     * @return mapping between labels and CT log editors
-     */
-    private Map<String, CtLogEditor> getCtLogEditors() {
-        final HashMap<String, CtLogEditor> availableCtLogEditors = new HashMap<String, CtLogEditor>();
-        for (final String label : super.getLabels()) {
-            availableCtLogEditors.put(label, new CtLogEditor());
-        }
-        return availableCtLogEditors;
+        this.ctLogEditor = new CtLogEditor();
     }
 
     private byte[] getCtLogPublicKey(final UploadedFile upload) {
@@ -178,22 +165,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     }
 
     /**
-     * Add a new CT log with the label given as argument. The contents of the CT log, such as URL and
-     * public key is fetched from the corresponding CT log editor.
-     * @param label the label of the new CT log
-     */
-    public void addCtLog(final String label) {
-        addCtLog(getCtLogEditor(label), label);
-    }
-
-    /**
-     * Adds a CT log with the information stored in the default CT log editor.
+     * Adds a CT log with the information stored in the CT log editor.
      */
     public void addCtLog() {
-        addCtLog(defaultCtLogEditor, defaultCtLogEditor.getCtLogLabel());
-    }
-
-    private void addCtLog(final CtLogEditor ctLogEditor, final String label) {
         if (ctLogEditor.getCtLogUrl() == null || !ctLogEditor.getCtLogUrl().contains("://")) {
             systemConfigurationHelper.addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
             return;
@@ -213,7 +187,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return;
         }
 
-        final CTLogInfo newCtLog = new CTLogInfo(ctLogEditor.getCtLogUrl(), newCtLogPublicKey, label,
+        final CTLogInfo newCtLog = new CTLogInfo(ctLogEditor.getCtLogUrl(), newCtLogPublicKey, ctLogEditor.getCtLogLabel(),
                 ctLogEditor.getCtLogTimeout());
 
         if (!super.canAdd(newCtLog)) {
@@ -223,8 +197,6 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
 
         super.addCtLog(newCtLog);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
-
-        ctLogEditors = getCtLogEditors();
         ctLogEditor.clear();
     }
 
@@ -236,7 +208,6 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             return;
         }
         super.removeCtLog(ctLog);
-        ctLogEditors = getCtLogEditors();
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
     }
 
@@ -286,36 +257,17 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
      * @return the constant string EDIT_CT_LOG
      */
     public String editCtLog(final CTLogInfo ctLog) {
-        final CtLogEditor ctLogEditor = getCtLogEditor(ctLog.getLabel());
+        ;
         ctLogEditor.loadIntoEditor(ctLog);
-        ctLogEditorInEditMode = ctLogEditor;
         return EDIT_CT_LOG;
     }
 
     /**
-     * Returns an editor of CT logs for a particular label which allows you to
-     * change the fields of a CT log to add.
-     * @return an editor of CT logs for the label given as argument
+     * Retrieves the CT log editor for this CT log manager.
+     * @return an editor which can be used to edit CT logs
      */
-    public CtLogEditor getCtLogEditor(final String label) {
-        return ctLogEditors.get(label);
-    }
-
-    /**
-     * Retrieves the default CT log editor for this CT log manager.
-     * @return the default CT log editor
-     */
-    public CtLogEditor getDefaultCtLogEditor() {
-        return defaultCtLogEditor;
-    }
-
-    /**
-     * Returns the CT log editor belonging to the CT log given as argument
-     * to a previous invocation of @link{#editCtLog}.
-     * @return the CT editor currently in edit mode
-     */
-    public CtLogEditor getCtLogEditorInEditMode() {
-        return ctLogEditorInEditMode;
+    public CtLogEditor getCtLogEditor() {
+        return ctLogEditor;
     }
 
     /**
@@ -324,24 +276,21 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
      * @throws IllegalStateException if there is no CT log to save
      */
     public String saveCtLogBeingEdited() {
-        if (ctLogEditorInEditMode == null) {
-            throw new IllegalStateException("No CT log editor in edit mode");
-        }
-        if (ctLogEditorInEditMode.getCtLogBeingEdited() == null) {
+        if (ctLogEditor.getCtLogBeingEdited() == null) {
             throw new IllegalStateException("The CT log being edited has already been saved or was never loaded.");
         }
 
         /* Validate data entry by the user */
-        if (!ctLogEditorInEditMode.getCtLogUrl().contains("://")) {
+        if (!ctLogEditor.hasValidUrl()) {
             systemConfigurationHelper.addErrorMessage("CTLOGTAB_MISSINGPROTOCOL");
             return StringUtils.EMPTY;
         }
-        if (ctLogEditorInEditMode.getCtLogTimeout() <= 0) {
+        if (ctLogEditor.getCtLogTimeout() <= 0) {
             systemConfigurationHelper.addErrorMessage("CTLOGTAB_TIMEOUTNEGATIVE");
             return StringUtils.EMPTY;
         }
-        if (ctLogEditorInEditMode.getPublicKeyFile() != null) {
-            final byte[] keyBytes = getCtLogPublicKey(ctLogEditorInEditMode.getPublicKeyFile());
+        if (ctLogEditor.getPublicKeyFile() != null) {
+            final byte[] keyBytes = getCtLogPublicKey(ctLogEditor.getPublicKeyFile());
             if (keyBytes == null) {
                 // Error already reported
                 return StringUtils.EMPTY;
@@ -349,12 +298,12 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
 
         /* Ensure the new log configuration is not conflicting with another log */
-        final CTLogInfo ctLogToUpdate = ctLogEditorInEditMode.getCtLogBeingEdited();
+        final CTLogInfo ctLogToUpdate = ctLogEditor.getCtLogBeingEdited();
         for (final CTLogInfo existing : super.getAllCtLogs()) {
             // TODO Perhaps change this logic to something else
             final boolean isSameLog = existing.getLogId() == ctLogToUpdate.getLogId();
-            final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogEditorInEditMode.getCtLogUrl());
-            final boolean inSameGroup = StringUtils.equals(existing.getLabel(), ctLogEditorInEditMode.getCtLogLabel());
+            final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogEditor.getCtLogUrl());
+            final boolean inSameGroup = StringUtils.equals(existing.getLabel(), ctLogEditor.getCtLogLabel());
             if (!isSameLog && hasSameUrl && inSameGroup) {
                 systemConfigurationHelper.addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
                 return StringUtils.EMPTY;
@@ -362,18 +311,17 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
 
         /* Update the configuration */
-        final String url = ctLogEditorInEditMode.getCtLogUrl();
-        final byte[] keyBytes = ctLogEditorInEditMode.getPublicKeyFile() != null ? getCtLogPublicKey(ctLogEditorInEditMode.getPublicKeyFile())
-                : ctLogEditorInEditMode.getCtLogBeingEdited().getPublicKeyBytes();
-        final int timeout = ctLogEditorInEditMode.getCtLogTimeout();
-        final String label = ctLogEditorInEditMode.getCtLogLabel();
+        final String url = ctLogEditor.getCtLogUrl();
+        final byte[] keyBytes = ctLogEditor.getPublicKeyFile() != null ? getCtLogPublicKey(ctLogEditor.getPublicKeyFile())
+                : ctLogEditor.getCtLogBeingEdited().getPublicKeyBytes();
+        final int timeout = ctLogEditor.getCtLogTimeout();
+        final String label = ctLogEditor.getCtLogLabel();
         ctLogToUpdate.setLogPublicKey(keyBytes);
         ctLogToUpdate.setTimeout(timeout);
         ctLogToUpdate.setUrl(url);
         ctLogToUpdate.setLabel(label);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
-        ctLogEditorInEditMode.stopEditing();
-        ctLogEditors = getCtLogEditors();
+        ctLogEditor.stopEditing();
         return CT_LOG_SAVED;
     }
 
@@ -381,6 +329,5 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     public void renameLabel(final String oldLabel, final String newLabel) {
         super.renameLabel(oldLabel, newLabel);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
-        ctLogEditors = getCtLogEditors();
     }
 }
