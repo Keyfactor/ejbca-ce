@@ -43,7 +43,7 @@
 			</h:column>
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
-				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionView}" disabled="#{certificateProfile.fixed}"/>
+				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionView}"/>
 				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
