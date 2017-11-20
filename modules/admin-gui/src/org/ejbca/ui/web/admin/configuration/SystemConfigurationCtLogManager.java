@@ -27,7 +27,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         private String url;
         private UploadedFile publicKeyFile;
         private String label;
-        private int timeout;
+        private int timeout = 5000;
         private CTLogInfo ctLogBeingEdited;
 
         public String getCtLogUrl() {
