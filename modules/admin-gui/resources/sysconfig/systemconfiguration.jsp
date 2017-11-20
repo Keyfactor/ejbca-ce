@@ -613,7 +613,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 					    <h:selectOneMenu value="#{ctlog.label}"
 					         rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
 					         onchange="this.form.submit()">
-					         <f:selectItems value="#{systemConfigMBean.ctLogManager.getAvailableLabels(ctlog)}" />
+					         <f:selectItems value="#{systemConfigMBean.ctLogManager.labels}" />
 					    </h:selectOneMenu>
 					</h:column>
 					<h:column>

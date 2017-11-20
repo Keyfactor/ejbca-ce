@@ -1,7 +1,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -226,38 +225,12 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     }
 
     /**
-     * Returns a list of all available labels for a given CT log, including the label of the CT log itself.
-     * A label is considered "available" if it is possible to switch to this label without creating duplicates.
-     * @return a list of available labels for the given CT log
-     */
-    public List<String> getAvailableLabels(final CTLogInfo ctLog) {
-        final List<String> allLabels = super.getLabels();
-        final List<String> availableLabels = new ArrayList<String>();
-        for (final String label : allLabels) {
-            if (StringUtils.equals(ctLog.getLabel(), label) || !groupHasCtLogWithUrl(getCtLogsByLabel(label), ctLog.getUrl())) {
-                availableLabels.add(label);
-            }
-        }
-        return availableLabels;
-    }
-
-    private boolean groupHasCtLogWithUrl(final List<CTLogInfo> ctLogGroup, final String url) {
-        for (final CTLogInfo ctLog : ctLogGroup) {
-            if (StringUtils.equals(ctLog.getUrl(), url)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Prepares for a CT log to be edited. This method will load the specified CT log into
      * the correct CT log editor and set the editor in edit mode.
      * @param ctLog the CT log to be edited
      * @return the constant string EDIT_CT_LOG
      */
     public String editCtLog(final CTLogInfo ctLog) {
-        ;
         ctLogEditor.loadIntoEditor(ctLog);
         return EDIT_CT_LOG;
     }
@@ -300,11 +273,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         /* Ensure the new log configuration is not conflicting with another log */
         final CTLogInfo ctLogToUpdate = ctLogEditor.getCtLogBeingEdited();
         for (final CTLogInfo existing : super.getAllCtLogs()) {
-            // TODO Perhaps change this logic to something else
             final boolean isSameLog = existing.getLogId() == ctLogToUpdate.getLogId();
             final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogEditor.getCtLogUrl());
-            final boolean inSameGroup = StringUtils.equals(existing.getLabel(), ctLogEditor.getCtLogLabel());
-            if (!isSameLog && hasSameUrl && inSameGroup) {
+            if (!isSameLog && hasSameUrl) {
                 systemConfigurationHelper.addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
                 return StringUtils.EMPTY;
             }

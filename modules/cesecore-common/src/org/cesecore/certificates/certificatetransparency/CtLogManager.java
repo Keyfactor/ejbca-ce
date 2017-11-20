@@ -134,25 +134,17 @@ public class CtLogManager {
 
     /**
      * Determine whether the CT log given as input can be added to this CT log manager. A CT log cannot be added
-     * if the following condition holds for another CT log:
+     * if any of the following conditions hold for another CT log:
      * <ul>
-     *   <li>The other log has an ID identical to the  CT log given as argument</li>
-     * </ul>
-     * Or if the following condition holds for another log with the same label (e.g. in the same log group)
-     * <ul>
-     *   <li>The other log is has an identical URL as the new log</li>
+     *   <li>The other log has an ID identical to the new CT log</li>
+     *   <li>The other log is has an identical URL as the new CT log</li>
      * </ul>
      * @param the new CT log to check
      * @return true if the CT log given as input can be added, false otherwise
      */
     public boolean canAdd(final CTLogInfo ctLog) {
         for (CTLogInfo existing : ctLogs) {
-            if (existing.getLogId() == ctLog.getLogId()) {
-                return false;
-            }
-        }
-        for (CTLogInfo existing : getCtLogsByLabel(ctLog.getLabel())) {
-            if (StringUtils.equals(existing.getUrl(), ctLog.getUrl())) {
+            if (existing.getLogId() == ctLog.getLogId() || StringUtils.equals(existing.getUrl(), ctLog.getUrl())) {
                 return false;
             }
         }
