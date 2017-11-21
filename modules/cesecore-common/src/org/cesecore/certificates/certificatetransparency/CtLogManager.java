@@ -184,4 +184,13 @@ public class CtLogManager {
             }
         }
     }
+
+    /**
+     * Returns the string representation of this object containing
+     * the CT logs currently managed by this CT log manager.
+     */
+    @Override
+    public String toString() {
+        return "CT logs: " + getAllCtLogs().toString();
+    }
 }
