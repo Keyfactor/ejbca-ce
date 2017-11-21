@@ -257,7 +257,7 @@ public class ScepServlet extends HttpServlet {
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
         boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.SCEP.getResource());
+                getProtocolStatus(AvailableProtocols.SCEP.getName());
         if (!protocolEnabled) {
             log.info("SCEP Protocol is disabled");
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP is disabled");
