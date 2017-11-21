@@ -1,5 +1,7 @@
-EJBCA 6.10.1
+EJBCA 6.10.0.2
 -----------
+
+Patch release covering one issue where an issuewild record on a DNS would cause checks for non-wildcard domains to fail.
 
 
 EJBCA 6.10.0.1
