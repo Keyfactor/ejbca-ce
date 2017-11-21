@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.config;
 
 import java.io.Serializable;
@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -40,7 +41,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     // Default Values
     public static final float LATEST_VERSION = 3f;
-    
+
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     public static final String PREFEREDINTERNALRESOURCES = InternalEjbcaResources.PREFEREDINTERNALRESOURCES;
@@ -70,7 +71,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
     // Default name of footbanner page in web interface.
     private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
-    
+
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
 
@@ -89,16 +90,16 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final  String  AUTOENROLL_DEFAULT_CONNECTIONPWD = "foo123";
     private static final  boolean  AUTOENROLL_DEFAULT_SSLCONNECTION = false;
     private static final  boolean  AUTOENROLL_DEFAULT_USE = false;
-    
+
     /** Default value for Enable Command Line Interface. */
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
-    
+
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
-    
+
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
-    /* By default the list is empty but it is possible to add logs here. 
+    /* By default the list is empty but it is possible to add logs here.
     static {
         try {
             // The Base64 data is the public key.
@@ -110,7 +111,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
             CTLOGS_DEFAULT.put(log.getLogId(), log);
         } catch (UnsupportedEncodingException e) { } // NOPMD can't do anything here
     }*/
-    
+
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
     public static final  int      SE                 = 1;
@@ -144,17 +145,17 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String LOCALKEYRECOVERYCRYPTOTOKEN  = "localkeyrecoverycryptotoken";
     private static final   String LOCALKEYRECOVERYKEYALIAS     = "localkeyrecoverykeyalias";
     private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
-    
+
     private static final   String ENABLEICAOCANAMECHANGE       = "enableicaocanamechange";
-    
+
     private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
     private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
     private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
-    
+
     private static final   String NODESINCLUSTER               = "nodesincluster";
-    
+
     private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
     private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
 
@@ -167,7 +168,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String AUTOENROLL_CONNECTIONPWD = "autoenroll.connectionpwd";
     private static final   String AUTOENROLL_BASEDN_USER = "autoenroll.basedn.user";
     private static final   String AUTOENROLL_CA = "autoenroll.caid";
-    
+
       // Paths
     private static final   String AUTHORIZATION_PATH  = "authorization_path";
     private static final   String BANNERS_PATH        = "banners_path";
@@ -181,9 +182,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
-    
+
     private static final   String CTLOGS              = "ctlogs";
-    
+
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
@@ -192,9 +193,10 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String MENUFILENAME          =  "menufilename";
     private static final   String ERRORPAGE             =  "errorpage";
     private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
-    
+    private static final String GOOGLE_CT_POLICY = "google_ct_policy";
+
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
-            
+
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -206,12 +208,12 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        setIssueHardwareTokens(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableIcaoCANameChange(false);
     }
-    
-    
+
+
     /** Initializes a new global configuration with data used in ra web interface. */
     public void initialize(String adminpath, String availablelanguages, String availablethemes,
                            String publicport, String privateport, String publicprotocol, String privateprotocol){
-       
+
        String tempadminpath = adminpath.trim();
 
        if(tempadminpath == null) {
@@ -223,10 +225,10 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        if(tempadminpath.startsWith("/")){
          tempadminpath = tempadminpath.substring(1);   // Remove starting '/'
        }
-       
+
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
-       data.put(AVAILABLETHEMES,availablethemes.trim());       
+       data.put(AVAILABLETHEMES,availablethemes.trim());
        data.put(PUBLICPORT,publicport.trim());
        data.put(PRIVATEPORT,privateport.trim());
        data.put(PUBLICPROTOCOL,publicprotocol.trim());
@@ -256,9 +258,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        setFootBanner(DEFAULTFOOTBANNER);
 
     }
-    
+
     public void initializeAdminWeb() {
-        initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css", 
+        initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
                 ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
     }
 
@@ -268,25 +270,25 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     }
 
     /** Method used by the Admin GUI. */
-    public   String getBaseUrl(String requestServerName) {    
-    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
+    public   String getBaseUrl(String requestServerName) {
+    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" +
     	            requestServerName  + "/" +
     	            InternalConfiguration.getAppNameLower() + "/";
    }
-    
-    public String getBaseUrl() {    
-    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
+
+    public String getBaseUrl() {
+    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" +
     	           WebConfiguration.getHostName() + ":" +
     	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
     	           InternalConfiguration.getAppNameLower() + "/";
    }
-        
+
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
     public String getStandardCRLDistributionPointURI(){
         return getStandardCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
     }
-    
+
     public String getStandardCRLDistributionPointURINoDN(){
         String retval = getBaseUrl();
         retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
@@ -294,7 +296,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
         retval+= DEFAULTCRLDISTURIPATH;
         return retval;
     }
-    
+
     public String getStandardCRLIssuer() {
     	return DEFAULTCRLDISTURIPATHDN;
     }
@@ -302,7 +304,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public String getStandardDeltaCRLDistributionPointURI(){
     	return getStandardDeltaCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
     }
-        
+
     public String getStandardDeltaCRLDistributionPointURINoDN(){
         String retval = getBaseUrl();
         retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
@@ -310,14 +312,14 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
         retval+= DEFAULTDELTACRLDISTURIPATH;
         return retval;
     }
-        
+
 	public String getStandardOCSPServiceLocatorURI(){
 		String retval = getBaseUrl();
 		retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
 		retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
 		retval+= DEFAULTOCSPSERVICELOCATORURIPATH;
 		return retval;
-	}        
+	}
 
      /** Checks the themes path for css files and returns an array of filenames
      *  without the ".css" ending. */
@@ -339,9 +341,9 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
-    
 
-    
+
+
     // Methods for manipulating the headbanner filename.
     public   String getHeadBanner() {return (String) data.get(HEADBANNER);}
     public   String getHeadBannerFilename(){
@@ -411,10 +413,10 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     public boolean getIssueHardwareTokens() { return getBoolean(ISSUEHARDWARETOKENS, false);}
     public void setIssueHardwareTokens(final boolean value) { putBoolean(ISSUEHARDWARETOKENS, value);}
-    
+
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-    
+
    /**
     * @return the number of required approvals to access sensitive hard token data (default 0)
     */
@@ -422,14 +424,14 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     	Object num = data.get(NUMBEROFAPPROVALSTOVIEWPUK);
         if(num == null){
         	return 0;
-        }  	
+        }
     	return ((Integer) num).intValue();
     }
-    
-    public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){ 
+
+    public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){
     	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
     }
-    
+
     /**
      * @return the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
      */
@@ -438,17 +440,17 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
          if(num == null){
          	return 0;
          }
-     	
+
      	return ((Integer) num).intValue();
      }
-     
+
      /**
       * @param hardTokenEncryptCA the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
       */
-     public void setHardTokenEncryptCA(int hardTokenEncryptCA){ 
+     public void setHardTokenEncryptCA(int hardTokenEncryptCA){
      	data.put(HARDTOKENENCRYPTCA, Integer.valueOf(hardTokenEncryptCA));
      }
-    
+
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
@@ -460,14 +462,14 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
      public String getApprovalAdminEmailAddress() {
          final Object value = data.get(APPROVALADMINEMAILADDRESS);
          return value == null ? "" : (String) value;
-     }      
+     }
      /** @return the email address used in the from field of approval notification emails */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public String getApprovalNotificationFromAddress() {
          final Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
          return value == null ? "" : (String) value;
-     }      
-   
+     }
+
        public void setAutoEnrollADServer(String server) { data.put(AUTOENROLL_ADSERVER, server); }
        public String getAutoEnrollADServer() {
     	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
@@ -493,7 +495,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     	   String ret = (String) data.get(AUTOENROLL_CONNECTIONDN);
    		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONDN : ret);
        }
-       public void setAutoEnrollConnectionPwd(String connectionPwd) { 
+       public void setAutoEnrollConnectionPwd(String connectionPwd) {
            data.put(AUTOENROLL_CONNECTIONPWD, StringTools.obfuscateIfNot(connectionPwd));
        }
        public String getAutoEnrollConnectionPwd() {
@@ -505,66 +507,74 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
        public void setAutoEnrollUse(final boolean value) { putBoolean(AUTOENROLL_USE, value); }
        public boolean getAutoEnrollUse() { return getBoolean(AUTOENROLL_USE, AUTOENROLL_DEFAULT_USE); }
-       
+
        public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
        @SuppressWarnings("unchecked")
        public Set<String> getNodesInCluster() {
            // In an earlier version (<5.0.11) this was a HashSet, not a LinkedHashSet. Using a HashSet causes order to be non-deterministic, that makes it possible
-           // to get verification failures if using Database Protection. This was then changed to a LinkedHashSet that guarantees order. 
-           // Therefore we try to ensure that a LinkedHashSet is returned, seamlessly upgrading any old HashSet. 
-           // If an old object is in the database, after a getNodesInCluster(),  setNodesInCluster() and saveGlobalConfiguration() it should be a LinkedHashSet in the database. 
+           // to get verification failures if using Database Protection. This was then changed to a LinkedHashSet that guarantees order.
+           // Therefore we try to ensure that a LinkedHashSet is returned, seamlessly upgrading any old HashSet.
+           // If an old object is in the database, after a getNodesInCluster(),  setNodesInCluster() and saveGlobalConfiguration() it should be a LinkedHashSet in the database.
            Set<String> ret = null;
            Object o = data.get(NODESINCLUSTER);
            if (o != null && !(o instanceof LinkedHashSet<?>)) {
                LOG.debug("Converting GlobalConfiguration NodesInCluster from "+o.getClass().getName()+" to LinkedHashSet.");
                ret = new LinkedHashSet<>((Collection<String>)o);
            } else {
-               ret = (Set<String>)o; 
+               ret = (Set<String>)o;
            }
            return (ret == null ? NODESINCLUSTER_DEFAULT : ret);
        }
 
        public void setEnableCommandLineInterface(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACE, value); }
        public boolean getEnableCommandLineInterface() { return getBoolean(ENABLECOMMANDLINEINTERFACE, DEFAULTENABLECOMMANDLINEINTERFACE); }
-       
+
        public void setEnableCommandLineInterfaceDefaultUser(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, value); }
        public boolean getEnableCommandLineInterfaceDefaultUser() { return getBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER); }
-       
+
     public boolean getPublicWebCertChainOrderRootFirst() {
         return getBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST);
     }
-    
+
     public void setPublicWebCertChainOrderRootFirst(boolean value) {
         putBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, value);
     }
-       
+
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
         return (ret == null ? CTLOGS_DEFAULT : new LinkedHashMap<>(ret));
     }
-    
+
     /** Sets the available CT logs. NOTE: The order of the is important, so this MUST be called with a LinkedHashMap! */
     public void setCTLogs(LinkedHashMap<Integer,CTLogInfo> ctlogs) {
         data.put(CTLOGS, ctlogs);
     }
-       
+
     public void addCTLog(CTLogInfo ctlog) {
         LinkedHashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.put(ctlog.getLogId(), ctlog);
         setCTLogs(logs);
     }
-    
+
     public void removeCTLog(int ctlogId) {
         LinkedHashMap<Integer,CTLogInfo> logs = new LinkedHashMap<>(getCTLogs());
         logs.remove(ctlogId);
         setCTLogs(logs);
     }
-    
+
+    public GoogleCtPolicy getGoogleCtPolicy() {
+        return (GoogleCtPolicy) data.get(GOOGLE_CT_POLICY);
+    }
+
+    public void setGoogleCtPolicy(final GoogleCtPolicy value) {
+        data.put(GOOGLE_CT_POLICY, value);
+    }
+
     public boolean getStatedumpLockedDown() {
         return getBoolean(STATEDUMP_LOCKDOWN, true);
     }
-    
+
     public void setStatedumpLockedDown(final boolean value) {
         data.put(STATEDUMP_LOCKDOWN, value);
     }
@@ -590,7 +600,7 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     		if(data.get(ENABLEICAOCANAMECHANGE) == null) {
                 data.put(ENABLEICAOCANAMECHANGE, Boolean.FALSE);
         }
-    		data.put(VERSION,  Float.valueOf(LATEST_VERSION));    		
+    		data.put(VERSION,  Float.valueOf(LATEST_VERSION));
     	}
     }
 
