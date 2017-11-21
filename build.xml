@@ -656,7 +656,8 @@
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-interface"/>
             <sourcepath location="${ejbca.home}/modules/peerconnector/src-publ"/>
         	<sourcepath location="${ejbca.home}/modules/peerconnector/src-rar"/>
-            <sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
+		<sourcepath location="${ejbca.home}/modules/peerconnector/src-war"/>
+		<sourcepath location="${ejbca.home}/modules/peerconnector/src-ra"/>
         	<sourcepath location="${ejbca.home}/modules/va/src-war"/>
         	<sourcepath location="${ejbca.home}/modules/va/publisher/src"/>
         </javadoc>
