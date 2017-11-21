@@ -66,7 +66,7 @@ public class CmpServlet extends HttpServlet {
             log.trace(">doPost()");
         }
         boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.CMP.getResource());
+                getProtocolStatus(AvailableProtocols.CMP.getName());
         try {
             if (!protocolEnabled) {
                 log.info("CMP Protocol is disabled");

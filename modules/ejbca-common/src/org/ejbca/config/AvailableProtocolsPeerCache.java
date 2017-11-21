@@ -48,17 +48,17 @@ public enum AvailableProtocolsPeerCache {
      * @return true if requested protocol is enabled for this peer. False otherwise.
      */
     public boolean isProtocolEnabled(String protocol) {
-        if (protocol.equals(AvailableProtocols.ACME.getResource())) {
+        if (protocol.equals(AvailableProtocols.ACME.getName())) {
             return isAllowAcme();
-        } else if (protocol.equals(AvailableProtocols.CMP.getResource())) {
+        } else if (protocol.equals(AvailableProtocols.CMP.getName())) {
             return isAllowCmp();
-        } else if (protocol.equals(AvailableProtocols.EST.getResource())) {
+        } else if (protocol.equals(AvailableProtocols.EST.getName())) {
             return isAllowEst();
-        } else if (protocol.equals(AvailableProtocols.OCSP.getResource())) {
+        } else if (protocol.equals(AvailableProtocols.OCSP.getName())) {
             return isAllowOcsp();
-        } else if (protocol.equals(AvailableProtocols.SCEP.getResource())) {
+        } else if (protocol.equals(AvailableProtocols.SCEP.getName())) {
             return isAllowScep();
-        } else if (protocol.equals(AvailableProtocols.WS.getResource())) {
+        } else if (protocol.equals(AvailableProtocols.WS.getName())) {
             return isAllowWebService();
         } 
         return false;

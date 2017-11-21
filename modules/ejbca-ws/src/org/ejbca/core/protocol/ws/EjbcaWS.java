@@ -325,7 +325,7 @@ public class EjbcaWS implements IEjbcaWS {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus(AvailableProtocols.WS.getResource());
+        final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus(AvailableProtocols.WS.getName());
         if (!isServiceEnabled) {
             throw new UnsupportedOperationException("Web Services has been disabled");
         } else if ((certificates == null) || (certificates[0] == null)) {

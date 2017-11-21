@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 
@@ -31,8 +30,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     private static final long serialVersionUID = 1L;
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
-    private static final Logger log = Logger.getLogger(AvailableProtocolsConfiguration.class);
-    
     /** Protocols currently supported by Ejbca */
     public enum AvailableProtocols{
         ACME("ACME"), 
@@ -42,13 +39,13 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         SCEP("SCEP"), 
         WS("Web Service");
         
-        private String resource;
+        private String name;
         private AvailableProtocols(String resource) {
-            this.resource = resource;
+            this.name = resource;
         }
         
-        public String getResource() {
-            return this.resource;
+        public String getName() {
+            return this.name;
         }
     };
 
@@ -65,7 +62,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     /** All protocols will be enabled by default */
     private void initialize() {
         for (int i = 0; i < AvailableProtocols.values().length; i++) {
-            setProtocolStatus(AvailableProtocols.values()[i].getResource(), true);
+            setProtocolStatus(AvailableProtocols.values()[i].getName(), true);
         }
     }
     

@@ -80,7 +80,7 @@ public class OCSPServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.OCSP.getResource());
+                getProtocolStatus(AvailableProtocols.OCSP.getName());
         try {
             if (log.isTraceEnabled()) {
                 log.trace(">doGet()");
@@ -181,7 +181,7 @@ public class OCSPServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.OCSP.getResource());
+                getProtocolStatus(AvailableProtocols.OCSP.getName());
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
