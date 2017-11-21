@@ -568,13 +568,12 @@ org.cesecore.authorization.AuthorizationDeniedException
 	<%-- Certificate Transparency Logs --%>
 
 	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
-		<h:panelGroup>
-			<h4>
-			<h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-			<h:outputText value="#{web.text.CTLOGCONFIGURATION_VIEW_CTLOG_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
-			</br>
-		</h:panelGroup>
+		<div style="margin-top: 1em; margin-bottom:1em;">
+            <h4>
+            <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <h:outputText value="#{web.text.CTLOGCONFIGURATION_VIEW_CTLOG_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
+        </div>
 		
 		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
 		    <h:column>
@@ -676,6 +675,28 @@ org.cesecore.authorization.AuthorizationDeniedException
 	             </h:outputLink>
 	         </f:facet>
         </h:panelGrid>
+        
+        <div style="margin-top: 1em; margin-bottom: 1em;">
+            <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
+        </div>
+        <h:panelGrid columns="2" styleClass="grid">
+            <h:outputText value="#{web.text.CERT_VALIDITY}"/>
+            <h:outputText value="#{web.text.CT_NUMBER_OF_SCTS}"/>
+            <h:outputText value="#{web.text.LESS_THAN_15_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.lessThan15Months}" size="10"/>
+            <h:outputText value="#{web.text.BETWEEN_15_AND_27_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between15And27Months}" size="10"/>
+            <h:outputText value="#{web.text.BETWEEN_27_AND_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between27And39Months}" size="10"/>
+            <h:outputText value="#{web.text.MORE_THAN_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.moreThan39Months}" size="10"/>
+        </h:panelGrid>
+        <div style="margin-top:1em;">
+            <h:commandButton action="#{systemConfigMBean.saveCurrentConfig}" 
+                value="#{web.text.SAVE}" 
+                title="#{web.text.SAVE}" 
+                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+        </div>
 	</h:form>
 	
 	

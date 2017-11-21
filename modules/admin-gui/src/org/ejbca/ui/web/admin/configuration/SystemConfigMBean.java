@@ -56,6 +56,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
+import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.InvalidConfigurationException;
@@ -88,7 +89,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
 
-    /** GUI table representation of a SCEP alias that can be interacted with. */
     public class GuiInfo {
         private String title;
         private String headBanner;
@@ -298,6 +298,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     /** Session bean for importing statedump. Will be null if statedump isn't available */
     private final StatedumpSessionLocal statedumpSession = new EjbLocalHelper().getStatedumpSession();
     private SystemConfigurationCtLogManager ctLogManager;
+    private GoogleCtPolicy googleCtPolicy;
 
 
     public SystemConfigMBean() {
@@ -351,6 +352,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 });
         }
         return ctLogManager;
+    }
+
+    public GoogleCtPolicy getGoogleCtPolicy() {
+        if (googleCtPolicy == null) {
+            googleCtPolicy = getGlobalConfiguration().getGoogleCtPolicy();
+        }
+        return googleCtPolicy;
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -704,6 +712,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     ctlogsMap.put(ctlog.getLogId(), ctlog);
                 }
                 globalConfig.setCTLogs(ctlogsMap);
+                globalConfig.setGoogleCtPolicy(googleCtPolicy);
 
                 getEjbcaWebBean().saveGlobalConfiguration(globalConfig);
 
@@ -764,6 +773,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableCustomCertExtensions = null;
         availableCustomCertExtensionsConfig = null;
         selectedCustomCertExtensionID = 0;
+        googleCtPolicy = null;
     }
 
     public void toggleUseAutoEnrollment() { currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment()); }
