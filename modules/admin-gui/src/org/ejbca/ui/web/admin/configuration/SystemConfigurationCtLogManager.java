@@ -88,7 +88,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             url = null;
             publicKeyFile = null;
             label = null;
-            timeout = 0;
+            timeout = 5000;
         }
 
         /**
