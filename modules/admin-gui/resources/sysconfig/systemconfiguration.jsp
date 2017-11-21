@@ -693,8 +693,8 @@ org.cesecore.authorization.AuthorizationDeniedException
         </h:panelGrid>
         <div style="margin-top:1em;">
             <h:commandButton action="#{systemConfigMBean.saveCurrentConfig}" 
-                value="#{web.text.SAVE}" 
-                title="#{web.text.SAVE}" 
+                value="#{web.text.SAVE_CT_POLICY}" 
+                title="#{web.text.SAVE_CT_POLICY}" 
                 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
         </div>
 	</h:form>
