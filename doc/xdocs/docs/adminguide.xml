@@ -5230,22 +5230,24 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 		such validator has been implemented, the CAA Validator.</p>
 		<subsubsection name="CAA Validator">
 			<p>
-			The Certificate Authority Authentication (CAA) validator is based on <a href="https://tools.ietf.org/html/rfc6844">RFC 6844</a> and the 
-			CA/B-Forum <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.5.pdf">guidelines</a>. These specify that for complying 
+			The Certificate Authority Authorization (CAA) validator is based on <a href="https://tools.ietf.org/html/rfc6844">RFC 6844</a>, <a href="http://www.rfc-editor.org/errata/eid5065">erratum 5065</a> 
+			and the CA/B-Forum <a href="https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.5.pdf">guidelines</a>. These specify that for complying 
 			CAs issuing certificates containing DNSName values in the subjectAltName extension, the CA must perform a lookup check to the DNS(s) of 
-			all specified names and check that the CAA records allow issuance for the given issuer. </p> 
+			all specified names and check that the CAA records allow issuance for the given issuer.</p> 
 			<note>
 				The result of all CAA lookups are written to the server logs on the INFO level.
 			</note>
 			<p> A typical CAA record has the following format:</p>
-<source>
-example.com. 243	IN	CAA	0 issue "ca.org"
-</source>
+			<source>
+			example.com. 243	IN	CAA	0 issue "ca.org"
+			</source>
 			<p>
-				This record says that the issuer known as "ca.org" is permitted to issue certificates (including wildcards) all domains and subdomains 
-				to the domain "example.com". In the EJBCA case, this means that according to CAA an end entity that includes the field <i>DNSNAME=example.com</i>
-				in the subjectAltName (SAN) extension must pass a CAA Validator check before having a certificate issued to it. To set up such a CAA Validator,
-				there are three specific settings which may/should be set: 
+				This record says that the issuer known as "ca.org" is permitted to issue certificates (including wildcards) for all domains and subdomains 
+				to the domain "example.com". In the EJBCA case, this means that according to CAA, an end entity that includes the field <i>DNSNAME=example.com</i>
+				in the subjectAltName (SAN) extension must pass a CAA Validator check before having a certificate issued to it.
+			</p>
+			<p>
+			    EJBCA allows the administrator to configure the following when setting up a CAA Validator:
 			</p>
 			<p>
 				<ul>
@@ -5258,14 +5260,12 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 					    <p>Check this box if you want to lookup and follow any DNAME records found during CAA processing. To comply with RFC 6844, it is recommended
 					    to keep this option enabled.</p>
 					<li>Validate DNSSEC</li>
-						<p>
-							Check this box if you want DNSSEC to be validated. If this box is checked, your DNS is signed with DNSSEC and your DNS presents a faulty set of records 
-							(suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended to enable DNSSEC checks to ensure the authenticity of DNS responses.
+						<p>Check this box if you want DNSSEC to be validated. If this box is checked, your DNS is signed with DNSSEC and your DNS presents a faulty set of records 
+						(suggesting a possible MitM attack), CAA validation will fail. It is strongly recommended to enable DNSSEC checks to ensure the authenticity of DNS responses.
 						</p>
                     <li>Trust Anchor</li>
-                        <p>
-                            In order to obtain secure answers from the root zone of the DNS using DNSSEC, a trust anchor must be configured. By default IANA
-                            root anchor is used. This value may be modified but should remain unchanged unless the records is signed by another trust anchor.
+                        <p>In order to obtain secure answers from the root zone of the DNS using DNSSEC, a trust anchor must be configured. By default IANA
+                        root anchor is used. This value may be modified but should remain unchanged unless the records is signed by another trust anchor.
                         </p>
                     <li>Fail on lookup error</li>
                         <p>The default behaviour is to permit issuance if a lookup error is encountered more than once and EJBCA can establish that the domain is not signed with DNSSEC. To always prohibit
@@ -5275,19 +5275,15 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 							Checking this box enables sending e-mails to any mailto-links registered on the DNA as CAA IODEF records. Doing so enables the 
 							following additional settings:
 							<ul>
-								<li>From:</li>
-									<p>The <i>From</i> field in the resulting e-mail.</p>
-								<li>Subject:</li>
-									<p>The <i>Subject</i> line in the resulting e-mail.</p>
+								<li>From:</li> <p>The <i>From</i> field in the resulting e-mail.</p>
+								<li>Subject:</li> <p>The <i>Subject</i> line in the resulting e-mail.</p>
 								<li>Additional Information:</li>
 									<p> 
 										Any additonal information required, in addition to the default message which will be appended last:
 									</p> 
-									<p><i><b>
-									A faulty Certificate Request was made for the domain 'example.com' for the issuer ca.com which was 
+								<p><i><b>A faulty Certificate Request was made for the domain 'example.com' for the issuer ca.com which was 
 									rejected by the CA due to the issuer not having a CAA record on the domain's DNS.
-									</b></i></p> 
-								
+								</b></i></p> 
 							</ul>
 						</p>
 				</ul>
@@ -5296,9 +5292,8 @@ example.com. 243	IN	CAA	0 issue "ca.org"
 				A few notes in regards to CAA validation:
 				<ul>
 					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
-					<li>According to the guidelines, a faulty CAA check should <b>always</b> lead to certificate issuance being canceled.</li>
 					<li>EJBCA currently doesn't validate parameters in CAA records, but such records will still be evaluated correctly. Parameter handling is planned in future versions.</li>
-					<li>EJBCA currently only supports e-mail IODEF records. WebService IODEF calls (RFC 5070) are not yet supported.</li>
+					<li>The CAA Validator requires TCP and UDP port 53 to be open in the firewall.</li>
 				</ul>			 
 			</p>
 			<p><strong>CAA Validator Logging</strong></p>
