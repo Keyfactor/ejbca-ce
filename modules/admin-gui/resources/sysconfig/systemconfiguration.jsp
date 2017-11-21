@@ -576,14 +576,14 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 		
-		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label" style="width: 1080px;">
+		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
 		    <h:column>
 				<h3>
 				    <h:outputText value="#{label}"/>
 				</h3>
 				<h:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}" 
 				    var="ctlog"
-				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; width: 100%;">
+				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto;">
 					<h:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
