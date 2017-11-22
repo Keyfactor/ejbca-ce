@@ -31,6 +31,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
@@ -127,7 +128,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     /** @return an authorized existing role based on the roleId HTTP param or null if no such role was found. */
     public Role getRole() {
-        if (role==null && StringUtils.isNumeric(roleIdParam)) {
+        if (role==null && NumberUtils.isNumber(roleIdParam)) {
             try {
                 role = roleSession.getRole(getAdmin(), Integer.parseInt(roleIdParam));
                 if (role==null && log.isDebugEnabled()) {
