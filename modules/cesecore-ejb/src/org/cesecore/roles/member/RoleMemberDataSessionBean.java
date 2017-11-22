@@ -68,7 +68,6 @@ public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, Ro
             final RoleMemberData roleMemberData = find(roleMember.getId());
             if (roleMemberData==null) {
                 // Must have been removed by another process, but caller wants to persist it, so we proceed
-                roleMember.setId(findFreePrimaryKey());
                 entityManager.persist(new RoleMemberData(roleMember));
             } else {
                 // Since the entity is managed, we just update its values
