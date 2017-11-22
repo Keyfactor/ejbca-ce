@@ -5151,19 +5151,19 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 
 <section name="Validators">
 	<p>
-		Validators are applied to CA's to validate the issuance of certificates, based on key strength, origin och on other values inherent to the 
-		certificate issued. To apply a Validator to a certificate it's chosen in the CA, where it will be called prior to issuance. Additionally, 
-		validators are restricted to only run for certain Certificate Profiles.
+		Validators are applied to CA's to validate the issuance of certificates, based on key strength, origin or on other values inherent to the 
+		certificate issued. To apply a Validator to a certificate it's chosen in the CA, where it will be called at fixed phase during certificate issuance.
+		Additionally, validators are restricted to only run for certain Certificate Profiles.
 	</p>
 	<p>
 		To explore Validators, look under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
 	</p>
 	<subsection name="Audit Logging">
 		<p>
-			All validation results are audit logged and also logged in the server logs for more detail. 
+			All validation results are audit logged and also logged in the server logs for more detail (log level can be configured). 
 		</p>
 	</subsection>
-	<subsection name="Key Validators">
+	<subsection name="Key Validators (before certificate generation)">
 		<p>
 			Key Validators are rather intuitively meant to validate the quality of keys, foremost as a result of incoming CSRs. There are currently 
 			three types of Key Validators:
@@ -5225,9 +5225,11 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 			The displayed date will be converted to the server's timezone, and you can specify timezone as well '2022-08-25 14:50:55-0000' for UTC.</p>
 		</subsubsection>
 	</subsection>
-	<subsection name="Certificate Field Validators">
-		<p>One may also wish to validate issuance based on other values which can't be evaluated during end entity creation. Currently, only one 
-		such validator has been implemented, the CAA Validator.</p>
+	<subsection name="Certificate Field Validators (before certificate generation)">
+		<p>
+			One may also wish to validate issuance based on other certificate values before it comes to issuance.
+			Currently, only one such validator has been implemented, the CAA Validator.
+		</p>
 		<subsubsection name="CAA Validator">
 			<p>
 			The Certificate Authority Authorization (CAA) validator is based on <a href="https://tools.ietf.org/html/rfc6844">RFC 6844</a>, <a href="http://www.rfc-editor.org/errata/eid5065">erratum 5065</a> 
@@ -5318,6 +5320,49 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			<p>There is also debug logging available, debug logging DNS lookup results. This can amount to large volumes however and is therefore set at debug level which is disabled by default.
 			If you want to have a separate DNS lookup log, you can send the DEBUG log for the class CaaDnsLookup to a separate log, similar to how you can do that for OCSP Transaction and Audit logging. See the <a href="#Logging">Logging section</a> for more information.</p>
 		</subsubsection>
+	</subsection>
+	<subsection name="Certificate Field Validators (after certificate generation)">
+		<p>
+			One may also wish to validate issuance based on other certificate values after the certificate was generated but not stored or issued.
+			Currently, only one such validator has been implemented, the external command certificate Validator.
+		</p>
+		<subsection name="External Command Certificate Validator">
+			<p>
+				With this validator an external command can be called for the generated certificate. The exit code of the external call determines if validation has failed. 
+				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course EJBCAs application needs the 
+				OS file system permittions to do so.
+			</p>
+			<note>
+					The platform for MS Windows, Unix/Linux, Solaris and Mac is auto-detected and a default shell command and shell options are set. 
+					To enter a custom call for an interpreter use the placer holder '%custom%' as first argument, followed by the custom interpreter command, 
+					and (optional) its options, separated by spaces. 
+					I.e. to call a python script on a linux platform: '%custom% /usr/bin/python -c <my-command-or-script-to-execute></my-command-or-script-to-execute>'
+			</note>
+			<p>
+				For the following platforms the executing interpreter is auto-detected and you can enter you external command including place holders 
+				and platform specific control operators without interpreter. If auto-detection of the platform fails, you have to specify your interpreter and options manually.
+			</p>
+			<ul>
+				<li>MS Windows -> 'cmd.exe /C'</li>
+				<li>Unix/Linux -> '/bin/sh -c'</li>
+				<li>AIX/HP-UX-> '/bin/sh -c'</li>
+				<li>Mac -> '/bin/sh -c'</li>
+			</ul>
+			<p>
+				Place holders can be used to specify a custom platform command and the certificate generated:
+			</p>
+			<ul>
+				<li><b>%custom%</b> to use a custom platform command. Use '%custom% {interpreter} {options} {command}'</li>
+				<li><b>%cert%</b> inserts the certificate issued as PEM formatted string. I.e. use 'echo -n "%cert% | {command}'</li>
+			</ul>
+			<p>
+				See the following samples for external commands for Unix/Linux platforms:
+			</p>
+<source>
+echo -n "%cert%" | openssl x509 -text -noout
+%custom% /usr/bin/python -3 echo -n "%cert%" | openssl x509 -text -noout
+</source>
+		</subsection>
 	</subsection>
 	<subsection name="Common Validator Settings">
 		<p>

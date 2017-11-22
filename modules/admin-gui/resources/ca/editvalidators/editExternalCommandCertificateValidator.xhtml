@@ -1,0 +1,49 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:component="http://java.sun.com/jsf/composite/component"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     version: $Id: editExternalCommandCertificateValidator.xhtml 25334 2017-03-01 16:22:09Z anjakobs $
+     -->
+</ui:remove>
+<h:outputLabel for="validator_settings" value="#{web.text.EXTERNALCERTIFICATEVALIDATORSETTINGS}" style="font-weight: bold;" />
+<h:panelGroup id="validator_settings"></h:panelGroup>
+<h:outputLabel for="settingsTemplate" value="#{web.text.VALIDATORSETTINGSTEMPLATE}"/>
+<h:selectOneMenu id="settingsTemplate" value="#{validatorBean.validator.settingsTemplate}" disabled="true">
+	<f:ajax listener="#{validatorBean.validatorTemplateChanged}" render="@form"/>	
+	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
+</h:selectOneMenu>
+<h:outputLabel for="external_command" value="#{web.text.EXTERNALCERTIFICATEVALIDATORCOMMAND}" />
+<h:inputText id="external_command" value="#{validatorBean.validator.externalCommand}" required="true" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="log_standard_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORLOGSTANDARDOUT}" styleClass="subItem"/>
+<h:selectBooleanCheckbox id="log_standard_out" value="#{validatorBean.validator.logStandardOut}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="log_error_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORLOGERROROUT}" styleClass="subItem"/>
+<h:selectBooleanCheckbox id="log_error_out" value="#{validatorBean.validator.logErrorOut}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="validator_test" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTEST}" style="font-weight: bold;" />
+<h:panelGroup id="validator_test"></h:panelGroup>
+<h:outputLabel for="validator_test_path" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTESTPATH}" />
+<t:inputFileUpload process="@form" update=":statusBlock" id="validator_test_path" value="#{validatorBean.testExternalCommandCertificateValidatorPath}"/>
+<h:outputLabel for="validator_test_action" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTESTCOMMANDACTION}" />
+<h:commandButton id="validator_test_action" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTEST}" action="#{validatorBean.testExternalCommandCertificateValidatorAction}"/>
+<h:outputLabel for="validator_test_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTESTOUT}" />
+<h:outputText id="validator_test_out" value="#{fn:replace(validatorBean.validator.testStandardAndErrorOut,validatorBean.lineSeparator,'&lt;br/&gt;')}" escape="false" style="display: block;"/>
+<ui:include src="certificateValidity.xhtml" />
+</ui:composition>

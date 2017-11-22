@@ -108,6 +108,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.ErrorCode;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -146,6 +147,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -1216,7 +1218,14 @@ public class X509CA extends CA implements Serializable {
                         new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
-
+                // ECA-6051 Re-Factor with Domain Service Layer.
+                if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
+                    try {
+                        certGenParams.getCertificateValidationDomainService().validateCertificate(certGenParams.getAuthenticationToken(), this, subject, cert);
+                    } catch (ValidationException e) {
+                        throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
+                    }
+                }
                 // Get certificate chain
                 final List<Certificate> chain = new ArrayList<>();
                 chain.add(cert);

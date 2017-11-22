@@ -20,28 +20,33 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.ui.DynamicUiProperties;
 
 /**
- * @version $Id$
+ * @version $Id: CertificateValidatorBase.java 26333 26390 2017-11-04 15:20:58Z anjakobs $
  *
  */
-public abstract class KeyValidatorBase extends ValidatorBase implements KeyValidator {
+public abstract class CertificateValidatorBase extends ValidatorBase implements CertificateValidator {
 
+    private static final long serialVersionUID = -125425559879817428L;
+
+	/** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
-    
-    private static final long serialVersionUID = 1L;
+
+    /** Dynamic UI properties extension. */
+    protected DynamicUiProperties uiProperties;
     
     /**
      * Public constructor needed for deserialization.
      */
-    public KeyValidatorBase() {
+    public CertificateValidatorBase() {
         super();
     }
-    
+
     /**
      * Creates a new instance.
      */
-    public KeyValidatorBase(final String name) {
+    public CertificateValidatorBase(final String name) {
         super(name);
         init();
     }
@@ -49,13 +54,14 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     /**
      * Creates a new instance with the same attributes as the given one.
      */
-    public KeyValidatorBase(final KeyValidatorBase keyValidator) {
+    public CertificateValidatorBase(final CertificateValidatorBase keyValidator) {
         super();
     }
 
     @Override
     public void init() {
         super.init();
+        // ECA-6051 Re-factor: move to parent.
         if (null == data.get(NOT_BEFORE_CONDITION)) {
             setNotBeforeCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
@@ -66,9 +72,9 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
 
     @Override
     public Class<? extends Validator> getValidatorSubType() {
-        return KeyValidator.class;
+        return CertificateValidator.class;
     }
-    
+
     @Override
     public Date getNotBefore() {
         return (Date) data.get(NOT_BEFORE);
@@ -109,12 +115,11 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         return ((Integer) data.get(NOT_AFTER_CONDITION)).intValue();
     }
 
-    
     @Override
     public String getNotBeforeAsString() {
         return formatDate(getNotBefore());
     }
-    
+
     @Override
     public String getNotAfterAsString() {
         return formatDate(getNotAfter());
@@ -128,7 +133,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
             log.debug("Could not parse Date: " + formattedDate);
         }
     }
-    
+
     @Override
     public void setNotAfterAsString(String formattedDate) {
         try {
@@ -138,7 +143,11 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         }
     }
     
-    
+    @Override
+    public DynamicUiProperties getDynamicUiProperties() {
+        return uiProperties;
+    }
+
     /**
      * Formats a date.
      * @param date the date
@@ -162,8 +171,8 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         Date result = null;
         if (StringUtils.isNotBlank(string)) {
             final String dateString = string.trim();
-                result = DateUtils.parseDate(dateString, DATE_FORMAT);
-  
+            result = DateUtils.parseDate(dateString, DATE_FORMAT);
+
         }
         return result;
     }

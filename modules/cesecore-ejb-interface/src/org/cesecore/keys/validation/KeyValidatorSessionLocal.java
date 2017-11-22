@@ -14,6 +14,7 @@
 package org.cesecore.keys.validation;
 
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -36,7 +37,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * @version $Id$
  */
 @Local
-public interface KeyValidatorSessionLocal extends KeyValidatorSession {
+public interface KeyValidatorSessionLocal extends KeyValidatorSession, CertificateValidationDomainService {
 
     /**
      * Retrieves a Map of key validators.
@@ -159,7 +160,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
     /**
      * Validates dnsName fields defined in the SubjectAltName field of the end entity against CAA rules.
      *
-     * @param authenticationToken the authentication token of the admin performin the action, for logging purposes
+     * @param authenticationToken the authentication token of the administrator performing the action
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
      * @param the incoming request message
@@ -168,6 +169,17 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession {
      */
     void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
             final RequestMessage requestMessage) throws ValidationException;
+
+    /**
+     * Validates a generated certificate during issuance.
+     * 
+     * @param authenticationToken the authentication token of the administrator performing the action.
+     * @param ca the issuing CA
+     * @param endEntityInformation the end entity object
+     * @param certificate the certificate to validate
+     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
+     */
+    void validateCertificate(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation, final X509Certificate certificate)  throws ValidationException, IllegalValidityException;
 
     /** Removes the key validator data if it is not referenced by a CA.
      * If the validatorId does not exist, the method returns without doing anything.

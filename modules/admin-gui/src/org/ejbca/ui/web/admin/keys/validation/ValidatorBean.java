@@ -13,12 +13,16 @@
 
 package org.ejbca.ui.web.admin.keys.validation;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,18 +32,21 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlSelectOneMenu;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AbortProcessingException;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.validation.ExternalCommandCertificateValidator;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.KeyValidatorDateConditions;
@@ -49,7 +56,10 @@ import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ui.DynamicUiPropertiesAware;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -222,9 +232,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void setValidatorType(String value) {
         // this re-creates the whole validator, so only do it if it actually changed type
         if (!validator.getValidatorTypeIdentifier().equals(value)) {
-            if (log.isTraceEnabled()) {
-                log.trace("Changing validator type to "+value);
-            }
             validator = ValidatorFactory.INSTANCE.getArcheType(value);
             validator.setDataMap(getValidator().getDataMap());
             validator.setProfileId(getSelectedKeyValidatorId());
@@ -553,7 +560,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * 
      * @param e the event.
      */
-    public void validatorTemplateChanged(AjaxBehaviorEvent e) {
+    public void validatorTemplateChanged(AjaxBehaviorEvent e) throws AbortProcessingException {
         if (log.isDebugEnabled()) {
             log.debug("Setting key validator base parameter option " + ((HtmlSelectOneMenu) e.getComponent()).getValue());
         }
@@ -564,4 +571,90 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         FacesContext.getCurrentInstance().renderResponse();
     }
 
+    private UploadedFile testExternalCommandCertificateValidatorPath;
+    
+    public UploadedFile getTestExternalCommandCertificateValidatorPath() {
+        return testExternalCommandCertificateValidatorPath;
+    }
+
+    public void setTestExternalCommandCertificateValidatorPath(final UploadedFile file) {
+    	if (log.isDebugEnabled()) {
+    	    log.debug("Uploaded test certificate file is: " + file);
+    	}
+        if (file != null) {
+            this.testExternalCommandCertificateValidatorPath = file;
+            try {
+                final List<Certificate> certificates = CertTools.getCertsFromPEM(file.getInputStream());
+                ((ExternalCommandCertificateValidator) validator).setTestCertificates(certificates);
+                if (log.isDebugEnabled()) {
+                    log.info("Test certificates uploaded: " + certificates);
+                }
+            } catch(IOException e) {
+                log.warn("Could not load file: " + e.getMessage(), e);
+            } catch(CertificateParsingException e) {
+                log.warn("Could not parse certificates: " + e.getMessage(), e);
+            }
+        }
+    }
+    
+    public String testExternalCommandCertificateValidatorAction() throws Exception {
+        if (testExternalCommandCertificateValidatorPath == null) {
+            addErrorMessage("EXTERNALCERTIFICATEVALIDATORTESTPATHMISSING");
+            return "";
+        }
+        final List<String> lines = ((ExternalCommandCertificateValidator) validator).testExternalCommandCertificateValidatorAction();
+        ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.join(lines, getLineSeparator()));
+        if (log.isDebugEnabled()) {
+            log.debug("Test certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + ((ExternalCommandCertificateValidator) validator).getTestStandardAndErrorOut());
+        }
+        FacesContext.getCurrentInstance().renderResponse();
+        return "";
+    }
+    
+    public String getLineSeparator() {
+        return System.getProperty("line.separator");
+    }
+    
+    //////////////
+    
+//    /** @return a list of the current InteralKeyBinding's properties */
+//    public ListDataModel<DynamicUiProperty<? extends Serializable>> getDynamicUiProperties() {
+//        return dynamicUiProperties;
+//    }
+
+//    /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
+//    public String getPropertyNameTranslated() {
+//        final String name = ((DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
+//        final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
+//        final String translatedName = super.getEjbcaWebBean().getText(msgKey);
+//        return translatedName.equals(msgKey) ? name : translatedName;
+//    }
+
+//    /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
+//    public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
+//        final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
+//        if (internalKeyBindingPropertyList != null) {
+//            final DynamicUiProperty<? extends Serializable> property = (DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList
+//                    .getRowData();
+//            for (final Serializable possibleValue : property.getPossibleValues()) {
+//                propertyPossibleValues.add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue
+//                        .toString()));
+//            }
+//        }
+//        return propertyPossibleValues;
+//    }
+    
+    public String getText(final String key) {
+        return getEjbcaWebBean().getText(key);
+    }
+    
+    public Map<String,Object> getCopyOfPropertiesWithHeader() {
+        final Map<String,?> map = ((DynamicUiPropertiesAware) validator).getDynamicUiProperties().getCopyOfProperties();
+        final Map<String,Object> newMap = new LinkedHashMap<String,Object>();
+        final DynamicUiProperty<String> header = new DynamicUiProperty<String>("header", StringUtils.EMPTY);
+        header.setLabelOnly(true);
+        newMap.put("header", header);
+        newMap.putAll(map);
+        return newMap;
+    }
 }
