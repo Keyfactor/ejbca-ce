@@ -38,7 +38,7 @@ To enable efficient maintenance there are certain break points where multi-step 
 need to be done. Currently direct upgrades are supported through:
 - EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x
 
-If you are running a version previous to EJBCA 4, a multi step upgrade is needed.
+If you are running a version previous to EJBCA 4, further multi step upgrades are needed.
 - EJBCA 3.0.x -> EJBCA 3.8 -> EJBCA 3.11 -> EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x
 or if starting from EJBCA 3.10:
 - EJBCA 3.10 -> EJBCA 3.11 -> EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x
@@ -48,8 +48,8 @@ When performing any upgrade, you should read through the upgrade notices below a
 
 For each version an 'ant upgrade' and 'ant post-upgrade' should be run (which can be done from the GUI since EJBCA 6.8 but must be done from command line before that).
 
-Up until, and including, EJBCA 6.3.2.6 EJBCA can be run on JBoss 5.1, while higher versions of EJBCA needs Java 7 and later versions of JBoss/WildFly.
-An upgrade can be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA 4.0.16 -> EJBCA 6.3.2.6, and after that a platform upgrade is needed.
+Up until, and including, EJBCA 6.3.2.6 EJBCA can be run on JBoss 5.1, while higher versions of EJBCA needs Java 7 or 8 and later versions of JBoss/WildFly.
+An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA 4.0.16 -> EJBCA 6.3.2.6, and after that a platform upgrade is needed.
 
 From EJBCA 6.10.0 to EJBCA 6.10.1
 -------------------------------

@@ -391,6 +391,30 @@ No need to run a full 'ant deploy'. This command cleans previous build and build
 <p>
 For easy upgrades, keeping personal configuration between versions, you should consider using the <a href="adminguide.html#Customizing%20EJBCA">ejbca-custom feature</a>. 
 </p>
+<subsection name="Upgrade path">
+<p>
+Generally upgrades across multiple versions are supported using the generic upgrade instructions. 
+To enable efficient maintenance there are certain break points where multi-step upgrades  need to be done. 
+Currently direct upgrades are supported through:
+<ul>
+<li>EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x</li>
+</ul>
+
+If you are running a version previous to EJBCA 4, further multi step upgrades are needed.
+<ul>
+<li>EJBCA 3.0.x -> EJBCA 3.8 -> EJBCA 3.11 -> EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x</li>
+</ul>
+or if starting from EJBCA 3.10:
+<ul>
+<li>EJBCA 3.10 -> EJBCA 3.11 -> EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x</li>
+</ul>
+
+For each version upgrade notes are provided below, if there are any considerations or behavioral changes in a version. Read doc/UPGRADE for details.
+
+Up until, and including, EJBCA 6.3.2.6 EJBCA can be run on JBoss 5.1, while higher versions of EJBCA needs Java 7 or 8 and later versions of JBoss/WildFly.
+An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA 4.0.16 -> EJBCA 6.3.2.6, and after that a platform upgrade is needed.
+</p>
+</subsection>
 </section>
 
 <section name="Application servers">
