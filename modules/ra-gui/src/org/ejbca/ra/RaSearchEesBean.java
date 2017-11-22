@@ -83,7 +83,7 @@ public class RaSearchEesBean implements Serializable {
     private final List<RaEndEntityDetails> resultsFiltered = new ArrayList<>();
     private Map<Integer,String> eepIdToNameMap = null;
     private Map<Integer,String> cpIdToNameMap = null;
-    private Map<Integer,String> caIdToNameMap = new HashMap<>();
+    private Map<Integer,String> caIdToNameMap = null;
     private List<SelectItem> availableEeps = new ArrayList<>();
     private List<SelectItem> availableCps = new ArrayList<>();
     private List<SelectItem> availableCas = new ArrayList<>();
@@ -185,6 +185,11 @@ public class RaSearchEesBean implements Serializable {
     private void filterTransformSort() {
         resultsFiltered.clear();
         if (lastExecutedResponse != null) {
+            if (eepIdToNameMap==null || cpIdToNameMap==null || caIdToNameMap==null) {
+                getAvailableCas();
+                getAvailableEeps();
+                getAvailableCps();
+            }
             for (final EndEntityInformation endEntityInformation : lastExecutedResponse.getEndEntities()) {
                 // ...we don't filter if the requested maxResults is lower than the search request
                 if (!genericSearchString.isEmpty() && (
@@ -383,6 +388,7 @@ public class RaSearchEesBean implements Serializable {
                     return caInfo1.getName().compareTo(caInfo2.getName());
                 }
             });
+            caIdToNameMap = new HashMap<>();
             for (final CAInfo caInfo : caInfos) {
                 caIdToNameMap.put(caInfo.getCAId(), caInfo.getName());
             }
