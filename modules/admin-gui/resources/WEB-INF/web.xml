@@ -94,6 +94,7 @@
     <filter-mapping>
         <filter-name>extensionsFilter</filter-name>
         <url-pattern>*.jsf</url-pattern>
+        <url-pattern>*.xhtml</url-pattern>
     </filter-mapping>
 
     <!-- Clickjack Filter from OWASP adding X-FRAME-OPTIONS header to pages to prevent including 

@@ -14,6 +14,7 @@
 package org.cesecore.keys.validation;
 
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -143,6 +144,12 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
         if (data != null) {
             profileSession.changeProfile(validator);
         }
+    }
+
+    @Override
+    public void validateCertificate(AuthenticationToken authenticationToken, CA ca, EndEntityInformation endEntityInformation,
+            X509Certificate certificate) throws ValidationException, IllegalValidityException {
+        keyValidatorSession.validateCertificate(authenticationToken, ca, endEntityInformation, certificate);
     }
 
     @Override

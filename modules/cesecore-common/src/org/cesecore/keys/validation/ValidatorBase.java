@@ -48,7 +48,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     public static final float LATEST_VERSION = 4F;
 
     public static final String TYPE = "type";
-    protected static final String SETTINGS_TEMPLATE = "settingsTemplate";
+    public static final String SETTINGS_TEMPLATE = "settingsTemplate";
     protected static final String DESCRIPTION = "description";
     protected static final String NOT_BEFORE = "notBefore";
     protected static final String NOT_BEFORE_CONDITION = "notBeforeCondition";

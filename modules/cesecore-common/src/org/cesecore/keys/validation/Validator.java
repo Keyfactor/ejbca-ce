@@ -13,9 +13,6 @@
 
 package org.cesecore.keys.validation;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.profiles.Profile;
 
@@ -25,7 +22,7 @@ import org.cesecore.profiles.Profile;
  * @version $Id$
  */
 
-public interface Validator extends Profile, Cloneable {
+public interface Validator extends CertificateProfileAwareValidator, Profile, Cloneable {
 
     static final String TYPE_NAME = "VALIDATOR";
     
@@ -82,34 +79,6 @@ public interface Validator extends Profile, Cloneable {
       */
      String toDisplayString();
 
-     /** 
-      * If the validator should apply to All certificate profiles. 
-      * 
-      * @return true or false.
-      */
-     boolean isAllCertificateProfileIds();
-     
-     /** 
-      * Sets if validation should be performed for all certificate profile ids.
-      * 
-      * @param isAll, true if validation should be done for all certificate profiles.
-      */
-     void setAllCertificateProfileIds(boolean isAll);
-
-     /** 
-      * Gets a list of selected certificate profile ids. 
-      * 
-      * @return the list.
-      */
-     List<Integer> getCertificateProfileIds();
-     
-     /** 
-      * Sets the selected certificate profile ids.
-      * 
-      * @param ids the collection of ids.
-      */
-     void setCertificateProfileIds(Collection<Integer> ids);
-     
      /**
       * Clone has to be implemented instead of a copy constructor due to the fact that we'll be referring to implementations by this interface only. 
       * 

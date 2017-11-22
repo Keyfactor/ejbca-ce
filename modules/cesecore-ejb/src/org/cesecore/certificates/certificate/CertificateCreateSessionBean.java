@@ -92,8 +92,8 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -361,6 +361,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         try {
             keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation, request);
         } catch (ValidationException e) {
+            // Re-factor: ErrorCode could be specified more precisely.
             throw new CertificateCreateException(ErrorCode.NOT_AUTHORIZED, e);
         }
         
@@ -442,7 +443,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
                 final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
                         globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+                certGenParams.setAuthenticationToken(admin);
+                certGenParams.setCertificateValidationDomainService(keyValidatorSession);
                 cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
+                // Set null required here?
+                certGenParams.setCertificateValidationDomainService(null);
+                // ECA-6051 Potential insertion hook for post-validation (not pre-certificate validation).
+//                if (CAInfo.CATYPE_X509 == ca.getCAType()) {
+//                    try {
+//                        keyValidatorSession.validateCertificate(admin, ca, endEntityInformation, (X509Certificate) cert);
+//                    } catch (ValidationException e) {
+//                        throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
+//                    }
+//                }
                 cafingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 // Store certificate in the database, if this CA is configured to do so.
