@@ -17,7 +17,6 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.util.ui.DynamicUiPropertiesAware;
 
 /**
  * Base interface for certificate validators. All certificate validators must implement this interface.
@@ -25,7 +24,7 @@ import org.cesecore.util.ui.DynamicUiPropertiesAware;
  * @version $Id: CertificateValidator.java 26390 2017-11-04 15:20:58Z anjakobs $
  *
  */
-public interface CertificateValidator extends Validator, ValidityAwareValidator, DynamicUiPropertiesAware {
+public interface CertificateValidator extends Validator, ValidityAwareValidator {
 
     /** List of accepted date formats for notBefore and notAfter filter. */
     static final String[] DATE_FORMAT = new String[] { "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };

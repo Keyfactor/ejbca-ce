@@ -20,7 +20,6 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.ui.DynamicUiProperties;
 
 /**
  * @version $Id: CertificateValidatorBase.java 26333 26390 2017-11-04 15:20:58Z anjakobs $
@@ -34,7 +33,7 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
 
     /** Dynamic UI properties extension. */
-    protected DynamicUiProperties uiProperties;
+//    protected DynamicUiProperties uiProperties;
     
     /**
      * Public constructor needed for deserialization.
@@ -143,10 +142,10 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
         }
     }
     
-    @Override
-    public DynamicUiProperties getDynamicUiProperties() {
-        return uiProperties;
-    }
+//    @Override
+//    public DynamicUiProperties getDynamicUiProperties() {
+//        return uiProperties;
+//    }
 
     /**
      * Formats a date.
