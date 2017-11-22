@@ -29,9 +29,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.ui.DynamicUiProperties;
-import org.cesecore.util.ui.DynamicUiPropertiesBase;
-import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * External command certificate validator for multiple platforms.
@@ -142,10 +139,10 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             setLogErrorOut(false);
         }
         // Initialize UI properties.
-        uiProperties = new DynamicUiPropertiesBase(data);
-        uiProperties.addProperty(new DynamicUiProperty<String>(EXTERNAL_COMMAND, StringUtils.EMPTY));
-        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_STANDARD_OUT, Boolean.FALSE)); 
-        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_ERROR_OUT, Boolean.FALSE)); 
+//        uiProperties = new DynamicUiPropertiesBase(data);
+//        uiProperties.addProperty(new DynamicUiProperty<String>(EXTERNAL_COMMAND, StringUtils.EMPTY));
+//        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_STANDARD_OUT, Boolean.FALSE)); 
+//        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_ERROR_OUT, Boolean.FALSE)); 
     }
 
     @Override
