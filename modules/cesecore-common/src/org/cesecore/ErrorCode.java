@@ -44,6 +44,7 @@ public class ErrorCode implements Serializable {
     private static final String _AUTH_CERT_NOT_RECEIVED = "AUTH_CERT_NOT_RECEIVED"; // Client authentication certificate not received.
     private static final String _USER_NOT_FOUND = "USER_NOT_FOUND"; // User doesn't exist.
     private static final String _BAD_USER_TOKEN_TYPE = "BAD_USER_TOKEN_TYPE"; // Wrong token type for user.
+    private static final String _INVALID_CERTIFICATE = "INVALID_CERTIFICATE"; // Generated certificate is invalid (usually validated with external command).
     private static final String _INVALID_KEY = "INVALID_KEY"; // Provided key is invalid.
     private static final String _ILLEGAL_KEY = "ILLEGAL_KEY"; // User key is illegal (key length too small).
     private static final String _USER_WRONG_STATUS = "USER_WRONG_STATUS"; // User wrong status.
@@ -122,6 +123,8 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode USER_NOT_FOUND = new ErrorCode(_USER_NOT_FOUND);
     /** Wrong token type for user. */
     public static final ErrorCode BAD_USER_TOKEN_TYPE = new ErrorCode(_BAD_USER_TOKEN_TYPE);
+    /** Generated certificate is invalid. */
+    public static final ErrorCode INVALID_CERTIFICATE = new ErrorCode(_INVALID_CERTIFICATE);
     /** Provided key is invalid. */
     public static final ErrorCode INVALID_KEY = new ErrorCode(_INVALID_KEY);
     /** User key is illegal (key length too small). */

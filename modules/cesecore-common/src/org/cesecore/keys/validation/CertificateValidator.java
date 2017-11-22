@@ -10,33 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.keys.validation;
 
-import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.List;
 
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.util.ui.DynamicUiPropertiesAware;
 
 /**
- * Base interface for key validators. All key validators must implement this interface.
+ * Base interface for certificate validators. All certificate validators must implement this interface.
  * 
- * @version $Id$
+ * @version $Id: CertificateValidator.java 26390 2017-11-04 15:20:58Z anjakobs $
  *
  */
-public interface KeyValidator extends Validator, ValidityAwareValidator {
-    
+public interface CertificateValidator extends Validator, ValidityAwareValidator, DynamicUiPropertiesAware {
+
     /** List of accepted date formats for notBefore and notAfter filter. */
     static final String[] DATE_FORMAT = new String[] { "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
-    
+
     /**
      * Method that validates the public key.
      * 
-     * @param publicKey the public key to validate.
-     * @param certificateProfile the Certificate Profile as input for validation
-     * @return the error messages or an empty list if the public key was validated successfully.
-     * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example ECC keys as input to an RSA key validator
-     * @throws ValidationException if the certificate issuance MUST be aborted.
+     * @param ca the issuing CA.
+     * @param certifcate the certificate to validate.
+     * @return the error messages or an empty list if the certificate was validated successfully.
+     * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example CVC certificate instead of X.509 or other type
+     * @throws ValidationException if the certificate could not be validated by the external command (exit code > 0).
+     * @throws CertificateException if one of the certificates could not be parsed.
      */
-    List<String> validate(PublicKey publicKey, CertificateProfile certificateProfiles) throws ValidatorNotApplicableException, ValidationException;    
+    List<String> validate(CA ca, Certificate certificate) throws ValidatorNotApplicableException, ValidationException, CertificateException;
 }

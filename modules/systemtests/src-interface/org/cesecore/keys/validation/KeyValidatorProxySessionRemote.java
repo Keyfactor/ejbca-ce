@@ -14,6 +14,7 @@
 package org.cesecore.keys.validation;
 
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -177,6 +178,18 @@ public interface KeyValidatorProxySessionRemote {
      */
     boolean validatePublicKey(AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation, CertificateProfile certificateProfile, Date notBefore,
             Date notAfter, PublicKey publicKey) throws ValidationException, IllegalValidityException;
+    
+    /**
+     * Validates a generated certificate during issuance.
+     * 
+     * @param authenticationToken the authentication token of the administrator performing the action.
+     * @param ca the issuing CA.
+     * @param endEntityInformation the end entity object.
+     * @param certificate the certificate to validate.
+     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
+     */
+    void validateCertificate(final AuthenticationToken authenticationToken, final CA ca, 
+            final EndEntityInformation endEntityInformation, final X509Certificate certificate)  throws ValidationException, IllegalValidityException;
     
     /** Change a Validator without affecting the cache */
     void internalChangeValidatorNoFlushCache(Validator validator)
