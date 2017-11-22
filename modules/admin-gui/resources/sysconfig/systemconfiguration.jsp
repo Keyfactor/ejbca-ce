@@ -568,7 +568,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 	<%-- Certificate Transparency Logs --%>
 
 	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
-		<div style="margin-top: 1em; margin-bottom:1em;">
+		<div class="section-label">
             <h4>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_VIEW_CTLOG_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -676,7 +676,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 	         </f:facet>
         </h:panelGrid>
         
-        <div style="margin-top: 1em; margin-bottom: 1em;">
+        <div class="section-label">
             <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
         </div>
         <h:panelGrid columns="2" styleClass="grid">
