@@ -564,7 +564,11 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     }
 
     public GoogleCtPolicy getGoogleCtPolicy() {
-        return (GoogleCtPolicy) data.get(GOOGLE_CT_POLICY);
+        final GoogleCtPolicy googleCtPolicy = (GoogleCtPolicy) data.get(GOOGLE_CT_POLICY);
+        if (googleCtPolicy == null) {
+            return new GoogleCtPolicy();
+        }
+        return googleCtPolicy;
     }
 
     public void setGoogleCtPolicy(final GoogleCtPolicy value) {
