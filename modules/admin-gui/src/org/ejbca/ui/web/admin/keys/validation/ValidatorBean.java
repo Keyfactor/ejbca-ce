@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -58,8 +57,6 @@ import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.cesecore.util.ui.DynamicUiPropertiesAware;
-import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -643,18 +640,18 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 //        }
 //        return propertyPossibleValues;
 //    }
-    
-    public String getText(final String key) {
-        return getEjbcaWebBean().getText(key);
-    }
-    
-    public Map<String,Object> getCopyOfPropertiesWithHeader() {
-        final Map<String,?> map = ((DynamicUiPropertiesAware) validator).getDynamicUiProperties().getCopyOfProperties();
-        final Map<String,Object> newMap = new LinkedHashMap<String,Object>();
-        final DynamicUiProperty<String> header = new DynamicUiProperty<String>("header", StringUtils.EMPTY);
-        header.setLabelOnly(true);
-        newMap.put("header", header);
-        newMap.putAll(map);
-        return newMap;
-    }
+//    
+//    public String getText(final String key) {
+//        return getEjbcaWebBean().getText(key);
+//    }
+//    
+//    public Map<String,Object> getCopyOfPropertiesWithHeader() {
+//        final Map<String,?> map = ((DynamicUiPropertiesAware) validator).getDynamicUiProperties().getCopyOfProperties();
+//        final Map<String,Object> newMap = new LinkedHashMap<String,Object>();
+//        final DynamicUiProperty<String> header = new DynamicUiProperty<String>("header", StringUtils.EMPTY);
+//        header.setLabelOnly(true);
+//        newMap.put("header", header);
+//        newMap.putAll(map);
+//        return newMap;
+//    }
 }
