@@ -898,8 +898,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // Check EEP authorization (allow an highly privileged admin, e.g. superadmin, that can access all profiles to ignore this check
         // so certificates can still be accessed by this admin even after a EEP has been removed.
+        // Also, if we have access to the EMPTY profile, then we allow access to certificates with zero/null profile IDs, so they can at least be revoked.
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
         final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
+        if (authorizedEepIds.contains(SecConst.EMPTY_ENDENTITYPROFILE)) {
+            authorizedEepIds.add(EndEntityInformation.NO_ENDENTITYPROFILE);
+        }
         if (!accessAnyEepAvailable && !authorizedEepIds.contains(Integer.valueOf(cdw.getCertificateData().getEndEntityProfileIdOrZero()))) {
             return false;
         }
@@ -974,6 +978,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
             }
             return response;
+        }
+        // If we have access to the EMPTY profile, then allow viewing certificates with zero/null profile IDs, so they can at least be revoked
+        if (authorizedEepIds.contains(SecConst.EMPTY_ENDENTITYPROFILE)) {
+            authorizedEepIds.add(EndEntityInformation.NO_ENDENTITYPROFILE);
+            authorizedCpIds.add(EndEntityInformation.NO_CERTIFICATEPROFILE);
         }
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
