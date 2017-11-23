@@ -272,17 +272,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return "";
     }
 
-    private int countNumberOfMandatoryLogsAvailable(Set<Integer> ctLogIds) {
-        int numberOfMandatoryLogsAvailable = 0;
-        for (final Integer ctLogId : ctLogIds) {
-            CTLogInfo ctLogInfo = getEjbcaWebBean().getGlobalConfiguration().getCTLogs().get(ctLogId);
-            if (ctLogInfo.isMandatory()) {
-                numberOfMandatoryLogsAvailable++;
-            }
-        }
-        return numberOfMandatoryLogsAvailable;
-    }
-
     private final void applyExpirationRestrictionForValidityWithFixedDate(final CertificateProfile profile) {
         final String encodedValidty = profile.getEncodedValidity();
         if (profile.getUseExpirationRestrictionForWeekdays()) {
