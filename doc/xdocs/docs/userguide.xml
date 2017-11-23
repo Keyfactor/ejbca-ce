@@ -101,7 +101,7 @@ If you select (as type) to use a PKCS#11 Crypto Token additional fields are disp
 <li>PKCS#11 Library: PKCS#11 shared library configured as available in conf/web.properties.</li>
 <li>PKCS#11 Reference Type: What kind of a slot reference that is described by the next parameter (Id, Index or Label).</li>
 <li>PKCS#11 Reference: PKCS#11 slot number, index or label.</li>
-<li>PCKS#11 Attribute File: If required, this is a PKCS#11 attribute file configured as available in conf/web.properties. This should only be required for non common HSMs.</li>
+<li>PKCS#11 Attribute File: If required, this is a PKCS#11 attribute file configured as available in conf/web.properties. This should only be required for non common HSMs.</li>
 </ul>
 The PKCS#11 properties above are described in more technical detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">Adminguide's HSM</a> section.
 A unique Crypto Token identifier will be generated when the token is created.
