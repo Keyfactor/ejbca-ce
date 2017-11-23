@@ -303,20 +303,37 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
+    protected static final String CTLABELS = "ctlabels";
     protected static final String CT_MIN_TOTAL_SCTS = "ctminscts"; // This key is the same as in previous versions
     protected static final String CT_MIN_TOTAL_SCTS_OCSP = "ctminsctsocsp"; // This key is also the same as in previous versions
     @Deprecated
     protected static final String CT_MAX_SCTS = "ctmaxscts"; // Only used to fetch old value after upgrade, replaced by CT_MAX_NON_MANDATORY_SCTS and CT_MAX_MANDATORY_SCTS
     @Deprecated
     protected static final String CT_MAX_SCTS_OCSP = "ctmaxsctsocsp"; // Only used to fetch old value after upgrade, replaced by CT_MAX_NONMANDATORY_SCTS_OCSP and CT_MAX_MANDATORY_SCTS
+    
+    /* All deprecated below were removed in 6.10.1. Keep for upgrade purposes or move keys to UpgradeSessionBean */
+    @Deprecated
     protected static final String CT_MIN_MANDATORY_SCTS = "ctminmandatoryscts";
+    @Deprecated
     protected static final String CT_MAX_MANDATORY_SCTS = "ctmaxmandatoryscts";
+    @Deprecated
     protected static final String CT_MIN_MANDATORY_SCTS_OCSP = "ctminmandatorysctsocsp";
+    @Deprecated
     protected static final String CT_MAX_MANDATORY_SCTS_OCSP = "ctmaxmandatorysctsocsp";
+    @Deprecated
     protected static final String CT_MIN_NONMANDATORY_SCTS = "ctminnonmandatoryscts";
+    @Deprecated
     protected static final String CT_MAX_NONMANDATORY_SCTS = "ctmaxnonmandatoryscts";
+    @Deprecated
     protected static final String CT_MIN_NONMANDATORY_SCTS_OCSP = "ctminnonmandatorysctsocsp";
+    @Deprecated
     protected static final String CT_MAX_NONMANDATORY_SCTS_OCSP = "ctmaxnonmandatorysctsocsp";
+    protected static final String CT_SCTS_MIN = "ctsctsmin";
+    protected static final String CT_SCTS_MAX = "ctsctsmax";
+    protected static final String CT_SCTS_MIN_OCSP = "ctsctsminocsp";
+    protected static final String CT_SCTS_MAX_OCSP = "ctsctsmaxocsp";
+    protected static final String CT_NUMBER_OF_SCTS_BY_VALIDITY = "ctnumberofsctsbyvalidity";
+    protected static final String CT_NUMBER_OF_SCTS_BY_CUSTOM = "ctnumberofsctsbycustom";
     protected static final String CTMAXRETRIES = "ctmaxretries";
 
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
@@ -2518,6 +2535,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
     }
 
+    public boolean isNumberOfSctByValidity() {
+        if (data.get(CT_NUMBER_OF_SCTS_BY_VALIDITY) == null) {
+            // Default value
+            return true;
+        }
+        return (Boolean)data.get(CT_NUMBER_OF_SCTS_BY_VALIDITY);
+    }
+    
+    public void setNumberOfSctByValidity(boolean use) {
+        data.put(CT_NUMBER_OF_SCTS_BY_VALIDITY, use);
+    }
+
+    public boolean isNumberOfSctByCustom() {
+        if (data.get(CT_NUMBER_OF_SCTS_BY_CUSTOM) == null) {
+            // Default value
+            return false;
+        }
+        return (Boolean)data.get(CT_NUMBER_OF_SCTS_BY_CUSTOM);
+    }
+    
+    public void setNumberOfSctByCustom(boolean use) {
+        data.put(CT_NUMBER_OF_SCTS_BY_CUSTOM, use);
+    }
+    
     /**
      * Whether existing certificates should be submitted by the CT publisher and the CT OCSP extension class.
      */
@@ -2549,6 +2590,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTLOGS, new LinkedHashSet<>(logIds));
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> getEnabledCtLabels() {
+        if (data.get(CTLABELS) == null) {
+            return new LinkedHashSet<>();
+        }
+        return (Set<String>)data.get(CTLABELS);
+    }
+    
+    public void setEnabledCTLabels(LinkedHashSet<String> ctLabels) {
+        data.put(CTLABELS, ctLabels);
+    }
+    
     /**
      * <p>Number of CT logs to require an SCT from, or it will be considered an error. If zero, CT is completely optional and
      * ignored if no log servers can be contacted.</p>
@@ -2716,6 +2769,51 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CT_MIN_NONMANDATORY_SCTS_OCSP, value);
     }
 
+    public int getCtMinScts() {
+        if (data.get(CT_SCTS_MIN) == null) {
+            return getCtMinTotalScts();
+        }
+        return (Integer) data.get(CT_SCTS_MIN);
+    }
+    
+    public void setCtMinScts(int value) {
+        data.put(CT_SCTS_MIN, value);
+    }
+    
+    public int getCtMaxScts() {
+        if (data.get(CT_SCTS_MAX) == null) {
+            return getCtMinTotalScts();
+        }
+        return (Integer) data.get(CT_SCTS_MAX);
+    }
+    
+    public void setCtMaxScts(int value) {
+        data.put(CT_SCTS_MAX, value);
+    }
+    
+    public int getCtMinSctsOcsp() {
+        if (data.get(CT_SCTS_MIN_OCSP) == null) {
+            return getCtMinTotalScts();
+        }
+        return (Integer) data.get(CT_SCTS_MIN_OCSP);
+    }
+    
+    public void setCtMinSctsOcsp(int value) {
+        data.put(CT_SCTS_MIN_OCSP, value);
+    }
+    
+    public int getCtMaxSctsOcsp() {
+        if (data.get(CT_SCTS_MAX_OCSP) == null) {
+            return getCtMinTotalScts();
+        }
+        return (Integer) data.get(CT_SCTS_MAX_OCSP);
+    }
+    
+    public void setCtMaxSctsOcsp(int value) {
+        data.put(CT_SCTS_MAX_OCSP, value);
+    }
+    
+    
     /** Number of times to retry connecting to a Certificate Transparency log */
     public int getCTMaxRetries() {
         if (data.get(CTMAXRETRIES) == null) {
