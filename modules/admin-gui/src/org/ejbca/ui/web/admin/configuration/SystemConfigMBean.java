@@ -343,7 +343,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                         for (Entry<Integer, CertificateProfile> entry : certificateProfileSession.getAllCertificateProfiles().entrySet()) {
                             final int certificateProfileId = entry.getKey();
                             final CertificateProfile certificateProfile = entry.getValue();
-                            if (certificateProfile.getEnabledCTLogs().contains(ctLog.getLogId())) {
+                            if (certificateProfile.getEnabledCtLabels().contains(ctLog.getLabel())) {
                                 usedByProfiles.add(idToName.get(certificateProfileId));
                             }
                         }
