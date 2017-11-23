@@ -128,131 +128,138 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
-                // Determine part of certificate to match with.
-                DNFieldExtractor usedExtractor = dnExtractor;
-                X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
-                if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
-                    try {
-                    BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
+                // Check if we actually have some value to match against, null is not an allowed match value
+                if (accessUser.getMatchValue() != null) {                    
+                    // Determine part of certificate to match with.
+                    DNFieldExtractor usedExtractor = dnExtractor;
+                    X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
+                    if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
+                        try {
+                            BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
+                            switch (accessUser.getMatchTypeAsType()) {
+                            case TYPE_EQUALCASE:
+                            case TYPE_EQUALCASEINS:
+                                returnvalue = matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                                break;
+                            case TYPE_NOT_EQUALCASE:
+                            case TYPE_NOT_EQUALCASEINS:
+                                returnvalue = !matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                                break;
+                            default:
+                            }
+                        } catch (NumberFormatException nfe) {
+                            log.info("Invalid matchValue for accessUser when expecting a hex serialNumber: "+accessUser.getMatchValue());
+                        }
+                    } else if (matchValue == X500PrincipalAccessMatchValue.WITH_FULLDN) {
+                        String value = accessUser.getMatchValue();
                         switch (accessUser.getMatchTypeAsType()) {
                         case TYPE_EQUALCASE:
+                            returnvalue = value.equals(CertTools.getSubjectDN(certificate));
                         case TYPE_EQUALCASEINS:
-                            returnvalue = matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                            returnvalue = value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
                             break;
                         case TYPE_NOT_EQUALCASE:
+                            returnvalue = !value.equals(CertTools.getSubjectDN(certificate));
                         case TYPE_NOT_EQUALCASEINS:
-                            returnvalue = !matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                            returnvalue = !value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
                             break;
                         default:
                         }
-                    } catch (NumberFormatException nfe) {
-                        log.info("Invalid matchValue for accessUser when expecting a hex serialNumber: "+accessUser.getMatchValue());
-                    }
-                } else if (matchValue == X500PrincipalAccessMatchValue.WITH_FULLDN) {
-                    String value = accessUser.getMatchValue();
-                    switch (accessUser.getMatchTypeAsType()) {
-                    case TYPE_EQUALCASE:
-                        returnvalue = value.equals(CertTools.getSubjectDN(certificate));
-                    case TYPE_EQUALCASEINS:
-                        returnvalue = value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
-                        break;
-                    case TYPE_NOT_EQUALCASE:
-                        returnvalue = !value.equals(CertTools.getSubjectDN(certificate));
-                    case TYPE_NOT_EQUALCASEINS:
-                        returnvalue = !value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
-                        break;
-                    default:
+                    } else {
+                        parameter = DNFieldExtractor.CN;
+                        switch (matchValue) {
+                        case WITH_COUNTRY:
+                            parameter = DNFieldExtractor.C;
+                            break;
+                        case WITH_DOMAINCOMPONENT:
+                            parameter = DNFieldExtractor.DC;
+                            break;
+                        case WITH_STATEORPROVINCE:
+                            parameter = DNFieldExtractor.ST;
+                            break;
+                        case WITH_LOCALITY:
+                            parameter = DNFieldExtractor.L;
+                            break;
+                        case WITH_ORGANIZATION:
+                            parameter = DNFieldExtractor.O;
+                            break;
+                        case WITH_ORGANIZATIONALUNIT:
+                            parameter = DNFieldExtractor.OU;
+                            break;
+                        case WITH_TITLE:
+                            parameter = DNFieldExtractor.T;
+                            break;
+                        case WITH_DNSERIALNUMBER:
+                            parameter = DNFieldExtractor.SN;
+                            break;
+                        case WITH_COMMONNAME:
+                            parameter = DNFieldExtractor.CN;
+                            break;
+                        case WITH_UID:
+                            parameter = DNFieldExtractor.UID;
+                            break;
+                        case WITH_DNEMAILADDRESS:
+                            parameter = DNFieldExtractor.E;
+                            break;
+                        case WITH_RFC822NAME:
+                            parameter = DNFieldExtractor.RFC822NAME;
+                            usedExtractor = anExtractor;
+                            break;
+                        case WITH_UPN:
+                            parameter = DNFieldExtractor.UPN;
+                            usedExtractor = anExtractor;
+                            break;
+                        default:
+                        }
+                        size = usedExtractor.getNumberOfFields(parameter);
+                        clientstrings = new String[size];
+                        for (int i = 0; i < size; i++) {
+                            clientstrings[i] = usedExtractor.getField(parameter, i);
+                        }
+
+                        // Determine how to match.
+                        if (clientstrings != null) {
+                            switch (accessUser.getMatchTypeAsType()) {
+                            case TYPE_EQUALCASE:
+                                String accessUserMatchValue = accessUser.getMatchValue();
+                                for (int i = 0; i < size; i++) {
+                                    returnvalue = clientstrings[i].equals(accessUserMatchValue);
+                                    if (returnvalue) {
+                                        break;
+                                    }
+                                }
+                                break;
+                            case TYPE_EQUALCASEINS:
+                                for (int i = 0; i < size; i++) {
+                                    returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                                    if (returnvalue) {
+                                        break;
+                                    }
+                                }
+                                break;
+                            case TYPE_NOT_EQUALCASE:
+                                for (int i = 0; i < size; i++) {
+                                    returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
+                                    if (returnvalue) {
+                                        break;
+                                    }
+                                }
+                                break;
+                            case TYPE_NOT_EQUALCASEINS:
+                                for (int i = 0; i < size; i++) {
+                                    returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                                    if (returnvalue) {
+                                        break;
+                                    }
+                                }
+                                break;
+                            default:
+                            }
+                        }
                     }
                 } else {
-                    parameter = DNFieldExtractor.CN;
-                    switch (matchValue) {
-                    case WITH_COUNTRY:
-                        parameter = DNFieldExtractor.C;
-                        break;
-                    case WITH_DOMAINCOMPONENT:
-                        parameter = DNFieldExtractor.DC;
-                        break;
-                    case WITH_STATEORPROVINCE:
-                        parameter = DNFieldExtractor.ST;
-                        break;
-                    case WITH_LOCALITY:
-                        parameter = DNFieldExtractor.L;
-                        break;
-                    case WITH_ORGANIZATION:
-                        parameter = DNFieldExtractor.O;
-                        break;
-                    case WITH_ORGANIZATIONALUNIT:
-                        parameter = DNFieldExtractor.OU;
-                        break;
-                    case WITH_TITLE:
-                        parameter = DNFieldExtractor.T;
-                        break;
-                    case WITH_DNSERIALNUMBER:
-                        parameter = DNFieldExtractor.SN;
-                        break;
-                    case WITH_COMMONNAME:
-                        parameter = DNFieldExtractor.CN;
-                        break;
-                    case WITH_UID:
-                        parameter = DNFieldExtractor.UID;
-                        break;
-                    case WITH_DNEMAILADDRESS:
-                        parameter = DNFieldExtractor.E;
-                        break;
-                    case WITH_RFC822NAME:
-                        parameter = DNFieldExtractor.RFC822NAME;
-                        usedExtractor = anExtractor;
-                        break;
-                    case WITH_UPN:
-                        parameter = DNFieldExtractor.UPN;
-                        usedExtractor = anExtractor;
-                        break;
-                    default:
-                    }
-                    size = usedExtractor.getNumberOfFields(parameter);
-                    clientstrings = new String[size];
-                    for (int i = 0; i < size; i++) {
-                        clientstrings[i] = usedExtractor.getField(parameter, i);
-                    }
-
-                    // Determine how to match.
-                    if (clientstrings != null) {
-                        switch (accessUser.getMatchTypeAsType()) {
-                        case TYPE_EQUALCASE:
-                            String accessUserMatchValue = accessUser.getMatchValue();
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = clientstrings[i].equals(accessUserMatchValue);
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        case TYPE_EQUALCASEINS:
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        case TYPE_NOT_EQUALCASE:
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        case TYPE_NOT_EQUALCASEINS:
-                            for (int i = 0; i < size; i++) {
-                                returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
-                                if (returnvalue) {
-                                    break;
-                                }
-                            }
-                            break;
-                        default:
-                        }
+                    if (log.isTraceEnabled()) {
+                        log.trace("Match value is null and could not be matched. A value is required.");
                     }
                 }
             } else {
