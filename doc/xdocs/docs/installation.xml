@@ -397,6 +397,7 @@ Generally upgrades across multiple versions are supported using the generic upgr
 To enable efficient maintenance there are certain break points where multi-step upgrades  need to be done. 
 Currently direct upgrades are supported through:
 <ul>
+<li>EJBCA 5.x/6.x -> EJBCA 6.x (latest)</li>
 <li>EJBCA 4.0.16 -> EJBCA 6.3.2.6 -> EJBCA 6.x</li>
 </ul>
 
