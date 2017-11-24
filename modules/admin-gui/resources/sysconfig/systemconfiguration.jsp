@@ -513,7 +513,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
-				<h:outputText value="#{protocolinfos.status}"/>
+				<h:outputText value="#{protocolinfos.enabled ? web.text.PC_STATUS_ENABLED : web.text.PC_STATUS_DISABLED}"/>
 			</h:column>
 			<h:column>
    				<f:facet name="header">
