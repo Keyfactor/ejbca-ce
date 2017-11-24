@@ -446,7 +446,7 @@ function toggleCANameChange(){
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">defaultKey</td>
-                <td><c:out value="<%= catoken.getAliasFromPurpose(0) %>"/>
+                <td><c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT) %>"/>
             </td>
         </tr>
         <tr id="Row<%=row%2%>">
@@ -616,7 +616,7 @@ function toggleCANameChange(){
                         if (!editca) {
                             isDefault = CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default");
                         } else {
-                            isDefault = alias.equals(catoken.getAliasFromPurpose(0));
+                            isDefault = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
                         %>

@@ -19,7 +19,9 @@ package org.cesecore.certificates.ca.catoken;
  */
 public final class CATokenConstants {
 
-	/** signs certificates issued by the CA */
+    /** default key used when there is no specific setting for a purpose */
+    public static final int CAKEYPURPOSE_DEFAULT             = 0;
+    /** signs certificates issued by the CA */
 	public static final int CAKEYPURPOSE_CERTSIGN            = 1;
 	/** igns CRLs issues by the CA */
 	public static final int CAKEYPURPOSE_CRLSIGN             = 2;
