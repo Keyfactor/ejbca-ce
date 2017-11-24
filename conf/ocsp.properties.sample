@@ -38,8 +38,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
 # DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
 #
-# Default: SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
-#ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA
+# Default: SHA256withRSA;SHA256withECDSA;SHA1withDSA
+#ocsp.signaturealgorithm=SHA256withRSA;SHA256withECDSA;SHA1withDSA
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.
