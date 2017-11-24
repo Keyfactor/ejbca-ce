@@ -507,7 +507,17 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else.
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
-                    propertyClone.setPossibleValues(roleRepresentations);
+                    
+                    /**
+                     * Check if this step has already been set before.
+                     * If yes then no need to update the possible values, just get them from property.
+                     */
+                    if (propertyClone.getPossibleValues() == null || propertyClone.getPossibleValues().isEmpty()) {
+                        propertyClone.setPossibleValues(roleRepresentations);
+                    } else {
+                        propertyClone.setPossibleValues(property.getPossibleValues());
+                    }
+                    
                     break;
                 case NONE:
                     break;
