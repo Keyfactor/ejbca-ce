@@ -29,6 +29,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -218,7 +219,7 @@ public class OcspTestUtils {
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
-                authenticationToken, user, req, X509ResponseMessage.class, null)).getCertificate());
+                authenticationToken, user, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
         return ocspSigningCertificate;
     }
 }

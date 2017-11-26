@@ -357,7 +357,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             //Make sure there is a rollover certificate in store
             final byte[] requestbytes = caAdminSessionRemote.makeRequest(intAdmin, subCA.getCAId(), null, null);
             final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
-            final X509ResponseMessage respmsg = (X509ResponseMessage) certificateCreateSession.createCertificate(intAdmin, endentity, req, X509ResponseMessage.class, null);
+            final X509ResponseMessage respmsg = (X509ResponseMessage) certificateCreateSession.createCertificate(intAdmin, endentity, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate newCertificate =  (X509Certificate) respmsg.getCertificate();
             ejbcaraws.caCertResponseForRollover(subCaName, newCertificate.getEncoded(), null, "foo123");
 
