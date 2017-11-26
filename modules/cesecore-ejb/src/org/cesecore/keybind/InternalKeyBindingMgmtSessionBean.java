@@ -65,6 +65,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -862,7 +863,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final CertificateResponseMessage response;
         final long updateTime = System.currentTimeMillis();
         try {
-            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, null, updateTime);
+            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, new CertificateGenerationParams(), updateTime);
         } catch (CustomCertificateSerialNumberException e) {
             throw new CertificateImportException(e);
         } catch (IllegalKeyException e) {

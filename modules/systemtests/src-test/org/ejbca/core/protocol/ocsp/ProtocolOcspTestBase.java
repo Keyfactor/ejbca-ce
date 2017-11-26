@@ -56,6 +56,7 @@ import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
@@ -436,12 +437,12 @@ public abstract class ProtocolOcspTestBase {
         
       
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class, null)).getCertificate());
+                req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
         internalCertificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, new Date(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class, null)).getCertificate());
+                req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
         
     }
     

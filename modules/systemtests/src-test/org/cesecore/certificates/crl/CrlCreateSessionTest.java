@@ -63,6 +63,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -216,7 +217,7 @@ public class CrlCreateSessionTest {
             userdata.setDN("CN=testremovefromcrl");
             final PublicKey pubkey = KeyTools.genKeys("1024", "RSA").getPublic();
             final RequestMessage req = new SimpleRequestMessage(pubkey, "testremovefromcrl", "foo123");
-            final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, null).getCertificate();
+            final Certificate cert = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, new CertificateGenerationParams()).getCertificate();
             internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             
             Thread.sleep(1000);
