@@ -158,10 +158,6 @@ function getPasswordAndSubmit(formname) {
   	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
   	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
-<!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
-  </div> -->
-
 <% // Import CRLs of external CAs
   	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
 	 if(extCaNameList.size() > 0) {

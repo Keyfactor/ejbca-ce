@@ -50,9 +50,6 @@ function checkallfields(){
       </td>
       <td width="60%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOUSERDATASOURCES") %></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
-        <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
