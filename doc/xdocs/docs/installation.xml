@@ -49,12 +49,6 @@ Security is CRITICAL for a CA.
 </p>
 </section>
 
-<section name="Upgrade">
-<p>
-See EJBCA_HOME/doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
-earlier version of EJBCA.
-</p></section>
-
 <section name="Ubuntu quick start">
 <note>
 The current installation procedures for JBoss 7 / EAP 6 uses the JBoss CLI to configure the application server.
