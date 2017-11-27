@@ -20,6 +20,8 @@
 ########################################################################################
 #
 # Original at GitHub: https://github.com/ip6li/ejbca-setup
+# 
+# This script modified by EJBCA Team to run on a local EJBCA package
 #
 ########################################################################################
 #     #     #     ######   #     #  ###  #     #   #####   
@@ -36,34 +38,44 @@
 
 
 ########################################################################################
+
 # Configurables
+httpsserver_hostname="localhost"
+database_host="localhost"
+database_name="ejbcatest"
+database_driver="org.mariadb.jdbc.Driver"
+database_url="jdbc:mysql://${database_host}:3306/${database_name}?characterEncoding=UTF-8"
+database_username="ejbca"
+database_password="ejbca"
+BASE_DN="O=Example CA,C=SE"
+
+# Variables that should not be configured
+superadmin_cn="SuperAdmin"
+ca_name="ManagementCA"
+ca_dn="CN=ManagementCA,${BASE_DN}"
 
 ejbca_user=$(whoami)
 ejbca_group=$(id -g -n $ejbca_user)
-ejbca_home=~
+ejbca_user_home=~
 
-httpsserver_hostname="ejbca.example.com"
-database_host="localhost"
-database_name="ejbca"
-database_url="jdbc:mysql://${database_host}:3306/${database_name}?characterEncoding=UTF-8"
-database_driver="org.mariadb.jdbc.Driver"
-database_username="ejbca"
-database_password="ejbca"
-superadmin_cn="SuperAdmin"
-ca_name="ManagementCA"
-BASE_DN="O=Example CA,C=SE"
-ca_dn="CN=ManagementCA,${BASE_DN}"
+# Full path to where we run the script, which will be where we unpack and install software
+INSTALL_DIRECTORY=$(pwd)
+# The name of the EJBCA directory
+startdirectory=`dirname "$0"`
+EJBCA_DIRECTORY=$(echo "$startdirectory" | cut -d "/" -f2)
+
+mysql_root_user="root"
 
 WILDFLY_VERSION="10.1.0.Final"
-EJBCA_VERSION="6_5.0.5"
-MARIADB_CONNECTOR_VERSION="1.5.8"
+#EJBCA_VERSION="6_5.0.5"
+MARIADB_CONNECTOR_VERSION="2.2.0"
 
-EJBCA_DOWNLOAD_URL="https://downloads.sourceforge.net/project/ejbca/ejbca6/ejbca_6_5_0/ejbca_ce_${EJBCA_VERSION}.zip"
-EJBCA_DOWNLOAD_SHA256=85c09d584896bef01d207b874c54ae2f994d38dd85b40fd10c21f71f7210be8a
+#EJBCA_DOWNLOAD_URL="https://downloads.sourceforge.net/project/ejbca/ejbca6/ejbca_6_5_0/ejbca_ce_${EJBCA_VERSION}.zip"
+#EJBCA_DOWNLOAD_SHA256=85c09d584896bef01d207b874c54ae2f994d38dd85b40fd10c21f71f7210be8a
 #EJBCA_DOWNLOAD_SHA256_URL="https://downloads.sourceforge.net/project/ejbca/ejbca6/ejbca_6_5_0/ejbca_ce_${EJBCA_VERSION}.zip.SHA-256"
 
 MARIADB_DOWNLOAD_URL="https://downloads.mariadb.com/Connectors/java/connector-java-${MARIADB_CONNECTOR_VERSION}/mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar"
-MARIADB_DOWNLOAD_SHA256=4c63c872b0e9d704d54cf336a312eefd73238368e8c337bc7bbd4926647ee988
+MARIADB_DOWNLOAD_SHA256=fead0b3c61eba772fdaef2abed3b80eaeadbb5706abd78acf7698fe0a871cd4c
 #MARIADB_DOWNLOAD_SHA256_URL="https://downloads.mariadb.com/Connectors/java/connector-java-${MARIADB_CONNECTOR_VERSION}/sha256sums.txt"
 
 WILDFLY_TAR="wildfly-${WILDFLY_VERSION}.tar.gz"
@@ -71,11 +83,13 @@ WILDFLY_TAR_SHA256=80781609be387045273f974662dadf7f64ad43ee93395871429bc6b7786ec
 WILDFLY_DIR="wildfly-${WILDFLY_VERSION}"
 WILDFLY_DOWNLOAD_URL=https://download.jboss.org/wildfly/${WILDFLY_VERSION}/${WILDFLY_TAR}
 
+# Which OS are we running? RHEL or UBUNTU? This is updated automagically in the end of this script
+BASE_OS=UBUNTU
+
 ########################################################################################
 
-
 pwgen() {
-  NEW_PASSWORD=$(dd if=/dev/urandom bs=1 count=64 2> /dev/null | sha512sum | awk '{print $1}' | tr -d "\n")
+  NEW_PASSWORD=$(dd if=/dev/urandom bs=1 count=64 2> /dev/null | sha1sum | awk '{print $1}' | tr -d "\n")
   if [ -z "$NEW_PASSWORD" ]; then
     echo "Created empty password - very bad"
     exit 1
@@ -87,18 +101,19 @@ cakeystorepass=$(pwgen)
 truststorepass=$(pwgen)
 httpsserver_password=$(pwgen)
 cmskeystorepass=$(pwgen)
+passwordencryptionkey=$(pwgen)
+superadmin_password=$(pwgen)
 
 init_mysql() {
-  mysql_user=$(grep database.username ejbca-custom/conf/database.properties | awk -F= '{ print $2 }' | grep -v '^$')
-  mysql_pass=$(grep database.password ejbca-custom/conf/database.properties | awk -F= '{ print $2 }' | grep -v '^$')
+  cd $INSTALL_DIRECTORY || exit 1
   mysql_host=$(grep database.url ejbca-custom/conf/database.properties | awk -F/ '{print $3}' | awk -F: '{print $1}' | grep -v '^$')
-  echo "drop database ${database_name};" | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} ${database_name}
-  echo "create database ${database_name} default character set = utf8 default collate = utf8_general_ci;" | mysql --user=$mysql_user --password=$mysql_pass --host=${mysql_host} || exit 1
+  echo "Dropping all database tables in database ${database_name} (using the script ejbca/doc/sql-scripts/drop-tables-ejbca-mysql.sql), using DB user ${database_username}, who should have privileges to do that"
+  cat ejbca/doc/sql-scripts/drop-tables-ejbca-mysql.sql | mysql --host=${database_host} --user=${database_username} --password=${database_password} ${database_name} -f
 }
 
 
 create_mysql_index() {
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   cat ejbca/doc/sql-scripts/create-index-ejbca.sql | mysql --host=${database_host} --user=${database_username} --password=${database_password} ${database_name}
 }
 
@@ -118,13 +133,13 @@ wildfly_exec() {
 
 
 wildfly_shutdown() {
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   wildfly/bin/jboss-cli.sh --connect command=:shutdown
 }
 
 
 wildfly_reload() {
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   wildfly/bin/jboss-cli.sh --connect command=:reload
 }
 
@@ -137,7 +152,7 @@ wildfly_check() {
   DURATION=$(echo "$DURATION_SECONDS / 5" | bc)
 
   echo "wait ${DURATION_SECONDS}s for start up wildfly"
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   for i in `seq 1 $DURATION`; do
     wildfly/bin/jboss-cli.sh --connect ":read-attribute(name=server-state)" | grep "result" | awk '{ print $3; }'|grep running
     if [ $? -eq 0 ]; then
@@ -151,7 +166,7 @@ wildfly_check() {
 
 
 ejbca_deploy_check() {
-  cd ~
+  cd $INSTALL_DIRECTORY
   DURATION_SECONDS=30
   if [ ! -z "$1" ]; then
     DURATION_SECONDS="$1"
@@ -159,7 +174,7 @@ ejbca_deploy_check() {
   DURATION=$(echo "$DURATION_SECONDS / 5" | bc)
 
   echo "wait ${DURATION_SECONDS}s for deploying EJBCA"
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   for i in `seq 1 $DURATION`; do
     tail -50 wildfly/standalone/log/server.log |grep 'Deployed "ejbca.ear"' > /dev/null 2> /dev/null
     if [ $? -eq 0 ]; then
@@ -185,7 +200,7 @@ wildfly_enable_ajp() {
 
 
 wildfly_setup_https() {
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
 
   wildfly_server_config_dir="wildfly/standalone/configuration"
   keystore_password=$(grep '^httpsserver.password' ejbca-custom/conf/web.properties | awk -F= '{ print $2 }' | grep -v '^$')
@@ -237,36 +252,40 @@ wildfly_setup_logging() {
 
 
 ejbca_installer() {
-  cd ~
-  rm -f /tmp/run_as_root.sh
+  cd $INSTALL_DIRECTORY
+  #rm -f /tmp/run_as_root.sh
 
   wildfly_killall
 
   create_config_files
 
+  echo
+  echo "Init database"
   init_mysql
 
   if [ ! -d Download ]; then
     mkdir Download
   fi
   
+  echo
+  echo "Downloading(if needed) and unpacking WildFly"
   if [ ! -f Download/${WILDFLY_TAR} ]; then
     cd Download
-    echo "Downloading WildFly ${WILDFLY_VERSION}"
+    echo "Downloading WildFly to $(pwd)"
     curl -o ${WILDFLY_TAR} -L ${WILDFLY_DOWNLOAD_URL}
     echo ${WILDFLY_TAR_SHA256} ${WILDFLY_TAR} > ${WILDFLY_TAR}.sha256
     sha256sum --check ${WILDFLY_TAR}.sha256
     if [ $? -ne 0 ]; then
        echo "SHA256 for wildfly does not match"
+       rm ${WILDFLY_TAR}
        exit 1
     fi
-    rm ${WILDFLY_TAR}
     cd ..
   fi
   
   if [ ! -f Download/mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar ]; then
     cd Download
-    echo "Downloading MariaDB Java Connector ${MARIADB_CONNECTOR_VERSION}"
+    echo "Downloading MariaDB Java Connector to $(pwd)"
     curl -o mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar -L ${MARIADB_DOWNLOAD_URL}
 #    curl -o mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.sha256 -L ${MARIADB_DOWNLOAD_SHA256_URL}
 #    sha256sum --check mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.sha256 2>&1| grep mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar
@@ -274,30 +293,30 @@ ejbca_installer() {
     sha256sum --check mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar.sha256
     if [ $? -ne 0 ]; then
        echo "SHA256 for mariadb-java-client does not match"
+       rm mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar
        exit 1
     fi
-    rm mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar
     cd ..
   fi
   
-  if [ ! -f Download/ejbca_ce_${EJBCA_VERSION}.zip ]; then
-    cd Download
-    echo "Downloading EJBCA ${EJBCA_VERSION}"
-    curl -o ejbca_ce_${EJBCA_VERSION}.zip -L "${EJBCA_DOWNLOAD_URL}"
+#  if [ ! -f Download/ejbca_ce_${EJBCA_VERSION}.zip ]; then
+#    cd Download
+#    echo "Downloading EJBCA ${EJBCA_VERSION}"
+#    curl -o ejbca_ce_${EJBCA_VERSION}.zip -L "${EJBCA_DOWNLOAD_URL}"
 #    curl -o ejbca_ce_${EJBCA_VERSION}.zip.sha256 -L "${EJBCA_DOWNLOAD_SHA256_URL}"
 #    sha256sum --check ejbca_ce_6_5.0.5.zip.sha256
-    echo ${EJBCA_DOWNLOAD_SHA256} ejbca_ce_${EJBCA_VERSION}.zip > ejbca_ce_${EJBCA_VERSION}.zip.sha256
-    sha256sum --check ejbca_ce_${EJBCA_VERSION}.zip.sha256
-    if [ $? -ne 0 ]; then
-       echo "SHA256 for EJBCA does not match"
-       exit 1
-    fi
-    rm ejbca_ce_${EJBCA_VERSION}.zip
-    cd ..
-  fi
+#    echo ${EJBCA_DOWNLOAD_SHA256} ejbca_ce_${EJBCA_VERSION}.zip > ejbca_ce_${EJBCA_VERSION}.zip.sha256
+#    sha256sum --check ejbca_ce_${EJBCA_VERSION}.zip.sha256
+#    if [ $? -ne 0 ]; then
+#       echo "SHA256 for EJBCA does not match"
+#       exit 1
+#    fi
+#    rm ejbca_ce_${EJBCA_VERSION}.zip
+#    cd ..
+#  fi
   
   rm -rf "${WILDFLY_DIR}" > /dev/null 2> /dev/null
-  rm -rf "ejbca_ce_${EJBCA_VERSION}" > /dev/null 2> /dev/null
+#  rm -rf "ejbca_ce_${EJBCA_VERSION}" > /dev/null 2> /dev/null
   
   tar xvf Download/${WILDFLY_TAR}
   if [ -h wildfly ]; then
@@ -307,10 +326,13 @@ ejbca_installer() {
   
   cp "Download/mariadb-java-client-${MARIADB_CONNECTOR_VERSION}.jar" "wildfly/standalone/deployments/mariadb-java-client.jar" || exit 1
   
+  echo
+  echo "Configuring WildFly"
+
   # patch standalone.conf
-  cd ~/wildfly/bin || exit 1
+  cd $INSTALL_DIRECTORY/wildfly/bin || exit 1
   sed -i.bak 's/JAVA_OPTS="-Xms64m -Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true"/JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MaxPermSize=384m -Djava.net.preferIPv4Stack=true"/g' standalone.conf
-  cd ~
+  cd $INSTALL_DIRECTORY
   
   nohup wildfly/bin/standalone.sh -b 0.0.0.0 > /dev/null 2> /dev/null &
   sleep 3
@@ -321,7 +343,7 @@ ejbca_installer() {
   wildfly_check || exit 1
   
   # Add datasource
-  wildfly_exec "data-source add --name=ejbcads --driver-name=\"mariadb-java-client.jar\" --connection-url=\"jdbc:mysql://${mysql_host}:3306/ejbca\" --jndi-name=\"java:/EjbcaDS\" --use-ccm=true --driver-class=\"org.mariadb.jdbc.Driver\" --user-name=\"${mysql_user}\" --password=\"${mysql_pass}\" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql=\"select 1;\""
+  wildfly_exec "data-source add --name=ejbcads --driver-name=\"mariadb-java-client.jar\" --connection-url=\"jdbc:mysql://${mysql_host}:3306/${database_name}\" --jndi-name=\"java:/EjbcaDS\" --use-ccm=true --driver-class=\"org.mariadb.jdbc.Driver\" --user-name=\"${database_username}\" --password=\"${database_password}\" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql=\"select 1;\""
   wildfly_exec ":reload"
   
   # Configure WildFly Remoting
@@ -344,11 +366,15 @@ ejbca_installer() {
   wildfly_exec "/socket-binding-group=standard-sockets/socket-binding=https:remove"
   wildfly_exec ":reload"
   
-  unzip Download/ejbca_ce_${EJBCA_VERSION}.zip || exit 1
+  echo
+  echo "Deploying EJBCA"
+
+#  unzip Download/ejbca_ce_${EJBCA_VERSION}.zip || exit 1
   if [ -h ejbca ]; then
     rm -f ejbca
   fi
-  ln -s ejbca_ce_${EJBCA_VERSION} ejbca
+#  ln -s ejbca_ce_${EJBCA_VERSION} ejbca
+  ln -s ${EJBCA_DIRECTORY} ejbca
 
   echo "deploying EJBCA"
   cd ejbca || exit 1
@@ -360,14 +386,14 @@ ejbca_installer() {
   ant runinstall
 
   echo "deploy keystore"
-  cd ~
+  cd $INSTALL_DIRECTORY
   wildfly_check || exit 1
   cd ejbca || exit 1
   ant deploy-keystore
   
   cp -a p12 ../ejbca-custom/
 
-  cd ~ || exit 1
+  cd $INSTALL_DIRECTORY || exit 1
   #wildfly_exec ":shutdown"
   #nohup wildfly/bin/standalone.sh -b 0.0.0.0 > /dev/null 2> /dev/null &
   #wildfly_check 240
@@ -389,7 +415,7 @@ ejbca_installer() {
 
 are_you_sure() {
   echo "LAST CHANCE TO STOP THIS"
-  echo "Do you really want to destroy your EJBCA installation?"
+  echo "Do you really want to destroy your EJBCA installation in database $database_name?"
   select yn in "Yes" "No"; do
     case $yn in
         Yes ) ejbca_installer; break;;
@@ -400,7 +426,8 @@ are_you_sure() {
 
 
 init_installer() {
-  echo "This will destroy your complete EJBCA installation"
+  echo "This will destroy your complete EJBCA installation in database $database_name"
+  echo "This will also 'kill -9' all your currently running java processes.
   echo "Do you want this?"
   select yn in "Yes" "No"; do
       case $yn in
@@ -453,6 +480,33 @@ cat <<EOF > ejbca-custom/conf/cesecore.properties
 #
 # Default: false
 #allow.external-dynamic.configuration=false
+
+# -------------- NOTE for Upgrades --------------
+# When upgrading, the important options are:
+# - ca.keystorepass
+# - password.encryption.key
+# - ca.cmskeystorepass (in ejbca.properties)
+
+# -------------- General security --------------
+# The following key (strictly speaking, PBE input password) allows for encrypting passwords used in EJBCA (e.g. End Entity and Crypto Token
+#   passwords stored in database).
+# This property should be set before initial EJBCA installation and it should't be changed later, because there could exist
+#   passwords encrypted with the key about to be changed and EJBCA would be unable to decrypt them (note that the current implementation
+#   is capable to try decryption with the default key, i.e. qhrnf.f8743;12%#75, but it won't be able to decrypt passwords encrypted
+#   with a custom key being replaced for another custom key).
+# For setting this property you could use any password you consider safe, but it is strongly recommended that you use a randomly
+#   generated password, e.g. by using `openssl rand -base64 24`.
+#
+# When upgrading a 100% up-time cluster all nodes must produce password encryption that is decryptable by old nodes.
+# When all nodes run EJBCA 6.8.0 or higher you can change the password, and count, to increase security when passwords are saved in clear text.
+# (mostly used for batch generation and auto-activation) 
+#
+# Default: qhrnf.f8743;12%#75
+password.encryption.key=${passwordencryptionkey}
+
+# Nr of rounds when creating password based encryption keys (PBE).
+# To be able to change this you also need to set password.encryption.key to something other than the default (with applicable 100% uptime consideration). 
+#password.encryption.count=100
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
@@ -550,7 +604,7 @@ intresources.secondarylanguage=en
 # To de-configure these devices, set their implementation to "null" value (don't forget to comment out default section below).
 # i.e.
 #securityeventsaudit.implementation.0=null
-#securityeventsaudit.implementation.1=null
+securityeventsaudit.implementation.1=null
 
 # Each device can have a different exporter.
 # The following AuditExporter implementations are available:
@@ -568,8 +622,8 @@ securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 # Example configuration of IntegrityProtectedDevice that logs to the database
 # With XML export to /tmp/ (default export dir)
 # On windows a path would be for example 'C:/Temp/'
-securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
-securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
+#securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
+#securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #securityeventsaudit.deviceproperty.1.export.dir=/tmp/
 #securityeventsaudit.deviceproperty.1.export.fetchsize=1000
 #securityeventsaudit.deviceproperty.1.validate.fetchsize=1000
@@ -752,7 +806,7 @@ database.username=${database_username}
 # Database password.
 # Default: sa (works with H2 on JBoss 7)
 # Set to empty for hsql on JBoss 5)
-database.password=${database_password}
+database.password=NOT_SHOWN
 
 # The encoded certificate may be stored in the table Base64CertData instead of
 # in a column in the CertificateData table. Using a separate table for the
@@ -777,7 +831,7 @@ cat <<EOF > ejbca-custom/conf/ejbca.properties
 
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: \$APPSRV_HOME
-appserver.home=${ejbca_home}/wildfly
+appserver.home=${INSTALL_DIRECTORY}/wildfly
 
 # See also the section 'cluster configuration' for other JBoss options, for example
 # for deploying on JBoss EAP.
@@ -819,7 +873,7 @@ ca.cmskeystorepass=${cmskeystorepass}
 # Default request validity in seconds
 # Default : 28800 (8 Hours)
 #approval.defaultrequestvalidity=28800
-approval.defaultrequestvalidity=86400
+#approval.defaultrequestvalidity=86400
 
 # Default approval validity (how long an approved request should stay valid)
 # Default : 28800 (8 Hours)
@@ -1034,7 +1088,7 @@ ca.tokenpassword=null
 # The keyspec for the administrative CAs key, to be generated in soft keystore.
 # Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192).
 # Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
-ca.keyspec=4096
+ca.keyspec=2048
 
 # The keytype for the administrative CA, can be RSA, ECDSA or DSA
 # For the key to be generated in soft keystore.
@@ -1095,7 +1149,7 @@ superadmin.dn=CN=\${superadmin.cn}
 
 # The password used to protect the generated super administrator P12 keystore (to be imported in browser).
 # Choose a good password here.
-superadmin.password=ejbca
+superadmin.password=${superadmin_password}
 
 # Set this to false if you want to fetch the certificate from the EJBCA public web pages, instead of
 # importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
@@ -1135,7 +1189,7 @@ httpsserver.dn=CN=${httpsserver_hostname},${BASE_DN}
 # The private port exposed externally, i.e. if you run an Apache proxy in front of JBoss
 # the port may be 443 instead.
 # Default same as httpserver.privhttps
-httpserver.external.privhttps=443
+#httpserver.external.privhttps=443
  
 # The fully qualified domain name (FQDN) of the front-end, e.g. an Apache proxy
 #   In order to build absolute URL, the server name is got from the web client request.
@@ -1206,7 +1260,7 @@ web.selfreg.enabled=false
 # Deploy the request browser certificate renewal web application and show a 
 # link to it from the EJBCA public web.
 # Default = false
-web.renewalenabled=true
+#web.renewalenabled=true
 
 # Wether it should be possible to manually specify a custom class name in
 # the admin web (e.g. for a custom Publisher or Service), or if the choice
@@ -1220,11 +1274,11 @@ web.renewalenabled=true
 #
 # General error message to be presented to the user when an exception occur.
 # Default: An exception has occurred
-web.errorpage.notification=An exception has occurred.
+#web.errorpage.notification=An exception has occurred.
 #
 # Print the stacktrace of the exception
 # Default: true
-web.errorpage.stacktrace=false
+#web.errorpage.stacktrace=false
 
 # Custom Servlet filter for emulation of client certificate authentication to the Admin GUI
 # using a Tomcat Valve or similar proxy.
@@ -1265,6 +1319,8 @@ web.log.adminremoteip=true
 #cryptotoken.p11.lib.21.file=/usr/lunapci/lib/libCryptoki2_64.so
 #cryptotoken.p11.lib.22.name=SafeNet Luna PCI
 #cryptotoken.p11.lib.22.file=/Program Files/LunaPCI/cryptoki.dll
+#cryptotoken.p11.lib.23.name=SafeNet Luna Client
+#cryptotoken.p11.lib.23.file=/usr/safenet/lunaclient/lib/libCryptoki2_64.so
 #cryptotoken.p11.lib.30.name=Utimaco
 #cryptotoken.p11.lib.30.file=/opt/utimaco/p11/libcs2_pkcs11.so
 #cryptotoken.p11.lib.31.name=Utimaco
@@ -1273,11 +1329,11 @@ web.log.adminremoteip=true
 #cryptotoken.p11.lib.32.file=/etc/utimaco/libcs2_pkcs11.so
 #cryptotoken.p11.lib.33.name=Utimaco
 #cryptotoken.p11.lib.33.file=C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll
-#cryptotoken.p11.lib.40.name=nCipher
+#cryptotoken.p11.lib.40.name=Thales
 #cryptotoken.p11.lib.40.file=/opt/nfast/toolkits/pkcs11/libcknfast.so
 #cryptotoken.p11.lib.50.name=ARX CoSign
 #cryptotoken.p11.lib.50.file=C:/windows/system32/sadaptor.dll
-#cryptotoken.p11.lib.60.name=SmartCard-HSM
+#cryptotoken.p11.lib.60.name=OpenSC
 #cryptotoken.p11.lib.60.file=/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so
 #cryptotoken.p11.lib.61.name=OpenSC
 #cryptotoken.p11.lib.61.file=/usr/lib/i386-linux-gnu/opensc-pkcs11.so
@@ -1285,6 +1341,36 @@ web.log.adminremoteip=true
 #cryptotoken.p11.lib.62.file=/usr/local/lib/opensc-pkcs11.so
 #cryptotoken.p11.lib.63.name=OpenSC
 #cryptotoken.p11.lib.63.file=C:/Windows/system32/opensc-pkcs11.dll
+#cryptotoken.p11.lib.64.name=OpenSC
+#cryptotoken.p11.lib.64.file=/usr/lib64/pkcs11/opensc-pkcs11.so
+#cryptotoken.p11.lib.70.name=Bull TrustWay CryptoBox
+#cryptotoken.p11.lib.70.file=/usr/lib64/libcryptobox_clnt.so
+#cryptotoken.p11.lib.71.name=Bull TrustWay PCI Crypto Card
+#cryptotoken.p11.lib.71.file=/usr/lib64/libgpkcs11cc2000.so
+#cryptotoken.p11.lib.72.name=Bull TrustWay Proteccio
+#cryptotoken.p11.lib.72.file=/usr/lib64/libnethsm64.so
+#cryptotoken.p11.lib.80.name=SoftHSM 2
+#cryptotoken.p11.lib.80.file=/usr/local/lib/softhsm/libsofthsm2.so
+#cryptotoken.p11.lib.81.name=SoftHSM 2
+#cryptotoken.p11.lib.81.file=/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so
+#cryptotoken.p11.lib.82.name=SoftHSM 2
+#cryptotoken.p11.lib.82.file=/usr/lib/softhsm/libsofthsm2.so
+#cryptotoken.p11.lib.83.name=SoftHSM 2
+#cryptotoken.p11.lib.83.file=/usr/lib64/pkcs11/libsofthsm2.so
+#cryptotoken.p11.lib.90.name=SoftHSM
+#cryptotoken.p11.lib.90.file=/usr/lib/softhsm/libsofthsm.so
+#cryptotoken.p11.lib.91.name=SoftHSM
+#cryptotoken.p11.lib.91.file=/usr/lib64/softhsm/libsofthsm.so
+#cryptotoken.p11.lib.100.name=PKCS11 Spy
+#cryptotoken.p11.lib.100.file=/usr/lib/x86_64-linux-gnu/pkcs11-spy.so
+#cryptotoken.p11.lib.101.name=PKCS11 Spy
+#cryptotoken.p11.lib.101.file=/usr/lib64/pkcs11/pkcs11-spy.so
+#cryptotoken.p11.lib.110.name=Utimaco R2
+#cryptotoken.p11.lib.110.file=/opt/utimaco/p11/libcs_pkcs11_R2.so
+#cryptotoken.p11.lib.111.name=Utimaco R2
+#cryptotoken.p11.lib.111.file=/opt/Utimaco/Linux/x86_64/Crypto_APIs/PKCS11_R2/lib/libcs_pkcs11_R2.so
+#cryptotoken.p11.lib.112.name=Utimaco R2
+#cryptotoken.p11.lib.112.file=/etc/utimaco/libcs_pkcs11_R2.so
 #
 # You can add your own values with an available number, or override numbers from defaults...
 #cryptotoken.p11.lib.255.name=P11 Proxy
@@ -1322,7 +1408,7 @@ cat <<EOF
 This installs the EJBCA PKI
 EOF
 
-cd ~
+cd $INSTALL_DIRECTORY
 if [ $EUID -eq 0 ]; then
   echo "Do not execute this script as root"
   echo "We did nothing yet"
@@ -1330,10 +1416,11 @@ if [ $EUID -eq 0 ]; then
 fi
 
 
-cd ~
+cd $INSTALL_DIRECTORY
 if [ -d ejbca-custom ]; then
-  echo "ejba-custom already exists"
+  echo "$INSTALL_DIRECTORY/ejbca-custom already exists"
   echo "we will do nothing here"
+  echo "remove the ejbca-custom directory to re-install from scratch"
   exit 0
 fi
 
@@ -1342,52 +1429,58 @@ PKG_INSTALL=""
 if [ -f /etc/redhat-release ]; then
   echo "found RedHat/CentOS"
   PKG_INSTALL="yum install tar unzip java-1.8.0-openjdk-devel ant psmisc mariadb bc patch"
+  BASE_OS=RHEL
 else if [ -f /etc/debian_version ]; then
   echo "found Debian/Ubuntu"
   PKG_INSTALL="apt install unzip openjdk-8-jdk-headless ant ant-optional psmisc mariadb-client bc patch"
+  BASE_OS=UBUNTU
   else
     echo "Unknown platform, your milage may vary"
   fi
 fi
 
-RUN_AS_ROOT_FILE="/tmp/run_as_root.sh"
-cat <<EOF >${RUN_AS_ROOT_FILE}
-$PKG_INSTALL
-#groupadd ${ejbca_group}
-#useradd -md ${ejbca_home} -g ${ejbca_group} -s /bin/bash ${ejbca_user}
+#RUN_AS_ROOT_FILE="/tmp/run_as_root.sh"
+#cat <<EOF >${RUN_AS_ROOT_FILE}
+#$PKG_INSTALL
 
-cat <<EOF2 > /etc/systemd/system/ejbca.service
-[Unit]
-Description=EJBCA PKI
-After=network.target
+#cat <<EOF2 > /etc/systemd/system/ejbca.service
+#[Unit]
+#Description=EJBCA PKI
+#After=network.target
 
-[Service]
-Type=simple
-User=${ejbca_user}
-Group=${ejbca_group}
-WorkingDirectory=${ejbca_home}
-ExecStart=${ejbca_home}/wildfly/bin/standalone.sh -b 0.0.0.0
-ExecStop=${ejbca_home}/wildfly/bin/jboss-cli.sh --connect command=:shutdown
-Restart=on-failure
-RestartSec=300s
+#[Service]
+#Type=simple
+#User=${ejbca_user}
+#Group=${ejbca_group}
+#WorkingDirectory=${ejbca_home}
+#ExecStart=${ejbca_home}/wildfly/bin/standalone.sh -b 0.0.0.0
+#ExecStop=${ejbca_home}/wildfly/bin/jboss-cli.sh --connect command=:shutdown
+#Restart=on-failure
+#RestartSec=300s
 
-[Install]
-WantedBy=multi-user.target
-EOF2
+#[Install]
+#WantedBy=multi-user.target
+#EOF2
 
-systemctl daemon-reload
+#systemctl daemon-reload
 
-rm -f "${RUN_AS_ROOT_FILE}"
-EOF
-chmod 755 "${RUN_AS_ROOT_FILE}"
+#rm -f "${RUN_AS_ROOT_FILE}"
+#EOF
+#chmod 755 "${RUN_AS_ROOT_FILE}"
 
-echo "EJBCA will be installed on user ${ejbca_user}"
+echo "EJBCA will be installed as OS user '${ejbca_user}'"
 echo 
-echo "please execute /tmp/run_as_root.sh as root (installs needed packages and creates a systemctl service for ejbca)"
+echo "please install dependencies with:"
+echo $PKG_INSTALL
+#echo "please execute /tmp/run_as_root.sh as root (installs needed packages and creates a systemctl service for ejbca)"
+echo
 echo "Please select \"Yes\" if you did so, but not before"
 select yn in "Yes" "No"; do
   case $yn in
       Yes ) init_installer; break;;
       No ) exit;;
   esac
+echo
+echo "You can now install the superadmin keystore in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca"
+echo
 done

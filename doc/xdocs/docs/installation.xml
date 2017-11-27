@@ -49,7 +49,28 @@ Security is CRITICAL for a CA.
 </p>
 </section>
 
-<section name="Ubuntu quick start">
+<section name="Quick Start Guide">
+<p>There are different ways to quick start EJBCA for different users.</p> 
+<ul>
+<li>In the <a href="../download.html">Download</a> section there is a VM that can be downloaded and run.</li>
+<li>Here we provide a scripted installation to be run locally when an EJBCA distribution has been unpacked.</li>
+<li>Further below are legacy quick start guides for Ubuntu and RHEL where you do more manual steps.</li>
+</ul>
+<p>To use the quick setup script, located in <i>bin/extra/ejbca-setup</i> on a Linux machine (Ubuntu or RedHat recommended) you can follow these simple steps:</p>
+<ol>
+<li>Download and unpack EJBCA</li>
+<li>Install a MariaDB database and create a database for EJBCA</li>
+<li>Configure the script in ejbca/bin/extra/ejbca-setup with your database user and password.</li>
+<li>Run the script with <i>ejbca-directory/bin/extra/ejbca-setup</i>. This will download WildFly 10 and the MariaDB database connector and install everything, leaving you with a usable EJBCA installation.</li>
+</ol>
+<p><strong>Done!</strong> Import superadmin.p12 in your web browser and open the EJBCA Administration pages at <a href="https://localhost:8443/ejbca/adminweb/">https://localhost:8443/ejbca/adminweb/</a></p>
+<p>Configuring a proper database in MariaDB is done with a few simple commands:</p>
+<source>
+$ sudo mysql -u root
+mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
+mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejbca';
+</source>
+<subsection name="Legacy Ubuntu quick start">
 <note>
 The current installation procedures for JBoss 7 / EAP 6 uses the JBoss CLI to configure the application server.
 The JBoss CLI turns out not to be well suited for automated deploys however, so functions can break. 
@@ -119,9 +140,9 @@ why it will not start correctly in your environment, See the <a href="adminguide
 </ol>
 <p>Done!</p>
 <p>After installation <strong>do not forget to secure your installation</strong> as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
-</section>
+</subsection>
 
-<section name="RedHat Enterprise Linux quick start">
+<subsection name="Legacy RedHat Enterprise Linux quick start">
 <p>This section provides a fast way to get installed and running for a test using RedHat Enterprise Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p>
@@ -164,10 +185,10 @@ This will install OpenJDK and apache ant.
 <li>Log out from root account and log in as 'user' in a new terminal 'ejbca'.</li>
 <li>After this follow the same steps, 4-11 as in the 'Ubuntu quick start' above.</li>
 </ol>
-
-
 <p>Done!</p>
 <p>After installation <strong>do not</strong> forget to <strong>secure</strong> your installation as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
+</subsection>
+
 </section>
 
 <section name="Installation guide">
