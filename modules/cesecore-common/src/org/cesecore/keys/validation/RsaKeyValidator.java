@@ -192,6 +192,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         return false;
     }
     
+       
     /**
      * Public constructor needed for deserialization.
      */
@@ -331,19 +332,34 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public String getPublicKeyExponentMinAsString() {
         return (String) data.get(PUBLIC_KEY_EXPONENT_MIN);
     }
-
+    
+    /**
+     * Setting value for PublicKeyExponentMin
+     * @param value the value for PublicKeyExponentMin
+     */
     public void setPublicKeyExponentMin(BigInteger value) {
-        if (null != value) {
+        if (null != value && !isNegative(value) ) {
             data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
-        } else {
+        } else if (null == value ){
             data.put(PUBLIC_KEY_EXPONENT_MIN, null);
+        }    
+        else {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent minimum value."));
         }
     }
-
+    
+    /**
+     * Setting value for PublicKeyExponentMinAsString
+     * @param value the string value for PublicKeyExponentMin
+     */
     public void setPublicKeyExponentMinAsString(String value) {
+        if (isNegative(new BigInteger(value))) { 
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+        } else{
         data.put(PUBLIC_KEY_EXPONENT_MIN, value);
+        }
     }
-
+    
     public BigInteger getPublicKeyExponentMax() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_EXPONENT_MAX))) {
             return new BigInteger(((String) data.get(PUBLIC_KEY_EXPONENT_MAX)));
@@ -351,21 +367,35 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             return null;
         }
     }
-
+    
     public String getPublicKeyExponentMaxAsString() {
         return (String) data.get(PUBLIC_KEY_EXPONENT_MAX);
     }
-
+    
+    /**
+     * Setting value for PublicKeyExponentMax
+     * @param value the value for PublicKeyExponentMax
+     */
     public void setPublicKeyExponentMax(BigInteger value) {
-        if (null != value) {
+        if (null != value && !isNegative(value) ) {
             data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
-        } else {
+        } else if (null == value ){
             data.put(PUBLIC_KEY_EXPONENT_MAX, null);
+        } else {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent maximum value."));
         }
     }
-
+    
+    /**
+     * Setting value for PublicKeyExponentMaxAsString
+     * @param value the string value for PublicKeyExponentMax
+     */
     public void setPublicKeyExponentMaxAsString(String value) {
-        data.put(PUBLIC_KEY_EXPONENT_MAX, value);
+       if (isNegative(new BigInteger(value))) { 
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+        } else {
+            data.put(PUBLIC_KEY_EXPONENT_MAX, value);
+        }
     }
 
     public boolean isPublicKeyModulusOnlyAllowOdd() {
@@ -396,11 +426,19 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public Integer getPublicKeyModulusMinFactor() {
         return (Integer) data.get(PUBLIC_KEY_MODULUS_MIN_FACTOR);
     }
-
+    
+    /**
+     * Setting value for PublicKeyModulusMinFactor
+     * @param type the value for PublicKeyModulusMinFactor 
+     */
     public void setPublicKeyModulusMinFactor(Integer type) {
-        data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, type);
+        if (null != type && !(type < 0) )  {
+            data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, type);
+        } else if (type < 0) { 
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", type, "Public key modulus smallest factor."));
+        }
     }
-
+    
     public BigInteger getPublicKeyModulusMin() {
         if (StringUtils.isNotBlank((String) data.get(PUBLIC_KEY_MODULUS_MIN))) {
             return new BigInteger(((String) data.get(PUBLIC_KEY_MODULUS_MIN)));
@@ -412,17 +450,31 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public String getPublicKeyModulusMinAsString() {
         return (String) data.get(PUBLIC_KEY_MODULUS_MIN);
     }
-
+    
+    /**
+     * Setting value for PublicKeyModulusMin
+     * @param value the value for PublicKeyModulusMin
+     */
     public void setPublicKeyModulusMin(BigInteger value) {
-        if (null != value) {
+        if (null != value && !isNegative(value) ) {
             data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
-        } else {
+        } else if (null == value ){
             data.put(PUBLIC_KEY_MODULUS_MIN, null);
+        } else {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus minimum value."));
         }
     }
-
+    
+    /**
+     * Setting value for PublicKeyModulusMinAsString
+     * @param value the string value for PublicKeyModulusMin
+     */
     public void setPublicKeyModulusMinAsString(String value) {
-        data.put(PUBLIC_KEY_MODULUS_MIN, value);
+        if (isNegative(new BigInteger(value))) { 
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+        } else {
+            data.put(PUBLIC_KEY_MODULUS_MIN, value);
+        }    
     }
 
     public BigInteger getPublicKeyModulusMax() {
@@ -436,17 +488,45 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public String getPublicKeyModulusMaxAsString() {
         return (String) data.get(PUBLIC_KEY_MODULUS_MAX);
     }
-
+    
+    /**
+     * Setting value for PublicKeyModulusMax
+     * @param value the value for PublicKeyModulusMax 
+     */
     public void setPublicKeyModulusMax(BigInteger value) {
-        if (null != value) {
+        if (null != value && !isNegative(value) ) {
             data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
-        } else {
+        } else if (null == value ){
             data.put(PUBLIC_KEY_MODULUS_MAX, null);
+        } else {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus maximum value."));
         }
     }
-
+    
+    /**
+     * Setting value for PublicKeyModulusMaxAsString 
+     * @param value the string value for PublicKeyModulusMax
+     */
     public void setPublicKeyModulusMaxAsString(String value) {
-        data.put(PUBLIC_KEY_MODULUS_MAX, value);
+        if (isNegative(new BigInteger(value))) { 
+            log.info(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+        } else {
+            data.put(PUBLIC_KEY_MODULUS_MAX, value);
+        }
+    }
+        
+    /**
+     * Testing if BigInteger value is negative
+     * @param value the value to be tested
+     * @return true or false
+     */
+    public boolean isNegative(BigInteger value){
+        if (value.compareTo(BigInteger.ZERO) == -1){
+            return true;
+        } else {
+         
+        return false;
+        }
     }
 
     @Override

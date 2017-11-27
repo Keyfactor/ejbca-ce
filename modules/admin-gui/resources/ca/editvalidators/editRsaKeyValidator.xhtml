@@ -39,9 +39,15 @@
 <h:outputLabel for="rsaPublicKeyExponentOnlyAllowOdd" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTONLYALLOWODD}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="rsaPublicKeyExponentOnlyAllowOdd" value="#{validatorBean.validator.publicKeyExponentOnlyAllowOdd}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyExponentMin" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMIN}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyExponentMin" value="#{validatorBean.validator.publicKeyExponentMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" />
+<h:inputText id="rsaPublicKeyExponentMin" value="#{validatorBean.validator.publicKeyExponentMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
+	<f:validator validatorId="noNegativeNumbersValidator"/>
+	<f:attribute name="fieldname" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMIN}"/>
+</h:inputText>
 <h:outputLabel for="rsaPublicKeyExponentMax" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMAX}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyExponentMax" value="#{validatorBean.validator.publicKeyExponentMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" />
+<h:inputText id="rsaPublicKeyExponentMax" value="#{validatorBean.validator.publicKeyExponentMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
+	<f:validator validatorId="noNegativeNumbersValidator" />
+	<f:attribute name="fieldname" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMAX}" />
+</h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusOnlyAllowOdd" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSONLYALLOWODD}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="rsaPublicKeyModulusOnlyAllowOdd" value="#{validatorBean.validator.publicKeyModulusOnlyAllowOdd}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusDontAllowPowerOfPrime" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSDONTALLOWPOWEROFPRIME}" styleClass="subItem"/>
@@ -49,10 +55,19 @@
 <h:outputLabel for="rsaPublicKeyModulusDontAllowRocaWeakKeys" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSDONTALLOWROCAWEAKKEYS}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="rsaPublicKeyModulusDontAllowRocaWeakKeys" value="#{validatorBean.validator.publicKeyModulusDontAllowRocaWeakKeys}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="rsaPublicKeyModulusMinFactor" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMINFACTOR}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMinFactor" value="#{validatorBean.validator.publicKeyModulusMinFactor}" required="false" maxlength="10" disabled="#{validatorsBean.viewOnly}" />
+<h:inputText id="rsaPublicKeyModulusMinFactor" value="#{validatorBean.validator.publicKeyModulusMinFactor}" required="false" maxlength="10" disabled="#{validatorsBean.viewOnly}">
+	<f:validator validatorId="noNegativeNumbersValidator" />
+	<f:attribute name="fieldname" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMINFACTOR}" />
+</h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusMin" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMIN}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMin" value="#{validatorBean.validator.publicKeyModulusMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" />
+<h:inputText id="rsaPublicKeyModulusMin" value="#{validatorBean.validator.publicKeyModulusMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
+	<f:validator validatorId="noNegativeNumbersValidator" />
+	<f:attribute name="fieldname" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMIN}" />
+</h:inputText>
 <h:outputLabel for="rsaPublicKeyModulusMax" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMAX}" styleClass="subItem"/>
-<h:inputText id="rsaPublicKeyModulusMax" value="#{validatorBean.validator.publicKeyModulusMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" />
+<h:inputText id="rsaPublicKeyModulusMax" value="#{validatorBean.validator.publicKeyModulusMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
+	<f:validator validatorId="noNegativeNumbersValidator" />
+	<f:attribute name="fieldname" value="#{web.text.RSAKEYVALIDATORPUBLICMODULUSMAX}" />
+</h:inputText>
 <ui:include src="certificateValidity.xhtml" />
 </ui:composition>

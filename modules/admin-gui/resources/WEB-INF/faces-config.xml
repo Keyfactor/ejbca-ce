@@ -153,6 +153,10 @@
         <validator-class>org.ejbca.ui.web.admin.HexSerialNumberValidator</validator-class>
   </validator>
   <validator>
+        <validator-id>noNegativeNumbersValidator</validator-id>
+        <validator-class>org.ejbca.util.validator.NoNegativeNumbersValidator</validator-class>
+  </validator>
+  <validator>
         <validator-id>optionalHexSerialNumberValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.OptionalHexSerialNumberValidator</validator-class>
   </validator>
