@@ -75,9 +75,6 @@ function checkallfields(){
       </td>
       <td width="60%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOHARDTOKENPROFILES") %></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#hardtokenprofiles"%>")'>
-        <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
     

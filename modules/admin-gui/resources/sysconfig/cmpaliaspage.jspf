@@ -109,9 +109,6 @@ function checkallfields() {
       </td>
       <td width="50%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"CMPBACKTOALIASES\") %>" /></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
       </td>
     </tr>
 

@@ -7,9 +7,6 @@
 
 <h1><%= ejbcawebbean.getText("MANAGEHARDTOKENPROFILES") %></h1>
 
-<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
-
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 

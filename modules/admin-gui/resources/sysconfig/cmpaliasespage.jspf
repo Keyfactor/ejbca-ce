@@ -7,9 +7,6 @@
 
 <h1><%= (ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) ? ejbcawebbean.getText("CMPMANAGEALIASES") : ejbcawebbean.getText("CMP_VIEW_ALIASES"))%></h1>
 
-<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
-
 <form name="editcmpaliases" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 

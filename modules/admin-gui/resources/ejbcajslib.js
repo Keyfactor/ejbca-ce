@@ -57,10 +57,6 @@ function onlyoneselected(checkboxlist,size,alerttext){
   return (numberofchecked==1);
 }
 
-function displayHelpWindow(helplink) {
-  window.open(helplink, 'ejbca_helpwindow','height=600,width=500,scrollbars=yes,toolbar=yes,resizable=1');
-}
-
 function checkfieldforlegalchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);

@@ -38,11 +38,8 @@ function check()
           <h3>&nbsp;</h3>
         </div>
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right">
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOHARDTOKENPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#cas"%>")'>
-        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+      <td width="50%" valign="top" align="right">
+        <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOHARDTOKENPROFILES") %></a>
       </td>
     </tr>
     <form name="uploadfile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >

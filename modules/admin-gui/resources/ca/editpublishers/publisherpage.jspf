@@ -143,9 +143,6 @@ function checkallfields(){
       </td>
       <td width="55%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOPUBLISHERS") %></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
-        <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

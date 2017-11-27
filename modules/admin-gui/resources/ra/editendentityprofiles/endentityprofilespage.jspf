@@ -9,9 +9,6 @@
 
 <h1><%= ejbcawebbean.getText(( authorizedToEdit ? "MANAGEENDENTITYPROFILES" : "VIEWENDENTITYPROFILES" )) %></h1>
 
-<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
-
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 

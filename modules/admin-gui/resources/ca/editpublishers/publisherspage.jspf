@@ -6,9 +6,6 @@
 
 <h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/adminguide.html#LDAP%20and%20Publishers") %></h1>
 
-<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
-
 <form name="editpublishers" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
   <input type="hidden" name='<%= publisherhelper.ACTION %>' value='<%=publisherhelper.ACTION_EDIT_PUBLISHERS %>'>

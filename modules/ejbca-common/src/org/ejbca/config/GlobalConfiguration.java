@@ -174,7 +174,6 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String BANNERS_PATH        = "banners_path";
     private static final   String CA_PATH             = "ca_path";
     private static final   String CONFIG_PATH         = "data_path";
-    private static final   String HELP_PATH           = "help_path";
     private static final   String IMAGES_PATH         = "images_path";
     private static final   String LANGUAGE_PATH       = "language_path";
     private static final   String LOG_PATH            = "log_path";
@@ -238,7 +237,6 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        data.put(BANNERS_PATH,"banners");
        data.put(CA_PATH, tempadminpath+"ca");
        data.put(CONFIG_PATH,tempadminpath+"sysconfig");
-       data.put(HELP_PATH,"help");
        data.put(IMAGES_PATH,"images");
        data.put(LANGUAGE_PATH,"languages");
        data.put(LOG_PATH,tempadminpath+"log");
@@ -374,7 +372,6 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     public   String getBannersPath() {return (String) data.get(BANNERS_PATH);}
     public   String getCaPath() {return (String) data.get(CA_PATH);}
     public   String getConfigPath() {return (String) data.get(CONFIG_PATH);}
-    public   String getHelpPath() {return (String) data.get(HELP_PATH);}
     public   String getImagesPath() {return (String) data.get(IMAGES_PATH);}
     public   String getLanguagePath() {return (String) data.get(LANGUAGE_PATH);}
     public   String getLogPath() {return (String) data.get(LOG_PATH);}

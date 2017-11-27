@@ -97,8 +97,6 @@ function confirmrevocation(){
         <A href='javascript:document.changefiltermode.submit();'><u><c:out value="<%= ejbcawebbean.getText(\"BASICMODE\") %>"/></u></A>
      <% } %>
      &nbsp;&nbsp;&nbsp;
-    <!-- <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#listendentities" %>")'>
-     <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></u> </A> -->
   </div>
   </form> 
 

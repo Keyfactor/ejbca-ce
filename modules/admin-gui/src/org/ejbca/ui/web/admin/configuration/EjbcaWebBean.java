@@ -487,40 +487,6 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * A functions that returns wanted helpfile in preferred language. The parameter helpfilename should the wanted filename without language infix.
-     * For example: given helpfilename 'cahelp.html' would return 'cahelp.en.html' if English was the users preferred language.
-     */
-    public String getHelpfileInfix(String helpfilename) {
-        String returnedurl = null;
-        String[] strs = adminsweblanguage.getAvailableLanguages();
-        int index = currentadminpreference.getPreferedLanguage();
-        String prefered = strs[index];
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
-
-        String helpfile = helpfilename.substring(0, helpfilename.lastIndexOf('.'));
-        String postfix = helpfilename.substring(helpfilename.lastIndexOf('.') + 1);
-
-        String preferedfilename = "/" + globalconfiguration.getHelpPath() + "/" + helpfile + "." + prefered + "." + postfix;
-
-        String preferedurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() + "/" + helpfile + "."
-                + prefered + "." + postfix;
-
-        String secondaryurl = getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() + "/" + helpfile + "."
-                + secondary + "." + postfix;
-
-        try (InputStream stream = this.getClass().getResourceAsStream(preferedfilename)) {
-            if (stream != null) {
-                returnedurl = preferedurl;
-            } else {
-                returnedurl = secondaryurl;
-            }
-        } catch (IOException e) {
-            log.info("IOException closing resource: ", e);
-        }
-        return returnedurl;
-    }
-
-    /**
      * A functions that returns wanted imagefile in preferred language and theme. If none of the language specific images are found the original
      * imagefilename will be returned.
      *

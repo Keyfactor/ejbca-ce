@@ -64,8 +64,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
        
        final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
-       final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
-               + "/index_help.html";
 
        final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
 
