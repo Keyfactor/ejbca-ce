@@ -459,9 +459,6 @@ if (!editerrors.isEmpty()) {
       </td>
       <td width="50%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"BACKTOENDENTITYPROFILES\") %>" /></a>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
       </td>
     </tr>
 
