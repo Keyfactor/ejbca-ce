@@ -83,7 +83,7 @@ org.cesecore.authorization.control.StandardRules
 		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop" styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.KEY}"/></f:facet>
-				<h:outputText value="#{prop.key}" title="#{prop.key}"/>
+				<h:outputText value="#{prop.label}" title="#{prop.label}"/>
 			</h:column>
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.VALUE}"/></f:facet>

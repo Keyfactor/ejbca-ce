@@ -46,7 +46,10 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class CustomCertExtensionMBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
-        
+
+    /** Prefix for properties in custom certificate extensions */
+    private static final String CUSTOMCERTEXTENSION_PROPERTY_PREFIX = "CUSTOMCERTEXTENSION_PROPERTY_";
+
     public class CurrentExtensionGUIInfo implements Serializable {
         private static final long serialVersionUID = 1L;
         private int id;
@@ -106,12 +109,13 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         public void setExtension(CustomCertificateExtension extension) {
             this.extension = extension;
             //Load the available properties
-            Map<String, CustomExtensionPropertyGUIInfo> extensionPropertiesCopy = new HashMap<String, CustomExtensionPropertyGUIInfo>();
+            Map<String, CustomExtensionPropertyGUIInfo> extensionPropertiesCopy = new HashMap<>();
             for (Entry<String, String[]> entry : extension.getAvailableProperties().entrySet()) {
-                String key = entry.getKey();   
+                String key = entry.getKey();
+                String label = getEjbcaWebBean().getText(CUSTOMCERTEXTENSION_PROPERTY_PREFIX + key);
                 Properties properties = extension.getProperties();
                 String value = (properties != null && properties.get(key) != null ? (String) properties.get(key) : null);
-                CustomExtensionPropertyGUIInfo property = new CustomExtensionPropertyGUIInfo(key, value, entry.getValue());
+                CustomExtensionPropertyGUIInfo property = new CustomExtensionPropertyGUIInfo(key, label, value, entry.getValue());
                 extensionPropertiesCopy.put(key, property);
             }
             extensionProperties = extensionPropertiesCopy;
@@ -125,12 +129,14 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     
     public class CustomExtensionPropertyGUIInfo {
        
-        private String key;
+        private final String key;
+        private final String label;
         private String value;
         private String[] possibleValues;
         
-        public CustomExtensionPropertyGUIInfo(final String key, final String value, final String ... possibleValues) {
+        public CustomExtensionPropertyGUIInfo(final String key, final String label, final String value, final String ... possibleValues) {
             this.key = key;
+            this.label = label;
             if(value != null) {
                 this.value = value;
             } else {
@@ -144,15 +150,15 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         }
        
         public String getKey() {
-            return this.key;
+            return key;
         }
-
-        public void setKey(String key) {
-            this.key = key;
+        
+        public String getLabel() {
+            return label;
         }
 
         public String getValue() {
-            return this.value;
+            return value;
         }
 
         /**
@@ -230,8 +236,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     
     public List<SelectItem> getAvailableCustomCertificateExtensions() {
         if (availableCertificateExtensions == null) {
-            availableCertificateExtensions = new HashMap<String, CustomCertificateExtension>();
-            availableCertificateExtensionsList = new ArrayList<SelectItem>();
+            availableCertificateExtensions = new HashMap<>();
+            availableCertificateExtensionsList = new ArrayList<>();
             ServiceLoader<? extends CustomCertificateExtension> serviceLoader = ServiceLoader.load(CustomCertificateExtension.class);
             for (CustomCertificateExtension extension : serviceLoader) {
                 availableCertificateExtensionsList.add(new SelectItem(extension.getClass().getCanonicalName(), extension.getDisplayName()));
@@ -298,7 +304,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     // ------------------------------------------------------------    
     public ListDataModel<CustomExtensionPropertyGUIInfo> getCurrentExtensionPropertiesList() {
         if (currentExtensionProperties == null) {
-            currentExtensionProperties = new ListDataModel<CustomExtensionPropertyGUIInfo>(new ArrayList<CustomExtensionPropertyGUIInfo>(getCurrentExtensionGUIInfo()
+            currentExtensionProperties = new ListDataModel<>(new ArrayList<>(getCurrentExtensionGUIInfo()
                     .getExtensionProperties().values()));
         }
         return currentExtensionProperties;

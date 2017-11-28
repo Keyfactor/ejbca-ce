@@ -95,7 +95,7 @@ public abstract class CvcCA extends CA implements Serializable {
 	@SuppressWarnings("deprecation")
     public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
 		super.init(data);
-		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
             //for instantiation. 

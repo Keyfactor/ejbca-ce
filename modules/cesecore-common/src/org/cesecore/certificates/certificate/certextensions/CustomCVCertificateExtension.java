@@ -27,7 +27,28 @@ import org.ejbca.cvc.CVCDiscretionaryDataTemplate;
  */
 public interface CustomCVCertificateExtension extends CustomCertificateExtension {
 
+    /**
+     * Constructs the Discretionary Data Template object for the certificate extension.
+     * @param userData End Entity information, or null in CSRs.
+     * @param ca Issuing CA.
+     * @param certProfile Certificate profile.
+     * @param userPublicKey Public key of user.
+     * @param caPublicKey Public key of CA, or null in CSRs.
+     * @param validity Validity, or null in CSRs.
+     * @param isCSR true if generating a CSR, false if generating a certificate.
+     * @return The Discretionary Data Template object
+     * @throws CertificateExtensionException In case of encoding errors etc.
+     */
     CVCDiscretionaryDataTemplate getValueCVC(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException;
+            PublicKey caPublicKey, CertificateValidity validity, boolean isCSR) throws CertificateExtensionException;
     
+    /**
+     * Returns true if the certificate is to be included in certificates (default: true).
+     */
+    boolean isIncludedInCertificates();
+    
+    /**
+     * Returns true if the certificate is to be included in CSRs (default: false).
+     */
+    boolean isIncludedInCSR();
 }
