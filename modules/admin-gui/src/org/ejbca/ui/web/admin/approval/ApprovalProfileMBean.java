@@ -29,6 +29,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -42,6 +43,7 @@ import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.cesecore.util.ui.RadioButton;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -514,17 +516,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                         //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else.
                         roleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
                     }
-                    
-                    /**
-                     * Check if this step has already been set before.
-                     * If yes then no need to update the possible values, just get them from property.
-                     */
-                    if (propertyClone.getPossibleValues() == null || propertyClone.getPossibleValues().isEmpty()) {
-                        propertyClone.setPossibleValues(roleRepresentations);
-                    } else {
-                        propertyClone.setPossibleValues(property.getPossibleValues());
-                    }
-                    
+                    propertyClone.setPossibleValues(roleRepresentations);
+                    updateEncodedValues(propertyClone, property);
                     break;
                 case NONE:
                     break;
@@ -637,5 +630,51 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         approvalProfile.removeUserNotificationProperties(approvalPartition);
         steps = null;
+    }
+    
+    /**
+     * Updates the encoded values of propertyClone if
+     * there has been a change in the role members of the 
+     * any of the roles which were selected in the list box 
+     * before the change.
+     * Uses property identifier as a base for comparison.
+     * 
+     * @param propertyClone updated property
+     * @param property current property
+     */
+    @SuppressWarnings("unchecked")
+    private void updateEncodedValues(final DynamicUiProperty<? extends Serializable> propertyClone, 
+            final DynamicUiProperty<? extends Serializable> property) {
+
+        List<Integer> currentIds = new ArrayList<>();
+        List<Integer> nextIds = new ArrayList<>();
+        
+        for (final String value : property.getEncodedValues()) {
+            RoleInformation roleInfo = (RoleInformation)DynamicUiProperty.getAsObject(value);
+            currentIds.add(roleInfo.getIdentifier());
+        }
+        
+        for (final Serializable value : propertyClone.getPossibleValues()) {
+            RoleInformation roleInformation = (RoleInformation) value;
+            nextIds.add(roleInformation.getIdentifier());
+        }
+        
+        List<Integer> sharedIds = (List<Integer>) CollectionUtils.intersection(currentIds, nextIds);
+        List<String> finalListOfEncodedValues = new ArrayList<>();
+        
+        for (final Serializable value : propertyClone.getPossibleValues()) {
+            RoleInformation roleInformation = (RoleInformation) value;
+
+            if (sharedIds.contains(roleInformation.getIdentifier())) {
+                finalListOfEncodedValues.add(property.getAsEncodedValue(property.getType().cast(value)));
+            }
+        }
+        
+        // Here we actually update the propertyClone set of encoded values.
+        try {
+            propertyClone.setEncodedValues(finalListOfEncodedValues);
+        } catch (PropertyValidationException e) {
+            log.error("Invalid propery value while setting the encoded values for property clone!" + e);
+        }
     }
 }
