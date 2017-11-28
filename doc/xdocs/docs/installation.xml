@@ -391,7 +391,7 @@ You must stop and start JBoss after doing this.
 
 </section>
 
-<section name="Upgrade and reconfigure">
+<section name="Upgrade and Reconfigure">
 <p>
 When upgrading EJBCA, read doc/UPGRADE for instructions related to different versions, and upgrading between them.
 Upgrading withing patch verson (i.e. 6.0.3->6.04) are usually plug-in upgrades (you have to transfer your configuration though).</p>
@@ -407,7 +407,7 @@ No need to run a full 'ant deploy'. This command cleans previous build and build
 <p>
 For easy upgrades, keeping personal configuration between versions, you should consider using the <a href="adminguide.html#Customizing%20EJBCA">ejbca-custom feature</a>. 
 </p>
-<subsection name="Upgrade path">
+<subsection name="Upgrade Path">
 <p>
 Generally upgrades across multiple versions are supported using the generic upgrade instructions. 
 To enable efficient maintenance there are certain break points where multi-step upgrades  need to be done. 
@@ -434,7 +434,7 @@ An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA
 </subsection>
 </section>
 
-<section name="Application servers">
+<section name="Application Servers">
 <p>
 EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't, because different application servers have different tweaks for the standard.
 It is not enough to pass JEE validation in order to run on all application servers.
