@@ -71,7 +71,7 @@ public class RsaKeyValidatorTest {
         // NOOP
         log.trace("<tearDown()");
     }
-    
+
     /**
      * Testing that no fields for RSA Key Validator configuration can be set to a negative value
      * @throws Exception Exception
@@ -127,7 +127,48 @@ public class RsaKeyValidatorTest {
                 keyValidator.getPublicKeyModulusMinFactor(), new Integer("2"));
         log.trace("<testNoNegativeNumbers()");
    }
-
+    
+    /**
+     * Tests that it is not possible to set a smaller maximum exponent than currently set minimum exponent and vice versa. 
+     * @throws Exception Exception
+     */
+    @Test
+    public void testPublicKeyExponentMinSmallerThanMax() throws Exception {
+        log.trace(">testPublicKeyExponentMinSmallerThanMax()");
+        
+        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+                "rsa-parameter-validation-test-0", "Description", null, -1, null, -1, -1, new Integer[] {});
+        
+        // Test that min and max can be changed from null.
+        keyValidator.setPublicKeyExponentMinAsString("2"); 
+        keyValidator.setPublicKeyExponentMaxAsString("3"); 
+        Assert.assertEquals("It should be possible to set minimum exponent to 2 if maximum is null",
+                keyValidator.getPublicKeyExponentMinAsString(),"2");
+        Assert.assertEquals("It should be possible to set maximum exponent to 3 if miniimum is 2",
+                keyValidator.getPublicKeyExponentMaxAsString(),"3");
+        // Test not possible to set smaller max than min.
+        keyValidator.setPublicKeyExponentMaxAsString("1"); 
+        Assert.assertEquals("It should not be possible to set maximum exponent to 1 if minimum is 2",
+                keyValidator.getPublicKeyExponentMaxAsString(),"3");
+        // Test not possible to set larger min than max.
+        keyValidator.setPublicKeyExponentMinAsString("4");
+        Assert.assertEquals("It should not be possible to set minimum exponent to 4 if maximum is 3",
+                keyValidator.getPublicKeyExponentMinAsString(),"2");
+        // Test possible to set same min as max.
+        keyValidator.setPublicKeyExponentMinAsString("3"); 
+        keyValidator.setPublicKeyExponentMaxAsString("5"); 
+        Assert.assertEquals("It should be possible to set minimum exponent to 3 if maximum is 3",
+                keyValidator.getPublicKeyExponentMinAsString(),"3");
+        Assert.assertEquals("It should be possible to set maximum exponent to 5 if minimum is 3",
+                keyValidator.getPublicKeyExponentMaxAsString(),"5");
+        // Test possible to set same max as min.
+        keyValidator.setPublicKeyExponentMaxAsString("3"); 
+        Assert.assertEquals("It should be possible to set maximum exponent to 3 if minimum is 3",
+                keyValidator.getPublicKeyExponentMaxAsString(),"3");
+        
+        log.trace("<testPublicKeyExponentMinSmallerThanMax()");
+    }
+    
     @Test
     public void test01HasSmallerFactorThan() throws Exception {
         log.trace(">test01HasSmallerFactorThan()");
@@ -208,7 +249,7 @@ public class RsaKeyValidatorTest {
         exponent = BigInteger.valueOf(4);
         publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
         keyValidator.setPublicKeyExponentMin(exponent.add(BigInteger.ONE));
-        keyValidator.setPublicKeyExponentMax(exponent.subtract(BigInteger.ONE));
+        //        keyValidator.setPublicKeyExponentMax(exponent.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyExponentOnlyAllowOdd(true);
         keyValidator.setPublicKeyModulusMin(modulus.add(BigInteger.ONE));
         keyValidator.setPublicKeyModulusMax(modulus.subtract(BigInteger.ONE));
@@ -220,20 +261,27 @@ public class RsaKeyValidatorTest {
         messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key valildation should have failed because of even RSA parameter and outside parameter bounds.",
-                messages.size() == 6);
+                messages.size() == 5);
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key exponent is odd.", messages.get(0));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key exponent is smaller than 5", messages.get(1));
+        //        Assert.assertEquals("RSA parameters bounds failure message isn't right",
+        //                "Invalid: RSA public key exponent is greater than 3", messages.get(2));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
-                "Invalid: RSA public key exponent is greater than 3", messages.get(2));
+                "Invalid: RSA public key modulus is odd.", messages.get(2));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
-                "Invalid: RSA public key modulus is odd.", messages.get(3));
+                "Invalid: RSA public key modulus is smaller than 17", messages.get(3));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
-                "Invalid: RSA public key modulus is smaller than 17", messages.get(4));
+                "Invalid: RSA public key modulus is greater than 15", messages.get(4));
+        // Need to set min to null before lowering max 
+        keyValidator.setPublicKeyExponentMin(null);
+        keyValidator.setPublicKeyExponentMax(exponent.subtract(BigInteger.ONE));
+        keyValidator.validate(publicKey, null);
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
-                "Invalid: RSA public key modulus is greater than 15", messages.get(5));
-
+                "Invalid: RSA public key exponent is greater than 3", keyValidator.validate(publicKey, null).get(1));
+        
+        
         // A-3: Test RSA key validation failed because of modulus factor restriction.
         modulus = BigInteger.valueOf(25);
         exponent = BigInteger.valueOf(3);

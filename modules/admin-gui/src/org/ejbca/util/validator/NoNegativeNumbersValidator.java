@@ -38,7 +38,7 @@ public class NoNegativeNumbersValidator implements Validator {
                 intVal = (BigInteger) object; 
             }
             if (intVal.compareTo(BigInteger.ZERO ) == -1) {
-                final String field = (String) component.getAttributes().get("fieldname");
+                final String field = (String) component.getAttributes().get("fieldName");
                 final String message = intres.getLocalizedMessage("validator.error.set_key_validator_values", intVal, field);
                 throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
             }

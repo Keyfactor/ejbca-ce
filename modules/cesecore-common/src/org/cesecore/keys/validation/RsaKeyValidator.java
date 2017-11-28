@@ -293,6 +293,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else {
             // NOOP
         }
+        // Reset to null before setting new values
+        setPublicKeyExponentMin(null);
+        setPublicKeyExponentMax(null);
+        
         setPublicKeyExponentOnlyAllowOdd(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_ONLY_ALLOW_ODD);
         setPublicKeyExponentMin(new BigInteger(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_MIN));
         setPublicKeyExponentMax(new BigInteger(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_MAX));
@@ -334,12 +338,17 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     }
     
     /**
-     * Setting value for PublicKeyExponentMin
-     * @param value the value for PublicKeyExponentMin
+     * Sets the validator minimum allowed public key exponent.
+     * @param value The new minimum public key exponent as BigInteger
      */
     public void setPublicKeyExponentMin(BigInteger value) {
         if (null != value && !isNegative(value) ) {
-            data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
+            if (getPublicKeyExponentMax() == null || value.compareTo(getPublicKeyExponentMax()) < 1) {
+                data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
+            } else if (log.isDebugEnabled()) {
+                final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", value, getPublicKeyExponentMax());
+                log.debug(message);
+            }
         } else if (null == value ){
             data.put(PUBLIC_KEY_EXPONENT_MIN, null);
         }    
@@ -356,7 +365,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         if (isNegative(new BigInteger(value))) { 
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
         } else{
-        data.put(PUBLIC_KEY_EXPONENT_MIN, value);
+            setPublicKeyExponentMin(new BigInteger(value));
         }
     }
     
@@ -373,12 +382,17 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     }
     
     /**
-     * Setting value for PublicKeyExponentMax
-     * @param value the value for PublicKeyExponentMax
+     * Sets the validator maximum allowed public key exponent.
+     * @param value The new maximum public key exponent as BigInteger
      */
     public void setPublicKeyExponentMax(BigInteger value) {
         if (null != value && !isNegative(value) ) {
-            data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
+            if (getPublicKeyExponentMin() == null || value.compareTo(getPublicKeyExponentMin()) > -1) {
+                data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
+            } else if (log.isDebugEnabled()) {
+                final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", getPublicKeyExponentMin(), value);
+                log.debug(message);
+            }
         } else if (null == value ){
             data.put(PUBLIC_KEY_EXPONENT_MAX, null);
         } else {
@@ -394,7 +408,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
        if (isNegative(new BigInteger(value))) { 
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
         } else {
-            data.put(PUBLIC_KEY_EXPONENT_MAX, value);
+            setPublicKeyExponentMax(new BigInteger(value));
         }
     }
 
