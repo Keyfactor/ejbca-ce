@@ -172,7 +172,11 @@
         <validator-id>validityDateValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.ValidityDateValidator</validator-class>
   </validator>
-  
+    <validator>
+        <validator-id>minSmallerThanMaxValidator</validator-id>
+        <validator-class>org.ejbca.util.validator.MinSmallerThanMaxValidator</validator-class>
+  </validator>
+
   <converter>
         <converter-id>mapToStringConverter</converter-id>
         <converter-class>org.ejbca.ui.web.admin.audit.MapToStringConverter</converter-class>
