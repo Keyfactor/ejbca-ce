@@ -287,16 +287,23 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             return "";
         }
 
-        if (updatedApprovalProfile.getStep(steps.getRowData().getIdentifier()).getPartition(partitionId).getProperty(fieldLabel) != null) {
-            addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
-            return "";
-        } else {
-            updatedApprovalProfile.addPropertyToPartition(steps.getRowData().getIdentifier(), partitionId, property);
-            steps = createStepListFromProfile(updatedApprovalProfile);
-            this.fieldLabel = new HashMap<>();
-            fieldToAdd = new HashMap<>();
-            return "";
+        //getRowData() doesn't always return the correct step 
+        for(ApprovalStep step : updatedApprovalProfile.getSteps().values()) {
+            ApprovalPartition approvalPartition = step.getPartition(partitionId);
+            if(approvalPartition != null) {
+                if(approvalPartition.getProperty(fieldLabel) != null) {
+                    addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
+                    return "";
+                } else {
+                    updatedApprovalProfile.addPropertyToPartition(step.getStepIdentifier(), partitionId, property);
+                    steps = createStepListFromProfile(updatedApprovalProfile);
+                    this.fieldLabel = new HashMap<>();
+                    fieldToAdd = new HashMap<>();
+                    return "";
+                }
+            }
         }
+        return "";
     }
 
     /**
