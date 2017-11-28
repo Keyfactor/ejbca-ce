@@ -164,6 +164,7 @@ public class X509CATest {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
         X509Certificate cacert = (X509Certificate) x509ca.getCACertificate();
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         
         // Start by creating a PKCS7
         byte[] p7 = x509ca.createPKCS7(cryptoToken, cacert, true);
@@ -180,14 +181,14 @@ public class X509CATest {
         assertEquals(1, certs.size());
         
 		// Create a certificate request (will be pkcs10)
-        byte[] req = x509ca.createRequest(cryptoToken, null, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        byte[] req = x509ca.createRequest(cryptoToken, null, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN, cp, cceConfig);
         PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
         String dn = p10.getSubject().toString();
         assertEquals(CADN, dn);
         
         // Make a request with some pkcs10 attributes as well
-		Collection<ASN1Encodable> attributes = new ArrayList<ASN1Encodable>();
+		Collection<ASN1Encodable> attributes = new ArrayList<>();
 		// Add a subject alternative name
 		ASN1EncodableVector altnameattr = new ASN1EncodableVector();
 		altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
@@ -205,7 +206,7 @@ public class X509CATest {
         attributes.add(new DERSequence(altnameattr));
         attributes.add(new DERSequence(pwdattr));
         // create the p10
-        req = x509ca.createRequest(cryptoToken, attributes, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        req = x509ca.createRequest(cryptoToken, attributes, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN, cp, cceConfig);
         p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
         dn = p10.getSubject().toString();
@@ -225,7 +226,6 @@ public class X509CATest {
         // Generate a client certificate and check that it was generated correctly
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = genTestKeyPair(algName);
-        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
         Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);

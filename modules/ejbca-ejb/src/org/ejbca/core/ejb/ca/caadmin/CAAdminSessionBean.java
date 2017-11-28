@@ -937,6 +937,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new AuthorizationDeniedException(detailsMsg);
         }
         try {
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
             final CA ca = caSession.getCAForEdit(authenticationToken, caid);
             final List<Certificate> chain = new ArrayList<Certificate>();
             if (certChain != null && certChain.size() > 0) {
@@ -1010,7 +1012,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // The CA certificate signing this request is the first in the certificate chain
             final Certificate caCert = chain.size() == 0 ? null : chain.get(0);
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
-            byte[] request = ca.createRequest(cryptoToken, null, signatureAlgorithm, caCert, CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+            final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
+            byte[] request = ca.createRequest(cryptoToken, null, signatureAlgorithm, caCert, CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT, certificateProfile, cceConfig);
             if (ca.getCAType() == CAInfo.CATYPE_CVC) {
                 /*
                  * If this is a CVC CA renewal request, we need to sign it to make an authenticated
