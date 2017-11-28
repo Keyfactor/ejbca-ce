@@ -20,6 +20,7 @@ import java.util.Date;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -38,9 +39,10 @@ public interface CvcPlugin {
     String getCvcType();
     
     /** 
-     * @see org.cesecore.certificates.ca.CA#createRequest(CryptoToken, Collection, String, Certificate, int) 
+     * @see org.cesecore.certificates.ca.CA#createRequest(CryptoToken, Collection, String, Certificate, int, CertificateProfile, AvailableCustomCertificateExtensionsConfiguration) 
      */
-    byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException;
+    byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose,
+            CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException, CertificateExtensionException;
 
     /** 
      * @see org.cesecore.certificates.ca.CA#createAuthCertSignRequest(CryptoToken, byte[]) 
@@ -48,13 +50,13 @@ public interface CvcPlugin {
     byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
     
     /** 
-     * @see org.cesecore.certificates.ca.CA#createOrRemoveLinkCertificate(CryptoToken, boolean, CertificateProfile) 
+     * @see org.cesecore.certificates.ca.CA#createOrRemoveLinkCertificate(CryptoToken, boolean, CertificateProfile, AvailableCustomCertificateExtensionsConfiguration, Certificate) 
      */
     void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile, 
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;   
 
     /** 
-     * @see org.cesecore.certificates.ca.CA#generateCertificate(CryptoToken, EndEntityInformation, RequestMessage, PublicKey, int, Date, Date, CertificateProfile, Extensions, String) 
+     * @see org.cesecore.certificates.ca.CA#generateCertificate(CryptoToken, EndEntityInformation, RequestMessage, PublicKey, int, Date, Date, CertificateProfile, Extensions, String, CertificateGenerationParams, AvailableCustomCertificateExtensionsConfiguration) 
      */
     Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
             RequestMessage request,

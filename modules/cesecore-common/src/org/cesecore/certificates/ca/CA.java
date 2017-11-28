@@ -57,6 +57,7 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -1040,7 +1041,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException;
 
     /**
-     * Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
+     * Creates a certificate signature request (CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
      * X509 CAs PKCS#10 requests are created, for CVC CAs CVC requests are created.
      * 
      * @param attributes PKCS10 attributes to be included in the request, a Collection of ASN1Encodable objects, ready to put in the request. Can be
@@ -1049,10 +1050,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param cacert the CAcertficate the request is targeted for, may be used or ignored by implementation depending on the request type created.
      * @param signatureKeyPurpose which CA token key pair should be used to create the request, normally SecConst.CAKEYPURPOSE_CERTSIGN but can also
      *            be SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
+     * @param certificateProfile Certificate profile to use for CA-type specific purposes, such as CV Certificate Extensions.
+     * @param cceConfig containing a list of available custom certificate extensions
      * @return byte array with binary encoded request
+     * @throws CryptoTokenOfflineException if the crypto token is offline
+     * @throws CertificateExtensionException if there was a problem constructing a certificate extension.
      */
-    public abstract byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
-            throws CryptoTokenOfflineException;
+    public abstract byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert,
+            int signatureKeyPurpose, CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+                    throws CryptoTokenOfflineException, CertificateExtensionException;
 
     public abstract byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
 

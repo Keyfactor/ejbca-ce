@@ -690,11 +690,12 @@ public class X509CA extends CA implements Serializable {
     }
 
     /**
-     * @see CA#createRequest(CryptoToken, Collection, String, Certificate, int)
+     * @see CA#createRequest(CryptoToken, Collection, String, Certificate, int, CertificateProfile)
      */
     @Override
-    public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
-            throws CryptoTokenOfflineException {
+    public byte[] createRequest(final CryptoToken cryptoToken, final Collection<ASN1Encodable> attributes, final String signAlg, final Certificate cacert,
+            final int signatureKeyPurpose, final CertificateProfile certificateProfile, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
+                    throws CryptoTokenOfflineException, CertificateExtensionException {
         log.trace(">createRequest: " + signAlg + ", " + CertTools.getSubjectDN(cacert) + ", " + signatureKeyPurpose);
         ASN1Set attrset = new DERSet();
         if (attributes != null) {

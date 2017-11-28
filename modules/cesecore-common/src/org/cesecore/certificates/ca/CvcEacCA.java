@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -100,7 +101,9 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	}
 
     @Override
-	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
+	public byte[] createRequest(final CryptoToken cryptoToken, final Collection<ASN1Encodable> attributes, final String signAlg, final Certificate cacert,
+	        final int signatureKeyPurpose, final CertificateProfile certificateProfile, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
+	                throws CryptoTokenOfflineException, CertificateExtensionException {
 		if (log.isTraceEnabled()) {
 			log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
 		}
@@ -162,22 +165,24 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 				caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());				
 				log.debug("No CA cert, using caRef from the holder itself: "+caRef.getConcatenated());					
 			}
+			final Collection<CVCDiscretionaryDataTemplate> certExtensions =
+                buildCustomCertificateExtension(null, certificateProfile, keyPair.getPublic(), null, null, cceConfig, true);
 			log.debug("Creating request with signature alg: "+signAlg+", using provider "+cryptoToken.getSignProviderName());
-			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, cryptoToken.getSignProviderName());
+			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, certExtensions, cryptoToken.getSignProviderName());
 			ret = request.getDEREncoded();
 		} catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		} catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		} catch (NoSuchProviderException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		} catch (SignatureException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		} catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
 		} catch (ConstructionException e) {
-            throw new RuntimeException(e);
-		}
+            throw new IllegalStateException(e);
+        }
 		log.trace("<createRequest");
 		return ret;
 	}
@@ -374,19 +379,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         final PublicKey caPublicKey = cryptoToken.getPublicKey(alias);
         
         // Build custom certificate extensions
-        Collection<CVCDiscretionaryDataTemplate> certExtensions = null;
-        for (final Integer certExtId : certProfile.getUsedCertificateExtensions()) {
-            final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(certExtId);
-            if (certExt instanceof CustomCVCertificateExtension) {
-                if (certExtensions == null) {
-                    certExtensions = new ArrayList<>();
-                }
-                final CustomCVCertificateExtension cvcExt = (CustomCVCertificateExtension) certExt;
-                final CVCDiscretionaryDataTemplate ddt =
-                            cvcExt.getValueCVC(subject, this, certProfile, publicKey, caPublicKey, val);
-                certExtensions.add(ddt);
-            }
-        }
+        final Collection<CVCDiscretionaryDataTemplate> certExtensions =
+                buildCustomCertificateExtension(subject, certProfile, publicKey, caPublicKey, val, cceConfig, false);
         
         // Generate the CVC certificate using Keijos library
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(alias);
@@ -432,6 +426,32 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         }
                                                                                          
 	}
+
+    private Collection<CVCDiscretionaryDataTemplate> buildCustomCertificateExtension(final EndEntityInformation subject, final CertificateProfile certProfile, final PublicKey publicKey,
+            final PublicKey caPublicKey, final CertificateValidity validity, final AvailableCustomCertificateExtensionsConfiguration cceConfig,
+            final boolean isCSR) throws CertificateExtensionException {
+        Collection<CVCDiscretionaryDataTemplate> certExtensions = null;
+        for (final Integer certExtId : certProfile.getUsedCertificateExtensions()) {
+            final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(certExtId);
+            if (certExt instanceof CustomCVCertificateExtension) {
+                final CustomCVCertificateExtension cvcExt = (CustomCVCertificateExtension) certExt;
+                if ((!isCSR && !cvcExt.isIncludedInCertificates()) || (isCSR && !cvcExt.isIncludedInCSR())) {
+                    continue;
+                }
+                
+                if (certExtensions == null) {
+                    certExtensions = new ArrayList<>();
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Adding CV Certificate Extension to " + (isCSR ? "CSR" : "certificate") + ": " + cvcExt.getDisplayName());
+                }
+                final CVCDiscretionaryDataTemplate ddt =
+                            cvcExt.getValueCVC(subject, this, certProfile, publicKey, caPublicKey, validity, isCSR);
+                certExtensions.add(ddt);
+            }
+        }
+        return certExtensions;
+    }
 
     @Override
     public String getCvcType() {
