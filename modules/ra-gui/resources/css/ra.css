@@ -279,3 +279,22 @@ img.menu_logo {
 .ra-eeCertTableView th, .ra-eeCertTableView td, .ra-eeCertTableSearch th, .ra-eeCertTableSearch td {
     color: #ffffff;
 }
+
+/* End Entity status change */
+.ra-editEndEntity select, .ra-editEndEntity input {
+    color: #000000;
+}
+
+/* End Entity status change */
+.ra-endEntityNavEditBar {
+    width: auto !important;
+    margin: 1% 2% 0 2% !important;
+}
+
+.ra-searchEndEntityEdit {
+    float: right !important;
+}
+
+.ra-endEntityEditSaveCancel {
+    height: 40px !important;
+}
