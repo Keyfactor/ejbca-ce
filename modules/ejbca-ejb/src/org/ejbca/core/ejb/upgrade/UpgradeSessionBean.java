@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,6 +80,7 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
@@ -513,6 +515,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.8.0");
         }
+        if (isLesserThan(oldVersion, "6.10.1")) {
+            try {
+                upgradeSession.migrateDatabase6101();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.10.1");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -549,6 +559,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("6.8.0");
         }
+        if (isLesserThan(oldVersion, "6.10.1")) {
+            if (!postMigrateDatabase6101()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("6.10.1");
+        }
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -557,7 +573,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean isPostUpgradeNeeded() {
-        return isLesserThan(getLastPostUpgradedToVersion(), "6.8.0");
+        return isLesserThan(getLastPostUpgradedToVersion(), "6.10.1");
     }
 
     /**
@@ -1451,6 +1467,109 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
     }
 
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase6101() throws UpgradeFailedException {
+        log.debug("migrateDatabase6100: Upgrading CT logs");
+        final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
+        final LinkedHashMap<Integer, CTLogInfo> allCtLogs = gc.getCTLogs();
+        LinkedHashMap<Integer, CTLogInfo> newCtLogs = new LinkedHashMap<>();
+        Map<Integer, Integer> selectedLogs = new HashMap<>();
+        
+        if (allCtLogs.isEmpty()) {
+            return;
+        }
+        
+        // Get all logs selected by any certificate profile
+        for (Map.Entry<Integer, CertificateProfile> profile : allCertProfiles.entrySet()) {
+            for (Integer enabledLog : profile.getValue().getEnabledCTLogs()) {
+                selectedLogs.put(enabledLog, enabledLog);
+            }
+        }
+
+        /* Determine new label for each log...
+         * If Google log or previously set to mandatory (6.10), place log under label 'Mandatory'.
+         * If log is selected in any cert profile, put it under its own label in order to keep it in the cert profile after upgrade.
+         * Gather remaining logs under the label 'Unlabeled'.
+         */
+        for (Map.Entry<Integer, CTLogInfo> ctLogInfo : allCtLogs.entrySet()) {
+            CTLogInfo ctLog = ctLogInfo.getValue();
+            if (ctLog.getUrl().contains("ct.googleapis.com") || ctLog.isMandatory()) {
+                ctLog.setLabel("Mandatory");
+            } else if (selectedLogs.containsKey(ctLog.getLogId())) {
+                // Set label to domain name of url
+                ctLog.setLabel(ctLog.getUrl().substring(ctLog.getUrl().lastIndexOf("://") + 3, ctLog.getUrl().lastIndexOf(".")));
+            } else {
+                ctLog.setLabel("Unlabeled");
+            }
+            newCtLogs.put(ctLog.getLogId(), ctLog);
+        }
+        
+        // Save CT logs with new labels set
+        gc.setCTLogs(newCtLogs);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, gc);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("Always allow token was denied access.", e);
+        }
+        
+        // Set CT labels corresponding to previously set CT logs in each cert profile
+        for (Integer profileId : allCertProfiles.keySet()) {
+            CertificateProfile certProfile = allCertProfiles.get(profileId);
+            if (certProfile.isUseCertificateTransparencyInCerts() || certProfile.isUseCertificateTransparencyInOCSP() || certProfile.isUseCertificateTransparencyInPublishers()) {
+                LinkedHashSet<String> labelsToSelect = new LinkedHashSet<>();
+                final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
+                for (Integer ctLog : certProfile.getEnabledCTLogs()) {
+                    if (newCtLogs.containsKey(ctLog)) {
+                        labelsToSelect.add(newCtLogs.get(ctLog).getLabel());
+                    }
+                }
+            
+                certProfile.setEnabledCTLabels(labelsToSelect);
+                certProfile.setNumberOfSctByValidity(true);
+                certProfile.setNumberOfSctByCustom(false);
+                // With the new label system, at least one log from each label will be written to, hence allowing a maximum lower than
+                // number of labels would lock out issuance.
+                if (certProfile.getCtMaxNonMandatoryScts() < labelsToSelect.size()) {
+                    certProfile.setCtMaxScts(labelsToSelect.size());
+                } else {
+                    certProfile.setCtMaxScts(certProfile.getCtMaxNonMandatoryScts());
+                }
+                if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
+                    certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
+                } else {
+                    certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
+                }
+                try {
+                    certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
+                } catch (AuthorizationDeniedException e) {
+                    throw new IllegalStateException("Always allow token was denied access.", e);
+                }
+            }
+        }
+    }
+    
+    private boolean postMigrateDatabase6101() {
+        log.info("Starting post upgrade to 6.10.1.");
+        final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
+        
+        for (Integer profileId : allCertProfiles.keySet()) {
+            CertificateProfile certProfile = allCertProfiles.get(profileId);
+            final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
+            certProfile.removeLegacyCtData();
+            try {
+                certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access.", e);
+            }
+        }
+        log.info("Post upgrade to 6.10.1 complete.");
+        return true;
+    }
+    
+    
     @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase680() {
         log.info("Starting post upgrade to 6.8.0.");

@@ -83,7 +83,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         FIXED_PROFILENAMES.add(HARDTOKENENCPROFILENAME);
         FIXED_PROFILENAMES.add(HARDTOKENSIGNPROFILENAME);
     }
-
+ 
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -342,7 +342,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CUSTOMDNORDER = "customdnorder";
     protected static final String OVERRIDABLEEXTENSIONOIDS = "overridableextensionoids";
     protected static final String NONOVERRIDABLEEXTENSIONOIDS = "nonoverridableextensionoids";
-
 
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
@@ -2825,6 +2824,42 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setCTMaxRetries(int numRetries) {
         data.put(CTMAXRETRIES, numRetries);
     }
+    
+    /** Removes CT data prior to EJBCA 6.10.1 from certificate profile. */
+    public void removeLegacyCtData() {
+        if (data.get(CT_MAX_SCTS) != null) {
+            data.remove(CT_MAX_SCTS);
+        }
+        if (data.get(CT_MAX_SCTS_OCSP) != null) {
+            data.remove(CT_MAX_SCTS_OCSP);
+        }
+        if (data.get(CT_MIN_MANDATORY_SCTS) != null) {
+            data.remove(CT_MIN_MANDATORY_SCTS);
+        }
+        if (data.get(CT_MAX_MANDATORY_SCTS) != null) {
+            data.remove(CT_MAX_MANDATORY_SCTS);
+        }
+        if (data.get(CT_MIN_MANDATORY_SCTS_OCSP) != null) {
+            data.remove(CT_MIN_MANDATORY_SCTS_OCSP);
+        }
+        if (data.get(CT_MAX_MANDATORY_SCTS_OCSP) != null) {
+            data.remove(CT_MAX_MANDATORY_SCTS_OCSP);
+        }
+        if (data.get(CT_MIN_NONMANDATORY_SCTS) != null) {
+            data.remove(CT_MIN_NONMANDATORY_SCTS);
+        }
+        if (data.get(CT_MAX_NONMANDATORY_SCTS) != null) {
+            data.remove(CT_MAX_NONMANDATORY_SCTS);
+        }
+        if (data.get(CT_MIN_NONMANDATORY_SCTS_OCSP) != null) {
+            data.remove(CT_MIN_NONMANDATORY_SCTS_OCSP);
+        }
+        if (data.get(CT_MAX_NONMANDATORY_SCTS_OCSP) != null) {
+            data.remove(CT_MAX_NONMANDATORY_SCTS_OCSP);
+        }
+    }
+    
+    
 
     /**
      * Checks that a public key fulfills the policy in the CertificateProfile
