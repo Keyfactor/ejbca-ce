@@ -36,20 +36,22 @@
                 <h:outputText rendered="#{not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
                 <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}" styleClass="pure-u-1">
                     <h:form styleClass="pure-form">
-                        <ui:remove><!-- Hide edit capabilities until fully implemented. -->
-                        <h:panelGroup styleClass="pure-u-1-3"></h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-2-3">
-                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}" disabled="false"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode}"/>
+                        <h:panelGroup styleClass="pure-u-1-3">
+                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
+                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode}" />
                             <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}"/>
+                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}" />
                             <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}" disabled="true"/>
+                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}" />
                         </h:panelGroup>
+                        <h:panelGroup styleClass="pure-u-2-3"></h:panelGroup>
                         <h:outputText styleClass="pure-u-1 pre" value=" " rendered="#{raAccessBean.authorizedToEditEndEntities}"/>
-                        </ui:remove>
                         <component:eedetails raEndEntityDetails="#{raEndEntityBean.endEntity}" raEndEntityIssuedCerts="#{raEndEntityBean.issuedCerts}"
-                            editMode="#{raEndEntityBean.editEditEndEntityMode}" styleTable="ra-eeCertTableView" />
+                            editMode="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode}" styleTable="ra-eeCertTableView"
+                            raEndEntityBean="#{raEndEntityBean}" />
                     </h:form>
                 </h:panelGroup>
             </h:panelGroup>

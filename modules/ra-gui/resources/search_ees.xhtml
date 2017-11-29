@@ -39,15 +39,18 @@
                         <h:panelGroup styleClass="pure-u-1-3">
                             <h2><h:outputText value="#{msg.endentity_page_title}"/></h2>
                         </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-2-3">
+                        <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
                             <h:commandButton action="#{raSearchEesBean.previousEndEntityDetails}" value="#{msg.search_ees_page_cdprevious_command}"
                                 styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchEesBean.currentEndEntityDetails.previous}"/>
+                                disabled="#{empty raSearchEesBean.currentEndEntityDetails.previous}" />
                             <h:commandButton action="#{raSearchEesBean.closeEndEntityDetails}" value="#{msg.search_ees_page_cdclose_command}"
-                                styleClass="pure-button ra-button"/>
+                                styleClass="pure-button ra-button" />
                             <h:commandButton action="#{raSearchEesBean.nextEndEntityDetails}" value="#{msg.search_ees_page_cdnext_command}"
                                 styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchEesBean.currentEndEntityDetails.next}"/>
+                                disabled="#{empty raSearchEesBean.currentEndEntityDetails.next}" />
+                            <h:commandButton action="#{raSearchEesBean.redirectToEdit}" value="#{msg.endentity_page_command_edit}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities}"
+                                styleClass="pure-button ra-button ra-searchEndEntityEdit" />
                         </h:panelGroup>
                     </h:panelGroup>
                     <h:panelGroup styleClass="pure-u-1">
