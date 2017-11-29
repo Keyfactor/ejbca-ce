@@ -522,6 +522,7 @@ public class RaSearchEesBean implements Serializable {
     public RaEndEntityDetails getCurrentEndEntityDetails() {
         return currentEndEntityDetails;
     }
+
     public void nextEndEntityDetails() {
         currentEndEntityDetails = currentEndEntityDetails.getNext();
         currentIssuedCerts = null;
@@ -625,5 +626,14 @@ public class RaSearchEesBean implements Serializable {
             }
         }
         return currentIssuedCerts;
+    }
+
+    /**
+     * @return the URL to editing the current End Entity
+     */
+    public String redirectToEdit() {
+        String url = "endentity.xhtml?faces-redirect=true&edit=true&ee="
+                + currentEndEntityDetails.getUsername();
+        return url;
     }
 }

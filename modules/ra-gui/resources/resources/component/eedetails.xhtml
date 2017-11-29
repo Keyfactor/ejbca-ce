@@ -31,16 +31,17 @@
     <h:head dir="#{raLocaleBean.direction}"/>
     <h:body>
         <composite:interface>
-            <composite:attribute name="raEndEntityDetails" required="true"/>
+            <composite:attribute name="raEndEntityDetails" required="true" />
             <composite:attribute name="raEndEntityIssuedCerts" required="true" />
-            <composite:attribute name="editMode" required="false" default="false"/>
-            <composite:attribute name="approvalRequestMode" required="false" default="false"/>
-            <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-3"/>
-            <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3 ra-outputText"/>
-            <composite:attribute name="styleFull" required="false" default="pure-u-lg-1"/>
-            <composite:attribute name="styleOdd" required="false" default="row-odd"/>
-            <composite:attribute name="styleEven" required="false" default="row-even"/>
-            <composite:attribute name="styleTable" required="false" default="ra-eeCertTableSearch"/>
+            <composite:attribute name="editMode" required="false" default="false" />
+            <composite:attribute name="approvalRequestMode" required="false" default="false" />
+            <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-3" />
+            <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3 ra-outputText" />
+            <composite:attribute name="styleFull" required="false" default="pure-u-lg-1" />
+            <composite:attribute name="styleOdd" required="false" default="row-odd" />
+            <composite:attribute name="styleEven" required="false" default="row-even" />
+            <composite:attribute name="styleTable" required="false" default="ra-eeCertTableSearch" />
+            <composite:attribute name="raEndEntityBean" required="false" default="#{null}" />
         </composite:interface>
 
         <composite:implementation>
@@ -65,11 +66,50 @@
                     styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="modified" value="#{cc.attrs.raEndEntityDetails.modified}"
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
                 <h:outputLabel for="status" value="#{msg.component_eedetails_field_status}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                    <h:outputText id="status" value="#{cc.attrs.raEndEntityDetails.status}"/>
+                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    rendered="#{!cc.attrs.editMode}" />
+                <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    rendered="#{!cc.attrs.editMode}">
+                    <h:outputText id="status" value="#{cc.attrs.raEndEntityDetails.status}" />
                 </h:panelGroup>
+
+                <h:outputLabel for="statusChangeSelect" value="#{msg.component_eedetails_field_status}"
+                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    rendered="#{cc.attrs.editMode}" />
+                <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode}">
+                    <h:selectOneMenu id="statusChangeSelect" value="#{cc.attrs.raEndEntityBean.selectedStatus}" styleClass="pure-input-1-4">
+                        <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableStatuses}" var="selectableStatus"
+                            itemLabel="#{selectableStatus.statusString}" itemValue="#{selectableStatus.statusConstant}" />
+                        <f:ajax event="change" />
+                    </h:selectOneMenu>
+                </h:panelGroup>
+
+                <h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}"
+                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    rendered="#{cc.attrs.editMode}" />
+                <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode}">
+                    <h:inputSecret id="enrollmentCode" value="#{cc.attrs.raEndEntityBean.enrollmentCode}">
+                        <f:ajax event="change" />
+                    </h:inputSecret>
+                </h:panelGroup>
+
+                <h:outputLabel for="enrollmentCodeConfirm" value="#{msg.enroll_confirm_password}"
+                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    rendered="#{cc.attrs.editMode}" />
+                <h:panelGroup
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                    rendered="#{cc.attrs.editMode}">
+                    <h:inputSecret id="enrollmentCodeConfirm" value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
+                        <f:ajax event="change" />
+                    </h:inputSecret>
+                </h:panelGroup>
+
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
@@ -183,11 +223,12 @@
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:outputLabel for="subjectdn" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
+            <h:outputLabel for="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectdn" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDn}"
+            <h:outputText id="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <ui:remove><!-- Hide edit capabilities until fully implemented. -->
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
@@ -205,12 +246,14 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
+            </ui:remove>
 
-            <h:outputLabel for="subjectan" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
+            <h:outputLabel for="subjectan" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectan" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAn}"
+            <h:outputText id="subjectan" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAn}"
                 value="#{cc.attrs.raEndEntityDetails.subjectAn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <ui:remove><!-- Hide edit capabilities until fully implemented. -->
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectAlternativeName.fieldInstances}">
@@ -228,12 +271,14 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
+            </ui:remove>
 
-            <h:outputLabel for="subjectda" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
+            <h:outputLabel for="subjectda" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDa}" value="#{msg.component_eedetails_header_subjectda}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectda" rendered="#{!cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDa}"
+            <h:outputText id="subjectda" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDa}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDa}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <ui:remove><!-- Hide edit capabilities until fully implemented. -->
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}"
                 value=" "/>
             <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDirectoryAttributes.fieldInstances}">
@@ -251,6 +296,7 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
+            </ui:remove>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
 
