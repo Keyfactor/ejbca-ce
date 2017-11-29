@@ -25,6 +25,8 @@ import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,9 +56,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
@@ -65,6 +69,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -107,18 +112,21 @@ public class UpgradeSessionBeanTest {
     
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
     private GlobalUpgradeConfiguration gucBackup;
+    private GlobalConfiguration gcBackup;
     
     @Before
     public void setUp() {
         cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession.
                 getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         gucBackup = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        gcBackup = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
     
     @After
     public void tearDown() throws Exception {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, cceConfigBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, gcBackup);
     }
 
     /**
@@ -714,6 +722,72 @@ public class UpgradeSessionBeanTest {
         }
     }
     
+    @Test
+    public void testUpgradeCtLogsTo6101() throws CertificateProfileExistsException, AuthorizationDeniedException {
+        final String UNUSED_LABEL = "Unlabeled";
+        final String MANDATORY_LABEL = "Mandatory";
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        final String CTLOG_PUBKEY =
+                "-----BEGIN PUBLIC KEY-----\n"+
+                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc\n"+
+                "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==\n"+
+                "-----END PUBLIC KEY-----\n";
+        final byte[] pubKeyBytes = KeyTools.getBytesFromPEM(CTLOG_PUBKEY, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+        // Create some logs
+        List<CTLogInfo> ctLogsPreUpgrade = new ArrayList<>();
+        final CTLogInfo log1 = new CTLogInfo("https://one.upgradetest.com/ct/v1/", pubKeyBytes, false);
+        final CTLogInfo log2 = new CTLogInfo("https://two.upgradetest.com/ct/v1/", pubKeyBytes, false);
+        final CTLogInfo log3 = new CTLogInfo("https://three.upgradetest.com/ct/v1/", pubKeyBytes, false);
+        final CTLogInfo log4 = new CTLogInfo("https://four.upgradetest.com/ct/v1/", pubKeyBytes, false);
+        final CTLogInfo logGoogle = new CTLogInfo("https://ct.googleapis.com/upgradetest/ct/v1/", pubKeyBytes, false);
+        ctLogsPreUpgrade.addAll(Arrays.asList(log1, log2, log3, log4, logGoogle));
+        gc.addCTLog(log1);
+        gc.addCTLog(log2);
+        gc.addCTLog(log3);
+        gc.addCTLog(log4);
+        gc.addCTLog(logGoogle);
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, gc);
+        final int numberOfCtLogsPreUpgrade = gc.getCTLogs().size();
+        // Create certificate profile using CT Logs
+        CertificateProfile profileUseCt = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        final String profileUseCtName = "profileUseCt";
+        profileUseCt.setUseCertificateTransparencyInCerts(true);
+        profileUseCt.setEnabledCTLogs(new LinkedHashSet<Integer>(Arrays.asList(log1.getLogId(), log2.getLogId(), logGoogle.getLogId())));
+        profileUseCt.setCtMinNonMandatoryScts(1);
+        profileUseCt.setCtMaxNonMandatoryScts(2);
+        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, profileUseCtName, profileUseCt);
+        
+        guc.setUpgradedFromVersion("6.9.0"); 
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        try {
+            // Perform upgrade 6.9.0 --> 6.10.1
+            upgradeSession.upgrade(null, "6.9.0", false);
+            GlobalConfiguration gcUpgraded = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            LinkedHashMap<Integer, CTLogInfo> upgradedCtLogs = gcUpgraded.getCTLogs();
+            // Check if all CT Logs survived upgrade
+            assertEquals("Unexpected number of CT logs. Some CT log(s) were lost during upgrade", numberOfCtLogsPreUpgrade, gc.getCTLogs().size());
+            // Check if labels were translated properly
+            assertEquals("Unexpected label set for CT log during upgrade", "one.upgradetest", upgradedCtLogs.get(log1.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", "two.upgradetest", upgradedCtLogs.get(log2.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log3.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log4.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", MANDATORY_LABEL, upgradedCtLogs.get(logGoogle.getLogId()).getLabel());
+            // Verify that CT logs selected in certificate profile were translated to selected CT Labels
+            CertificateProfile upgradedProfileUseCtName = certificateProfileSession.getCertificateProfile(profileUseCtName);
+            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains("one.upgradetest"));
+            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains("two.upgradetest"));
+            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains(MANDATORY_LABEL));
+            // Verify new SCT min / max value
+            assertTrue("Minimum number of SCTs was not set to 'By validity'", upgradedProfileUseCtName.isNumberOfSctByValidity());
+            assertFalse("Minimum number of SCTs was set to 'Custom'. Expected 'By validity'", upgradedProfileUseCtName.isNumberOfSctByCustom());
+            // With the new CT label system, maximum number of SCTs cannot be less than the number of selected labels. Expected change from 2 --> 3
+            assertEquals("Maximum number of SCTs was not converted correctly during upgrade", 3, upgradedProfileUseCtName.getCtMaxScts());
+        } finally {
+            // Clean up (CT logs are removed in @After)
+            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName);
+        }
+    }
     
     private void deleteRole(final String nameSpace, final String roleName) {
         try {
