@@ -45,10 +45,6 @@
 	<f:validator validatorId="noNegativeNumbersValidator"/>
 	<f:validator validatorId="minSmallerThanMaxValidator" />
 </h:inputText>
-<h:inputText id="rsaPublicKeyExponentMin" value="#{validatorBean.validator.publicKeyExponentMin}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" >
-	<f:validator validatorId="noNegativeNumbersValidator"/>
-	<f:attribute name="fieldName" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMIN}"/>
-</h:inputText>
 <h:outputLabel for="rsaPublicKeyExponentMax" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTMAX}" styleClass="subItem"/>
 <h:inputText id="rsaPublicKeyExponentMax" value="#{validatorBean.validator.publicKeyExponentMax}" converter="javax.faces.BigInteger" required="false" disabled="#{validatorsBean.viewOnly}" binding="#{publicKeyExponentMaxField}" >
 	<f:validator validatorId="noNegativeNumbersValidator" />

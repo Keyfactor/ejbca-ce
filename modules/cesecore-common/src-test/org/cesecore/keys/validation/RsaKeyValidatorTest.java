@@ -137,7 +137,8 @@ public class RsaKeyValidatorTest {
         log.trace(">testPublicKeyExponentMinSmallerThanMax()");
         
         RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
-                "rsa-parameter-validation-test-0", "Description", null, -1, null, -1, -1, new Integer[] {});
+                "rsa-parameter-set-min-smaller-max-test", "Description", null, -1, null, -1, -1, new Integer[] {});
+        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         
         // Test that min and max can be changed from null.
         keyValidator.setPublicKeyExponentMinAsString("2"); 
