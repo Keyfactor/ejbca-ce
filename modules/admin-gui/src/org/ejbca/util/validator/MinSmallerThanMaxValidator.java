@@ -27,7 +27,7 @@ import org.cesecore.internal.InternalResources;
 /**
  * Validator which will validate that a BigInteger value is smaller than another input value.
  * 
- * @version $Id$
+ * @version 
  */
 public class MinSmallerThanMaxValidator implements Validator {
     
@@ -41,16 +41,14 @@ public class MinSmallerThanMaxValidator implements Validator {
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         final BigInteger minValue = (BigInteger) value;
         final String maxInput = (String) component.getAttributes().get("maxFieldInput");
-        if (StringUtils.isNotBlank(maxInput) && minValue != null) {
-            final BigInteger maxValue = new BigInteger(maxInput);
-                if (minValue.compareTo(maxValue) == 1) {
-                    final String field = (String) component.getAttributes().get("fieldName");
-                    final String message = intres.getLocalizedMessage("validator.error.minimum_bigger", field, minValue, maxValue);
-                    if (log.isDebugEnabled()) {
-                        log.debug(message);
-                    }
-                    throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
-                }
+        
+        if (StringUtils.isNotBlank(maxInput) && minValue != null && minValue.compareTo(new BigInteger(maxInput)) == 1) {
+            final String field = (String) component.getAttributes().get("fieldName");
+            final String message = intres.getLocalizedMessage("validator.error.minimum_bigger", field, minValue, maxInput);
+            if (log.isDebugEnabled()) {
+                log.debug(message);
+            }
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
         }
     }
 }
