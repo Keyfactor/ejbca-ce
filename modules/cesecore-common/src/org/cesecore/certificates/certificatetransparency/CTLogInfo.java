@@ -52,7 +52,7 @@ public final class CTLogInfo implements Serializable {
      *        the strings "add-chain" or "add-pre-chain" depending on whether
      *        EJBCA is submitting a pre-certificate or a regular certificate.
      * @param publicKeyBytes  The ASN1 encoded public key of the log.
-     * @param label to place CT under.
+     * @param label to place CT log under.
      * @param timeout of SCT response in ms.
      */
     public CTLogInfo(final String url, final byte[] publicKeyBytes, final String label, final int timeout) {
@@ -68,7 +68,11 @@ public final class CTLogInfo implements Serializable {
             throw new IllegalArgumentException("publicKeyBytes is null");
         }
         this.publicKeyBytes = publicKeyBytes.clone();
-        this.label = label;
+        if (label.isEmpty()) {
+            this.label = "Unlabeled";
+        } else {
+            this.label = label;
+        }
         this.timeout = timeout;
     }
 
