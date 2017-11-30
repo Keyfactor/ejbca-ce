@@ -2825,7 +2825,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CTMAXRETRIES, numRetries);
     }
     
-    /** Removes CT data prior to EJBCA 6.10.1 from certificate profile. */
+    /**
+     * Usage only intended for post upgrade! 
+     * Removes CT data prior to EJBCA 6.10.1 from certificate profile. 
+     * */
     public void removeLegacyCtData() {
         if (data.get(CT_MAX_SCTS) != null) {
             data.remove(CT_MAX_SCTS);

@@ -36,8 +36,9 @@ public final class CTLogInfo implements Serializable {
     private byte[] publicKeyBytes;
     private String url; // base URL, without "add-chain" or "add-pre-chain"
     private int timeout = 5000; // milliseconds
-    private boolean isMandatory;
     private String label;
+    @Deprecated
+    private boolean isMandatory;
 
     private transient PublicKey publicKey;
 
@@ -51,7 +52,8 @@ public final class CTLogInfo implements Serializable {
      *        the strings "add-chain" or "add-pre-chain" depending on whether
      *        EJBCA is submitting a pre-certificate or a regular certificate.
      * @param publicKeyBytes  The ASN1 encoded public key of the log.
-     * @param isMandatory a boolean indicating whether this is mandatory log
+     * @param label to place CT under.
+     * @param timeout of SCT response in ms.
      */
     public CTLogInfo(final String url, final byte[] publicKeyBytes, final String label, final int timeout) {
         if (!url.endsWith("/")) {
@@ -68,14 +70,6 @@ public final class CTLogInfo implements Serializable {
         this.publicKeyBytes = publicKeyBytes.clone();
         this.label = label;
         this.timeout = timeout;
-    }
-
-    /**
-     * TODO Remove this
-     */
-    public CTLogInfo(final String url, final byte[] publicKeyBytes, final boolean isMandatory) {
-        this(url, publicKeyBytes, null, 5000);
-        this.isMandatory = isMandatory;
     }
 
     private void ensureParsed() {
