@@ -342,31 +342,26 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value The new minimum public key exponent as BigInteger
      */
     public void setPublicKeyExponentMin(BigInteger value) {
-        if (null != value && !isNegative(value) ) {
+        if (null == value) {
+            data.put(PUBLIC_KEY_EXPONENT_MIN, null);
+        } else if (!isNegative(value)){
             if (getPublicKeyExponentMax() == null || value.compareTo(getPublicKeyExponentMax()) < 1) {
                 data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
             } else if (log.isDebugEnabled()) {
                 final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", value, getPublicKeyExponentMax());
                 log.debug(message);
             }
-        } else if (null == value ){
-            data.put(PUBLIC_KEY_EXPONENT_MIN, null);
-        }    
-        else {
-                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent minimum value."));
+        } else if (log.isDebugEnabled()) {
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent minimum value."));
         }
     }
-    
+        
     /**
      * Setting value for PublicKeyExponentMinAsString
      * @param value the string value for PublicKeyExponentMin
      */
     public void setPublicKeyExponentMinAsString(String value) {
-        if (isNegative(new BigInteger(value))) { 
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
-        } else{
-            setPublicKeyExponentMin(new BigInteger(value));
-        }
+        setPublicKeyExponentMin(new BigInteger(value));
     }
     
     public BigInteger getPublicKeyExponentMax() {
@@ -386,17 +381,17 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value The new maximum public key exponent as BigInteger
      */
     public void setPublicKeyExponentMax(BigInteger value) {
-        if (null != value && !isNegative(value) ) {
+        if (null == value) {
+            data.put(PUBLIC_KEY_EXPONENT_MAX, null);
+        } else if (!isNegative(value)) {
             if (getPublicKeyExponentMin() == null || value.compareTo(getPublicKeyExponentMin()) > -1) {
                 data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
             } else if (log.isDebugEnabled()) {
                 final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", getPublicKeyExponentMin(), value);
                 log.debug(message);
             }
-        } else if (null == value ){
-            data.put(PUBLIC_KEY_EXPONENT_MAX, null);
-        } else {
-                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent maximum value."));
+        } else if (log.isDebugEnabled()) {
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent maximum value."));
         }
     }
     
@@ -446,9 +441,11 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param type the value for PublicKeyModulusMinFactor 
      */
     public void setPublicKeyModulusMinFactor(Integer type) {
-        if (null != type && !(type < 0) )  {
+        if (null == type) {
+            data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, null);
+        } else if(!(type < 0)) {
             data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, type);
-        } else if (type < 0) { 
+        } else if( log.isDebugEnabled() ) {
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", type, "Public key modulus smallest factor."));
         }
     }
@@ -470,12 +467,12 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the value for PublicKeyModulusMin
      */
     public void setPublicKeyModulusMin(BigInteger value) {
-        if (null != value && !isNegative(value) ) {
-            data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
-        } else if (null == value ){
+        if (null == value){
             data.put(PUBLIC_KEY_MODULUS_MIN, null);
-        } else {
-                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus minimum value."));
+        } else if (!isNegative(value)) {
+            data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
+        } else if (log.isDebugEnabled()){
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus minimum value."));
         }
     }
     
@@ -508,12 +505,12 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the value for PublicKeyModulusMax 
      */
     public void setPublicKeyModulusMax(BigInteger value) {
-        if (null != value && !isNegative(value) ) {
-            data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
-        } else if (null == value ){
+        if (null == value){
             data.put(PUBLIC_KEY_MODULUS_MAX, null);
-        } else {
-                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus maximum value."));
+        } else if (!isNegative(value)) {
+            data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
+        } else if (log.isDebugEnabled()){
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus maximum value."));
         }
     }
     
@@ -534,12 +531,11 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the value to be tested
      * @return true or false
      */
-    public boolean isNegative(BigInteger value){
-        if (value.compareTo(BigInteger.ZERO) == -1){
+    public boolean isNegative(BigInteger value) {
+        if (value.compareTo(BigInteger.ZERO) == -1) {
             return true;
         } else {
-         
-        return false;
+            return false;
         }
     }
 
