@@ -29,7 +29,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -642,39 +641,33 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
      * @param propertyClone updated property
      * @param property current property
      */
-    @SuppressWarnings("unchecked")
-    private void updateEncodedValues(final DynamicUiProperty<? extends Serializable> propertyClone, 
+    private void updateEncodedValues(
+            final DynamicUiProperty<? extends Serializable> propertyClone, 
             final DynamicUiProperty<? extends Serializable> property) {
 
         List<Integer> currentIds = new ArrayList<>();
-        List<Integer> nextIds = new ArrayList<>();
         
         for (final String value : property.getEncodedValues()) {
             RoleInformation roleInfo = (RoleInformation)DynamicUiProperty.getAsObject(value);
             currentIds.add(roleInfo.getIdentifier());
         }
         
-        for (final Serializable value : propertyClone.getPossibleValues()) {
-            RoleInformation roleInformation = (RoleInformation) value;
-            nextIds.add(roleInformation.getIdentifier());
-        }
-        
-        List<Integer> sharedIds = (List<Integer>) CollectionUtils.intersection(currentIds, nextIds);
         List<String> finalListOfEncodedValues = new ArrayList<>();
         
         for (final Serializable value : propertyClone.getPossibleValues()) {
             RoleInformation roleInformation = (RoleInformation) value;
 
-            if (sharedIds.contains(roleInformation.getIdentifier())) {
+            if (currentIds.contains(roleInformation.getIdentifier())) {
                 finalListOfEncodedValues.add(property.getAsEncodedValue(property.getType().cast(value)));
             }
         }
         
-        // Here we actually update the propertyClone set of encoded values.
+        // Here we update the propertyClone set of encoded values.
         try {
             propertyClone.setEncodedValues(finalListOfEncodedValues);
         } catch (PropertyValidationException e) {
             log.error("Invalid propery value while setting the encoded values for property clone!" + e);
         }
     }
+    
 }
