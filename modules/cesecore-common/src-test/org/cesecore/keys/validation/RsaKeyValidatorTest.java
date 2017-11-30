@@ -90,16 +90,12 @@ public class RsaKeyValidatorTest {
         keyValidator.setPublicKeyExponentMin(exponent);
         // Test that a negative number can not be set for setPublicKeyExponentMin
         Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
-                keyValidator.getPublicKeyExponentMinAsString(), numStringPos  );
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
                 keyValidator.getPublicKeyExponentMin(), new BigInteger(numStringPos) );
         // Test that a negative number can not be set for setPublicKeyExponentMax
         exponent = new BigInteger(numStringPos);
         keyValidator.setPublicKeyExponentMax(exponent);
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyExponentMax(exponent);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
-                keyValidator.getPublicKeyExponentMaxAsString(), numStringPos  );
         Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
                 keyValidator.getPublicKeyExponentMax(), new BigInteger(numStringPos)  );
         // Test that a negative number can not be set for setPublicKeyModulusMin
@@ -108,16 +104,12 @@ public class RsaKeyValidatorTest {
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyModulusMin(exponent);
         Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
-                keyValidator.getPublicKeyModulusMinAsString(), numStringPos  );
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
                 keyValidator.getPublicKeyModulusMin(),  new BigInteger(numStringPos));
         // Test that a negative number can not be set for setPublicKeyModulusMax
         exponent = new BigInteger(numStringPos);
         keyValidator.setPublicKeyModulusMax(exponent);
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyModulusMax(exponent);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
-                keyValidator.getPublicKeyModulusMaxAsString(), numStringPos  );
         Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
                 keyValidator.getPublicKeyModulusMax(), new BigInteger(numStringPos) );
         // Test that a negative number can not be set for setPublicKeyModulusMinFactor
