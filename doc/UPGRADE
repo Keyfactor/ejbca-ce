@@ -56,6 +56,12 @@ An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA
 From EJBCA 6.10.0 to EJBCA 6.10.1
 -------------------------------
 
+When upgrading to EJBCA 6.10.1, the initial upgrade will occur automatically when 6.10.1 is deployed.
+
+The upgrade won't alter any database tables. During upgrade, references to CT logs are replaced with corresponding references to the new CT Labels.
+
+Once all nodes have been upgraded, post-upgrade should be run (this can be done in the Admin GUI). The procedure will remove old CT log references.
+
 From EJBCA 6.9.x to EJBCA 6.10.0
 -------------------------------
 
