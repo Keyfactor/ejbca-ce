@@ -1351,7 +1351,7 @@ Content-Type: text/html; charset=iso-8859-1
         log.debug("base64 encoded request: " + new String(Base64.encode(ocspRequest.getEncoded(), false)));
         final BasicOCSPResp response1 = helper.sendOCSPGet(ocspRequest.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response1);
-        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response1.getSignatureAlgOID());
+        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response1.getSignatureAlgOID());
     }
 
     /** Test with a preferred signature algorithm specified in the request that is incompatible with the singing key. */
