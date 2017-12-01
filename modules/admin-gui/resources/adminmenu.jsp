@@ -361,16 +361,6 @@ org.cesecore.keybind.InternalKeyBindingRules
 <% } %>
 
 <%
-   // If authorized to edit SCEP configuration then display related links.
-     if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
-       if(!configheaderprinted){
-         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>"); 
-         configheaderprinted=true;
-         }  %>
-				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
-<% } %>
-
-<%
 // If authorized to edit EST Configuration then display related links.
   if(ejbcawebbean.isEstConfigurationPresent() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
       if(!configheaderprinted){      
@@ -378,6 +368,16 @@ org.cesecore.keybind.InternalKeyBindingRules
     configheaderprinted = true;
       } %>
     <li><a href="<%= ESTCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ESTCONFIGURATION") %></a></li>
+<% } %>
+
+<%
+   // If authorized to edit SCEP configuration then display related links.
+     if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
+       if(!configheaderprinted){
+         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>"); 
+         configheaderprinted=true;
+         }  %>
+				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
 <% } %>
 
 <%
