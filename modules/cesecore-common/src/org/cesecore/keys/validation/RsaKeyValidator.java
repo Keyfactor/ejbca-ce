@@ -352,7 +352,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
                 log.debug(message);
             }
         } else if (log.isDebugEnabled()) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent minimum value."));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_min", value));
         }
     }
         
@@ -391,7 +391,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
                 log.debug(message);
             }
         } else if (log.isDebugEnabled()) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key exponent maximum value."));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_max", value));
         }
     }
     
@@ -400,11 +400,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyExponentMax
      */
     public void setPublicKeyExponentMaxAsString(String value) {
-       if (isNegative(new BigInteger(value))) { 
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
-        } else {
-            setPublicKeyExponentMax(new BigInteger(value));
-        }
+        setPublicKeyExponentMax(new BigInteger(value));
     }
 
     public boolean isPublicKeyModulusOnlyAllowOdd() {
@@ -446,7 +442,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else if(!(type < 0)) {
             data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, type);
         } else if( log.isDebugEnabled() ) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", type, "Public key modulus smallest factor."));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_fact_min", type));
         }
     }
     
@@ -472,7 +468,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else if (!isNegative(value)) {
             data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
         } else if (log.isDebugEnabled()){
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus minimum value."));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
         }
     }
     
@@ -482,7 +478,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public void setPublicKeyModulusMinAsString(String value) {
         if (isNegative(new BigInteger(value))) { 
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
         } else {
             data.put(PUBLIC_KEY_MODULUS_MIN, value);
         }    
@@ -510,7 +506,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else if (!isNegative(value)) {
             data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
         } else if (log.isDebugEnabled()){
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_values", value, "Public key modulus maximum value."));
+            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
         }
     }
     
@@ -520,7 +516,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public void setPublicKeyModulusMaxAsString(String value) {
         if (isNegative(new BigInteger(value))) { 
-            log.info(intres.getLocalizedMessage("validator.error.set_key_validator_values", value));
+            log.info(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
         } else {
             data.put(PUBLIC_KEY_MODULUS_MAX, value);
         }

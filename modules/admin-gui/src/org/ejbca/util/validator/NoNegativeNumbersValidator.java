@@ -29,15 +29,15 @@ public class NoNegativeNumbersValidator implements Validator {
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {
         if (null != object){
-            BigInteger intVal;
+            BigInteger integerValue;
             if (object instanceof  Integer ){
-                intVal = BigInteger.valueOf(((Integer) object).intValue());
+                integerValue = BigInteger.valueOf(((Integer) object).intValue());
             } else {
-                intVal = (BigInteger) object; 
+                integerValue = (BigInteger) object; 
             }
-            if (intVal.compareTo(BigInteger.ZERO ) == -1) {
+            if (integerValue.compareTo(BigInteger.ZERO ) == -1) {
                 final String field = (String) component.getAttributes().get("fieldName");
-                final String message = intres.getLocalizedMessage("validator.error.set_key_validator_values", intVal, field);
+                final String message = intres.getLocalizedMessage("validator.error.set_key_validator_values_gui", integerValue, field);
                 if (log.isDebugEnabled()) {
                     log.debug(message);
                 }
