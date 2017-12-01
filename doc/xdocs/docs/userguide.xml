@@ -1699,6 +1699,11 @@ abc0123/
 
 2.16.840.1.101.3.4.2.1::CB3AE7FBFFFD9C85A3FB234E51FFFD2190B1F8F161C0A2873B998EFAC067B03A::6D9E6264DDBD0FC997B9B40524247C8BC319D02A583F4B499DD3ECAF06C786DF
 </source>
+<strong>FASC-N</strong>
+<p>FASC-N is an OtherName defined for PIV certificates in <a href="http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.201-2.pdf">FIPS 201-2</a>. It is encoded as an Octet String and therefore the
+altName in EJBCA is entered as Hex encoded octets. A subjectAltName string could for example look like: 'rfc822Name=email@example.com, fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1'.
+</p>
+
 </subsubsection>
 <subsubsection name="Certificate Validity">
 <p>

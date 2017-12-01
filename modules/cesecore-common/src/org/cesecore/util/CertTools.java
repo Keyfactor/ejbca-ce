@@ -192,6 +192,7 @@ public abstract class CertTools {
     public static final String REGISTEREDID = "registeredID";
     public static final String XMPPADDR = "xmppAddr";
     public static final String SRVNAME = "srvName";
+    public static final String FASCN = "fascN";
 
     /** Kerberos altName for smart card logon */
     public static final String KRB5PRINCIPAL = "krb5principal";
@@ -208,6 +209,7 @@ public abstract class CertTools {
     public static final String PERMANENTIDENTIFIER = "permanentIdentifier";
     public static final String PERMANENTIDENTIFIER_OBJECTID = "1.3.6.1.5.5.7.8.3";
     public static final String PERMANENTIDENTIFIER_SEP = "/";
+    public static final String FASCN_OBJECTID =  "2.16.840.1.101.3.6.6";
 
     /** Microsoft altName for windows domain controller guid */
     public static final String GUID = "guid";
@@ -2160,6 +2162,30 @@ public abstract class CertTools {
     }
 
     /**
+     * Helper method.
+     * 
+     * @param seq the OtherName sequence
+     * @return bytes which is the decoded ASN.1 Octet String of the (simple) OtherName
+     */
+    private static byte[] getOctetStringFromSequence(final ASN1Sequence seq, final String oid) {
+        if (seq != null) {
+            // First in sequence is the object identifier, that we must check
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(oid)) {
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                ASN1OctetString str = ASN1OctetString.getInstance(obj);
+                return str.getOctets();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets the Permanent Identifier (altName, OtherName).
      * 
      * permanentIdentifier is an OtherName Subject Alternative Name:
@@ -2544,6 +2570,7 @@ public abstract class CertTools {
                 String rdn = null;
                 switch (type.intValue()) {
                 case 0:
+                    // OtherName, can be a lot of different things
                     final ASN1Sequence sequence = getAltnameSequence(item);
                     final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(sequence.getObjectAt(0));
                     switch(oid.getId()) {
@@ -2568,6 +2595,10 @@ public abstract class CertTools {
                             break;
                         case CertTools.SRVNAME_OBJECTID:
                             rdn = CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
+                            break;
+                        case CertTools.FASCN_OBJECTID:
+                            // PIV FASC-N (FIPS 201-2) is an OCTET STRING, we'll return if as a hex encoded String
+                            rdn = CertTools.FASCN + "=" + new String(Hex.encode(getOctetStringFromSequence(sequence, CertTools.FASCN_OBJECTID)));
                             break;
                     };
                     break;
@@ -2684,6 +2715,15 @@ public abstract class CertTools {
             final ASN1EncodableVector v = new ASN1EncodableVector();
             v.add(new ASN1ObjectIdentifier(CertTools.SRVNAME_OBJECTID));
             v.add(new DERTaggedObject(true, 0, new DERIA5String(srvName)));
+            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
+        }
+
+        // FASC-N is an OtherName see method getOctetString...... for asn.1 definition (PIV FIPS 201-2)
+        // We take the input as being a hex encoded octet string
+        for (final String fascN : CertTools.getPartsFromDN(altName, CertTools.FASCN)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new ASN1ObjectIdentifier(CertTools.FASCN_OBJECTID));
+            v.add(new DERTaggedObject(true, 0, new DEROctetString(Hex.decode(fascN))));
             vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
         }
 
@@ -2843,6 +2883,9 @@ public abstract class CertTools {
                     break;
                 case CertTools.SRVNAME_OBJECTID:
                     ret = CertTools.SRVNAME + "=" + getIA5StringFromSequence(sequence, CertTools.SRVNAME_OBJECTID);
+                    break;
+                case CertTools.FASCN_OBJECTID:
+                    ret = CertTools.FASCN + "=" + new String(Hex.encode(getOctetStringFromSequence(sequence, CertTools.FASCN_OBJECTID)));
                     break;
             };
             break;
