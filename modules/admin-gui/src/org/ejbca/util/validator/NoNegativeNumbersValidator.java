@@ -29,7 +29,7 @@ public class NoNegativeNumbersValidator implements Validator {
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {
         if (null != object){
-            BigInteger integerValue;
+            final BigInteger integerValue;
             if (object instanceof  Integer ){
                 integerValue = BigInteger.valueOf(((Integer) object).intValue());
             } else {
