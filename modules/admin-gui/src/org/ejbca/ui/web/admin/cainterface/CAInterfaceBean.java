@@ -1411,4 +1411,33 @@ public class CAInterfaceBean implements Serializable {
         }
         return retMsg;
     }
+
+    /**
+     * Checks if keys in current crypto token are already in use by another CA or not
+     * This method used while creating a new CA to warn users about keys which are already in use 
+     * by other CAs.
+     * 
+     * @param CAIds
+     * @param alias
+     * @param currentCryptoTokenId
+     * @return String (Already in use) if crypto key is used by another CA or empty string otherwise.
+     */
+    public String ifKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
+
+        CAInfo caInfo = null;
+
+        for (final int caId : CAIds) {
+            try {
+                caInfo = getCAInfo(caId).getCAInfo();
+            } catch (CADoesntExistsException e) {
+                log.info("Certificate authority with id " + caId + " does not exist!" + e);
+            } catch (AuthorizationDeniedException e) {
+                log.info("Authoriazation denied for the ca id " + caId);
+            }
+
+            if (currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
+                return " (Already in use)";
+        }
+        return "";
+    }
 }
