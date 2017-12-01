@@ -542,6 +542,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.UNIFORMRESOURCEID);
+        profile.addField(DnComponents.UNIFORMRESOURCEID);
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.DNSNAME);
         profile.addField(DnComponents.RFC822NAME);
@@ -559,7 +560,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
+                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -576,6 +577,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertTrue(list.contains("foo@b.se"));
             String name = CertTools.getPartFromDN(altNames, CertTools.URI);
             assertEquals("http://www.a.se/", name);
+            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            assertEquals("There should be 2 URIs", 2, names.size());
+            assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
             name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
             assertEquals("tomas@a.se", name);
             list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
@@ -594,7 +598,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertEquals("0419d23210d8210c2c1a843085a16858300842108608823210c3e1", name);
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
-                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
+                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -611,6 +615,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertTrue(list.contains("foo@b.se"));
             name = CertTools.getPartFromDN(altNames, CertTools.URI);
             assertEquals("http://www.a.se/", name);
+            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            assertEquals("There should be 2 URIs", 2, names.size());
+            assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
             name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
             assertEquals("tomas@a.se", name);
             list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
