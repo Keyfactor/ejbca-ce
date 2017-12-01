@@ -523,6 +523,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         String.valueOf(caid), null, username, details);
                 throw new EJBException(e);
             }
+        } else if (log.isDebugEnabled()) {
+            log.debug("User storage disabled on CA '"+caInfo.getName()+"', user with username '"+username+"' is not stored.");
         }
         if (log.isTraceEnabled()) {
             log.trace("<addUser(" + username + ", password, " + dn + ", " + email + ")");
