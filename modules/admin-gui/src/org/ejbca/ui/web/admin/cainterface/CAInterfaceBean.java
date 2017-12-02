@@ -1428,11 +1428,9 @@ public class CAInterfaceBean implements Serializable {
 
         for (final int caId : CAIds) {
             try {
-                caInfo = getCAInfo(caId).getCAInfo();
+                caInfo = getCAInfoNoAuth(caId).getCAInfo();
             } catch (CADoesntExistsException e) {
                 log.info("Certificate authority with id " + caId + " does not exist!" + e);
-            } catch (AuthorizationDeniedException e) {
-                log.info("Authoriazation denied for the ca id " + caId);
             }
 
             if (currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
