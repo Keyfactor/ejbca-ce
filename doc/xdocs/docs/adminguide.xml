@@ -2620,6 +2620,48 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
     </subsection>
 </section>
 
+<section name="Modular Protocol Configuration">
+<p>
+EJBCA supports multiple protocols for certificate enrollment, status and web services. It might however be desirable to disable some of these for an EJBAC instance in order to reduce potential vulnerabilities. E.g. an instance serving as an OCSP responder would not likely have any use for enrollment protocols, hence it can be disabled for that instance. Any request to a disabled protocol / service will be rejected immediately and an error code is returned.
+</p>
+<subsection name="Local Configuration">
+<p>
+The following protocols / services can be disabled:
+<ul>
+    <li>ACME</li>
+    <li>CMP</li>
+    <li>EST</li>
+    <li>OCSP</li>
+    <li>SCEP</li>
+    <li>Web Services</li>
+</ul> 
+</p>
+<p>
+All configurable protocols and services are enabled by default. Protocols can be disabled or re-enabled from the Admin GUI:
+<ol>
+    <li>System Configuration</li>
+    <li>Select the tab 'Protocol Configuration'</li>
+    <li>Enable or disable the desired protocol / service</li>
+</ol>
+</p>
+</subsection>
+<subsection name="Protocol Configurration Over Peers">
+<p>
+Each instance can disable protocols locally as described above. Additionally, an administrator may disable protocols and services for each outgoing Peer connection, hence making it possible to control protocol access of remote instances. Disabling a protocol locally or for a Peer connection will always override an enabled configuration. E.g. if an external RA has web services disabled locally and the outgoing Peer connection from the CA has configured web services as 'Enabled'. Any web service call to the external RA would be rejected anyway.
+</p>
+<p>
+Protocols for an outgoing Peer connection can be configured from in the Admin GUI:
+<ol>
+    <li>Peer Systems</li>
+    <li>Select 'Manage' for the outgoing Peer (the Peer has to be enabled first)</li>
+    <li>Select the tab 'Protocol Access'</li>
+    <li>Check protocols to enable and uncheck protocols to disabled and save</li>
+</ol>
+In consistency with local configuration, all protocols are enabled by default for outgoing Peers.
+</p>
+</subsection>
+</section>
+
 <section name="ePassport PKI">
 
 <subsection name="ICAO Specific Options">
