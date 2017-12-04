@@ -422,10 +422,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean upgrade(String dbtype, String oldVersion, boolean isPost) {
         try {
             log.debug("Upgrading from version=" + oldVersion);
-            final String reasonWhyUpgradeIsForbidden = isUpgradeForbidden(oldVersion);
-            if (reasonWhyUpgradeIsForbidden != null) {
-                throw new RuntimeException(reasonWhyUpgradeIsForbidden);
-            }
             if (isPost) {
                 // TODO: We might want to check that upgrade has run ok before allowing this.
                 // ...on the other hand... we wont allow it via the GUI so it might be good to be able to force upgrade retries
@@ -442,23 +438,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    /**
-     * Determine if an upgrade from an old version of EJBCA is forbidden. Currently only implementing ECA-6381.
-     * @param oldVersion the version of EKBCA to upgrade from
-     * @return the reason why an upgrade is forbidden, or null if an upgrade is allowed
-     */
-    private String isUpgradeForbidden(final String oldVersion) {
-        // ECA-6381
-        if (new Version(oldVersion).compareTo("5.0.12") < 0) {
-            return "Upgrading from EJBCA prior to version 5.0.12 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.";
-        }
-        return null;
-    }
-
     private boolean upgrade(String dbtype, String oldVersion) {
     	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
-        if (isLesserThan(oldVersion, "3.11")) {
-            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x and higher.");
+        if (isLesserThan(oldVersion, "5.0.12")) {
+            log.error(
+                    "Upgrading from EJBCA prior to version 5.0.12 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
             return false;
         }
         // Upgrade between EJBCA 3.11.x and EJBCA 4.0.x to 5.0.x
@@ -546,8 +530,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private boolean postUpgrade(String oldVersion, String dbtype) {
         log.debug(">post-upgrade from version: "+oldVersion);
-        if (isLesserThan(oldVersion, "3.11")) {
-            log.error("Upgrades directly from versions 3.10.x or earlier ("+oldVersion+" in this case) are not supported by this version of EJBCA. Please upgrade to a version of 4.0.x first.");
+        if (isLesserThan(oldVersion, "5.0.12")) {
+            log.error(
+                    "Post-upgrade from EJBCA prior to version 5.0.12 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.");
             return false;
         }
         // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
