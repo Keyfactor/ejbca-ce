@@ -28,13 +28,14 @@
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
-            <h:panelGroup layout="block" class="header" id="title">
+            <h:panelGroup layout="block" class="header" id="title" rendered="#{raAccessBean.authorizedToEnroll}">
                 <h1><h:outputText value="#{msg.welcome_page_header}"/></h1>
-            </h:panelGroup> 
+            </h:panelGroup>
             <script>
     			var messageshowmore = '#{msg.enroll_render_non_modifiable_button_show}';
     			var messagehidemore = '#{msg.enroll_render_non_modifiable_button_hide}';
     		</script>
+    		
             <h:panelGroup layout="block" class="content-body" id="content-body-request" rendered="#{raAccessBean.authorizedToEnrollMakeRequest}">
                 <h2><h:outputText value="Request new certificate"/></h2>
                 <h:panelGroup layout="block" styleClass="internal-frame">
