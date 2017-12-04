@@ -36,8 +36,8 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
- * Managed bean with isAuthorized method. 
- * 
+ * Managed bean with isAuthorized method.
+ *
  * @version $Id$
  */
 @ManagedBean
@@ -46,9 +46,9 @@ public class RaAccessBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaAccessBean.class);
-    
+
     private static final long CACHE_READ_TIMEOUT = 2000L; // milliseconds
-    
+
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     @EJB
@@ -59,9 +59,9 @@ public class RaAccessBean implements Serializable {
     @ManagedProperty(value="#{raAuthenticationBean}")
     private RaAuthenticationBean raAuthenticationBean;
     public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
-    
+
     private static AtomicBoolean reloadEventRegistered = new AtomicBoolean(false);
-    
+
     private boolean isAuthorized(String... resources) {
         final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
         if (raMasterApiProxyBean.getApiVersion()>=1) {
@@ -71,7 +71,7 @@ public class RaAccessBean implements Serializable {
         }
     }
 
-    /** 
+    /**
      * Check authorization using AccessSet which do not support deny rules.
      * @deprecated since EJBCA 6.8.0
      */
@@ -80,7 +80,7 @@ public class RaAccessBean implements Serializable {
         ensureCacheReloadEventRegistered();
         AccessSet myAccess;
         final ConcurrentCache<AuthenticationToken,AccessSet> cache = RemoteAccessSetCacheHolder.getCache();
-        
+
         // Try to read from cache
         final ConcurrentCache<AuthenticationToken,AccessSet>.Entry entry = cache.openCacheEntry(authenticationToken, CACHE_READ_TIMEOUT);
         if (entry == null) {
@@ -110,7 +110,7 @@ public class RaAccessBean implements Serializable {
         if (reloadEventRegistered.compareAndSet(false, true)) {
           accessTreeUpdateSession.addReloadEvent(new AuthorizationCacheReloadListener() {
                 private int lastUpdate = -1;
-                
+
                 @Override
                 public void onReload(final AuthorizationCacheReload event) {
                     if (event.getAccessTreeUpdateNumber() > lastUpdate) {
@@ -118,7 +118,7 @@ public class RaAccessBean implements Serializable {
                         RemoteAccessSetCacheHolder.forceEmptyCache();
                     }
                 }
-                
+
                 @Override
                 public String getListenerName() {
                     return RemoteAccessSetCacheHolder.class.getName();
@@ -126,22 +126,22 @@ public class RaAccessBean implements Serializable {
             });
         }
     }
-    
+
     // Methods for checking authorization to various parts of EJBCA can be defined below
-    
+
     /** Example method */
     @Deprecated
     public boolean isAuthorizedToRootTEST() {
         return isAuthorized(StandardRules.ROLE_ROOT.resource());
     }
-    
+
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the whole enrollment menu */
     public boolean isAuthorizedToEnroll() {
         return isAuthorizedToEnrollMakeRequest() ||
                 isAuthorizedToEnrollWithRequestId();
     }
-    
+
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the make request sub menu item */
     public boolean isAuthorizedToEnrollMakeRequest() {
@@ -153,17 +153,17 @@ public class RaAccessBean implements Serializable {
          */
         return isAuthorized(AccessRulesConstants.REGULAR_CREATEENDENTITY);
     }
-    
+
     /** correspond to menu items in menu.xhtml
      * This method shows and hides the use request id sub menu item */
     public boolean isAuthorizedToEnrollWithRequestId() {
         // There are no access rules available for "finalizing" requests, i.e. retrieving the certificate for your request
         // For starters we will assume that the same person who made the request is finalizing it with request ID, therefore
-        // The same access rules aply as when making a request. 
+        // The same access rules aply as when making a request.
         // This is a safe default until we can add access rules to allow "public" users to enroll
         return isAuthorizedToEnrollMakeRequest();
     }
-    
+
     public boolean isAuthorizedToCas() {
         final boolean auth = isAuthorized(StandardRules.CAVIEW.resource());
         if (!auth && log.isDebugEnabled()) {
@@ -171,7 +171,7 @@ public class RaAccessBean implements Serializable {
         }
         return auth;
     }
-    
+
     public boolean isAuthorizedToManageRequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY) || isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION) || isAuthorized(AuditLogRules.VIEW.resource());
         if (!auth && log.isDebugEnabled()) {
@@ -179,7 +179,7 @@ public class RaAccessBean implements Serializable {
         }
         return auth;
     }
-    
+
     public boolean isAuthorizedToApproveEndEntityRequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
         if (!auth && log.isDebugEnabled()) {
@@ -187,7 +187,7 @@ public class RaAccessBean implements Serializable {
         }
         return auth;
     }
-    
+
     public boolean isAuthorizedToApproveCARequests() {
         final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION);
         if (!auth && log.isDebugEnabled()) {
@@ -199,41 +199,58 @@ public class RaAccessBean implements Serializable {
     public boolean isAuthorizedToEditEndEntities() {
         return isAuthorized(AccessRulesConstants.REGULAR_EDITENDENTITY);
     }
-    
+
     public boolean isAuthorizedToSearch() {
         return isAuthorizedToSearchCerts() ||
                 isAuthorizedToSearchEndEntities();
     }
-    
+
     public boolean isAuthorizedToSearchCerts() {
         return isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
     }
-    
+
     public boolean isAuthorizedToSearchEndEntities() {
         return isAuthorized(AccessRulesConstants.REGULAR_VIEWENDENTITY);
     }
-    
+
     public boolean isAuthorizedToRoles() {
         return isAuthorizedToRoleRules() || isAuthorizedToRoleMembers();
     }
-    
+
     public boolean isAuthorizedToEditRoleRules() {
         return isAuthorized(StandardRules.EDITROLES.resource());
     }
-    
+
     public boolean isAuthorizedToRoleRules() {
         return isAuthorized(StandardRules.VIEWROLES.resource());
     }
-    
+
     public boolean isAuthorizedToRoleMembers() {
         return isAuthorized(StandardRules.VIEWROLES.resource());
     }
-    
+
     public boolean isAuthorizedToEditRoleMembers() {
         return isAuthorized(StandardRules.EDITROLES.resource());
     }
 
     public boolean isAuthorizedToRevokeCertificates() {
         return isAuthorized(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+    }
+
+    public boolean isAuthorizedToAnything() {
+        return  isAuthorizedToEnroll() ||
+                isAuthorizedToCas() ||
+                isAuthorizedToManageRequests() ||
+                isAuthorizedToApproveEndEntityRequests() ||
+                isAuthorizedToApproveCARequests() ||
+                isAuthorizedToEditEndEntities() ||
+                isAuthorizedToSearchCerts() ||
+                isAuthorizedToSearchEndEntities() ||
+                isAuthorizedToRoles() ||
+                isAuthorizedToEditRoleRules() ||
+                isAuthorizedToRoleRules() ||
+                isAuthorizedToRoleMembers() ||
+                isAuthorizedToEditRoleMembers() ||
+                isAuthorizedToRevokeCertificates();
     }
 }
