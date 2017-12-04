@@ -68,8 +68,8 @@ Security is CRITICAL for a CA.
 <p>Configuring a proper database in MariaDB is done with a few simple commands:</p>
 <source>
 $ sudo mysql -u root
-mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
-mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejbca';
+mysql> CREATE DATABASE ejbcatest CHARACTER SET utf8 COLLATE utf8_general_ci;
+mysql> GRANT ALL PRIVILEGES ON ejbcatest.* TO 'ejbca'@'localhost' IDENTIFIED BY 'ejbca';
 </source>
 <subsection name="Legacy Ubuntu quick start">
 <note>
