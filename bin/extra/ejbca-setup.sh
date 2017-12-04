@@ -1480,7 +1480,7 @@ select yn in "Yes" "No"; do
     Yes )
     init_installer;
     echo;
-    echo "You can now install the superadmin.p12 keystore, from ${EJBCA_DIRECTORY}, in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca";
+    echo "You can now install the superadmin.p12 keystore, from ${EJBCA_DIRECTORY}/p12, in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca";
     echo;
   break;;
   No ) exit;;
