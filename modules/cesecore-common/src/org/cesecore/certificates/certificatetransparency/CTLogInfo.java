@@ -180,12 +180,13 @@ public final class CTLogInfo implements Serializable {
         }
 
         final CTLogInfo ctLogInfo = (CTLogInfo) o;
-        return this.getLogId() == ctLogInfo.getLogId();
+        return logId == ctLogInfo.getLogId() &&
+                url.equals(ctLogInfo.getUrl());
     }
 
     @Override
     public int hashCode() {
-        return logId;
+        return logId + (url.hashCode() * 4711);
     }
 
     @Override
