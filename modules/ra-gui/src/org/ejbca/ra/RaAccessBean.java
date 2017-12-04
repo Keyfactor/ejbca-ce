@@ -237,20 +237,22 @@ public class RaAccessBean implements Serializable {
         return isAuthorized(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
     }
 
-    public boolean isAuthorizedToAnything() {
-        return  isAuthorizedToEnroll() ||
-                isAuthorizedToCas() ||
-                isAuthorizedToManageRequests() ||
-                isAuthorizedToApproveEndEntityRequests() ||
-                isAuthorizedToApproveCARequests() ||
-                isAuthorizedToEditEndEntities() ||
-                isAuthorizedToSearchCerts() ||
-                isAuthorizedToSearchEndEntities() ||
-                isAuthorizedToRoles() ||
-                isAuthorizedToEditRoleRules() ||
-                isAuthorizedToRoleRules() ||
-                isAuthorizedToRoleMembers() ||
-                isAuthorizedToEditRoleMembers() ||
-                isAuthorizedToRevokeCertificates();
+    /**
+     * Determine if the user has access to at least one access rule. Will only work
+     * with RA Master API version 1 and above. True will always be returned if an older version
+     * is detected.
+     * @return true if at least one access rule is granted or legacy API detected, false if no access or
+     * an authentication error occurred
+     */
+    public boolean isHasAccess() {
+        try {
+            final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
+            if (raMasterApiProxyBean.getApiVersion() >= 1) {
+                return !raMasterApiProxyBean.getAuthorization(authenticationToken).getAccessRules().isEmpty();
+            }
+            return true;
+        } catch (AuthenticationFailedException e) {
+            return false;
+        }
     }
 }
