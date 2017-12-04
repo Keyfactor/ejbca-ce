@@ -334,6 +334,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CT_SCTS_MAX_OCSP = "ctsctsmaxocsp";
     protected static final String CT_NUMBER_OF_SCTS_BY_VALIDITY = "ctnumberofsctsbyvalidity";
     protected static final String CT_NUMBER_OF_SCTS_BY_CUSTOM = "ctnumberofsctsbycustom";
+    protected static final String CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY = "ctmaxnumberofsctsbyvalidity";
+    protected static final String CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM = "ctmaxnumberofsctsbycustom";
     protected static final String CTMAXRETRIES = "ctmaxretries";
 
     protected static final String USERSINGLEACTIVECERTIFICATECONSTRAINT = "usesingleactivecertificateconstraint";
@@ -2556,6 +2558,30 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setNumberOfSctByCustom(boolean use) {
         data.put(CT_NUMBER_OF_SCTS_BY_CUSTOM, use);
+    }
+    
+    public boolean isMaxNumberOfSctByValidity() {
+        if (data.get(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY) == null) {
+            // Default value
+            return false;
+        }
+        return (Boolean)data.get(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY);
+    }
+    
+    public void setMaxNumberOfSctByValidity(boolean use) {
+        data.put(CT_MAX_NUMBER_OF_SCTS_BY_VALIDITY, use);
+    }
+    
+    public boolean isMaxNumberOfSctByCustom() {
+        if (data.get(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM) == null) {
+            // Default value
+            return true;
+        }
+        return (Boolean)data.get(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM);
+    }
+    
+    public void setMaxNumberOfSctByCustom(boolean use) {
+        data.put(CT_MAX_NUMBER_OF_SCTS_BY_CUSTOM, use);
     }
     
     /**

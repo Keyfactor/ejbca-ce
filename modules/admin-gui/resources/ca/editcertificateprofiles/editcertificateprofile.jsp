@@ -1012,21 +1012,21 @@
 		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.numberOfSctByValidity}" rendered="#{!web.legacyInternetExplorer}"
 				disabled="#{certProfilesBean.viewOnly}"/>
-			<h:commandButton id="useCtSctNumberByValidity" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleNumberOfSctByValidity}"
+			<h:commandButton id="useCtSctNumberByValidity" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleNumberOfSctBy}"
 				value="#{certProfileBean.certificateProfile.numberOfSctByValidity?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="useCtSctNumberByValidity" value="#{web.text.EXT_CT_NUMOFSCTS_BY_VALIDITY}" styleClass="checkBoxOverlay"/>
 			
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.numberOfSctByCustom}" rendered="#{!web.legacyInternetExplorer}"
 				disabled="#{certProfilesBean.viewOnly}"/>
-			<h:commandButton id="useCtSctNumberByCustom" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleNumberOfSctByCustom}"
+			<h:commandButton id="useCtSctNumberByCustom" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleNumberOfSctBy}"
 				value="#{certProfileBean.certificateProfile.numberOfSctByCustom?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
 				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="useCtSctNumberByCustom" value="#{web.text.EXT_CT_NUMOFSCTS_BY_CUSTOM}" styleClass="checkBoxOverlay"/>
 		</h:panelGroup>
 
-        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.numberOfCtByCustom}" value="#{web.text.EXT_CT_NUMOFSCT_MIN}" styleClass="subItem"/>
-        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.numberOfCtByCustom}">
+        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.numberOfSctsByCustom}" value="#{web.text.EXT_CT_NUMOFSCT_MIN}" styleClass="subItem"/>
+        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.numberOfSctsByCustom}">
             <h:inputText id="textfieldCtMinScts" value="#{certProfileBean.certificateProfile.ctMinScts}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
                 disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}"/>
             <h:outputLabel for="textfieldCtMinScts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
@@ -1035,8 +1035,26 @@
             <h:outputLabel for="textfieldCtMinSctsOcsp" value="#{web.text.EXT_CT_PER_OCSPRESPONSE}"/>
         </h:panelGroup>
         
-        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_NUMOFSCT_MAX}" styleClass="subItem"/>
-        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
+       	<!-- TODO: replace validity check boxes with radio buttons. Tricky without Ajax since we need to render the following fields depending on selection -->
+    	<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_NUMOFSCT_MAX}" styleClass="subItem"/>
+		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.maxNumberOfSctByValidity}" rendered="#{!web.legacyInternetExplorer}"
+				disabled="#{certProfilesBean.viewOnly or certProfileBean.numberOfSctsByCustom}"/>
+			<h:commandButton id="useCtSctMaxNumberByValidity" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleMaxNumberOfSctBy}"
+				value="#{certProfileBean.certificateProfile.maxNumberOfSctByValidity?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+				disabled="#{certProfilesBean.viewOnly or certProfileBean.numberOfSctsByCustom}"/>
+			<h:outputLabel for="useCtSctMaxNumberByValidity" value="#{web.text.EXT_CT_NUMOFSCTS_BY_VALIDITY}" styleClass="checkBoxOverlay"/>
+			
+			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.maxNumberOfSctByCustom}" rendered="#{!web.legacyInternetExplorer}"
+				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:commandButton id="useCtSctMaxNumberByCustom" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleMaxNumberOfSctBy}"
+				value="#{certProfileBean.certificateProfile.maxNumberOfSctByCustom?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
+				disabled="#{certProfilesBean.viewOnly}"/>
+			<h:outputLabel for="useCtSctMaxNumberByCustom" value="#{web.text.EXT_CT_NUMOFSCTS_BY_CUSTOM}" styleClass="checkBoxOverlay"/>
+		</h:panelGroup>
+        
+        <h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.maxNumberOfSctsByCustom}" value="#{web.text.EXT_CT_NUMOFSCT_MAX}" styleClass="subItem"/>
+        <h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled and certProfileBean.maxNumberOfSctsByCustom}">
             <h:inputText id="textfieldCtMaxScts" value="#{certProfileBean.certificateProfile.ctMaxScts}" size="2" maxlength="255" title="#{web.text.FORMAT_INTEGER}"
                 disabled="#{!certProfileBean.certificateProfile.useCertificateTransparencyInCerts or certProfilesBean.viewOnly}"/>
             <h:outputLabel for="textfieldCtMaxScts" value="#{web.text.EXT_CT_PER_CERTIFICATE}"/> &nbsp; &nbsp;
