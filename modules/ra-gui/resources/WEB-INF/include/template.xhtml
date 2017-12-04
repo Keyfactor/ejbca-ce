@@ -65,9 +65,9 @@
 	    </h:panelGroup>
 	    
 		<div id="content" class="content">
-			<h:panelGroup styleClass="raNotification" rendered="#{not raAccessBean.authorizedToEnroll}">
+			<h:panelGroup styleClass="raNotification" rendered="#{not raAccessBean.authorizedToAnything}">
                 <img class="raNotificationIcon" src="#{facesContext.externalContext.context.contextPath}/img/ic_sentiment_very_dissatisfied_black_24dp_2x.png" />
-                <h:outputText value="#{msg.unable_to_enroll}"/>
+                <h:outputText value="#{msg.broken_ra}"/>
             </h:panelGroup>
 			
 			<ui:insert name="content">
