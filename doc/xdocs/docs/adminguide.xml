@@ -5329,16 +5329,29 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 								</b></i></p> 
 							</ul>
 						</p>
+					<li>Use IODEF WEB</li>
+						<p>
+							Checking this box enables sending iodef incident reports to any http/s-links registered on the DNA as CAA IODEF records.
+						</p>
 				</ul>
 			</p>
 			<p>
 				A few notes in regards to CAA validation:
+			</p>
+			<note>
 				<ul>
-					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
+   					<li>CAA validation will pass if the DNS lacks CAA records entirely</li>
 					<li>EJBCA currently doesn't validate parameters in CAA records, but such records will still be evaluated correctly. Parameter handling is planned in future versions.</li>
 					<li>The CAA Validator requires TCP and UDP port 53 to be open in the firewall.</li>
+					<li>Current iodef implementation does not support TLS protocol to send iodef reports over secure connection. 
+						This will be added per request by customers or in future releases. </li>
+					<li>Another limitation is that the implementation does not support callback, only immidiate reponses with code 200 OK are supported. 
+						See <a href="https://tools.ietf.org/html/rfc6546">RFC-6546</a> for more details.</li>
+					<li>The attributes in the produced incident report are the minimum required ones.
+   						Optionals are ignored for now but could be added if requested.</li>
 				</ul>			 
-			</p>
+			</note>
+			
 			<p><strong>CAA Validator Logging</strong></p>
 			<p>The CAA validator will log both success and failure. Since success can be considered a security event, to be shown as evidence, this is logged in the security audit log. 
 			Failures are not security events per se and logged to the standard server log at info level.</p>
