@@ -1477,10 +1477,12 @@ echo
 echo "Please select \"Yes\" if you did so, but not before"
 select yn in "Yes" "No"; do
   case $yn in
-      Yes ) init_installer; break;;
-      No ) exit;;
+    Yes )
+    init_installer;
+    echo;
+    echo "You can now install the superadmin keystore in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca";
+    echo;
+  break;;
+  No ) exit;;
   esac
-echo
-echo "You can now install the superadmin keystore in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca"
-echo
 done
