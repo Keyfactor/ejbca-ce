@@ -187,6 +187,21 @@
     padding: 0;
 }
 
+.raNotification {
+	border: none;
+	padding: 2em;
+	background-color: #fff;
+	border-radius: 5px;
+	text-align: center;
+	font-size: 1.2em;
+}
+
+.raNotificationIcon {
+	margin-right: 2em;
+	border: none;
+	vertical-align: middle;
+}
+
 /* Add-Remove controls */
 .addRemoveListEnabled, .addRemoveListButtons, .addRemoveListAvailable {
     display: inline-block;
