@@ -61,8 +61,8 @@ ejbca_user_home=~
 # Full path to where we run the script, which will be where we unpack and install software
 INSTALL_DIRECTORY=$(pwd)
 # The name of the EJBCA directory
-startdirectory=`dirname "$0"`
-EJBCA_DIRECTORY=$(echo "$startdirectory" | cut -d "/" -f2)
+startdirectory=$(cd "$(dirname "$0")"; pwd -P)
+EJBCA_DIRECTORY=$(echo "$startdirectory" | sed 's/bin\/.*//')
 
 mysql_root_user="root"
 
@@ -1480,7 +1480,7 @@ select yn in "Yes" "No"; do
     Yes )
     init_installer;
     echo;
-    echo "You can now install the superadmin keystore in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca";
+    echo "You can now install the superadmin.p12 keystore, from ${EJBCA_DIRECTORY}, in your web browser, using the password ${superadmin_password}, and access EJBCA at https://localhost:8443/ejbca";
     echo;
   break;;
   No ) exit;;
