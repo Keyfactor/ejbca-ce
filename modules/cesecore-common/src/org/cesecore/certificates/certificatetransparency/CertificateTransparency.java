@@ -13,8 +13,6 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +47,11 @@ public interface CertificateTransparency {
     };
 
     /**
-     * Overloaded method that with allLogs = false
-     *
+     * Overloaded method with usageMode = UsageMode.CERTIFICATE.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
-     *
-     * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, Map, boolean)
+     * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, Map, UsageMode)
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, LinkedHashMap<Integer,CTLogInfo> configuredCTLogs) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs) throws CTLogException;
 
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).
@@ -68,26 +64,7 @@ public interface CertificateTransparency {
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, LinkedHashMap<Integer,CTLogInfo> configuredCTLogs, UsageMode usageMode) throws CTLogException;
-
-    /**
-     * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).
-     *
-     * @param chain Certificate chain including any CT signer and the leaf pre-certificate
-     * @param logs The logs to connect to.
-     * @param minMandatorySCTs the number of mandatory SCTs required
-     * @param maxMandatorySCTs the maximum number of mandatory SCTs to fetch in parallel
-     * @param minNonMandatorySCTs the minimum number of non-mandatory SCTs
-     * @param maxNonMandatorySCTs the maximum number of non-mandatory SCTs
-     * @param minTotalSCTs the minimum number of SCTs in total
-     * @param maxRetries Maximum number of retries
-     * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension
-     * @throws CTLogException If too many servers are down to satisfy the certificate profile.
-     */
-    byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minMandatorySCTs, int maxMandatorySCTs, int minNonMandatorySCTs,
-            int maxNonMandatorySCTs,
-            int minTotalSCTs, int maxRetries)
-            throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs, UsageMode usageMode) throws CTLogException;
 
     /**
      * Adds a critical extension to prevent the certificate from being used
