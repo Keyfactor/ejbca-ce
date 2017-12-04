@@ -143,7 +143,7 @@ import org.ejbca.util.SqlExecutor;
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
@@ -153,7 +153,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
-    
+
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -243,7 +243,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private String getUpgradedFromVersion() {
         return getGlobalUpgradeConfiguration().getUpgradedFromVersion();
     }
-    
+
     private void setLastPostUpgradedToVersion(final String version) {
         final GlobalUpgradeConfiguration guc = getGlobalUpgradeConfiguration();
         guc.setPostUpgradedToVersion(version);
@@ -306,8 +306,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException(e);
         }
     }
-    
-    
+
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void performPreUpgrade(final boolean isFreshInstallation) {
@@ -331,7 +331,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
         }
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean performUpgrade() {
@@ -422,6 +422,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean upgrade(String dbtype, String oldVersion, boolean isPost) {
         try {
             log.debug("Upgrading from version=" + oldVersion);
+            final String reasonWhyUpgradeIsForbidden = isUpgradeForbidden(oldVersion);
+            if (reasonWhyUpgradeIsForbidden != null) {
+                throw new RuntimeException(reasonWhyUpgradeIsForbidden);
+            }
             if (isPost) {
                 // TODO: We might want to check that upgrade has run ok before allowing this.
                 // ...on the other hand... we wont allow it via the GUI so it might be good to be able to force upgrade retries
@@ -436,6 +440,19 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } finally {
             log.trace("<upgrade()");
         }
+    }
+
+    /**
+     * Determine if an upgrade from an old version of EJBCA is forbidden. Currently only implementing ECA-6381.
+     * @param oldVersion the version of EKBCA to upgrade from
+     * @return the reason why an upgrade is forbidden, or null if an upgrade is allowed
+     */
+    private String isUpgradeForbidden(final String oldVersion) {
+        // ECA-6381
+        if (new Version(oldVersion).compareTo("5.0.12") < 0) {
+            return "Upgrading from EJBCA prior to version 5.0.12 is forbidden. You must upgrade to the intermediate release EJBCA 6.3.2.6 first. Read the EJBCA Upgrade Guide for more information.";
+        }
+        return null;
     }
 
     private boolean upgrade(String dbtype, String oldVersion) {
@@ -579,7 +596,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Called from other migrate methods, don't call this directly, call from an
      * interface-method
-     * 
+     *
      */
     private boolean migrateDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
@@ -612,7 +629,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * (ECA-200:) In EJB 2.1 JBoss CMP used it's own serialization method for all Object/BLOB fields.
-     * 
+     *
      * This affects the following entity fields:
      * - CertificateProfileData.data
      * - HardTokenData.data
@@ -621,13 +638,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * - AdminPreferencesData.data
      * - EndEntityProfileData.data
      * - GlobalConfigurationData.data
-     * 
+     *
      * NOTE: You only need to run this if you upgrade a JBoss installation.
      */
     private boolean postMigrateDatabase4_0_0() {
     	log.error("(this is not an error) Starting post upgrade from EJBCA 3.11.x to EJBCA 4.0.x");
     	boolean ret = true;
-    	upgradeSession.postMigrateDatabase400SmallTables();	// Migrate small tables in a new transaction 
+    	upgradeSession.postMigrateDatabase400SmallTables();	// Migrate small tables in a new transaction
     	log.info(" Processing HardTokenData entities.");
     	log.info(" - Building a list of entities.");
     	final List<String> tokenSNs = HardTokenData.findAllTokenSN(entityManager);
@@ -642,7 +659,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	log.error("(this is not an error) Finished post upgrade from EJBCA 3.11.x to EJBCA 4.0.x with result: "+ret);
         return ret;
     }
-        
+
     /** @return a subset of the source list with index as its first item and index+count-1 as its last. */
     private <T> List<T> getSubSet(final List<T> source, final int index, final int count) {
     	List<T> ret = new ArrayList<T>(count);
@@ -696,7 +713,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
     private HashMap getDataUnsafe(Serializable s) {
-		HashMap h = null; 
+		HashMap h = null;
 		try {
 			h = JBossUnmarshaller.extractObject(LinkedHashMap.class, s);
 			if (h == null) {
@@ -707,7 +724,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		}
 		return h;
 	}
-    
+
     @SuppressWarnings("rawtypes")
     @Override
     public void postMigrateDatabase400HardTokenData(List<String> subSet) {
@@ -726,11 +743,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * In EJBCA 5.0 we have introduced a new authorization rule system.
      * The old "/super_administrator" rule is replaced by a rule to access "/" (StandardRules.ROLE_ROOT.resource()) with recursive=true.
      * therefore we must insert a new access rule in the database in all roles that have super_administrator access.
-     * 
+     *
      * We have also added a column to the table AdminEntityData: tokenType
-     * 
+     *
      * @param dbtype A string representation of the actual database.
-     * 
+     *
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)   // Until our roles API can handle transactions properly
@@ -738,13 +755,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public boolean migrateDatabase500(String dbtype) {
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
-    	
+
     	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
 
     	//Upgrade database
     	migrateDatabase("/400_500/400_500-upgrade-"+dbtype+".sql");
-    	
-    	final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
+
+    	final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
     	        globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID );
     	// fix CAs that don't have classpath for extended CA services
     	Collection<Integer> caids = caSession.getAllCaIds();
@@ -779,7 +796,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 								break;
 							}
 						} else {
-							// If we can't get info for the HardTokenEncrypt or KeyRecovery service it means they don't exist 
+							// If we can't get info for the HardTokenEncrypt or KeyRecovery service it means they don't exist
 							// as such in the database, but was hardcoded before. We need to create them from scratch
 							switch (type) {
 							case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
@@ -808,7 +825,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 						extendedcaserviceinfos.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 					}
 					if (!extendedServiceTypes.contains(ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE)) {
-						log.info("Adding new extended CA service of type "+ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE+" with implementation class "+KeyRecoveryCAService.class.getName());							
+						log.info("Adding new extended CA service of type "+ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE+" with implementation class "+KeyRecoveryCAService.class.getName());
 						extendedcaserviceinfos.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 					}
 					if (!extendedcaserviceinfos.isEmpty()) {
@@ -829,8 +846,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	}
     	/*
     	 *  Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
-    	 *  
-    	 * Also, set token types to the standard X500 principal if otherwise null. Since token types is a new concept, 
+    	 *
+    	 * Also, set token types to the standard X500 principal if otherwise null. Since token types is a new concept,
          * all existing aspects/admin entities must be of this type
     	 */
     	legacyRoleManagementSession.setTokenTypeWhenNull(admin);
@@ -839,16 +856,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         // Note from EJBCA 6.8.0 rewrite: Since this will be normalized and minimized in a later upgrade adding this rule is sufficient
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
                 Arrays.asList("/super_administrator"), Arrays.asList(StandardRules.ROLE_ROOT.resource()), true);
-    	
+
     	accessTreeUpdateSession.signalForAccessTreeUpdate();
     	log.error("(this is not an error) Finished upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
         return ret;
     }
 
     /**
-     * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration 
+     * Upgrade access rules such that every role that already has access to /system_functionality/edit_systemconfiguration
      * will also have access to the new access rule /system_functionality/edit_available_extended_key_usages
-     * 
+     *
      * @return true if the upgrade was successful and false otherwise
      */
     @SuppressWarnings("deprecation")
@@ -865,7 +882,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         AvailableExtendedKeyUsagesConfiguration ekuConfig;
         if (url == null) {
             // Create using the default template of the current version if no such file exists
-            ekuConfig = (AvailableExtendedKeyUsagesConfiguration) 
+            ekuConfig = (AvailableExtendedKeyUsagesConfiguration)
                     globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         } else {
             ekuConfig = new AvailableExtendedKeyUsagesConfiguration(false);
@@ -887,7 +904,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     } else {
                         log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
                     }
-                } 
+                }
                 // No eku with a certain number == continue trying next, we will try 0-255.
             }
             if(log.isDebugEnabled()) {
@@ -903,18 +920,18 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * This method adds read-only rules that were created for the new read-only admin in https://jira.primekey.se/browse/ECA-4344. It makes sure that any roles which previously
-     * had access to the affected resources retain read rights (in case those roles should be restricted as a result of this ticket). 
-     * 
-     * All access has been made more granular, so performing this step post-upgrade is safe. 
-     * 
-     * 
-     * The exact changes performed are documented in the UPGRADE document. 
-     * @throws UpgradeFailedException if upgrade fails. 
+     * had access to the affected resources retain read rights (in case those roles should be restricted as a result of this ticket).
+     *
+     * All access has been made more granular, so performing this step post-upgrade is safe.
+     *
+     *
+     * The exact changes performed are documented in the UPGRADE document.
+     * @throws UpgradeFailedException if upgrade fails.
      */
     @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules640() throws UpgradeFailedException {
-        // Roles with access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive) 
+        // Roles with access to /ca_functionality/basic_functions/activate_ca or just /ca_functionality/ (+recursive)
         // should be given access to /ca_functionality/view_ca
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.CAFUNCTIONALITY.resource(),
                 Arrays.asList(AccessRulesConstants.REGULAR_ACTIVATECA), Arrays.asList(StandardRules.CAVIEW.resource()), false);
@@ -936,22 +953,22 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(),
                 Arrays.asList(InternalKeyBindingRules.BASE.resource()), Arrays.asList(InternalKeyBindingRules.VIEW.resource()), true);
     }
-    
+
     /**
      * Adds the access rules defined in https://jira.primekey.se/browse/ECA-4463
-     * 
-     * These are:   View rules for system configuration, EKU config and CCE config 
-     * 
-     * Any roles which matched the previous auditor role, or which had edit access to the above will be given view access. 
-     * @throws UpgradeFailedException 
-     * 
+     *
+     * These are:   View rules for system configuration, EKU config and CCE config
+     *
+     * Any roles which matched the previous auditor role, or which had edit access to the above will be given view access.
+     * @throws UpgradeFailedException
+     *
      */
     @SuppressWarnings("deprecation")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private void addReadOnlyRules642() throws UpgradeFailedException {
         // If role is the old auditor from 6.4.0, grant new view rights
         legacyRoleManagementSession.addAccessRuleDataToRolesWhenAccessIsImplied(authenticationToken, StandardRules.ROLE_ROOT.resource(), Arrays.asList(
-                AccessRulesConstants.ROLE_ADMINISTRATOR, 
+                AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
                 AuditLogRules.VIEW.resource(),
                 InternalKeyBindingRules.VIEW.resource(),
@@ -987,11 +1004,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
-     * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users. 
-     * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community 
+     * EJBCA 6.3.1.1 moves the VA Publisher from Community to Enterprise, changing its baseclass in the process for Enterprise users.
+     * This method will fail gracefully if user is not running Enterprise. It will also upgrade any placeholder publishers from 6.3.1.1 Community
      * if so required.
-     * 
-     * @return true if the upgrade was successful 
+     *
+     * @return true if the upgrade was successful
      */
     private boolean postMigrateDatabase632() {
         if(!enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
@@ -999,7 +1016,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return true; // Fail gracefully and pretend it was ok.
         }
         log.error("(this is not an error) Starting post upgrade to 6.3.2");
-        //Find all publishers, make copies of them using the new publisher class. 
+        //Find all publishers, make copies of them using the new publisher class.
         Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
         Map<Integer, String> publisherNames = publisherSession.getPublisherIdToNameMap();
         BasePublisherConverter publisherFactory;
@@ -1016,7 +1033,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException(e);
         }
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase631"));
- 
+
         for(Integer publisherId : allPublishers.keySet()) {
             BasePublisher newPublisher = publisherFactory.createPublisher(allPublishers.get(publisherId));
             if (newPublisher != null) {
@@ -1031,10 +1048,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         return true;
     }
-        
+
     /**
      * EJBCA 6.2.4 introduced default responder configuration in the database.
-     * 
+     *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
@@ -1058,8 +1075,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * EJBCA 6.4.0 introduces new sun rules to System Configuration in regards to Custom OIDs and EKUs.
-     * 
-     * Access rules have also been added for read only rights to parts of the GUI. 
+     *
+     * Access rules have also been added for read only rights to parts of the GUI.
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1067,20 +1084,20 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
         // Add the new access rule /system_functionality/edit_available_extended_key_usages to every role that already has the access rule /system_functionality/edit_systemconfiguration
-        addEKUAndCustomCertExtensionsAccessRulestoRoles();  
+        addEKUAndCustomCertExtensionsAccessRulestoRoles();
         importExtendedKeyUsagesFromFile();
-        // Next add access rules for the new audit role template, allowing easy restriction of resources where needed. 
+        // Next add access rules for the new audit role template, allowing easy restriction of resources where needed.
         addReadOnlyRules640();
         log.error("(This is not an error) Completed upgrade procedure to 6.4.0");
     }
-    
+
     /**
      * EJBCA 6.4.2:
-     * 
+     *
      * 1.   Adds view rules to System Configuration, EKU Configuration and Certificate Extension Configuration. Any roles with edit rights to those pages, or which match the Auditor role
-     *      from 6.4.0 will be automatically upgraded. 
-     * 2.   Adds view rules to Roles. Any roles with edit rights roles, or which match the Auditor role from 6.4.0 will be automatically upgraded. 
-     * 
+     *      from 6.4.0 will be automatically upgraded.
+     * 2.   Adds view rules to Roles. Any roles with edit rights roles, or which match the Auditor role from 6.4.0 will be automatically upgraded.
+     *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1089,14 +1106,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         addReadOnlyRules642();
         log.error("(This is not an error) Completed upgrade procedure to 6.4.2");
     }
-    
+
     /**
      * EJBCA 6.5.1:
-     * 
+     *
      * This upgrade only affects CMP aliases:
-     * 1.   End entity profiles will be referred to by ID instead of by name. In consideration of 100% uptime requirements, the value 
-     *      ra.endentityprofile is replaced by ra.endentityprofileid, allowing legacy configurations to keep using the old value.  
-     * 
+     * 1.   End entity profiles will be referred to by ID instead of by name. In consideration of 100% uptime requirements, the value
+     *      ra.endentityprofile is replaced by ra.endentityprofileid, allowing legacy configurations to keep using the old value.
+     *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -1107,7 +1124,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // Avoid aliases that may already have been upgraded
             if(StringUtils.isEmpty(cmpConfiguration.getRAEEProfile(cmpAlias))) {
                 @SuppressWarnings("deprecation")
-                String endEntityProfileName = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, cmpAlias);         
+                String endEntityProfileName = cmpConfiguration.getValue(cmpAlias + "." + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, cmpAlias);
                 if (!StringUtils.isEmpty(endEntityProfileName)) {
                     try {
                         cmpConfiguration.setRAEEProfile(cmpAlias,
@@ -1117,7 +1134,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         log.error("CMP alias " + cmpAlias + " could not be upgraded. It refers by name to End Entity Profile " + endEntityProfileName
                                 + ", which does not appear to exist. Value has instead been set to 1 (EMPTY). Please review this profile after upgrade.");
                         cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
-                    } 
+                    }
                 } else {
                     //Could be a client alias, we still need to set a default value though
                     cmpConfiguration.setRAEEProfile(cmpAlias, CmpConfiguration.DEFAULT_RA_EEPROFILE);
@@ -1131,13 +1148,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         log.error("(This is not an error) Completed upgrade procedure to 6.5.1");
     }
-    
+
     /**
      * EJBCA 6.6.0:
-     * 
+     *
      * 1.   Adds new access rules for approval profiles
      * 2.   If CA or certificate profiles require Approvals, create a new Approval Profile matching those settings and convert to using that
-     * 
+     *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
@@ -1155,7 +1172,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         //Sort cache by the number of approvals
         Map<Integer, Integer> approvalProfileCache = new HashMap<>();
         Map<Integer, Integer> approvalPartitionCache = new HashMap<>();
-        //Add approval profiles to all CAs with approvals 
+        //Add approval profiles to all CAs with approvals
         try {
             log.debug("migrateDatabase660: Upgrading CAs with approval profiles");
             for (int caId : caSession.getAllCaIds()) {
@@ -1199,7 +1216,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     throw new IllegalStateException("CA was not found, in spite of ID just being retireved", e);
                 }
             }
-            //Do the same for all certificate profiles (same boilerplate, repeated). 
+            //Do the same for all certificate profiles (same boilerplate, repeated).
             log.debug("migrateDatabase660: Upgrading Certificate Profiles with approval profiles");
             Map<Integer, CertificateProfile> allCertificateProfiles = certProfileSession.getAllCertificateProfiles();
             for (Integer certificateProfileId : allCertificateProfiles.keySet()) {
@@ -1240,14 +1257,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     }
                 }
             }
-            
-            // An approval now is specific to a partition in a step. Connect previously performed approvals 
-            // to the newly created partition so that the new code will recognize it. Note that an AccumulativeApprovalProfile 
-            // only has one step and one partition. The step ID is '0', which is the default step ID in an approval, which 
+
+            // An approval now is specific to a partition in a step. Connect previously performed approvals
+            // to the newly created partition so that the new code will recognize it. Note that an AccumulativeApprovalProfile
+            // only has one step and one partition. The step ID is '0', which is the default step ID in an approval, which
             // is why the step ID in an approval does not need updating the same way as the partition ID needs updating.
             List<ApprovalData> approvalRequests = approvalSession.findWaitingForApprovalApprovalDataLocal();
             if (approvalRequests.isEmpty()) {
-                log.debug("migrateDatabase660: No approval requests to upgrade");                
+                log.debug("migrateDatabase660: No approval requests to upgrade");
             } else {
                 log.debug("migrateDatabase660: Upgrading approval requests");
             }
@@ -1278,7 +1295,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     }
                 }
             }
-            
+
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("AlwaysAllowToken was denied access", e);
         }
@@ -1287,13 +1304,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * EJBCA 6.8.0:
-     * 
+     *
      * 1.   Converts AdminGroupData, AccessRuleData and AdminEntityData to RoleData and RoleMemberData
-     * 2.   Migrates /ca_functionality/basic_functions and /ca_functionality/basic_functions/activate_ca 
+     * 2.   Migrates /ca_functionality/basic_functions and /ca_functionality/basic_functions/activate_ca
      *      to a single rule: /ca_functionality/activate_ca
      * 3.   Remove no longer used rules
      * 4.   Upgrades CAs and Certificate Profiles to go from having one approval profile for all approval types to having one for each
-     * 
+     *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
@@ -1327,7 +1344,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             roleDataSession.persistRole(role);
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
             final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
-            // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe. 
+            // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe.
             for (final AccessUserAspectData accessUserAspect : accessUsers.values()) {
                 final String tokenType = accessUserAspect.getTokenType();
                 // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
@@ -1415,8 +1432,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         tokenIssuerId, tokenMatchKey, tokenMatchOperator, tokenMatchValue, roleId, description));
             }
         }
-        // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have 
-        // been created in previous upgrade steps. 
+        // Note that this has to happen here and not in X509CA or CvcCA due to the fact that this step has to happen after approval profiles have
+        // been created in previous upgrade steps.
         log.debug("migrateDatabase680: Converting Certificate Authorities from using one approval profile for all request types "
                 + "to using one profile per request type.");
         try {
@@ -1433,14 +1450,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                     }
                     ca.setApprovals(approvals);
                     caSession.editCA(authenticationToken, ca, true);
-                }             
+                }
             }
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Always allow token was denied access.", e);
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("CA doesn't exist in spite of just being retrieved", e);
         }
-        // Note that this has to happen here and not in CertificateProfile due to the fact that this step has to happen after approval profiles have 
+        // Note that this has to happen here and not in CertificateProfile due to the fact that this step has to happen after approval profiles have
         // been created in previous upgrade steps.
         log.debug("migrateDatabase680: Converting Certificate Profiles from using one approval profile for all request types "
                 + "to using one profile per request type.");
@@ -1463,11 +1480,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
 
         }
-        
+
         log.error("(This is not an error) Completed upgrade procedure to 6.8.0");
     }
 
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
@@ -1477,11 +1494,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final LinkedHashMap<Integer, CTLogInfo> allCtLogs = gc.getCTLogs();
         LinkedHashMap<Integer, CTLogInfo> newCtLogs = new LinkedHashMap<>();
         Map<Integer, Integer> selectedLogs = new HashMap<>();
-        
+
         if (allCtLogs.isEmpty()) {
             return;
         }
-        
+
         // Get all logs selected by any certificate profile
         for (Map.Entry<Integer, CertificateProfile> profile : allCertProfiles.entrySet()) {
             for (Integer enabledLog : profile.getValue().getEnabledCTLogs()) {
@@ -1506,7 +1523,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             newCtLogs.put(ctLog.getLogId(), ctLog);
         }
-        
+
         // Save CT logs with new labels set
         gc.setCTLogs(newCtLogs);
         try {
@@ -1514,7 +1531,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException("Always allow token was denied access.", e);
         }
-        
+
         // Set CT labels corresponding to previously set CT logs in each cert profile
         for (Integer profileId : allCertProfiles.keySet()) {
             CertificateProfile certProfile = allCertProfiles.get(profileId);
@@ -1526,7 +1543,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         labelsToSelect.add(newCtLogs.get(ctLog).getLabel());
                     }
                 }
-            
+
                 certProfile.setEnabledCTLabels(labelsToSelect);
                 certProfile.setNumberOfSctByValidity(true);
                 certProfile.setNumberOfSctByCustom(false);
@@ -1550,11 +1567,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
     }
-    
+
     private boolean postMigrateDatabase6101() {
         log.info("Starting post upgrade to 6.10.1.");
         final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
-        
+
         for (Integer profileId : allCertProfiles.keySet()) {
             CertificateProfile certProfile = allCertProfiles.get(profileId);
             final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
@@ -1568,8 +1585,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Post upgrade to 6.10.1 complete.");
         return true;
     }
-    
-    
+
+
     @SuppressWarnings("deprecation")
     private boolean postMigrateDatabase680() {
         log.info("Starting post upgrade to 6.8.0.");
@@ -1603,13 +1620,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Post upgrade to 6.8.0 complete.");
         return true;
     }
-    
+
     /**
      * Since EJBCA 6.8.0, some rules are either removed or have a changed scope.
      * If Role had access to /ca_functionality/basic_functions or /ca_functionality/basic_functions/activate_ca,
      * grant access to new rule /ca_functionality/activate_ca
-     * 
-     * If upgrading from 6.6.0 or later, grant access to /ca_functionality/view_certificate for roles with access 
+     *
+     * If upgrading from 6.6.0 or later, grant access to /ca_functionality/view_certificate for roles with access
      * to ra_functionality/view_end_entity
      * @param accessRules HashMap of access rules to migrate
      * @param isInstalledOn660OrLater if upgrading from 6.6.0 or later
@@ -1653,7 +1670,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * In EJBCA 5.0 we have changed classname for CertificatePolicy.
      * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname
-     * 
+     *
      * In order to be able to create new Roles we also need to remove the long deprecated database column caId, otherwise
      * we will get a database error during insert. Reading works fine though, so this is good for a post upgrade in order
      * to allow for 100% uptime upgrades.
@@ -1710,28 +1727,28 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("CA does not exist during upgrade: "+caid, e);
             } catch (AuthorizationDeniedException e) {
                 log.error("Authorization denied to CA during upgrade: "+caid, e);
-            } 
+            }
         }
-        
+
     	boolean exists = upgradeSession.checkColumnExists500();
     	if (exists) {
-    		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");			
+    		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");
     	}
 
         // Creates a super admin role for Cli usage. post-upgrade to remove caId column must have been run in order
-    	// for this command to succeed. 
+    	// for this command to succeed.
     	// In practice this means that when upgrading from EJBCA 4.0 you can not use the CLI in 5.0 before you
     	// have finished migrating all your 4.0 nodes and run post-upgrade.
     	legacyRoleManagementSession.createSuperAdministrator();
-    
+
         //Remove all old roles, should remove associated aspects and rules as well.
         removeOldRoles500();
 
     	log.error("(this is not an error) Finished post upgrade from EJBCA 4.0.x to EJBCA 5.0.x with result: "+ret);
-	
+
         return ret;
     }
-    
+
     /**
      * This method removes the following now unused roles:
      *                                                  DEFAULT
@@ -1757,15 +1774,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 // Here we stumbled upon an old certificate policy
                 final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
                 CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
-                newpolicies.add(newpolicy);                    
+                newpolicies.add(newpolicy);
             }
         }
         return newpolicies;
     }
 
-    /** 
+    /**
      * Checks if the column cAId column exists in AdminGroupData
-     * 
+     *
      * @return true or false if the column exists or not
      */
     @Override
@@ -1778,7 +1795,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 			final PreparedStatement stmt = connection.prepareStatement("select cAId from AdminGroupData where pk='0'");
 			stmt.executeQuery();
 			// If it did not throw an exception the column exists and we must run the post upgrade sql
-			exists = true; 
+			exists = true;
 			log.info("cAId column exists in AdminGroupData");
 		} catch (SQLException e) {
 			// Column did not exist, it's good we are running a newer version
@@ -1793,7 +1810,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		}
 		return exists;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isLesserThan(final String first, final String second) {
