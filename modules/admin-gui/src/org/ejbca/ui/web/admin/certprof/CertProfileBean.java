@@ -165,6 +165,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             if (isCtEnabled()) {
                 final int numEnabledLabels = prof.getEnabledCtLabels().size();
                 final boolean isNumOfSctsCustom = prof.isNumberOfSctByCustom();
+                final boolean isMaxNumOfSctsCustom = prof.isMaxNumberOfSctByCustom();
                 if (numEnabledLabels == 0) {
                     addErrorMessage("NOCTLABELSSELECTED");
                     success = false;
@@ -188,8 +189,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                             && isNumOfSctsCustom) {
                     addErrorMessage("INCORRECTNUMBEROFLABELS");
                     success = false;
-                } else if ((prof.getCtMaxScts() < numEnabledLabels && prof.isUseCertificateTransparencyInCerts()) ||
-                           (prof.getCtMaxSctsOcsp() < numEnabledLabels && prof.isUseCertificateTransparencyInOCSP())) {
+                } else if (((prof.getCtMaxScts() < numEnabledLabels && prof.isUseCertificateTransparencyInCerts()) ||
+                           (prof.getCtMaxSctsOcsp() < numEnabledLabels && prof.isUseCertificateTransparencyInOCSP()))
+                            && isMaxNumOfSctsCustom) {
                     addErrorMessage("INCORRECTNUMBEROFLABELSMAX");
                     success = false;
                 }
@@ -886,16 +888,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         redirectToComponent("header_certificatetransparency");
     }
     
-    public void toggleNumberOfSctByValidity() throws AuthorizationDeniedException, IOException {
-        getCertificateProfile().setNumberOfSctByValidity(!getCertificateProfile().isNumberOfSctByValidity());
+    public void toggleNumberOfSctBy() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setNumberOfSctByCustom(!getCertificateProfile().isNumberOfSctByCustom());
-        redirectToComponent("header_certificatetransparency");
+        getCertificateProfile().setNumberOfSctByValidity(!getCertificateProfile().isNumberOfSctByValidity());
+        if (getCertificateProfile().isNumberOfSctByCustom() && getCertificateProfile().isMaxNumberOfSctByValidity()) {
+            toggleMaxNumberOfSctBy();
+        } else {
+            redirectToComponent("header_certificatetransparency");
+        }
     }
-    
-    public void toggleNumberOfSctByCustom() throws AuthorizationDeniedException, IOException {
-        getCertificateProfile().setNumberOfSctByCustom(!getCertificateProfile().isNumberOfSctByCustom());
-        getCertificateProfile().setNumberOfSctByValidity(!getCertificateProfile().isNumberOfSctByValidity());
-        redirectToComponent("header_certificatetransparency");        
+        
+    public void toggleMaxNumberOfSctBy() throws AuthorizationDeniedException, IOException {
+        getCertificateProfile().setMaxNumberOfSctByCustom(!getCertificateProfile().isMaxNumberOfSctByCustom());
+        getCertificateProfile().setMaxNumberOfSctByValidity(!getCertificateProfile().isMaxNumberOfSctByValidity());
+        redirectToComponent("header_certificatetransparency");
     }
     
     public boolean isCtAvailable() { return CertificateTransparencyFactory.isCTAvailable(); }
@@ -915,12 +921,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             getCertificateProfile().isUseCertificateTransparencyInPublishers();
     }
     
-    public boolean isNumberOfCtByValidity() {
+    public boolean isNumberOfSctsByValidity() {
         return getCertificateProfile().isNumberOfSctByValidity();
     }
 
-    public boolean isNumberOfCtByCustom() {
+    public boolean isNumberOfSctsByCustom() {
         return getCertificateProfile().isNumberOfSctByCustom();
+    }
+    
+    public boolean isMaxNumberOfSctsByValidity() {
+        return getCertificateProfile().isMaxNumberOfSctByValidity();
+    }
+    
+    public boolean isMaxNumberOfSctsByCustom() {
+        return getCertificateProfile().isMaxNumberOfSctByCustom();
     }
     
     public List<SelectItem> getDistinctCtLabelsAvailable() {
