@@ -161,10 +161,6 @@ public final class CTLogInfo implements Serializable {
         return url;
     }
 
-    public void setIsMandatory(final boolean isMandatory) {
-        this.isMandatory = isMandatory;
-    }
-
     public String getLabel() {
         return label == null ? "Unlabeled" : label;
     }
