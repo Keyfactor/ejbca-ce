@@ -19,7 +19,7 @@ public interface UpgradeSession {
      * 
      * @return true or false if upgrade was done or not
      */
-    public boolean upgrade(String dbtype, String sOldVersion, boolean isPost);
+    boolean upgrade(String dbtype, String sOldVersion, boolean isPost);
     
     /**Access rules removed from EJBCA 6.8.0*/
     String ROLE_PUBLICWEBUSER               = "/public_web_user";
