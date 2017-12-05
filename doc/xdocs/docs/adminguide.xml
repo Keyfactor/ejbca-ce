@@ -2316,20 +2316,26 @@ You can accomplish this by adding the following to JAVA_OPTS:
 <section name="Certificate Transparency (Enterprise only)">
 <subsection name="Introduction">
 <p>EJBCA Enterprise Edition implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
-The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
+The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 
+(and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be 
+found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
 
-<p>From a CA's point of view, CT works by publishing certificates from the CA to the log servers and retrieving Signed Certificate Timestamps (SCTs) in response (this is a single operation, so requesting an SCT for a certificate publishes it also). The resulting SCTs can then be sent to end-users in a TLS handshake three ways: in a certificate extension, in a stapled OCSP response extension and/or in a TLS extension. 
-EJBCA supports all of those, including combinations. The following sections describe how to configure EJBCA in one or more of these modes.</p>
+<p>From a CA's point of view, CT works by publishing certificates from the CA to the log servers and retrieving Signed Certificate Timestamps (SCTs) in response (this is a single operation, so requesting an SCT for 
+a certificate publishes it also). The resulting SCTs can then be sent to end-users in a TLS handshake in three different ways: in a certificate extension, in a stapled OCSP response and/or in a TLS extension. 
+EJBCA supports all of these, including combinations. The following sections describe how to configure EJBCA in one or more of these modes.</p>
 </subsection>
 
 <subsection name="Prerequisites">
-<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.com">PrimeKey</a> for details). Depending on the CT modes you need, there are some extra preparations.</p>
+<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.com">PrimeKey</a> for details). Depending on the 
+CT modes you need, there are some extra preparations.</p>
 
 <subsubsection name="CT in certificates">
 <p>No extra preparations are needed. Just configure the logs and enable CT in the certificate profiles as described in the following sections "Adding CT logs" and "Activating CT".</p>
 </subsubsection>
 <subsubsection name="CT in OCSP responses">
-<p>EJBCA supports CT in OCSP responses, both in live OCSP responders and for pre-production of responses. By default, EJBCA will cache up to approximately <nobr>100 000</nobr> CT response extensions in memory. Excess cached response extensions that haven't been requested for 10 seconds are randomly evicted from the cache. These parameters may be adjusted in <code>conf/cesecore.properties</code>. In order to use CT OCSP you must also enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
+<p>EJBCA supports CT in OCSP responses, both in live OCSP responders and for pre-production of responses. By default, EJBCA will cache up to approximately <nobr>100 000</nobr> CT response extensions in memory. Excess 
+cached response extensions that haven't been requested for 10 seconds are randomly evicted from the cache. These parameters may be adjusted in <code>conf/cesecore.properties</code>. In order to use CT OCSP you must 
+also enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
 
 <source>
 ocsp.extensionoid=*1.3.6.1.4.1.11129.2.4.5
@@ -2339,9 +2345,8 @@ ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.certificatetransparen
 <p>After enabling the extension, please redeploy EJBCA. Then proceed with configuring CT logs and certificate profiles. See the following sections "Adding CT logs" and "Activating CT".</p>
 </subsubsection>
 <subsubsection name="CT in a TLS extension">
-<p>In this mode, the certificate holder requests SCTs himself from the logs and includes them in a TLS extension.
-The CA is not required to do anything, but it is possible to reduce the time it takes until full (merged) audit log
-records are available by publishing certificates to the logs as soon as they are issued. See the following section for configuration details.</p>
+<p>In this mode, the certificate holder requests SCTs himself from the logs and includes them in a TLS extension. The CA is not required to do anything, but it is possible to reduce the time it takes until full 
+(merged) audit log records are available by publishing certificates to the logs as soon as they are issued. See the following section for configuration details.</p>
 </subsubsection>
 <subsubsection name="Publishing to logs without using the SCTs">
 <p>EJBCA can asynchronously publish certificates to one or more CT logs, using a Custom Publisher. This feature is intended to be used mainly when using CT in TLS mode or OCSP mode.
@@ -2369,33 +2374,49 @@ To enable this feature, go to CA Functions, Publishers and add a new publisher w
 
 </subsection>
 <subsection name="Adding CT logs">
-<p>CT log servers are configured under System Configuration. They do not become active until they are enabled per certificate profile.
-The following parameters have to be configured in a log:</p>
+<p>CT log servers are configured under System Configuration. They do not become active until they are enabled per certificate profile. The following parameters have to be configured in a log:</p>
 
 <ul>
 <li>Log URL : The log URL, e.g. <code>http://something/</code>, for example <code>https://ct.googleapis.com/testtube/</code>.</li>
 <li>Public Key : The log's public key, in PEM or DER format. Usually this is an Elliptic Curve key.</li>
-<li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate
-issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.
+<li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate issuance and/or OCSP response generation must wait for the log server to respond, so do not set it too high.
 Note that zero is not a valid value for the timeout.</li>
-<li>Label : Specify which label to place the log under. See 'CT log labels' below.</li>
+<li>Label: Specify which label to place the log under. See "CT log labels" below.</li>
 </ul>
 
-<p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
+<p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">
+CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
 
-<p>For redundancy, it's recommended to add more logs than the minimum required to each label. That way certificate issuance will not fail if a single log is down.
-It is also a good idea to specify a short timeout value and/or enable the "ct.fastfail.enabled" option in conf/cesecore.properties, so a failing log does not slow down all requests.</p>
-<p>Regarding performance, EJBCA will connect to all logs of each label selected in the certificate profile in the order they have been added and in parallel. It will keep fetching SCTs until 'Maximum number of SCTs' is reached. The 'Minimum number of SCTs' value is a limit for when EJBCA will consider the request failed, i.e. if less SCTs than this number is retrieved. If the number of retrieved SCTs exceeds the max value, the log(s) last in order will be excluded</p>
+<p>For redundancy, it's recommended to add more logs to each label than the minimum required. That way certificate issuance will not fail if a single log is down. It is also a good idea to specify a short timeout 
+value and/or enable the "ct.fastfail.enabled" option in conf/cesecore.properties, so a failing log does not slow down all requests.</p>
 
-<p>You may change the order the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use 
+<p>Regarding performance: EJBCA will connect to every log having one of the labels selected in the certificate profile, in the order they have been added and in parallel. It will keep fetching SCTs until 
+'Maximum number of SCTs' is reached. EJBCA will fail issuance if EJBCA will fail issuance if it is unable to fetch at least the number of SCTs given by the parameter 'Minimum number of SCTs' specified in the 
+certificate profile. If the number of retrieved SCTs exceeds the max value, the log(s) last in order will be excluded.</p>
+
+<p>You may change the order in which the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use 
 the moved CT logs.</p>
 
 </subsection>
 <subsubsection name="CT log labels">
 <p>It may be a requirement to publish to certain logs and a certain number of logs before issuing a certificate. For example, Google Chrome requires that all EV certificates issued after 1st of 
 January 2015 must be published to at least one CT log operated by Google, at least one log not operated by Google, and to a certain number of logs in total, where the total amount of logs depends on the lifetime
-of the certificate. This is achieved by marking logs with specific labels in the 'System Configuration' page. This ensures that at least one CT log from each label, selected by the certificate profile is written to during issuance. Furthermore the 'Minimum number of SCTs' and 'Maximum number of SCTs' can be configured for each certificate profile, either manually or by certificate validity according to policy. An example setup could contain the following: </p>
-<p>Two labels, 'Mandatory' containing a set of Google logs and 'Unlabeled' containing a set of non-Google logs. A certificate profile complying to the "Chrome EV policy" would have both labels selected and 'Minimum number of SCTs' set to 'By validity'</p>
+of the certificate. This is achieved by grouping logs using labels in 'System Configuration' page. All logs with the same label forms a log group. EJBCA will fail issuance unless it receieves at least one SCT from
+each log group. Log groups are enabled/disabled by selecting/deselecting labels in the certificate profile.</p>
+
+<p>The parameters 'Minimum number of SCTs' and 'Maximum number of SCTs' can be configured for each certificate profile, either manually or by certificate validity according to CT policy. An example setup complying to
+Chrome's CT policy could contain the following: </p>
+
+<ul>
+  <li>Two labels, 'Google logs' containing a set of logs operated by Google and 'Unlabeled' containing a set of logs not operated by Google.</li>
+  <li>A certificate profile with: 
+  <ul>
+    <li>The labels "Google logs" and "Unlabeled" selected</li>
+    <li>The paramater 'Minimum number of SCTs' set to 'By validity' to let EJBCA select a minimum dynamically based on Chrome's CT Policy.</li>
+    <li>The parameter 'Maximum number of SCTs set to 'By validity' to publish to as many logs as possible.</li>
+  </ul>
+  </li>
+</ul>
 
 </subsubsection>
 <subsection name="EJBCA audit logging">
