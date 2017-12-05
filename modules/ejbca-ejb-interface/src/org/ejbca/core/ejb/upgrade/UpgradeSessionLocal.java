@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import java.util.List;
 import java.util.concurrent.Future;
 
 import javax.ejb.Local;
@@ -50,12 +49,6 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** @return true if the AdminGroupData.cAId column still exists which indicates that this is EJBCA 4.0 or earlier. */
     boolean checkColumnExists500();
 
-    /** For internal user from UpgradeSessionBean only! */
-    void postMigrateDatabase400SmallTables();
-    /** For internal user from UpgradeSessionBean only! */
-    void postMigrateDatabase400HardTokenData(List<String> subSet);
-    /** For internal user from UpgradeSessionBean only! */
-	boolean migrateDatabase500(String dbtype);
     /** For internal user from UpgradeSessionBean only! */
     void migrateDatabase624() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only! */
