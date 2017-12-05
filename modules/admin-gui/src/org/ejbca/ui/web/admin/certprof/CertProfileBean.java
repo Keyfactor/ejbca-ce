@@ -947,6 +947,12 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 distinctLables.put(current.getLabel(), current.getLabel());
             }
         }
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem label1, SelectItem label2) {
+                return label1.getLabel().compareToIgnoreCase(label2.getLabel());
+            }
+        });
         return ret;
     }
     

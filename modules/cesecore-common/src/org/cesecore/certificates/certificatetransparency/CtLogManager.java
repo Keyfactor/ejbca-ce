@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificatetransparency;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -60,7 +61,14 @@ public class CtLogManager {
      * @return a list of all unique labels
      */
     public List<String> getLabels() {
-        return new ArrayList<String>(getCtLogGroups().keySet());
+        List<String> ret = new ArrayList<String>(getCtLogGroups().keySet());
+        Collections.sort(ret, new Comparator<String>() {
+            @Override
+            public int compare(String label1, String label2) {
+                return label1.compareToIgnoreCase(label2);
+            }
+        });
+        return ret;
     }
 
     /**
