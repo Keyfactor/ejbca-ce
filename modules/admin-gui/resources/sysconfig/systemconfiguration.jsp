@@ -669,13 +669,10 @@ org.cesecore.authorization.AuthorizationDeniedException
 	         <h:commandButton value="#{web.text.ADD}" 
                  action="#{systemConfigMBean.ctLogManager.addCtLog}" 
                  rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-	         <f:facet name="footer">
-	             <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank">
-	                 <h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS}"/>
-	             </h:outputLink>
-	         </f:facet>
         </h:panelGrid>
-        
+        <h:outputLink value="https://www.certificate-transparency.org/known-logs" target="_blank" styleClass="tableFooter">
+        	<h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS}"/>
+        </h:outputLink>
         <div class="section-label">
             <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
         </div>
@@ -683,13 +680,13 @@ org.cesecore.authorization.AuthorizationDeniedException
             <h:outputText value="#{web.text.CERT_VALIDITY}"/>
             <h:outputText value="#{web.text.CT_NUMBER_OF_SCTS}"/>
             <h:outputText value="#{web.text.LESS_THAN_15_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.lessThan15Months}" size="10"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.lessThan15Months}" size="26"/>
             <h:outputText value="#{web.text.BETWEEN_15_AND_27_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between15And27Months}" size="10"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between15And27Months}" size="26"/>
             <h:outputText value="#{web.text.BETWEEN_27_AND_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between27And39Months}" size="10"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.between27And39Months}" size="26"/>
             <h:outputText value="#{web.text.MORE_THAN_39_MONTHS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.moreThan39Months}" size="10"/>
+            <h:inputText rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" value="#{systemConfigMBean.googleCtPolicy.moreThan39Months}" size="26"/>
         </h:panelGrid>
         <div style="margin-top:1em;">
             <h:commandButton action="#{systemConfigMBean.saveCurrentConfig}" 
