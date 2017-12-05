@@ -130,7 +130,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
 
             EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER);
             int token = SecConst.TOKEN_SOFT_P12;
-            int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
+            int profileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
             int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             String dn = "C=SE, O=AnaTom, CN=" + username;

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.core.model;
 
 /**
@@ -45,53 +45,46 @@ public final class SecConst {
 
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
-    
+
     public static final String[] TOKENTEXTS = {"TOKENSOFTUSERGENERATED","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
-    
+
     public static final int[]    TOKENIDS   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
 
     /** Constant indicating a standard hard token, defined in scaper. */
     public static final int TOKEN_HARD_DEFAULT = 101;
 
-    /** Constant indicating a eid hard token.  
+    /** Constant indicating a eid hard token.
      *   OBSERVE This class should only be used for backward compatibility with EJBCA 2.0
      */
     public static final int TOKEN_EID = 102;
-    
+
     /**Constant indicating a swedish eid hard token.  */
     public static final int TOKEN_SWEDISHEID = 103;
 
     /**Constant indicating a enhanced eid hard token.  */
     public static final int TOKEN_ENHANCEDEID = 104;
-    
+
     /**Constant indicating a enhanced eid hard token.  */
     public static final int TOKEN_TURKISHEID = 105;
-    
-    public static final int NO_HARDTOKENISSUER            = 0;
 
-    public static final int EMPTY_ENDENTITYPROFILE = 1;
+    public static final int NO_HARDTOKENISSUER = 0;
 
     // ECA-419 Check This!
     public static final int EMPTY_VALIDATOR = 1;
-    
-    /** Used in end entity profiles and service workers 
+
+    /** Used in end entity profiles and service workers
      * This is duplicated in CAConstants */
     public static final int ALLCAS = 1;
-        
-    /**
-     * Constants defining range of id's reserved for fixed end entity profile
-     */
-    public static final int PROFILE_NO_PROFILE = 0;
 
-    
+
     /**
      * Constants used in the SignSessionBean indicating the userdata defined CA should be used.
      */
     public static final int CAID_USEUSERDEFINED = 0;
-        
+
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
-     * lookup of available bit lengths fails. 
+     * lookup of available bit lengths fails.
      * @see org.ejbca.ui.web.pub.ApplyBean
      */
     public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};

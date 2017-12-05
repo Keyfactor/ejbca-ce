@@ -111,7 +111,7 @@
     String username = null;
     EndEntityProfile profile = null;
     UserView userdata = null;
-    int profileid = EndEntityInformation.NO_ENDENTITYPROFILE;
+    int profileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
     int[] fielddata = null;
 
     boolean userchanged = false;

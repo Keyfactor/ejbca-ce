@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -53,7 +54,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds an end entity to the database.
- * 
+ *
  * @version $Id$
  */
 public class AddEndEntityCommand extends BaseRaCommand {
@@ -183,7 +184,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
                                 certificatetypeid) + ", with id: " + certificatetypeid);
 
         final String endEntityProfile = parameters.get(EE_PROFILE_KEY);
-        int endEntityProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
+        int endEntityProfileId = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         if (endEntityProfile != null) {
             try {
                 endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(
@@ -347,7 +348,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
 
         if (usehardtokens) {
             StringBuilder existingHtis = new StringBuilder();
-            for (String alias : (String[]) EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class)
+            for (String alias : EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class)
                     .getHardTokenIssuerAliases(getAuthenticationToken()).toArray(new String[0])) {
                 existingHtis.append((existingHtis.length() == 0 ? "" : ", ") + alias);
             }
@@ -361,9 +362,9 @@ public class AddEndEntityCommand extends BaseRaCommand {
     protected Logger getLogger() {
         return log;
     }
-    
+
     private String getAuthenticationCode(final String commandLineArgument) {
-      
+
         final String authenticationCode;
         if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {
             getLogger().info("Enter password: ");

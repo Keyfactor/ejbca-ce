@@ -66,6 +66,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
@@ -74,7 +75,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -729,7 +729,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @return true if admin is authorized and false otherwise.
      */
     private boolean authorizedToEndEntityProfile(AuthenticationToken admin, int profileid, String rights) {
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
+        if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
 
             return authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());

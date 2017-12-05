@@ -40,7 +40,7 @@ import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -54,7 +54,7 @@ import org.cesecore.util.ValueExtractor;
 
 /**
  * Representation of a certificate and related information.
- * 
+ *
  * @version $Id$
  */
 @Entity
@@ -108,9 +108,9 @@ public class CertificateData extends ProtectedData implements Serializable {
      * Entity holding info about a certificate. Create by sending in the certificate, which extracts (from the cert) fingerprint (primary key),
      * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
      * (CERT_UNASSIGNED, USER_INVALID, null, null and REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
-     * 
+     *
      * NOTE! Never use this constructor without considering the useBase64CertTable below!
-     * 
+     *
      * @param certificate the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
@@ -122,7 +122,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param endEntityProfileId end entity profile id, can be 0 for "no profile"
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
-     * @param storeCertificate true if the certificate should be stored in this table in the base&4Cert column, false if certificate data isn't to be stored in this table. NOTE: If false and the data should be stored in Base64CertData then the caller must store the certificate in Base64CertData as well. 
+     * @param storeCertificate true if the certificate should be stored in this table in the base&4Cert column, false if certificate data isn't to be stored in this table. NOTE: If false and the data should be stored in Base64CertData then the caller must store the certificate in Base64CertData as well.
      * @param storeSubjectAltName true if the subjectAltName column should be populated with the Subject Alternative Name of the certificate
      */
     public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
@@ -211,13 +211,13 @@ public class CertificateData extends ProtectedData implements Serializable {
         setRowVersion(copy.getRowVersion());
         setRowProtection(copy.getRowProtection());
     }
-    
+
     public CertificateData() {
     }
 
     /**
      * Fingerprint of certificate
-     * 
+     *
      * @return fingerprint
      */
     // @Id @Column
@@ -227,7 +227,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Fingerprint of certificate
-     * 
+     *
      * @param fingerprint fingerprint
      */
     public void setFingerprint(String fingerprint) {
@@ -236,7 +236,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * DN of issuer of certificate
-     * 
+     *
      * @return issuer dn
      */
     // @Column
@@ -246,7 +246,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Use setIssuer instead
-     * 
+     *
      * @param issuerDN issuer dn
      * @see #setIssuer(String)
      */
@@ -256,7 +256,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * DN of subject in certificate
-     * 
+     *
      * @return subject dn, never null
      */
     @Transient
@@ -265,9 +265,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         return subjectDn == null ? "" : subjectDn;
     }
 
-    /** 
+    /**
      * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
-     * 
+     *
      * @return value as it is stored in the database
      */
     // @Column(length=400)
@@ -277,7 +277,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Use setSubject instead
-     * 
+     *
      * @param subjectDN subject dn
      * @see #setSubject(String)
      */
@@ -292,9 +292,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         return subjectAltName == null ? "" : subjectAltName;
     }
 
-    /** 
+    /**
      * Use getSubjectAltNameNeverNull() for consistent access, since Oracle will treat empty Strings as null.
-     * 
+     *
      * @return value as it is stored in the database
      */
     //@Column(length=2000)
@@ -307,7 +307,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Fingerprint of CA certificate
-     * 
+     *
      * @return fingerprint
      */
     // @Column
@@ -317,7 +317,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Fingerprint of CA certificate
-     * 
+     *
      * @param cAFingerprint fingerprint
      */
     public void setCaFingerprint(String cAFingerprint) {
@@ -326,9 +326,9 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * status of certificate, ex CertificateConstants.CERT_ACTIVE
-     * 
+     *
      * @see CertificateConstants#CERT_ACTIVE etc
-     * 
+     *
      * @return status
      */
     // @Column
@@ -338,7 +338,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * status of certificate, ex CertificateConstants.CERT_ACTIVE
-     * 
+     *
      * @param status status
      */
     public void setStatus(int status) {
@@ -347,7 +347,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
-     * 
+     *
      * @return user type
      */
     // @Column
@@ -357,7 +357,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
-     * 
+     *
      * @param type type
      */
     public void setType(int type) {
@@ -366,7 +366,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Serialnumber formated as BigInteger.toString()
-     * 
+     *
      * @return serial number
      */
     // @Column
@@ -376,7 +376,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Serialnumber formated as BigInteger.toString(16).toUpperCase(), or just as it is in DB if not encodable to hex.
-     * 
+     *
      * @return serial number in hex format
      */
     @Transient
@@ -387,10 +387,10 @@ public class CertificateData extends ProtectedData implements Serializable {
             return serialNumber;
         }
     }
-    
+
     /**
      * Sets serial number (formated as BigInteger.toString())
-     * 
+     *
      * @param serialNumber serial number formated as BigInteger.toString()
      */
     public void setSerialNumber(String serialNumber) {
@@ -414,7 +414,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Date formated as milliseconds since 1970 (== Date.getTime())
-     * 
+     *
      * @param expireDate expire date
      */
     public void setExpireDate(long expireDate) {
@@ -423,7 +423,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Set to date when revocation occured if status == CERT_REVOKED. Format == Date.getTime()
-     * 
+     *
      * @return revocation date
      */
     // @Column
@@ -433,7 +433,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
-     * 
+     *
      * @param revocationDate revocation date
      */
     public void setRevocationDate(long revocationDate) {
@@ -442,7 +442,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Set to revocation reason if status == CERT_REVOKED
-     * 
+     *
      * @return revocation reason
      */
     // @Column
@@ -452,7 +452,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Set to revocation reason if status == CERT_REVOKED
-     * 
+     *
      * @param revocationReason revocation reason
      */
     public void setRevocationReason(int revocationReason) {
@@ -461,7 +461,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * The certificate itself
-     * 
+     *
      * @return base64 encoded certificate
      */
     // @Column @Lob
@@ -471,16 +471,16 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * The certificate itself
-     * 
+     *
      * @param base64Cert base64 encoded certificate
      */
     public void setBase64Cert(String base64Cert) {
         this.setZzzBase64Cert(base64Cert);
     }
 
-    /** 
+    /**
      * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
-     * 
+     *
      * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
      * @deprecated Use {@link #getBase64Cert()} instead
      */
@@ -496,7 +496,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * username in database
-     * 
+     *
      * @return username
      */
     // @Column
@@ -506,7 +506,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * username in database
-     * 
+     *
      * @param username username
      */
     public void setUsername(String username) {
@@ -515,7 +515,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * tag in database. This field was added for the 3.9.0 release, but is not used yet.
-     * 
+     *
      * @return tag
      */
     // @Column
@@ -525,7 +525,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * tag in database. This field was added for the 3.9.0 release, but is not used yet.
-     * 
+     *
      * @param username tag
      */
     public void setTag(String tag) {
@@ -534,7 +534,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Certificate Profile Id that was used to issue this certificate.
-     * 
+     *
      * @return certificateProfileId
      */
     // @Column
@@ -544,7 +544,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Certificate Profile Id that was used to issue this certificate.
-     * 
+     *
      * @param certificateProfileId certificateProfileId
      */
     public void setCertificateProfileId(Integer certificateProfileId) {
@@ -553,7 +553,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * The time this row was last updated.
-     * 
+     *
      * @return updateTime
      */
     // @Column
@@ -604,9 +604,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         this.setZzzRowProtection(rowProtection);
     }
 
-    /** 
+    /**
      * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
-     * 
+     *
      * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
      * @deprecated Use {@link #getRowProtection()} instead
      */
@@ -645,7 +645,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     /**
      * Returns the certificate as an object.
-     * 
+     *
      * @return The certificate or null if it doesn't exist or is blank/null in the database
      */
     @Transient
@@ -666,7 +666,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     /**
      * Returns the certificate as an object.
-     * 
+     *
      * @return The certificate or null if it doesn't exist or is blank/null in the database
      */
     @Transient
@@ -693,7 +693,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * DN of issuer of certificate
-     * 
+     *
      * @param dn issuer dn
      */
     public void setIssuer(String dn) {
@@ -702,7 +702,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * DN of subject in certificate
-     * 
+     *
      * @param dn subject dn
      */
     public void setSubject(String dn) {
@@ -711,7 +711,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * expire date of certificate
-     * 
+     *
      * @param expireDate expire date
      */
     public void setExpireDate(Date expireDate) {
@@ -724,7 +724,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * date the certificate was revoked
-     * 
+     *
      * @param revocationDate revocation date
      */
     public void setRevocationDate(Date revocationDate) {
@@ -746,7 +746,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     /** @return the end entity profile this certificate was issued under or 0 if the information is not available. */
     @Transient
     public int getEndEntityProfileIdOrZero() {
-        return endEntityProfileId==null ? EndEntityInformation.NO_ENDENTITYPROFILE : endEntityProfileId;
+        return endEntityProfileId==null ? EndEntityConstants.NO_END_ENTITY_PROFILE : endEntityProfileId;
     }
 
     // Comparators
@@ -863,7 +863,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Compare the status field of this and another CertificateData object.
-     * 
+     *
      * @param strict will treat NOTIFIED as ACTIVE and ARCHIVED as REVOKED if set to false
      */
     public boolean equalsStatus(CertificateData certificateData, boolean strict) {
@@ -1051,7 +1051,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("serialNumber", serialNumber);
         return (String) query.getSingleResult();
     }
-    
+
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static Set<String> findUsernamesBySubjectKeyIdOrDnAndIssuer(EntityManager entityManager, String issuerDN, String subjectKeyId, String subjectDN) {
@@ -1072,7 +1072,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Get next batchSize row ordered by fingerprint
-     * 
+     *
      * @param entityManager
      * @param certificateProfileId
      * @param currentFingerprint
@@ -1091,7 +1091,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Get next batchSize row ordered by fingerprint
-     * 
+     *
      * @param entityManager
      * @param certificateProfileId
      * @param currentFingerprint
@@ -1149,7 +1149,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
-        final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize(); 
+        final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
         final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
@@ -1180,7 +1180,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         revokedCertInfos.closeForWrite();
         return revokedCertInfos;
     }
-    
+
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate, int maxNumberOfResults) {
@@ -1192,7 +1192,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setMaxResults(maxNumberOfResults);
         return query.getResultList();
     }
-    
+
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN, int maxNumberOfResults) {
@@ -1205,7 +1205,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setMaxResults(maxNumberOfResults);
         return query.getResultList();
     }
-    
+
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType, int maxNumberOfResults) {
@@ -1218,7 +1218,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setMaxResults(maxNumberOfResults);
         return query.getResultList();
     }
-    
+
     @SuppressWarnings("unchecked")
     public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime, int maxResults) {
         // TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
@@ -1254,7 +1254,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             Collection<BigInteger> serialNumbers) {
         final StringBuilder sb = new StringBuilder();
         for(final BigInteger serno : serialNumbers) {
-            sb.append(", '");            
+            sb.append(", '");
             sb.append(serno.toString());
             sb.append("'");
         }
@@ -1269,7 +1269,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         query.setParameter("issuerDN", issuerDN);
         return getCertificateList(query.getResultList(), entityManager);
     }
-    
+
     /** @return the CertificateInfo representation (all fields except the actual cert) or null if no such fingerprint exists. */
     public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
         CertificateInfo ret = null;
@@ -1357,28 +1357,28 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
-     * 
+     *
      * We want to accomplish two things:
-     * 
-     * 1. Notify for expirations within the service window 
-     * 2. Notify _once_ for expirations that occurred before the service window like flagging certificates that have a shorter 
+     *
+     * 1. Notify for expirations within the service window
+     * 2. Notify _once_ for expirations that occurred before the service window like flagging certificates that have a shorter
      * life-span than the threshold (pathologic test-case...)
-     * 
+     *
      * The first is checked by:
-     * 
-     * notify = currRunTimestamp + thresHold <= ExpireDate < nextRunTimestamp + thresHold 
+     *
+     * notify = currRunTimestamp + thresHold <= ExpireDate < nextRunTimestamp + thresHold
      *          AND (status = ACTIVE OR status = NOTIFIEDABOUTEXPIRATION)
-     * 
+     *
      * The second can be checked by:
-     * 
+     *
      * notify = currRunTimestamp + thresHold > ExpireDate AND status = ACTIVE
-     * 
+     *
      * @param cas A list of CAs that the sought certificates should be issued from
-     * @param certificateProfiles A list if certificateprofiles to sort from. Will be ignored if left empty. 
+     * @param certificateProfiles A list if certificateprofiles to sort from. Will be ignored if left empty.
      * @param activeNotifiedExpireDateMin The minimal date for expiration notification
      * @param activeNotifiedExpireDateMax The maxmimal date for expiration notification
-     * @param activeExpireDateMin the current rune timestamp + the threshold 
-     * 
+     * @param activeExpireDateMin the current rune timestamp + the threshold
+     *
      * @return [0] = (String) fingerprint, [1] = (String) username
      */
     @SuppressWarnings("unchecked")

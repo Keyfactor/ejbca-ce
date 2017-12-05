@@ -22,7 +22,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
@@ -138,7 +138,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         if (!entityprofile && CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
                             getLogger().error("Not adding fixed certificate profile '" + profilename + "'.");
                         } else {
-                            if (entityprofile && profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                            if (entityprofile && profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
                                 getLogger().error("Not adding fixed entity profile '" + profilename + "'.");
                             } else {
                                 // Check if the profiles already exist, and change the name and id if already taken
@@ -193,7 +193,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         String availableCertProfiles = "";
                                         String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
                                         //getLogger().debug("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
-                                        for (String currentCertProfile : (Collection<String>) eprofile.getAvailableCertificateProfileIds()) {
+                                        for (String currentCertProfile : eprofile.getAvailableCertificateProfileIds()) {
                                             Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
                                             Integer replacementCertProfileId = certificateProfileIdMapping.get(currentCertProfileId);
                                             if (replacementCertProfileId != null) {

@@ -200,25 +200,25 @@ public class ApprovalSessionTest extends CaTestCase {
             reqadminusername = "req" + adminusername1;
 
             EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata, true);
 
             EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata2, true);
 
             EndEntityInformation userdata3 = new EndEntityInformation(adminusername3, "CN=" + adminusername3, caid, null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata3.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata3, true);
             
             EndEntityInformation reqUserData = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             reqUserData.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, reqUserData, true);
@@ -306,7 +306,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, 
-                SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         Certificate cert = nonExecutableRequest.getRequestAdminCert();
         assertEquals(CertTools.getIssuerDN(reqadmincert), CertTools.getIssuerDN(cert));
         removeApprovalId = nonExecutableRequest.generateApprovalId();
@@ -327,7 +327,7 @@ public class ApprovalSessionTest extends CaTestCase {
             cleanUpList.add(next.getId());
             assertEquals("Status was expired and not waiting.", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, next.getStatus());
             assertEquals(caid, next.getCAId());
-            assertEquals(SecConst.EMPTY_ENDENTITYPROFILE, next.getEndEntityProfileId());
+            assertEquals(EndEntityConstants.EMPTY_END_ENTITY_PROFILE, next.getEndEntityProfileId());
             assertEquals(CertTools.getIssuerDN(reqadmincert), next.getReqadmincertissuerdn());
             assertEquals(CertTools.getSerialNumberAsString(reqadmincert), next.getReqadmincertsn());
             assertEquals(nonExecutableRequest.generateApprovalId(), next.getApprovalId());
@@ -391,7 +391,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false,
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false,
                     approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
@@ -435,7 +435,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             // Test using an executable Dummy, different behaviour
             DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, 
-                    SecConst.EMPTY_ENDENTITYPROFILE, true, approvalProfile);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, true, approvalProfile);
             approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
 
             approvalExecutionSessionRemote.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
@@ -457,7 +457,7 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
             // Test to request and to approve with the same admin
-            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 
+            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
                     false, approvalProfile);
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
             Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
@@ -484,12 +484,12 @@ public class ApprovalSessionTest extends CaTestCase {
         final String username = "ApprovalEndEntityUsername";
         final String clearpwd = "foo123";
         final EndEntityInformation userdata = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
-                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(clearpwd);
         approvalProfile.setNumberOfApprovalsRequired(1);
         final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, caid,
-                SecConst.EMPTY_ENDENTITYPROFILE, approvalProfile);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfile);
         removeApprovalId = eeApprovalRequest.generateApprovalId();
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
         // Use the authentication token
@@ -536,7 +536,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
 
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
                     false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
@@ -558,7 +558,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
             approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
-            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
             rejection = new Approval("rejectiontest2", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
@@ -608,7 +608,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
 
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
             approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest);
 
@@ -657,7 +657,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
 
             int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
@@ -708,7 +708,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfile.setRequestExpirationPeriod(500);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         try {
-            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+            DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
             removeApprovalId = nonExecutableRequest.generateApprovalId();
 
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
@@ -735,8 +735,8 @@ public class ApprovalSessionTest extends CaTestCase {
     public void testQuery() throws Exception {
         log.trace(">testQuery");
         // Add a few requests
-        DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
-        DummyApprovalRequest req2 = new DummyApprovalRequest(admin1, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+        DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
+        DummyApprovalRequest req2 = new DummyApprovalRequest(admin1, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         DummyApprovalRequest req3 = new DummyApprovalRequest(admin2, null, 3, 2, false, approvalProfile);
 
         approvalSessionRemote.addApprovalRequest(admin1, req1);
@@ -751,20 +751,20 @@ public class ApprovalSessionTest extends CaTestCase {
             q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + req1.getApprovalType());
 
             List<ApprovalDataVO> result = approvalSessionProxyRemote.query(q1, 0, 3, "cAId=" + caid,
-                    "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+                    "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 2 && result.size() <= 3);
 
-            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 
-            result = approvalSessionProxyRemote.query(q1, 0, 1, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 0, 1, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() == 1);
 
             Query q2 = new Query(Query.TYPE_APPROVALQUERY);
             q2.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, "" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, Query.CONNECTOR_AND);
             q2.add(ApprovalMatch.MATCH_WITH_REQUESTADMINCERTSERIALNUMBER, BasicMatch.MATCH_TYPE_EQUALS, reqadmincert.getSerialNumber().toString(16));
 
-            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+            result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
             assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);           
         } finally {
             // Remove the requests
@@ -787,14 +787,14 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         
         // Add a few requests
-        DummyApprovalRequest expiredRequest = new DummyApprovalRequest(admin3, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+        DummyApprovalRequest expiredRequest = new DummyApprovalRequest(admin3, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         approvalSessionRemote.addApprovalRequest(admin1, expiredRequest);
         try {            
             Query expiredQuery = new Query(Query.TYPE_APPROVALQUERY);
             expiredQuery.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + expiredRequest.getApprovalType(), Query.CONNECTOR_AND);
             expiredQuery.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date());
             List<ApprovalDataVO> result = approvalSessionProxyRemote.query(expiredQuery, 0, 3, "cAId=" + caid,
-                    "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+                    "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
             assertTrue("At least one expired query was not returned.", result.size() > 0);
         } finally {
             // Remove the requests
@@ -811,7 +811,7 @@ public class ApprovalSessionTest extends CaTestCase {
             InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException, ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, SelfApprovalException, ApprovalException, AuthenticationFailedException {
         log.trace(">testApprovalsWithExternalAdmins()");
-        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false, approvalProfile);
+        DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         removeApprovalId = nonExecutableRequest.generateApprovalId();
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 

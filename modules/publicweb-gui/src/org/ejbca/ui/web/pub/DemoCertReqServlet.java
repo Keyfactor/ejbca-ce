@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -79,7 +80,7 @@ import org.ejbca.util.HTMLTools;
  * <dd>
  * The name of the EJBCA certificate profile to use. Optional, defaults to the fixed end user profile.</dd>
  * </dl>
- * 
+ *
  * @version $Id$
  */
 public class DemoCertReqServlet extends HttpServlet {
@@ -116,7 +117,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     /**
      * Handles PKCS10 certificate request, these are constructed as:
-     * 
+     *
      * <pre>
      * <code>
      * CertificationRequest ::= SEQUENCE {
@@ -135,7 +136,7 @@ public class DemoCertReqServlet extends HttpServlet {
      * subjectPublicKey    BIT STRING
      * }
      * </pre>
-     * 
+     *
      * PublicKey's encoded-format has to be RSA X.509.
      */
     @Override
@@ -215,7 +216,7 @@ public class DemoCertReqServlet extends HttpServlet {
         }
 
         String tmp = null;
-        int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
+        int eProfileId = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         if ((tmp = request.getParameter("entityprofile")) != null) {
             try {
                 eProfileId = endEntityProfileSession.getEndEntityProfileId(request.getParameter("entityprofile"));

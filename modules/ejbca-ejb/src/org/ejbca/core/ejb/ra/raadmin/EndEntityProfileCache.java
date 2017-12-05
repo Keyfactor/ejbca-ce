@@ -20,9 +20,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -69,8 +69,8 @@ public enum EndEntityProfileCache {
     private final ReentrantLock lock = new ReentrantLock(false);
     
     private EndEntityProfileCache() {
-    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
-    	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
+    	idNameMapCacheTemplate.put(Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
+    	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE));
     }
 
     /**

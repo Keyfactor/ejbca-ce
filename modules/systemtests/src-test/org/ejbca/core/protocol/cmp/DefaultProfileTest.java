@@ -478,7 +478,7 @@ public class DefaultProfileTest extends CmpTestCase {
 
         final String admUsername = "cmpAdminUsername";
         final KeyPair admkeys = KeyTools.genKeys("512", "RSA");
-        final AuthenticationToken admToken = createAdminToken(admkeys, admUsername, "CN="+admUsername+",C=SE", caid1, SecConst.EMPTY_ENDENTITYPROFILE,
+        final AuthenticationToken admToken = createAdminToken(admkeys, admUsername, "CN="+admUsername+",C=SE", caid1, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final Certificate admCert = getCertFromCredentials(admToken);
         final CMPCertificate[] extraCert = getCMPCert(admCert);
@@ -573,7 +573,7 @@ public class DefaultProfileTest extends CmpTestCase {
         
         final String admUsername = "cmpAdminUsername";
         final KeyPair admkeys = KeyTools.genKeys("512", "RSA");
-        final AuthenticationToken admToken = createAdminToken(admkeys, admUsername, "CN="+admUsername+",C=SE", caid1, SecConst.EMPTY_ENDENTITYPROFILE,
+        final AuthenticationToken admToken = createAdminToken(admkeys, admUsername, "CN="+admUsername+",C=SE", caid1, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final Certificate admCert = getCertFromCredentials(admToken);
         final CMPCertificate[] extraCert = getCMPCert(admCert);

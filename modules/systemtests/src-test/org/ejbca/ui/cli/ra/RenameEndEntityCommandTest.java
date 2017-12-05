@@ -29,6 +29,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -85,7 +86,7 @@ public class RenameEndEntityCommandTest {
     @Test
     public void testExecuteHappyPath() throws AuthorizationDeniedException, RemoveException, CADoesntExistsException, EndEntityExistsException,
             EndEntityProfileValidationException, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
-        endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, testx509ca.getCAId());
         try {
             assertEquals(CommandResult.SUCCESS, renameEndEntityCommand.execute(HAPPY_PATH_RENAME_ARGS));

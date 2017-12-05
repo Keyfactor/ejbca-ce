@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -192,7 +193,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         // Initialize config in here
         EjbcaConfigurationHolder.instance();    
         this.cmpConfiguration.addAlias(this.cmpAlias);
-        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, String.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
+        this.cmpConfiguration.setRAEEProfile(this.cmpAlias, String.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE));
         this.cmpConfiguration.setRACertProfile(this.cmpAlias, "ENDUSER");
         this.cmpConfiguration.setRACAName(this.cmpAlias, TEST_CA_NAME);
         this.cmpConfiguration.setCMPDefaultCA(this.cmpAlias, TEST_CA_NAME);

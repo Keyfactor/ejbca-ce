@@ -13,9 +13,9 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;

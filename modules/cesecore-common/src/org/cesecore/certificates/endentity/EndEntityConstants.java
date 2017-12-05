@@ -18,12 +18,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-/** Constants for End Entity types 
- * 
+/** Constants for End Entity types
+ *
  * @version $Id$
  */
 public final class EndEntityConstants {
-	
+    /**
+     * The id of a non-existing end entity profile.
+     */
+    public static final int NO_END_ENTITY_PROFILE = 0;
+    /**
+     * The id for the built-in EMPTY end entity profile.
+     */
+    public static final int EMPTY_END_ENTITY_PROFILE = 1;
+
     //
     // User status codes
     //
@@ -35,9 +43,9 @@ public final class EndEntityConstants {
     public static final int STATUS_REVOKED = 50;  // The user has been revoked and should not have any more certificates issued
     public static final int STATUS_HISTORICAL = 60; // The user is old and archived
     public static final int STATUS_KEYRECOVERY  = 70; // The user is should use key recovery functions in next certificate generation.
-    public static final int STATUS_WAITINGFORADDAPPROVAL = 80; // the operation is waiting to be approved before execution. This status 
-                                                            // is never stored in the database, but is used transiently when a request 
-                                                            // is not stored because it's waiting for approval. This status is primarily 
+    public static final int STATUS_WAITINGFORADDAPPROVAL = 80; // the operation is waiting to be approved before execution. This status
+                                                            // is never stored in the database, but is used transiently when a request
+                                                            // is not stored because it's waiting for approval. This status is primarily
                                                             // used to send the right notification note when a request is waiting for approval.
 
     //
@@ -53,7 +61,7 @@ public final class EndEntityConstants {
     public static final int TOKEN_SOFT_PEM = 4;
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
-    
+
     //
     // Names and language strings of statuses
     //
@@ -61,8 +69,8 @@ public final class EndEntityConstants {
     private static final HashMap<Integer, String> STATUS_TEXT_TRANS = new HashMap<Integer, String>();
     static {
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_NEW),"STATUSNEW");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED"); 
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INITIALIZED),"STATUSINITIALIZED"); 
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INITIALIZED),"STATUSINITIALIZED");
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INPROCESS),"STATUSINPROCESS");
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_GENERATED),"STATUSGENERATED");
         STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_REVOKED),"STATUSREVOKED");
@@ -84,8 +92,8 @@ public final class EndEntityConstants {
     private static final HashMap<Integer, String> STATUS_TEXT = new HashMap<Integer, String>();
     static {
         STATUS_TEXT.put(Integer.valueOf(STATUS_NEW),"NEW");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED"); 
-        STATUS_TEXT.put(Integer.valueOf(STATUS_INITIALIZED),"INITIALIZED"); 
+        STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_INITIALIZED),"INITIALIZED");
         STATUS_TEXT.put(Integer.valueOf(STATUS_INPROCESS),"INPROCESS");
         STATUS_TEXT.put(Integer.valueOf(STATUS_GENERATED),"GENERATED");
         STATUS_TEXT.put(Integer.valueOf(STATUS_REVOKED),"REVOKED");
@@ -101,7 +109,7 @@ public final class EndEntityConstants {
         }
         return ret;
     }
-    
+
     public static Collection<Integer> getAllStatusCodes() {
         List<Integer> statuses = new ArrayList<Integer>(STATUS_TEXT.keySet());
         Collections.sort(statuses);

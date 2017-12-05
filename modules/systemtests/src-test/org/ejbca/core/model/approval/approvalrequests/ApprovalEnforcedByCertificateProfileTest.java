@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -173,7 +174,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         // Create admin end entity
         adminUsername = genRandomUserName("approvalEnforcedTestAdmin");
-        createUser(admin1, adminUsername, caid, SecConst.EMPTY_ENDENTITYPROFILE,
+        createUser(admin1, adminUsername, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
@@ -385,7 +386,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
             endEntityManagementSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username1));
-            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin1, username1, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
         } catch (WaitingForApprovalException ex) {

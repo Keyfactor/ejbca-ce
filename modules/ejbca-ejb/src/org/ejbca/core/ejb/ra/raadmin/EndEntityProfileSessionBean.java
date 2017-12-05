@@ -39,6 +39,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -282,8 +283,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	
     	final boolean rootAccess = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         // We have to manually add the EMPTY end entity profile because it is not included in the profile cache
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + SecConst.EMPTY_ENDENTITYPROFILE + endentityAccessRule)) {
-            returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + endentityAccessRule)) {
+            returnval.add(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         }
         	for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
         		// Check if all profiles available CAs exists in authorizedcaids.
@@ -379,7 +380,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.trace(">getEndEntityProfileNoClone(" + id + ")");
         }
         EndEntityProfile returnval = null;
-        if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
+        if (id == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
             returnval = new EndEntityProfile(true);
         } else {
             // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
@@ -588,7 +589,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     
     /**
      * Help function that checks if administrator is authorized to edit profile.
-     * @param profile is the end entity profile or null for SecConst.EMPTY_ENDENTITYPROFILE
+     * @param profile is the end entity profile or null for EndEntityConstants.EMPTY_END_ENTITY_PROFILE
      * @param editcheck is true for edit, add, remove, clone and rename operations. false for get.
      */    
     private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {

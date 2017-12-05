@@ -124,7 +124,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         final String username = USERNAME_PREFIX + suffix;
         final String subjectDn = "CN="+username;
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDn, caid, null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         endEntityInformation.setPassword("foo123");
         try {
             endEntityManagementSession.addUser(admin, endEntityInformation, true);

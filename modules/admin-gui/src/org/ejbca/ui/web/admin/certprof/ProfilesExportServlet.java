@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -53,7 +54,6 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -87,28 +87,31 @@ public class ProfilesExportServlet extends HttpServlet {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
-    
+
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
     }
-    
+
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(request, response);
         log.trace("<doPost()");
     }
 
+    @Override
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String type = request.getParameter("profileType");
-        
+
         String zipfilename = null;
         int exportedprofiles = 0;
         int totalprofiles = 0;
         int missingprofiles = 0;
         ByteArrayOutputStream zbaos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(zbaos);
-        
+
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null) {
             throw new ServletException("This servlet requires certificate authentication!");
@@ -121,10 +124,10 @@ public class ProfilesExportServlet extends HttpServlet {
         if (authenticationToken == null) {
             throw new IOException("Authorization denied for certificate: " + CertTools.getSubjectDN(certs[0]));
         }
-        
+
         if(StringUtils.equalsIgnoreCase(type, "cp")) {
             zipfilename = "certprofiles.zip";
-      
+
             final List<Integer> certificateProfileTypes = new ArrayList<>();
             certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
             if (authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
@@ -136,12 +139,12 @@ public class ProfilesExportServlet extends HttpServlet {
             if (globaConfiguration.getIssueHardwareTokens()) {
                 certificateProfileTypes.add(CertificateConstants.CERTTYPE_HARDTOKEN);
             }
-                     
+
             Collection<Integer> certprofids = new LinkedHashSet<>();
             for(Integer certificateProfileType : certificateProfileTypes) {
                 certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
             }
-                   
+
             totalprofiles = certprofids.size();
             log.info("Exporting non-fixed certificate profiles");
             for (int profileid : certprofids) {
@@ -175,19 +178,19 @@ public class ProfilesExportServlet extends HttpServlet {
                     }
                 }
             }
-            
+
         } else if(StringUtils.equalsIgnoreCase(type, "eep")) {
-            
+
             zipfilename = "entityprofiles.zip";
-            
+
             Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
             totalprofiles = endentityprofids.size();
             log.info("Exporting non-fixed end entity profiles");
             for (int profileid : endentityprofids) {
-                if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
+                if (profileid == EndEntityConstants.NO_END_ENTITY_PROFILE) { // Entity profile not found i database.
                     missingprofiles++;
                     log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
-                } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                } else if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
                     if(log.isDebugEnabled()) {
                         log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                     }
@@ -203,14 +206,14 @@ public class ProfilesExportServlet extends HttpServlet {
                         } catch (UnsupportedEncodingException e) {
                             throw new IllegalStateException("UTF-8 was not a known encoding", e);
                         }
-                        
+
                         byte[] ba = getProfileBytes(profile);
                         String filename = "entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
                         ZipEntry ze = new ZipEntry(filename);
                         zos.putNextEntry(ze);
                         zos.write(ba);
                         zos.closeEntry();
-                        
+
                         exportedprofiles++;
                     }
                 }
@@ -241,6 +244,6 @@ public class ProfilesExportServlet extends HttpServlet {
         baos.close();
         return ba;
     }
-    
+
 
 }

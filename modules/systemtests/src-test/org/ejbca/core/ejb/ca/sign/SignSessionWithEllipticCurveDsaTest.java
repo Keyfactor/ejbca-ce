@@ -46,7 +46,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -265,7 +264,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         final String ecDsaImplicitCaUserName = "fooecdsaimpca";
         CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME);
         int ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+        createEndEntity(ecDsaImplicitCaUserName, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
             endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
@@ -301,7 +300,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         final String ecDsaImplicitCaUserName = "fooecdsaimpca";
         CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME);
         int ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+        createEndEntity(ecDsaImplicitCaUserName, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
             endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
@@ -349,7 +348,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CAInfo infoecdsa = caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME);
         assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
-        createEndEntity(ECDSA_USERNAME, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, infoecdsa.getCAId());
+        createEndEntity(ECDSA_USERNAME, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, infoecdsa.getCAId());
     }
 
 }

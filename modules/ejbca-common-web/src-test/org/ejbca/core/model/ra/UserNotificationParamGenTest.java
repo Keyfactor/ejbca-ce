@@ -35,7 +35,7 @@ public class UserNotificationParamGenTest {
 		                                 "rfc822Name=fooalt@foo.se", "fooee@foo.se", 
 		                                 EndEntityConstants.STATUS_GENERATED, 
 		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
-		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
+		                                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
 		userdata.setPassword("foo$123\\bar");
@@ -44,7 +44,7 @@ public class UserNotificationParamGenTest {
 		                                 "rfc822Name=adminalt@foo.se", "adminee@foo.se",
 		                                 EndEntityConstants.STATUS_GENERATED, 
 		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
-		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
+		                                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, 
 		                                 SecConst.NO_HARDTOKENISSUER, null);

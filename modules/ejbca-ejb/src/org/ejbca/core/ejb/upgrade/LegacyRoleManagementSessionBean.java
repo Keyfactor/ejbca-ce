@@ -53,7 +53,6 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.UserData;
-import org.ejbca.core.model.SecConst;
 
 /**
  * Implementation of the legacy role management needed by upgrade.
@@ -307,7 +306,7 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
             log.debug("Adding new AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' to " + SUPERADMIN_ROLE + ".");
             newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
             UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, 0, null);
             defaultCliUserData.setStatus(EndEntityConstants.STATUS_GENERATED);
             if (entityManager.find(UserData.class, defaultCliUserData.getUsername())==null) {
                 entityManager.persist(defaultCliUserData);

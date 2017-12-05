@@ -62,7 +62,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -622,7 +622,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         X509Certificate caCertificate = (X509Certificate) certificate;
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
         return caCertificate;
     }
 

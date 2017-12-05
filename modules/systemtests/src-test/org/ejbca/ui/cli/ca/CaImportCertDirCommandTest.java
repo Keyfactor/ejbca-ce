@@ -104,7 +104,7 @@ public class CaImportCertDirCommandTest {
         caSession.addCA(authenticationToken, ca);
         certificateFile = File.createTempFile("test", null, tempDirectory);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, CERTIFICATE_DN, ca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         endEntityInformation.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);

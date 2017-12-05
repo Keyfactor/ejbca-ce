@@ -119,7 +119,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
         try {
             assertFalse(eeSession.existsUser(USER_NAME));
             final EndEntityInformation userdata = new EndEntityInformation(USER_NAME, "C=SE, O=PrimeKey, CN=" + USER_NAME, caid, null, null,
-                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             eeSession.addUser(admin, userdata, false);

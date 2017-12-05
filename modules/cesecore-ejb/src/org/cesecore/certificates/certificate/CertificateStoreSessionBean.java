@@ -66,7 +66,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -1458,7 +1458,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 try {
                     // needs to call using "certificateStoreSession." in order to honor the transaction annotations
                     certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert1, userName, "abcdef0123456789",
-                            CertificateConstants.CERT_INACTIVE, 0, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, "", new Date().getTime());
+                            CertificateConstants.CERT_INACTIVE, 0, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, "", new Date().getTime());
                 } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
                     throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
                 }
@@ -1468,7 +1468,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 try { 
                     // needs to call using "certificateStoreSession." in order to honor the transaction annotations
                     certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction(admin, cert2, userName, "fedcba9876543210",
-                            CertificateConstants.CERT_INACTIVE, 0, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, "", new Date().getTime());
+                            CertificateConstants.CERT_INACTIVE, 0, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, "", new Date().getTime());
                 } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
                     log.info("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): "+e.getMessage());
                     log.info("Unique index in CertificateData table for certificate serial number");

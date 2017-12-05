@@ -79,7 +79,7 @@ public class DeleteEndEntityCommandTest {
     @Before
     public void setup() throws Exception {
         final EndEntityInformation userdata = new EndEntityInformation(TESTCLASS_NAME, "C=SE, O=PrimeKey, CN=" + TESTCLASS_NAME, x509ca.getCAId(),
-                null, null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                null, null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(authenticationToken, userdata, false);

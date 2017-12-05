@@ -88,7 +88,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         CaTestCase.createTestCA();
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SignSessionTest"));
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        createEndEntity(USER_PRIVKEYUSAGEPERIOD,  SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId());
+        createEndEntity(USER_PRIVKEYUSAGEPERIOD,  EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId());
         
     }
     

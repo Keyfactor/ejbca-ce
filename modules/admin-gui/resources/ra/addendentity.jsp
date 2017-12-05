@@ -175,7 +175,7 @@
         if (request.getParameter(ACTION).equals(ACTION_ADDUSER)) {
     if (request.getParameter(BUTTON_ADDUSER) != null) {
         UserView newuser = new UserView();
-        int oldprofileid = EndEntityInformation.NO_ENDENTITYPROFILE;
+        int oldprofileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
 
         // Get previous chosen profile.
         String hiddenprofileid = request.getParameter(HIDDEN_PROFILE);

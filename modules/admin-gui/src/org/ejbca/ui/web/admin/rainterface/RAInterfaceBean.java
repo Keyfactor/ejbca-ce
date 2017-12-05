@@ -1363,7 +1363,7 @@ public class RAInterfaceBean implements Serializable {
 
     private boolean ignoreProfile(String filename, String profilename, int profileid) {
         // We don't add the fixed profiles, EJBCA handles those automagically
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+        if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
             log.info(filename + " contains a fixed profile. IGNORED");
             return true;
         }

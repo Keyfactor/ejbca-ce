@@ -13,6 +13,14 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -34,14 +42,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the Name Change CA Renewal {@link CAAdminSession.renewCANewSubjectDn}

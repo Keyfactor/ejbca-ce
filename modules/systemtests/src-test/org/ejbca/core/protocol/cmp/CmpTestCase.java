@@ -1146,7 +1146,7 @@ public abstract class CmpTestCase extends CaTestCase {
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException,
             CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, ApprovalException, CustomFieldException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username + "@primekey.se",
-                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
@@ -1172,7 +1172,7 @@ public abstract class CmpTestCase extends CaTestCase {
         
         int eepID = eeProfileID;
         if (eepID == -1) {
-            eepID = SecConst.EMPTY_ENDENTITYPROFILE;
+            eepID = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         }
         X500Name userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
         if (useDnOverride) {

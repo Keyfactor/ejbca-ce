@@ -134,7 +134,7 @@ public class KeyRecoveryTest extends CaTestCase {
         super.setUp();
         admin = createCaAuthenticatedToken();
         final Role role = roleSession.persistRole(internalAdmin, new Role(null, KEYRECOVERY_ROLE, Arrays.asList(
-                AccessRulesConstants.ENDENTITYPROFILEPREFIX + SecConst.EMPTY_ENDENTITYPROFILE + AccessRulesConstants.KEYRECOVERY_RIGHTS,
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                 AccessRulesConstants.REGULAR_KEYRECOVERY,
                 StandardRules.CAACCESS.resource() + getTestCAId()
                 ), null));
@@ -173,7 +173,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 if (!endEntityManagementSession.existsUser(user)) {
                     keypair1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
                     endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false,
-                            SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
+                            EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
                             getTestCAId());
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
                     fp1 = CertTools.getFingerprintAsString(cert1);
@@ -189,9 +189,9 @@ public class KeyRecoveryTest extends CaTestCase {
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
             assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert1);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertNotNull("Couldn't recover keys from database", data);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair1.getPrivate().getEncoded()));
@@ -218,9 +218,9 @@ public class KeyRecoveryTest extends CaTestCase {
             fp2 = CertTools.getFingerprintAsString(cert2);
             keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert2), user, EJBTools.wrap(keypair2));
             // Recover the first (old) key pair
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert1);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             // If we hadn't stored the actual key alias that was used to protect a specific entry, this is where we would fail
             // since we have changed the "keyEncryptKey" of the CA by now, so that key can not recover this old key pair.
             assertNotNull("Couldn't recover keys from database", data);
@@ -228,9 +228,9 @@ public class KeyRecoveryTest extends CaTestCase {
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair1.getPrivate().getEncoded()));
             keyRecoverySession.unmarkUser(admin, user);
             // Recover the new key pair 
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert2);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert2);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertNotNull("Couldn't recover keys from database", data);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair2.getPrivate().getEncoded()));
@@ -239,15 +239,15 @@ public class KeyRecoveryTest extends CaTestCase {
             // Delete the RSA key that was used before as keyEncryptKey
             cryptoTokenManagementSession.removeKeyPair(internalAdmin, cryptoTokenId, currentAlias);
             // Try to recover the first (old) key pair, this should not work without that old keyEncryptKey
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert1);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertNull("Could recover keys from database although we should not", data);
             keyRecoverySession.unmarkUser(admin, user);
             // Recover the new key pair, this should still work
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert2);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert2);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair2.getPrivate().getEncoded()));
             // Even that worked as expected if we came all the way here, great success!
@@ -291,7 +291,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 try {
                     keypair1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
                     endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(),
-                            "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false, SecConst.EMPTY_ENDENTITYPROFILE,
+                            "rfc822name=" + TEST_EMAIL, TEST_EMAIL, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                             CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12,
                             0, getTestCAId());
                     cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123",
@@ -316,7 +316,7 @@ public class KeyRecoveryTest extends CaTestCase {
 
             }
             try {
-                endEntityManagementSession.prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert1);
+                endEntityManagementSession.prepareForKeyRecovery(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert1);
             } catch (AuthorizationDeniedException e) {
                 fail("Key recovery could not be performed due to incorrect authorization checks.");
             }
