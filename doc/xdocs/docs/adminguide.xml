@@ -5315,7 +5315,7 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
                         issuance when a lookup error is encountered, tick this option. To have this option enabled may be a compliance requirement if you are contacting your own DNS resolver for CAA lookups.</p>
 					<li>Use IODEF E-mail</li>
 						<p>
-							Checking this box enables sending e-mails to any mailto-links registered on the DNA as CAA IODEF records. Doing so enables the 
+							Checking this box enables sending e-mails to any mailto-links registered on the DNS as CAA IODEF records. Doing so enables the 
 							following additional settings:
 							<ul>
 								<li>From:</li> <p>The <i>From</i> field in the resulting e-mail.</p>
@@ -5331,7 +5331,7 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 						</p>
 					<li>Use IODEF WEB</li>
 						<p>
-							Checking this box enables sending iodef incident reports to any http/s-links registered on the DNA as CAA IODEF records.
+							Checking this box enables sending iodef incident reports to any http/s-links registered on the DNS as CAA IODEF records.
 						</p>
 				</ul>
 			</p>
