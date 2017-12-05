@@ -295,7 +295,7 @@ public class ServiceServiceTest extends CaTestCase {
     private ServiceConfiguration createAServiceConfig(final String username, final String caName) throws Exception {
         // Create a new user
         final String pwd = genRandomPwd();
-        getEndEntityManagementSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        getEndEntityManagementSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, getTestCAId(caName));
         log.debug("created user: " + username);
 

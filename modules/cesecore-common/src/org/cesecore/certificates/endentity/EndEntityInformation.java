@@ -47,11 +47,6 @@ public class EndEntityInformation implements Serializable {
      */
     private static final long serialVersionUID = 3837505643343885941L;
 
-    // Public constants
-    public static final int NO_ENDENTITYPROFILE    = 0;
-    public static final int NO_CERTIFICATEPROFILE  = 0;
-
-
     private String username;
     private String subjectDN;
     transient private String subjectDNClean = null;

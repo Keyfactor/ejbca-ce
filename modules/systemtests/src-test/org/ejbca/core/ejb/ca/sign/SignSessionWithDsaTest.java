@@ -47,7 +47,6 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -74,7 +73,7 @@ public class SignSessionWithDsaTest extends SignSessionCommon {
         createDefaultDsaCa();
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         int caIdDsa = caSession.getCAInfo(internalAdmin, TEST_DSA_CA_NAME).getCAId();
-        createEndEntity(DSA_USERNAME, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, caIdDsa);
+        createEndEntity(DSA_USERNAME, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, caIdDsa);
     }
     
     @AfterClass

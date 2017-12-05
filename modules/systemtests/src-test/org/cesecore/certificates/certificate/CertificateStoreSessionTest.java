@@ -59,7 +59,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -82,9 +82,9 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateStoreSessionTest.class);
     private static KeyPair keys;
-    
+
     private static final String USERNAME = "foo";
-    
+
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -92,7 +92,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateStoreSessionTest"));
-    
+
     @BeforeClass
     public static void setUpProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -182,7 +182,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
 	/**
 	 * finds certs by issuer and serialno
-	 * 
+	 *
 	 * @throws Exception
 	 *             error
 	 */
@@ -200,13 +200,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     		Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(cert));
     		assertNotNull("Cant find by issuer and serno", fcert);
     	} finally {
-    		internalCertStoreSession.removeCertificate(cert);    		
+    		internalCertStoreSession.removeCertificate(cert);
     	}
 	}
 
 	/**
      * finds and alters certificates
-     * 
+     *
      * @throws Exception
      *             error
      */
@@ -242,7 +242,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         	log.info("revocationdate (after rev)=" + info1.getRevocationDate());
         	assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate()) >= 0);
         } finally {
-        	internalCertStoreSession.removeCertificate(cert);    		
+        	internalCertStoreSession.removeCertificate(cert);
         }
     }
 
@@ -274,7 +274,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     			internalCertStoreSession.setRevokeStatus(roleMgmgToken, tmpcert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
     			log.debug("Revoked cert " + fp);
     		}
-    		
+
     		// Check that they are revoked
 			Collection<Certificate> revcerts = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
 			assertNotNull("failed to list certs", revcerts);
@@ -289,15 +289,15 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 				log.info("revocationdate (after rev)=" + rev.getRevocationDate());
 				assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate()) >= 0);
 				assertTrue(rev.getStatus() == CertificateConstants.CERT_REVOKED);
-			}    		
+			}
     	} finally {
-    		internalCertStoreSession.removeCertificate(cert);    		
+    		internalCertStoreSession.removeCertificate(cert);
     	}
 	}
 
     /**
      * finds certificates again
-     * 
+     *
      * @throws Exception
      *             error
      */
@@ -326,10 +326,10 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             log.debug("subjectAltName=" + data3.getSubjectAltName());
             assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
             log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
-            assertEquals("Wrong EEP", EndEntityInformation.NO_ENDENTITYPROFILE, data3.getEndEntityProfileIdOrZero());
+            assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
             log.debug("notBefore=" + data3.getNotBefore());
             assertEquals("Wrong notBefore", CertTools.getNotBefore(cert), data3.getNotBefore());
-			
+
 			internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			data3 = certificateStoreSession.getCertificateInfo(fp);
 			assertNotNull("Failed to find cert", data3);
@@ -359,13 +359,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 				// log.debug(certs[i].toString());
 			}
 		} finally {
-			internalCertStoreSession.removeCertificate(cert);    		
+			internalCertStoreSession.removeCertificate(cert);
 		}
     }
 
     /**
      * checks if a certificate is revoked
-     * 
+     *
      * @throws Exception
      *             error
      */
@@ -394,8 +394,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             log.debug("subjectAltName=" + data3.getSubjectAltName());
             assertEquals("Wrong SAN", "dNSName=foobar.bar.com", data3.getSubjectAltName());
             log.debug("endEntityProfileId=" + data3.getEndEntityProfileIdOrZero());
-            assertEquals("Wrong EEP", EndEntityInformation.NO_ENDENTITYPROFILE, data3.getEndEntityProfileIdOrZero());
-			
+            assertEquals("Wrong EEP", EndEntityConstants.NO_END_ENTITY_PROFILE, data3.getEndEntityProfileIdOrZero());
+
 			boolean worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			assertTrue("Failed to revoke cert that should have worked", worked);
 			data3 = certificateStoreSession.getCertificateInfo(fp);
@@ -423,12 +423,12 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
 			assertTrue("Wrong revocationDate!", revinfo.revocationDate.compareTo(data3.getRevocationDate()) == 0);
 			assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
-			
+
 			// Try to revoke again, should return false since no changes should be done in database since certificate is already revoked
 			worked = internalCertStoreSession.setRevokeStatus(roleMgmgToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 			assertFalse("Revoked cert in database although it should not have worked", worked);
 		} finally {
-			internalCertStoreSession.removeCertificate(cert);    		
+			internalCertStoreSession.removeCertificate(cert);
 		}
     }
 
@@ -524,17 +524,17 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         	assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
         	assertTrue(revDate.compareTo(status.revocationDate) == 0);
         } finally {
-        	internalCertStoreSession.removeCertificate(xcert);    		
+        	internalCertStoreSession.removeCertificate(xcert);
 		}
     }
 
 	@Test
 	public void test10Authorization() throws Exception {
-        
+
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertStoreSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
-        
+
         // Try to create a cert with an admin that does not have access to CA
         try {
         	generateCert(adminTokenNoAuth, CertificateConstants.CERT_ACTIVE);
@@ -565,12 +565,12 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             	// NOPMD
             }
             // Should work with the right admin though
-        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);    		
+        	certificateStoreSession.setStatus(roleMgmgToken, CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ARCHIVED);
     	} finally {
     		internalCertStoreSession.removeCertificate(cert);
     	}
 	}
-	
+
 	@Test
 	public void test11FindByType() throws Exception {
     	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
@@ -588,7 +588,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     		assertNotNull("Cant find by type", tcert);
     		assertTrue("Should be more than one ee cert", tcert.size()>0);
     	} finally {
-    		internalCertStoreSession.removeCertificate(cert);    		
+    		internalCertStoreSession.removeCertificate(cert);
     	}
 	}
 
@@ -612,24 +612,24 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     		assertNotNull("Cant find any expiration info", fcert);
     		assertEquals("Should be one ee cert", 1, fcert.size());
     	} finally {
-    		internalCertStoreSession.removeCertificate(cert);    		
+    		internalCertStoreSession.removeCertificate(cert);
     	}
 	}
 
 	@Test
 	public void test13TestXss() throws Exception {
-        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>", 24, null, keys.getPrivate(), 
+        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>", 24, null, keys.getPrivate(),
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
 		try {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
 	        certificateStoreSession.storeCertificateRemote(roleMgmgToken, EJBTools.wrap(xcert), username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
+	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
 	        // Username must not include <tag>s or !
 	        assertEquals("username must not contain < or ! signs: ", "foouser/tag/mytag//mytag//", info.getUsername());
 		} finally {
-	        internalCertStoreSession.removeCertificate(xcert);			
+	        internalCertStoreSession.removeCertificate(xcert);
 		}
 	}
 
@@ -647,8 +647,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(cert);
         }
     }
-    
-    
+
+
     // certificateStoreSession.updateLimitedCertificateDataStatus should not be able to tamper with locally issued certs in CertificateData
     @Test
     public void testLimitedCertificateDataWontUpdateFullEntire() throws Exception {
@@ -687,8 +687,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(certificate);
         }
     }
-    
-    // verify that certificateStoreSession.getStatus (used by OcspResponseGeneratorSessionBean) returns the correct CertificateStatus for limited entries 
+
+    // verify that certificateStoreSession.getStatus (used by OcspResponseGeneratorSessionBean) returns the correct CertificateStatus for limited entries
     @Test
     public void testLimitedCertificateDataAddUpdateRemove() throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -733,7 +733,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         assertTrue("Limited CertificateData entry was not removed properly.",
                 certificateStatus5.equals(CertificateStatus.NOT_AVAILABLE));
     }
-    
+
     @Test
     public void testLimitedCertificateDataFindByUsername() throws AuthorizationDeniedException {
         final String username = CertificateStoreSessionTest.class.getName()+"_NonExistent";
@@ -750,22 +750,22 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
                     throw new IllegalStateException("Couldn't find either ManagementCA or AdminCA1");
                 }
             }
-            
+
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();
             final int caid = cainfo.getCAId();
             final String issuerDn = cainfo.getSubjectDN();
             final String cafp = CertTools.getFingerprintAsString(cacert);
-            
+
             // Creates limited certificate entry, with ACTIVE status this time.
             internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, caid, issuerDn, subjectDn, username, serialNumber, CertificateConstants.CERT_ACTIVE, null, -1, cafp);
-            
+
             final Collection<CertificateDataWrapper> cdws = certificateStoreSession.getCertificateDataByUsername(username, false, null);
             assertEquals("Should get list of 1 certificate data wrapper", 1, cdws.size());
             final CertificateDataWrapper cdw = cdws.iterator().next();
             assertEquals("Should get the certificate.", subjectDn, cdw.getCertificateData().getSubjectDnNeverNull());
             final Collection<CertificateDataWrapper> cdws2 = certificateStoreSession.getCertificateDataByUsername(username, true, null);
             assertEquals("Should get list of 1 certificate data wrapper (since we have no expire date for limited entires, excluding expired cert should not matter)", 1, cdws2.size());
-            
+
             // Even if the end entity doesn't exist, and there's no certificate in the database, it should still work.
             final Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
             assertEquals("Should get an empty list (since there's no certificate)", 0, certs.size());
@@ -800,13 +800,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         try {
             // Persists self signed certificates
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate1, USERNAME, fingerprint1, CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate2, USERNAME, fingerprint2, CertificateConstants.CERT_ARCHIVED,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate3, USERNAME, fingerprint3, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, now);
             internalCertStoreSession.storeCertificateNoAuth(alwaysAllowToken, x509Certificate4, USERNAME, fingerprint4, CertificateConstants.CERT_REVOKED,
-                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, now);
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, now);
             // Check that the expected certificate are returned
             final List<CertificateDataWrapper> cdws1 = certificateStoreSession.getCertificateDataByUsername(USERNAME, false, null);
             assertTrue("Unfiltered result did not return all certificates for user.", isCertificatePresentInList(cdws1, fingerprint1, fingerprint2, fingerprint3, fingerprint4));
@@ -845,7 +845,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 //		/* Vulnerability type : Blind SQL Injection
 //	    First, certificatedata table in the database should not be empty in order to exploit the vulnerability
 //		The PoC is : We inject a test checking if the database port is set to 3306 (@@global.port = 3306), the sub-query return TRUE and the query isn't affected. It will return some results. If we test a bad port value (@@global.port <> 3306), the full SQL query return null.*
-//		
+//
 //		Replacing the basic port test by SELECT queries permit the attacker to dump the database.
 //		*/
 //		// Listing without cASelectString should return nothing
@@ -855,7 +855,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 //		result = certificateStoreSession.findExpirationInfo("1=1) OR (1=1", 1, 1, 1);
 //		assertTrue("Result returned", result.size()>0);
 //	}
-	
+
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             SignatureException, InvalidKeyException, CreateException, AuthorizationDeniedException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         // create a new self signed certificate
@@ -865,8 +865,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         Extension sanExtension = extgen.generate().getExtension(Extension.subjectAlternativeName);
         List<Extension> additionalExtensions = new ArrayList<>();
         additionalExtensions.add(sanExtension);
-        
-        X509Certificate xcert = CertTools.genSelfCertForPurpose("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
+
+        X509Certificate xcert = CertTools.genSelfCertForPurpose("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(),
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false, 0, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
         String fp = CertTools.getFingerprintAsString(xcert);
 
@@ -875,7 +875,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
         certificateStoreSession.storeCertificateRemote(admin, EJBTools.wrap(xcert), USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
-        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
+        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
         return xcert;
     }
 

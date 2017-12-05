@@ -49,7 +49,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -200,6 +199,6 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CAInfo infoecdsa = caSession.getCAInfo(internalAdmin, TEST_ECGOST3410_CA_NAME);
         assertTrue("No active ECGOST3410 CA! Must have at least one active CA to run tests!", infoecdsa != null);
-        createEndEntity(ECGOST3410_USERNAME, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, infoecdsa.getCAId());
+        createEndEntity(ECGOST3410_USERNAME, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, infoecdsa.getCAId());
     }
 }

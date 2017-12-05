@@ -122,6 +122,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -197,7 +198,7 @@ import org.ejbca.util.CAIdTools;
 
 /**
  * Manages CAs in EJBCA.
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminSessionRemote")
@@ -368,7 +369,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new IllegalStateException(e);
             } catch (CAOfflineException e) {
                 // This should not happen.
-                // The user can ignore these errors if he/she does not use CMS 
+                // The user can ignore these errors if he/she does not use CMS
                 log.error("Failed to renew extended service (CMS) certificates for ca '" + caInfo.getName() + "'.", e);
             } catch (CertificateRevokeException e) {
                 // ditto
@@ -561,7 +562,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /** When creating, or renewing a CA we will merge the certificate policies from the CAInfo and the CertificateProfile.
      * Since  Certificate generation uses the CertificateProfile, we merge them into the CertificateProfile object.
-     * 
+     *
      * @param cainfo cainfo that may contain certificate policies, or not
      * @param certprofile CertificateProfile that may contain certificate policies or not, this object is modified
      */
@@ -675,7 +676,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * The final steps of creating a CA, which are not performed for uninitialized CAs until
      * they are initialized.
-     * 
+     *
      * It creates a certificate chain and publishes certificate, services, CRLs, etc.
      * This method also performs audit logging.
      */
@@ -1143,7 +1144,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // 2. If no parameter is given we assume that the request chain was stored when the request was created.
                 reqchain = ca.getRequestCertificateChain();
                 if (reqchain == null) {
-                    // 3. Lastly, if that failed we'll check if the certificate chain in it's entirety already exists in the database. 
+                    // 3. Lastly, if that failed we'll check if the certificate chain in it's entirety already exists in the database.
                     reqchain = new ArrayList<Certificate>();
                     Certificate issuer = certificateStoreSession.findLatestX509CertificateBySubject(CertTools.getIssuerDN(cacert));
                     if (issuer != null) {
@@ -1264,15 +1265,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Verifies that the next signing key of the given CA is working. This is checked with {@link KeyTools#testKey}.
-     * 
-     * @param authenticationToken Admin performing the test. 
+     *
+     * @param authenticationToken Admin performing the test.
      * @param ca CA to test the key of.
      * @param cacert CA certificate from the request.
      * @param chain Certificate chain including the newly issued certificate.
      * @param caCertPublicKey Public key of CA. Must be fully usable, i.e. CVC DVCA keys must be have the full parameters from the CVCA.
      * @param nextKeyAlias Key alias to test, or null to test the current key alias given by the CA Token (or the next signing key as a fallback).
      * @throws CryptoTokenOfflineException
-     * @throws IllegalKeyException 
+     * @throws IllegalKeyException
      */
     private void testNextKey(AuthenticationToken authenticationToken, final CA ca, final Certificate cacert, final List<Certificate> chain,
             PublicKey caCertPublicKey, String nextKeyAlias) throws CryptoTokenOfflineException, IllegalKeyException {
@@ -1753,7 +1754,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String oldSubjectDn = CertTools.getSubjectDN(oldCaCertificate);
         boolean storeCscaWithChangedSubjectDn = false;
         if (!oldSubjectDn.equals(newSubjectDn)) {
-            // Could be a CSCA certificate with other SubjectDN SN (C and CN attribute must match). 
+            // Could be a CSCA certificate with other SubjectDN SN (C and CN attribute must match).
             // This is only for X.509 CAs (serialNumber in CVC certificates is the key sequence).
             // For example the German CSCA has same subjectDN except a SN (serialNumber) element after rollover.
             boolean sameCsca = true;
@@ -2022,7 +2023,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             //Save old CA certificate before renewal, so we can use its expire date when creating link certificate
             Certificate oldCaCertificate = ca.getCACertificate();
-            
+
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 if (subjectDNWillBeChanged) {
                     ca.setSubjectDN(newSubjectDN);
@@ -2506,8 +2507,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Method that import CA token keys from a P12 file. Was originally used when upgrading from old EJBCA versions. Only supports SHA1 and SHA256
      * with RSA or ECDSA and SHA1 with DSA.
-     * @throws OperatorCreationException 
-     * @throws AuthorizationDeniedException 
+     * @throws OperatorCreationException
+     * @throws AuthorizationDeniedException
      */
     private CAToken importKeysToCAToken(AuthenticationToken authenticationToken, String authenticationCode, Properties caTokenProperties,
             PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey, PublicKey publicEncryptionKey,
@@ -2660,7 +2661,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         importCA(authenticationToken, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
     }
 
-    /** Wrapper for CryptoToken creation that tries to find a unique CryptoTokenName 
+    /** Wrapper for CryptoToken creation that tries to find a unique CryptoTokenName
      * @throws NoSuchSlotException if no slot with the given label could be found
      */
     private int createCryptoTokenWithUniqueName(AuthenticationToken authenticationToken, String basename, String className,
@@ -2695,9 +2696,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws CAExistsException if the CA already exists
      * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
      * @throws CryptoTokenAuthenticationFailedException if authentication to crypto token failed
-     * @throws IllegalCryptoTokenException if CA certificate was not self signed, and chain length > 1 
-     * @throws CryptoTokenOfflineException if crypto token is unavailable. 
-     * 
+     * @throws IllegalCryptoTokenException if CA certificate was not self signed, and chain length > 1
+     * @throws CryptoTokenOfflineException if crypto token is unavailable.
+     *
      */
     private CA importCA(AuthenticationToken admin, String caname, String keystorepass, Certificate[] signatureCertChain, CAToken catoken,
             String keyAlgorithm, String keySpecification) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException,
@@ -3090,7 +3091,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 long updateTime = System.currentTimeMillis();
                 certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
                         futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type,
-                        EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, updateTime);
+                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, updateTime);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {
@@ -3135,7 +3136,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Find all publishers, use this set to track unowned publishers
         final Map<Integer, BasePublisher> allPublishers = publisherSession.getAllPublishers();
 
-        //Firstly, weed out all publishers which we lack authorization to 
+        //Firstly, weed out all publishers which we lack authorization to
         for (Integer key : new HashSet<Integer>(allPublishers.keySet())) {
             BasePublisher publisher = allPublishers.get(key);
             if (publisher instanceof CustomPublisherContainer) {
@@ -3156,11 +3157,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     final boolean authorizedtoca = caSession.authorizedToCANoLogging(admin, caId);
                     // TODO: Logically getCRLPublishers() should return an empty list if empty, but that's a change for another day
                     for (Integer caPublisherId : crlPublishers) {
-                        //This publisher is owned by a CA 
+                        //This publisher is owned by a CA
                         allPublishers.remove(caPublisherId);
                         // We don't need to log this access (to CA) since it only decides which publishers to display
                         if (authorizedtoca) {
-                            //Admin has access to the CA, so return it as a result. 
+                            //Admin has access to the CA, so return it as a result.
                             result.add(caPublisherId);
                         }
                     }
@@ -3169,7 +3170,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // NOPMD: This can't happen
             }
         }
-        //Any remaining publishers must be unowned, so add them in as well. 
+        //Any remaining publishers must be unowned, so add them in as well.
         result.addAll(allPublishers.keySet());
         return result;
     }
@@ -3191,7 +3192,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         keyValidators.remove(id);
                         // We don't need to log this access (to CA) since it only decides which publishers to display
                         if (isAuthorizedToCa) {
-                            //Admin has access to the CA, so return it as a result. 
+                            //Admin has access to the CA, so return it as a result.
                             result.add(id);
                         }
                     }
@@ -3201,7 +3202,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
-        //Any remaining key validators must not be owned, so add them in as well. 
+        //Any remaining key validators must not be owned, so add them in as well.
         result.addAll(keyValidators.keySet());
         return result;
     }
@@ -3272,10 +3273,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Check if subject certificate is signed by issuer certificate. Used in
-     * 
+     *
      * @see #upgradeFromOldCAKeyStore(Admin, String, byte[], char[], char[], String). This method does a lazy check: if signature verification failed
      *      for any reason that prevent verification, e.g. signature algorithm not supported, method returns false. Author: Marco Ferrante
-     * 
+     *
      * @param subject Subject certificate
      * @param issuer Issuer certificate
      * @return true if subject certificate is signed by issuer certificate
@@ -3294,7 +3295,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Checks the signer validity given a CA object and throws an EJBException to the caller.
      * This should only be called from create and edit CA methods.
-     * 
+     *
      * @param admin administrator calling the method
      * @param signca a CA object of the signer to be checked
      * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet
@@ -3325,7 +3326,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /**
      * Helper method that activates CA services and publisher their certificates, if the services are marked as active
-     * 
+     *
      * @throws AuthorizationDeniedException
      */
     private void activateAndPublishExternalCAServices(AuthenticationToken admin, Collection<ExtendedCAServiceInfo> extendedCAServiceInfos, CA ca)

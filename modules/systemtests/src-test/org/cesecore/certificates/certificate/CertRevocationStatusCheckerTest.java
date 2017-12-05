@@ -194,7 +194,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         
         try {
             // create a user and issue it a certificate
-            createUser(username, userDN, testx509ca.getCAId(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            createUser(username, userDN, testx509ca.getCAId(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
             X509Certificate usercert = (X509Certificate) signSession.createCertificate(alwaysAllowToken, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
             usercertFp = CertTools.getFingerprintAsString(usercert);
@@ -461,7 +461,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         try {
             
             // create a user and issue it a certificate
-            createUser(username, userDN, testx509ca.getCAId(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            createUser(username, userDN, testx509ca.getCAId(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
             X509Certificate usercert = (X509Certificate) signSession.createCertificate(alwaysAllowToken, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
             usercertFp = CertTools.getFingerprintAsString(usercert);
@@ -543,7 +543,7 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
         try {
             
             // create a user and issue it a certificate
-            createUser(username, userDN, testx509ca.getCAId(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            createUser(username, userDN, testx509ca.getCAId(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             final KeyPair userkeys = KeyTools.genKeys("1024", "RSA");
             X509Certificate usercert = (X509Certificate) signSession.createCertificate(alwaysAllowToken, username, "foo123", new PublicKeyWrapper(userkeys.getPublic()));
             usercertFp = CertTools.getFingerprintAsString(usercert);

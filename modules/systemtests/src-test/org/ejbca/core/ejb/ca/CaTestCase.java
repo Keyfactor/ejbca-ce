@@ -55,6 +55,7 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -73,7 +74,6 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
@@ -435,7 +435,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                 List<ApprovalDataVO> queryResults = approvalSessionProxyRemote.query(q, 0, 1, "cAId=" + approvalCAID,
-                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+                        "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
                 if (queryResults.size() > 0) {
                     ApprovalDataVO approvalData = queryResults.get(0);
                     Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);

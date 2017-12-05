@@ -30,6 +30,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -37,7 +38,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
@@ -230,7 +230,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     private boolean authorizedToEndEntityProfile(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
-        if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
+        if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_END_ENTITY) || rights.equals(AccessRulesConstants.EDIT_END_ENTITY))) {
             if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
                 returnval = true;

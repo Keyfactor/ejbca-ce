@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.cesecore.certificates.certificate;
 
 /**
@@ -26,17 +26,17 @@ package org.cesecore.certificates.certificate;
  * token type can be generated.
  *
  * Based on EJBCA (SecConst) version: SecConst.java 9321 2010-06-30 12:49:32Z jeklund
- * 
+ *
  * @version $Id$
  */
 public final class CertificateConstants {
-    
+
     /**
      * Prevents creation of new class
      */
     private CertificateConstants() {
     }
-    
+
     // Certificate status representations
     /** Certificate doesn't belong to anyone */
     public static final int CERT_UNASSIGNED = 0;
@@ -46,7 +46,7 @@ public final class CertificateConstants {
     public static final int CERT_ROLLOVERPENDING = 11;
     /** Certificate is active and assigned */
     public static final int CERT_ACTIVE = 20;
-    /** Certificate is still active and the user is notified that it 
+    /** Certificate is still active and the user is notified that it
      * will soon expire. */
     public static final int CERT_NOTIFIEDABOUTEXPIRATION = 21;
     // there was previously a status 30, CERT_TEMP_REVOKED here as well, but it was not used so
@@ -60,13 +60,13 @@ public final class CertificateConstants {
 
     // Constants used in certificate generation and publication.
     /** Certificate type is unknown. */
-    public static final int CERTTYPE_UNKNOWN    =     0x0;    
+    public static final int CERTTYPE_UNKNOWN    =     0x0;
     /** Certificate belongs to an end entity. */
-    public static final int CERTTYPE_ENDENTITY  =     0x1;    
+    public static final int CERTTYPE_ENDENTITY  =     0x1;
     /** Certificate belongs to a sub ca. */
     public static final int CERTTYPE_SUBCA      =     0x2;
     /** Certificate belongs to a root ca. */
-    public static final int CERTTYPE_ROOTCA     =     0x8;        
+    public static final int CERTTYPE_ROOTCA     =     0x8;
     /** Certificate belongs on a hard token. */
     public static final int CERTTYPE_HARDTOKEN  =     0x16;
 
@@ -77,18 +77,18 @@ public final class CertificateConstants {
     public static final int CERT_TYPE_SIGNATURE = 0x2;
     /** Certificate used for both encryption and signatures. */
     public static final int CERT_TYPE_ENCSIGN = 0x3;
-    
+
     // Certificate request types
     public static final int CERT_REQ_TYPE_PKCS10    = 0;
     public static final int CERT_REQ_TYPE_CRMF      = 1;
     public static final int CERT_REQ_TYPE_SPKAC     = 2;
     public static final int CERT_REQ_TYPE_PUBLICKEY = 3;
     public static final int CERT_REQ_TYPE_CVC       = 4;
-    
+
     // Certificate response types
     public static final int CERT_RES_TYPE_CERTIFICATE    = 0;
     public static final int CERT_RES_TYPE_PKCS7          = 1;
-    public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2; 
+    public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2;
 
 	/** KeyUsage constants */
 	public static final int DIGITALSIGNATURE = 0;

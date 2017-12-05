@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -102,9 +102,9 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             log.info("Exporting non-fixed end entity profiles: ");
 
             for (int profileid : endentityprofids) {
-                if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
+                if (profileid == EndEntityConstants.NO_END_ENTITY_PROFILE) { // Entity profile not found i database.
                     log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
-                } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
+                } else if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
                     //log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
                     String profilename = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(
@@ -146,7 +146,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
     public String getFullHelpText() {
         return getCommandDescription();
     }
-    
+
     @Override
     protected Logger getLogger() {
         return log;

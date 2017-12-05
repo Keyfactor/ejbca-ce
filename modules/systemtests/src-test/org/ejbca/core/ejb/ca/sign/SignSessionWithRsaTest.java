@@ -512,14 +512,14 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         int rsareversecaid = inforsareverse.getCAId();
         if (!endEntityManagementSession.existsUser(RSA_REVERSE_USERNAME)) {
             endEntityManagementSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
-                    "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
             log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
         } else {
             log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
             EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
                     rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");
             endEntityManagementSession.changeUser(internalAdmin, userData, false);
@@ -955,7 +955,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         if (!endEntityManagementSession.existsUser(username)) {
             // We use unicode encoding for the three Swedish character åäö
             endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, username
-                    + "@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    + "@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
@@ -1067,7 +1067,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         String username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);
@@ -1080,7 +1080,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         username = genRandomUserName();
-        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
         assertNotNull("Failed to create certificate", cert);

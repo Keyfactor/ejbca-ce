@@ -334,7 +334,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caSession.addCA(intAdmin, rootCA);
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, new Date().getTime());
+                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, new Date().getTime());
             //Create a SubCA for this test. 
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
             int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
@@ -342,8 +342,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X509Certificate subCaCertificate = (X509Certificate) subCA.getCACertificate();
             //Store the CA Certificate.
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(subCaCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityInformation.NO_ENDENTITYPROFILE, "footag", new Date().getTime());
-            final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    CertificateConstants.CERTTYPE_SUBCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
+            final EndEntityInformation endentity = new EndEntityInformation(subCaName, subCaSubjectDn, rootCA.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
             endentity.setPassword("foo123");
@@ -769,7 +769,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
         createTestCA();
         EndEntityInformation approvingAdmin = new EndEntityInformation(adminUsername, "CN=" + adminUsername, getTestCAId(), null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         approvingAdmin.setPassword("foo123");
         try {
@@ -795,10 +795,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X509Certificate admincert = (X509Certificate) this.signSession.createCertificate(intAdmin, adminUsername, "foo123", new PublicKeyWrapper(keys.getPublic()));
             AuthenticationToken approvingAdminToken = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(admincert));
             EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, caId, "", "",
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             ApprovalRequest approvalRequest = new AddEndEntityApprovalRequest(endEntityInformation, false, intAdmin, null, caId,
-                    SecConst.EMPTY_ENDENTITYPROFILE, approvalProfileSession.getApprovalProfile(approvalProfileId));
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileSession.getApprovalProfile(approvalProfileId));
             int approvalId = approvalSession.addApprovalRequest(intAdmin, approvalRequest);
             try {
                 assertEquals("There should be two approvals remaining.", 2,
@@ -1794,7 +1794,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 adminUser.setSubjectAltName(null);
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
                 adminUser.setTokenType(SecConst.TOKEN_SOFT_JKS);
-                adminUser.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+                adminUser.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
                 adminUser.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
                 log.info("Adding new user: "+adminUser.getUsername());
@@ -2314,7 +2314,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Create a user a generate certificate.
      */
     private X509Certificate createUserAndCert(String username, int caID) throws Exception {
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intAdmin, userdata, true);

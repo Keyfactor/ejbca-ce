@@ -248,7 +248,7 @@ public class RaMasterApiStressTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;
                 EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
-                        SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
                 
                 testRaMasterApiProxySession.addUser(roleMgmgToken, endEntity, false);
 

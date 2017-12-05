@@ -27,7 +27,7 @@ import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -37,13 +37,13 @@ import org.junit.Test;
 /**
  * Tests backwards and forwards compatibility with the CertificateData class,
  * and indirectly CertificateDataWrapper.
- * 
+ *
  * @version $Id$
  */
 public class CertificateDataSerializationTest {
 
     private static final Logger log = Logger.getLogger(CertificateDataSerializationTest.class);
-    
+
     /** CertificateData object that's intentionally missing the endEntityProfileId column */
     private static final String OLD_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgASSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
@@ -57,7 +57,7 @@ public class CertificateDataSerializationTest {
             "LmxhbmcuTnVtYmVyhqyVHQuU4IsCAAB4cAAAAAF0ACgxOTRiNDcxMjJmMTcwMjA2NzcxNWVjZmIx" +
             "MTYyMTE1N2M5NmNmMmFidAALQ049Y2VydHVzZXJwdAATODc2NzYzODEyNDM1MTIyMjgzMXQAC0NO" +
             "PWNlcnR1c2VydAAcY1U1UXF2NDR1T0JzVGpnQXh5WmNVYnZGNnNrPXB0AAhjZXJ0dXNlcg==";
-    
+
     /** CertificateData object that intentionally has a non-existing column called "testFutureColumn" */
     private static final String FUTURE_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgAUSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
@@ -72,7 +72,7 @@ public class CertificateDataSerializationTest {
             "dW1iZXKGrJUdC5TgiwIAAHhwAAAAAXB0ACg0YTcyYTk0MGRhY2U3ZjcxYWE4OWYzYTcyNjVmYTRm" +
             "MGUwYzFlMGY3dAALQ049Y2VydHVzZXJwdAATMzUwNzY2NTg4NjI3NTcyOTY3NXQAC0NOPWNlcnR1" +
             "c2VydAAcUFg0eUc4cEs0b3JPZFBTU0hLMDMvOWtUcjBNPXBwdAAIY2VydHVzZXI=";
-    
+
     /** CertificateData object that has a non-existent field "testNonExistentClass" with of a non-existent type "org.cesecore.certificates.certificate.NonExistent" */
     private static final String FUTURE_NEW_CLASS_DATA = "rO0ABXNyADVvcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlLkNlcnRpZmljYXRl" +
             "RGF0YYoibbY+5VZeAgAUSgAKZXhwaXJlRGF0ZUoADnJldm9jYXRpb25EYXRlSQAQcmV2b2NhdGlv" +
@@ -88,12 +88,12 @@ public class CertificateDataSerializationTest {
             "AAFwdAAoNjlkOWEzYzI3N2ViYjg4ODZmMzQzYTRiNWEzM2ViYTVlNDJlZmEyM3QAC0NOPWNlcnR1" +
             "c2VycHQAEzYyODQxMDQwODE0Mjg3NzQxMTJ0AAtDTj1jZXJ0dXNlcnQAHFdXaUJwdTZidFVTRzZZ" +
             "RE4yT1dnazJsYi95ND1wcHQACGNlcnR1c2Vy";
-    
+
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-    
+
     /** This test prints the serialized form of a CertificateData object, and was used to generated the data above. */
     @Test
     public void testSerializeCurrent() throws Exception {
@@ -101,7 +101,7 @@ public class CertificateDataSerializationTest {
         final KeyPair kp = KeyTools.genKeys("1024", "RSA");
         final Certificate cert = CertTools.genSelfCert("CN=certuser", 10*365, null, kp.getPrivate(), kp.getPublic(), "SHA256withRSA", false);
         final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE,
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
                 null, new Date().getTime(), false, true);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final Base64OutputStream b64os = new Base64OutputStream(baos);
@@ -112,7 +112,7 @@ public class CertificateDataSerializationTest {
         log.info("Base 64 of serialized CertData is: " + baos.toString("US-ASCII"));
         log.trace("<testSerializeCurrent");
     }
-    
+
     @Test
     public void testDeserializeOld() throws Exception {
         log.trace(">testDeserializeOld");
@@ -123,10 +123,10 @@ public class CertificateDataSerializationTest {
         ois.close();
         assertEquals("certuser", certData.getUsername()); // unrelated column. should not be affected
         assertNull("End Entity Profile Id in CertificateData with old serialization.", certData.getEndEntityProfileId());
-        assertEquals(EndEntityInformation.NO_ENDENTITYPROFILE, certData.getEndEntityProfileIdOrZero());
+        assertEquals(EndEntityConstants.NO_END_ENTITY_PROFILE, certData.getEndEntityProfileIdOrZero());
         log.trace("<testDeserializeOld");
     }
-    
+
     @Test
     public void testDeserializeFuture() throws Exception {
         log.trace(">testDeserializeFuture");
@@ -138,7 +138,7 @@ public class CertificateDataSerializationTest {
         assertEquals("certuser", certData.getUsername()); // unrelated column. should not be affected
         log.trace("<testDeserializeFuture");
     }
-    
+
     @Test
     public void testDeserializeFutureFieldNewClass() throws Exception {
         log.trace(">testDeserializeFutureFieldNewClass");

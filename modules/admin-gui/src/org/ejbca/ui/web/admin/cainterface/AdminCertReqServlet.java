@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -61,15 +62,15 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * This servlet requires authentication of the administrator, specifically it requires that the
  * client certificate has the privilege "/ra_functionality/create_end_entity", as defined in the
  * admin-GUI.
- * 
+ *
  * <p>
  * This implementation handles only the POST method.
  * </p>
- * 
+ *
  * <p>
  * The CGI parameters for requests are the following.
  * </p>
- * 
+ *
  * <dl>
  * <dt>
  * pkcs10req
@@ -109,7 +110,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  *   The name of the ca to use.  Required,
  * </dd>
  * </dl>
- * 
+ *
  * @version $Id$
  */
 public class AdminCertReqServlet extends HttpServlet {
@@ -131,6 +132,7 @@ public class AdminCertReqServlet extends HttpServlet {
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
@@ -165,6 +167,7 @@ public class AdminCertReqServlet extends HttpServlet {
      *
      * PublicKey's encoded-format has to be RSA X.509.
      */
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         // Check if authorized
         EjbcaWebBean ejbcawebbean = getEjbcaWebBean(request);
@@ -226,7 +229,7 @@ public class AdminCertReqServlet extends HttpServlet {
         }
 
         String tmp = null;
-        int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
+        int eProfileId = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         if ((tmp = request.getParameter("entityprofile")) != null) {
             int reqId;
             try {
@@ -300,6 +303,7 @@ public class AdminCertReqServlet extends HttpServlet {
 
     }
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         response.setHeader("Allow", "POST");

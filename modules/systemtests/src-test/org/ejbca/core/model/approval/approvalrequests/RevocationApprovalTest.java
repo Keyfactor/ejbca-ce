@@ -155,12 +155,12 @@ public class RevocationApprovalTest extends CaTestCase {
             adminUsername = "RevocationApprovalTest_revocationTestAdmin";
             requestingAdminUsername = "RevocationApprovalTest_revocationTestRequestingAdmin";
             EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, userdata, true);
             EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null,
-                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
             endEntityManagementSession.addUser(internalAdmin, userdata2, true);
@@ -243,7 +243,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
     private void createUser(AuthenticationToken admin, String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(
-                EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(admin, userdata, true);
@@ -440,7 +440,7 @@ public class RevocationApprovalTest extends CaTestCase {
             assertNotNull("Test user certificate was not created", usercert);
 
             RevocationApprovalRequest revAr = new RevocationApprovalRequest(CertTools.getSerialNumber(usercert), CertTools.getIssuerDN(usercert), username, 
-                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+                    RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
             revAr.execute(endEntityManagementSession, 4711, null);
             // Verify that the certificate was revokes
             usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
@@ -472,7 +472,7 @@ public class RevocationApprovalTest extends CaTestCase {
             assertNotNull("Test user certificate was not created", usercert3);
             usercert3fp = CertTools.getFingerprintAsString(usercert3);
             
-            revAr = new RevocationApprovalRequest(false, username, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, requestingAdmin, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+            revAr = new RevocationApprovalRequest(false, username, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, requestingAdmin, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
             revAr.execute(endEntityManagementSession, 4712, null);
             
             

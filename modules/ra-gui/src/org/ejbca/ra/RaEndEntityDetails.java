@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -41,11 +42,11 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-/** 
+/**
  * UI representation of a result set item from the back end.
- * 
+ *
  * Bravely ignoring hard token issuer and printing of user data fields.
- * 
+ *
  * @version $Id$
  */
 public class RaEndEntityDetails {
@@ -72,7 +73,7 @@ public class RaEndEntityDetails {
     private final String created;
     private final String modified;
     private final int status;
-    
+
     private EndEntityProfile endEntityProfile = null;
     private SubjectDn subjectDistinguishedName = null;
     private SubjectAlternativeName subjectAlternativeName = null;
@@ -89,7 +90,7 @@ public class RaEndEntityDetails {
                 String.valueOf(eepIdToNameMap.get(Integer.valueOf(endEntity.getEndEntityProfileId()))),
                 String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId()))));
     }
-    
+
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final String certProfName, final String eeProfName, final String caName) {
         this.endEntityInformation = endEntity;
@@ -113,20 +114,20 @@ public class RaEndEntityDetails {
         }
         final Date timeModified = endEntity.getTimeModified();
         if(timeModified != null) {
-            this.modified = ValidityDate.formatAsISO8601ServerTZ(timeModified.getTime(), TimeZone.getDefault());    
+            this.modified = ValidityDate.formatAsISO8601ServerTZ(timeModified.getTime(), TimeZone.getDefault());
         } else {
             this.modified = "";
         }
         this.status = endEntity.getStatus();
     }
-    public EndEntityInformation getEndEntityInformation() { return endEntityInformation; } 
+    public EndEntityInformation getEndEntityInformation() { return endEntityInformation; }
     public String getUsername() { return username; }
     public String getSubjectDn() { return subjectDn; }
     public String getSubjectAn() { return subjectAn; }
     public String getSubjectDa() { return subjectDa; }
     public String getCaName() { return caName; }
     public String getCpName() {
-        if (cpId==EndEntityInformation.NO_CERTIFICATEPROFILE) {
+        if (cpId==CertificateProfileConstants.NO_CERTIFICATE_PROFILE) {
             return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_unknowncp");
         } else if (cpName!=null) {
             return cpName;
@@ -135,7 +136,7 @@ public class RaEndEntityDetails {
     }
     public boolean isCpNameSameAsEepName() { return getEepName().equals(getCpName()); }
     public String getEepName() {
-        if (eepId==EndEntityInformation.NO_ENDENTITYPROFILE) {
+        if (eepId==EndEntityConstants.NO_END_ENTITY_PROFILE) {
             return callbacks.getRaLocaleBean().getMessage("component_eedetails_info_unknowneep", eepId);
         } else if (eepName!=null) {
             return eepName;
@@ -173,7 +174,7 @@ public class RaEndEntityDetails {
         }
         return "?";
     }
-    
+
     /**
      * Extracts subject DN from certificate request and converts the string to cesecore namestyle
      * @return subject DN from CSR or null if CSR is missing / corrupted
@@ -187,11 +188,11 @@ public class RaEndEntityDetails {
                 return subjectDn.toString();
             } catch (IOException e) {
                 log.info("Failed to retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
-                return null; 
+                return null;
             }
         }
         log.info("No CSR found for end entity with username " + username);
-        return null; 
+        return null;
     }
 
     /** Returns the specified key type for this end entity (e.g. "RSA 2048"), or null if none is specified (e.g. if created from the Admin GUI) */
@@ -204,7 +205,7 @@ public class RaEndEntityDetails {
             return keyTypeString;
         } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
             return getKeysFromCsr();
-            
+
         }
         return null; // null = hidden in UI
     }
@@ -238,7 +239,7 @@ public class RaEndEntityDetails {
             throw new IllegalStateException("Could not find CSR attached to end entity with username " + username + ". CSR is expected to be set at this point");
         }
     }
-    
+
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension) {
         if (token == null) {
             return;
@@ -251,7 +252,7 @@ public class RaEndEntityDetails {
         ec.setResponseContentLength(token.length);
         String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
-            fileName = "request_csr"; 
+            fileName = "request_csr";
         }
 
         final String filename = StringTools.stripFilename(fileName + fileExtension);
@@ -275,11 +276,11 @@ public class RaEndEntityDetails {
             }
         }
     }
-    
+
     public boolean isTokenTypeUserGenerated() {
         return endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN;
     }
-    
+
     public boolean isKeyRecoverable() {
         return endEntityInformation.getKeyRecoverable();
     }
@@ -300,14 +301,14 @@ public class RaEndEntityDetails {
     public String getLoginsRemaining() {
         return Integer.toString(extendedInformation.getRemainingLoginAttempts());
     }
-    
+
     public boolean isSendNotificationEnabled() {
         return getEndEntityProfile().getUse(EndEntityProfile.SENDNOTIFICATION, 0);
     }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
     }
-    
+
     public boolean isCertificateSerialNumberOverrideEnabled() {
         return getEndEntityProfile().getUse(EndEntityProfile.CERTSERIALNR, 0);
     }
@@ -399,7 +400,7 @@ public class RaEndEntityDetails {
             this.subjectAlternativeName = new SubjectAlternativeName(getEndEntityProfile(), subjectAn);
         }
         return subjectAlternativeName;
-        
+
     }
 
     public SubjectDirectoryAttributes getSubjectDirectoryAttributes() {
@@ -407,7 +408,7 @@ public class RaEndEntityDetails {
             this.subjectDirectoryAttributes = new SubjectDirectoryAttributes(getEndEntityProfile(), subjectDa);
         }
         return subjectDirectoryAttributes;
-        
+
     }
 
     private EndEntityProfile getEndEntityProfile() {
@@ -416,7 +417,7 @@ public class RaEndEntityDetails {
         }
         return endEntityProfile;
     }
-    
+
     /**
      * Returns the add approval request ID stored in the extended information
      * @return the ID of the approval request that was submitted to create the end entity
@@ -432,10 +433,10 @@ public class RaEndEntityDetails {
         }
         return ret;
     }
-    
+
     /**
-     * Returns the edit approval request IDs stored in the extended information as one String separated by ';'     
-     * @return the IDs of the approval request that were submitted to edit the end entity 
+     * Returns the edit approval request IDs stored in the extended information as one String separated by ';'
+     * @return the IDs of the approval request that were submitted to edit the end entity
      */
     public String getEditEndEntityApprovalRequestIds() {
         StringBuilder ret = new StringBuilder("");
@@ -451,10 +452,10 @@ public class RaEndEntityDetails {
         }
         return ret.toString();
     }
-    
+
     /**
-     * Returns the revocation approval request IDs stored in the extended information as one String separated by ';'     
-     * @return the IDs of the approval request that were submitted to revoke the end entity 
+     * Returns the revocation approval request IDs stored in the extended information as one String separated by ';'
+     * @return the IDs of the approval request that were submitted to revoke the end entity
      */
     public String getRevokeEndEntityApprovalRequestIds() {
         StringBuilder ret = new StringBuilder("");
@@ -469,8 +470,8 @@ public class RaEndEntityDetails {
             }
         }
         return ret.toString();
-    } 
-    
+    }
+
     /** @return true every twice starting with every forth call */
     public boolean isEven() {
         styleRowCallCounter++;
