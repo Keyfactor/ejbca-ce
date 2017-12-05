@@ -950,30 +950,8 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     
-    public List<SelectItem/*<String,String*/> getEnabledCTLogsAvailable() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for (final CTLogInfo current : getEjbcaWebBean().getGlobalConfiguration().getCTLogs().values()) {
-            ret.add(new SelectItem(String.valueOf(current.getLogId()), current.getUrl()));
-        }
-        return ret;
-    }
     /** @returns the size of the select box */ 
     public int getDistinctCTLabelsAvailableSize() { return Math.max(3, Math.min(6, getDistinctCtLabelsAvailable().size())); }
-    
-    public List<String> getEnabledCTLogs() throws AuthorizationDeniedException {
-        final List<String> ret = new ArrayList<String>();
-        for (Integer current : getCertificateProfile().getEnabledCTLogs()) {
-            ret.add(current.toString());
-        }
-        return ret;
-    }
-    public void setEnabledCTLogs(final List<String> in) throws AuthorizationDeniedException {
-        final LinkedHashSet<Integer> out = new LinkedHashSet<>();
-        for (String current : in) {
-            out.add(Integer.parseInt(current));
-        }
-        getCertificateProfile().setEnabledCTLogs(out);
-    }
 
     public List<String> getEnabledCtLabels() throws AuthorizationDeniedException {
         return new ArrayList<String>(getCertificateProfile().getEnabledCtLabels());
