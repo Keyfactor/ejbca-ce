@@ -517,7 +517,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             X509Certificate newCACert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
             // Create a user and generate the cert
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
             this.endEntityManagementSession.addUser(ADMIN, userdata, true);
@@ -658,7 +658,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                 ApprovalDataVO approvalData = (approvalSessionProxyRemote.query(q, 0, 1, "cAId=" + approvalCAID,
-                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
+                        "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.", sequenceId, partitionId);
                 approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
                 approvalData = approvalSession.findApprovalDataVO(approvalID).iterator().next();

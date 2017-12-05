@@ -62,7 +62,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
   
         endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.TOKEN_SOFT_P12, 0, caid);
         endEntityManagementSession.setClearTextPassword(admin, username1, "foo123");
 
@@ -70,7 +70,7 @@ public class BatchMakeP12CommandTest extends CaTestCase {
         assertEquals("end entity password wasn't set", "foo123", findPassword(username1));
 
         endEntityManagementSession.addUser(admin, username2, "foo123", "C=SE, O=AnaTom, CN=" + username2, "", username2 + "@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.TOKEN_SOFT_P12, 0, caid);
         endEntityManagementSession.setClearTextPassword(admin, username2, "foo123");
 

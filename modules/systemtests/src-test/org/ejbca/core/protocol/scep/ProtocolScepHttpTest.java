@@ -668,7 +668,7 @@ public class ProtocolScepHttpTest {
             certProf.setAllowValidityOverride(true);
             certProf.setEncodedValidity("14d");
             final int certProfId = certificateProfileSession.addCertificateProfile(admin, "TestScepCARollover", certProf);
-            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+            final EndEntityInformation endentity = new EndEntityInformation("TestScepCARollover", ROLLOVER_SUB_CA_DN, x509ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     certProfId, EndEntityConstants.TOKEN_USERGEN, 0, null);
             endentity.setStatus(EndEntityConstants.STATUS_NEW);
             endentity.setPassword("foo123");
@@ -877,7 +877,7 @@ public class ProtocolScepHttpTest {
     
     private EndEntityInformation getEndEntityInformation(String userName, String userDN, int caId) {
         final EndEntityInformation data = new EndEntityInformation(userName, userDN, caId, null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         data.setPassword("foo123");
         data.setStatus(EndEntityConstants.STATUS_NEW);
         return data;

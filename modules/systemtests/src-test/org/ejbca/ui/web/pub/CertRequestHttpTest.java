@@ -549,7 +549,7 @@ public class CertRequestHttpTest extends CaTestCase {
         boolean userExists = false;
         try {
             endEntityManagementSession.addUser(admin, TEST_USERNAME, "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", clearpwd,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
             log.debug("created user: "+TEST_USERNAME+", foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (EndEntityExistsException e) {
             userExists = true; // This is what we want
@@ -557,7 +557,7 @@ public class CertRequestHttpTest extends CaTestCase {
         if (userExists) {
             log.debug("User "+TEST_USERNAME+" already exists.");
             EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
             endEntityInformation.setPassword("foo123");
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(admin, endEntityInformation, false);
@@ -567,7 +567,7 @@ public class CertRequestHttpTest extends CaTestCase {
 
     private void setupUserStatus(int status) throws Exception {
         EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         endEntityInformation.setPassword("foo123");
         endEntityInformation.setStatus(status);
         endEntityManagementSession.changeUser(admin, endEntityInformation, false);

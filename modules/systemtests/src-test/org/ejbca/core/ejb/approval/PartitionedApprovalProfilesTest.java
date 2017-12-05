@@ -37,6 +37,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -120,17 +121,17 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 .getRemoteSession(EndEntityManagementSessionRemote.class);
 
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, userdata, true);
         EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata2.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, userdata2, true);
         EndEntityInformation reqUserData = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null,
-                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(alwaysAllowAuthenticationToken, reqUserData, true);
@@ -219,7 +220,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
                 singleStepPartitionProfile);
         singleStepPartitionProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
         
-        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, true,
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, true,
                 singleStepPartitionProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {
@@ -306,7 +307,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         int approvalProfileId = approvalProfileSession.addApprovalProfile(alwaysAllowAuthenticationToken, doubleSequencenProfile);
         doubleSequencenProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
     
-        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, true,
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, true,
                 doubleSequencenProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {
@@ -374,7 +375,7 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
         doubleSequencenProfile.addPropertyToPartition(step.getStepIdentifier(), secondPartition.getPartitionIdentifier(), secondrolesProperty);   
         int approvalProfileId = approvalProfileSession.addApprovalProfile(alwaysAllowAuthenticationToken, doubleSequencenProfile);
         doubleSequencenProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
-        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, true,
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, true,
                 doubleSequencenProfile);
         approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
         try {

@@ -79,6 +79,8 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
@@ -998,7 +1000,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException("No CA certificate for " + issuerDn + " was found on the system.");
         }
         certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, EndEntityInformation.NO_CERTIFICATEPROFILE, EndEntityInformation.NO_ENDENTITYPROFILE, null, System.currentTimeMillis());
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, System.currentTimeMillis());
     }
 
     /** Helper method for audit logging changes */

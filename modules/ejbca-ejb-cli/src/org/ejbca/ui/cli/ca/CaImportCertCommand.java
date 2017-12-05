@@ -217,7 +217,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             email = CertTools.getEMailAddress(certificate);
         }
 
-        int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
+        int endentityprofileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         if (eeprofile != null) {
             log.debug("Searching for End Entity Profile " + eeprofile);
             try {

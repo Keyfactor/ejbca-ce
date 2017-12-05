@@ -85,7 +85,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
 
         // Create a new user
-        endEntityManagementSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         log.debug("created user: " + USERNAME);
 

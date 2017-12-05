@@ -97,6 +97,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -901,8 +902,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Also, if we have access to the EMPTY profile, then we allow access to certificates with zero/null profile IDs, so they can at least be revoked.
         final Collection<Integer> authorizedEepIds = new ArrayList<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
         final boolean accessAnyEepAvailable = authorizedEepIds.containsAll(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
-        if (authorizedEepIds.contains(SecConst.EMPTY_ENDENTITYPROFILE)) {
-            authorizedEepIds.add(EndEntityInformation.NO_ENDENTITYPROFILE);
+        if (authorizedEepIds.contains(EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
+            authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
         }
         if (!accessAnyEepAvailable && !authorizedEepIds.contains(Integer.valueOf(cdw.getCertificateData().getEndEntityProfileIdOrZero()))) {
             return false;
@@ -980,9 +981,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return response;
         }
         // If we have access to the EMPTY profile, then allow viewing certificates with zero/null profile IDs, so they can at least be revoked
-        if (authorizedEepIds.contains(SecConst.EMPTY_ENDENTITYPROFILE)) {
-            authorizedEepIds.add(EndEntityInformation.NO_ENDENTITYPROFILE);
-            authorizedCpIds.add(EndEntityInformation.NO_CERTIFICATEPROFILE);
+        if (authorizedEepIds.contains(EndEntityConstants.EMPTY_END_ENTITY_PROFILE)) {
+            authorizedEepIds.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
+            authorizedCpIds.add(CertificateProfileConstants.NO_CERTIFICATE_PROFILE);
         }
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();

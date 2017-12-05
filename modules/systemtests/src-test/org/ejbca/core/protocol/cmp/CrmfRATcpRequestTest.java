@@ -330,7 +330,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            this.endEntityManagementSession.addUser(ADMIN, username, "foo123", dn, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+            this.endEntityManagementSession.addUser(ADMIN, username, "foo123", dn, null, "cmptest@primekey.se", false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, this.caid);
             log.debug("created user: " + username + ", foo123, " + dn);
         } catch (EndEntityExistsException e) {

@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -76,7 +77,7 @@ public class CreateCertCommandTest {
         ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
         caSession.addCA(authenticationToken, ca);
         endEntityManagementSession.addUser(authenticationToken, USERNAME, PASSWORD, "CN=" + USERNAME, null, null, false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.TOKEN_SOFT_P12, 0, ca.getCAId());
         byte[] rawPkcs10req = caAdminSession.makeRequest(authenticationToken, ca.getCAId(), ca.getCertificateChain(), ca.getCAToken()
                 .getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));

@@ -82,11 +82,11 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
             // Add an end entity through executing an AddEndEntityApprovalRequest
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caid, null, null, new EndEntityType(
-                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
             addAr.execute(endEntityManagementSession, 4711, null);
 
             // Verify that the end entity was added
@@ -104,7 +104,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             EndEntityInformation editUserdata = userdata;
             assertEquals("CN=" + username, userdata.getDN());
             editUserdata.setDN("CN=" + username + ", C=SE");
-            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null); 
+            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null); 
             editAr.execute(endEntityManagementSession, 4712, null);
             
             // Verify the the end entity has been edited
@@ -126,7 +126,7 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             // Change the status of the end entity through executing a ChangeStatusEndEntityApprovalRequest
             assertEquals(EndEntityConstants.STATUS_NEW, executeUser.getStatus());
             ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW, 
-                    EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, null);
+                    EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
             statusAr.execute(endEntityManagementSession, 4713, null);
             
             // Verify that the end entity status has been changed

@@ -133,13 +133,13 @@ public class AuthenticationSessionTest extends CaTestCase {
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         endEntityManagementSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
 
         // Make another user that we know later...
         username2 = genRandomUserName();
         pwd2 = genRandomPwd();
-        createUser(internalAdmin, username2, pwd2, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, MAXFAILEDLOGINS);
+        createUser(internalAdmin, username2, pwd2, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, MAXFAILEDLOGINS);
         log.debug("created user: " + username2 + ", " + pwd2 + ", C=SE, O=AnaTom, CN=" + username2);
     }
 
@@ -217,7 +217,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
         // First mark the user for recovery
         keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert), username1, EJBTools.wrap(keys));
-        endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
+        endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username1, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
 
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(username1));
 

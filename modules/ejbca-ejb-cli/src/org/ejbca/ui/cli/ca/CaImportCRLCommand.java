@@ -174,7 +174,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                             log.debug("Loading/updating user " + missing_user_name);
                             final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate),
                                     cainfo.getCAId(), null, null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
-                                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
+                                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
                                     SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
                             userdataNew.setPassword("foo123");
                             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(),
@@ -186,7 +186,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                         }
                         EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificateRemote(getAuthenticationToken(),
                                 EJBTools.wrap(certificate), missing_user_name, fingerprint, CertificateConstants.CERT_ACTIVE,
-                                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityInformation.NO_ENDENTITYPROFILE, null,
+                                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, null,
                                 new Date().getTime());
                         log.info("Dummy certificate  '" + serialHex + "' has been stored.");
                     }

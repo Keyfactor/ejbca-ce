@@ -557,7 +557,7 @@ public class CrmfRequestTest extends CmpTestCase {
             final X500Name userDN = new X500Name("C=SE,O=PrimeKey,CN=cmptest");
             EndEntityInformation user = new EndEntityInformation("cmptest", userDN.toString(), subcaID,
                     null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-//                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+//                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                     this.eepDnOverrideId, this.cpDnOverrideId,
                     SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");

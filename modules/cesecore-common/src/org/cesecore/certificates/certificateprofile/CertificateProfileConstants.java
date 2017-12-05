@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.cesecore.certificates.certificateprofile;
 
 /**
@@ -25,16 +25,20 @@ package org.cesecore.certificates.certificateprofile;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * Base on EJBCA (SecConst) version: SecConst.java 9321 2010-06-30 12:49:32Z jeklund
- * 
+ * Based on EJBCA (SecConst) version: SecConst.java 9321 2010-06-30 12:49:32Z jeklund
+ *
  * @version $Id$
  */
 public final class CertificateProfileConstants {
-    
+    /**
+     * The id of a non-existing certificate profile.
+     */
+    public static final int NO_CERTIFICATE_PROFILE = 0;
+
     // Certificate profiles.
 
     /** Used when no certificate profile id value is available */
-    public static final int CERTPROFILE_NO_PROFILE            = 0; 
+    public static final int CERTPROFILE_NO_PROFILE            = 0;
     public static final int CERTPROFILE_FIXED_ENDUSER         = 1;
     public static final int CERTPROFILE_FIXED_SUBCA           = 2;
     public static final int CERTPROFILE_FIXED_ROOTCA          = 3;
@@ -44,7 +48,7 @@ public final class CertificateProfileConstants {
 	public static final int CERTPROFILE_FIXED_HARDTOKENENC    = 7;
 	public static final int CERTPROFILE_FIXED_HARDTOKENSIGN   = 8;
     public static final int CERTPROFILE_FIXED_SERVER          = 9;
-        
+
     /**
      * Constants defining range of id's reserved for fixed certificate types. Observe fixed
      * certificates cannot have value 0.
@@ -66,10 +70,10 @@ public final class CertificateProfileConstants {
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER ||
     			profileId == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER );
     }
-    
+
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
-     * lookup of available bit lengths fails. 
+     * lookup of available bit lengths fails.
      * @see org.ejbca.ui.web.pub.ApplyBean
      */
     public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
@@ -79,5 +83,5 @@ public final class CertificateProfileConstants {
      */
     private CertificateProfileConstants() {
     }
-    
+
 }

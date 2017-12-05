@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -36,8 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Creates tons of end entities. The baseline should be the user creation time for a single thread using an always allow token (forgoing database 
- * checks), while this test should press the database to the point where caching influences behavior. 
+ * Creates tons of end entities. The baseline should be the user creation time for a single thread using an always allow token (forgoing database
+ * checks), while this test should press the database to the point where caching influences behavior.
  *
  * @version $Id$
  */
@@ -48,23 +49,26 @@ public class AddLotsofUsersTest extends CaTestCase {
 	private static final String USERNAME_PREFIX = "AddLotsofUsersTest";
 	private static final int NUMBER_OF_THREADS = 10;
 	private static final int USERS_PER_THREAD = 100;
-	
+
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AddLotsofUsersTest"));
 
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
     public String getRoleName() {
-        return "AddLotsofUsersTest"; 
+        return "AddLotsofUsersTest";
     }
 
     @Test
@@ -84,7 +88,7 @@ public class AddLotsofUsersTest extends CaTestCase {
             }
             stopWatch.stop();
             long diff = stopWatch.getTime();
-            log.info(createdUsers.size() + " end entities have been generated. Total time: " + diff + " ms."); 
+            log.info(createdUsers.size() + " end entities have been generated. Total time: " + diff + " ms.");
             log.info("Average creation time: " + diff / (NUMBER_OF_THREADS * USERS_PER_THREAD) + " ms per end entity");
         } finally {
             for (String endEntityName : createdUsers) {
@@ -96,13 +100,13 @@ public class AddLotsofUsersTest extends CaTestCase {
             }
         }
     }
-    
+
     private class RaEntity implements Callable<String[]> {
 
         private final int endEntitiesPerThread;
         private final String[] usernames;
         private final int threadNumber;
-        
+
         public RaEntity(int threadNumber, int endEntitiesPerThread) {
             this.threadNumber = threadNumber;
             this.endEntitiesPerThread = endEntitiesPerThread;
@@ -116,12 +120,12 @@ public class AddLotsofUsersTest extends CaTestCase {
                 String username = theadUsername + "_" + i;
                 usernames[i] = username;
                 endEntityManagementSession.addUser(roleMgmgToken, username, "foo123", "CN=" + username, null, null, false,
-                        SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                        EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                         EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, getTestCAId());
 
             }
             return usernames;
         }
     }
-    
+
 }

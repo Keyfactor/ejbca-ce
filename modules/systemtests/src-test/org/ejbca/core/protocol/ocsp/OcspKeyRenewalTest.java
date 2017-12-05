@@ -70,7 +70,6 @@ import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -167,7 +166,7 @@ public class OcspKeyRenewalTest {
         assertNotEquals("key binding Ids should not be the same", ocspKeyBindingId, ocspKeyBindingIdEcc);
         // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
         EndEntityInformation user = new EndEntityInformation(OcspTestUtils.OCSP_END_USER_NAME, SIGNER_DN, x509ca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         if (endEntityManagementSession.existsUser(OcspTestUtils.OCSP_END_USER_NAME)) {
@@ -180,7 +179,7 @@ public class OcspKeyRenewalTest {
         assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(ocspSigningCertificate.getPublicKey()));
         // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
         user = new EndEntityInformation(OCSP_ECC_END_USER_NAME, SIGNER_DN+"Ecc", x509eccca.getCAId(), null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         if (endEntityManagementSession.existsUser(OCSP_ECC_END_USER_NAME)) {

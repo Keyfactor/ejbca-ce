@@ -63,7 +63,6 @@ import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -307,7 +306,7 @@ public class AuthorizationSystemSessionBean implements AuthorizationSystemSessio
                     username, role.getRoleId(), null));
             // Add CLI user end entity
             final UserData userData = new UserData(username, EjbcaConfiguration.getCliDefaultPassword(), false, "UID=" + username, 0, null, null, null, 0,
-                    SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, 0, null);
             userData.setStatus(EndEntityConstants.STATUS_GENERATED);
             if (entityManager.find(UserData.class, username)==null) {
                 entityManager.persist(userData);
