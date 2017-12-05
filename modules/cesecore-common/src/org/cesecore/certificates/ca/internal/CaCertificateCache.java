@@ -115,7 +115,12 @@ public enum CaCertificateCache  {
             }
             final X509Certificate cert = (X509Certificate) tmp;
             try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
-                newCertsFromSubjectKeyIdentifier.put(HashID.getFromKeyID(cert).getKey(), cert);
+                final Integer key = HashID.getFromKeyID(cert).getKey();
+                final X509Certificate pastCert = newCertsFromSubjectKeyIdentifier.get(key);
+                // Add the entry if it's the first, or if it is more recent than the one existing (in that case replace it)
+                if ( pastCert == null || (pastCert != null && CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) ) {
+                    newCertsFromSubjectKeyIdentifier.put(key, cert);
+                }
             } catch (Throwable t) { // NOPMD: catch all to not break with an error here.
                 if (log.isDebugEnabled()) {
                     final StringWriter sw = new StringWriter();
