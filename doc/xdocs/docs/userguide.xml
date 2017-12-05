@@ -1420,6 +1420,11 @@ The purpose of CT is to create public audit logs of all certificates issued by t
 		at least one CT log from each label will be written to and expect a response</li>	
 </ul>
 <li>Maximum number of SCTs: After having received this number of SCTs, EJBCA will stop contacting log servers.</li>
+<ul>
+	<li>By Validity: Sets the number of maximum SCT responses by validity i.e. maximum = minimum. This ensures that no more SCTs than required will be included in the final certificate</li>
+	<li>Custom: Specifies the maximum number of SCT responses manually. This value cannot be less than the number of selected labels since
+		at least one CT log from each label will be written to and expect a response</li>	
+</ul>
 <li>Submit existing certificates: If existing certificates (defined as not already having an SCT) should be submitted to CT logs during OCSP responses or publishing.</li>
 <li>Number of retries: If a log server times out it will be tried again after all other logs have been tried. This is the maximum number of tries per server.</li>
 </ul>
