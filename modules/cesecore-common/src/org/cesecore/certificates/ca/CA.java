@@ -57,7 +57,6 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -788,6 +787,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @deprecated since 6.8.0, see getApprovals()
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
         if (data.get(APPROVALSETTINGS) == null) {

@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
