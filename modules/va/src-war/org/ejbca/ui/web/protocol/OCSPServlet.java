@@ -123,6 +123,8 @@ public class OCSPServlet extends HttpServlet {
                     ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx),
                             aConfig[i].substring(separatorIx + 1, aConfig[i].length()));
                 }
+                // This setting is cached and must be cleared on config update
+                OcspConfiguration.clearAcceptedSignatureAlgorithmCache();
                 OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to update configuration");
                 return;
