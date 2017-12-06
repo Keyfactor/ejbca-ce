@@ -1157,6 +1157,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
 
+    /**
+     * Upgrade to EJBCA 6.10.1. 
+     * Upgrading System configuration and certificate profiles with CT log label system
+     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
@@ -1164,40 +1168,24 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
         final LinkedHashMap<Integer, CTLogInfo> allCtLogs = gc.getCTLogs();
-        LinkedHashMap<Integer, CTLogInfo> newCtLogs = new LinkedHashMap<>();
-        Map<Integer, Integer> selectedLogs = new HashMap<>();
-
-        if (allCtLogs.isEmpty()) {
-            return;
-        }
-
-        // Get all logs selected by any certificate profile
-        for (Map.Entry<Integer, CertificateProfile> profile : allCertProfiles.entrySet()) {
-            for (Integer enabledLog : profile.getValue().getEnabledCTLogs()) {
-                selectedLogs.put(enabledLog, enabledLog);
-            }
-        }
+        LinkedHashMap<Integer, CTLogInfo> updatedCtLogs = new LinkedHashMap<>();
 
         /* Determine new label for each log...
          * If Google log or previously set to mandatory (6.10), place log under label 'Mandatory'.
-         * If log is selected in any cert profile, put it under its own label in order to keep it in the cert profile after upgrade.
          * Gather remaining logs under the label 'Unlabeled'.
          */
         for (Map.Entry<Integer, CTLogInfo> ctLogInfo : allCtLogs.entrySet()) {
             CTLogInfo ctLog = ctLogInfo.getValue();
             if (ctLog.getUrl().contains("ct.googleapis.com") || ctLog.isMandatory()) {
                 ctLog.setLabel("Mandatory");
-            } else if (selectedLogs.containsKey(ctLog.getLogId())) {
-                // Set label to domain name of url
-                ctLog.setLabel(ctLog.getUrl().substring(ctLog.getUrl().lastIndexOf("://") + 3, ctLog.getUrl().lastIndexOf(".")));
             } else {
                 ctLog.setLabel("Unlabeled");
             }
-            newCtLogs.put(ctLog.getLogId(), ctLog);
+            updatedCtLogs.put(ctLog.getLogId(), ctLog);
         }
 
         // Save CT logs with new labels set
-        gc.setCTLogs(newCtLogs);
+        gc.setCTLogs(updatedCtLogs);
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, gc);
         } catch (AuthorizationDeniedException e) {
@@ -1211,26 +1199,53 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 LinkedHashSet<String> labelsToSelect = new LinkedHashSet<>();
                 final String certProfileName = certProfileSession.getCertificateProfileName(profileId);
                 for (Integer ctLog : certProfile.getEnabledCTLogs()) {
-                    if (newCtLogs.containsKey(ctLog)) {
-                        labelsToSelect.add(newCtLogs.get(ctLog).getLabel());
+                    if (updatedCtLogs.containsKey(ctLog)) {
+                        labelsToSelect.add(updatedCtLogs.get(ctLog).getLabel());
                     }
                 }
-
                 certProfile.setEnabledCTLabels(labelsToSelect);
-                certProfile.setNumberOfSctByValidity(true);
-                certProfile.setNumberOfSctByCustom(false);
-                // With the new label system, at least one log from each label will be written to, hence allowing a maximum lower than
-                // number of labels would lock out issuance.
-                if (certProfile.getCtMaxNonMandatoryScts() < labelsToSelect.size()) {
-                    certProfile.setCtMaxScts(labelsToSelect.size());
+                
+                // This means there were some mandatory- or Google logs selected before upgrade, i.e. it would be ideal to comply to Chrome CT policy
+                if (labelsToSelect.size() > 1) {
+                    certProfile.setNumberOfSctByValidity(true);
+                    certProfile.setMaxNumberOfSctByValidity(true);
+                    certProfile.setNumberOfSctByCustom(false);
+                    certProfile.setMaxNumberOfSctByCustom(false);
                 } else {
-                    certProfile.setCtMaxScts(certProfile.getCtMaxNonMandatoryScts());
+                    certProfile.setNumberOfSctByValidity(false);
+                    certProfile.setMaxNumberOfSctByValidity(false);
+                    certProfile.setNumberOfSctByCustom(true);
+                    certProfile.setMaxNumberOfSctByCustom(true);
+                    // Migrate old values...
+                    // With the new label system, at least one log from each label will be written to, hence allowing a maximum / minimum
+                    // lower than number of labels would lock out issuance.
+                    if (certProfile.getCtMaxNonMandatoryScts() < labelsToSelect.size()) {
+                        certProfile.setCtMaxScts(labelsToSelect.size());
+                    } else {
+                        certProfile.setCtMaxScts(certProfile.getCtMaxNonMandatoryScts());
+                    }
+                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
+                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
+                    } else {
+                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
+                    }
+                    if (certProfile.getCtMinNonMandatoryScts() < labelsToSelect.size()) {
+                        certProfile.setCtMinScts(labelsToSelect.size());
+                    } else {
+                        certProfile.setCtMinScts(certProfile.getCtMinNonMandatoryScts());
+                    }
+                    if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
+                        certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
+                    } else {
+                        certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
+                    }
+                    if (certProfile.getCtMinNonMandatorySctsOcsp() < labelsToSelect.size()) {
+                        certProfile.setCtMinSctsOcsp(labelsToSelect.size());
+                    } else {
+                        certProfile.setCtMinSctsOcsp(certProfile.getCtMinNonMandatorySctsOcsp());
+                    }
                 }
-                if (certProfile.getCtMaxNonMandatorySctsOcsp() < labelsToSelect.size()) {
-                    certProfile.setCtMaxSctsOcsp(labelsToSelect.size());
-                } else {
-                    certProfile.setCtMaxSctsOcsp(certProfile.getCtMaxNonMandatorySctsOcsp());
-                }
+                
                 try {
                     certProfileSession.changeCertificateProfile(authenticationToken, certProfileName, certProfile);
                 } catch (AuthorizationDeniedException e) {
