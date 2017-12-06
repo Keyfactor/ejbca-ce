@@ -792,18 +792,18 @@ org.cesecore.authorization.AuthorizationDeniedException
 		<br/>
 		<h3><h:outputText value="#{web.text.IMPORT}"/></h3>
 		
-		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColoumRight">
+		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
 			<t:inputFileUpload id="raCssFile" value="#{systemConfigMBean.raCssFile}"/>
 		</h:panelGrid>
-		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColoumRight">
+		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
 			<t:inputFileUpload id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="1" columnClasses="gridColumnLeft">
 			<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
 		</h:panelGrid>
-		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColoumRight">
+		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
 			<h:inputText id="archiveName" value="#{systemConfigMBean.archiveName}"/>
 			<h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.actionImportRaStyle}"/>
 		</h:panelGrid>
