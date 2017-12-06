@@ -103,6 +103,13 @@ public class OcspConfiguration {
         return acceptedSignatureAlgorithms.contains(sigAlg);
     }
 
+    /** acceptedSignatureAlgorithms are cached, so if we try to dynamically change the value (for testing)
+     * we need to clear this cache so it is reloaded.
+     */
+    public static void clearAcceptedSignatureAlgorithmCache() {
+        acceptedSignatureAlgorithms = new HashSet<String>();
+    }
+    
     /**
      * 
      * @return How often the standalone OCSP certificate cache should be checked for expiring certificates. Default value i 1 hour
