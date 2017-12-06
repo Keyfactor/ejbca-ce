@@ -1039,10 +1039,10 @@
     	<h:outputLabel rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}" value="#{web.text.EXT_CT_NUMOFSCT_MAX}" styleClass="subItem"/>
 		<h:panelGroup rendered="#{certProfileBean.ctInCertsOrOCSPEnabled}">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.maxNumberOfSctByValidity}" rendered="#{!web.legacyInternetExplorer}"
-				disabled="#{certProfilesBean.viewOnly or certProfileBean.numberOfSctsByCustom}"/>
+				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:commandButton id="useCtSctMaxNumberByValidity" styleClass="checkBoxOverlay" action="#{certProfileBean.toggleMaxNumberOfSctBy}"
 				value="#{certProfileBean.certificateProfile.maxNumberOfSctByValidity?web.text.BOOL_TRUE:web.text.BOOL_FALSE}"
-				disabled="#{certProfilesBean.viewOnly or certProfileBean.numberOfSctsByCustom}"/>
+				disabled="#{certProfilesBean.viewOnly}"/>
 			<h:outputLabel for="useCtSctMaxNumberByValidity" value="#{web.text.EXT_CT_NUMOFSCTS_BY_VALIDITY}" styleClass="checkBoxOverlay"/>
 			
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.maxNumberOfSctByCustom}" rendered="#{!web.legacyInternetExplorer}"
