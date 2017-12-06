@@ -85,7 +85,9 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1,
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
-            AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1
+            AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+            AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA512_WITH_RSA
     ));
 
     /** Signature algorithms supported by DSA keys */
