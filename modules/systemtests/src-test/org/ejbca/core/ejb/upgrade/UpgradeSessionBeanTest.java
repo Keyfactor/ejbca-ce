@@ -722,6 +722,14 @@ public class UpgradeSessionBeanTest {
         }
     }
     
+    /**
+     * Tests upgrade from 6.9.0 to 6.10.1.
+     * The tests expects all previous CT log selections in certificate profiles to be changed into corresponding CT Labels.
+     * Additionally Each CT log should get a label set during upgrade. Previous Google logs 
+     * should get the label "Mandatory", remaining logs should get the label "Unlabeled"
+     * @throws CertificateProfileExistsException
+     * @throws AuthorizationDeniedException
+     */
     @Test
     public void testUpgradeCtLogsTo6101() throws CertificateProfileExistsException, AuthorizationDeniedException {
         final String UNUSED_LABEL = "Unlabeled";
@@ -754,9 +762,15 @@ public class UpgradeSessionBeanTest {
         final String profileUseCtName = "profileUseCt";
         profileUseCt.setUseCertificateTransparencyInCerts(true);
         profileUseCt.setEnabledCTLogs(new LinkedHashSet<Integer>(Arrays.asList(log1.getLogId(), log2.getLogId(), logGoogle.getLogId())));
-        profileUseCt.setCtMinNonMandatoryScts(1);
-        profileUseCt.setCtMaxNonMandatoryScts(2);
         certificateProfileSession.addCertificateProfile(alwaysAllowtoken, profileUseCtName, profileUseCt);
+        
+        CertificateProfile profileUseCt2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        final String profileUseCtName2 = "profileUseCt2";
+        profileUseCt2.setUseCertificateTransparencyInCerts(true);
+        profileUseCt2.setEnabledCTLogs(new LinkedHashSet<Integer>(Arrays.asList(log1.getLogId(), log2.getLogId(), log3.getLogId())));
+        profileUseCt2.setCtMinNonMandatoryScts(0);
+        profileUseCt2.setCtMaxNonMandatoryScts(3);
+        certificateProfileSession.addCertificateProfile(alwaysAllowtoken, profileUseCtName2, profileUseCt2);
         
         guc.setUpgradedFromVersion("6.9.0"); 
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
@@ -768,21 +782,25 @@ public class UpgradeSessionBeanTest {
             // Check if all CT Logs survived upgrade
             assertEquals("Unexpected number of CT logs. Some CT log(s) were lost during upgrade", numberOfCtLogsPreUpgrade, gc.getCTLogs().size());
             // Check if labels were translated properly
-            assertEquals("Unexpected label set for CT log during upgrade", "one.upgradetest", upgradedCtLogs.get(log1.getLogId()).getLabel());
-            assertEquals("Unexpected label set for CT log during upgrade", "two.upgradetest", upgradedCtLogs.get(log2.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log1.getLogId()).getLabel());
+            assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log2.getLogId()).getLabel());
             assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log3.getLogId()).getLabel());
             assertEquals("Unexpected label set for CT log during upgrade", UNUSED_LABEL, upgradedCtLogs.get(log4.getLogId()).getLabel());
             assertEquals("Unexpected label set for CT log during upgrade", MANDATORY_LABEL, upgradedCtLogs.get(logGoogle.getLogId()).getLabel());
             // Verify that CT logs selected in certificate profile were translated to selected CT Labels
             CertificateProfile upgradedProfileUseCtName = certificateProfileSession.getCertificateProfile(profileUseCtName);
-            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains("one.upgradetest"));
-            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains("two.upgradetest"));
+            CertificateProfile upgradedProfileUseCtName2 = certificateProfileSession.getCertificateProfile(profileUseCtName2);
+            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains(UNUSED_LABEL));
             assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName.getEnabledCtLabels().contains(MANDATORY_LABEL));
+            assertTrue("CT Log selected in cert profile was unselected after upgrade", upgradedProfileUseCtName2.getEnabledCtLabels().contains(UNUSED_LABEL));
+            assertFalse("Invalid CT label selected after upgrade", upgradedProfileUseCtName2.getEnabledCtLabels().contains(MANDATORY_LABEL));
             // Verify new SCT min / max value
             assertTrue("Minimum number of SCTs was not set to 'By validity'", upgradedProfileUseCtName.isNumberOfSctByValidity());
-            assertFalse("Minimum number of SCTs was set to 'Custom'. Expected 'By validity'", upgradedProfileUseCtName.isNumberOfSctByCustom());
-            // With the new CT label system, maximum number of SCTs cannot be less than the number of selected labels. Expected change from 2 --> 3
-            assertEquals("Maximum number of SCTs was not converted correctly during upgrade", 3, upgradedProfileUseCtName.getCtMaxScts());
+            assertTrue("Maximum number of SCTs was not set to 'By validity'", upgradedProfileUseCtName.isMaxNumberOfSctByValidity());
+            assertTrue("Minimum number of SCTs was not set to 'By custom'", upgradedProfileUseCtName2.isNumberOfSctByCustom());
+            assertTrue("Maximum number of SCTs was not set to 'By custom'", upgradedProfileUseCtName2.isMaxNumberOfSctByCustom());
+            assertEquals("Minimum number of SCTs was set lower than number of selected labels after upgrade", 1, upgradedProfileUseCtName2.getCtMinScts());
+            assertEquals("Maximum number of SCTs was should not have been changed during upgrade", 3, upgradedProfileUseCtName2.getCtMaxScts());
         } finally {
             // Clean up (CT logs are removed in @After)
             certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName);
