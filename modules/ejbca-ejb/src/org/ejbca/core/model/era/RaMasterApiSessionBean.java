@@ -317,7 +317,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public List<CAInfo> getAuthorizedCas(AuthenticationToken authenticationToken) {
-        return caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
+        return caSession.getAuthorizedCaInfos(authenticationToken);
     }
 
     private LinkedHashMap<Integer, RaStyleInfo> getAllCustomRaCss() {
