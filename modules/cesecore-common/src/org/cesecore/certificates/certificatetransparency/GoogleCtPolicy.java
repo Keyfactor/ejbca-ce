@@ -33,6 +33,21 @@ public class GoogleCtPolicy implements Serializable {
     private final int[] minScts = new int[] { 2, 3, 4, 5, };
 
     /**
+     * Validate the CT policy stored in this object. Currently checking the following:
+     * <ul>
+     *   <li>Ensure the number of CT logs are all greater than zero.</li>
+     * </ul>
+     */
+    public boolean isValid() {
+        for (int i = 0; i < minScts.length; i++) {
+            if (minScts[i] <= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Set the minimum number of SCTs required for certificates with a lifetime
      * of less than 15 Months.
      * @param value a number of SCTs
