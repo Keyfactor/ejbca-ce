@@ -891,11 +891,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     public void toggleNumberOfSctBy() throws AuthorizationDeniedException, IOException {
         getCertificateProfile().setNumberOfSctByCustom(!getCertificateProfile().isNumberOfSctByCustom());
         getCertificateProfile().setNumberOfSctByValidity(!getCertificateProfile().isNumberOfSctByValidity());
-        if (getCertificateProfile().isNumberOfSctByCustom() && getCertificateProfile().isMaxNumberOfSctByValidity()) {
-            toggleMaxNumberOfSctBy();
-        } else {
-            redirectToComponent("header_certificatetransparency");
-        }
+        redirectToComponent("header_certificatetransparency");
     }
         
     public void toggleMaxNumberOfSctBy() throws AuthorizationDeniedException, IOException {
