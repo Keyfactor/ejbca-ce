@@ -33,13 +33,13 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default true 
 #ocsp.includesignercert=true
 
-# Specifies which signature algorithms should be used on OCSP responses. You can specify several algorithm
+# Specifies which signature algorithms can be used in OCSP responses. You can specify several algorithm
 # separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
 # DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
 #
 # Default: SHA256withRSA;SHA256withECDSA;SHA1withDSA
-#ocsp.signaturealgorithm=SHA256withRSA;SHA256withECDSA;SHA1withDSA
+#ocsp.signaturealgorithm=SHA256withRSA;SHA256withRSAandMGF1;SHA256withECDSA;SHA1withDSA
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.

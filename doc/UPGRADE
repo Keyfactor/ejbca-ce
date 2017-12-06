@@ -53,6 +53,13 @@ For each version an 'ant upgrade' and 'ant post-upgrade' should be run (which ca
 Up until, and including, EJBCA 6.3.2.6 EJBCA can be run on JBoss 5.1, while higher versions of EJBCA needs Java 7 or 8 and later versions of JBoss/WildFly.
 An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA 4.0.16 -> EJBCA 6.3.2.6, and after that a platform upgrade is needed.
 
+From EJBCA 6.10 to EJBCA 6.11.0
+-------------------------------
+
+NOTE: SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder. If you are running a legacy responder that still 
+need to use these deprecated algorithms, you have to configure these in the setting 'ocsp.signaturealgorithm' in conf/ocsp.properties.
+
+
 From EJBCA 6.10.0 to EJBCA 6.10.1
 -------------------------------
 
