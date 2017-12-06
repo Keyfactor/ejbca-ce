@@ -286,18 +286,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + endentityAccessRule)) {
             returnval.add(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         }
-        // Certificates that where issued or imported prior to EJBCA 6.6.0 did not have the endEntityProfileId column,
-        // so upgraded systems will have certificates with NO_END_ENTITY_PROFILE as the endEntityProfileId
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + EndEntityConstants.NO_END_ENTITY_PROFILE + endentityAccessRule)) {
-            returnval.add(EndEntityConstants.NO_END_ENTITY_PROFILE);
-        }
         for (final Entry<Integer, EndEntityProfile> entry : EndEntityProfileCache.INSTANCE.getProfileCache(entityManager).entrySet()) {
             // Check if all profiles available CAs exists in authorizedcaids.
             final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
             boolean authorizedToProfile = false;
             // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
-            if (authorizationSession.isAuthorizedNoLogging(admin,
-                    AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
+            if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
                 authorizedToProfile = true;
                 if (availableCasString != null) {
                     for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
