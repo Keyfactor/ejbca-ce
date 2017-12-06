@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -65,6 +66,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
@@ -94,6 +96,8 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
     
+    protected static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
+
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
@@ -1082,7 +1086,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, currentCryptoToken.intValue(),
                         currentKeyPairAlias).getPublicKey();
                 for (final String signatureAlgorithm : AlgorithmTools.getSignatureAlgorithms(currentPublicKey)) {
-                    availableSignatureAlgorithms.add(new SelectItem(signatureAlgorithm));
+                    if (OcspConfiguration.isAcceptedSignatureAlgorithm(signatureAlgorithm)) {
+                        availableSignatureAlgorithms.add(new SelectItem(signatureAlgorithm));
+                    }
+                }
+                // If we have a currently selected signature algorithm, but it's not one of the ones we would choose, add it so we don't hide the current selection 
+                if (currentSignatureAlgorithm != null && !OcspConfiguration.isAcceptedSignatureAlgorithm(currentSignatureAlgorithm)) {
+                    log.error("Adding '"+currentSignatureAlgorithm+"' because it was not one of '"+OcspConfiguration.getSignatureAlgorithm()+"'");
+                    availableSignatureAlgorithms.add(new SelectItem(currentSignatureAlgorithm));                    
                 }
                 if (currentSignatureAlgorithm == null && !availableSignatureAlgorithms.isEmpty()) {
                     currentSignatureAlgorithm = (String) availableSignatureAlgorithms.get(0).getValue();
