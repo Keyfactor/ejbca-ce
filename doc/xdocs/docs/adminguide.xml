@@ -2391,11 +2391,10 @@ CT open source project</a>, and add your root CA to the list of trusted CAs. For
 value and/or enable the "ct.fastfail.enabled" option in conf/cesecore.properties, so a failing log does not slow down all requests.</p>
 
 <p>Regarding performance: EJBCA will connect to every log having one of the labels selected in the certificate profile, in the order they have been added and in parallel. It will keep fetching SCTs until 
-'Maximum number of SCTs' is reached. EJBCA will fail issuance if EJBCA will fail issuance if it is unable to fetch at least the number of SCTs given by the parameter 'Minimum number of SCTs' specified in the 
+'Maximum number of SCTs' is reached. EJBCA will fail issuance if it is unable to fetch at least the number of SCTs given by the parameter 'Minimum number of SCTs' specified in the 
 certificate profile. If the number of retrieved SCTs exceeds the max value, the log(s) last in order will be excluded.</p>
 
-<p>You may change the order in which the logs are contacted by moving them up or down in the configuration page. The changed log ordering will not take effect until you edit and save your Certificate Profiles that use 
-the moved CT logs.</p>
+<p>You may change the order in which the logs are contacted by moving them up or down in the 'System Configuration' page.</p>
 
 </subsection>
 <subsubsection name="CT log labels">
@@ -2413,7 +2412,7 @@ Chrome's CT policy could contain the following: </p>
   <ul>
     <li>The labels "Google logs" and "Unlabeled" selected</li>
     <li>The paramater 'Minimum number of SCTs' set to 'By validity' to let EJBCA select a minimum dynamically based on Chrome's CT Policy.</li>
-    <li>The parameter 'Maximum number of SCTs set to 'By validity' to publish to as many logs as possible.</li>
+    <li>The parameter 'Maximum number of SCTs' set to 'By validity' to only include the number of SCT's required based on Chrome's CT Policy in the certificate.</li>
   </ul>
   </li>
 </ul>
