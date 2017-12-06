@@ -1,4 +1,10 @@
-EJBCA 6.10.0.2
+EJBCA 6.11
+-----------
+
+Notable highlights:
+- SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder.
+
+EJBCA 6.10.0.2/6.10.0.3
 -----------
 
 Patch release covering one issue where an issuewild record on a DNS would cause checks for non-wildcard domains to fail.
