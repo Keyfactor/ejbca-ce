@@ -804,6 +804,7 @@ public class UpgradeSessionBeanTest {
         } finally {
             // Clean up (CT logs are removed in @After)
             certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName);
+            certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName2);
         }
     }
     
