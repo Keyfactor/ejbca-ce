@@ -29,6 +29,15 @@ a img {
 	border-width: 0px;
 }
 
+/* Help Text */
+p.help {
+	font-size: 0.70em;
+	line-height: 0.70em;
+	white-space: normal;
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+}
+
 
 /*--------------------------------------------------------------------------*/
 /* NAVIGATION */
@@ -313,7 +322,10 @@ table.grid td {
 	padding: 2px 3px;
 	border: 1px solid #6F9AD3;
 }
-
+/* nested table */
+table.grid table td {
+    border: none;
+}
 .numberCell {
 	display: block;
 	text-align: right;
@@ -388,7 +400,14 @@ table.grid tfoot tr:active {
 .gridCenter {
 	text-align: center;
 }
-
+.gridColumnRight {
+	text-align: right;
+	width: 50%;
+}
+.gridColumnLeft {
+	text-align: left;
+	vertical-align: middle;
+}
 
 /* --- Forms: List/Actions */
 table.list,
@@ -444,11 +463,39 @@ table.edit tr td {
 .editColumn2 {
 	width: 65%;
 }
-
+.editColumn1-Approval-profile {
+	width: 17%;
+	text-align: right;
+}
+.editColumn2-Approval-profile {
+	width: 65%
+}
+.editColumn1-Approval-steps {
+	width: 20%;
+	text-align: right;
+}
+.editColumn2-Approval-steps {
+	width: 45%
+}
 .editColumnSystem2 {
 	width: 65%;
 	text-align: left;
 }
+.column-checkbox1 {
+	width: 3%;
+	text-align: left;
+}
+.column-checkbox2 {
+	width: 15%;
+	text-align: left;
+}
+.column-checkbox3 {
+	text-align: left;
+}
+.column-align-right {
+	text-align: right;
+}
+
 
 /* Titles (and Sections) */
 table tr.section td,
@@ -609,6 +656,11 @@ table.results tbody tr td {
 }
 table.results tbody tr td a {
 	white-space: nowrap;
+}
+
+.section-label {
+    margin-bottom: 1em;
+    margin-top: 1em;
 }
 
 
@@ -910,6 +962,22 @@ table#config tr td:first-child {
 .listCaption { font-weight: bold; font-size: 1.2em; text-align: left; background-color: #5B8CCD; color: #FFF; padding-left: .25em; }
 .listHeader { color: #777; font-size: 1.1em; font-weight: bold; text-align: left; }
 
+.subheader { color: #777; font-size: 0.7em; font-weight: bold; text-align: left; }
+
+.subTable { background-color: #ffffff; border: 1px solid #252525; }
+
+.tableFooter {
+	font-size: 0.70em;
+	line-height: 0.70em;
+	white-space: normal;
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+	padding: 5px 10px;
+}
+.tableFooter-approval-step {
+	text-align: left;
+}
+
 /* --- Table: List/Actions */
 
 .listColumn1 { text-align: left; width: 40%; }
@@ -933,8 +1001,10 @@ tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #E5ECFF; }
 .valueColumn { text-align: left; width: 20%; }
 .commandColumn { text-align: left; width: 5%; }
 
-.rulesColumn1 { text-align: left; width: 70%; }
-.rulesColumn2 { text-align: center; width: 15%; }
+.rulesColumn1 { text-align: left; width: 50%; }
+.rulesColumn2 { text-align: center; width: 50%; }
+
+table.selectStateRadio td * { vertical-align: middle; }
 
 
 /*--------------------------------------------------------------------------*/
@@ -1094,6 +1164,23 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 	right: auto;
 	left: auto;
 }
+.informationalSection {
+	font-style: normal;
+	padding: 0.5em;
+	border-radius: 0.3em;
+	background: #fcfcfc;
+	margin-bottom: 1em;
+}
+.readablewidth {
+    max-width: 1000px;
+}
+.fullwidth {
+    width: 100%;
+}
+.alignright {
+    text-align: right;
+}
+.alignmiddle { vertical-align: middle; }
 
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }

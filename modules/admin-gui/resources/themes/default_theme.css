@@ -400,12 +400,10 @@ table.grid tfoot tr:active {
 .gridCenter {
 	text-align: center;
 }
-
-.gridColoumRight {
+.gridColumnRight {
 	text-align: right;
 	width: 50%;
 }
-
 .gridColumnLeft {
 	text-align: left;
 	vertical-align: middle;
@@ -483,21 +481,17 @@ table.edit tr td {
 	width: 65%;
 	text-align: left;
 }
-
 .column-checkbox1 {
 	width: 3%;
 	text-align: left;
 }
-
 .column-checkbox2 {
 	width: 15%;
 	text-align: left;
 }
-
 .column-checkbox3 {
 	text-align: left;
 }
-
 .column-align-right {
 	text-align: right;
 }
@@ -668,6 +662,7 @@ table.results tbody tr td a {
     margin-bottom: 1em;
     margin-top: 1em;
 }
+
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT > PAGES */
@@ -972,17 +967,16 @@ table#config tr td:first-child {
 .subTable { background-color: #ffffff; border: 1px solid #252525; }
 
 .tableFooter {
-			font-size: 0.70em;
-			line-height: 0.70em;
-			white-space: normal;
-			color: #606060;		/* Keep it, for old web browsers */
-			color: rgba(0,0,0,.6);
-			padding: 5px 10px;
-		}
-		
+	font-size: 0.70em;
+	line-height: 0.70em;
+	white-space: normal;
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+	padding: 5px 10px;
+}
 .tableFooter-approval-step {
-			text-align: left;
-		}
+	text-align: left;
+}
 
 /* --- Table: List/Actions */
 
@@ -1011,6 +1005,7 @@ tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #E5ECFF; }
 .rulesColumn2 { text-align: center; width: 50%; }
 
 table.selectStateRadio td * { vertical-align: middle; }
+
 
 /*--------------------------------------------------------------------------*/
 /* POPUPS */
