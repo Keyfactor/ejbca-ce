@@ -224,14 +224,12 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     public void moveUp(final CTLogInfo ctLog) {
         super.moveUp(ctLog);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
-        systemConfigurationHelper.addInfoMessage("CTLOGTAB_MOVEDCTLOGS");
     }
 
     @Override
     public void moveDown(final CTLogInfo ctLog) {
         super.moveDown(ctLog);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
-        systemConfigurationHelper.addInfoMessage("CTLOGTAB_MOVEDCTLOGS");
     }
 
     /**
