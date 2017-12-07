@@ -1420,9 +1420,10 @@ public class CAInterfaceBean implements Serializable {
      * @param CAIds
      * @param alias
      * @param currentCryptoTokenId
-     * @return String (Already in use) if crypto key is used by another CA or empty string otherwise.
+     * @return boolean true if crypto key is used by another CA or false otherwise.
+     * @throws javax.resource.spi.IllegalStateException 
      */
-    public String ifKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
+    public boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
 
         CAInfo caInfo = null;
 
@@ -1430,12 +1431,13 @@ public class CAInterfaceBean implements Serializable {
             try {
                 caInfo = getCAInfoNoAuth(caId).getCAInfo();
             } catch (CADoesntExistsException e) {
-                log.info("Certificate authority with id " + caId + " does not exist!" + e);
+                log.error("Certificate authority with id " + caId + " does not exist!" + e);
+                throw new IllegalStateException();
             }
 
             if (currentCryptoTokenId == caInfo.getCAToken().getCryptoTokenId() && caInfo.getCAToken().getProperties().contains(alias))
-                return " (Already in use)";
+                return true;
         }
-        return "";
+        return false;
     }
 }
