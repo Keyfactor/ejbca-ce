@@ -242,12 +242,10 @@ public class RsaKeyValidatorTest {
         exponent = BigInteger.valueOf(4);
         publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
         keyValidator.setPublicKeyExponentMin(exponent.add(BigInteger.ONE));
-        //        keyValidator.setPublicKeyExponentMax(exponent.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyExponentOnlyAllowOdd(true);
         keyValidator.setPublicKeyModulusMin(modulus.add(BigInteger.ONE));
         keyValidator.setPublicKeyModulusMax(modulus.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyModulusOnlyAllowOdd(true);
-        //        keyValidator.setPublicKeyModulusMinFactor(2);
         bitLengths = new ArrayList<String>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
@@ -259,8 +257,6 @@ public class RsaKeyValidatorTest {
                 "Invalid: RSA public key exponent is odd.", messages.get(0));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key exponent is smaller than 5", messages.get(1));
-        //        Assert.assertEquals("RSA parameters bounds failure message isn't right",
-        //                "Invalid: RSA public key exponent is greater than 3", messages.get(2));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key modulus is odd.", messages.get(2));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
