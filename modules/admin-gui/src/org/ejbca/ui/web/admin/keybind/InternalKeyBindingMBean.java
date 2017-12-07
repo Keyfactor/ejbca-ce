@@ -361,7 +361,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public void saveDefaultResponder() {
         GlobalOcspConfiguration globalConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        if (!defaultResponderTarget.equals(globalConfiguration.getOcspDefaultResponderReference())) {
+        if (defaultResponderTarget == null && globalConfiguration.getOcspDefaultResponderReference() != "") {
+            globalConfiguration.setOcspDefaultResponderReference("");
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+            }
+        }
+        else if (!defaultResponderTarget.equals(globalConfiguration.getOcspDefaultResponderReference())) {
             globalConfiguration.setOcspDefaultResponderReference(defaultResponderTarget);
             try {
                 globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
