@@ -27,7 +27,7 @@ import org.cesecore.internal.InternalResources;
 /**
  * Validator which will validate that a BigInteger value is smaller than another input value.
  * 
- * @version 
+ * @version $Id$
  */
 public class MinSmallerThanMaxValidator implements Validator {
     
