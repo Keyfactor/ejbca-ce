@@ -1707,7 +1707,7 @@ abc0123/
 <strong>Federal Agency Smart Credential Number (FASC-N)</strong>
 <p>FASC-N is an OtherName defined for PIV certificates in <a href="http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.201-2.pdf">FIPS 201-2</a>. It is encoded as an Octet String and therefore the
 altName in EJBCA is entered as Hex encoded octets. A subjectAltName string could for example look like: 'rfc822Name=email@example.com, fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1'.
-Since the field is limited to 25 bytes, at suggested validation regex would be "[0-9a-f]{1,50}".
+Since the field is limited to 25 bytes, a suggested validation regex would be "[0-9a-f]{1,50}".
 </p>
 
 </subsubsection>
