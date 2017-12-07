@@ -239,13 +239,22 @@ public class RaAccessBean implements Serializable {
 
     /**
      * Determine if the user has access to the RA master API.
-     * @return true if there is at least one CA serving this RA
+     * @return true if there is at least one CA serving this RA and the user has access rights
      */
     public boolean isBackendAvailable() {
-        final boolean backendAvailable = raMasterApiProxyBean.isBackendAvailable();
-        if (!backendAvailable) {
-            log.warn("Unable to serve RA requests since there is no connection to the upstream CA or lack of authorization of this RA node.");
+        try {
+            if (raMasterApiProxyBean.getApiVersion() < 1) {
+                return true;
+            }
+            final boolean backendAvailable = !raMasterApiProxyBean.getAuthorization(raAuthenticationBean.getAuthenticationToken()).getAccessRules()
+                    .isEmpty();
+            if (!backendAvailable) {
+                log.warn("Unable to serve RA requests since there is no connection to the upstream CA or lack of authorization of this RA node.");
+            }
+            return backendAvailable;
+        } catch (AuthenticationFailedException e) {
+            log.warn("Could not determine RA status");
+            return false;
         }
-        return backendAvailable;
     }
 }
