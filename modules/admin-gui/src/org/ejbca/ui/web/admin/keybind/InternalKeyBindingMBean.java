@@ -1040,13 +1040,17 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if ((keyPairs != null) && (keyPairs.size() > 0)) {
             setCurrentKeyPairAlias((String) keyPairs.get(0).getValue());
             // No need to try to find signature algorithms if there are no keys
-            setCurrentSignatureAlgorithm((String) getAvailableSignatureAlgorithms().get(0).getValue());
+            if (!getAvailableSignatureAlgorithms().isEmpty()) {
+                setCurrentSignatureAlgorithm((String) getAvailableSignatureAlgorithms().get(0).getValue());
+            }
         }
     }
 
     /** Invoked when a KeyPairAlias has been selected and the "Update Next" button is clicked (or clicked by a JavaScript) */
     public void reloadKeyPairAlias() {
-        setCurrentSignatureAlgorithm((String) getAvailableSignatureAlgorithms().get(0).getValue());
+        if (!getAvailableSignatureAlgorithms().isEmpty()) {
+            setCurrentSignatureAlgorithm((String) getAvailableSignatureAlgorithms().get(0).getValue());
+        }
     }
 
     /** @return a list of available aliases in the currently selected CryptoToken */
