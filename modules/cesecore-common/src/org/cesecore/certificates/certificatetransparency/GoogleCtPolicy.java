@@ -31,6 +31,7 @@ public class GoogleCtPolicy implements Serializable {
 
     /* Default policy values. Should not be changed unless the policy changes. */
     private final int[] minScts = new int[] { 2, 3, 4, 5, };
+    private final int[] lessThanMonths = new int[] { 15, 27, 39, Integer.MAX_VALUE };
 
     /**
      * Validate the CT policy stored in this object. Currently checking the following:
@@ -113,9 +114,38 @@ public class GoogleCtPolicy implements Serializable {
     /**
      * Get the minimum number of SCTs required for non EV-certificates with a lifetime
      * of more than 39 Months.
-     * @param value number of SCTs
+     * return a number of SCTs
      */
     public int getMoreThan39Months() {
         return minScts[MORE_THAN_39_MONTHS];
+    }
+    
+    /**
+     * Returns the minimum SCTs for the given index.
+     * @param breakpointIndex Index
+     * @throws IndexOutOfBoundsException if out of bounds.
+     * @return Minimum SCTs
+     * @see #getNumberOfBreakpoints
+     */
+    public int getMinSctsByIndex(int breakpointIndex) {
+        return minScts[breakpointIndex];
+    }
+    
+    /**
+     * Returns the "less than months" validity restriction for the given index.
+     * @param breakpointIndex Index
+     * @throws IndexOutOfBoundsException if out of bounds.
+     * @return "Less than months" value, or Integer.MAX_VALUE if infinite
+     * @see #getNumberOfBreakpoints
+     */
+    public int getLessThanMonthsByIndex(int breakpointIndex) {
+        return lessThanMonths[breakpointIndex];
+    }
+    
+    /**
+     * Returns the number of breakpoints (i.e. indices to getMinSctsByIndex/getLessThanMonthsByIndex)
+     */
+    public int getNumberOfBreakpoints() {
+        return minScts.length;
     }
 }
