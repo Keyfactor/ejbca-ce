@@ -517,7 +517,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyModulusMax
      */
     public void setPublicKeyModulusMaxAsString(String value) {
-        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)/*isNegative(new BigInteger(value))*/) { 
+        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) { 
             log.info(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
         } else {
             data.put(PUBLIC_KEY_MODULUS_MAX, value);
