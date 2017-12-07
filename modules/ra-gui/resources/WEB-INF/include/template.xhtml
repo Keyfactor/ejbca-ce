@@ -33,19 +33,19 @@
         
         <title dir="#{raLocaleBean.direction}"><h:outputText value="#{msg.generic_title}"/></title>
         <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/img/favicon.png"/>
-      	<!-- CSS links to the used Pure library files used -->
-      	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css"/>
-    	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css"/>  
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css"/>
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css"/>
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css"/>
-   		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>   	   		
-   		 <!-- CSS for the standard content frame -->
-  		<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra.css"/> 
+          <!-- CSS links to the used Pure library files used -->
+          <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/base.css"/>
+        <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/pure.css"/>  
+           <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids.css"/>
+           <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/grids-responsive.css"/>
+           <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/menus-dropdown.css"/>
+           <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/pure/forms.css"/>                  
+            <!-- CSS for the standard content frame -->
+          <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/ra.css"/> 
         <!-- Base CSS for the entire RA GUI -->
-     	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css"/>
+         <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/base.css"/>
         <!-- PrimeKey styling from WebExpress -->
-     	<link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/w_e_style.css"/>
+         <link type="text/css" rel="stylesheet" href="#{facesContext.externalContext.context.contextPath}/css/w_e_style.css"/>
         
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/js/common.js"></script>
         <script src="#{facesContext.externalContext.context.contextPath}/js/jquery-3.1.0.min.js"></script>
@@ -53,40 +53,40 @@
     </h:head>
     <h:body dir="#{raLocaleBean.direction}" styleClass="#{raLocaleBean.direction}Direction">
         <h:outputLink id="sessionKeepAliveLink" style="display: none;" value="sessionKeepAlive"><h:outputText value="sessionKeepAlive"/></h:outputLink>
-		 
-		<div id="menu" class="ejbca-menu">
-			<ui:insert name="menu" >
-				<ui:include src="/WEB-INF/include/menu.xhtml" />
-			</ui:insert>
-		</div>
+         
+        <div id="menu" class="ejbca-menu">
+            <ui:insert name="menu" >
+                <ui:include src="/WEB-INF/include/menu.xhtml" />
+            </ui:insert>
+        </div>
 
-		<h:panelGroup layout="block" id="globalMessages">
-	  		<h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
-	    </h:panelGroup>
-	    
-		<div id="content" class="content">
-			<h:panelGroup styleClass="raNotification" rendered="#{not raAccessBean.hasAccess}">
+        <h:panelGroup layout="block" id="globalMessages">
+              <h:messages id="messages" class="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="true"/>
+        </h:panelGroup>
+        
+        <div id="content" class="content">
+            <h:panelGroup styleClass="raNotification" rendered="#{not raAccessBean.backendAvailable}">
                 <img class="raNotificationIcon" src="#{facesContext.externalContext.context.contextPath}/img/ic_sentiment_very_dissatisfied_black_24dp_2x.png" />
-                <h:outputText value="#{msg.broken_ra}"/>
+                <h:outputText value="#{msg.generic_error_upstream_unavailable}"/>
             </h:panelGroup>
-			
-			<ui:insert name="content">
-				<p>If you see this then whatever you're looking at couldn't be rendered.</p>
-			</ui:insert>
-		</div>
-		<!-- Made visible/hidden by showHideScrollToTop -->
-		<a href="#" id="web-express-scroll-to-top">
-    		<span></span>
-    		<span></span>
-		</a>
-		<div id="footer" class="footer">
-			<ui:insert name="footer">
-				<div class="align-center">
-					<img src="#{facesContext.externalContext.context.contextPath}/img/pk_footer_logo.png" alt="logo" class="footerLogo" />
-   	     			<p>© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.</p>
-   	 			</div>
-			</ui:insert>
-		</div>    
+            
+            <ui:insert name="content">
+                <p>If you see this then whatever you're looking at couldn't be rendered.</p>
+            </ui:insert>
+        </div>
+        <!-- Made visible/hidden by showHideScrollToTop -->
+        <a href="#" id="web-express-scroll-to-top">
+            <span></span>
+            <span></span>
+        </a>
+        <div id="footer" class="footer">
+            <ui:insert name="footer">
+                <div class="align-center">
+                    <img src="#{facesContext.externalContext.context.contextPath}/img/pk_footer_logo.png" alt="logo" class="footerLogo" />
+                        <p>© 2002–2017 PrimeKey Solutions AB. EJBCA® is a registered trademark of PrimeKey Solutions AB.</p>
+                    </div>
+            </ui:insert>
+        </div>    
     </h:body>
     </f:view>
 </html>
