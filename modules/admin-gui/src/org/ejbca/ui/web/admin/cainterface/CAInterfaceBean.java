@@ -1421,7 +1421,7 @@ public class CAInterfaceBean implements Serializable {
      * @param alias
      * @param currentCryptoTokenId
      * @return boolean true if crypto key is used by another CA or false otherwise.
-     * @throws javax.resource.spi.IllegalStateException 
+     * @throws IllegalStateException 
      */
     public boolean isKeyInUse(final Collection<Integer> CAIds, final String alias, final int currentCryptoTokenId) {
 
