@@ -347,12 +347,16 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else if (!(value.compareTo(BigInteger.ZERO) == -1)){
             if (getPublicKeyExponentMax() == null || value.compareTo(getPublicKeyExponentMax()) < 1) {
                 data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
-            } else if (log.isDebugEnabled()) {
-                final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", value, getPublicKeyExponentMax());
-                log.debug(message);
+            } else {
+                if (log.isDebugEnabled()) {
+                    final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", value, getPublicKeyExponentMax());
+                    log.debug(message);
+                }
             }
-        } else if (log.isDebugEnabled()) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_min", value));
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_min", value));
+            }
         }
     }
         
@@ -386,12 +390,16 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             if (getPublicKeyExponentMin() == null || value.compareTo(getPublicKeyExponentMin()) > -1) {
                 data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
-            } else if (log.isDebugEnabled()) {
-                final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", getPublicKeyExponentMin(), value);
-                log.debug(message);
+            } else { 
+                if (log.isDebugEnabled()) {
+                    final String message = intres.getLocalizedMessage("validator.error.minimum_bigger_log", getPublicKeyExponentMin(), value);
+                    log.debug(message);
+                }
             }
-        } else if (log.isDebugEnabled()) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_max", value));
+        } else { 
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_exp_max", value));
+            }
         }
     }
     
