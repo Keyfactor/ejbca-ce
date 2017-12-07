@@ -82,7 +82,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -901,10 +901,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Supply extra info to X509CA for Certificate Transparency
         final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        final LinkedHashMap<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
         
         final CertificateGenerationParams certGenParams = new CertificateGenerationParams();
-        certGenParams.setConfiguredCTLogs(configuredCTLogs);
+        final CTSubmissionConfigParams ctConfig = new CTSubmissionConfigParams();
+        ctConfig.setConfiguredCTLogs(globalConfiguration.getCTLogs());
+        ctConfig.setValidityPolicy(globalConfiguration.getGoogleCtPolicy());
+        certGenParams.setCTSubmissionConfigParams(ctConfig);
         return certGenParams;
     }
 
