@@ -477,8 +477,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             data.put(PUBLIC_KEY_MODULUS_MIN, null);
         } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
-        } else if (log.isDebugEnabled()){
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
+        } else {
+            if (log.isDebugEnabled()){
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
+            }
         }
     }
     
@@ -487,8 +489,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyModulusMin
      */
     public void setPublicKeyModulusMinAsString(String value) {
-        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) { 
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
+        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) {
+            if (log.isDebugEnabled()){
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
+            }
         } else {
             data.put(PUBLIC_KEY_MODULUS_MIN, value);
         }    
@@ -515,8 +519,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             data.put(PUBLIC_KEY_MODULUS_MAX, null);
         } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
-        } else if (log.isDebugEnabled()){
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
+        } else {
+            if (log.isDebugEnabled()){
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
+            }
         }
     }
     
@@ -525,8 +531,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyModulusMax
      */
     public void setPublicKeyModulusMaxAsString(String value) {
-        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) { 
-            log.info(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
+        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) {
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
+            }
         } else {
             data.put(PUBLIC_KEY_MODULUS_MAX, value);
         }
