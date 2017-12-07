@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.keys.validation.CertificateValidationDomainService;
 
 /**
@@ -43,17 +44,17 @@ public final class CertificateGenerationParams implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private LinkedHashMap<Integer, CTLogInfo> configuredCTLogs;
+    private CTSubmissionConfigParams ctSubmissionConfigParams;
     private CTAuditLogCallback ctAuditLogCallback;
     
     private AuthenticationToken authenticationToken;
     private CertificateValidationDomainService certificateValidationDomainService;
     
     /**
-     * Set the CT logs from the system configuration.
+     * Sets CT parameters that are not specific to the certificate profile, for example list of available CT logs.
      */
-    public void setConfiguredCTLogs(LinkedHashMap<Integer, CTLogInfo> configuredCTLogs) {
-        this.configuredCTLogs = configuredCTLogs;
+    public void setCTSubmissionConfigParams(final CTSubmissionConfigParams ctSubmissionConfigParams) {
+        this.ctSubmissionConfigParams = ctSubmissionConfigParams;
     }
 
     /**
@@ -66,8 +67,8 @@ public final class CertificateGenerationParams implements Serializable {
 
     /* Package internal methods are called from X509CA */
 
-    LinkedHashMap<Integer, CTLogInfo> getConfiguredCTLogs() {
-        return configuredCTLogs;
+    CTSubmissionConfigParams getCTSubmissionConfigParams() {
+        return ctSubmissionConfigParams;
     }
 
     CTAuditLogCallback getCTAuditLogCallback() {
