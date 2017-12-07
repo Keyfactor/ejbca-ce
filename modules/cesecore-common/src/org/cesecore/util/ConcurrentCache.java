@@ -12,9 +12,13 @@
  *************************************************************************/  
 package org.cesecore.util;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -140,7 +144,8 @@ public final class ConcurrentCache<K,V> {
     
     /** @see #setEnabled */
     private volatile boolean enabled = true;
-    
+    /** @see #setCloseOnEviction */
+    private volatile boolean closeOnEviction = false;
     /** @see setMaxEntries */
     private volatile long maxEntries = NO_LIMIT;
     
@@ -302,6 +307,22 @@ public final class ConcurrentCache<K,V> {
     }
     
     /**
+     * <p>Turns on or off automatic closure of values on eviction from the cache.
+     * Automatic closure can only be done on objects that implement the {@link Closeable} interface.
+     * Exceptions from the close() method are debug logged and swallowed.</p>
+     * 
+     * <p>The default is false.</p>
+     */
+    public void setCloseOnEviction(boolean closeOnEviction) {
+        this.closeOnEviction = closeOnEviction;
+    }
+    
+    /** @see ConcurrentCache#setCloseOnEviction */
+    public boolean isCloseOnEviction() {
+        return closeOnEviction;
+    }
+    
+    /**
      * <p>Sets the desired maximum number of entries in the cache. This is not a
      * strict limit, and the cache may temporarily exceed this number.</p>
      * 
@@ -366,6 +387,7 @@ public final class ConcurrentCache<K,V> {
      * Removes expired entries, and randomly selected entries that have not been used since the last call.
      */
     private void cleanup() {
+        List<Closeable> valuesToClose = null;
         final long startTime = System.currentTimeMillis();
         if (startTime < lastCleanup+cleanupInterval || !isCleaning.tryLock()) {
             return;
@@ -378,11 +400,15 @@ public final class ConcurrentCache<K,V> {
                 random = null;
             } else {
                 // Remove a bit extra
-                ratioToRemove = Math.max(0.0F, 1.0F-0.8F*(float)maxEntries/(float)numEntries.get());
+                ratioToRemove = Math.max(0.0F, 1.0F-0.8F*maxEntries/numEntries.get());
                 
                 // Remove items that have not been accessed since they were last marked as "pending removal"
+                if (closeOnEviction) { valuesToClose = new ArrayList<>(); }
                 for (K key : pendingRemoval) {
-                    cache.remove(key);
+                    InternalEntry<V> evicted = cache.remove(key);
+                    if (closeOnEviction && evicted.value instanceof Closeable) {
+                        valuesToClose.add((Closeable)evicted.value);
+                    }
                     numEntries.decrementAndGet();
                 }
                 pendingRemoval.clear();
@@ -409,13 +435,41 @@ public final class ConcurrentCache<K,V> {
                 log.debug("Clean up took "+(endTime - startTime)+" ms");
             }
         }
+        
+        if (valuesToClose != null) {
+            for (final Closeable closable : valuesToClose) {
+                try {
+                    closable.close();
+                } catch (IOException e) {
+                    log.debug("Exception ocurring when closing evicted value.", e);
+                }
+            }
+        }
     }
     
     /**
      * Removes all entries in the cache
      */
     public void clear() {
-        cache.clear();
+        if (closeOnEviction) {
+            isCleaning.lock();
+            try {
+                for (final InternalEntry<V> entry : cache.values()) {
+                    if (entry.value instanceof Closeable) {
+                        try {
+                            ((Closeable)entry.value).close();
+                        } catch (IOException e) {
+                            log.debug("Exception ocurring when closing value during cache clearing.", e);
+                        }
+                    }
+                }
+                cache.clear();
+            } finally {
+                isCleaning.unlock();
+            }
+        } else {
+            cache.clear();
+        }
         numEntries.set(0L);
         pendingRemoval.clear();
         lastCleanup = 0L;
