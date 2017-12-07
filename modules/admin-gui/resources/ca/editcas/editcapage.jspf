@@ -620,7 +620,7 @@ function toggleCANameChange(){
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
 
-                        final String alreadyInUse = cabean.ifKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId);
+                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                         
                         %>
                         <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
@@ -644,7 +644,7 @@ function toggleCANameChange(){
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
 
-                        final String alreadyInUse = cabean.ifKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId);
+                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                         
                         %>
                         <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
@@ -673,8 +673,8 @@ function toggleCANameChange(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYENCRYPTKEY %>" size="1">
                     <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { 
-                
-                    final String alreadyInUse = cabean.ifKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId);
+
+                    final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                 %>
                 
                         <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)) ? "selected=\"selected\" " : "" %>
@@ -690,7 +690,7 @@ function toggleCANameChange(){
                     <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { 
                 
-                    final String alreadyInUse = cabean.ifKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId);
+                    final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                 %>
                     <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT)) ? "selected=\"selected\" " : "" %>
                           value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
@@ -712,7 +712,7 @@ function toggleCANameChange(){
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
                         
-                        final String alreadyInUse = cabean.ifKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId);
+                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                         
                         %>
                         <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
