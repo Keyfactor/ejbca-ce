@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.util.validator;
 
 import java.math.BigInteger;
@@ -15,7 +27,7 @@ import org.cesecore.internal.InternalResources;
 /**
  * Validates that no negative numbers can be set for a Rsa Key Validator.
  * 
- * @version 
+ * @version $Id$
  */
 
 public class NoNegativeNumbersValidator implements Validator {
@@ -24,7 +36,7 @@ public class NoNegativeNumbersValidator implements Validator {
     private static final InternalResources intres = InternalResources.getInstance();
     
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(MinSmallerThanMaxValidator.class);
+    private static final Logger log = Logger.getLogger(NoNegativeNumbersValidator.class);
     
     @Override
     public void validate(FacesContext context, UIComponent component, Object object) throws ValidatorException {

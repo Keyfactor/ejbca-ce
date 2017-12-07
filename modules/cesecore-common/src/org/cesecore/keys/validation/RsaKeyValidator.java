@@ -344,7 +344,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public void setPublicKeyExponentMin(BigInteger value) {
         if (null == value) {
             data.put(PUBLIC_KEY_EXPONENT_MIN, null);
-        } else if (!isNegative(value)){
+        } else if (!(value.compareTo(BigInteger.ZERO) == -1)){
             if (getPublicKeyExponentMax() == null || value.compareTo(getPublicKeyExponentMax()) < 1) {
                 data.put(PUBLIC_KEY_EXPONENT_MIN, value.toString());
             } else if (log.isDebugEnabled()) {
@@ -383,7 +383,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public void setPublicKeyExponentMax(BigInteger value) {
         if (null == value) {
             data.put(PUBLIC_KEY_EXPONENT_MAX, null);
-        } else if (!isNegative(value)) {
+        } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             if (getPublicKeyExponentMin() == null || value.compareTo(getPublicKeyExponentMin()) > -1) {
                 data.put(PUBLIC_KEY_EXPONENT_MAX, value.toString());
             } else if (log.isDebugEnabled()) {
@@ -441,8 +441,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, null);
         } else if(!(type < 0)) {
             data.put(PUBLIC_KEY_MODULUS_MIN_FACTOR, type);
-        } else if( log.isDebugEnabled() ) {
-            log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_fact_min", type));
+        } else {
+            if( log.isDebugEnabled() ) {
+                log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_fact_min", type));
+            }
         }
     }
     
@@ -465,7 +467,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public void setPublicKeyModulusMin(BigInteger value) {
         if (null == value){
             data.put(PUBLIC_KEY_MODULUS_MIN, null);
-        } else if (!isNegative(value)) {
+        } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             data.put(PUBLIC_KEY_MODULUS_MIN, value.toString());
         } else if (log.isDebugEnabled()){
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
@@ -477,7 +479,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyModulusMin
      */
     public void setPublicKeyModulusMinAsString(String value) {
-        if (isNegative(new BigInteger(value))) { 
+        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)) { 
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_min", value));
         } else {
             data.put(PUBLIC_KEY_MODULUS_MIN, value);
@@ -503,7 +505,7 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     public void setPublicKeyModulusMax(BigInteger value) {
         if (null == value){
             data.put(PUBLIC_KEY_MODULUS_MAX, null);
-        } else if (!isNegative(value)) {
+        } else if (!(value.compareTo(BigInteger.ZERO) == -1)) {
             data.put(PUBLIC_KEY_MODULUS_MAX, value.toString());
         } else if (log.isDebugEnabled()){
             log.debug(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
@@ -515,26 +517,13 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param value the string value for PublicKeyModulusMax
      */
     public void setPublicKeyModulusMaxAsString(String value) {
-        if (isNegative(new BigInteger(value))) { 
+        if (!(new BigInteger(value).compareTo(BigInteger.ZERO) == -1)/*isNegative(new BigInteger(value))*/) { 
             log.info(intres.getLocalizedMessage("validator.error.set_key_validator_mod_max", value));
         } else {
             data.put(PUBLIC_KEY_MODULUS_MAX, value);
         }
     }
-        
-    /**
-     * Testing if BigInteger value is negative
-     * @param value the value to be tested
-     * @return true or false
-     */
-    public boolean isNegative(BigInteger value) {
-        if (value.compareTo(BigInteger.ZERO) == -1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
+      
     @Override
     public String getTemplateFile() {
         return TEMPLATE_FILE;
