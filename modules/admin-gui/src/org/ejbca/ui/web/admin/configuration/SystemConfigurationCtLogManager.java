@@ -11,6 +11,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +40,8 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         private String label;
         private int timeout = 5000;
         private CTLogInfo ctLogBeingEdited;
+        private boolean isAcceptingByExpirationYear;
+        private String expirationYearRequired;
 
         public String getCtLogUrl() {
             if (StringUtils.isEmpty(url)) {
@@ -80,6 +83,27 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
 
         /**
+         * Set a boolean indicating whether the log being edited only accepts certificates with
+         * a certain year of expiry, e.g. all certificates expiring in 2019.
+         * @param isAcceptingByExpirationYear true if the log is discriminating based on year of expiry
+         */
+        public void setIsAcceptingByExpirationYear(final boolean isAcceptingByExpirationYear) {
+            this.isAcceptingByExpirationYear = isAcceptingByExpirationYear;
+        }
+
+        public boolean getIsAcceptingByExpirationYear() {
+            return isAcceptingByExpirationYear;
+        }
+
+        public void setExpirationYearRequired(final String expirationYearRequired) {
+            this.expirationYearRequired = expirationYearRequired;
+        }
+
+        public String getExpirationYearRequired() {
+            return expirationYearRequired;
+        }
+
+        /**
          * Load an existing CT log into the editor.
          */
         public void loadIntoEditor(final CTLogInfo ctLog) {
@@ -89,6 +113,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             this.timeout = ctLog.getTimeout();
             this.url = ctLog.getUrl();
             this.ctLogBeingEdited = ctLog;
+            this.isAcceptingByExpirationYear = ctLog.getExpirationYearRequired() != null;
+            this.expirationYearRequired = ctLog.getExpirationYearRequired() == null ? 
+                    String.valueOf(Calendar.getInstance().get(Calendar.YEAR)) : String.valueOf(ctLog.getExpirationYearRequired());
         }
 
         /**
@@ -277,6 +304,10 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
                 return StringUtils.EMPTY;
             }
         }
+        if (ctLogEditor.getIsAcceptingByExpirationYear() && !StringUtils.isNumeric(ctLogEditor.getExpirationYearRequired())) {
+            systemConfigurationHelper.addErrorMessage("CTLOGCONFIGURATION_INVALID_YEAR");
+            return StringUtils.EMPTY;
+        }
 
         /* Ensure the new log configuration is not conflicting with another log */
         final CTLogInfo ctLogToUpdate = ctLogEditor.getCtLogBeingEdited();
@@ -299,6 +330,8 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         ctLogToUpdate.setTimeout(timeout);
         ctLogToUpdate.setUrl(url);
         ctLogToUpdate.setLabel(label);
+        ctLogToUpdate.setExpirationYearRequired(ctLogEditor.getIsAcceptingByExpirationYear() ? 
+                Integer.valueOf(ctLogEditor.getExpirationYearRequired()) : null);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
         ctLogEditor.stopEditing();
         return CT_LOG_SAVED;

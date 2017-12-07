@@ -39,6 +39,7 @@ public final class CTLogInfo implements Serializable {
     private String label;
     @Deprecated
     private boolean isMandatory;
+    private Integer expirationYearRequired;
 
     private transient PublicKey publicKey;
 
@@ -167,6 +168,30 @@ public final class CTLogInfo implements Serializable {
 
     public void setLabel(final String label) {
         this.label = label;
+    }
+
+    /**
+     * Returns the expiration year which certificates published to this CT log must
+     * have in order to be accepted, or null if there is no such requirement. For
+     * example, if this method returns "2019" then you should only try to publish
+     * certificates to this CT log expiring in 2019, since all other certificates
+     * will be rejected.
+     * @return the expiration year required for all certificates being published to
+     * this log or null if there is no such requirement
+     */
+    public Integer getExpirationYearRequired() {
+        return expirationYearRequired;
+    }
+
+    /**
+     * Returns the expiration year which certificates published to this CT log must
+     * have in order to be accepted, or null if there is no such requirement. See
+     * {@link #getExpirationYearRequired()}.
+     * @param expirationYearRequired the expiration year required for new certificates
+     * being published to this CT log, or null if no such requirement
+     */
+    public void setExpirationYearRequired(final Integer expirationYearRequired) {
+        this.expirationYearRequired = expirationYearRequired;
     }
 
     @Override
