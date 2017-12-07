@@ -77,8 +77,22 @@ org.cesecore.authorization.control.StandardRules
                 required="true"
                 value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogLabel}"
                 size="46"/>
-                
         </h:panelGrid>
+        
+        <h3><h:outputLabel value="#{web.text.CONSTRAINTS}"/></h3>
+        <div class="block">
+	         <h:selectBooleanCheckbox id="enableExpirationYearAcceptanceRule"
+	             styleClass="checkbox"
+	             value="#{systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear}" /> 
+	         <h:outputLabel for="enableExpirationYearAcceptanceRule" 
+	             value="#{web.text.ACCEPTING_BASED_ON_YEAR_OF_EXPIRY}" />
+	    </div>
+	    <div class="block">
+	         <h:outputText value="#{web.text.YEAR}"
+	             styleClass="textLabel"/>
+             <h:inputText id="expirationYearRequired"
+                 value="#{systemConfigMBean.ctLogManager.ctLogEditor.expirationYearRequired}" />
+	    </div>
         <h:commandButton action="#{systemConfigMBean.ctLogManager.saveCtLogBeingEdited}" value="#{web.text.SAVE}" />
     </h:form>
     <%  // Include Footer 

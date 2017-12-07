@@ -663,6 +663,17 @@ table.results tbody tr td a {
     margin-top: 1em;
 }
 
+.checkbox {
+	margin-right:10px;
+}
+
+.textLabel {
+	margin-right:40px;
+}
+
+.block {
+	margin-bottom:1em;
+}
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT > PAGES */
