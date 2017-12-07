@@ -238,21 +238,14 @@ public class RaAccessBean implements Serializable {
     }
 
     /**
-     * Determine if the user has access to at least one access rule. Will only work
-     * with RA Master API version 1 and above. True will always be returned if an older version
-     * is detected.
-     * @return true if at least one access rule is granted or legacy API detected, false if no access or
-     * an authentication error occurred
+     * Determine if the user has access to the RA master API.
+     * @return true if there is at least one CA serving this RA
      */
-    public boolean isHasAccess() {
-        try {
-            final AuthenticationToken authenticationToken = raAuthenticationBean.getAuthenticationToken();
-            if (raMasterApiProxyBean.getApiVersion() >= 1) {
-                return !raMasterApiProxyBean.getAuthorization(authenticationToken).getAccessRules().isEmpty();
-            }
-            return true;
-        } catch (AuthenticationFailedException e) {
-            return false;
+    public boolean isBackendAvailable() {
+        final boolean backendAvailable = raMasterApiProxyBean.isBackendAvailable();
+        if (!backendAvailable) {
+            log.warn("Unable to serve RA requests since there is no connection to the upstream CA or lack of authorization of this RA node.");
         }
+        return backendAvailable;
     }
 }
