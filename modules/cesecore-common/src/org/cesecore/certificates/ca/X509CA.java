@@ -1233,7 +1233,7 @@ public class X509CA extends CA implements Serializable {
                     log.debug("Not logging to CT. CT submission configuration parameters was null.");
                 } else if (MapUtils.isEmpty(certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs())) {
                     log.debug("Not logging to CT. There are no CT logs configured in System Configuration.");
-                } else if (certGenParams.getCTAuditLogCallback() != null) {
+                } else if (certGenParams.getCTAuditLogCallback() == null) {
                     log.debug("Not logging to CT. No CT audit logging callback was passed to X509CA.");
                 } else {
                     // Get certificate chain
