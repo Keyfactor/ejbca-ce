@@ -358,7 +358,7 @@ public class Pkcs11SlotLabel {
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    private static Provider getSunP11ProviderNoExceptionHandeling(final InputStream is) throws ClassNotFoundException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private static Provider getSunP11ProviderNoExceptionHandling(final InputStream is) throws ClassNotFoundException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         // Sun PKCS11 has InputStream as constructor argument
         @SuppressWarnings("unchecked")
         final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
@@ -374,7 +374,7 @@ public class Pkcs11SlotLabel {
      */
     private static Provider getSunP11Provider(final InputStream is) {
         try {
-            return getSunP11ProviderNoExceptionHandeling(is);
+            return getSunP11ProviderNoExceptionHandling(is);
         } catch (Exception e) {
             final String msg = "Error constructing pkcs11 provider: " + e.getMessage();
             log.error(msg);
@@ -397,11 +397,11 @@ public class Pkcs11SlotLabel {
      */
     static void doC_Initialize(final File libFile) {
         try {
-            getSunP11ProviderNoExceptionHandeling( getSunP11ProviderInputStream(-1, libFile, Pkcs11SlotLabelType.SLOT_NUMBER, null, null) );
+            getSunP11ProviderNoExceptionHandling( getSunP11ProviderInputStream(-1, libFile, Pkcs11SlotLabelType.SLOT_NUMBER, null, null) );
         } catch (InvocationTargetException e) {
             // the p11 module don't like the bogus arguments and throws an exception but we don't bother about this since
             // C_Initialize has already been called with multithread arguments.
-            log.debug("Get dummy sun provider throws an exception. This is OK.", e);
+            log.debug("Get dummy sun provider throws an exception for "+libFile.getPath()+". This is OK.", e);
         } catch (Exception e) {
             final String msg = "Error constructing pkcs11 provider: " + e.getMessage();
             log.error(msg);

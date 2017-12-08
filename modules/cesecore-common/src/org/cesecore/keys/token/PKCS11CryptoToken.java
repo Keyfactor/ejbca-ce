@@ -90,6 +90,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     @Override
     public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException, NoSuchSlotException {
+        if (log.isDebugEnabled()) {
+            log.debug(">init: id=" + id);
+        }
         // Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
         init(properties, false, id);
@@ -109,6 +112,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         }
         final Provider provider = p11slot.getProvider();
         setJCAProvider(provider);
+        if (log.isDebugEnabled()) {
+            log.debug("<init: id=" + id);
+        }
     }
 
     @Override
