@@ -1,4 +1,75 @@
-EJBCA 6.10.0.2, 2017-11-21
+EJBCA 6.10.1, 2017-12-11
+---
+
+Bug
+    [ECA-5945] - 'Roles which may approve this partition' resets when Members of role changes
+    [ECA-5977] - Continue to check connectivity to peers after MariaDB Galera Cluster error
+    [ECA-6198] - Upgrading KeyRecoveryData (with rows) past EJBCA 6.1.0 will fail
+    [ECA-6250] - AccessTreeUpdateData accessed too often, causing performance reduction
+    [ECA-6256] - "Description" attribute can not be used in Subject DN
+    [ECA-6258] - Approval partition metadata doesn't show up unless the partition has a title 
+    [ECA-6264] - Fix javadoc compilation errors
+    [ECA-6268] - Approval metadata is lost in the RA gui when a request moves from Pending to Processed
+    [ECA-6274] - Approving/Viewing roles are removed when metadata is added to an Approval Profile
+    [ECA-6278] - CA Renewal with name change logs caid as 0
+    [ECA-6281] - Add flag to not reverse Custom DN order by the LDAP DN Order setting
+    [ECA-6300] - upgrade() in CAs should set new version last
+    [ECA-6327] - Wrong CT error message when saving certificate profile
+    [ECA-6341] - Upgrade of extended services from version before EJBCA 5 doesn't work correctly
+    [ECA-6343] - AccessUserAspectData must handle null matchValues after upgrade
+    [ECA-6346] - CAA fails to ignore issuewild statements for non-wildcard domains 
+    [ECA-6348] - when trying to navigate RA Web nothing happens (Blank page). Error message occured in logs
+    [ECA-6349] - Error editing access rules and members in role in GUI after upgrade, can not get role with negative ID
+    [ECA-6358] - RA End Entity Search stops working until page reload if session is lost
+    [ECA-6359] - Certificates with null or zero End Entity Profile not accessible through RA
+    [ECA-6360] - X509AuthenticationToken match should ignore null values
+    [ECA-6375] - CAA mispelled in documentation
+    [ECA-6382] - Adding a new CT log without a label makes it unselectable
+    [ECA-6389] - Cosmetic Fixes to CT Log Configuration
+    [ECA-6393] - Sort CT Labels
+    [ECA-6394] - search.cgi certificate download by subejctKeyID hash doesn't always return the last if there are multiple
+    [ECA-6395] - Remove CTLOGTAB_MOVEDCTLOGS message
+    [ECA-6403] - Minimum SCTs should be possible to set to zero
+
+New Feature
+    [ECA-6303] - Replace the current "mandatory/non-mandatory" setting for CT logs with a basic label system 
+    [ECA-6304] - Upgrade CT logs using the mandatory/non-mandatory binary setting to the label system 
+    [ECA-6305] - Document new CT logs features
+    [ECA-6307] - Add code to System Configuration for adding/removing/editing CT log labels
+    [ECA-6309] - Modify Certificate Profiles to use the CT log label system instead of the mandatory/non-mandatory for min/max
+    [ECA-6310] - Create a table in CT settings for having the minimum number of logs set by validity at issuance
+    [ECA-6312] - Add an option in Certificate Profiles for CT log publishing to base the minimum number of logs on validity.
+    [ECA-6351] - Add CT backend support for labels, and submit to all logs in parallel
+    [ECA-6363] - Backport CVC Certificate Extensions to 6.10.1
+    [ECA-6365] - Custom CVC extensions in certificate requests
+    [ECA-6385] - Allow CT submission to use implicit min/max defined by validity (configuration option)
+    [ECA-6399] - Allow CT submission to use implicit min/max defined by validity (backend)
+
+Improvement
+    [ECA-5879] - Update quick install guide with ejbca-setup scripted installation
+    [ECA-6248] - Microoptimization of X509CertificateAuthenticationToken
+    [ECA-6260] - CaSession.getAllCaIds queries the database every time and should be cached
+    [ECA-6261] - Micro-optimize status lookup in WebAuthenticationSession.authenticate
+    [ECA-6262] - RaMasterAPI should cache active CA to determine if backend is available
+    [ECA-6263] - CertificateData.existsByIssuerAndSerno can be a micro-optimized
+    [ECA-6270] - Micro-optimize EndEntityManagementSession.existsUser
+    [ECA-6275] - Micro-optimize away one getIssuerDN in CertificateCreateSessionBean
+    [ECA-6276] - Remove dual verification of POPO
+    [ECA-6277] - Optimize to avoid repeated certificate encoding/decoding converting into BC class
+    [ECA-6297] - Optimize EjbcaWS to only enrich with raw subject DN when override will be used
+    [ECA-6306] - Avoid ArrayCopy in DNFieldExtractor.getUseFields
+    [ECA-6308] - Pre-allocate enough byte array buffer when writing XML
+    [ECA-6311] - Cache StringTools internal CharSet for forbidden characters
+    [ECA-6314] - Don't use Exception as condition handling in RequestMessageUtils
+    [ECA-6317] - Micro-optimize exists queries and get status
+    [ECA-6318] - Save one BCrypt operation internally in a transaction
+    [ECA-6334] - Remove old CT code
+    [ECA-6335] - Document required upgrade steps from EJBCA 3.x to 6.10
+    [ECA-6353] - Duplicated role members after upgrade to 6.8
+    [ECA-6381] - Forbid upgrading EJBCA from versions prior to 5.0.0
+    [ECA-6397] - Filter CT logs based on expiration date of certificate
+
+EJBCA 6.10.0.2/3, 2017-11-21
 ---
 
 Bug
