@@ -4,6 +4,26 @@ EJBCA 6.11
 Notable highlights:
 - SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder.
 
+EJBCA 6.10.1 
+-----------
+
+This minor release introduces a couple of cool new features and above all a big performance improvement. We've added certificate extensions
+to CV certificates; these can be managed just like standard custom certificate extensions under System Configuration.
+
+We've made a big change to how we handle CT logs. In 6.10.0 we added the option to make certain logs mandatory in anticipation to Google's 
+enforcement of their updated CT specification in April 2018. Looking back we weren't entirely satisfied with our design, so have instead introduced
+the concept of CT Log Labels in order to group sets of logs. Instead of choosing a series of logs in the Certificate Profile you may choose a series
+of labels. Upon issuance all logs from those labels will be queried to, and the first n SCTs will be written to the certificate, where n is the max 
+number of SCTs allowed and there will be at least one SCT per label. For those of you using the 'Mandatory'-option since 6.10, your logs will be 
+automatically upgraded, which is documented further in the UPGRADE document. 
+
+Speaking of upgrading, you may have caught the EJBCA 6.3.2.6 Intermediate Release issued recently in order to facilitate upgrades from versions of
+EJBCA earlier than 5.0. In this release we've ironed out the last remaining upgrade bugs, as well as forbidding upgrades from versions of EJBCA prior
+to 5.0 in order to avoid errors in the future. 
+
+Lastly, we've put some time into optimizing certificate issuance in EJBCA. In comparison to 6.10, EJBCA 6.10.1 has about twice the throughput and 
+half the latency in our benchmark environment for high volumes of certificate issuance. 
+
 EJBCA 6.10.0.2/6.10.0.3
 -----------
 
