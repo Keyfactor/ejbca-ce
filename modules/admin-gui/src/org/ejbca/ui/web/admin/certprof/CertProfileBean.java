@@ -181,7 +181,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                     
                 } else if (((prof.getCtMaxScts() < prof.getCtMinScts() && prof.isUseCertificateTransparencyInCerts()) ||
                             (prof.getCtMaxSctsOcsp() < prof.getCtMinSctsOcsp() && prof.isUseCertificateTransparencyInOCSP()))
-                            && isNumOfSctsCustom) {
+                            && (isNumOfSctsCustom && isMaxNumOfSctsCustom)) {
                     addErrorMessage("INCORRECTMAXLESSTHANMIN");
                     success = false;
                 } else if (((prof.getCtMinScts() < numEnabledLabels && prof.isUseCertificateTransparencyInCerts()) ||
