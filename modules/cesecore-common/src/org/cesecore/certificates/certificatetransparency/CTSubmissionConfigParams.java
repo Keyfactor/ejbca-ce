@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificatetransparency;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -19,8 +20,10 @@ import java.util.Map;
  * that are not specific to the certificate profiles.
  * @version $Id$
  */
-public final class CTSubmissionConfigParams {
+public final class CTSubmissionConfigParams implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private Map<Integer,CTLogInfo> configuredCTLogs;
     private GoogleCtPolicy validityPolicy;
     
