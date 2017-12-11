@@ -46,6 +46,7 @@ New Feature
     [ECA-6399] - Allow CT submission to use implicit min/max defined by validity (backend)
 
 Improvement
+    [ECA-6406] - Fix CT performance and error logging regressions
     [ECA-5879] - Update quick install guide with ejbca-setup scripted installation
     [ECA-6248] - Microoptimization of X509CertificateAuthenticationToken
     [ECA-6260] - CaSession.getAllCaIds queries the database every time and should be cached
