@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.profiles.ProfileBase;
@@ -45,6 +46,9 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
+    /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
+    protected static List<Integer> APPLICABLE_CA_TYPES;
+    
     public static final float LATEST_VERSION = 4F;
 
     public static final String TYPE = "type";
@@ -58,6 +62,12 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
     protected static final String FAILED_ACTION = "failedAction";
     protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
+
+    static {
+        APPLICABLE_CA_TYPES = new ArrayList<Integer>();
+        APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
+        APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_CVC);
+    }
 
     // Values used for lookup that are not stored in the data hash map.
     private int id;
@@ -83,6 +93,11 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     public ValidatorBase(final ValidatorBase keyValidator) {
         this.data = new LinkedHashMap<Object, Object>(keyValidator.data);
         this.id = keyValidator.id;
+    }
+
+    @Override
+    public List<Integer> getApplicableCaTypes() {
+        return APPLICABLE_CA_TYPES;
     }
 
     @Override

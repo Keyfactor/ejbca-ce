@@ -15,11 +15,14 @@ package org.cesecore.keys.validation;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
 
 /**
  * @version $Id: CertificateValidatorBase.java 26333 26390 2017-11-04 15:20:58Z anjakobs $
@@ -31,9 +34,14 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
 
 	/** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
-
-    /** Dynamic UI properties extension. */
-//    protected DynamicUiProperties uiProperties;
+    
+    /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
+    protected static List<Integer> APPLICABLE_CA_TYPES;
+    
+    static {
+        APPLICABLE_CA_TYPES = new ArrayList<Integer>();
+        APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
+    }
     
     /**
      * Public constructor needed for deserialization.
@@ -50,11 +58,9 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
         init();
     }
 
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     */
-    public CertificateValidatorBase(final CertificateValidatorBase keyValidator) {
-        super();
+    @Override
+    public List<Integer> getApplicableCaTypes() {
+        return APPLICABLE_CA_TYPES;
     }
 
     @Override
@@ -141,11 +147,6 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
             log.debug("Could not parse Date: " + formattedDate);
         }
     }
-    
-//    @Override
-//    public DynamicUiProperties getDynamicUiProperties() {
-//        return uiProperties;
-//    }
 
     /**
      * Formats a date.

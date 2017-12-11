@@ -54,10 +54,11 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
     Map<Integer, String> getKeyValidatorIdToNameMap();
 
     /**
-     * Retrieves a Map of key validator ids, sorted on profile name.
-     * @return sorted mapping of key validator names and ids.
+     * Retrieves a Map of key validator names which are applicable for the type of CA (X509 or CVC see {@link CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC}).
+     * @param applicableCas applicable CA type identifier.
+     * @return mapping of key validators ids and names.
      */
-    Map<String, Integer> getKeyValidatorNameToIdMap();
+    Map<Integer, String> getKeyValidatorIdToNameMap(int applicableCas);
 
     /**
      * <p>Returns the ids for validators conflicting with a given key validator which is to be added.</p>
