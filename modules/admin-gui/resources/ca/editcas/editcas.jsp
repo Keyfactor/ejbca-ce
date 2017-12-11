@@ -736,7 +736,7 @@ org.ejbca.ui.web.ParameterException
         if (ACTION_CHOOSE_CATYPE.equals(action)) {
     	    // Change the CA type we are
     	    catype = Integer.parseInt(requestMap.get(SELECT_CATYPE));
-            caname = requestMap.get(HIDDEN_CANAME);   
+            caname = requestMap.get(HIDDEN_CANAME);
             keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
             if (requestMap.get(SELECT_KEY_SEQUENCE_FORMAT) != null) {
           	    keySequenceFormat = Integer.parseInt(requestMap.get(SELECT_KEY_SEQUENCE_FORMAT));

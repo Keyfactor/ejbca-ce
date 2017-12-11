@@ -116,14 +116,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     /**
-     * Creates a new instance with the same attributes as the given one.
-     * @param validator the base key validator to load.
-     */
-    public ExternalCommandCertificateValidator(final CertificateValidatorBase validator) {
-        super(validator);
-    }
-
-    /**
      * Initializes uninitialized data fields.
      */
     @Override
@@ -138,11 +130,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         if (data.get(LOG_ERROR_OUT) == null) {
             setLogErrorOut(false);
         }
-        // Initialize UI properties.
-//        uiProperties = new DynamicUiPropertiesBase(data);
-//        uiProperties.addProperty(new DynamicUiProperty<String>(EXTERNAL_COMMAND, StringUtils.EMPTY));
-//        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_STANDARD_OUT, Boolean.FALSE)); 
-//        uiProperties.addProperty(new DynamicUiProperty<Boolean>(LOG_ERROR_OUT, Boolean.FALSE)); 
     }
 
     @Override

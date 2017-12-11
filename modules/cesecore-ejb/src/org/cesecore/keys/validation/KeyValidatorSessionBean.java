@@ -327,6 +327,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
 
+    // Not used.
     @Override
     public Map<Integer, Validator> getKeyValidatorsById(Collection<Integer> ids) {
         final List<ProfileData> keyValidators = profileSession.findAllProfiles(Validator.TYPE_NAME);
@@ -350,19 +351,17 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-
+    
     @Override
-    public Map<String, Integer> getKeyValidatorNameToIdMap() {
-        final LinkedHashMap<String, Integer> result = new LinkedHashMap<>();
-        List<ProfileData> profiles = profileSession.findAllProfiles(Validator.TYPE_NAME);
-        Collections.sort(profiles, new Comparator<ProfileData>() {
-            @Override
-            public int compare(ProfileData o1, ProfileData o2) {
-                return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
+    public Map<Integer, String> getKeyValidatorIdToNameMap(int applicableCa) {
+        final HashMap<Integer, String> result = new HashMap<>();
+        for (Entry<Integer,Validator> data : getAllKeyValidators().entrySet()) {
+            if (data.getValue().getApplicableCaTypes().contains((Integer) applicableCa)) {
+                result.put(data.getKey(), data.getValue().getProfileName());
             }
-        });
-        for (ProfileData data : profiles) {
-            result.put(data.getProfileName(), data.getId());
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Found validators for applicable CAs " + applicableCa + ": " + result);
         }
         return result;
     }
@@ -666,9 +665,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
             // We need to read from database because we specified to not get from cache or we don't have anything in the cache
             final ProfileData data = profileSession.findById(id);
-
             if (data != null) {
                 result = (Validator) data.getProfile();
+                if (log.isDebugEnabled()) {
+                    log.debug("Load validator: " + result);
+                    log.debug("Load validator: " + result.getDataMap());
+                }
                 final int digest = data.getProtectString(0).hashCode();
                 // The cache compares the database data with what is in the cache
                 // If database is different from cache, replace it in the cache

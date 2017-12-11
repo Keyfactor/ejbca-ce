@@ -13,6 +13,9 @@
 
 package org.cesecore.keys.validation;
 
+import java.util.List;
+
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.profiles.Profile;
 
@@ -38,24 +41,39 @@ public interface Validator extends CertificateProfileAwareValidator, Profile, Cl
     void setKeyValidatorSettingsTemplate();
     
     /**
-     * Gets the failed action index {@link KeyValidationFailedActions}, defining what action should
-     * be taken when validation fails, i.e. #validate returns errors
+     * Gets the failed action index {@see #setFailedAction(int)}.
      * @return the index.
      */
     int getFailedAction();
     
+    /**
+     * Sets the failed action index {@link KeyValidationFailedActions}, defining what action should
+     * be taken when validation fails, i.e. #validate returns errors
+     * @param index the index.
+     */
     void setFailedAction(int index);
 
+    
     /**
-     * Gets the not_applicable action index {@link KeyValidationFailedActions}, defining what action should
+     * Gets the not_applicable action index {@see #setNotApplicableAction(int).
+     * @return the index.
+     */
+    int getNotApplicableAction();
+
+    /**
+     * Sets the not_applicable action index {@link KeyValidationFailedActions}, defining what action should
      * be taken when a Validator is not applicable for the input (for example ECC keys to an RSA key validator),
      * i.e. #validate throws ValidatorNotApplicableException
-     * @return the index.
+     * @param index the index.
      */
     void setNotApplicableAction(int index);
 
-    int getNotApplicableAction();
-
+    /**
+     * Gets a list of applicable CA types (X509 or CVC see {@link CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC}).
+     * @return the list of class names of the allowed CA types.
+     */
+    List<Integer> getApplicableCaTypes();
+    
     /**
      * @return the settings template index.
      */
