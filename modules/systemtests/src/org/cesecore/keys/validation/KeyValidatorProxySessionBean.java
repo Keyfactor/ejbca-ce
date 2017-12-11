@@ -17,6 +17,8 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -56,7 +58,7 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     private ProfileSessionLocal profileSession;
 
     @Override
-    public Validator getKeyValidator(int id) {
+    public Validator getValidator(int id) {
         return keyValidatorSession.getValidator(id);
     }
 
@@ -81,17 +83,6 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public Map<String, Integer> getKeyValidatorNameToIdMap() {
-        return keyValidatorSession.getKeyValidatorNameToIdMap();
-    }
-
-    @Override
-    public void addKeyValidator(AuthenticationToken admin, int id, String name, Validator validator)
-            throws AuthorizationDeniedException, KeyValidatorExistsException {
-        keyValidatorSession.importValidator(admin, validator);
-    }
-
-    @Override
     public int addKeyValidator(AuthenticationToken admin, Validator validator)
             throws AuthorizationDeniedException, KeyValidatorExistsException {
         return keyValidatorSession.addKeyValidator(admin, validator);
@@ -102,11 +93,33 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException {
         keyValidatorSession.changeKeyValidator(admin, validator);
     }
+    
+    @Override
+    public List<Integer> getConflictingKeyValidatorIds(Validator validator) {
+        return keyValidatorSession.getConflictingKeyValidatorIds(validator);
+    }
+
+    @Override
+    public void importValidator(AuthenticationToken admin, Validator validator) throws AuthorizationDeniedException, KeyValidatorExistsException {
+        keyValidatorSession.importValidator(admin, validator);
+    }
 
     @Override
     public void cloneKeyValidator(AuthenticationToken admin, Validator validator, String newname)
             throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
         keyValidatorSession.cloneKeyValidator(admin, validator, newname);
+    }
+
+    @Override
+    public void cloneKeyValidator(AuthenticationToken admin, int validatorId, String newName)
+            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+        keyValidatorSession.cloneKeyValidator(admin, validatorId, newName);
+    }
+    
+    @Override
+    public void renameKeyValidator(AuthenticationToken admin, int validatorId, String newName)
+            throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+        keyValidatorSession.renameKeyValidator(admin, validatorId, newName);
     }
 
     @Override
@@ -119,6 +132,12 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     public void removeKeyValidator(AuthenticationToken admin, final int validatorId)
             throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
         keyValidatorSession.removeKeyValidator(admin, validatorId);
+    }
+    
+    @Override
+    public void removeKeyValidator(AuthenticationToken admin, String validatorName)
+            throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
+        keyValidatorSession.removeKeyValidator(admin, validatorName);
     }
 
     @Override
@@ -156,5 +175,16 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     public void validateDnsNames(AuthenticationToken authenticationToken, CA ca, EndEntityInformation endEntityInformation,
             RequestMessage requestMessage) throws ValidationException {
         keyValidatorSession.validateDnsNames(authenticationToken, ca, endEntityInformation, requestMessage);
+    }
+
+    @Override
+    public Map<Integer, String> getKeyValidatorIdToNameMap(int applicableCas) {
+        return keyValidatorSession.getKeyValidatorIdToNameMap(applicableCas);
+    }
+    
+    @Override
+    public void replaceKeyValidator(AuthenticationToken authenticationToken, LinkedHashMap<Object, Object> data, int id)
+            throws AuthorizationDeniedException {
+        keyValidatorSession.replaceKeyValidator(authenticationToken, data, id);
     }
 }

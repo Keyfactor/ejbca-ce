@@ -7,7 +7,7 @@
   TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();      
   Map<String,Integer> casigners = info.getActiveCANames();
   Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMapByValue();
-  Map<String, Integer> keyValidatorNameToIdMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorNameToIdMap();
+  Map<Integer, String> keyValidatorMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap();
   Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
@@ -58,7 +58,6 @@
     revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
     waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
     isUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
-
     if (!isexternal) {
 	    for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
 	        if (extendedCAServiceInfo instanceof CmsCAServiceInfo) {
@@ -79,6 +78,8 @@
         signatureAlgorithmParam = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
     }
   }
+  
+  keyValidatorMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap(catype);
   
   String hidden_ca_key;
   String hidden_ca_value;
@@ -1559,10 +1560,10 @@ function toggleCANameChange(){
                if(editca) {
                    usedKeyValidators = cainfo.getValidators(); 
                }
-               for(String validatorName : keyValidatorNameToIdMap.keySet()) {
-                 Integer id = keyValidatorNameToIdMap.get(validatorName);  %>
-          <option  value="<%= id %>" 
-             <%    if(editca && usedKeyValidators.contains(id))
+               for(Integer validatorId : keyValidatorMap.keySet()) {
+            	   String validatorName = keyValidatorMap.get(validatorId);  %>
+          <option  value="<%= validatorId %>" 
+             <%    if(editca && usedKeyValidators.contains(validatorId))
                      out.write(" selected ");
                  %>>
              <c:out value="<%= validatorName %>"/>                 

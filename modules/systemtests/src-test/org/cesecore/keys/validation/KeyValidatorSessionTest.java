@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -218,25 +219,25 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             allIdentifiers = new int[] { rsaDefaultId, rsaId, eccDefaultId, eccId };
             // A-1: Check add with defaults.
             // RSA key validator
-            KeyValidator keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(rsaDefaultId);
+            KeyValidator keyValidator = (KeyValidator) keyValidatorProxySession.getValidator(rsaDefaultId);
             assertKeyValidatorDefaultValues(keyValidator);
             // ECC key validator
-            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(eccDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getValidator(eccDefaultId);
             assertKeyValidatorDefaultValues(keyValidator);
 
             // A-2: Check change and load again with custom values.
             // RSA key validator
-            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(rsaDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getValidator(rsaDefaultId);
             ((RsaKeyValidator) keyValidator).setCABForumBaseLineRequirements142Settings();
             keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
-            KeyValidator testKeyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
+            KeyValidator testKeyValidator = (KeyValidator) keyValidatorProxySession.getValidator(keyValidator.getProfileId());
             assertEqualsKeyValidator(keyValidator, testKeyValidator);
             assertRsaKeyValidatorCABForumBaseLineRequirements142Values((RsaKeyValidator) testKeyValidator);
             // ECC key validator
-            keyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(eccDefaultId);
+            keyValidator = (KeyValidator) keyValidatorProxySession.getValidator(eccDefaultId);
             ((EccKeyValidator) keyValidator).setCABForumBaseLineRequirements142();
             keyValidatorProxySession.changeKeyValidator(internalAdmin, keyValidator);
-            testKeyValidator = (KeyValidator) keyValidatorProxySession.getKeyValidator(keyValidator.getProfileId());
+            testKeyValidator = (KeyValidator) keyValidatorProxySession.getValidator(keyValidator.getProfileId());
             assertEqualsKeyValidator(keyValidator, testKeyValidator);
             assertEccKeyValidatorCABForumBaseLineRequirements142Values((EccKeyValidator) testKeyValidator);
 
@@ -500,7 +501,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         try {
             // See if we have to remove the old validator first
-            final Map<String, Integer> nameMap = keyValidatorProxySession.getKeyValidatorNameToIdMap();
+            @SuppressWarnings("unchecked")
+            final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
             if (nameMap.containsKey(name)) {
                 final int idtoremove = nameMap.get(name);
                 keyValidatorProxySession.removeKeyValidator(internalAdmin, idtoremove);                
@@ -508,28 +510,28 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             // Add a Validator
             id = keyValidatorProxySession.addKeyValidator(internalAdmin, rsaKeyValidator);
             // Make sure Validator has the right value from the beginning
-            Validator val = keyValidatorProxySession.getKeyValidator(id);
+            Validator val = keyValidatorProxySession.getValidator(id);
             assertEquals("Description is not what we set", "foobar", val.getDescription());
             // Change publisher
             val.setDescription("bar");
             keyValidatorProxySession.changeKeyValidator(internalAdmin, val);
             // Read Validator again, cache should have been updated directly
-            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            val = keyValidatorProxySession.getValidator(val.getProfileId());
             assertEquals("bar", val.getDescription());
             // Flush caches to reset cache timeout
             keyValidatorProxySession.flushKeyValidatorCache();
             /// Read Validator to ensure it is in cache
-            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            val = keyValidatorProxySession.getValidator(val.getProfileId());
             assertEquals("bar", val.getDescription());
             // Change validator not flushing cache, old value should remain when reading
             val.setDescription("newvalue");
             //keyValidatorProxySession.changeKeyValidator(internalAdmin, val);
             keyValidatorProxySession.internalChangeValidatorNoFlushCache(val);
-            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            val = keyValidatorProxySession.getValidator(val.getProfileId());
             assertEquals("bar", val.getDescription()); // old value
             // Wait 2 seconds and try again, now the cache should have been updated
             Thread.sleep(2000);
-            val = keyValidatorProxySession.getKeyValidator(val.getProfileId());
+            val = keyValidatorProxySession.getValidator(val.getProfileId());
             assertEquals("newvalue", val.getDescription()); // new value
         } finally {
             cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", oldcachetime);
@@ -551,7 +553,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int id = 0; // id of the Validator we will add
         int id1 = 0;
         // See if we have to remove the old validator first
-        final Map<String, Integer> nameMap = keyValidatorProxySession.getKeyValidatorNameToIdMap();
+        @SuppressWarnings("unchecked")
+        final Map<String, Integer> nameMap = MapUtils.invertMap(keyValidatorProxySession.getKeyValidatorIdToNameMap());
         if (nameMap.containsKey(name)) {
             final int idtoremove = nameMap.get(name);
             keyValidatorProxySession.removeKeyValidator(internalAdmin, idtoremove);                
@@ -573,7 +576,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             }
             // Add it by someone who can
             id = keyValidatorProxySession.addKeyValidator(internalAdmin, rsaKeyValidator);
-            Validator val = keyValidatorProxySession.getKeyValidator(id);
+            Validator val = keyValidatorProxySession.getValidator(id);
             try {
                 // Try to edit a Validator
                 keyValidatorProxySession.changeKeyValidator(roleMgmgToken, val);
@@ -605,13 +608,13 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     private void assertKeyValidatorsExist(final int... identifiers) {
         for (int identifier : identifiers) {
-            assertNotNull("Added key validator (id=" + identifier + ") must be retrieved by datastore. ", keyValidatorProxySession.getKeyValidator(identifier));
+            assertNotNull("Added key validator (id=" + identifier + ") must be retrieved by datastore. ", keyValidatorProxySession.getValidator(identifier));
         }
     }
 
     private void assertKeyValidatorsNotExist(final int... identifiers) {
         for (int identifier : identifiers) {
-            assertNull("Removed key validator must not be retrieved by datastore. ", keyValidatorProxySession.getKeyValidator(identifier));
+            assertNull("Removed key validator must not be retrieved by datastore. ", keyValidatorProxySession.getValidator(identifier));
         }
     }
 
@@ -745,7 +748,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     private void removeKeyValidatorsIfExist(int... identifiers) throws Exception {
         for (int identifier : identifiers) {
             try {
-                if (keyValidatorProxySession.getKeyValidator(identifier) != null) {
+                if (keyValidatorProxySession.getValidator(identifier) != null) {
                     log.info("Key validator with ID" + identifier + " exists and will be removed.");
                     keyValidatorProxySession.removeKeyValidator(internalAdmin, identifier);
                 }
