@@ -151,6 +151,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.keys.validation.ValidatorPhase;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -1223,7 +1224,7 @@ public class X509CA extends CA implements Serializable {
                 // ECA-6051 Re-Factor with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
                     try {
-                        certGenParams.getCertificateValidationDomainService().validateCertificate(certGenParams.getAuthenticationToken(), this, subject, cert);
+                        certGenParams.getCertificateValidationDomainService().validateCertificate(certGenParams.getAuthenticationToken(), ValidatorPhase.PRE_CERTIFICATE_VALIDATION.getIndex(), this, subject, cert);
                     } catch (ValidationException e) {
                         throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
                     }

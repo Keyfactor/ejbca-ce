@@ -19,8 +19,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -505,12 +503,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
     
     @Override
-    public void validateCertificate(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
+    public void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca, final EndEntityInformation endEntityInformation,
             final X509Certificate certificate) throws ValidationException {
         if (log.isDebugEnabled()) {
-            log.debug("Validate certificate after pre-certificate phase.");
+            log.debug("Validate certificate for phase " + phase);
         }
-        if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
+        if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) {
             Validator baseValidator;
             CertificateValidator validator;
             String name;
@@ -519,6 +517,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 if (baseValidator != null && baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
                     validator = (CertificateValidator) baseValidator;
                     name = validator.getProfileName();
+                    if (phase != validator.getPhase()) {
+                        continue;
+                    }
                     if (validator instanceof CertificateProfileAwareValidator
                             && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
                         continue;
@@ -529,7 +530,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     try {
                         final String fingerprint = CertTools.createPublicKeyFingerprint(certificate.getPublicKey(), "SHA-256");
-                        log.info(intres.getLocalizedMessage("validator.certificate.isbeingprocessed", name, endEntityInformation.getUsername(),
+                        log.info(intres.getLocalizedMessage("validator.certificate.isbeingprocessed", name, phase, endEntityInformation.getUsername(),
                                 fingerprint));
                         final List<String> messages = validator.validate(ca, certificate);
                         if (messages.size() > 0) { // Evaluation has failed.

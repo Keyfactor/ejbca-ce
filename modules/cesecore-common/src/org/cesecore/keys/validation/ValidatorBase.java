@@ -46,13 +46,17 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
+    /** List of applicable validator phases (see {@link ValidatorPhase}). */ 
+    protected static List<Integer> APPLICABLE_PHASES;
+    
     /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
     protected static List<Integer> APPLICABLE_CA_TYPES;
     
-    public static final float LATEST_VERSION = 4F;
+    public static final float LATEST_VERSION = 7F;
 
     public static final String TYPE = "type";
     public static final String SETTINGS_TEMPLATE = "settingsTemplate";
+    protected static final String PHASE = "phase";
     protected static final String DESCRIPTION = "description";
     protected static final String NOT_BEFORE = "notBefore";
     protected static final String NOT_BEFORE_CONDITION = "notBeforeCondition";
@@ -62,8 +66,13 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     protected static final String CERTIFICATE_PROFILE_IDS = "certificateProfileIds";
     protected static final String FAILED_ACTION = "failedAction";
     protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
-
+        
     static {
+        APPLICABLE_PHASES = new ArrayList<Integer>();
+        APPLICABLE_PHASES.add(ValidatorPhase.DATA_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(ValidatorPhase.PRE_CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(ValidatorPhase.CERTIFICATE_VALIDATION.getIndex());
+        
         APPLICABLE_CA_TYPES = new ArrayList<Integer>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_CVC);
@@ -77,6 +86,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
      */
     public ValidatorBase() {
         super();
+        init();
     }
     
     /**
@@ -85,14 +95,6 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     public ValidatorBase(final String name) {
         super(name);
         init();
-    }
-
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     */
-    public ValidatorBase(final ValidatorBase keyValidator) {
-        this.data = new LinkedHashMap<Object, Object>(keyValidator.data);
-        this.id = keyValidator.id;
     }
 
     @Override
@@ -112,6 +114,9 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         super.initialize();
         if (null == data.get(VERSION)) {
             data.put(VERSION, new Float(LATEST_VERSION));
+        }
+        if (null == data.get(PHASE)) {
+            setPhase(getApplicablePhases().get(0));
         }
         if (null == data.get(SETTINGS_TEMPLATE)) {
             setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption());
@@ -134,6 +139,21 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         }
     }
 
+    @Override
+    public List<Integer> getApplicablePhases() {
+        return APPLICABLE_PHASES;
+    }
+    
+    @Override
+    public int getPhase() {
+        return ((Integer) data.get(PHASE)).intValue();
+    }
+
+    @Override
+    public void setPhase(int index) {
+        data.put(PHASE, index);
+    }
+    
     @Override
     public void setKeyValidatorSettingsTemplate() {
     }

@@ -25,7 +25,7 @@ import org.cesecore.profiles.Profile;
  * @version $Id$
  */
 
-public interface Validator extends CertificateProfileAwareValidator, Profile, Cloneable {
+public interface Validator extends PhasedValidator, CertificateProfileAwareValidator, Profile, Cloneable {
 
     static final String TYPE_NAME = "VALIDATOR";
     
