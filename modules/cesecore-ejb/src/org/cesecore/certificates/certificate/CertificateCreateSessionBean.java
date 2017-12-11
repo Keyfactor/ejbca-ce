@@ -94,6 +94,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.keys.validation.ValidatorPhase;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -349,6 +350,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Retrieve the certificate profile this user should have, checking for authorization to the profile
         final int certProfileId = endEntityInformation.getCertificateProfileId();
         final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
+        
+        // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
             final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
@@ -445,17 +448,21 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
                 certGenParams.setAuthenticationToken(admin);
                 certGenParams.setCertificateValidationDomainService(keyValidatorSession);
+
+                // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
                 cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
                 // Set null required here?
                 certGenParams.setCertificateValidationDomainService(null);
-                // ECA-6051 Potential insertion hook for post-validation (not pre-certificate validation).
-//                if (CAInfo.CATYPE_X509 == ca.getCAType()) {
-//                    try {
-//                        keyValidatorSession.validateCertificate(admin, ca, endEntityInformation, (X509Certificate) cert);
-//                    } catch (ValidationException e) {
-//                        throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
-//                    }
-//                }
+                
+                // Validate ValidatorPhase.CERTIFICATE_VALIDATION (X.509 CA only)
+                if (CAInfo.CATYPE_X509 == ca.getCAType()) {
+                    try {
+                        keyValidatorSession.validateCertificate(admin, ValidatorPhase.CERTIFICATE_VALIDATION.getIndex(), ca, endEntityInformation, (X509Certificate) cert);
+                    } catch (ValidationException e) {
+                        throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
+                    }
+                }
+                
                 cafingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 // Store certificate in the database, if this CA is configured to do so.
@@ -580,7 +587,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         }
-        
     }
 
     private void addCTLoggingCallback(CertificateGenerationParams certGenParams, final String authTokenName) {

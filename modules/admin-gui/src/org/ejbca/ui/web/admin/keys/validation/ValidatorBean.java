@@ -52,9 +52,11 @@ import org.cesecore.keys.validation.KeyValidatorDateConditions;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.PhasedValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
+import org.cesecore.keys.validation.ValidatorPhase;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -209,6 +211,31 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         final KeyValidatorSettingsTemplate[] items = KeyValidatorSettingsTemplate.values();
         for (int i = 0, j = items.length; i < j; i++) {
             result.add(new SelectItem(items[i].getOption(), getEjbcaWebBean().getText(items[i].getLabel())));
+        }
+        return result;
+    }
+    
+    /**
+     * Gets a list of select items of the certificate issuance process phases (see {@link ValidatorPhase}).
+     * @return the list.
+     */
+    public List<SelectItem> getAllApplicablePhases() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final ValidatorPhase[] items = ValidatorPhase.values();
+        for (int i = 0, j = items.length; i < j; i++) {
+            result.add(new SelectItem(items[i].getIndex(), getEjbcaWebBean().getText(items[i].getLabel())));
+        }
+        return result;
+    }
+    
+    /**
+     * Gets a list of select items of the certificate issuance process phases (see {@link ValidatorPhase}).
+     * @return the list.
+     */
+    public List<SelectItem> getApplicablePhases() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        for (Integer index : ((PhasedValidator) getValidator()).getApplicablePhases()) {
+            result.add(new SelectItem(index, getEjbcaWebBean().getText(ValidatorPhase.indexOf(index).getLabel())));
         }
         return result;
     }
@@ -611,47 +638,4 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public String getLineSeparator() {
         return System.getProperty("line.separator");
     }
-    
-    //////////////
-    
-//    /** @return a list of the current InteralKeyBinding's properties */
-//    public ListDataModel<DynamicUiProperty<? extends Serializable>> getDynamicUiProperties() {
-//        return dynamicUiProperties;
-//    }
-
-//    /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
-//    public String getPropertyNameTranslated() {
-//        final String name = ((DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
-//        final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
-//        final String translatedName = super.getEjbcaWebBean().getText(msgKey);
-//        return translatedName.equals(msgKey) ? name : translatedName;
-//    }
-
-//    /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
-//    public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
-//        final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
-//        if (internalKeyBindingPropertyList != null) {
-//            final DynamicUiProperty<? extends Serializable> property = (DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList
-//                    .getRowData();
-//            for (final Serializable possibleValue : property.getPossibleValues()) {
-//                propertyPossibleValues.add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue
-//                        .toString()));
-//            }
-//        }
-//        return propertyPossibleValues;
-//    }
-//    
-//    public String getText(final String key) {
-//        return getEjbcaWebBean().getText(key);
-//    }
-//    
-//    public Map<String,Object> getCopyOfPropertiesWithHeader() {
-//        final Map<String,?> map = ((DynamicUiPropertiesAware) validator).getDynamicUiProperties().getCopyOfProperties();
-//        final Map<String,Object> newMap = new LinkedHashMap<String,Object>();
-//        final DynamicUiProperty<String> header = new DynamicUiProperty<String>("header", StringUtils.EMPTY);
-//        header.setLabelOnly(true);
-//        newMap.put("header", header);
-//        newMap.putAll(map);
-//        return newMap;
-//    }
 }

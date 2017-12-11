@@ -30,15 +30,23 @@ import org.cesecore.certificates.ca.CAInfo;
  */
 public abstract class CertificateValidatorBase extends ValidatorBase implements CertificateValidator {
 
+    
     private static final long serialVersionUID = -125425559879817428L;
 
 	/** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
-    
-    /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
+
+    /** List of applicable CA types (see {@link #getApplicableCaTypes()}). */ 
     protected static List<Integer> APPLICABLE_CA_TYPES;
     
+    /** List of applicable validator phases (see {@link ValidatorPhase}). */ 
+    protected static List<Integer> APPLICABLE_PHASES;
+    
     static {
+        APPLICABLE_PHASES = new ArrayList<Integer>();
+        APPLICABLE_PHASES.add(ValidatorPhase.PRE_CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(ValidatorPhase.CERTIFICATE_VALIDATION.getIndex());
+        
         APPLICABLE_CA_TYPES = new ArrayList<Integer>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
     }
@@ -55,7 +63,6 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
      */
     public CertificateValidatorBase(final String name) {
         super(name);
-        init();
     }
 
     @Override
@@ -66,7 +73,9 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
     @Override
     public void init() {
         super.init();
-        // ECA-6051 Re-factor: move to parent.
+        if (null == data.get(PHASE)) {
+            setPhase(getApplicablePhases().get(0));
+        }
         if (null == data.get(NOT_BEFORE_CONDITION)) {
             setNotBeforeCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
@@ -76,10 +85,15 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
     }
 
     @Override
+    public List<Integer> getApplicablePhases() {
+        return APPLICABLE_PHASES;
+    }
+    
+    @Override
     public Class<? extends Validator> getValidatorSubType() {
         return CertificateValidator.class;
     }
-
+    
     @Override
     public Date getNotBefore() {
         return (Date) data.get(NOT_BEFORE);

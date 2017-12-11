@@ -5219,6 +5219,14 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 		Additionally, validators are restricted to only run for certain Certificate Profiles.
 	</p>
 	<p>
+		Validators are applied for one of the defined phases in the certificate issuance process:
+	</p>
+	<ul>
+		<li>'Data validation' after all required data for the certificate issuance was collected but before the certificate was generated, </li>
+		<li>'Pre-certificate validation' after the CT pre-certificate was generated but not stored and issued (works with CT only!), and</li>
+		<li>'Certificate validation' after the certificate was generated but not stored and issued.</li>
+	</ul>
+	<p>
 		To explore Validators, look under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
 	</p>
 	<subsection name="Audit Logging">
@@ -5226,7 +5234,7 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 			All validation results are audit logged and also logged in the server logs for more detail (log level can be configured). 
 		</p>
 	</subsection>
-	<subsection name="Key Validators (before certificate generation)">
+	<subsection name="Key Validators (data validation)">
 		<p>
 			Key Validators are rather intuitively meant to validate the quality of keys, foremost as a result of incoming CSRs. There are currently 
 			three types of Key Validators:
@@ -5288,7 +5296,7 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 			The displayed date will be converted to the server's timezone, and you can specify timezone as well '2022-08-25 14:50:55-0000' for UTC.</p>
 		</subsubsection>
 	</subsection>
-	<subsection name="Certificate Field Validators (before certificate generation)">
+	<subsection name="Certificate Field Validators (data validation)">
 		<p>
 			One may also wish to validate issuance based on other certificate values before it comes to issuance.
 			Currently, only one such validator has been implemented, the CAA Validator.
@@ -5397,9 +5405,9 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			If you want to have a separate DNS lookup log, you can send the DEBUG log for the class CaaDnsLookup to a separate log, similar to how you can do that for OCSP Transaction and Audit logging. See the <a href="#Logging">Logging section</a> for more information.</p>
 		</subsubsection>
 	</subsection>
-	<subsection name="Certificate Field Validators (after certificate generation)">
+	<subsection name="Certificate Field Validators (pre-certificate or certifcate validation)">
 		<p>
-			One may also wish to validate issuance based on other certificate values after the certificate was generated but not stored or issued.
+			One may also wish to validate issuance based on other certificate values after the (optionally pre-certificate) or certificate was generated but not stored or issued.
 			Currently, only one such validator has been implemented, the external command certificate Validator.
 		</p>
 		<subsection name="External Command Certificate Validator">
@@ -5454,7 +5462,7 @@ echo -n "%cert%" | openssl x509 -text -noout
 				message to trigger monitoring systems, etc.). This handles the case when for example a CSR with ECC keys is passed to an RSA key validator.</li>
 		</ul>
 	</subsection>
-</section>
+</section>#
 
 <section name="LDAP and Publishers">
 <p>

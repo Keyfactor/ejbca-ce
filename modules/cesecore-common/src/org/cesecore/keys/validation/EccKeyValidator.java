@@ -58,7 +58,6 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public EccKeyValidator() {
         super();
-        init();
     }
     
     /**
@@ -66,15 +65,6 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public EccKeyValidator(final String name) {
         super(name);
-        init();
-    }
-
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     * @param keyValidator the base key validator to load.
-     */
-    public EccKeyValidator(final KeyValidatorBase keyValidator) {
-        super(keyValidator);
     }
 
     /**
