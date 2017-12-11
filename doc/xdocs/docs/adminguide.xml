@@ -5296,7 +5296,7 @@ bin/ejbca.sh ca updatepublickeyblacklist --command remove --mode fingerprint --d
 			The displayed date will be converted to the server's timezone, and you can specify timezone as well '2022-08-25 14:50:55-0000' for UTC.</p>
 		</subsubsection>
 	</subsection>
-	<subsection name="Certificate Field Validators (data validation)">
+	<subsection name="Certificate Field Validators">
 		<p>
 			One may also wish to validate issuance based on other certificate values before it comes to issuance.
 			Currently, only one such validator has been implemented, the CAA Validator.
@@ -5405,21 +5405,21 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			If you want to have a separate DNS lookup log, you can send the DEBUG log for the class CaaDnsLookup to a separate log, similar to how you can do that for OCSP Transaction and Audit logging. See the <a href="#Logging">Logging section</a> for more information.</p>
 		</subsubsection>
 	</subsection>
-	<subsection name="Certificate Field Validators (pre-certificate or certifcate validation)">
+	<subsection name="Post Processing Validators (Pre-Certificate or Certificate Validation)">
 		<p>
-			One may also wish to validate issuance based on other certificate values after the (optionally pre-certificate) or certificate was generated but not stored or issued.
-			Currently, only one such validator has been implemented, the external command certificate Validator.
+			One may also wish to validate issuance based on other certificat values after the certificate (or eventual pre-certificate) has been generated but not issued, stored and published. Currently, 
+			only one such validator has been implemented: the External Command Certificate Validator.
 		</p>
 		<subsection name="External Command Certificate Validator">
 			<p>
 				With this validator an external command can be called for the generated certificate. The exit code of the external call determines if validation has failed. 
-				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course EJBCAs application needs the 
-				OS file system permittions to do so.
+				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course the user running EJBCA's 
+				application server needs OS file system permittions to do so.
 			</p>
 			<note>
 					The platform for MS Windows, Unix/Linux, Solaris and Mac is auto-detected and a default shell command and shell options are set. 
-					To enter a custom call for an interpreter use the placer holder '%custom%' as first argument, followed by the custom interpreter command, 
-					and (optional) its options, separated by spaces. 
+					To enter a custom call for an interpreter, use the placeholder '%custom%' as the first argument followed by the custom interpreter command, 
+					and (optionally) its options, separated by spaces. 
 					I.e. to call a python script on a linux platform: '%custom% /usr/bin/python -c <my-command-or-script-to-execute></my-command-or-script-to-execute>'
 			</note>
 			<p>
