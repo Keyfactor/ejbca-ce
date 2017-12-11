@@ -2432,19 +2432,19 @@ Requesting access to the above resources will result in the following:
     
     <subsection name="Administrator details">
       <p>
-        You can chose to see all the logs created by a specific type of administrator, his or her IP address or the hexadecimal serialnumber of the administrator certificate used. There are six types of administrators:
+        You can choose to see all the logs created by a specific type of administrator, their IP address or the hexadecimal serial number of the administrator certificate used. There are six types of administrators:
         <ul>
-          <li>An administrator who logs in with a certificate. Typically an administrator who logs into the Admin GUI to perfom tacks that need administrator privileges.
-              An administrator who logs in with a certificate is loged with his certificate serialnumber and SubjectDN.</li>
-          <li>An administrator who logs into the public web using only username and password. An administrator who logs into the public web is loges with his IP address.</li>
-          <li>An RA user. The RA user is loged with his IP address.</li>
-          <li>An administrator performing administrative tasks through commandline.</li>
-          <li>An administrator performing administrative tasks through batch commandline.</li>
-          <li>An internal user performing tasks within Ejbca.</li>
+          <li>An administrator who logs in with a certificate. Typically an administrator who logs into the Admin GUI to perform tasks that need administrator privileges.
+              An administrator who logs in with a certificate is logged with their certificate's serial number and subject DN.</li>
+          <li>An administrator who logs into the public web using only username and password. An administrator who logs into the public web is logged with their IP address.</li>
+          <li>An RA user. The RA user is logged with his IP address.</li>
+          <li>An administrator performing administrative tasks through command line.</li>
+          <li>An administrator performing administrative tasks through batch command line.</li>
+          <li>An internal user performing tasks within EJBCA.</li>
         </ul>
       </p>
     </subsection>
-  <p> The log can be displayed on the screen or exported as a XML file.</p>
+  <p> The log can be displayed on the screen or be exported as an XML file.</p>
   <subsection name="Signing log files">
     <p>If so desired the exported log file can be signed by a specific signing certificate of a certificate authority. This will generate a binary (DER) format CMS/PKCS#7 MIME Message (p7m) file. Specific CMS compatible tools are needed to validate the signature and to 'strip' it off as to allow importing into other tools such as a text editor. 
  </p>
