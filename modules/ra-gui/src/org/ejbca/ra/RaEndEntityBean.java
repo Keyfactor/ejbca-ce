@@ -208,10 +208,11 @@ public class RaEndEntityBean implements Serializable {
                 endEntityInformation.setPassword(enrollmentCode);
                 changed = true;
             }
-        } else if (!blankEnrollmentCodes()) {
-            // Not a new status, but the enrollment codes were not blank
+        } else if (!StringUtils.isEmpty(enrollmentCode)
+                || !StringUtils.isEmpty(enrollmentCodeConfirm)) {
+            // Not a new status, but the enrollment codes were not empty
             if (verifyEnrollmentCodes()) {
-                // Enrollment codes were valid, only set new password
+                // Enrollment codes were valid, set new password but leave status unchanged
                 endEntityInformation.setPassword(enrollmentCode);
                 changed = true;
             }
