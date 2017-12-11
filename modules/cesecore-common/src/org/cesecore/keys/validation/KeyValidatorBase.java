@@ -15,7 +15,9 @@ package org.cesecore.keys.validation;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -31,6 +33,14 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     
     private static final long serialVersionUID = 1L;
     
+    /** List of applicable validator phases (see {@link ValidatorPhase}). */ 
+    protected static List<Integer> APPLICABLE_PHASES;
+    
+    static {
+        APPLICABLE_PHASES = new ArrayList<Integer>();
+        APPLICABLE_PHASES.add(ValidatorPhase.DATA_VALIDATION.getIndex());
+    }
+    
     /**
      * Public constructor needed for deserialization.
      */
@@ -43,19 +53,14 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
      */
     public KeyValidatorBase(final String name) {
         super(name);
-        init();
-    }
-
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     */
-    public KeyValidatorBase(final KeyValidatorBase keyValidator) {
-        super();
     }
 
     @Override
     public void init() {
         super.init();
+        if (null == data.get(PHASE)) {
+            setPhase(getApplicablePhases().get(0));
+        }
         if (null == data.get(NOT_BEFORE_CONDITION)) {
             setNotBeforeCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
@@ -64,6 +69,11 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         }
     }
 
+    @Override
+    public List<Integer> getApplicablePhases() {
+        return APPLICABLE_PHASES;
+    }
+    
     @Override
     public Class<? extends Validator> getValidatorSubType() {
         return KeyValidator.class;

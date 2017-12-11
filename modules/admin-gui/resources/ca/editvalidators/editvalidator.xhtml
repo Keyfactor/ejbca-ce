@@ -66,6 +66,10 @@
 				<h:panelGroup id="general_settings"/>
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
 				<h:inputTextarea id="description" value="#{validatorBean.validator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
+				<h:outputLabel for="applicablePhase" value="#{web.text.VALIDATORAPPLICABLEPHASE}"/>
+				<h:selectOneMenu id="applicablePhase" value="#{validatorBean.validator.phase}" required="true" disabled="#{validatorsBean.viewOnly}">
+					<f:selectItems value="#{validatorBean.applicablePhases}" />
+				</h:selectOneMenu>
 				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
 				<h:selectBooleanCheckbox id="allcertificateprofiles" value="#{validatorBean.allCertificateProfileIds}" disabled="#{validatorsBean.viewOnly}">
 					<f:ajax execute="allcertificateprofiles" render="selectapplicablecertificateprofiles" event="change"/>

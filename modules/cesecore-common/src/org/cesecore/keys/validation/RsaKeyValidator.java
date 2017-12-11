@@ -198,7 +198,6 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public RsaKeyValidator() {
         super();
-        init();
     }
 
     /**
@@ -206,15 +205,6 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public RsaKeyValidator(final String name) {
         super(name);
-        init();
-    }
-
-    /**
-     * Creates a new instance with the same attributes as the given one.
-     * @param keyValidator the base key validator to load.
-     */
-    public RsaKeyValidator(final KeyValidatorBase keyValidator) {
-        super(keyValidator);
     }
 
     @Override
