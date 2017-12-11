@@ -175,11 +175,9 @@
         if (request.getParameter(ACTION).equals(ACTION_ADDUSER)) {
     if (request.getParameter(BUTTON_ADDUSER) != null) {
         UserView newuser = new UserView();
-        int oldprofileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
-
         // Get previous chosen profile.
         String hiddenprofileid = request.getParameter(HIDDEN_PROFILE);
-        oldprofileid = Integer.parseInt(hiddenprofileid);
+        int oldprofileid = Integer.parseInt(hiddenprofileid);
         if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
             // Check that adminsitrator is authorized to given profileid
             boolean authorizedtoprofile = false;
