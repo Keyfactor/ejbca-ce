@@ -33,7 +33,7 @@ import org.cesecore.util.CertTools;
 /**
  * External command certificate validator for multiple platforms.
  * 
- * @version $Id: ExternalCommandCertificateValidator.java 26865 2017-10-22 20:58:48Z anjakobs $
+ * @version $Id$
  */
 public class ExternalCommandCertificateValidator extends CertificateValidatorBase {
 
@@ -230,9 +230,9 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     /**
      * Tests the external command with the uploaded test certificate (chain).
      * @return a list with size > 0 and the exit code in field with index 0 and STDOUT and ERROR appended subsequently.
-     * @throws Exception any exception.
+     * @throws CertificateException if one of the certificates could not be parsed.
      */
-    public List<String> testExternalCommandCertificateValidatorAction() throws Exception {
+    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateException {
         log.info("Test external command certificate validator: " + getProfileName());
         final String[] cmdTokens = buildPlatformCommand(getTestCertificates());
         final List<String> out = launchExternalCommand(cmdTokens, isLogStandardOut(), isLogErrorOut());

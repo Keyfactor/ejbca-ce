@@ -33,12 +33,12 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     
     private static final long serialVersionUID = 1L;
     
-    /** List of applicable validator phases (see {@link ValidatorPhase}). */ 
+    /** List of applicable issuance phases (see {@link IssuancePhase}). */ 
     protected static List<Integer> APPLICABLE_PHASES;
     
     static {
         APPLICABLE_PHASES = new ArrayList<Integer>();
-        APPLICABLE_PHASES.add(ValidatorPhase.DATA_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(IssuancePhase.DATA_VALIDATION.getIndex());
     }
     
     /**

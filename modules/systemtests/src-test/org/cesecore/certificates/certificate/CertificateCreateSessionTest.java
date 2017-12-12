@@ -728,7 +728,6 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 certificateCreateSession.createCertificate(roleMgmgToken, endEntityInformation, simpleRequestMessage, X509ResponseMessage.class, signSession.fetchCertGenParams());
                 fail("Key algorithm and spec should not have been allowed by validator.");
             } catch (CertificateCreateException e) {
-                System.out.println("####### getMessage():" + e.getLocalizedMessage());
                 assertEquals("Error message should come from Validator.",
                         "org.cesecore.keys.validation.ValidationException: Key Validator 'testKeyValidatorrsa-parameter-validation-test-1' could not validate sufficient key quality for public key [Invalid: RSA key size/strength: Use one of the following [1024].].", 
                         e.getMessage());

@@ -94,7 +94,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.keys.validation.ValidatorPhase;
+import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -457,7 +457,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 // Validate ValidatorPhase.CERTIFICATE_VALIDATION (X.509 CA only)
                 if (CAInfo.CATYPE_X509 == ca.getCAType()) {
                     try {
-                        keyValidatorSession.validateCertificate(admin, ValidatorPhase.CERTIFICATE_VALIDATION.getIndex(), ca, endEntityInformation, (X509Certificate) cert);
+                        keyValidatorSession.validateCertificate(admin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), ca, endEntityInformation, (X509Certificate) cert);
                     } catch (ValidationException e) {
                         throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
                     }
