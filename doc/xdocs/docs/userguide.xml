@@ -2172,6 +2172,8 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 <li>Supervisor:</li>
 <ul>
 <li>has full read access to the audit log</li>
+<li>can search for and view end entities</li>
+<li>can view certificates</li>
 </ul>
 <li>Auditor:</li>
 <ul>

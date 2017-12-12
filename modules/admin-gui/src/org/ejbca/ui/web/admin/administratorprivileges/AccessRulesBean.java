@@ -58,7 +58,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * - Basic mode access rule configuration
  * - Advanced mode access rule configuration
  * - Advanced mode access rule summary
- * 
+ *
  * @version $Id$
  */
 @ViewScoped
@@ -80,7 +80,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private static class AccessRulesTemplate {
         private final String name;
         private final HashMap<String,Boolean> accessRules = new HashMap<>();
-        
+
         public AccessRulesTemplate(final String name, final AccessRule...accessRules) {
             this.name = name;
             for (final AccessRule accessRule : accessRules) {
@@ -182,7 +182,8 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, Role.STATE_ALLOW),
                     // From legacy JS
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, Role.STATE_ALLOW)
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITY, Role.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("AUDITOR",
                     new AccessRule(AccessRulesConstants.ROLE_ADMINISTRATOR, Role.STATE_ALLOW),
@@ -330,12 +331,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public boolean isAdvancedMode() {
         return Boolean.parseBoolean(advancedParam);
     }
-    
+
     /** @return true in advanced access rule mode */
     public boolean isAdvancedModeSummary() {
         return Boolean.parseBoolean(summaryParam);
     }
-    
+
     /** @return true when admin is authorized to edit access rules of this role */
     public boolean isAuthorizedToEditRole() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EDITROLES.resource()) && getRole()!=null;
@@ -367,7 +368,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         availableResourcesKeyValidators = null;
         availableResourcesIkb = null;
         availableResourcesOther = null;
-        // Calculate available templates and the current best match  
+        // Calculate available templates and the current best match
         getAvailableAccessRulesTemplates();
         // Select access rules that are allowed by the role
         final LinkedHashMap<String, Boolean> accessRules = getRole().getAccessRules();
@@ -400,7 +401,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     /** @return minimal list of resources that the provided access rules grants */
     private List<String> getSelectedRulesFromSelectItems(final LinkedHashMap<String, Boolean> accessRules, final List<SelectItem> selectItems) {
         final List<String> ret = new ArrayList<>();
@@ -506,7 +507,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         }
         return availableAccessRulesTemplates;
     }
-    
+
     private void removeAccessRulesTemplateCustomOption() {
         for (final SelectItem selectItem : new ArrayList<>(availableAccessRulesTemplates)) {
             if (selectItem.getValue().equals(TEMPLATE_NAME_CUSTOM)) {
@@ -525,7 +526,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public List<String> getResourcesCaSelected() { return resourcesCaSelected; }
     /** Set the currently selected CA access resources */
     public void setResourcesCaSelected(final List<String> resourcesCaSelected) { this.resourcesCaSelected = new ArrayList<>(resourcesCaSelected); }
-    
+
     /** @return the selectable CA access resources */
     public List<SelectItem> getAvailableResourcesCa() {
         if (availableResourcesCa==null) {
@@ -546,12 +547,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public boolean isRenderResourcesEeSelection() {
         return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateCaAdmin();
     }
-    
+
     /** @return the currently selected RA functionality resources */
     public List<String> getResourcesEeSelected() { return resourcesEeSelected; }
     /** Set the currently selected RA functionality resources */
     public void setResourcesEeSelected(final List<String> resourcesEeSelected) { this.resourcesEeSelected = new ArrayList<>(resourcesEeSelected); }
-    
+
     /** @return the selectable RA functionality resources */
     public List<SelectItem> getAvailableResourcesEe() {
         if (availableResourcesEe==null) {
@@ -590,12 +591,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public boolean isRenderResourcesEepSelection() {
         return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateCaAdmin();
     }
-    
+
     /** @return the currently selected EEP resources */
     public List<String> getResourcesEepSelected() { return resourcesEepSelected; }
     /** Set the currently selected EEP resources */
     public void setResourcesEepSelected(final List<String> resourcesEepSelected) { this.resourcesEepSelected = new ArrayList<>(resourcesEepSelected); }
-    
+
     /** @return the selectable EEP resources */
     public List<SelectItem> getAvailableResourcesEep() {
         if (availableResourcesEep==null) {
@@ -614,17 +615,17 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return true if the key validator rule selection box should be modifiable */
     public boolean isRenderResourcesKvSelection() {
-        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateRaAdmin(); 
+        return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin() && !isAccessRulesTemplateRaAdmin();
     }
 
     /** @return the currently selected key validator resources */
     public List<String> getResourcesKeyValidatorsSelected() { return resourcesKeyValidatorsSelected; }
-    
+
     /** Set the currently selected key validator resources */
     public void setResourcesKeyValidatorsSelected(final List<String> resourcesKeyValidatorsSelected) {
         this.resourcesKeyValidatorsSelected = new ArrayList<>(resourcesKeyValidatorsSelected);
     }
-    
+
     /** @return the selectable key validator resources */
     public List<SelectItem> getAvailableResourcesKeyValidators() {
         if (availableResourcesKeyValidators==null) {
@@ -648,12 +649,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public boolean isRenderResourcesIkbSelection() {
         return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin();
     }
-    
+
     /** @return the currently selected IKB resources */
     public List<String> getResourcesIkbSelected() { return resourcesIkbSelected; }
     /** Set the currently selected IKB resources */
     public void setResourcesIkbSelected(final List<String> resourcesIkbSelected) { this.resourcesIkbSelected = new ArrayList<>(resourcesIkbSelected); }
-    
+
     /** @return the selectable IKB resources */
     public List<SelectItem> getAvailableResourcesIkb() {
         if (availableResourcesIkb==null) {
@@ -677,12 +678,12 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     public boolean isRenderResourcesOtherSelection() {
         return !isAccessRulesTemplateCustom() && !isAccessRulesTemplateSuperAdmin();
     }
-    
+
     /** @return the currently selected Other resources */
     public List<String> getResourcesOtherSelected() { return resourcesOtherSelected; }
     /** Set the currently selected Other resources */
     public void setResourcesOtherSelected(final List<String> resourcesOtherSelected) { this.resourcesOtherSelected = new ArrayList<>(resourcesOtherSelected); }
-    
+
     /** @return the selectable Other resources */
     public List<SelectItem> getAvailableResourcesOther() {
         if (availableResourcesOther==null) {
@@ -738,14 +739,14 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
             newAccessRules.put(resource, Role.STATE_ALLOW);
         }
         if (isEnableEndEntityProfileLimitations()) {
-            /* 
+            /*
              * To be authorized to an EEP, the authentication token needs to be authorized to both
              *  '/ra_functionality/some_function/'
              *  '/endentityprofilesrules/<eepId>/some_function/'
-             * 
+             *
              * So here in basic mode, we simply allow '/endentityprofilesrules/<eepId>/' and rely
              * on the '/ra_functionality/' sub-rules to limit functions.
-             * 
+             *
              * Long story short: Do nothing here.
              */
         }
@@ -784,7 +785,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
             }
         }
     }
-    
+
     /** @return a normalized, minimized and sorted list of access rules that is set to ALLOW or DENY */
     public List<AccessRuleItem> getAccessRules() {
         final List<AccessRuleItem> ret = new ArrayList<>();
