@@ -46,6 +46,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.validation.ExternalCommandCertificateValidator;
+import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.KeyValidatorDateConditions;
@@ -56,7 +57,6 @@ import org.cesecore.keys.validation.PhasedValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
-import org.cesecore.keys.validation.ValidatorPhase;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -93,6 +93,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     /** Selected key validator. */
     private Validator validator = null;
 
+    private UploadedFile testExternalCommandCertificateValidatorPath;
+    
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
         currentValidatorId = -1;
@@ -216,26 +218,26 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * Gets a list of select items of the certificate issuance process phases (see {@link ValidatorPhase}).
+     * Gets a list of select items of the certificate issuance process phases (see {@link IssuancePhase}).
      * @return the list.
      */
     public List<SelectItem> getAllApplicablePhases() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
-        final ValidatorPhase[] items = ValidatorPhase.values();
-        for (int i = 0, j = items.length; i < j; i++) {
-            result.add(new SelectItem(items[i].getIndex(), getEjbcaWebBean().getText(items[i].getLabel())));
+        final IssuancePhase[] items = IssuancePhase.values();
+        for(IssuancePhase phase : items) {
+            result.add(new SelectItem(phase.getIndex(), getEjbcaWebBean().getText(phase.getLabel())));
         }
         return result;
     }
     
     /**
-     * Gets a list of select items of the certificate issuance process phases (see {@link ValidatorPhase}).
+     * Gets a list of select items of the certificate issuance process phases (see {@link IssuancePhase}).
      * @return the list.
      */
     public List<SelectItem> getApplicablePhases() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
         for (Integer index : ((PhasedValidator) getValidator()).getApplicablePhases()) {
-            result.add(new SelectItem(index, getEjbcaWebBean().getText(ValidatorPhase.indexOf(index).getLabel())));
+            result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.indexOf(index).getLabel())));
         }
         return result;
     }
@@ -594,8 +596,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         keyValidator.setKeyValidatorSettingsTemplate();
         FacesContext.getCurrentInstance().renderResponse();
     }
-
-    private UploadedFile testExternalCommandCertificateValidatorPath;
     
     public UploadedFile getTestExternalCommandCertificateValidatorPath() {
         return testExternalCommandCertificateValidatorPath;
@@ -608,7 +608,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         if (file != null) {
             this.testExternalCommandCertificateValidatorPath = file;
             try {
-                final List<Certificate> certificates = CertTools.getCertsFromPEM(file.getInputStream());
+                final List<Certificate> certificates = CertTools.getCertsFromPEM(file.getInputStream(), Certificate.class);
                 ((ExternalCommandCertificateValidator) validator).setTestCertificates(certificates);
                 if (log.isDebugEnabled()) {
                     log.info("Test certificates uploaded: " + certificates);

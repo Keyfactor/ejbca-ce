@@ -21,7 +21,7 @@ import org.cesecore.certificates.ca.CA;
 /**
  * Base interface for certificate validators. All certificate validators must implement this interface.
  * 
- * @version $Id: CertificateValidator.java 26390 2017-11-04 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public interface CertificateValidator extends Validator, ValidityAwareValidator {

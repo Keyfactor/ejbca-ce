@@ -18,6 +18,13 @@ import java.util.List;
 
 import org.cesecore.profiles.Profile;
 
+/**
+ * Base validator interface that contains references to certificate profiles. 
+ * 
+ * @version $Id$
+ *
+ */
+
 public interface CertificateProfileAwareValidator extends Profile {
 
     /** 
