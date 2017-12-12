@@ -48,6 +48,7 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -63,6 +64,7 @@ import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -576,5 +578,136 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         return propertyList;
     }
     
-     
+    /**
+     * Updates approval request based on the changes in approval profile.
+     * Also updates corresponding approval profile in the approval profile session.
+     * 
+     * @param uniqueId id of approval request to be updated.
+     */
+    public void updateApprovalRequest(final int uniqueId) {
+
+        int approvalProfileId = approvalDataVOView.getApprovalProfile().getProfileId();
+        int approvalId = approvalDataVOView.getApprovalId();
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalId);
+
+        if (approvalDataVO == null) {
+            log.error("Approval request already expired or invalid!");
+            throw new IllegalStateException();
+        } else {
+            ApprovalRequest currentApprovalRequest = approvalDataVO.getApprovalRequest();
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
+
+            for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
+                for (ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
+                    for (DynamicUiProperty<? extends Serializable> property : approvalPartition.getPropertyList().values()) {
+
+                        if (property.getName().equals(PartitionedApprovalProfile.PROPERTY_NAME))
+                            continue;
+
+                        DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
+
+                        List<RoleInformation> updatedRoleInformation = new ArrayList<>();
+
+                        for (final Serializable value : property.getPossibleValues()) {
+                            RoleInformation roleInfo = (RoleInformation) value;
+                            updatedRoleInformation.addAll(updateRoleMembers(roleInfo));
+                        }
+
+                        if (!updatedRoleInformation.contains(propertyClone.getDefaultValue())) {
+                            //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
+                            updatedRoleInformation.add(0, (RoleInformation) propertyClone.getDefaultValue());
+                        }
+
+                        propertyClone.setPossibleValues(updatedRoleInformation);
+                        updateEncodedValues(propertyClone, property);
+
+                        approvalPartition.removeProperty(property.getName());
+                        approvalPartition.addProperty(propertyClone);
+
+                        approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
+                        approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
+
+                        approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                property.getName());
+                        approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                propertyClone);
+                    }
+                }
+            }
+
+            currentApprovalRequest.setApprovalProfile(approvalProfile);
+            approvalSession.updateApprovalRequest(approvalDataVO.getId(), currentApprovalRequest);
+            updateApprovalRequestData(uniqueId);
+            try {
+                approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
+            } catch (AuthorizationDeniedException e) {
+                log.info("Not authorized to change approval profile!" + e);
+            }
+        }
+    }
+
+     /**
+      * Update role members based on latest from role member session.
+      * 
+      * @param roleToUpdate
+      * @return list of updated role infos.
+      */
+     private List<RoleInformation> updateRoleMembers(final RoleInformation roleToUpdate) {
+         final List<Role> allAuthorizedRoles = roleSession.getAuthorizedRoles(getAdmin());
+         final List<RoleInformation> roleRepresentations = new ArrayList<>();
+         for (final Role role : allAuthorizedRoles) {
+             if (role.getRoleId() == roleToUpdate.getIdentifier()
+                     && (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                             || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION))) {
+                 try {
+                     final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+                     roleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
+                 } catch (AuthorizationDeniedException e) {
+                     if (log.isDebugEnabled()) {
+                         log.debug("Not authorized to members of authorized role '" + role.getRoleNameFull() + "' (?):" + e.getMessage());
+                     }
+                 }
+             }
+         }
+         return roleRepresentations;
+     }
+
+     /**
+      * Updates the encoded values of propertyClone if
+      * there has been a change in the role members of the 
+      * any of the roles which were selected in the list box 
+      * before the change.
+      * Uses property identifier as a base for comparison.
+      * 
+      * @param propertyClone updated property
+      * @param property current property
+      */
+     private void updateEncodedValues(final DynamicUiProperty<? extends Serializable> propertyClone,
+             final DynamicUiProperty<? extends Serializable> property) {
+
+         List<Integer> currentIds = new ArrayList<>();
+
+         for (final String value : property.getEncodedValues()) {
+             RoleInformation roleInfo = (RoleInformation) DynamicUiProperty.getAsObject(value);
+             currentIds.add(roleInfo.getIdentifier());
+         }
+
+         List<String> finalListOfEncodedValues = new ArrayList<>();
+
+         for (final Serializable value : propertyClone.getPossibleValues()) {
+             RoleInformation roleInformation = (RoleInformation) value;
+
+             if (currentIds.contains(roleInformation.getIdentifier())) {
+                 finalListOfEncodedValues.add(property.getAsEncodedValue(property.getType().cast(value)));
+             }
+         }
+
+         // Here we update the propertyClone set of encoded values.
+         try {
+             propertyClone.setEncodedValues(finalListOfEncodedValues);
+         } catch (PropertyValidationException e) {
+             log.error("Invalid propery value while setting the encoded values for property clone!" + e);
+         }
+     }
+ 
 }
