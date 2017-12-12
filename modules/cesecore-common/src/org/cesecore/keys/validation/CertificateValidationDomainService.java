@@ -23,7 +23,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * Functional domain service interface (should be implemented by separate domain service class, 
  * but is used temporarily to solve cyclic package dependency at compile time).
  * 
- * @version $Id: CertificateValidationDomainService.java 26390 2017-11-14 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public interface CertificateValidationDomainService {
@@ -32,12 +32,14 @@ public interface CertificateValidationDomainService {
      * Validates a generated certificate during issuance.
      * 
      * @param authenticationToken the authentication token of the administrator performing the action.
-     * @param phase the certificate issuance life cycle phase ({@link ValidatorPhase}.
+     * @param phase the certificate issuance life cycle phase ({@link IssuancePhase}.
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
      * @param certificate the certificate to validate
-     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
+     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance 
+     * {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are
+     *  stored in the cause, and message is null.
      */
-    void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca, final EndEntityInformation endEntityInformation,
-            final X509Certificate certificate) throws ValidationException, IllegalValidityException;
+    void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca,
+            final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException, IllegalValidityException;
 }

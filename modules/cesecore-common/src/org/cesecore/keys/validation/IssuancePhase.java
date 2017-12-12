@@ -19,9 +19,9 @@ import java.util.List;
 /**
  * An enum domain class representing all certificate process phases for validators.
  *
- * @version $Id: ValidatorPhase.java 26199 2017-12-11 07:17:28Z anjakobs $
+ * @version $Id$
  */
-public enum ValidatorPhase {
+public enum IssuancePhase {
 
     // @formatter:off
     DATA_VALIDATION(0, "VALIDATORPHASE_DATA_VALIDATION"),
@@ -41,7 +41,7 @@ public enum ValidatorPhase {
      * @param index index
      * @param label resource key or label.
      */
-    private ValidatorPhase(final int index, final String label) {
+    private IssuancePhase(final int index, final String label) {
         this.index = index;
         this.label = label;
     }
@@ -68,20 +68,20 @@ public enum ValidatorPhase {
      */
     public static final List<Integer> indices() {
         final List<Integer> result = new ArrayList<Integer>();
-        for (ValidatorPhase phase : values()) {
+        for (IssuancePhase phase : values()) {
             result.add(phase.getIndex());
         }
         return result;
     }
     
     /**
-     * Gets the {@link ValidatorPhase} object with the given index.
+     * Gets the {@link IssuancePhase} object with the given index.
      * @param index the index.
      * @return the valildator phase.
      */
-    public static final ValidatorPhase indexOf(final int index) {
-        ValidatorPhase result = null;
-        for (ValidatorPhase phase : values()) {
+    public static final IssuancePhase indexOf(final int index) {
+        IssuancePhase result = null;
+        for (IssuancePhase phase : values()) {
             if (phase.getIndex() == index) {
                 result = phase;
             }

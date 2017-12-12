@@ -175,7 +175,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      * Validates a generated certificate during issuance.
      * 
      * @param authenticationToken the authentication token of the administrator performing the action.
-     * @param phase the certificate issuance process phase ({@link ValidatorPhase}.
+     * @param phase the certificate issuance process phase ({@link IssuancePhase}.
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
      * @param certificate the certificate to validate

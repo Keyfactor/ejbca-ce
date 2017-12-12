@@ -25,27 +25,26 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 
 /**
- * @version $Id: CertificateValidatorBase.java 26333 26390 2017-11-04 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public abstract class CertificateValidatorBase extends ValidatorBase implements CertificateValidator {
 
-    
-    private static final long serialVersionUID = -125425559879817428L;
+	private static final long serialVersionUID = 1L;
 
-	/** Class logger. */
+    /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
 
     /** List of applicable CA types (see {@link #getApplicableCaTypes()}). */ 
     protected static List<Integer> APPLICABLE_CA_TYPES;
     
-    /** List of applicable validator phases (see {@link ValidatorPhase}). */ 
+    /** List of applicable issuance phases (see {@link IssuancePhase}). */ 
     protected static List<Integer> APPLICABLE_PHASES;
     
     static {
         APPLICABLE_PHASES = new ArrayList<Integer>();
-        APPLICABLE_PHASES.add(ValidatorPhase.PRE_CERTIFICATE_VALIDATION.getIndex());
-        APPLICABLE_PHASES.add(ValidatorPhase.CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(IssuancePhase.PRE_CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
         
         APPLICABLE_CA_TYPES = new ArrayList<Integer>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);

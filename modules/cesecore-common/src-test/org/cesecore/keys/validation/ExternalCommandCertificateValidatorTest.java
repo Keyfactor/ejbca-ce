@@ -11,11 +11,6 @@
  *                                                                       *
  *************************************************************************/
 
-/**
- * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
- * 
- * @version $Id: EccKeyValidatorTest.java 26242 2017-08-08 09:53:27Z anatom $
- */
 package org.cesecore.keys.validation;
 
 import static org.junit.Assert.assertTrue;
@@ -30,9 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests ECC key validator functions.
+ * Tests External Command validator functions.
  * 
- * @version $Id: ExternalCommandCertificateValidatorTest.java 26242 2017-11-11 12:07:27Z anatom $
+ * @version $Id$
  */
 public class ExternalCommandCertificateValidatorTest {
 
