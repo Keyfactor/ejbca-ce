@@ -117,25 +117,16 @@
 		 caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
 		 notauthorized = false;
 	     noparameter = false;
-		 try {
-			 ejbcawebbean.isAuthorized(StandardRules.CAVIEW.resource(), StandardRules.CAACCESS.resource() + caid);
-			 rabean.loadCertificates(new BigInteger(certificateserno,16), caid); 
-		 } catch (AuthorizationDeniedException e) {
-		     notauthorized = true;
-		 }
+	     rabean.loadCertificates(new BigInteger(certificateserno,16), caid);
   } else if( request.getParameter(CACERT_PARAMETER ) != null){
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
-       try{  
-         ejbcawebbean.isAuthorized(StandardRules.CAVIEW.resource(), StandardRules.CAACCESS.resource() + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
-         if(numberofcertificates > 0)
-          currentindex = 0;     
-          notauthorized = false;
-       }catch(AuthorizationDeniedException e){
-    	   notauthorized = true;
-       }
+         if(numberofcertificates > 0) {
+             currentindex = 0;
+         }
+         notauthorized = false;
        noparameter = false;
      }
      cacerts = true;
