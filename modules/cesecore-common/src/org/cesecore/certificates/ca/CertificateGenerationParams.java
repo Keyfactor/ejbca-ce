@@ -13,11 +13,9 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CTSubmissionConfigParams;
 import org.cesecore.keys.validation.CertificateValidationDomainService;
 
