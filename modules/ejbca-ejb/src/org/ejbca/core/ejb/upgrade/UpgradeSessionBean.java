@@ -295,7 +295,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 setEndEntityProfileInCertificateData(true);
                 // Since we know that this is a brand new installation, no upgrade should be needed
                 setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
-                setLastPostUpgradedToVersion("6.8.0");
+                setLastPostUpgradedToVersion("6.10.1");
             } else {
                 // Ensure that we save currently known oldest installation version before any upgrade is invoked
                 if(getLastUpgradedToVersion() != null) {
@@ -493,6 +493,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.10.1");
+        }
+        if (isLesserThan(oldVersion, "6.11.0")) {
+            try {
+                upgradeSession.migrateDatabase6110();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.11.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1255,6 +1263,29 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
+    /**
+     * Upgrade to EJBCA 6.11.0 
+     * Provides all current Peer connector roles with the new set of rules, controlling access to protocols
+     * on remote RA instances. All should be allowed by default to not cause any regressions. The rules are
+     * only relevant for RA Peer connector roles.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase6110() throws UpgradeFailedException {
+        log.debug("migrateDatabase6110: Adding new rules for protocol access on remote RA instances.");
+        List<Role> allRoles = roleDataSession.getAllRoles();
+        for (Role role : allRoles) {
+            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
+            if (isRaRequestRole) {
+                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME, Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP, Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST, Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS, Role.STATE_ALLOW);
+                roleDataSession.persistRole(role);
+            }
+        }
+    }
+    
     private boolean postMigrateDatabase6101() {
         log.info("Starting post upgrade to 6.10.1.");
         final Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
