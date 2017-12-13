@@ -41,10 +41,14 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final Logger log = Logger.getLogger(EstConfiguration.class);
     
     // Constants: Configuration keys
-    public static final String CONFIG_DEFAULTCA               = "defaultca";
-    public static final String CONFIG_CERTPROFILE             = "certprofile";
-    public static final String CONFIG_EEPROFILE           = "eeprofile";
-    
+    public static final String CONFIG_DEFAULTCA     = "defaultca";
+    public static final String CONFIG_CERTPROFILE   = "certprofile";
+    public static final String CONFIG_EEPROFILE     = "eeprofile";
+    public static final String CONFIG_REQCERT       = "requirecert";    
+    public static final String CONFIG_REQUSERNAME   = "requsername";
+    public static final String CONFIG_REQPASSWORD   = "reqpassword";
+    public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
+
     private final String ALIAS_LIST = "aliaslist";
     public static final String EST_CONFIGURATION_ID = "4";
 
@@ -57,6 +61,11 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_DEFAULTCA = "";
     public static final String DEFAULT_EEPROFILE = "1";
     private static final String DEFAULT_CERTPROFILE = "ENDUSER";
+    private static final String DEFAULT_REQCERT = "true";
+    private static final String DEFAULT_REQUSERNAME = "";
+    private static final String DEFAULT_REQPASSWORD = "";
+    private static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
+    
 
     /** Creates a new instance of EstConfiguration */
     public EstConfiguration()  {
@@ -91,6 +100,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_DEFAULTCA, DEFAULT_DEFAULTCA);   
             data.put(alias + CONFIG_CERTPROFILE, DEFAULT_CERTPROFILE);
             data.put(alias + CONFIG_EEPROFILE, DEFAULT_EEPROFILE); 
+            data.put(alias + CONFIG_REQCERT, DEFAULT_REQCERT);
+            data.put(alias + CONFIG_REQUSERNAME, DEFAULT_REQUSERNAME);
+            data.put(alias + CONFIG_REQPASSWORD, DEFAULT_REQPASSWORD);
+            data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_ALLOWUPDATEWITHSAMEKEY);
         }
     }
     
@@ -99,6 +112,12 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         alias = alias + ".";
         Set<String> keys = new LinkedHashSet<>();
         keys.add(alias + CONFIG_DEFAULTCA);
+        keys.add(alias + CONFIG_CERTPROFILE);
+        keys.add(alias + CONFIG_EEPROFILE);
+        keys.add(alias + CONFIG_REQCERT);
+        keys.add(alias + CONFIG_REQUSERNAME);
+        keys.add(alias + CONFIG_REQPASSWORD);
+        keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
         return keys;
     }
 
@@ -128,6 +147,67 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public void setEndEntityProfile(String alias, String eep) {
         String key = alias + "." + CONFIG_EEPROFILE;
         setValue(key, eep, alias);
+    }
+
+    /**
+     * Get wheter we require a certificate for authentication
+     */
+    public boolean getRequireCert(String alias) {
+        String key = alias + "." + CONFIG_REQCERT;
+        return StringUtils.equalsIgnoreCase(getValue(key, alias), "true");
+    }
+    /**
+     * Set wheter we require a certificate for authentication
+     */
+    public void setRequireCert(String alias, boolean reqCert) {
+        String key = alias + "." + CONFIG_REQCERT;
+        setValue(key, Boolean.toString(reqCert), alias);
+    }
+
+    /**
+     * Get wheter we require a username for authentication
+     */
+    public String getRequireUsername(String alias) {
+        String key = alias + "." + CONFIG_REQUSERNAME;
+        return getValue(key, alias);
+    }
+    /**
+     * Set wheter we require a username for authentication
+     */
+    public void setRequireUsername(String alias, String username) {
+        String key = alias + "." + CONFIG_REQUSERNAME;
+        setValue(key, username, alias);
+    }
+
+    /**
+     * Get wheter we require a password for authentication
+     */
+    public String getRequirePassword(String alias) {
+        String key = alias + "." + CONFIG_REQPASSWORD;
+        return getValue(key, alias);
+    }
+    /**
+     * Set wheter we require a password for authentication
+     */
+    public void setRequirePassword(String alias, String password) {
+        String key = alias + "." + CONFIG_REQPASSWORD;
+        setValue(key, password, alias);
+    }
+
+    /**
+     * Get wether we're allowed to reenroll with the same key
+     */
+    public boolean getKurAllowSameKey(String alias) {
+        String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    /**
+     * Set wether we're allowed to reenroll with same key
+     */
+    public void setKurAllowSameKey(String alias, boolean allowSameKey) {
+        String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
+        setValue(key, Boolean.toString(allowSameKey), alias);
     }
 
     public String getValue(String key, String alias) {
