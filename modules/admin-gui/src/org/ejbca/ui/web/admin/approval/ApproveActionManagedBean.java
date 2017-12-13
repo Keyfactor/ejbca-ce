@@ -601,36 +601,37 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                 for (ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                     for (DynamicUiProperty<? extends Serializable> property : approvalPartition.getPropertyList().values()) {
 
-                        if (property.getName().equals(PartitionedApprovalProfile.PROPERTY_NAME))
-                            continue;
+                        if (property.getName().equals(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS) || 
+                            property.getName().equals(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS)) {
 
-                        DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
+                            DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
 
-                        List<RoleInformation> updatedRoleInformation = new ArrayList<>();
+                            List<RoleInformation> updatedRoleInformation = new ArrayList<>();
 
-                        for (final Serializable value : property.getPossibleValues()) {
-                            RoleInformation roleInfo = (RoleInformation) value;
-                            updatedRoleInformation.addAll(updateRoleMembers(roleInfo));
+                            for (final Serializable value : property.getPossibleValues()) {
+                                RoleInformation roleInfo = (RoleInformation) value;
+                                updatedRoleInformation.addAll(updateRoleMembers(roleInfo));
+                            }
+
+                            if (!updatedRoleInformation.contains(propertyClone.getDefaultValue())) {
+                                //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
+                                updatedRoleInformation.add(0, (RoleInformation) propertyClone.getDefaultValue());
+                            }
+
+                            propertyClone.setPossibleValues(updatedRoleInformation);
+                            updateEncodedValues(propertyClone, property);
+
+                            approvalPartition.removeProperty(property.getName());
+                            approvalPartition.addProperty(propertyClone);
+
+                            approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
+                            approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
+
+                            approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                    property.getName());
+                            approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                    propertyClone);
                         }
-
-                        if (!updatedRoleInformation.contains(propertyClone.getDefaultValue())) {
-                            //Add the default, because it makes no sense why it wouldn't be there. Also, it may be a placeholder for something else. 
-                            updatedRoleInformation.add(0, (RoleInformation) propertyClone.getDefaultValue());
-                        }
-
-                        propertyClone.setPossibleValues(updatedRoleInformation);
-                        updateEncodedValues(propertyClone, property);
-
-                        approvalPartition.removeProperty(property.getName());
-                        approvalPartition.addProperty(propertyClone);
-
-                        approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
-                        approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
-
-                        approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                                property.getName());
-                        approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                                propertyClone);
                     }
                 }
             }
