@@ -30,7 +30,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     private static final long serialVersionUID = 1L;
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
-    /** Protocols currently supported by Ejbca */
+    /** Protocols currently supporting enable/disable configuration by EJBCA */
     public enum AvailableProtocols{
         ACME("ACME"), 
         CMP("CMP"), 
@@ -73,7 +73,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * @return true if protocol is enabled and incoming peer allows the protocol, false otherwise
      */
     public boolean getProtocolStatus(String protocol) {
-        return (Boolean)data.get(protocol) && AvailableProtocolsPeerCache.INSTANCE.isProtocolEnabled(protocol);
+        return (Boolean)data.get(protocol);
     }
     
     public void setProtocolStatus(String protocol, boolean status) {
