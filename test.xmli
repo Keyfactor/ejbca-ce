@@ -61,6 +61,8 @@
     <target name="optionaltestvapublisher" if="${vapublisher.exists}"><ant antfile="build.xml" dir="modules/va" target="test" /></target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
     <target name="optionaltestacme" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test"/></target>
+    <condition property="est.exists"><available file="modules/est"/></condition>
+    <target name="optionaltestest" if="${est.exists}"><ant antfile="build.xml" dir="modules/est" target="test"/></target>
     <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
     <target name="optionaltestcmpproxy" if="${cmpproxy.exists}"><ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" /></target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
@@ -150,6 +152,9 @@
         </condition>
     	<condition property="module" value="modules/acme">
     		<matches string="${test-fullname}" pattern="^modules/acme/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/est">
+    		<matches string="${test-fullname}" pattern="^modules/est/.*$"/>
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
