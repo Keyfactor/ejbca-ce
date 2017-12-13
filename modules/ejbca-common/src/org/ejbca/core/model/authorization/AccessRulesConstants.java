@@ -87,6 +87,17 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_PEERCONNECTOR_VIEW                 = "/peer/view";   // org.ejbca.peerconnector.PeerAccessRules.VIEW
     public static final String REGULAR_PEERCONNECTOR_MODIFY               = "/peer/modify"; // org.ejbca.peerconnector.PeerAccessRules.MODIFY
     public static final String REGULAR_PEERCONNECTOR_MANAGE               = "/peer/manage"; // org.ejbca.peerconnector.PeerAccessRules.MANAGE
+    public static final String REGULAR_PEERCONNECTOR_INVOKEAPI            = "/ra_master/invoke_api"; // org.ejbca.peerconnector.PeerRaAccessRules.RA_MASTER_INVOKE_API
+    
+    /**
+     * EE version only. Intended for checks required when Peers 
+     * module might not be available. When possible, reference 
+     * PeerProtocolAccessRules instead.
+     **/
+    public static final String REGULAR_PEERPROTOCOL_ACME                  = "/protocol/acme"; // org.ejbca.peerconnector.PeerProtocolAccessRules.ACME
+    public static final String REGULAR_PEERPROTOCOL_CMP                   = "/protocol/cmp";  // org.ejbca.peerconnector.PeerProtocolAccessRules.CMP
+    public static final String REGULAR_PEERPROTOCOL_EST                   = "/protocol/est";  // org.ejbca.peerconnector.PeerProtocolAccessRules. EST
+    public static final String REGULAR_PEERPROTOCOL_WS                    = "/protocol/web_services"; // org.ejbca.peerconnector.PeerProtocolAccessRules.WS
     
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
     public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/edit_hardtoken_issuers";

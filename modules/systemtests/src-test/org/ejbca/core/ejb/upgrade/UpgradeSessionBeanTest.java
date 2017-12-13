@@ -808,6 +808,68 @@ public class UpgradeSessionBeanTest {
         }
     }
     
+    /**
+     * Tests upgrade to 6.11.0. Expected behavior is roles with access to /ra_master/invoke_api before upgrade
+     * should be granted 'Allow' access to the new set of rules controlling protocol access of remote RA 
+     * instances.
+     * @throws RoleExistsException
+     * @throws AuthorizationDeniedException
+     */
+    @Test
+    public void testUpgradeProtocolAccess6110() throws RoleExistsException, AuthorizationDeniedException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        String roleNameInvokeApi = "roleInvokeApi";
+        String roleNameSuperAdmin = "roleSuperAdmin";
+        String roleNameLowAccess = "roleLowAccess";
+        Role roleInvokeApiPreUpgrade = new Role(null, roleNameInvokeApi);
+        Role roleSuperAdminPreUpgrade = new Role(null, roleNameSuperAdmin);
+        Role roleLowAccessPreUpgrade = new Role(null, roleNameLowAccess);
+        roleInvokeApiPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI, Role.STATE_ALLOW);
+        roleSuperAdminPreUpgrade.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+        roleLowAccessPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW);
+        try {
+            Role roleInvokeApiPersisted = roleSession.persistRole(alwaysAllowtoken, roleInvokeApiPreUpgrade);
+            Role roleSuperAdminPersisted = roleSession.persistRole(alwaysAllowtoken, roleSuperAdminPreUpgrade);
+            Role roleLowAccessPersisted = roleSession.persistRole(alwaysAllowtoken, roleLowAccessPreUpgrade);
+            // Perform upgrade 6.10.1 --> 6.11.0
+            guc.setUpgradedFromVersion("6.10.1");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            upgradeSession.upgrade(null, "6.10.1", false);
+            
+            Role roleInvokeApiPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleInvokeApiPersisted.getRoleId());
+            Role roleSuperAdminPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleSuperAdminPersisted.getRoleId());
+            Role roleLowAccessPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleLowAccessPersisted.getRoleId());
+            // Make sure roles survived upgrade at all
+            assertNotNull("Role vanished during upgrade", roleInvokeApiPostUpgrade);
+            assertNotNull("Role vanished during upgrade", roleSuperAdminPostUpgrade);
+            assertNotNull("Role vanished during upgrade", roleLowAccessPostUpgrade);
+            // Verify new and old access rules
+            assertTrue("Role lost old access rules during upgrade", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI));
+            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
+            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
+            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
+            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
+            
+            assertTrue("Role lost old access rules during upgrade", roleSuperAdminPostUpgrade.hasAccessToResource(StandardRules.ROLE_ROOT.resource()));
+            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
+            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
+            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
+            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
+            
+            assertTrue("Role lost old access rules during upgrade", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_RAFUNCTIONALITY));
+            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
+            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
+            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
+            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
+        } finally {
+            // Clean up
+            deleteRole(null, roleNameInvokeApi);
+            deleteRole(null, roleNameSuperAdmin);
+            deleteRole(null, roleNameLowAccess);
+        }     
+    }
+    
+    
     private void deleteRole(final String nameSpace, final String roleName) {
         try {
             final Role role = roleSession.getRole(alwaysAllowtoken, null, roleName);

@@ -292,7 +292,8 @@ public class EjbcaWS implements IEjbcaWS {
 	private static final Logger log = Logger.getLogger(EjbcaWS.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
+    /** Only intended to check if Peer connected instance is authorized to Web Services at all.*/
+    private final AuthenticationToken raWsAuthCheckToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("wsServiceAuthCheck"));
 
     /**
      * Gets an Admin object for a WS-API administrator authenticated with client certificate SSL.
@@ -326,8 +327,9 @@ public class EjbcaWS implements IEjbcaWS {
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus(AvailableProtocols.WS.getName());
-        if (!isServiceEnabled) {
-            throw new UnsupportedOperationException("Web Services has been disabled");
+        final boolean isServiceAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raWsAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_WS);
+        if (!(isServiceEnabled && isServiceAuthorized)) {
+            throw new UnsupportedOperationException("Not authorized to Web Services");
         } else if ((certificates == null) || (certificates[0] == null)) {
             throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
         }

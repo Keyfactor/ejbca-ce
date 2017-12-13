@@ -24,11 +24,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -45,7 +47,10 @@ public class CmpServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CmpServlet.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
+    
+    /** Only intended to check if Peer connected instance is authorized to CMP at all. */
+    private final AuthenticationToken raCmpAuthCheckToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cmpProtocolAuthCheck"));
+    
     private static final String DEFAULT_CMP_ALIAS = "cmp";
     
     @EJB
@@ -67,9 +72,10 @@ public class CmpServlet extends HttpServlet {
         }
         boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
                 getProtocolStatus(AvailableProtocols.CMP.getName());
+        boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raCmpAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP);
         try {
-            if (!protocolEnabled) {
-                log.info("CMP Protocol is disabled");
+            if (!(protocolEnabled && isProtocolAuthorized)) {
+                log.info("Not authorized to CMP Protocol");
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "CMP is disabled");
                 return;
             }
