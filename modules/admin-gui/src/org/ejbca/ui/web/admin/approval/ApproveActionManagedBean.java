@@ -586,25 +586,24 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      */
     public void updateApprovalRequest(final int uniqueId) {
 
-        int approvalProfileId = approvalDataVOView.getApprovalProfile().getProfileId();
         int approvalId = approvalDataVOView.getApprovalId();
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalId);
+        ApprovalProfile approvalProfile = approvalDataVOView.getApprovalProfile();
 
         if (approvalDataVO == null) {
             log.error("Approval request already expired or invalid!");
             throw new IllegalStateException();
         } else {
             ApprovalRequest currentApprovalRequest = approvalDataVO.getApprovalRequest();
-            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalProfileId);
 
             for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
                 for (ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                     for (DynamicUiProperty<? extends Serializable> property : approvalPartition.getPropertyList().values()) {
 
+                        DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
+
                         if (property.getName().equals(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_VIEW_RIGHTS) || 
                             property.getName().equals(PartitionedApprovalProfile.PROPERTY_ROLES_WITH_APPROVAL_RIGHTS)) {
-
-                            DynamicUiProperty<? extends Serializable> propertyClone = new DynamicUiProperty<>(property);
 
                             List<RoleInformation> updatedRoleInformation = new ArrayList<>();
 
@@ -620,25 +619,24 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
                             propertyClone.setPossibleValues(updatedRoleInformation);
                             updateEncodedValues(propertyClone, property);
-
-                            approvalPartition.removeProperty(property.getName());
-                            approvalPartition.addProperty(propertyClone);
-
-                            approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
-                            approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
-
-                            approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                                    property.getName());
-                            approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                                    propertyClone);
                         }
+
+                        approvalPartition.removeProperty(property.getName());
+                        approvalPartition.addProperty(propertyClone);
+
+                        approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
+                        approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
+
+                        approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                property.getName());
+                        approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                propertyClone);
                     }
                 }
             }
 
             currentApprovalRequest.setApprovalProfile(approvalProfile);
             approvalSession.updateApprovalRequest(approvalDataVO.getId(), currentApprovalRequest);
-            updateApprovalRequestData(uniqueId);
             try {
                 approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
             } catch (AuthorizationDeniedException e) {
