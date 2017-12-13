@@ -29,12 +29,8 @@
 	static final String ACTION_EDIT_ALIASES						= "actioneditestaliases";
 
 	static final String TEXTFIELD_ALIAS                       	 	= "textfieldalias";
-	static final String TEXTFIELD_EST_RANAMEGENPARAM			  	= "textfieldestranamegenerationparameter";
-	static final String TEXTFIELD_EST_RANAMEGENPREFIX		  		= "textfieldestranamegenerationprefix";
-	static final String TEXTFIELD_EST_RANAMEGENPOSTFIX		  		= "textfieldestranamegenerationpostfix";
-	static final String TEXTFIELD_EST_RAPASSWORDGENPARAM		  	= "textfieldestrapasswordgenerationparameter";
-	static final String TEXTFIELD_HMACPASSWORD						= "textfieldhmacpassword";
-	static final String TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH		= "textfieldnestedmessagetrustedcertificatespath";
+	static final String TEXTFIELD_EST_REQUIREUSERNAME						= "textfieldrequireusername";
+	static final String TEXTFIELD_EST_REQUIREPASSWORD						= "textfieldrequirepassword";
 	
 	static final String BUTTON_ADD_ALIAS						= "buttonaliasadd";
 	static final String BUTTON_DELETE_ALIAS					 	= "buttondeletealias";
@@ -45,51 +41,19 @@
 	static final String BUTTON_SAVE							 	= "buttonsave";
 	static final String BUTTON_CANCEL							= "buttoncancel";
 	static final String BUTTON_RELOAD							= "buttonreload";
-	static final String BUTTON_ADDVENDORCA						= "buttonaddvendorca";
-	static final String BUTTON_REMOVEVENDORCA					= "buttonremovevendorca";
-	static final String BUTTON_ADD_NAMEGENPARAM_DN				= "buttonaddnamegenparamdn";
-	static final String BUTTON_REMOVE_NAMEGENPARAM_DN			= "buttonremovenamegenparamdn";
-	
-	static final String RADIO_ESTMODE								= "radioestmode";
-	static final String RADIO_NAMEGENSCHEME						= "radionnamegenscheme";
-	static final String RADIO_HMACPASSWORD							= "radiohmacpassword";
-
 	
 	static final String CHECKBOX_EST_VENDORMODE					= "checkestvendormode";
-	static final String CHECKBOX_EST_KUR_USEAUTOMATICKEYUPDATE  	= "checkboxestuseautomatickeyupdate";
-	static final String CHECKBOX_EST_KUR_USESAMEKEYS				= "checkboxestkurusesamekeys";
-	static final String CHECKBOX_EST_ALLOWRAVERIFYPOPO				= "checkboxestallowraverifypopo";
-	static final String CHECKBOX_EST_ALLOWCUSTOMSERNO				= "checkboxestallowcustomserno";
-	static final String CHECKBOX_HMAC								= "checkboxhmac";
-	static final String CHECKBOX_EEC								= "checkboxeec";
-	static final String CHECKBOX_REGTOKEN							= "checkboxregtoken";
-	static final String CHECKBOX_DNPART							= "checkboxdnpart";
-	static final String CHECKBOX_OMITVERIFICATIONINECC				= "checkboxomitverificationsinecc";
+	static final String CHECKBOX_EST_REQUIRECERT  				= "checkboxrequirecert";
+	static final String CHECKBOX_EST_KUR_USESAMEKEYS 			= "checkboxkurusesamekeys";
 
-	
 	static final String LIST_ESTDEFAULTCA					   		= "listestdefaultca";
-	static final String LIST_ESTRACAS						   		= "listestracas";
-	static final String LIST_ESTRESPONSEPROTECTION		   		    = "listestresponseprotection";
 	static final String LIST_ESTEEPROFILES					   		= "listesteeprofile";
 	static final String LIST_ESTCERTPROFILES				   		= "listestcertprofiles";
-	static final String LIST_ECCCAS								= "listecccas";
-	static final String LIST_DNPARTS								= "listdnparts";
-	static final String LIST_EXTRACTUSERNAMECOMP					= "listextractusernamecomp";
-	static final String LIST_VENDORCA								= "listvendorca";
-	static final String LIST_NAMEGENPARAM_DN						= "listnamegenparamdn";
 		
 	static final String SELECT_ALIASES                       		= "selectaliases";
 	static final String HIDDEN_ALIAS                         		= "hiddenalias";
 	static final String CHECKBOX_VALUE								= "true"; 
 	 
-	 
-	List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "serialNumber", "givenName", "initials", "surname", "title", 
-			   		"unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
-			   		"telephoneNumber", "pseudonym", "streetAddress", "name", "CIF", "NIF");
-
-
- 
-
   // Declare Language file.
 %>
 <%
@@ -102,7 +66,6 @@
   boolean  triedrenametoexistingalias = false;
   boolean  triedclonetoexistingalias = false;
   
-  boolean ramode = false;
   boolean pbe = false;
 
   GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource()); 
@@ -242,19 +205,35 @@
     		                	estConfigClone.setDefaultCA(alias, value);
     		       			}
 									   
-							   // ra endentity profile
-							   value = request.getParameter(LIST_ESTEEPROFILES);
-							   if(value != null){
+							// ra endentity profile
+							value = request.getParameter(LIST_ESTEEPROFILES);
+							if(value != null){
 								estConfigClone.setEndEntityProfile(alias, value);
-							   }
+							}
 							   
-							   // ra certprofile
-							   value = request.getParameter(LIST_ESTCERTPROFILES);
-							   if(value != null) {
+							// ra certprofile
+							value = request.getParameter(LIST_ESTCERTPROFILES);
+							if(value != null) {
 								estConfigClone.setCertProfile(alias, value);
-							   }
+							}
 
-    				        includefile="estaliaspage.jspf";
+							// require cert
+							value = request.getParameter(CHECKBOX_EST_REQUIRECERT);
+							estConfigClone.setRequireCert(alias, value != null);
+
+							// require username
+							value = request.getParameter(TEXTFIELD_EST_REQUIREUSERNAME);
+							estConfigClone.setRequireUsername(alias, value == null ? "" : value);
+
+							// require password
+							value = request.getParameter(TEXTFIELD_EST_REQUIREPASSWORD);
+							estConfigClone.setRequirePassword(alias, value == null ? "" : value);
+
+							// allow reenroll with same key
+							value = request.getParameter(CHECKBOX_EST_KUR_USESAMEKEYS);
+							estConfigClone.setKurAllowSameKey(alias, value != null);
+
+							includefile="estaliaspage.jspf";
     			        
     				        if(request.getParameter(BUTTON_SAVE) != null) {
     				        		ejbcawebbean.updateEstConfigFromClone(alias);

@@ -98,8 +98,6 @@ function checkallfields() {
 		</noscript>
       </td>
     </tr>
-
-
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
@@ -122,6 +120,61 @@ function checkallfields() {
         </select>
       </td>
     </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIRECERT\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIRECERT_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_EST_REQUIRECERT%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
+			<% if(estConfigClone.getRequireCert(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_EST_REQUIRECERT%>" />
+		<label for="<%=CHECKBOX_EST_REQUIRECERT%>"><c:out value="<%= ejbcawebbean.getText(\"YES\") %>" /></label>
+      </td>
+    </tr> 
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREUSERNAME\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREUSERNAME_HELP\") %>"/></p>
+	  </td>
+      <td width="50%">        
+        <input type="text" name="<%=TEXTFIELD_EST_REQUIREUSERNAME %>" value='<c:out value="<%= estConfigClone.getRequireUsername(alias) %>"/>' 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREPASSWORD\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREPASSWORD_HELP\") %>"/></p>
+	  </td>
+      <td width="50%">        
+        <input type="text" name="<%=TEXTFIELD_EST_REQUIREPASSWORD %>" value='<c:out value="<%= estConfigClone.getRequirePassword(alias) %>"/>' 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTALLOWKURWITHSAMEKEY\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Update%20Request%20(kur)") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTALLOWKURWITHSAMEKEY_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_EST_KUR_USESAMEKEYS%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
+			<% if(estConfigClone.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_EST_KUR_USESAMEKEYS%>" />
+		<label for="<%=CHECKBOX_EST_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label> 
+      </td>
+    </tr> 
+
+    
     <%-- Form buttons --%>
 	
     <tr  id="Row<%=row++%2%>"> 

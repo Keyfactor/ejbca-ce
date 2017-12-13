@@ -1334,7 +1334,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * Deletes a CMP alias from the database.
+     * Deletes a EST alias from the database.
      *
      * @param alias the name of the alias to delete.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
@@ -1345,7 +1345,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * Renames a CMP alias
+     * Renames a EST alias
      *
      * @param oldName the old alias name
      * @param newName the new alias name

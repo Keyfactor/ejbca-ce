@@ -446,7 +446,7 @@
 						replacement-file="${eardd.src}/META-INF/application.xml"
 						replacement-enabled="${mod.est.exists}"
 						replacement-web-uri="est.war"
-						replacement-context-root="/.well-known"
+						replacement-context-root="/.well-known/est"
 				/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
