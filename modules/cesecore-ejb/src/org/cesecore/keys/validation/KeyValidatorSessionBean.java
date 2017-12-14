@@ -412,9 +412,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
                         final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName, validator.getIssuer(), messages);
+                        final String shortMessage = intres.getLocalizedMessage("validator.caa.validation_failed_error_page", validatorName, validator.getIssuer());
                         log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
                         final int index = validator.getFailedAction();
-                        performValidationFailedActions(index, message);
+                        performValidationFailedActions(index, message, shortMessage);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
                         final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, validator.getIssuer(),
@@ -488,7 +489,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
                         // use method performValidationFailedActions because it's the same actions
-                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage());
+                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage()); 
                     } catch (ValidationException e) {
                         throw e;
                     }
@@ -772,15 +773,27 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-
+    
+    /**
+     * Calling overloaded method performValidationFailedActions when parameter shortMessage should be null.
+     * 
+     * @param failedAction
+     * @param message
+     * @throws ValidationException
+     */
+    private void performValidationFailedActions(final int failedAction, final String message) throws ValidationException {
+        performValidationFailedActions(failedAction, message, null);
+    }
+       
     /** 
      * Post processes every validation depending on its failed action.
      * 
      * @param failedAction the failed action index (see {@link KeyValidationFailedActions}).
      * @param message the message to log.
+     * @param shortMessage the error message to EJBCA Certificate Enrollment Error page 
      * @throws ValidationException if a failed validation has to be abort the certificate issuance.
      * */
-    private void performValidationFailedActions(final int failedAction, final String message) throws ValidationException {
+    private void performValidationFailedActions(final int failedAction, final String message, final String shortMessage) throws ValidationException {
         if (KeyValidationFailedActions.LOG_INFO.getIndex() == failedAction) {
             log.info(message);
         } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == failedAction) {
@@ -791,7 +804,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             if (log.isDebugEnabled()) {
                 log.debug("Action ABORT_CERTIFICATE_ISSUANCE: " + message);
             }
-            throw new ValidationException(message);
+            throw new ValidationException(shortMessage);
         } else {
             // NOOP
             log.debug(message);
