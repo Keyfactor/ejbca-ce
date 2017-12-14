@@ -584,7 +584,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      *
      * @param uniqueId id of approval request to be updated.
      */
-    public void updateApprovalRequest(final int uniqueId) {
+    public void updateApprovalRequest() {
         int approvalId = approvalDataVOView.getApprovalId();
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalId);
         ApprovalProfile approvalProfile = approvalDataVOView.getApprovalProfile();
