@@ -13,7 +13,9 @@
 package org.ejbca.core.model.era;
 
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.roles.Role;
@@ -521,4 +524,20 @@ public interface RaMasterApi {
      */
     byte[] cmpDispatch(AuthenticationToken authenticationToken, byte[] pkiMessageBytes, String cmpConfigurationAlias) throws NoSuchAliasException;
 
+    /**
+     * Dispatch EST request over RaMasterApi.
+     * 
+     * Basic ASN.1 validation is performed at a proxy to increase the protection of a CA slightly.
+     * 
+     * @param operation the EST operation to perform
+     * @param alias the requested CA configuration that should handle the request.
+     * @param cert The client certificate used to request this operation if any
+     * @param username The authentication username if any
+     * @param password The authentication password if any
+     * @param requestBody The HTTP request body. Usually a PKCS#10
+     * @return the HTTP respons body
+     * @see EstOperationBeanLocal#dispatchRequest(Certificate, String, String, String, String, byte[])
+     * @since RA Master API version 1 (EJBCA 6.8.0)
+     */
+    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException;    
 }
