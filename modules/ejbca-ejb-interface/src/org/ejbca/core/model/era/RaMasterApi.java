@@ -259,16 +259,28 @@ public interface RaMasterApi {
      */
     RaRequestsSearchResponse searchForApprovalRequests(AuthenticationToken authenticationToken, RaRequestsSearchRequest raRequestsSearchRequest);
     
-    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
+    /**
+     * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned 
+     * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
+     */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
     
-    /** @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise*/
+    /**
+     * Searches for a certificate. If present locally, then the data (revocation status etc.) from the local database will be returned
+     * @return CertificateDataWrapper if it exists and the caller is authorized to see the data or null otherwise
+     */
     CertificateDataWrapper searchForCertificateByIssuerAndSerial(AuthenticationToken authenticationToken, String issuerDN, String serno);
     
-    /** @return list of certificates from the specified search criteria*/
+    /**
+     * Searches for certificates. Data (e.g. revocation status) of remote certificates take precedence over local ones.
+     * @return list of certificates from the specified search criteria
+     */
     RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest raCertificateSearchRequest);
 
-    /** @return list of end entities from the specified search criteria*/
+    /**
+     * Searches for end entities. Remote end entities take precedence over local ones.
+     * @return list of end entities from the specified search criteria
+     */
     RaEndEntitySearchResponse searchForEndEntities(AuthenticationToken authenticationToken, RaEndEntitySearchRequest raEndEntitySearchRequest);
 
     /**
