@@ -713,7 +713,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 }
                 globalConfig.setCTLogs(ctlogsMap);
 
-                if (googleCtPolicy.isValid()) {
+                if (getGoogleCtPolicy().isValid()) {
                     globalConfig.setGoogleCtPolicy(googleCtPolicy);
                 } else {
                     addErrorMessage("INVALID_CT_POLICY");
