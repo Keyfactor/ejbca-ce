@@ -30,6 +30,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
+		<path location="${mod.est-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws.lib}"/>
 	</path>
@@ -60,6 +61,7 @@
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
+		<path location="${mod.est-interface.lib}"/>
 	</path>
 
 	<path id="test.classpath">
@@ -118,7 +120,7 @@
 
 
 
-	<target name="compile-ejbca-ejb" depends="with.clover, ejbca-ejb-interface, ejbca-common, ejbca-common-web">
+	<target name="compile-ejbca-ejb" depends="with.clover, ejbca-ejb-interface, ejbca-common, ejbca-common-web, est-interface">
 		<mkdir dir="${build.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>

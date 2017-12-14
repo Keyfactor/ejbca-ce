@@ -63,6 +63,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -1442,6 +1443,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
+        // either throw an exception or return null
+        if (caughtException != null) {
+            throw caughtException;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password, final byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
+        NoSuchAliasException caughtException = null;
+        
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion()>=1) {
+                try {
+                    byte[] result;
+                    try {
+                        result = raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
+                        return result;
+                    } catch (NoSuchAliasException e) {
+                        //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
+                        //later though.
+                        caughtException = e;
+                    }                    
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+
         // either throw an exception or return null
         if (caughtException != null) {
             throw caughtException;
