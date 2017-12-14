@@ -95,8 +95,9 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     /**
      * Sets the complete certificate in the response message.
      *
-     * @param cert certificate in the response message.
+     * @param certificate certificate in the response message.
      */
+    @Override
     public void setCertificate(final Certificate certificate) {
         this.certificate = certificate;
         try {
@@ -106,23 +107,18 @@ public class X509ResponseMessage implements CertificateResponseMessage {
         }
     }
 
-    /**
-     * Sets the CRL (if present) in the response message.
-     *
-     * @param crl crl in the response message.
-     */
+    @Override
     public void setCrl(CRL crl) {
         // This message type does not contain a CRL
     }
 
-    /** @see org.cesecore.certificates.certificate.request.ResponseMessage.protocol.IResponseMessage#setIncludeCACert
-     * 
-     */
+    @Override
     public void setIncludeCACert(boolean incCACert) {
-    	// Do nothing, not applicable
+        // Do nothing, not applicable
     }
-	public void setCACert(Certificate cACert) {
-	}
+    @Override
+    public void setCACert(Certificate cACert) {
+    }
 
     @Override
     public Certificate getCertificate() {
@@ -147,6 +143,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @param status status of the response.
      */
+    @Override
     public void setStatus(ResponseStatus status) {
         this.status = status;
     }
@@ -156,6 +153,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @return status status of the response.
      */
+    @Override
     public ResponseStatus getStatus() {
         return status;
     }
@@ -165,6 +163,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @param failInfo reason for failure.
      */
+    @Override
     public void setFailInfo(FailInfo failInfo) {
         this.failInfo = failInfo;
     }
@@ -174,16 +173,19 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @return failInfo reason for failure.
      */
+    @Override
     public FailInfo getFailInfo() {
         return failInfo;
     }
 
+    @Override
     public void setFailText(String failText) {
-    	this.failText = failText;
+        this.failText = failText;
     }
 
+    @Override
     public String getFailText() {
-    	return this.failText;
+        return failText;
     }
 
     /**
@@ -202,6 +204,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @see #setSignKeyInfo()
      */
+    @Override
     public boolean create() {
 
         if (status.equals(ResponseStatus.SUCCESS)) {
@@ -228,73 +231,44 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @return True if public and private key is needed.
      */
+    @Override
     public boolean requireSignKeyInfo() {
         return false;
     }
 
-    /**
-     * Sets the public and private key needed to sign the message. Must be set if
-     * requireSignKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireSignKeyInfo()
-     */
+    @Override
     public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
     }
 
-    /**
-     * Sets a senderNonce if it should be present in the response
-     *
-     * @param senderNonce a string of base64 encoded bytes
-     */
+    @Override
     public void setSenderNonce(String senderNonce) {
     }
 
-    /**
-     * Sets a recipient if it should be present in the response
-     *
-     * @param recipientNonce a string of base64 encoded bytes
-     */
+    @Override
     public void setRecipientNonce(String recipientNonce) {
     }
 
-    /**
-     * Sets a transaction identifier if it should be present in the response
-     *
-     * @param transactionId transaction id
-     */
+    @Override
     public void setTransactionId(String transactionId) {
     }
 
-    /**
-     * Sets recipient key info, key id or similar. This is usually the request key info from the
-     * request message.
-     *
-     * @param recipientKeyInfo key info
-     */
+    @Override
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
     }
     
-    /** @see org.cesecore.certificates.certificate.request.ResponseMessage.core.protocol.IResponseMessage
-     */
+    @Override
     public void setPreferredDigestAlg(String digest) {
     }
 
-    /** @see org.cesecore.certificates.certificate.request.ResponseMessage.core.protocol.IResponseMessage
-     */
+    @Override
     public void setRequestType(int reqtype) {
-	}
+    }
 
-    /** @see org.cesecore.certificates.certificate.request.ResponseMessage.core.protocol.IResponseMessage
-     */
+    @Override
     public void setRequestId(int reqid) {
     }
 
-    /** @see org.cesecore.certificates.certificate.request.ResponseMessage.core.protocol.IResponseMessage
-     */
+    @Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     }
 }
