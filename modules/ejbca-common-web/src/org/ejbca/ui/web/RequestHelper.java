@@ -57,6 +57,7 @@ import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -161,11 +162,9 @@ public class RequestHelper {
             return null;
         }
 
-        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-        ASN1Sequence spkac;
-        try {
+        final ASN1Sequence spkac;
+        try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer))) {
             spkac = (ASN1Sequence) in.readObject();
-            in.close();
         } catch (IOException e) {
             throw new IllegalStateException("Unexpected IOException was caught.", e);
         }
@@ -253,7 +252,7 @@ public class RequestHelper {
             break;
         case ENCODED_CERTIFICATE_CHAIN:
             CAInfo caInfo = signsession.getCAFromRequest(administrator, req, false).getCAInfo();
-            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+            LinkedList<Certificate> chain = new LinkedList<>(caInfo.getCertificateChain());
             chain.addFirst(cert);
             encoded = CertTools.getPemFromCertificateChain(chain);
             break;
@@ -277,13 +276,13 @@ public class RequestHelper {
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
-            CertificateEncodingException, CertificateException, IOException, CertificateExtensionException {
+            CertificateEncodingException, CertificateException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, CertificateResponseType.fromNumber(resulttype), doSplitLines).getEncoded();
     }
     
     public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             CertificateResponseType resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
-            AuthorizationDeniedException, IOException, CertificateExtensionException {
+            AuthorizationDeniedException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
     }
     
@@ -293,7 +292,7 @@ public class RequestHelper {
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
-            AuthorizationDeniedException, IOException, CertificateExtensionException {
+            AuthorizationDeniedException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
     }
 
@@ -312,7 +311,12 @@ public class RequestHelper {
             req.setPassword(password);
             // Yes it says X509ResponseMessage, but for CVC it means it just contains the binary certificate blob
             ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
-            Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
+            if (resp.getStatus() == ResponseStatus.FAILURE) {
+                final String msg = "Failed to generate CVC certificate: " + resp.getFailText();
+                log.debug(msg);
+                throw new EjbcaException(msg);
+            }
+            CardVerifiableCertificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), CardVerifiableCertificate.class);
             byte[] result = cert.getEncoded();
             log.debug("Created CV certificate for " + username);
             if (debug != null) {
@@ -452,8 +456,7 @@ public class RequestHelper {
      * @param filename filename sent as 'Content-disposition' header 
      * @param beginKey String containing key information, i.e. BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
      * @param endKey String containing key information, i.e. END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
-     * @throws IOException 
-     * @throws Exception on error
+     * @throws IOException on error
      */
     public static void sendNewB64File(byte[] b64cert, HttpServletResponse out, String filename, String beginKey, String endKey) 
     throws IOException {
@@ -487,9 +490,9 @@ public class RequestHelper {
      *
      * @param b64cert base64 encoded certificate to be returned
      * @param out output stream to send to
-     * @param beginKey, String containing key information, i.e. BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
-     * @param beginKey, String containing key information, i.e. END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
-     * @throws Exception on error
+     * @param beginKey String containing key information, i.e. BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
+     * @param endKey String containing key information, i.e. END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
+     * @throws IOException on error
      */
     public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out, String beginKey, String endKey)
         throws IOException {
@@ -502,7 +505,7 @@ public class RequestHelper {
      * @param cert DER encoded certificate to be returned
      * @param out output stream to send to
      *
-     * @throws Exception on error
+     * @throws IOException on error
      */
     public static void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
         throws IOException {
@@ -516,9 +519,9 @@ public class RequestHelper {
      * @param bytes DER encoded certificate to be returned
      * @param out output stream to send to
      * @param contentType mime type to send back bytes as
-     * @param fileName to call the file in a Content-disposition, can be null to leave out this header
+     * @param filename to call the file in a Content-disposition, can be null to leave out this header
      *
-     * @throws Exception on error
+     * @throws IOException on error
      */
     public static void sendBinaryBytes(final byte[] bytes, final HttpServletResponse out, final String contentType, final String filename)
         throws IOException {
@@ -552,9 +555,9 @@ public class RequestHelper {
      * @param bytes Data to be encoded
      * @param out output stream to send to
      * @param contentType mime type to send back bytes as
-     * @param fileName to call the file in a Content-disposition, can be null to leave out this header
+     * @param filename to call the file in a Content-disposition, can be null to leave out this header
      *
-     * @throws Exception on error
+     * @throws IOException on error
      */
     public static void sendB64BinaryBytes(final byte[] bytes, final HttpServletResponse out, final String contentType, final String filename)
     throws IOException {
