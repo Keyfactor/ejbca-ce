@@ -98,6 +98,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -168,6 +169,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.util.query.ApprovalMatch;
@@ -222,6 +224,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSessionLocal;
+    @EJB
+    private EstOperationsSessionLocal estOperationsSessionLocal;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -1994,4 +1998,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
         return cmpMessageDispatcherSession.dispatchRequest(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
     }
+
+    @Override
+    public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
+        return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password,  requestBody);
+    }
+
 }
