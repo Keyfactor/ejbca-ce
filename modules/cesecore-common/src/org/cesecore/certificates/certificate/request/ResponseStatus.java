@@ -69,6 +69,7 @@ public final class ResponseStatus implements Serializable {
     	return value;
     }
 
+    @Override
     public boolean equals(final Object o) {
     	boolean ret = false;
         if (this == o) {
@@ -84,6 +85,7 @@ public final class ResponseStatus implements Serializable {
         return ret;
     }
 
+    @Override
     public int hashCode() {
         return value;
     }
