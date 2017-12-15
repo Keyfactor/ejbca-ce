@@ -321,6 +321,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @return AuthenticationToken object based on the SSL client certificate
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
+     * @throws UnsupportedOperationException if this instance incoming peer connection denies web services
      */
     private AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException {
         final MessageContext msgContext = wsContext.getMessageContext();
