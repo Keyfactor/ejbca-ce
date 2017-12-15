@@ -4,6 +4,10 @@ EJBCA 6.11
 Notable highlights:
 - SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder.
 
+EJBCA 6.10.1.1 
+-----------
+Patch release for ECA-6426, in which the database version was set incorrectly for fresh installations. 
+
 EJBCA 6.10.1 
 -----------
 
