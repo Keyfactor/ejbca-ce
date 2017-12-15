@@ -94,7 +94,7 @@ public abstract class AccessRulesConstants {
      * module might not be available. When possible, reference 
      * PeerProtocolAccessRules instead.
      **/
-    public static final String REGULAR_PEERPROTOCOL_ACME                  = "/protocol/acme"; // org.ejbca.peerconnector.PeerProtocolAccessRules.ACME
+    //public static final String REGULAR_PEERPROTOCOL_ACME                  = "/protocol/acme"; // org.ejbca.peerconnector.PeerProtocolAccessRules.ACME
     public static final String REGULAR_PEERPROTOCOL_CMP                   = "/protocol/cmp";  // org.ejbca.peerconnector.PeerProtocolAccessRules.CMP
     public static final String REGULAR_PEERPROTOCOL_EST                   = "/protocol/est";  // org.ejbca.peerconnector.PeerProtocolAccessRules. EST
     public static final String REGULAR_PEERPROTOCOL_WS                    = "/protocol/web_services"; // org.ejbca.peerconnector.PeerProtocolAccessRules.WS

@@ -845,19 +845,16 @@ public class UpgradeSessionBeanTest {
             assertNotNull("Role vanished during upgrade", roleLowAccessPostUpgrade);
             // Verify new and old access rules
             assertTrue("Role lost old access rules during upgrade", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI));
-            assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
             assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
             assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
             assertTrue("Denied access to new access rules", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
             
             assertTrue("Role lost old access rules during upgrade", roleSuperAdminPostUpgrade.hasAccessToResource(StandardRules.ROLE_ROOT.resource()));
-            assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
             assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
             assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
             assertTrue("Denied access to new access rules", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
             
             assertTrue("Role lost old access rules during upgrade", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_RAFUNCTIONALITY));
-            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME));
             assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP));
             assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST));
             assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS));
