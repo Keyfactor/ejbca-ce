@@ -834,43 +834,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         // Fetching the CA object will trigger UpgradableHashMap upgrades
         CA ca = cadata.getCA();
-        final boolean caStatusChanged = setCaStatus(ca);
+        final boolean expired = hasCAExpiredNow(ca);
+        if (expired) {
+            ca.setStatus(CAConstants.CA_EXPIRED);
+        }
         final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
         // Compare old version with current version and save the data if there has been a change
         final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-        if (adhocUpgrade || upgradedExtendedService || upgradeCA || caStatusChanged) {
+        if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
             if (log.isDebugEnabled()) {
-                log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() + 
-                        ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService + 
-                        ", upgradeCA: " + upgradeCA + ", caStatus: " + ca.getStatus());
+                log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
+                        ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
+                        ", upgradeCA: " + upgradeCA + ", expired: " + expired);
             }
             ca.getCAToken();
             final int caId = caSession.mergeCa(ca);
             caDataReturn = entityManager.find(CAData.class, caId);
         }
         return caDataReturn;
-    }
-
-    /***
-     * Set the status of the CA given as argument, and return a boolean indicating
-     * whether the status changed.
-     * @param ca the CA whose status should be set
-     * @return true if the CA status changed, false otherwise
-     */
-    private boolean setCaStatus(final CA ca) {
-        final int oldCaStatus = ca.getStatus();
-        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-        final boolean offline = cryptoToken == null || cryptoToken.getTokenStatus() == CryptoToken.STATUS_OFFLINE;
-        final boolean expired = hasCAExpiredNow(ca);
-        if (expired) {
-            ca.setStatus(CAConstants.CA_EXPIRED);
-        } else if (offline) {
-            ca.setStatus(CAConstants.CA_OFFLINE);
-        } else {
-            ca.setStatus(CAConstants.CA_ACTIVE);
-        }
-        // TODO Implement status EXTERNAL, REVOKED, UNITIALIZED, WAITING_FOR_CERTIFICATE_RESPONSE
-        return oldCaStatus != ca.getStatus();
     }
 
     /**
