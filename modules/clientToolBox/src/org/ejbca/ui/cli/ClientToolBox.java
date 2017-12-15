@@ -16,9 +16,7 @@ import org.ejbca.ui.cli.dbmanager.DBManager;
 
 /**
  * Extend this class for each new tool you want to add and add the new extended class to the toolBox array in {@link #main(String[])}
- * @author primelars
  * @version $Id$
- *
  */
 public abstract class ClientToolBox {
 
@@ -58,7 +56,7 @@ public abstract class ClientToolBox {
         		new CMPKeyUpdateStressTest(),
         		new SCEPTest(),
                 new OCSPActivate(),
-                new DBManager()
+                new DBManager(), new PasswordGenerator()
         		};
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {
