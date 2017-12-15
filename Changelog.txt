@@ -1,3 +1,9 @@
+EJBCA 6.10.1.1, 2017-12-15
+---
+
+BUG
+    [ECA-6426] - EJBCA needs "System upgrade" (from 6.8 -> 6.10.1) on a freshly installed database on the appliance
+
 EJBCA 6.10.1, 2017-12-11
 ---
 
