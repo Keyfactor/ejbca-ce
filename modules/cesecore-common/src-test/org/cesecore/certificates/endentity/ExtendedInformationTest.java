@@ -113,34 +113,34 @@ public class ExtendedInformationTest {
         assertEquals(approvalRequestId, extendedInformation.getAddEndEntityApprovalRequestId());
         assertEquals(certificateEndTime, extendedInformation.getCertificateEndTime());
         assertArrayEquals(certificateRequest, extendedInformation.getCertificateRequest());
-        //assertEquals(certificateSerialNumber, extendedInformation.getCertificateSerialNumber());
+        assertEquals(certificateSerialNumber, extendedInformation.getCertificateSerialNumber());
         assertEquals(customDataValue, extendedInformation.getCustomData(customDataKey));
         assertEquals(customExtensionDataValue, extendedInformation.getExtensionData(customExtensionDataKey));
-        assertEquals(issuanceRevocationReason, extendedInformation.getIssuanceRevocationReason());
+        assertEquals(issuanceRevocationReason, (Integer) extendedInformation.getIssuanceRevocationReason());
         assertEquals(keyStoreSubAlgorithmType, extendedInformation.getKeyStoreAlgorithmSubType());
         assertEquals(keyStoreAlgorithm, extendedInformation.getKeyStoreAlgorithmType());
         assertEquals(mapDataValue, extendedInformation.getMapData(mapDataKey));
-        assertEquals(maxLoginAttempts, extendedInformation.getMaxLoginAttempts());
+        assertEquals(maxLoginAttempts, (Integer) extendedInformation.getMaxLoginAttempts());
         assertEquals(nameConstraintsExcluded, extendedInformation.getNameConstraintsExcluded());
         assertEquals(nameConstraintsPermitted, extendedInformation.getNameConstraintsPermitted());
-        assertEquals(remainingLoginAttempts, extendedInformation.getRemainingLoginAttempts());
+        assertEquals(remainingLoginAttempts, (Integer) extendedInformation.getRemainingLoginAttempts());
         assertEquals(subjectDirectoryAttributes, extendedInformation.getSubjectDirectoryAttributes());
 
         final ExtendedInformation extendedInformation2 = new ExtendedInformation(extendedInformation);
         assertEquals(approvalRequestId, extendedInformation2.getAddEndEntityApprovalRequestId());
         assertEquals(certificateEndTime, extendedInformation2.getCertificateEndTime());
         assertArrayEquals(certificateRequest, extendedInformation2.getCertificateRequest());
-        //assertEquals(certificateSerialNumber, extendedInformation2.getCertificateSerialNumber());
+        assertEquals(certificateSerialNumber, extendedInformation2.getCertificateSerialNumber());
         assertEquals(customDataValue, extendedInformation2.getCustomData(customDataKey));
         assertEquals(customExtensionDataValue, extendedInformation2.getExtensionData(customExtensionDataKey));
-        assertEquals(issuanceRevocationReason, extendedInformation2.getIssuanceRevocationReason());
+        assertEquals(issuanceRevocationReason, (Integer) extendedInformation2.getIssuanceRevocationReason());
         assertEquals(keyStoreSubAlgorithmType, extendedInformation2.getKeyStoreAlgorithmSubType());
         assertEquals(keyStoreAlgorithm, extendedInformation2.getKeyStoreAlgorithmType());
         assertEquals(mapDataValue, extendedInformation2.getMapData(mapDataKey));
-        assertEquals(maxLoginAttempts, extendedInformation2.getMaxLoginAttempts());
+        assertEquals(maxLoginAttempts, (Integer) extendedInformation2.getMaxLoginAttempts());
         assertEquals(nameConstraintsExcluded, extendedInformation2.getNameConstraintsExcluded());
         assertEquals(nameConstraintsPermitted, extendedInformation2.getNameConstraintsPermitted());
-        assertEquals(remainingLoginAttempts, extendedInformation2.getRemainingLoginAttempts());
+        assertEquals(remainingLoginAttempts, (Integer) extendedInformation2.getRemainingLoginAttempts());
         assertEquals(subjectDirectoryAttributes, extendedInformation2.getSubjectDirectoryAttributes());
     }
 
@@ -151,7 +151,7 @@ public class ExtendedInformationTest {
         final String maxFailedLoginAttempts = "2";
         extendedInformation.getRawData().put("remainingloginattempts", remainingLoginAttempts);
         extendedInformation.getRawData().put("maxfailedloginattempts", maxFailedLoginAttempts);
-        assertEquals(Integer.valueOf(remainingLoginAttempts), extendedInformation.getRemainingLoginAttempts());
-        assertEquals(Integer.valueOf(maxFailedLoginAttempts), extendedInformation.getMaxLoginAttempts());
+        assertEquals(Integer.valueOf(remainingLoginAttempts), (Integer) extendedInformation.getRemainingLoginAttempts());
+        assertEquals(Integer.valueOf(maxFailedLoginAttempts), (Integer) extendedInformation.getMaxLoginAttempts());
     }
 }
