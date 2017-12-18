@@ -22,7 +22,7 @@ public final class CAConstants {
      * The state of a node-local CA with a keypair which is neither expired nor revoked.
      * An active CA should be able to create signatures unless the crypto token associated
      * with the CA is offline, in which case healthcheck will fail. A CA stays in this
-     * state until the public key expires or is revoked.
+     * state until the certificate expires or is revoked.
      */
     public static final int CA_ACTIVE = 1;
     /**
@@ -31,12 +31,12 @@ public final class CAConstants {
      */
     public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
     /**
-     * The state of a node-local or external CA with a public key which has expired. Once
-     * a CA is expired, it will stay in this state indefinitely.
+     * The state of a node-local or external CA whose certificate has expired. Once
+     * a CA's certificate has expired, it will stay in this state indefinitely.
      */
     public static final int CA_EXPIRED = 3;
     /**
-     * The state of a node-local CA with a public key which has been revoked.
+     * The state of a node-local CA with a certificate which has been revoked.
      */
     public static final int CA_REVOKED = 4;
     /**
@@ -46,13 +46,14 @@ public final class CAConstants {
      */
     public static final int CA_OFFLINE = 5;
     /**
-     * An external CA with a signed public key available. A CA stays in this state until
-     * the public key expires.
+     * An external CA without a private key. A CA stays in this state until
+     * the certificate expires.
      */
     public static final int CA_EXTERNAL = 6;
     /**
-     * The initial state of an external CA before a CSR has been created, in which case
-     * it moves to the CA_WAITING_CERTIFICATE_RESPONSE state.
+     * The initial state of a CA imported using Statedump. In this state, the CA does not have a keypair. The CA can advance to the
+     * CA_WAITING_CERTIFICATE_RESPONSE state if a CSR is created for the CA, or it can advance to the CA_ACTIVE state directly, if
+     * a keypair is associated with it.
      */
     public static final int CA_UNINITIALIZED = 7;
 
