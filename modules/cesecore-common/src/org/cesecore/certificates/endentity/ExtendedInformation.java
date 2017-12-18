@@ -255,7 +255,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * @return the serial number to be used for the certificate or null if no number defined.
      */
-    public BigInteger getCertificateSerialNumber() {
+    public BigInteger certificateSerialNumber() {
         final String s = (String) this.data.get(CERTIFICATESERIALNUMBER);
         if (s == null) {
             return null;
