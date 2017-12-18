@@ -1111,7 +1111,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         log.debug("No (optional) request counter exists for end entity: " + username);
                     }
                 }
-                if (!serialNumberCleared && ei.certificateSerialNumber() != null) {
+                if (!serialNumberCleared && ei.getCertificateSerialNumber() != null) {
                     ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successful command.
                     data1.setExtendedInformation(ei);
                 }

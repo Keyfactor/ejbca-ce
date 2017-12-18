@@ -313,7 +313,7 @@ public class RaEndEntityDetails {
         return getEndEntityProfile().getUse(EndEntityProfile.CERTSERIALNR, 0);
     }
     public String getCertificateSerialNumberOverride() {
-        final BigInteger certificateSerialNumber = extendedInformation.certificateSerialNumber();
+        final BigInteger certificateSerialNumber = extendedInformation.getCertificateSerialNumber();
         if (certificateSerialNumber!=null) {
             return certificateSerialNumber.toString(16);
         }

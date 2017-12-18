@@ -886,15 +886,15 @@ public class X509CA extends CA implements Serializable {
         final BigInteger serno;
         {
             if (certProfile.getAllowCertSerialNumberOverride()) {
-                if (ei != null && ei.certificateSerialNumber()!=null) {
-                    serno = ei.certificateSerialNumber();
+                if (ei != null && ei.getCertificateSerialNumber()!=null) {
+                    serno = ei.getCertificateSerialNumber();
                 } else {
                     serno = SernoGeneratorRandom.instance().getSerno();
                 }
             } else {
                 serno = SernoGeneratorRandom.instance().getSerno();
-                if ((ei != null) && (ei.certificateSerialNumber() != null)) {
-                    final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal", ei.certificateSerialNumber().toString(16));
+                if ((ei != null) && (ei.getCertificateSerialNumber() != null)) {
+                    final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal", ei.getCertificateSerialNumber().toString(16));
                     log.info(msg);
                 }
             }
