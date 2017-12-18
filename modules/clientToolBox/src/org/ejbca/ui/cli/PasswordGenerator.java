@@ -19,17 +19,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 /**
  * Implements a cryptographically secure password generator. Runs as a
  * command line client which may ask for the following parameters (if specified)
- * 
+ *
  *      Flag    Description                              Default
  *      -h      Hash function used for mixing            SHA-256
  *      -c      Charset used for the generated password  [a-zA-Z0-9]
  *      -b      Length of the password in bits           128
  *      -s      User input to mix into the password      null
- *      
+ *
  * @version $Id$
  */
 public class PasswordGenerator extends ClientToolBox {
@@ -48,9 +49,14 @@ public class PasswordGenerator extends ClientToolBox {
 
         try {
             final String algorithm = readInput(args, "Algorithm [SHA-256]", "-h", "SHA-256");
-            final String charset = readInput(args, "Charset [a-zA-Z0-9]", "-c", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+            final String charset = expandRegex(readInput(args, "Charset [a-zA-Z0-9]", "-c", "[a-zA-Z0-9]"));
             final int passwordBits = Integer.valueOf(readInput(args, "Bit strength [128]", "-b", "128"));
             final String seed = readInput(args, "Seed [null]", "-s", "");
+
+            if (charset.length() < 2) {
+                System.err.println("Charset must consist of at least 2 characters.");
+                return;
+            }
 
             byte[] state = new byte[256];
             secureRandom.nextBytes(state);
@@ -99,6 +105,17 @@ public class PasswordGenerator extends ClientToolBox {
             b[b1.length + i] = b2[i];
         }
         return MessageDigest.getInstance(algorithm).digest(b);
+    }
+
+    String expandRegex(final String regex) {
+        final StringBuilder charset = new StringBuilder();
+        final Pattern pattern = Pattern.compile(regex);
+        for (int i = 0; i < 256; ++i) {
+            if (pattern.matcher(Character.toString((char) i)).matches()) {
+                charset.append((char) i);
+            }
+        }
+        return charset.toString();
     }
 
     @Override
