@@ -136,7 +136,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-
+    
 
 	private String comment = "";
 	private ApprovalDataVOView approvalDataVOView = new ApprovalDataVOView();
@@ -353,7 +353,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     		addErrorMessage("AUTHORIZATIONDENIED");
     	}
     }
-
+    
     public String getComment() {
     	return "";
     }
@@ -582,19 +582,44 @@ public class ApproveActionManagedBean extends BaseManagedBean {
      * Updates approval request based on the changes in approval profile.
      * Also updates corresponding approval profile in the approval profile session.
      *
-     * @param uniqueId id of approval request to be updated.
+     * @param uniqueId id of approval request data to be updated.
      */
-    public void updateApprovalRequest() {
-        int approvalId = approvalDataVOView.getApprovalId();
-        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalId);
-        ApprovalProfile approvalProfile = approvalDataVOView.getApprovalProfile();
+    public void updateApprovalRequest(final int uniqueId) {
 
+        ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
+        
         if (approvalDataVO == null) {
             log.warn("Approval request already expired or invalid!");
             return;
         }
+        
         ApprovalRequest currentApprovalRequest = approvalDataVO.getApprovalRequest();
+        
+        ApprovalProfile approvalProfileFromRequest = currentApprovalRequest.getApprovalProfile();
+        ApprovalProfile approvalProfileFromSession = approvalProfileSession.getApprovalProfile(currentApprovalRequest.getApprovalProfile().getProfileId().intValue());
+        
+        // Set the updated approval profile in current request.
+        currentApprovalRequest.setApprovalProfile(updateApprovalProfile(approvalProfileFromRequest));
+        approvalSession.updateApprovalRequest(approvalDataVO.getId(), currentApprovalRequest);
+        
+        // To update the roles and make authorization possible
+        try {
+            approvalProfileSession.changeApprovalProfile(getAdmin(), updateApprovalProfile(approvalProfileFromSession));
+        } catch (AuthorizationDeniedException e) {
+            log.info("Not authorized to change approval profile!" + e);
+        }
 
+        updateApprovalRequestData(uniqueId);
+    }
+    
+    /**
+     * Updates the approval profile based on the role changes in session.
+     * 
+     * @param approvalProfile
+     * @return
+     */
+    private ApprovalProfile updateApprovalProfile(final ApprovalProfile approvalProfile) {
+        
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
             for (ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                 for (DynamicUiProperty<? extends Serializable> property : approvalPartition.getPropertyList().values()) {
@@ -618,31 +643,25 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
                         propertyClone.setPossibleValues(updatedRoleInformation);
                         updateEncodedValues(propertyClone, property);
+                        
+                        approvalPartition.removeProperty(property.getName());
+                        approvalPartition.addProperty(propertyClone);
+
+                        approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
+                        approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
+
+                        approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                property.getName());
+                        approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
+                                propertyClone);
                     }
-
-                    approvalPartition.removeProperty(property.getName());
-                    approvalPartition.addProperty(propertyClone);
-
-                    approvalStep.removePropertyFromPartition(approvalPartition.getPartitionIdentifier(), property.getName());
-                    approvalStep.setPropertyToPartition(approvalPartition.getPartitionIdentifier(), propertyClone);
-
-                    approvalProfile.removePropertyFromPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                            property.getName());
-                    approvalProfile.addPropertyToPartition(approvalStep.getStepIdentifier(), approvalPartition.getPartitionIdentifier(),
-                            propertyClone);
                 }
             }
         }
-
-        currentApprovalRequest.setApprovalProfile(approvalProfile);
-        approvalSession.updateApprovalRequest(approvalDataVO.getId(), currentApprovalRequest);
-        try {
-            approvalProfileSession.changeApprovalProfile(getAdmin(), approvalProfile);
-        } catch (AuthorizationDeniedException e) {
-            log.info("Not authorized to change approval profile!" + e);
-        }
+        
+        return approvalProfile;
     }
-
+    
      /**
       * Update role members based on latest from role member session.
       *
@@ -706,5 +725,4 @@ public class ApproveActionManagedBean extends BaseManagedBean {
              log.error("Invalid propery value while setting the encoded values for property clone!" + e);
          }
      }
-
 }
