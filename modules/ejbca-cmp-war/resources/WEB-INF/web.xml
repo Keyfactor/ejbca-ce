@@ -23,6 +23,16 @@
 
     <description><![CDATA[CMP server]]></description>
 
+	<filter>
+		<filter-name>ServiceControlFilter</filter-name>
+		<filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>ServiceControlFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
     <servlet>
         <description><![CDATA[Used to handle CMP (RFC4210) protocol messages]]></description>
         <display-name>CmpServlet</display-name>
