@@ -37,7 +37,7 @@ public class ApproveActionRequestBean {
                 ApproveActionManagedBean value = (ApproveActionManagedBean) app.evaluateExpressionGet(ctx, "#{approvalActionManagedBean}",
                         ApproveActionManagedBean.class);
                 value.setUniqueId(uniqueId);
-                value.updateApprovalRequest();
+                value.updateApprovalRequest(uniqueId);
             }
         } catch (NumberFormatException e) {
 
