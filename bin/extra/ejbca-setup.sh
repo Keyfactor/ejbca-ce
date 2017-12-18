@@ -62,7 +62,7 @@ ejbca_user_home=~
 INSTALL_DIRECTORY=$(pwd)
 # The name of the EJBCA directory
 startdirectory=$(cd "$(dirname "$0")"; pwd -P)
-EJBCA_DIRECTORY=$(echo "$startdirectory" | sed 's/bin\/.*//')
+EJBCA_DIRECTORY=$(echo "$startdirectory" | sed 's/\/bin\/.*//')
 
 mysql_root_user="root"
 
@@ -176,8 +176,7 @@ ejbca_deploy_check() {
   echo "wait ${DURATION_SECONDS}s for deploying EJBCA"
   cd $INSTALL_DIRECTORY || exit 1
   for i in `seq 1 $DURATION`; do
-    tail -50 wildfly/standalone/log/server.log |grep 'Deployed "ejbca.ear"' > /dev/null 2> /dev/null
-    if [ $? -eq 0 ]; then
+    if [ -f wildfly/standalone/deployments/ejbca.ear.deployed ]; then
       echo "EJBCA deployed"
       return 0
     fi
@@ -373,8 +372,10 @@ ejbca_installer() {
   if [ -h ejbca ]; then
     rm -f ejbca
   fi
-#  ln -s ejbca_ce_${EJBCA_VERSION} ejbca
-  ln -s ${EJBCA_DIRECTORY} ejbca
+  if [ ! -d ejbca ]; then
+#    ln -s ejbca_ce_${EJBCA_VERSION} ejbca
+    ln -s ${EJBCA_DIRECTORY} ejbca
+  fi
 
   echo "deploying EJBCA"
   cd ejbca || exit 1
