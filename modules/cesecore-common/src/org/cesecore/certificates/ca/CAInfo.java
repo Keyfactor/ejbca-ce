@@ -14,6 +14,7 @@ package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -307,6 +308,10 @@ public abstract class CAInfo implements Serializable {
     }
     
     public Collection<Integer> getValidators() {
+        if (validators == null) {
+        	// Make sure we never return null for upgraded CAs, avoiding possible NPE
+            return new ArrayList<Integer>();
+        }
         return validators;
     }
 
