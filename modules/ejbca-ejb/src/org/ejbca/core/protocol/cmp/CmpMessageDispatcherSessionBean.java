@@ -118,19 +118,18 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             final PKIBody pkiBody = pkiMessage.getBody();
             final int tagno = pkiBody.getType();
             if (log.isDebugEnabled()) {
-                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" + pkiHeader.getSender().toString() + 
-                        ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() + 
-                        "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() + 
-                        "The CMP message is already authenticated: " + authenticated + System.lineSeparator() + 
-                        "Body is of type: " + tagno + System.lineSeparator() + 
+                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" + pkiHeader.getSender().toString() +
+                        ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
+                        "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
+                        "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
+                        "Body is of type: " + tagno + System.lineSeparator() +
                         "Transaction ID: " + pkiHeader.getTransactionID();
                 log.debug(message);
                 if (log.isTraceEnabled()) {
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
-            } else {
-                log.info("Dispatching message with transaction ID: " + pkiHeader.getTransactionID());
             }
+            log.info("Dispatching message with transaction ID: " + pkiHeader.getTransactionID());
             BaseCmpMessage cmpMessage = null;
             ICmpMessageHandler handler = null;
             int unknownMessageType = -1;
