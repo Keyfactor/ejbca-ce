@@ -23,6 +23,17 @@
 
     <display-name>Public web root</display-name>
 
+    
+	<filter>
+		<filter-name>ServiceControlFilter</filter-name>
+		<filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>ServiceControlFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+    
     <!-- Clickjack Filter from OWASP adding X-FRAME-OPTIONS header to pages to prevent including 
          our pages in other frames. https://www.owasp.org/index.php/Clickjacking_Protection_for_Java_EE -->
 	<filter>
