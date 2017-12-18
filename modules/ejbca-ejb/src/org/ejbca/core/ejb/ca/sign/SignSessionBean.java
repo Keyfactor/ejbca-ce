@@ -810,7 +810,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param data of user
      */
     private void cleanUserCertDataSN(final EndEntityInformation data) {
-        if (data == null || data.getExtendedInformation() == null || data.getExtendedInformation().getCertificateSerialNumber() == null) {
+        if (data == null || data.getExtendedInformation() == null || data.getExtendedInformation().certificateSerialNumber() == null) {
             return;
         }
         try {
