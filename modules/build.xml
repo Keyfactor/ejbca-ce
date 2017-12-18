@@ -554,7 +554,7 @@
 	</target>
     
 	<target name="est-interface" description="Build the EST interfaces">
-		<ant antfile="${mod.est-war.path}/build.xml" target="build-interface" inheritall="false">
+		<ant antfile="${mod.est-war.path}/build.xml" target="build-interface" inheritall="false" if="${mod.est.exists}">
 				<property name="runoncesetup.hasrun" value="true"/>
 				<property name="external-deps-satfisfied" value="isset"/>
 		</ant>
