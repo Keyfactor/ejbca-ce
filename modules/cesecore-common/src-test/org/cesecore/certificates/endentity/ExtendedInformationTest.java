@@ -113,7 +113,7 @@ public class ExtendedInformationTest {
         assertEquals(approvalRequestId, extendedInformation.getAddEndEntityApprovalRequestId());
         assertEquals(certificateEndTime, extendedInformation.getCertificateEndTime());
         assertArrayEquals(certificateRequest, extendedInformation.getCertificateRequest());
-        assertEquals(certificateSerialNumber, extendedInformation.getCertificateSerialNumber());
+        assertEquals(certificateSerialNumber, extendedInformation.certificateSerialNumber());
         assertEquals(customDataValue, extendedInformation.getCustomData(customDataKey));
         assertEquals(customExtensionDataValue, extendedInformation.getExtensionData(customExtensionDataKey));
         assertEquals(issuanceRevocationReason, (Integer) extendedInformation.getIssuanceRevocationReason());
@@ -130,7 +130,7 @@ public class ExtendedInformationTest {
         assertEquals(approvalRequestId, extendedInformation2.getAddEndEntityApprovalRequestId());
         assertEquals(certificateEndTime, extendedInformation2.getCertificateEndTime());
         assertArrayEquals(certificateRequest, extendedInformation2.getCertificateRequest());
-        assertEquals(certificateSerialNumber, extendedInformation2.getCertificateSerialNumber());
+        assertEquals(certificateSerialNumber, extendedInformation2.certificateSerialNumber());
         assertEquals(customDataValue, extendedInformation2.getCustomData(customDataKey));
         assertEquals(customExtensionDataValue, extendedInformation2.getExtensionData(customExtensionDataKey));
         assertEquals(issuanceRevocationReason, (Integer) extendedInformation2.getIssuanceRevocationReason());

@@ -391,7 +391,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final boolean useCustomSN;
             {
                 final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
-                useCustomSN = ei != null && ei.getCertificateSerialNumber() != null;
+                useCustomSN = ei != null && ei.certificateSerialNumber() != null;
             }
             final int maxRetrys;
             if (useCustomSN) {
