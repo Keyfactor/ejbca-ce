@@ -237,11 +237,11 @@ public class EndEntityManagementTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, data2, false);
         data2 = endEntityAccessSession.findUser(admin, username);
         assertNotNull("We should have extended information", data2.getExtendedInformation());
-        assertEquals("Extended Information should be unlimited", new Integer(-1), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should be unlimited", -1, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should still be unlimited", new Integer(-1), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should still be unlimited", -1, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
 
         // Edit user again to set remaining login attempts to not be unlimited
@@ -250,34 +250,34 @@ public class EndEntityManagementTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, data2, false);
         data2 = endEntityAccessSession.findUser(admin, username);
         assertNotNull("We should have extended information", data2.getExtendedInformation());
-        assertEquals("Extended Information should be 5", new Integer(5), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should be 5", 5, data2.getExtendedInformation().getRemainingLoginAttempts());
         // 1 with false as parameter, should not decrease counter, and one with true, should decrease counter
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", false));
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should be 3", new Integer(3), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         // Right password should reset counter, but not if we pass false to the method
         assertTrue("right pwd should work" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, false));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should still be 3", new Integer(3), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should still be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // The verifyPassword method does not reset the counter, so nothing should change. Resetting the counter is done deeper when a user is "really" authenticated
         assertTrue("right pwd should work" + pwd, endEntityManagementSession.verifyPassword(admin, username, pwd, true));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should still be 3", new Integer(3), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should still be 3", 3, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // Send it all to the bottom...
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should be 0", new Integer(0), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should be 0", 0, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_NEW, data2.getStatus());
         // One more failed attempt will reset the counter, but set user to GENERATED
         assertFalse("wrong pwd (foo123 works)", endEntityManagementSession.verifyPassword(admin, username, "foo123", true));
         data2 = endEntityAccessSession.findUser(admin, username);
-        assertEquals("Extended Information should be 5 again", new Integer(5), data2.getExtendedInformation().getRemainingLoginAttempts());
+        assertEquals("Extended Information should be 5 again", 5, data2.getExtendedInformation().getRemainingLoginAttempts());
         assertEquals("wrong status", EndEntityConstants.STATUS_GENERATED, data2.getStatus());
 
         log.trace("<testRemainingLoginAttempts()");

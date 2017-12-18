@@ -202,7 +202,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * @return The number of remaining allowed failed login attempts or -1 for unlimited
      */
-    public Integer getRemainingLoginAttempts() {
+    public int getRemainingLoginAttempts() {
         return Integer.valueOf(data.get(REMAININGLOGINATTEMPTS).toString());
     }
 
@@ -219,7 +219,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * @return The maximum number of allowed failed login attempts or -1 for unlimited
      */
-    public Integer getMaxLoginAttempts() {
+    public int getMaxLoginAttempts() {
         return Integer.valueOf(data.get(MAXFAILEDLOGINATTEMPTS).toString());
     }
 
@@ -255,7 +255,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /**
      * @return the serial number to be used for the certificate or null if no number defined.
      */
-    public BigInteger certificateSerialNumber() {
+    public BigInteger getCertificateSerialNumber() {
         final String s = (String) this.data.get(CERTIFICATESERIALNUMBER);
         if (s == null) {
             return null;
@@ -283,7 +283,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @return issuance revocation code configured on the end entity extended information, a constant from RevokedCertInfo. Default
      *         RevokedCertInfo.NOT_REVOKED.
      */
-    public Integer getIssuanceRevocationReason() {
+    public int getIssuanceRevocationReason() {
         int ret = RevokedCertInfo.NOT_REVOKED;
             final String revocationReason = getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
             if (revocationReason != null) {
