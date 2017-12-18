@@ -39,21 +39,21 @@ import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Class that receives a CMP message and passes it on to the correct message handler.
- * 
- * ----- 
- * This processes does the following: 
- * 1. receive a CMP message 
- * 2. check which message type it is 
- * 3. dispatch to the correct message handler 
- * 4. send back the response received from the handler 
+ *
  * -----
- * 
+ * This processes does the following:
+ * 1. receive a CMP message
+ * 2. check which message type it is
+ * 3. dispatch to the correct message handler
+ * 4. send back the response received from the handler
+ * -----
+ *
  * Messages supported:
  * - Initialization Request - will return an Initialization Response
  * - Revocation Request - will return a Revocation Response
  * - PKI Confirmation - same as certificate confirmation accept - will return a PKIConfirm
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
- * 
+ *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CmpMessageDispatcherSessionRemote")
@@ -62,7 +62,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcherSessionBean.class);
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-	
+
     @EJB
     private EjbBridgeSessionLocal ejbBridgeSession;
 	@EJB
@@ -99,7 +99,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 
 	/**
 	 * The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param pkiMessage DER encoded CMP message received from the client
 	 * @param pkiHeader DER encoded PKI header of the original CMP message received from the client
@@ -117,14 +117,18 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             final PKIBody pkiBody = pkiMessage.getBody();
 			final int tagno = pkiBody.getType();
 			if (log.isDebugEnabled()) {
-				log.debug("Received CMP message with pvno="+pkiHeader.getPvno()+", sender="+pkiHeader.getSender().toString()+", recipient="+pkiHeader.getRecipient().toString());
-				log.debug("Cmp configuration alias: " + cmpConfigurationAlias);
-				log.debug("The CMP message is already authenticated: " + authenticated);
-				log.debug("Body is of type: " + tagno);
-				log.debug("Transaction id: " + pkiHeader.getTransactionID());
+			    final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" + pkiHeader.getSender().toString() +
+			            ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
+			            "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
+			            "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
+			            "Body is of type: " + tagno + System.lineSeparator() +
+			            "Transaction id: " + pkiHeader.getTransactionID();
+			    log.debug(message);
 				if (log.isTraceEnabled()) {
 	                log.trace(ASN1Dump.dumpAsString(pkiMessage));
 				}
+            } else {
+                log.info("Dispatching message with transactionId: " + pkiHeader.getTransactionID());
 			}
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
@@ -171,7 +175,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
                         log.info(errMsg, e);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg); 
+                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
                     }
                 }
                 final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
