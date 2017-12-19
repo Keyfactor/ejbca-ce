@@ -5410,41 +5410,33 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			One may also wish to validate issuance based on other certificat values after the certificate (or eventual pre-certificate) has been generated but not issued, stored and published. Currently, 
 			only one such validator has been implemented: the External Command Certificate Validator.
 		</p>
-		<subsection name="External Command Certificate Validator">
+		<subsection name="External Script Certificate Validator">
 			<p>
-				With this validator an external command can be called for the generated certificate. The exit code of the external call determines if validation has failed. 
+				With this validator an external script can be called for the generated certificate. The exit code of the external call determines if validation has failed.
 				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course the user running EJBCA's 
 				application server needs OS file system permittions to do so.
 			</p>
+			<p>
+				First token of the "External command" field must be the external command or script called, followed by its arguments, all separated by spaces.
+				<br></br>
+				The certificate is stored as temporary file on the EJBCA server an its full path is used as first argument. All subsequent arguments are shifted to the right.
+				<br></br>
+				If the place holder '%cert%' is used as any argument at any position, the certificate is not stored on the EJBCA server file system, instead the place holder is removed and the PEM encoded certificate is echoed into the STDIN of the called external command or script.
+			</p>
 			<note>
-					The platform for MS Windows, Unix/Linux, Solaris and Mac is auto-detected and a default shell command and shell options are set. 
-					To enter a custom call for an interpreter, use the placeholder '%custom%' as the first argument followed by the custom interpreter command, 
-					and (optionally) its options, separated by spaces. 
-					I.e. to call a python script on a linux platform: '%custom% /usr/bin/python -c <my-command-or-script-to-execute></my-command-or-script-to-execute>'
-			</note>
-			<p>
-				For the following platforms the executing interpreter is auto-detected and you can enter you external command including place holders 
-				and platform specific control operators without interpreter. If auto-detection of the platform fails, you have to specify your interpreter and options manually.
-			</p>
-			<ul>
-				<li>MS Windows -> 'cmd.exe /C'</li>
-				<li>Unix/Linux -> '/bin/sh -c'</li>
-				<li>AIX/HP-UX-> '/bin/sh -c'</li>
-				<li>Mac -> '/bin/sh -c'</li>
-			</ul>
-			<p>
-				Place holders can be used to specify a custom platform command and the certificate generated:
-			</p>
-			<ul>
-				<li><b>%custom%</b> to use a custom platform command. Use '%custom% {interpreter} {options} {command}'</li>
-				<li><b>%cert%</b> inserts the certificate issued as PEM formatted string. I.e. use 'echo -n "%cert% | {command}'</li>
-			</ul>
+					The platform for MS Windows and Unix/Linux is auto-detected and a default shell command and shell options are set.'
+					<ul>
+						<li>MS Windows -> 'cmd.exe /C'</li>
+						<li>Unix/Linux -> '/bin/sh -c'</li>
+					</ul>
+			</note>		
 			<p>
 				See the following samples for external commands for Unix/Linux platforms:
 			</p>
 <source>
-echo -n "%cert%" | openssl x509 -text -noout
-%custom% /usr/bin/python -3 echo -n "%cert%" | openssl x509 -text -noout
+/usr/local/opt/script.sh -param1 -param2
+/usr/local/opt/script.sh -param1 -param2 %cert%
+openssl x509 -text -noout %cert%
 </source>
 		</subsection>
 	</subsection>

@@ -31,12 +31,18 @@
 	<f:ajax listener="#{validatorBean.validatorTemplateChanged}" render="@form"/>	
 	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
 </h:selectOneMenu>
-<h:outputLabel for="external_command" value="#{web.text.EXTERNALCERTIFICATEVALIDATORCOMMAND}" />
-<h:inputText id="external_command" value="#{validatorBean.validator.externalCommand}" required="true" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="platform_detected" value="#{web.text.EXTERNALCERTIFICATEVALIDATORPLATFORM}" />
+<h:outputText id="platform_detected" value="#{validatorBean.validator.platform}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="fail_on_script_error_code" value="#{web.text.EXTERNALCERTIFICATEVALIDATOR_FAILONERRORCODE}" styleClass="subItem"/>
+<h:selectBooleanCheckbox id="fail_on_script_error_code" value="#{validatorBean.validator.failOnErrorCode}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="fail_on_script_errout" value="#{web.text.EXTERNALCERTIFICATEVALIDATOR_FAILONSTANDARDERROR}" styleClass="subItem"/>
+<h:selectBooleanCheckbox id="fail_on_script_errout" value="#{validatorBean.validator.failOnStandardError}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="log_standard_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORLOGSTANDARDOUT}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="log_standard_out" value="#{validatorBean.validator.logStandardOut}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="log_error_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORLOGERROROUT}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="log_error_out" value="#{validatorBean.validator.logErrorOut}" disabled="#{validatorsBean.viewOnly}" />
+<h:outputLabel for="external_command" value="#{web.text.EXTERNALCERTIFICATEVALIDATORCOMMAND}" />
+<h:inputText id="external_command" value="#{validatorBean.validator.externalCommand}" required="true" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="validator_test" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTEST}" style="font-weight: bold;" />
 <h:panelGroup id="validator_test"></h:panelGroup>
 <h:outputLabel for="validator_test_path" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTESTPATH}" />
