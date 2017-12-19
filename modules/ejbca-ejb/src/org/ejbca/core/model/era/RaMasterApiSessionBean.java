@@ -124,6 +124,7 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -214,6 +215,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
     private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
     @EJB
@@ -2000,8 +2003,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
-        return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password,  requestBody);
+    public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+            throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException,
+            NoSuchAlgorithmException {
+        if (enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
+            return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
+        } else {
+            throw new UnsupportedOperationException("EST calls are only supported in EJBCA Enterprise");
+        }
     }
 
 }
