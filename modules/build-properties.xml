@@ -162,8 +162,6 @@
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
 	<property name="mod.est.lib" location="${mod.dist.path}/est-ejb.jar" />
-	<property name="mod.est-interface.lib" location="${mod.dist.path}/est-interface.jar" />
-
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>

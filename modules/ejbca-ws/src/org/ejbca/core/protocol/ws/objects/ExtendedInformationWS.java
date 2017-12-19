@@ -32,7 +32,6 @@ import java.io.Serializable;
  *   user.setExtendedInformation (ei);
  *</pre>
  * 
- * @author Anders Rundgren
  * @version $Id$
  */
 public class ExtendedInformationWS implements Serializable{
