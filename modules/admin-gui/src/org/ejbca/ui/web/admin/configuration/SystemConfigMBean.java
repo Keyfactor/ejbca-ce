@@ -925,6 +925,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public class ProtocolGuiInfo {
         private String protocol;
+        private String url;
         private boolean enabled;
 
         public ProtocolGuiInfo(String protocol, boolean enabled) {
@@ -935,6 +936,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getProtocol() {
             return protocol;
         }
+
+        public String getUrl() {
+            return url;
+        }
+        
         public boolean isEnabled() {
             return enabled;
         }
