@@ -436,6 +436,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     this.errorMessage = e.getLocalizedMessage();
                     return false;
                 }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate does not belong to user. Username='"+username+"', extraCert username='"+extraCertUsername+"'.");
+                }
+                
             }
         }
         
