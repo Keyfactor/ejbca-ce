@@ -49,7 +49,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
             String sn = CertTools.getSerialNumberAsString(cert);
-            String errmsg = "Certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
+            String errmsg = "Client certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
                     "' and serialnumber '" + sn + "' is NOT trusted.";
             throw new CertificateException(errmsg);
         }
@@ -64,7 +64,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             String subjectdn = CertTools.getSubjectDN(cert);
             String issuerdn = CertTools.getIssuerDN(cert);
             String sn = CertTools.getSerialNumberAsString(cert);
-            String errmsg = "Certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
+            String errmsg = "Server certificate with SubjectDN '" + subjectdn + "', IssuerDN '" + issuerdn + 
                     "' and serialnumber '" + sn + "' is NOT trusted.";
             throw new CertificateException(errmsg);
         }
