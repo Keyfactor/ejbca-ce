@@ -17,7 +17,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 
@@ -29,6 +31,8 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(AvailableProtocolsConfiguration.class);
+    
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
     /**
@@ -38,12 +42,14 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         PUBLIC_WEB("Public Web", "/ejbca"),
         ACME("ACME", "/ejbca/acme"),
         CMP("CMP", "/ejbca/publicweb"),
+        // TODO Fill in CRL and certificate webdist
+        CERTSTORE("Certificate Store", ""),
+        CRLSTORE("CRL Store", ""),
         // TODO Fill in context path for EST
         EST("EST", ""),
         OCSP("OCSP", "/ejbca/publicweb/status"),
         SCEP("SCEP", "/ejbca/publicweb/appl"),
         WS("Web Service", "/ejbca/ejbcaws");
-        // TODO Fill in CRL and certificate webdist
 
         private final String name;
         private final String contextPath;
@@ -59,6 +65,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
             this.parameterMap = parameterMap;
         }
 
+        /** @return user friendly name of protocol */
         public String getName() {
             return name;
         }
@@ -90,10 +97,9 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
 
     /**
-     * Checks whether protocol is enabled / disabled locally and from incoming Peer connection. Disabled status
-     * from peer or local configuration will always override enable.
-     * @param protocol to check status of
-     * @return true if protocol is enabled and incoming peer allows the protocol, false otherwise
+     * Checks whether protocol is enabled / disabled locally
+     * @param protocol to check status of @see {@link AvailableProtocols}
+     * @return true if protocol is enabled, false otherwise
      */
     public boolean getProtocolStatus(String protocol) {
         return (Boolean)data.get(protocol);
@@ -104,20 +110,20 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
 
     private boolean isDataInitialized() {
-        boolean ret = data != null && data.size() > 1 && (getAllProtocolsAndStatus().size() == AvailableProtocols.values().length);
+        boolean ret = !getAllProtocolsAndStatus().isEmpty();
         return ret;
     }
 
-    @SuppressWarnings("unchecked")
     public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
-        Map<String, Boolean> protocolStatusMap = (Map<String, Boolean>) data.clone();
-        if (protocolStatusMap != null) {
-            if (protocolStatusMap.containsKey("version")) {
-                protocolStatusMap.remove("version");
+        LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();//(Map<String, Boolean>) data.clone();
+        
+        for (Entry<Object, Object> entry : data.entrySet()) {
+            if (entry.getKey().equals("version")) {
+                continue;
             }
-            return new LinkedHashMap<>(protocolStatusMap);
+            protocolStatusMap.put((String)entry.getKey(), (Boolean)entry.getValue());
         }
-        return new LinkedHashMap<>();
+        return protocolStatusMap;
     }
 
     @Override

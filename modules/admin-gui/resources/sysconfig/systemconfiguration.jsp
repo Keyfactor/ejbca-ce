@@ -512,6 +512,10 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:outputText value="#{protocolinfos.protocol}"/>
 			</h:column>
 			<h:column>
+				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_RESOURCE_URL}"/></f:facet>
+				<h:outputText value="#{protocolinfos.url}"/>
+			</h:column>
+			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
 				<h:outputText value="#{protocolinfos.enabled ? web.text.PC_STATUS_ENABLED : web.text.PC_STATUS_DISABLED}"/>
 			</h:column>
