@@ -79,7 +79,7 @@ public class RsaKeyValidatorTest {
     @Test
     public void testNoNegativeNumbers() throws Exception {
         log.trace(">testNoNegativeNumbers()");
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-input_test", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         String numStringPos = "2";
@@ -128,7 +128,7 @@ public class RsaKeyValidatorTest {
     public void testPublicKeyExponentMinSmallerThanMax() throws Exception {
         log.trace(">testPublicKeyExponentMinSmallerThanMax()");
         
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-set-min-smaller-max-test", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         
@@ -170,7 +170,7 @@ public class RsaKeyValidatorTest {
     public void testPublicKeyModulusMinSmallerThanMax() throws Exception {
         log.trace(">testPublicKeyModulusMinSmallerThanMax()");
         
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-set-min-smaller-max-test", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         
@@ -268,7 +268,7 @@ public class RsaKeyValidatorTest {
         BigInteger modulus = BigInteger.valueOf(15);
         BigInteger exponent = BigInteger.valueOf(3);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom bit length.
@@ -353,7 +353,7 @@ public class RsaKeyValidatorTest {
         X509Certificate noroca = CertTools.getCertfromByteArray(noRocaCert, X509Certificate.class);
         X509Certificate roca = CertTools.getCertfromByteArray(rocaCert, X509Certificate.class);
         
-        RsaKeyValidator keyValidator = (RsaKeyValidator) KeyValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
 

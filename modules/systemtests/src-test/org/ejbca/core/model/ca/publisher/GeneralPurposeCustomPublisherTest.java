@@ -18,15 +18,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
+import org.apache.commons.lang.SystemUtils;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -91,27 +90,22 @@ public class GeneralPurposeCustomPublisherTest {
         admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
         gpcPublisher = new GeneralPurposeCustomPublisher();
         // Make sure an external command exists for testing purposes
-        command = null;
-        commandFailsafe = null;
-        invalidOption = null;
-        if (isValidCommand(EXTERNAL_COMMAND_UNIX)) {
-            command = EXTERNAL_COMMAND_UNIX;
-            commandFailsafe = EXTERNAL_COMMAND_UNIX_FAILSAFE;
-            invalidOption = INVALID_OPTION_1;
-        } else if (isValidCommand(EXTERNAL_COMMAND_WINDOWS)) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             command = EXTERNAL_COMMAND_WINDOWS;
             commandFailsafe = EXTERNAL_COMMAND_WINDOWS_FAILSAFE;
             invalidOption = INVALID_OPTION_2;
+        } else {
+            command = EXTERNAL_COMMAND_UNIX;
+            commandFailsafe = EXTERNAL_COMMAND_UNIX_FAILSAFE;
+            invalidOption = INVALID_OPTION_1;
         }
         assertNotNull("This test requires \"" + EXTERNAL_COMMAND_UNIX + "\" or \"" + EXTERNAL_COMMAND_WINDOWS + "\"to be available.", command);
-
     }
 
     @After
     public void tearDown() {
         admin = null;
         gpcPublisher = null;
-
     }
     
     /**
@@ -133,10 +127,8 @@ public class GeneralPurposeCustomPublisherTest {
             e.printStackTrace();
         }
         assertTrue("Store CRL with GeneralPurposeCustomPublisher failed.", ret);
-
     }
     
-
     /**
      * Tests storing a certificate using arguments passed to the command. 
      */
@@ -155,7 +147,6 @@ public class GeneralPurposeCustomPublisherTest {
                 CertificateConstants.CERTTYPE_ENDENTITY, 0, 0, null, 0, 0, null);
 
         assertTrue("Store Certificate with GeneralPurposeCustomPublisher failed.", ret);
-
     }
 
     @Test
@@ -171,7 +162,6 @@ public class GeneralPurposeCustomPublisherTest {
             fail(e.getLocalizedMessage());
         }
         assertTrue("Publishing a standard CRL with delta check set true failed.", ret);
-
     }
 
     @Test
@@ -187,7 +177,6 @@ public class GeneralPurposeCustomPublisherTest {
             fail(e.getLocalizedMessage());
         }
         assertTrue("Publishing a standard CRL with delta check set true failed.", ret);
-
     }
 
     @Test
@@ -214,7 +203,6 @@ public class GeneralPurposeCustomPublisherTest {
      */
     @Test
     public void testErrorCodes() {
-
         Properties props = new Properties();
 
         // Test function by calling a command that is available on most
@@ -334,30 +322,5 @@ public class GeneralPurposeCustomPublisherTest {
         } catch (PublisherConnectionException e) {
         }
         assertFalse("testConnection reported all ok, but commandfile does not exist!", ret);
-
     }
-
-    /**
-     * Tries to execute the argument and return true if no exception was thrown
-     * and the command returned 0.
-     * 
-     * @param externalCommandToTest
-     *            The String to run.
-     * @return Returns false on error.
-
-     */
-    private boolean isValidCommand(String externalCommandToTest) throws IOException, InterruptedException {
-        boolean ret = false;
-  
-            String[] cmdarray = externalCommandToTest.split("\\s");
-            Process externalProcess = Runtime.getRuntime().exec(cmdarray, null, null);
-            BufferedReader br = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
-            while (br.readLine() != null) {} // NOPMD
-            if (externalProcess.waitFor() == 0) {
-                ret = true;
-            }
-     
-        return ret;
-    }
-
 }

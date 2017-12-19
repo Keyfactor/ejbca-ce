@@ -75,7 +75,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorSessionBean.class);
 
-    /** Internal localization of logs and errors */
+    /** Internal localization of logs and errors. */
     private static final InternalResources intres = InternalResources.getInstance();
 
     @EJB
@@ -440,7 +440,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             CertificateProfile certificateProfile, Date notBefore, Date notAfter, PublicKey publicKey)
             throws ValidationException, IllegalValidityException {
         boolean result = true;
-        // ECA-6051 Re-factor: filter for key validators ...
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) { // || certificateProfile.isTypeRootCA() || certificateProfile.isTypeSubCA()
             final CertificateValidity certificateValidity = new CertificateValidity(endEntityInformation, certificateProfile, notBefore, notAfter,
                     ca.getCACertificate(), false, false);

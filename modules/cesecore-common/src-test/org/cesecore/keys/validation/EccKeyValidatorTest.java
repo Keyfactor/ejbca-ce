@@ -63,7 +63,7 @@ public class EccKeyValidatorTest {
 
         // Test ECC key validation OK with an allowed curve.
         KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
-        EccKeyValidator keyValidator = (EccKeyValidator) KeyValidatorTestUtil.createKeyValidator(EccKeyValidator.class,
+        EccKeyValidator keyValidator = (EccKeyValidator) ValidatorTestUtil.createKeyValidator(EccKeyValidator.class,
                 "ecc-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         // Set custom curve

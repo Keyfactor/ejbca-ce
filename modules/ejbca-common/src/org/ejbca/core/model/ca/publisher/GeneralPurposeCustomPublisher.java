@@ -13,12 +13,7 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -27,13 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalProcessException;
+import org.cesecore.util.ExternalProcessTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -157,11 +153,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
                 arguments.add(CertTools.getSubjectDN(incert));
                 arguments.add(CertTools.getIssuerDN(incert));
                 arguments.add(CertTools.getSerialNumberAsString(incert));
-                runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, arguments);
+                ExternalProcessTools.launchExternalCommand(certExternalCommandFileName, incert.getEncoded(), 
+                        certFailOnErrorCode, certFailOnStandardError, arguments, "GeneralPurposeCustomPublisher");
             } catch (CertificateEncodingException e) {
                 String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
                 log.error(msg);
                 throw new PublisherException(msg);
+            } catch (ExternalProcessException e) {
+                throw new PublisherException(e.getMessage());
             }
         }
         if (log.isTraceEnabled()) {
@@ -201,11 +200,15 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             } catch (CRLException e) {
                 log.error("Byte array does not contain a correct CRL.", e);
             }
-
         }
 
-        // Run internal method to create tempfile and run the command
-        runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError, additionalArguments);
+        // Write temporary file and run the external script / command.
+        try {
+            ExternalProcessTools.launchExternalCommand(crlExternalCommandFileName, incrl, 
+                crlFailOnErrorCode, crlFailOnStandardError, additionalArguments, "GeneralPurposeCustomPublisher");
+        } catch (ExternalProcessException e) {
+            throw new PublisherException(e.getMessage());
+        }
         if (log.isTraceEnabled()) {
         	log.trace("<storeCRL");
         }
@@ -239,11 +242,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
             arguments.add(CertTools.getSubjectDN(cert));
             arguments.add(CertTools.getIssuerDN(cert));
             arguments.add(CertTools.getSerialNumberAsString(cert));
-            runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError, arguments);
+            ExternalProcessTools.launchExternalCommand(revokeExternalCommandFileName, cert.getEncoded(), 
+                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, "GeneralPurposeCustomPublisher");
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
             log.error(msg);
             throw new PublisherException(msg);
+        } catch (ExternalProcessException e) {
+            throw new PublisherException(e.getMessage());
         }
         if (log.isTraceEnabled()) {
         	log.trace("<revokeCertificate");
@@ -293,117 +299,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         	log.trace("finalize, doing nothing");
         }
         super.finalize();
-    } // finalize
-
-    /**
-     * Writes a byte-array to a temporary file and executes the given command
-     * with the file as argument. The function will, depending on its
-     * parameters, fail if output to standard error from the command was
-     * detected or the command returns with an non-zero exit code.
-     * 
-     * @param externalCommand
-     *            The command to run.
-     * @param bytes
-     *            The buffer with content to write to the file.
-     * @param failOnCode
-     *            Determines if the method should fail on a non-zero exit code.
-     * @param failOnOutput
-     *            Determines if the method should fail on output to standard
-     *            error.
-     * @param additionalArguments
-     *            Added to the command after the tempfiles name
-     * @throws PublisherException
-     */
-    private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, List<String> additionalArguments)
-            throws PublisherException {
-        // Create temporary file
-        File tempFile = null;
-        FileOutputStream fos = null;
-        try {
-            tempFile = File.createTempFile("GeneralPurposeCustomPublisher", ".tmp");
-            fos = new FileOutputStream(tempFile);
-            fos.write(bytes);
-            // fos.close();
-        } catch (FileNotFoundException e) {
-            String msg = intres.getLocalizedMessage("publisher.errortempfile");
-            log.error(msg, e);
-            throw new PublisherException(msg);
-        } catch (IOException e) {
-            try {
-                fos.close();
-            } catch (IOException e1) {
-            }
-            tempFile.delete();
-            String msg = intres.getLocalizedMessage("publisher.errortempfile");
-            log.error(msg, e);
-            throw new PublisherException(msg);
-        }
-        // Exec file from properties with the file as an argument
-        String tempFileName = null;
-        try {
-            tempFileName = tempFile.getCanonicalPath();
-            String[] cmdcommand = (externalCommand).split("\\s");
-            additionalArguments.add(0, tempFileName);
-            if (SystemUtils.IS_OS_WINDOWS) {
-                /*
-                 * Hack needed for Windows, where Runtime.exec won't consistently encapsulate arguments, leading to arguments
-                 * containing spaces (such as Subject DNs) sometimes being parsed as multiple arguments. Bash, on the other hand,
-                 * won't parse quote surrounded arguments. 
-                 */
-                for (int i = 0; i < additionalArguments.size(); i++) {
-                    String argument = additionalArguments.get(i);
-                    //Add quotes to encapsulate argument. 
-                    if (!argument.startsWith("\"") && !argument.endsWith("\"")) {
-                        additionalArguments.set(i, "\"" + argument + "\"");
-                    }
-                }
-            }
-            String[] cmdargs = additionalArguments.toArray(new String[additionalArguments.size()]);
-            String[] cmdarray = new String[cmdcommand.length + cmdargs.length];
-            System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
-            System.arraycopy(cmdargs, 0, cmdarray, cmdcommand.length, cmdargs.length);
-            Process externalProcess = Runtime.getRuntime().exec(cmdarray, null, null);
-            BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
-            while (stdInput.readLine() != null) {} // NOPMD: Required under win32 to avoid lock
-            String stdErrorOutput = null;
-            // Check errorcode and the external applications output to stderr
-            if (((externalProcess.waitFor() != 0) && failOnCode) || (stdError.ready() && failOnOutput)) {
-                tempFile.delete();
-                String errTemp = null;
-                while (stdError.ready() && (errTemp = stdError.readLine()) != null) {
-                    if (stdErrorOutput == null) {
-                        stdErrorOutput = errTemp;
-                    } else {
-                        stdErrorOutput += "\n" + errTemp;
-                    }
-                }
-                String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
-                if (stdErrorOutput != null) {
-                    msg += " - " + stdErrorOutput + " - " + tempFileName;
-                }
-                log.error(msg);
-                throw new PublisherException(msg);
-            }
-        } catch (IOException e) {
-            String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
-            throw new PublisherException(msg);
-        } catch (InterruptedException e) {
-            String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
-            Thread.currentThread().interrupt();
-            throw new PublisherException(msg);
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e1) {
-            }
-            // Remove temporary file or schedule for delete if delete fails.
-            if (!tempFile.delete()) {
-                tempFile.deleteOnExit();
-                log.info(intres.getLocalizedMessage("publisher.errordeletetempfile", tempFileName));
-            }
-        }
-    } // runWithTempFile
+    }
 
     @Override
     public boolean willPublishCertificate(int status, int revocationReason) {
