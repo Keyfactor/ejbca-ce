@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -41,6 +42,7 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionLocation;
 import org.cesecore.certificates.certificate.certextensions.CustomCVCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -165,7 +167,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 				log.debug("No CA cert, using caRef from the holder itself: "+caRef.getConcatenated());					
 			}
 			final Collection<CVCDiscretionaryDataTemplate> certExtensions =
-                buildCustomCertificateExtension(null, certificateProfile, keyPair.getPublic(), null, null, cceConfig, true);
+                buildCustomCertificateExtension(null, certificateProfile, keyPair.getPublic(), null, null, cceConfig, CertificateExtensionLocation.CERT);
 			log.debug("Creating request with signature alg: "+signAlg+", using provider "+cryptoToken.getSignProviderName());
 			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, certExtensions, cryptoToken.getSignProviderName());
 			ret = request.getDEREncoded();
@@ -264,8 +266,11 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	            final Date validFrom = caCertificate.getCVCertificate().getCertificateBody().getValidFrom();
 	            // When we create a link certificate, we want to have an expire date based on the old ca, not the renewed ca
 	            final Date validTo = ((CardVerifiableCertificate) oldCaCert).getCVCertificate().getCertificateBody().getValidTo();
+	            // Build certificate extensions
+	            final Collection<CVCDiscretionaryDataTemplate> certExtensions =
+	                    buildCustomCertificateExtension(null, certProfile, publicKey, previousSignKeyPair.getPublic(), null, cceConfig, CertificateExtensionLocation.LINKCERT);
 	            // Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
-	            final CVCertificate retcert = CertificateGenerator.createCertificate(publicKey, previousSignKeyPair.getPrivate(), caSigningAlgorithm, caRef, cvccertholder, authRole, rights, validFrom, validTo, cryptoToken.getSignProviderName());
+	            final CVCertificate retcert = CertificateGenerator.createCertificate(publicKey, previousSignKeyPair.getPrivate(), caSigningAlgorithm, caRef, cvccertholder, authRole, rights, validFrom, validTo, certExtensions, cryptoToken.getSignProviderName());
 	            ret = retcert.getDEREncoded();
 	            log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cvccertholder.getConcatenated(), caRef.getConcatenated()));
 	        } catch (CryptoTokenOfflineException e) {
@@ -379,7 +384,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
         
         // Build custom certificate extensions
         final Collection<CVCDiscretionaryDataTemplate> certExtensions =
-                buildCustomCertificateExtension(subject, certProfile, publicKey, caPublicKey, val, cceConfig, false);
+                buildCustomCertificateExtension(subject, certProfile, publicKey, caPublicKey, val, cceConfig, CertificateExtensionLocation.CERT);
         
         // Generate the CVC certificate using Keijos library
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(alias);
@@ -428,24 +433,32 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 
     private Collection<CVCDiscretionaryDataTemplate> buildCustomCertificateExtension(final EndEntityInformation subject, final CertificateProfile certProfile, final PublicKey publicKey,
             final PublicKey caPublicKey, final CertificateValidity validity, final AvailableCustomCertificateExtensionsConfiguration cceConfig,
-            final boolean isCSR) throws CertificateExtensionException {
+            final CertificateExtensionLocation certExtLocation) throws CertificateExtensionException {
         Collection<CVCDiscretionaryDataTemplate> certExtensions = null;
         for (final Integer certExtId : certProfile.getUsedCertificateExtensions()) {
             final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(certExtId);
             if (certExt instanceof CustomCVCertificateExtension) {
                 final CustomCVCertificateExtension cvcExt = (CustomCVCertificateExtension) certExt;
-                if ((!isCSR && !cvcExt.isIncludedInCertificates()) || (isCSR && !cvcExt.isIncludedInCSR())) {
-                    continue;
+                switch (certExtLocation) {
+                case CERT:
+                    if (!cvcExt.isIncludedInCertificates()) continue;
+                    break;
+                case CSR:
+                    if (!cvcExt.isIncludedInCSR()) continue;
+                    break;
+                case LINKCERT:
+                    if (!cvcExt.isIncludedInLinkCertificates()) continue;
+                    break;
                 }
                 
                 if (certExtensions == null) {
                     certExtensions = new ArrayList<>();
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("Adding CV Certificate Extension to " + (isCSR ? "CSR" : "certificate") + ": " + cvcExt.getDisplayName());
+                    log.debug("Adding CV Certificate Extension to " + certExtLocation.toString().toLowerCase(Locale.ROOT) + ": " + cvcExt.getDisplayName());
                 }
                 final CVCDiscretionaryDataTemplate ddt =
-                            cvcExt.getValueCVC(subject, this, certProfile, publicKey, caPublicKey, validity, isCSR);
+                            cvcExt.getValueCVC(subject, this, certProfile, publicKey, caPublicKey, validity, certExtLocation);
                 certExtensions.add(ddt);
             }
         }

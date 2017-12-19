@@ -29,26 +29,31 @@ public interface CustomCVCertificateExtension extends CustomCertificateExtension
 
     /**
      * Constructs the Discretionary Data Template object for the certificate extension.
-     * @param userData End Entity information, or null in CSRs.
+     * @param userData End Entity information, or null in CSRs and link certificates.
      * @param ca Issuing CA.
      * @param certProfile Certificate profile.
      * @param userPublicKey Public key of user.
-     * @param caPublicKey Public key of CA, or null in CSRs.
-     * @param validity Validity, or null in CSRs.
+     * @param caPublicKey Public key of CA, or old public key in link certificates. Null in CSRs.
+     * @param validity Validity, or null in CSRs and link certificates.
      * @param isCSR true if generating a CSR, false if generating a certificate.
      * @return The Discretionary Data Template object
      * @throws CertificateExtensionException In case of encoding errors etc.
      */
     CVCDiscretionaryDataTemplate getValueCVC(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity validity, boolean isCSR) throws CertificateExtensionException;
+            PublicKey caPublicKey, CertificateValidity validity, CertificateExtensionLocation extensionLocation) throws CertificateExtensionException;
     
     /**
-     * Returns true if the certificate is to be included in certificates (default: true).
+     * Returns true if the certificate is to be included in certificates.
      */
     boolean isIncludedInCertificates();
     
     /**
-     * Returns true if the certificate is to be included in CSRs (default: false).
+     * Returns true if the certificate is to be included in CSRs.
      */
     boolean isIncludedInCSR();
+    
+    /**
+     * Returns true if the certificate is to be included in link certificates.
+     */
+    boolean isIncludedInLinkCertificates();
 }
