@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public final class KeyValidatorTestUtil {
+public final class ValidatorTestUtil {
 
     /**
      * Factory method to create key validators.
@@ -70,10 +70,10 @@ public final class KeyValidatorTestUtil {
         result.setCertificateProfileIds(ids);
         return result;
     }
-
+    
     /**
      * Avoid instantiation.
      */
-    private KeyValidatorTestUtil() {
+    private ValidatorTestUtil() {
     }
 }

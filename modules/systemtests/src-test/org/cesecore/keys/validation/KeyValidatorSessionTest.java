@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
@@ -61,6 +62,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -75,6 +77,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -135,6 +138,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
+    private final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     // Helper objects.
     protected X509CA testCA;
 
@@ -194,7 +199,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     @Test
     public void testAddChangeRemoveKeyValidators() throws Exception {
-        log.trace(">test01AddChangeRemoveKeyValidators()");
+        log.trace(">testAddChangeRemoveKeyValidators()");
         // Create some test data.
         final Validator rsaKeyValidatorDefault = createKeyValidator(RsaKeyValidator.class, "rsa-test-1-default", null, null, -1,
                 null, -1, -1);
@@ -212,10 +217,10 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         int[] allIdentifiers = new int[] {};
         try {
             // A: Add different new key validators.
-            int rsaDefaultId = addKeyValidator(rsaKeyValidatorDefault);
-            int rsaId = addKeyValidator(rsaKeyValidator);
-            int eccDefaultId = addKeyValidator(eccKeyValidatorDefault);
-            int eccId = addKeyValidator(eccKeyValidator);
+            int rsaDefaultId = addValidator(rsaKeyValidatorDefault);
+            int rsaId = addValidator(rsaKeyValidator);
+            int eccDefaultId = addValidator(eccKeyValidatorDefault);
+            int eccId = addValidator(eccKeyValidator);
             allIdentifiers = new int[] { rsaDefaultId, rsaId, eccDefaultId, eccId };
             // A-1: Check add with defaults.
             // RSA key validator
@@ -260,7 +265,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             // Add to test CA and try to remove it -> CouldNot RemoveKeyValidatorException expected.
             String name = "rsa-test-1-referential-integrity";
             keyValidator = createKeyValidator(RsaKeyValidator.class, name, null, null, -1, null, -1, -1);
-            int validatorId = addKeyValidator(keyValidator);
+            int validatorId = addValidator(keyValidator);
             setKeyValidatorsForCa(testCA, validatorId);
             try {
                 keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
@@ -275,19 +280,19 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
             removeKeyValidatorsIfExist(allIdentifiers);
         }
-        log.trace("<test01AddChangeRemoveKeyValidators()");
+        log.trace("<testAddChangeRemoveKeyValidators()");
     }
 
     @Test
     public void testValidateRsaPublicKey() throws Exception {
-        log.trace(">test02ValidateRsaPublicKey()");
+        log.trace(">testValidateRsaPublicKey()");
 
         // A-1: Check validation of non RSA key, use ECC key instead -> KeyValidationIllegalKeyAlgorithmException expected.
         KeyPair keyPair = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA); // generateEcCurve("prime192v1");
         PublicKey publicKey = keyPair.getPublic();
         Validator keyValidator = createKeyValidator(RsaKeyValidator.class, "rsa-test-1-default", null, null, -1, null, -1,
                 KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileSession.getCertificateProfileId(TEST_CP_NAME));
-        int validatorId = addKeyValidator(keyValidator);
+        int validatorId = addValidator(keyValidator);
         keyValidator.setProfileId(validatorId);
         try {
             setKeyValidatorsForCa(testCA, validatorId);
@@ -353,21 +358,139 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
         }
-        log.trace("<test02ValidateRsaPublicKey()");
+        log.trace("<testValidateRsaPublicKey()");
     }
 
+    // This test is platform dependent
+    @Test
+    public void testValidateCertificteWithExternalCommand() throws Exception {
+        log.trace(">testValidateCertificteWithExternalCommand()");
+
+        // ECA-6051 Impl. test.
+        // A-1: Check validation of an external call with x.509 RSA public key while IssuancePhase#CERTIFICATE_VALIDATION phase.
+        KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate certificate = CertTools.genSelfCert(
+                "C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand", 365, null,
+                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        ExternalCommandCertificateValidator validator = (ExternalCommandCertificateValidator) createCertificateValidator(ExternalCommandCertificateValidator.class, "external-command-cert-test-1-default", null, null, -1, null, -1,
+                KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileSession.getCertificateProfileId(TEST_CP_NAME));
+        validator.setAllCertificateProfileIds(true);
+        validator.setPhase(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
+        validator.setFailOnErrorCode(true);
+        validator.setFailOnStandardError(true);
+        validator.setLogStandardOut(true);
+        validator.setLogErrorOut(true);
+        int validatorId = addValidator(validator);
+        // Required?
+        validator.setProfileId(validatorId);
+        setKeyValidatorsForCa(testCA, validatorId);
+        
+        try {
+            // A: Arguments does not contain place holder '%cert%' -> certificate is written to disk.
+            // A:1 Check call of an existing external command.
+            // Command is expanded to: 'echo <path>', command should succeed on MS Windows and Unix/Linux.
+            validator.setExternalCommand("echo");
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+            } catch (IllegalValidityException | ValidationException e) {
+                fail("External command certificate validator should sucessfully echo the path of the temporary file to STDOUT: " + e.getMessage());
+                e.printStackTrace(System.err);
+            }
+            
+            // A:2 Check call of non existing external command.
+            // Command is expanded to: 'th1sC0mmandD0esN0tExist <path>', command should not succeed.
+            validator.setExternalCommand("th1sC0mmandD0esN0tExist");
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                fail("External command certificate validator should not call a non existing command sucessfully: " + validator.getExternalCommand());
+            } catch (Exception e) {
+                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+            }
+            
+            // A:3 Check call of non existing external command (failOnCode = true, failOnError = true).
+            // Command is expanded to: 'th1sC0mmandD0esN0tExist <path>', command should not succeed as well.
+            validator.setExternalCommand("th1sC0mmandD0esN0tExist");
+            validator.setFailOnErrorCode(false);
+            validator.setFailOnStandardError(false);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                fail("External command certificate validator should not call a non existing command sucessfully even if fail on error code and fail on error out are set to true: " + validator.getExternalCommand());
+            } catch (Exception e) {
+                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+            }
+            
+            // A:4 Check call of existing external command with invalid parameters (failOnCode = false, failOnError = false).
+            // Command is expanded to: '<command> <path> -abcdefghijklmnopqrstuvwxyz', command should succeed because of configuration.
+            if (SystemUtils.IS_OS_WINDOWS) {
+                validator.setExternalCommand("help -abcdefghijklmnopqrstuvwxyz");
+            } else {
+                validator.setExternalCommand("openssl -abcdefghijklmnopqrstuvwxyz");
+            }
+            validator.setFailOnErrorCode(false);
+            validator.setFailOnStandardError(false);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+            } catch (Exception e) {
+                fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code and fail on error out are set to false: " + validator.getExternalCommand());
+            }
+            
+            // A:4 Check call of existing external command with invalid parameters (failOnCode = true, failOnError = false).
+            // Command is expanded to: 'help <path> -abcdefghijklmnopqrstuvwxyz', command should succeed because of configuration.
+            validator.setExternalCommand("help -abcdefghijklmnopqrstuvwxyz");
+            validator.setFailOnErrorCode(true);
+            validator.setFailOnStandardError(false);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code is set to true: " + validator.getExternalCommand());
+            } catch (Exception e) {
+                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+            }
+            
+            // B: Arguments contains place holder '%cert%' -> certificate is written to STDIN
+            // B:1 Check call of an existing external command.
+            // Command is expanded to: 'cmd.exe /C echo "%cert%" | echo' on MS Windows, '/bin/sh -c echo "%cert%" | echo' on Unix/Linux. Command should succeed.
+            // Fix on MS Windows (echo %cert% | does not work!)
+            validator.setExternalCommand("echo %cert%");
+            validator.setFailOnErrorCode(true);
+            validator.setFailOnStandardError(true);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+            } catch (IllegalValidityException | ValidationException e) {
+                fail("External command certificate validator should sucessfully echo PEM certificate: " + e.getMessage());
+                e.printStackTrace(System.err);
+            }
+            
+            // Further tests for %cert% will only succeed on Unix/Linux.
+            // ECA-6051 TODO
+            
+        } finally {
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
+            // Todo: remove certificates
+        }
+        
+        log.trace("<testValidateCertificteWithExternalCommand()");
+    }
+    
     /**
      * This test uses a mock DnsNameValidator to verify that DNS names are properly sourced. This test should grab the domain names from the EE. 
      */
     @Test
     public void testValidateDnsNamesFromEndEntity() throws Exception {
+        log.trace(">testValidateDnsNamesFromEndEntity()");
         final String eeDomain = "foo.com";
         final String requestDomain = "bar.com";
         final String eeSan = "dNSName=" + eeDomain;
         final String requestSan = "dNSName=" + requestDomain;
         DnsNameValidator keyValidator = new DnsNameValidatorMock("testValidateDnsNamesFromEndEntity", eeDomain);
         keyValidator.setAllCertificateProfileIds(true);
-        int validatorId = addKeyValidator(keyValidator);
+        int validatorId = addValidator(keyValidator);
         keyValidator.setProfileId(validatorId);
         final String username = "testValidateDnsNamesFromEndEntity";
         final String certificateProfileName = "testValidateDnsNamesFromEndEntity";
@@ -419,6 +542,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
         }
+        log.trace("<testValidateDnsNamesFromEndEntity()");
     }
     
     /**
@@ -427,13 +551,14 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      */
     @Test
     public void testValidateDnsNamesFromRequest() throws Exception {
+        log.trace(">testValidateDnsNamesFromRequest()");
         final String eeDomain = "foo.com";
         final String requestDomain = "bar.com";
         final String eeSan = "dNSName=" + eeDomain;
         final String requestSan = "dNSName=" + requestDomain;
         DnsNameValidator keyValidator = new DnsNameValidatorMock("testValidateDnsNamesFromRequest", requestDomain);
         keyValidator.setAllCertificateProfileIds(true);
-        int validatorId = addKeyValidator(keyValidator);
+        int validatorId = addValidator(keyValidator);
         keyValidator.setProfileId(validatorId);
         final String username = "testValidateDnsNamesFromRequest";
         final String certificateProfileName = "testValidateDnsNamesFromRequest";
@@ -485,6 +610,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
         }
+        log.trace("<testValidateDnsNamesFromRequest()");
     }
     
     /**
@@ -492,6 +618,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
      */
     @Test
     public void testKeyValidatorCache() throws Exception {
+        log.trace(">testKeyValidatorCache()");
         // First make sure we have the right cache time
         final String oldcachetime = cesecoreConfigurationProxySession.getConfigurationValue("validator.cachetime");
         cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", "1000");
@@ -537,10 +664,12 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             cesecoreConfigurationProxySession.setConfigurationValue("validator.cachetime", oldcachetime);
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id);                
         }
+        log.trace("<testKeyValidatorCache()");
     }
 
     @Test
     public void testAuthorization() throws Exception {
+        log.trace(">testAuthorization()");
         // AuthenticationToken that does not have privileges to edit a Validator
         KeyPair keys = KeyTools.genKeys("1024",  "RSA");
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test KeyValidatorSessionTest", 365, null, keys.getPrivate(),
@@ -604,6 +733,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id);
             keyValidatorProxySession.removeKeyValidator(internalAdmin, id1);
         }
+        log.trace("<testAuthorization()");
     }
 
     private void assertKeyValidatorsExist(final int... identifiers) {
@@ -618,8 +748,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         }
     }
 
-    private int addKeyValidator(Validator keyValidator) throws AuthorizationDeniedException, KeyValidatorExistsException {
-        int id = keyValidatorProxySession.addKeyValidator(internalAdmin, keyValidator);
+    private int addValidator(Validator validator) throws AuthorizationDeniedException, KeyValidatorExistsException {
+        int id = keyValidatorProxySession.addKeyValidator(internalAdmin, validator);
         assertKeyValidatorsExist(id);
         return id;
     }
@@ -833,6 +963,55 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         result.setCertificateProfileIds(ids);
         return result;
     }
+    
+    /**
+     * Factory method to create certificate validators.
+     * 
+     * @param type the key validator type (see {@link ValidatorBase#KEY_VALIDATOR_TYPE}
+     * @param name the logical name
+     * @param description the description text
+     * @param notBefore the certificates validity not before
+     * @param notBeforeCondition the certificates validity not before condition
+     * @param notAfter the certificates validity not after
+     * @param notAfterCondition the certificates validity not after condition
+     * @param failedAction the failed action to be performed.
+     * @param certificateProfileIds list of IDs of certificate profile to be applied to. 
+     * @return the concrete key validator instance.
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
+     */
+    // Code dublication: Re-factor.
+    public static final CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
+            final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
+            final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException {
+        CertificateValidator result = type.newInstance();
+        result.setProfileName(name);
+        if (null != description) {
+            result.setDescription(description);
+        }
+        if (null != notBefore) {
+            result.setNotBefore(notBefore);
+        }
+        if (-1 < notBeforeCondition) {
+            result.setNotBeforeCondition(notBeforeCondition);
+        }
+        if (null != notAfter) {
+            result.setNotAfter(notAfter);
+        }
+        if (-1 < notAfterCondition) {
+            result.setNotAfterCondition(notAfterCondition);
+        }
+        if (-1 < failedAction) {
+            result.setFailedAction(failedAction);
+        }
+        final List<Integer> ids = new ArrayList<Integer>();
+        for (Integer id : certificateProfileIds) {
+            ids.add(id);
+        }
+        result.setCertificateProfileIds(ids);
+        return result;
+    }
+
     
 //    @Test
 //    public void testImportFromZip() throws Exception {
