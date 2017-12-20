@@ -27,8 +27,10 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -47,6 +49,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -459,7 +462,27 @@ public interface RaMasterApi {
      */
     boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws AuthorizationDeniedException, ApprovalException, 
                             CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
-    
+
+    /**
+     * Edit End Entity information.
+     * 
+     * @param authenticationToken the administrator performing the action
+     * @param endEntityInformation an EndEntityInformation object with the new information
+     * @throws AuthorizationDeniedException administrator not authorized to edit user
+     * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
+     * @throws ApprovalException if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException if the action has been added in the approval queue
+     * @throws CADoesntExistsException if the user's CA doesn't exist
+     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists
+     * @throws NoSuchEndEntityException if the EE was not found
+     * @throws CustomFieldException if the EE was not validated by a locally defined field validator
+     */
+    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
+
     /**
      * Key recovery method to be called from web services. This method handles some special cases differently from the regular key recovery method.
      * 
