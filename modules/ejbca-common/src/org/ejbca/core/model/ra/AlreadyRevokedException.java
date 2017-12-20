@@ -19,7 +19,7 @@ import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
- * Exception thrown when a revocation request for an already revoket object is requested.
+ * Exception thrown when a revocation request for an already revoked object is requested.
  */
 @WebFault
 public class AlreadyRevokedException extends EjbcaException {

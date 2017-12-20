@@ -400,13 +400,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-            throw new EJBException(msg);
+            throw new CAOfflineException(msg);
         }
         try {
             // See if we need some key material to decrypt request
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-            setDecryptInfo(cryptoToken, req, ca);
-            
+            setDecryptInfo(cryptoToken, req, ca);    
             if (ca.isUseUserStorage() && req.getUsername() == null) {
                 String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);
@@ -461,6 +460,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw ex;
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
+            throw new IllegalStateException(e);
         } catch (InvalidKeyException e) {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
@@ -542,8 +542,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     @Override
     public CertificateResponseMessage createRequestFailedResponse(final AuthenticationToken admin, final RequestMessage req,
-            final Class<? extends ResponseMessage> responseClass, final FailInfo failInfo, final String failText) throws CADoesntExistsException,
-            SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
+            final Class<? extends ResponseMessage> responseClass, final FailInfo failInfo, final String failText)
+            throws CADoesntExistsException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createRequestFailedResponse(IRequestMessage)");
         }
@@ -583,9 +583,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req) throws AuthStatusException,
-            AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
-            CryptoTokenOfflineException, AuthorizationDeniedException {
+    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req)
+            throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">decryptAndVerifyRequest(IRequestMessage)");
         }

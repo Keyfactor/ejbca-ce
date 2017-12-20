@@ -80,6 +80,7 @@ public interface EndEntityManagementSession {
      * @throws ApprovalException if an approval already exists for this request.
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     * @throws EndEntityExistsException if an end entity by the specified username already exists
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
@@ -126,20 +127,21 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws EndEntityProfileValidationException
-     *             if data doesn't fulfill requirements of end entity profile
+     *             if data doesn't fulfill requirements of the end entity profile
      * @throws EndEntityExistsException
      *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
      * @throws WaitingForApprovalException
-     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws IllegalNameException if the Subject DN or SAN failed constraints
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws ApprovalException if an approval already exists for this request.
-     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws CertificateSerialNumberException if the CA requires that Subject DN Serial Numbers be unique, and the one specified here already exists.
      */
-    void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, EndEntityProfileValidationException,
-            EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException;
+    void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
+            CADoesntExistsException, IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException;
 
     /**
      * Add a new user after an AddEndEntityApprovalRequest had been approved.
