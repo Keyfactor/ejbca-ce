@@ -14,12 +14,9 @@
 package org.ejbca.config;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
 
@@ -31,8 +28,7 @@ import org.cesecore.configuration.ConfigurationBase;
  */
 public class AvailableProtocolsConfiguration extends ConfigurationBase implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(AvailableProtocolsConfiguration.class);
-    
+
     public final static String CONFIGURATION_ID = "AVAILABLE_PROTOCOLS";
 
     /**
@@ -42,27 +38,25 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         PUBLIC_WEB("Public Web", "/ejbca"),
         ACME("ACME", "/ejbca/acme"),
         CMP("CMP", "/ejbca/publicweb"),
-        // TODO Fill in CRL and certificate webdist
-        CERTSTORE("Certificate Store", ""),
-        CRLSTORE("CRL Store", ""),
-        // TODO Fill in context path for EST
-        EST("EST", ""),
+        EST("EST", "/.well-known/est"),
         OCSP("OCSP", "/ejbca/publicweb/status"),
         SCEP("SCEP", "/ejbca/publicweb/appl"),
-        WS("Web Service", "/ejbca/ejbcaws");
+        WS("Web Service", "/ejbca/ejbcaws"),
+        CERT_DIST("Webdist", "/ejbca/publicweb/webdist"),
+        // TODO Context path
+        CERT_STORE("Certstore", "");
 
         private final String name;
         private final String contextPath;
-        private final Map<String, String[]> parameterMap;
 
+        /**
+         * Creates a new instance of an available protocol enum.
+         * @param name the name of the enum, same as the "serviceName" from web.xml
+         * @param contextPath the URL to the servlet
+         */
         private AvailableProtocols(final String name, final String contextPath) {
-            this(name, contextPath, Collections.<String, String[]> emptyMap());
-        }
-
-        private AvailableProtocols(final String name, final String contextPath, final Map<String, String[]> parameterMap) {
             this.name = name;
             this.contextPath = contextPath;
-            this.parameterMap = parameterMap;
         }
 
         /** @return user friendly name of protocol */
@@ -72,10 +66,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
         public String getContextPath() {
             return contextPath;
-        }
-
-        public Map<String, String[]> getParameterMap() {
-            return parameterMap;
         }
     };
 
@@ -116,7 +106,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
     public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
         LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();//(Map<String, Boolean>) data.clone();
-        
+
         for (Entry<Object, Object> entry : data.entrySet()) {
             if (entry.getKey().equals("version")) {
                 continue;
