@@ -49,7 +49,7 @@ public class ExternalProcessToolsTest {
             assertTrue("On " + ExternalProcessTools.getPlatformString() + "the platform dependend default shell options must be "
                     + ExternalProcessTools.WINDOWS_SHELL_OPTIONS, shellCommand.get(1).equals(ExternalProcessTools.UNIX_SHELL_OPTIONS));
         }
-        assertTrue("The external command " + externalCommand + " must be keeped unchanged.", externalCommand.equals(shellCommand.get(2)));
+        assertEquals("The external command " + externalCommand + " must be keeped unchanged.", externalCommand, shellCommand.get(2));
 
         log.trace("<test01BuildShellCommand()");
     }
@@ -65,7 +65,7 @@ public class ExternalProcessToolsTest {
         final File file = ExternalProcessTools.writeTemporaryFileToDisk(content.getBytes(), filePrefix, fileSuffix);
 
         // Filename must match.
-        assertTrue("Filename must match start with filePrefix '" + filePrefix + "'and end with fileSuffix '" + fileSuffix + "'",
+        assertTrue("Filename ("+file.getName()+") must match start with filePrefix '" + filePrefix + "'and end with fileSuffix '" + fileSuffix + "'",
                 file.getName().startsWith(filePrefix) && file.getName().endsWith(fileSuffix));
 
         // File content must match.
