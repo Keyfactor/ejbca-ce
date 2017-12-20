@@ -36,8 +36,6 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      */
     public enum AvailableProtocols {
         PUBLIC_WEB("Public Web", "/ejbca"),
-        ADMIN_WEB("Admin Web", "/ejbca/adminweb"),
-        RA_WEB("RA Web", "/ejbca/ra"),
         ACME("ACME", "/ejbca/acme"),
         CMP("CMP", "/ejbca/publicweb"),
         EST("EST", "/.well-known/est"),
