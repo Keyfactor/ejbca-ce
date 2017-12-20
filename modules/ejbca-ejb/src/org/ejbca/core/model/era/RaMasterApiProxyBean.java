@@ -1476,7 +1476,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password, final byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
+    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password, final byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, AuthenticationFailedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
         NoSuchAliasException caughtException = null;
         
         for (final RaMasterApi raMasterApi : raMasterApis) {

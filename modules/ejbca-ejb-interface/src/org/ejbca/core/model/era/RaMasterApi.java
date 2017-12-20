@@ -562,5 +562,5 @@ public interface RaMasterApi {
      * @see EstOperationBeanLocal#dispatchRequest(Certificate, String, String, String, String, byte[])
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
-    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException;    
+    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, AuthenticationFailedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException;    
 }
