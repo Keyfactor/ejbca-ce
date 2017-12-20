@@ -2020,7 +2020,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, AuthenticationFailedException {
         if (enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
             return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
         } else {
