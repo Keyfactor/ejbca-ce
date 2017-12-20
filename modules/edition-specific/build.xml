@@ -20,6 +20,7 @@
 		<path location="${build-interface.dir}/classes"/>
         <path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 	
 	<target name="build" depends="">
