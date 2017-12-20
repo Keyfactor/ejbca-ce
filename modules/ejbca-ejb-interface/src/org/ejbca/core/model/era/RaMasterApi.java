@@ -558,7 +558,7 @@ public interface RaMasterApi {
      * @param username The authentication username if any
      * @param password The authentication password if any
      * @param requestBody The HTTP request body. Usually a PKCS#10
-     * @return the HTTP respons body
+     * @return the HTTP response body
      * @see EstOperationBeanLocal#dispatchRequest(Certificate, String, String, String, String, byte[])
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
