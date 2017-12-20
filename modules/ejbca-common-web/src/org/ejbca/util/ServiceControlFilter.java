@@ -14,9 +14,6 @@
 package org.ejbca.util;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.servlet.Filter;
@@ -28,7 +25,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -50,6 +46,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
  */
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);
+    private String serviceName;
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -60,8 +57,11 @@ public class ServiceControlFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig arg0) throws ServletException {
-
+    public void init(FilterConfig filterConfig) throws ServletException {
+        serviceName = filterConfig.getInitParameter("serviceName");
+        if (log.isDebugEnabled()) {
+            log.debug("Initialized service control filter for '" + serviceName + "'.");
+        }
     }
 
     @Override
@@ -70,65 +70,18 @@ public class ServiceControlFilter implements Filter {
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
         final AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        final String protocol = getServiceNameMatchingRequest(httpRequest);
 
-        if (protocol != null && !availableProtocolsConfiguration.getProtocolStatus(protocol)) {
+        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
             if (log.isDebugEnabled()) {
-                log.debug("Access to service " + protocol + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
+                log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
             httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
             return;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Access to service " + protocol + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+            log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
         chain.doFilter(request, response);
-    }
-
-    private String getServiceNameMatchingRequest(final HttpServletRequest httpRequest) {
-        for (AvailableProtocolsConfiguration.AvailableProtocols service : AvailableProtocolsConfiguration.AvailableProtocols.values()) {
-            if (StringUtils.equals(httpRequest.getContextPath(), service.getContextPath())
-                    && containsRequiredParameters(httpRequest.getParameterMap(), service.getParameterMap())) {
-                return service.getName();
-            }
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Request " + httpRequest.getRequestURL() + " for unknown service is let through.");
-        }
-        return null;
-    }
-
-    /**
-     * Checks if the GET parameters of a request stored in the map given as first argument contains the required
-     * parameters stored in the map given as second argument.
-     * @param requestParams the parameter map of all GET parameters
-     * @param requiredParams the parameter map with required parameters
-     * @return true if all required parameters are present in the request
-     */
-    private boolean containsRequiredParameters(final Map<String, String[]> requestParams, final Map<String, String[]> requiredParams) {
-        if (requiredParams.isEmpty()) {
-            return true;
-        }
-
-        for (final String key : requiredParams.keySet()) {
-            final String[] requestValues = requestParams.get(key);
-            final String[] requiredValues = requiredParams.get(key);
-
-            // Ensure each required value is in the list of request values
-
-            if (requestValues == null) {
-                return false;
-            }
-
-            final List<String> requestValuesList = Arrays.asList(requestValues);
-
-            for (int i = 0; i < requiredValues.length; ++i) {
-                if (!requestValuesList.contains(requiredValues[i])) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }
