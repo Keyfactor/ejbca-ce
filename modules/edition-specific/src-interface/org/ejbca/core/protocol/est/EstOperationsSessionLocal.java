@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.Local;
+
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -37,6 +38,7 @@ public interface EstOperationsSessionLocal extends EstOperationsSession {
      * @param password
      * @param requestBody
      * @return
+     * @throws UnsupportedOperationException if the method is not available in this edition of EJBCA
      * @throws NoSuchAliasException If the requested EST alias doesn't exist
      * @throws CADoesntExistsException If the request CA for the given alias doesn't exist
      * @throws AuthorizationDeniedException If the user it unauthroized to enroll or reenroll
@@ -45,6 +47,6 @@ public interface EstOperationsSessionLocal extends EstOperationsSession {
      * @throws AuthenticationFailedException If authentication is required
      */
     byte[] dispatchRequest(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
-            throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, CertificateProfileDoesNotExistException,
+            throws UnsupportedOperationException, NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, CertificateProfileDoesNotExistException,
             NoSuchAlgorithmException, AuthenticationFailedException;
 }

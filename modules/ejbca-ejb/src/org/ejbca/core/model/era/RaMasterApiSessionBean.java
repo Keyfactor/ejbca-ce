@@ -2021,11 +2021,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, AuthorizationDeniedException, CADoesntExistsException, CertificateProfileDoesNotExistException,
             NoSuchAlgorithmException, AuthenticationFailedException {
-        if (enterpriseEditionEjbBridgeSession.isRunningEnterprise()) {
-            return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
-        } else {
-            throw new UnsupportedOperationException("EST calls are only supported in EJBCA Enterprise");
-        }
+        // throws UnsupportedOperationException if EST is not available (Community);
+        return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
     }
 
 }
