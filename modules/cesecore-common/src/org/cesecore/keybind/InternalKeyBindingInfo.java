@@ -36,6 +36,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final private int id;
     final private String name;
     final private InternalKeyBindingStatus status;
+    final private InternalKeyBindingOperationalStatus operationalStatus;
     final private String certificateId;
     final private int cryptoTokenId;
     final private String keyPairAlias;
@@ -49,6 +50,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.id = internalKeyBinding.getId();
         this.name = internalKeyBinding.getName();
         this.status = internalKeyBinding.getStatus();
+        this.operationalStatus = internalKeyBinding.getOperationalStatus(); 
         this.certificateId = internalKeyBinding.getCertificateId();
         this.cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         this.keyPairAlias = internalKeyBinding.getKeyPairAlias();
@@ -124,6 +126,16 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         throw new RuntimeException(new OperationNotSupportedException());
     }
 
+    @Override
+    public InternalKeyBindingOperationalStatus getOperationalStatus() {
+        return operationalStatus;
+    }
+
+    @Override
+    public void setOperationalStatus(InternalKeyBindingOperationalStatus opStatus) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+    
     @Override
     public String getCertificateId() {
         return certificateId;
