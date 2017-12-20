@@ -265,7 +265,6 @@ public final class ExternalProcessTools {
         }
         if (file != null) {
             try (FileOutputStream fos = new FileOutputStream(file)) {
-                file = File.createTempFile(filePrefix + "-" + System.currentTimeMillis(), ".tmp");
                 fos.write(bytes);
             } catch (FileNotFoundException e) {
                 final String msg = intres.getLocalizedMessage("process.errortempfile");
