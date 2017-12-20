@@ -20,6 +20,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 
 /**
  * Provides access to authentication system.
+ * 
  * @version $Id$
  */
 public interface EndEntityAuthenticationSession {
@@ -33,7 +34,7 @@ public interface EndEntityAuthenticationSession {
      * @return EndEntityInformation, never returns null
      *
      * @throws NoSuchEndEntityException if the user does not exist.
-     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthStatusException if the end entity's status is not on in which it may generate a certificate
      * @throws AuthLoginException If the password is incorrect.
      */
     EndEntityInformation authenticateUser(AuthenticationToken admin, String username, String password)

@@ -18,8 +18,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.ObjectNotFoundException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -231,19 +229,19 @@ public interface SignSession {
      * @throws NoSuchEndEntityException       if the user does not exist.
      * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
      *             missing unique index in database, or certificate profile does not allow it
-     * @throws CryptoTokenOfflineException
-     * @throws AuthStatusException           If the users status is incorrect.
-     * @throws AuthLoginException            If the password is incorrect.
-     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws CryptoTokenOfflineException if the CA's crypto token was offline
+     * @throws AuthStatusException if the end entity's status is not on in which it may generate a certificate
+     * @throws AuthLoginException if the provided password is not the same as in the database
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
      * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the provided client certificate was not signed by the CA.
+     * @throws SignRequestException if the provided request doesn't contain a username or a password.
+     * @throws SignRequestSignatureException if the request was not correctly signed
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * @throws CAOfflineException if the CA was offline
      * @throws IllegalValidityException if the validity defined in the request was invalid
      * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
-     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
-     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws CertificateRevokeException (rollback) if the certificate was meant to be issued revoked, but could not.
+     * @throws CertificateCreateException (rollback) if the certificate couldn't be created for any various reason
      * @throws IllegalNameException if the certificate request contained an illegal name
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
      *
@@ -322,13 +320,11 @@ public interface SignSession {
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
      * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
      *
      */
     ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            FailInfo failInfo, String failText) throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
+            FailInfo failInfo, String failText) throws CADoesntExistsException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
@@ -338,22 +334,19 @@ public interface SignSession {
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      *
-     * @return A decrypted and verified IReqeust message
-     * @throws AuthStatusException           If the users status is incorrect.
-     * @throws AuthLoginException            If the password is incorrect.
-     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @return A decrypted and verified RequestMessage message
+     * 
      * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws CryptoTokenOfflineException
      * @throws AuthorizationDeniedException
+     * 
      * @see org.cesecore.certificates.certificate.request.RequestMessage
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
-            AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
-            CryptoTokenOfflineException, AuthorizationDeniedException;
+    RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req)
+            throws CADoesntExistsException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      *
