@@ -14,7 +14,9 @@
 package org.ejbca.config;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.configuration.ConfigurationBase;
@@ -50,7 +52,14 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
         private final String name;
         private final String contextPath;
-
+        private static final Map<String, String> reverseLookupMap = new HashMap<>();
+        
+        static {
+            for (final AvailableProtocols protocol : AvailableProtocols.values()) {
+                reverseLookupMap.put(protocol.getName(), protocol.getContextPath());
+            }
+        }
+        
         /**
          * Creates a new instance of an available protocol enum.
          * @param name the name of the enum, same as the "serviceName" from web.xml
@@ -68,6 +77,10 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
 
         public String getContextPath() {
             return contextPath;
+        }
+        
+        public static String getContextPathByName(String name) {
+            return reverseLookupMap.get(name);
         }
     };
 
@@ -94,7 +107,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * @return true if protocol is enabled, false otherwise
      */
     public boolean getProtocolStatus(String protocol) {
-        return (Boolean)data.get(protocol);
+        Boolean ret = (Boolean)data.get(protocol);
+        return ret == null ? true : ret;
     }
 
     public void setProtocolStatus(String protocol, boolean status) {
@@ -107,7 +121,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     }
 
     public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
-        LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();//(Map<String, Boolean>) data.clone();
+        LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();
 
         for (Entry<Object, Object> entry : data.entrySet()) {
             if (entry.getKey().equals("version")) {

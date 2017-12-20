@@ -68,6 +68,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -925,12 +926,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public class ProtocolGuiInfo {
         private String protocol;
-        private String url;
+        private String contextPath;
         private boolean enabled;
 
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
+            this.contextPath = AvailableProtocols.getContextPathByName(protocol);
+            log.info("URL: " + contextPath);
         }
 
         public String getProtocol() {
@@ -938,7 +941,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getUrl() {
-            return url;
+            return contextPath;
         }
         
         public boolean isEnabled() {
