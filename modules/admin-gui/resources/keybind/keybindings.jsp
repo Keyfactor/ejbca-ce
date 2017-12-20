@@ -104,8 +104,12 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_STATUS}"/></f:facet>
-			<h:outputText value="#{web.text[guiInfo.status]}"/>
-		</h:column>
+ 			<h:outputText value="#{web.text[guiInfo.status]}"/>
+ 		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OPERATIONAL_STATUS}"/></f:facet>
+			<h:graphicImage height="16" width="16" url="#{guiInfo.operationalStatus}" />
+ 		</h:column>
 		<h:column rendered="#{!internalKeyBindingMBean.forbiddenToEdit}">
    			<f:facet name="header">
    				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>

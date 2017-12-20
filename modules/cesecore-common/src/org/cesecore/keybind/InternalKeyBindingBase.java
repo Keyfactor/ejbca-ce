@@ -46,6 +46,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private int internalKeyBindingId;
     private String name;
     private InternalKeyBindingStatus status;
+    private InternalKeyBindingOperationalStatus operationalStatus;
     private String certificateId;
     private int cryptoTokenId;
     private String keyPairAlias;
@@ -118,6 +119,23 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
             this.status = status;
         }
     }
+    
+    @Override
+    public InternalKeyBindingOperationalStatus getOperationalStatus() {
+        if (operationalStatus == null) {
+            operationalStatus = InternalKeyBindingOperationalStatus.OFFLINE;
+        }
+        return operationalStatus;
+    }
+    @Override
+    public void setOperationalStatus(final InternalKeyBindingOperationalStatus operationalStatus) {
+        if (operationalStatus == null) {
+            this.operationalStatus = InternalKeyBindingOperationalStatus.OFFLINE;
+        } else {
+            this.operationalStatus = operationalStatus;
+        }
+    }
+    
     @Override
     public String getCertificateId() { return certificateId; }
     @Override

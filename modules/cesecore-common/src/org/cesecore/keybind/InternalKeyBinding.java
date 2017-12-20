@@ -71,6 +71,12 @@ public interface InternalKeyBinding extends Serializable {
     /** Sets the current status of this instance */
     void setStatus(InternalKeyBindingStatus status);
 
+    /** @return the current operational status of this instance */
+    InternalKeyBindingOperationalStatus getOperationalStatus();
+
+    /** Sets the current operational status of this instance */
+    void setOperationalStatus(InternalKeyBindingOperationalStatus opStatus);
+    
     /** @return the fingerprint of the certificate currently in use or null if none is referenced */
     String getCertificateId();
 
