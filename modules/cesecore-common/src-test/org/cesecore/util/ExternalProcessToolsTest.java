@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -69,7 +70,7 @@ public class ExternalProcessToolsTest {
 
         // File content must match.
         final String reloadedContent = new String(FileTools.readFiletoBuffer(file.getCanonicalPath()));
-        assertTrue("File contents must not have changed after reloading.", content.equals(reloadedContent));
+        assertEquals("File contents must not have changed after reloading.", content, reloadedContent);
 
         // Delete file
         if (file.exists() && !file.delete()) {
