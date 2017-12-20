@@ -162,6 +162,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -1869,6 +1870,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return keyRecoverySuccessful;
         }
         return false;
+    }
+
+    @Override
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+        if (endEntityAccessSession.findUser(authenticationToken, endEntityInformation.getUsername()) == null) {
+            // If called from the wrong instance, return to proxybean and try next implementation
+            return false;
+        } else {
+            endEntityManagementSessionLocal.changeUser(authenticationToken, endEntityInformation, false);
+            return true;
+        }
     }
 
     @Override

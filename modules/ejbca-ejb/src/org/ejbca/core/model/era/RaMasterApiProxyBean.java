@@ -60,8 +60,10 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -91,6 +93,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -1365,7 +1368,28 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-    
+
+    @Override
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
+        boolean ret = false;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    ret = raMasterApi.editUser(authenticationToken, endEntityInformation);
+                    if (ret) {
+                        break;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
     @Override
     public boolean keyRecoveryPossible(AuthenticationToken authenticationToken, Certificate cert, String username) {
         // Special case where local key generation is enabled
