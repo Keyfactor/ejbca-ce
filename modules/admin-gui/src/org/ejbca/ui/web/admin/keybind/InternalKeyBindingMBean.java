@@ -70,6 +70,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingCache;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -112,6 +113,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final String keyPairAlias;
         private final String nextKeyPairAlias;
         private final String status;
+        private final String operationalStatus;
         private final String certificateId;
         private final String certificateIssuerDn;
         private final String certificateSerialNumber;
@@ -122,7 +124,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final String certificateSubjectDn;
 
         private GuiInfo(int internalKeyBindingId, String name, int cryptoTokenId, String cryptoTokenName, boolean cryptoTokenAvailable,
-                boolean cryptoTokenActive, String keyPairAlias, String nextKeyPairAlias, String status, String certificateId,
+                boolean cryptoTokenActive, String keyPairAlias, String nextKeyPairAlias, String status, String operationalStatus, String certificateId,
                 String certificateIssuerDn, String certificateSubjectDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber,
                 String caCertificateIssuerDn, String caCertificateSerialNumber) {
             this.internalKeyBindingId = internalKeyBindingId;
@@ -134,6 +136,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.keyPairAlias = keyPairAlias;
             this.nextKeyPairAlias = nextKeyPairAlias;
             this.status = TEXTKEY_PREFIX + status;
+            this.operationalStatus = operationalStatus;
             this.certificateId = certificateId;
             this.certificateIssuerDn = certificateIssuerDn;
             this.certificateSerialNumber = certificateSerialNumber;
@@ -172,6 +175,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             return status;
         }
 
+        public String getOperationalStatus() {
+            return operationalStatus;
+        }
+        
         public String getCertificateId() {
             return certificateId;
         }
@@ -546,8 +553,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     }
                 }
                 internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, cryptoTokenAvailable,
-                        cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, current
-                                .getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
+                        cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, updateOperationalStatus(current, cryptoTokenInfo), 
+                        current.getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
                         certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
                 Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
                     @Override
@@ -1299,6 +1306,32 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         } catch (InternalKeyBindingNameInUseException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Updates the current operational status of the current key binding.
+     * @param currentKeyBindingInfo
+     * @param cryptoTokenInfo
+     * @return path to corresponding icons based on the followings:
+     * 
+     *  Online if Keybinding is enabled, crypto token is active and keybinding exists in the cache
+     *  Pending if Keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
+     *  Offline if keybindig is disabled or crypto token is offline.
+     *  
+     */
+    private String updateOperationalStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+        switch (currentKeyBindingInfo.getStatus()) {
+        case ACTIVE:
+            if (cryptoTokenInfo.isActive() && (InternalKeyBindingCache.INSTANCE.getEntry(currentKeyBindingInfo.getId()) != null)) {
+                return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+            } else if (cryptoTokenInfo.isActive() && (InternalKeyBindingCache.INSTANCE.getEntry(currentKeyBindingInfo.getId()) == null)) {
+                return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
+            } else if (!cryptoTokenInfo.isActive()) {
+                return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+            }
+        default:
+            return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
         }
     }
 }
