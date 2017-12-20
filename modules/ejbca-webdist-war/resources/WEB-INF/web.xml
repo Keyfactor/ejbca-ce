@@ -23,16 +23,16 @@
 
     <display-name>Web distribution</display-name>
 
-	<filter>
-		<filter-name>ServiceControlFilter</filter-name>
-		<filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
-		<init-param>  
+    <filter>
+        <filter-name>ServiceControlFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
             <param-name>serviceName</param-name>  
             <param-value>Webdist</param-value>  
         </init-param>
-	</filter>
-	
-	<filter-mapping>
+    </filter>
+    
+    <filter-mapping>
         <filter-name>ServiceControlFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
@@ -43,8 +43,8 @@
         <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-	    <servlet-name>CertDist</servlet-name>
-	    <url-pattern>/certdist</url-pattern>
+        <servlet-name>CertDist</servlet-name>
+        <url-pattern>/certdist</url-pattern>
     </servlet-mapping>
 
     <session-config>

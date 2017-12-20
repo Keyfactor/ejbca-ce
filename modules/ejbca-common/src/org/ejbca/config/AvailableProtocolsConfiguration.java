@@ -36,6 +36,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      */
     public enum AvailableProtocols {
         PUBLIC_WEB("Public Web", "/ejbca"),
+        ADMIN_WEB("Admin Web", "/ejbca/adminweb"),
         ACME("ACME", "/ejbca/acme"),
         CMP("CMP", "/ejbca/publicweb"),
         EST("EST", "/.well-known/est"),
@@ -43,8 +44,10 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         SCEP("SCEP", "/ejbca/publicweb/appl"),
         WS("Web Service", "/ejbca/ejbcaws"),
         CERT_DIST("Webdist", "/ejbca/publicweb/webdist"),
-        // TODO Context path
-        CERT_STORE("Certstore", "");
+        CRL_DIST("CRLdist", "/ejbca/publicweb/webdist"),
+        // TODO Fill in context path
+        CERT_STORE("Certstore", ""),
+        CRL_STORE("CRLstore", "");
 
         private final String name;
         private final String contextPath;
