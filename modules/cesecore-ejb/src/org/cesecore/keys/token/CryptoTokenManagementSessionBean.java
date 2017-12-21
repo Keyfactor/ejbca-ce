@@ -50,6 +50,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionBean;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
@@ -79,6 +80,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private OcspResponseGeneratorSessionBean ocspResponseGeneratorSessionBean;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -155,10 +158,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             }
             cryptoToken.activate(authenticationCode);
         }
-        
-        // This property is used only once during crypto token creation 
+
+        // This property is used only once during crypto token creation
         properties.remove(CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY);
-        
+
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
         details.put("name", cryptoToken.getTokenName());
@@ -196,7 +199,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     /**
      * Asserts if an authentication token is authorized to modify crypto tokens
-     * 
+     *
      * @param authenticationToken the authentication token to check
      * @throws AuthorizationDeniedException thrown if authorization was denied.
      */
@@ -255,7 +258,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 newCryptoToken.activate(authenticationCode);
             }
         } catch (CryptoTokenOfflineException e) {
-            // If the crypto token can not be initialized, we have a problem and can not even disable auto-activation. 
+            // If the crypto token can not be initialized, we have a problem and can not even disable auto-activation.
             // Go ahead and ignore this
             log.info("CryptoTokenOfflineException getting new crypto token for saving, ignoring this error and saving anyway: ", e);
             newCryptoToken = currentCryptoToken;
@@ -275,7 +278,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             log.trace("<saveCryptoToken: " + tokenName + ", " + cryptoTokenId);
         }
     }
-    
+
     @Override
     public void saveCryptoToken(final AuthenticationToken authenticationToken, final int cryptoTokenId,
             final String newName, final String newPlaceholders) throws AuthorizationDeniedException, CryptoTokenNameInUseException {
@@ -294,12 +297,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String oldPlaceholders = cryptoToken.getProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY);
         properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newPlaceholders);
         cryptoToken.setProperties(properties);
-        
+
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Modified name/placeholders of CryptoToken with id " + cryptoTokenId);
         putDelta("name", oldName, newName, details);
         putDelta("keyPlaceholders", oldPlaceholders, newPlaceholders, details);
-        
+
         cryptoTokenSession.mergeCryptoToken(cryptoToken);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
@@ -344,6 +347,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.activate(authenticationCode);
+        ocspResponseGeneratorSessionBean.reloadOcspSigningCache();
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Activated CryptoToken '" + cryptoToken.getTokenName()
                         + "' with id " + cryptoTokenId);
@@ -355,16 +359,16 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
-
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
-                            + "' with id " + cryptoTokenId);
+        ocspResponseGeneratorSessionBean.reloadOcspSigningCache();
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
+                "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
         if (cryptoToken.isAutoActivationPinPresent()) {
             securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_REACTIVATION, EventStatus.VOID, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                     authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
                             + "' with id " + cryptoTokenId);
         }
-        
+
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -622,7 +626,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
@@ -677,14 +681,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void removeKeyPairPlaceholder(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, InvalidKeyException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-        
+
         boolean removed = false;
         final Properties props = new Properties();
         props.putAll(cryptoToken.getProperties());
@@ -698,24 +702,24 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 removed = true;
             }
         }
-        
+
         if (removed) {
             final String newValue = StringUtils.join(entries, CryptoToken.KEYPLACEHOLDERS_OUTER_SEPARATOR);
             props.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, newValue);
             cryptoToken.setProperties(props);
         }
-        
+
         // Check if alias is in use
         if (!removed) {
             throw new InvalidKeyException("Alias " + alias + " is not in use");
         }
-        
+
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
         } catch (CryptoTokenNameInUseException e) {
             throw new IllegalStateException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
-        
+
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Deleted key pair placeholder from CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
