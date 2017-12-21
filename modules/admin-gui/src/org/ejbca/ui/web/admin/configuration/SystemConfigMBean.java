@@ -71,6 +71,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
@@ -924,29 +925,58 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return protocolInfos;
     }
 
+    /** @return true if CRLStore is deployed. Determined by crlstore.properties file */
+    public boolean isCrlStoreAvailable() {
+        return WebConfiguration.isCrlStoreEnabled();
+    }
+    
+    /** @return true if EST is enabled. Should be false for EJBCA CE */
+    public boolean isEstAvailable() {
+        return getEjbcaWebBean().isEstConfigurationPresent();
+    }
+    
     public class ProtocolGuiInfo {
         private String protocol;
-        private String contextPath;
+        private String url;
         private boolean enabled;
+        private boolean available;
 
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
-            this.contextPath = AvailableProtocols.getContextPathByName(protocol);
-            log.info("URL: " + contextPath);
+            this.url = AvailableProtocols.getContextPathByName(protocol);
+            this.available = true;
         }
 
+        /** @return user friendly protocol/service name */
         public String getProtocol() {
             return protocol;
         }
 
+        /** @return URL to service */
         public String getUrl() {
-            return contextPath;
+            return url;
         }
         
+        /** @return true if protocol is enabled */
         public boolean isEnabled() {
             return enabled;
         }
+        
+        /** @return true if service is available in the deployed instance */
+        public boolean isAvailable() {
+            // This is only applicable to services/protocols which may be unavailable for some installations,
+            // such as community edition or installations where CRLStore is disabled by .properties file.
+            if (protocol.equals(AvailableProtocols.CRL_STORE.getName()) && !isCrlStoreAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
+                available = false;
+            }
+            return available;
+        }
+        
+        /** @return user friendly status text. Enabled or disabled */
         public String getStatus() {
             return enabled ? "Enabled" : "Disabled";
         }
