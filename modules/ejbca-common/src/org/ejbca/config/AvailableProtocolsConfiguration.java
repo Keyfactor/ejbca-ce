@@ -37,15 +37,14 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * Protocols currently supporting enable/disable configuration by EJBCA
      */
     public enum AvailableProtocols {
-        CERT_DIST("Certdist", "/ejbca/publicweb/webdist"),
         CERT_STORE("Certstore", "/certificates"),
         CMP("CMP", "/ejbca/publicweb/cmp"),
-        CRL_DIST("CRLdist", "/ejbca/publicweb/webdist"),
         CRL_STORE("CRLstore", "/crls"),
         EST("EST", "/.well-known/est"),
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
+        WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
         private final String name;
