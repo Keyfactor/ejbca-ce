@@ -50,7 +50,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionBean;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
@@ -80,8 +79,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
-    @EJB
-    private OcspResponseGeneratorSessionBean ocspResponseGeneratorSessionBean;
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -347,7 +344,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.activate(authenticationCode);
-        ocspResponseGeneratorSessionBean.reloadOcspSigningCache();
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Activated CryptoToken '" + cryptoToken.getTokenName()
                         + "' with id " + cryptoTokenId);
@@ -359,7 +355,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
-        ocspResponseGeneratorSessionBean.reloadOcspSigningCache();
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                 "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
