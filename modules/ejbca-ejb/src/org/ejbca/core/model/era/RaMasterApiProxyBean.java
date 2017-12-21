@@ -1374,20 +1374,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
-        boolean ret = false;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    ret = raMasterApi.editUser(authenticationToken, endEntityInformation);
-                    if (ret) {
-                        break;
+                    if (raMasterApi.editUser(authenticationToken, endEntityInformation)) {
+                        // Successfully edited the user
+                        return true;
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return ret;
+        // Editing was unsuccessful
+        return false;
     }
 
     @Override

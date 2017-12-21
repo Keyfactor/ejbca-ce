@@ -464,7 +464,7 @@ public interface RaMasterApi {
                             CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
 
     /**
-     * Edit End Entity information.
+     * Edit End Entity information. Can only be used with API version 2 and later.
      * 
      * @param authenticationToken the administrator performing the action
      * @param endEntityInformation an EndEntityInformation object with the new information
