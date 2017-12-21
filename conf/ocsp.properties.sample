@@ -183,7 +183,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Specifies classes implementing OCSP extensions matching oids above, 
 # separate multiple entries with ;"
 # Leave out if you do not know what this is.
-# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Example value: org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension
 # Example value: org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
 # Default: nothing
 #ocsp.extensionclass=
