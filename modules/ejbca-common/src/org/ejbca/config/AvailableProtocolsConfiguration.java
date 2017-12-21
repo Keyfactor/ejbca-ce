@@ -37,37 +37,35 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * Protocols currently supporting enable/disable configuration by EJBCA
      */
     public enum AvailableProtocols {
-        PUBLIC_WEB("Public Web", "/ejbca"),
-        ACME("ACME", "/ejbca/acme"),
-        CMP("CMP", "/ejbca/publicweb"),
-        EST("EST", "/.well-known/est"),
-        OCSP("OCSP", "/ejbca/publicweb/status"),
-        SCEP("SCEP", "/ejbca/publicweb/appl"),
-        WS("Web Service", "/ejbca/ejbcaws"),
-        CERT_DIST("Webdist", "/ejbca/publicweb/webdist"),
+        CERT_DIST("Certdist", "/ejbca/publicweb/webdist"),
+        CERT_STORE("Certstore", "/certificates"),
+        CMP("CMP", "/ejbca/publicweb/cmp"),
         CRL_DIST("CRLdist", "/ejbca/publicweb/webdist"),
-        // TODO Fill in context path
-        CERT_STORE("Certstore", ""),
-        CRL_STORE("CRLstore", "");
+        CRL_STORE("CRLstore", "/crls"),
+        EST("EST", "/.well-known/est"),
+        OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
+        PUBLIC_WEB("Public Web", "/ejbca"),
+        SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
+        WS("Web Service", "/ejbca/ejbcaws");
 
         private final String name;
-        private final String contextPath;
+        private final String url;
         private static final Map<String, String> reverseLookupMap = new HashMap<>();
         
         static {
             for (final AvailableProtocols protocol : AvailableProtocols.values()) {
-                reverseLookupMap.put(protocol.getName(), protocol.getContextPath());
+                reverseLookupMap.put(protocol.getName(), protocol.getUrl());
             }
         }
         
         /**
          * Creates a new instance of an available protocol enum.
          * @param name the name of the enum, same as the "serviceName" from web.xml
-         * @param contextPath the URL to the servlet
+         * @param url the URL to the servlet
          */
-        private AvailableProtocols(final String name, final String contextPath) {
+        private AvailableProtocols(final String name, final String url) {
             this.name = name;
-            this.contextPath = contextPath;
+            this.url = url;
         }
 
         /** @return user friendly name of protocol */
@@ -75,8 +73,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
             return name;
         }
 
-        public String getContextPath() {
-            return contextPath;
+        public String getUrl() {
+            return url;
         }
         
         public static String getContextPathByName(String name) {
@@ -97,7 +95,12 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     /** All protocols will be enabled by default */
     private void initialize() {
         for (int i = 0; i < AvailableProtocols.values().length; i++) {
-            setProtocolStatus(AvailableProtocols.values()[i].getName(), true);
+            boolean defaultValue = true;
+            // All protocols added < 6.11.0 should be set to false (disabled) by default
+            if (AvailableProtocols.values()[i].getName().equals(AvailableProtocols.EST.getName())) {
+                defaultValue = false;
+            }
+            setProtocolStatus(AvailableProtocols.values()[i].getName(), defaultValue);
         }
     }
 

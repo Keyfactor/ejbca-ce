@@ -501,7 +501,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h4>
 			<h:outputText value="#{web.text.PC_EDIT_PC_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 			<h:outputText value="#{web.text.PC_VIEW_PC_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html") %></h4> <!-- TODO link to actual documentation when available -->
+			<%= ejbcawebbean.getHelpReference("/adminguide.html#Modular%20Protocol%20Configuration") %></h4> <!-- TODO link to actual documentation when available -->
 			</br>
 		</h:panelGroup>
 	
@@ -524,7 +524,7 @@ org.cesecore.authorization.AuthorizationDeniedException
    					<h:outputText value="#{web.text.PC_TABLE_ACTION_TITLE}"/>
    				</f:facet>
 				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
-					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
 			</h:column>
 		</h:dataTable>
 	</h:form>
