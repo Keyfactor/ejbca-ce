@@ -177,10 +177,10 @@ public class RaEndEntityBean implements Serializable {
     }
 
     /**
-     * Enables edit mode and reloads
+     * Enables edit mode (given that the API version allows it) and reloads
      */
     public void editEditEndEntity() {
-        editEditEndEntityMode = true;
+        editEditEndEntityMode = isApiEditCompatible();
         reload();
     }
 
@@ -353,5 +353,12 @@ public class RaEndEntityBean implements Serializable {
                     username, raLocaleBean);
         }
         return issuedCerts;
+    }
+
+    /**
+     * @return true if the API is compatible with End Entity editing 
+     */
+    public boolean isApiEditCompatible() {
+        return raMasterApiProxyBean.getApiVersion() >= 2;
     }
 }

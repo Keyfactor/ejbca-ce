@@ -2013,6 +2013,14 @@ a large number of pending publisher queue objects issued under this end entity, 
 complete.
 </p>
 </subsection>
+
+<subsection name="Editing Users in the RA Web">
+<p>
+Administrators have the ability to edit the status of an end entity from the RA Web. This is done by clicking the Edit button while viewing an end
+entity, selecting a status and entering a new Enrollment code. For the Edit button to appear the administrator needs to have the rights to edit the
+end entity and all EJBCA instances in the cluster must be running EJBCA 6.11 or later.
+</p>
+</subsection>
 </section>
 
 <section name="Administrators">
