@@ -2648,15 +2648,14 @@ rejected immediately and an error code is returned.
 <p>
 The following protocols / services can be disabled:
 <ul>
-    <li>Certdist	- CA certificate servlet /ejbca/publicweb/webdist</li>
     <li>Certstore 	- Certificate store servlet /certificates</li>
     <li>CMP 		- CMP protocol servlet /ejbca/publicweb/cmp</li>
-    <li>CRLdist 	- CRL dist servlet /ejbca/publicweb/webdist</li>
     <li>CRLstore 	- CRL Store servlet /crls</li>
     <li>EST 		- EST protocol servlet /.well-known/est</li>
     <li>OCSP		- OCSP Servlet /ejbca/publicweb/status/ocsp</li>
     <li>Public Web 	- All functionality of public web /ejbca</li>
     <li>SCEP 		- SCEP protocol servlet /ejbca/publicweb/apply/scep</li>
+    <li>Webdist 	- Web dist servlet /ejbca/publicweb/webdist</li>
     <li>Web Service - All web services calls requiring authentication /ejbca/ejbcaws</li>
 </ul> 
 </p>
