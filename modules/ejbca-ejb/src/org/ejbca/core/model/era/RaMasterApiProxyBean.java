@@ -61,11 +61,11 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -99,6 +99,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
@@ -1476,7 +1477,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password, final byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, AuthenticationFailedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException {
+    public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password,
+            final byte[] requestBody) throws NoSuchAliasException,
+            CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtException = null;
         
         for (final RaMasterApi raMasterApi : raMasterApis) {

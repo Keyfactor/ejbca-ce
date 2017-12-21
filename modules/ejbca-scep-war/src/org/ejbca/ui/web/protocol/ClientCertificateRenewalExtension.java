@@ -78,7 +78,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             IllegalKeyException, SignatureException, CustomCertificateSerialNumberException, SignRequestException, SignRequestSignatureException,
             AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException,
-            ClientCertificateRenewalException {
+            CertificateRenewalException {
 
         final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
         final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
@@ -166,7 +166,7 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
          * See draft-nourse-scep-23 Appendix D
          */
         if (System.currentTimeMillis() <= (issueTime + (expirationTime - issueTime) / 2)) {
-            throw new ClientCertificateRenewalException("Re-enrollment request was sent but last issued certificate for username " + username
+            throw new CertificateRenewalException("Re-enrollment request was sent but last issued certificate for username " + username
                     + " hasn't passed half its validity date yet.");
         }
         
@@ -205,9 +205,9 @@ public class ClientCertificateRenewalExtension implements ScepResponsePlugin {
             }
             return signSession.createCertificateIgnoreStatus(authenticationToken, reqmsg, ScepResponseMessage.class, ignorePassword);
         } catch (ApprovalException e) {
-            throw new ClientCertificateRenewalException(e);
+            throw new CertificateRenewalException(e);
         } catch (WaitingForApprovalException e) {
-            throw new ClientCertificateRenewalException(e);
+            throw new CertificateRenewalException(e);
         }
     }
 

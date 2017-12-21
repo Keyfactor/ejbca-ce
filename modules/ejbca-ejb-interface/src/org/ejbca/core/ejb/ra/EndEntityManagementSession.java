@@ -120,20 +120,13 @@ public interface EndEntityManagementSession {
      * Add a new user.
      * 
      * @param admin the administrator performing the action
-     * @param userdata a EndEntityInformation object, the fields status, timecreated and
-     *            timemodified will not be used.
-     * @param clearpwd true if the password will be stored in clear form in the
-     *            db, otherwise it is hashed.
-     * @throws AuthorizationDeniedException
-     *             if administrator isn't authorized to add user
-     * @throws EndEntityProfileValidationException
-     *             if data doesn't fulfill requirements of the end entity profile
-     * @throws EndEntityExistsException
-     *             if user already exists or some other database error occur during commit
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
-     * @throws WaitingForApprovalException
+     * @param userdata a EndEntityInformation object, the fields status, timecreated and timemodified will not be used.
+     * @param clearpwd true if the password will be stored in clear form in the db, otherwise it is hashed.
+     * 
+     * @throws AuthorizationDeniedException if the administrator isn't authorized to add user
+     * @throws EndEntityProfileValidationException if data doesn't fulfill requirements of the end entity profile
+     * @throws EndEntityExistsException if user already exists or some other database error occurs during commit
+     * @throws WaitingForApprovalException if approval is required and the action has been added in the approval queue.
      * @throws IllegalNameException if the Subject DN or SAN failed constraints
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws ApprovalException if an approval already exists for this request.

@@ -12,16 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.protocol.est;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * @version $Id$
@@ -38,15 +37,13 @@ public interface EstOperationsSessionLocal extends EstOperationsSession {
      * @param password
      * @param requestBody
      * @return
-     * @throws UnsupportedOperationException if the method is not available in this edition of EJBCA
-     * @throws NoSuchAliasException If the requested EST alias doesn't exist
-     * @throws CADoesntExistsException If the request CA for the given alias doesn't exist
-     * @throws AuthorizationDeniedException If the user it unauthroized to enroll or reenroll
-     * @throws CertificateProfileDoesNotExistException
-     * @throws NoSuchAlgorithmException
-     * @throws AuthenticationFailedException If authentication is required
+     * @throws NoSuchAliasException if the alias doesn't exist
+     * @throws CADoesntExistsException if the CA specified in a request for CA certs doesn't exist
+     * @throws CertificateCreateException if an error was encountered when trying to enroll
+     * @throws CertificateRenewalException if an error was encountered when trying to re-enroll
+     * @throws AuthenticationFailedException if request was sent in without an authenticating certificate, or the username/password combo was 
+     *           invalid (depending on authentication method). 
      */
     byte[] dispatchRequest(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
-            throws UnsupportedOperationException, NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, CertificateProfileDoesNotExistException,
-            NoSuchAlgorithmException, AuthenticationFailedException;
+            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
 }

@@ -986,7 +986,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws CertificateExtensionException  if any of the certificate extensions were invalid
      * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
      * @throws OperatorCreationException  if CA's private key contained an unknown algorithm or provider
-     * @throws IllegalNameException if the name specified in the certificate request was invalid
+     * @throws IllegalNameException if the name specified in the certificate request contains illegal characters
      * @throws IllegalValidityException  if validity was invalid
      * @throws InvalidAlgorithmException  if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid. 
      * @throws CAOfflineException if the CA wasn't active

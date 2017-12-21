@@ -13,39 +13,39 @@
 package org.ejbca.ui.web.protocol;
 
 /**
- * Thrown if an error occurs during Client Certificate Renewal.
+ * Thrown if an error occurs during Certificate Renewal.
  * 
  * @version $Id$
  *
  */
-public class ClientCertificateRenewalException extends Exception {
+public class CertificateRenewalException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * @see java.lang.Exception#Exception()
      */
-    public ClientCertificateRenewalException() {
+    public CertificateRenewalException() {
     }
 
     /**
      * @see java.lang.Exception#Exception(String)
      */
-    public ClientCertificateRenewalException(String message) {
+    public CertificateRenewalException(String message) {
         super(message);
     }
 
     /**
      * @see java.lang.Exception#Exception(Throwable)
      */
-    public ClientCertificateRenewalException(Throwable cause) {
+    public CertificateRenewalException(Throwable cause) {
         super(cause);
     }
 
     /**
      * @see java.lang.Exception#Exception(String, Throwable)
      */
-    public ClientCertificateRenewalException(String message, Throwable cause) {
+    public CertificateRenewalException(String message, Throwable cause) {
         super(message, cause);
     }
 

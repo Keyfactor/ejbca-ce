@@ -13,7 +13,6 @@
 package org.ejbca.core.model.era;
 
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
@@ -28,11 +27,11 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.roles.Role;
@@ -55,6 +54,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * API of available methods on the CA that can be invoked by the RA.
@@ -559,8 +559,17 @@ public interface RaMasterApi {
      * @param password The authentication password if any
      * @param requestBody The HTTP request body. Usually a PKCS#10
      * @return the HTTP response body
+     * 
+     * @throws NoSuchAliasException if the alias doesn't exist
+     * @throws CADoesntExistsException if the CA specified in a request for CA certs doesn't exist
+     * @throws CertificateCreateException if an error was encountered when trying to enroll
+     * @throws CertificateRenewalException if an error was encountered when trying to re-enroll
+     * @throws AuthenticationFailedException if request was sent in without an authenticating certificate, or the username/password combo was 
+     *           invalid (depending on authentication method). 
+     * 
      * @see EstOperationBeanLocal#dispatchRequest(Certificate, String, String, String, String, byte[])
      * @since RA Master API version 1 (EJBCA 6.8.0)
      */
-    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody) throws NoSuchAliasException, AuthorizationDeniedException, AuthenticationFailedException, CADoesntExistsException, CertificateProfileDoesNotExistException, NoSuchAlgorithmException;    
+    byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
+            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
 }
