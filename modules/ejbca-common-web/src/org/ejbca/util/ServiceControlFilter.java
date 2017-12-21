@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
  * <p>This filter is responsible for disabling access to parts of EJBCA based
@@ -47,12 +46,6 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
  */
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);
-    private static final String WEBDIST_SERVICE_NAME = "Webdist";
-    private static final String WEBDIST_PARAMETER_KEY = "cmd";
-    private static final String WEBDIST_CRL = "crl"; 
-    private static final String WEBDIST_CRL_DELTA = "deltacrl";
-    private static final String WEBDIST_CACERT = "cacert";
-    private static final String WEBDIST_CACERT_CHAIN = "cachain"; 
     
     private AvailableProtocolsConfiguration availableProtocolsConfiguration;
     
@@ -81,7 +74,7 @@ public class ServiceControlFilter implements Filter {
         availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         
-        if ((serviceName.equals(WEBDIST_SERVICE_NAME) && !webdistAllowed(httpRequest)) || !availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
+        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
             if (log.isDebugEnabled()) {
                 log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
@@ -93,17 +86,6 @@ public class ServiceControlFilter implements Filter {
             log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
         chain.doFilter(request, response);
-    }
-    
-    /** Checks status of protocol to corresponding request parameter for the webdist servlet */
-    private boolean webdistAllowed(HttpServletRequest httpRequest) {
-        String parameter = httpRequest.getParameter(WEBDIST_PARAMETER_KEY);
-        if (parameter.equals(WEBDIST_CACERT) || parameter.equals(WEBDIST_CACERT_CHAIN)) {
-            return availableProtocolsConfiguration.getProtocolStatus(AvailableProtocols.CERT_DIST.getName());
-        } else if (parameter.equals(WEBDIST_CRL) || parameter.equals(WEBDIST_CRL_DELTA)) {
-            return availableProtocolsConfiguration.getProtocolStatus(AvailableProtocols.CRL_DIST.getName());
-        }
-        return false;
     }
 }
 
