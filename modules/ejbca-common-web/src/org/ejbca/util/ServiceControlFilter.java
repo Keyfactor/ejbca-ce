@@ -28,17 +28,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
  * <p>This filter is responsible for disabling access to parts of EJBCA based
  * on the URL of the request and the current system configuration, which
- * together with some peer access rules are known as "Modular Protocol Configuration".
+ * is known as "Modular Protocol Configuration".
  * The purpose of Modular Protocol Configuration is to reduce the attack surface by
  * allowing an administrator to completely disable access to node-local services which
  * should not be used.</p>
  * <p>The servlet filter implemented by this class only filters incoming requests.
  * The URL of the request is matched against a service in EJBCA, such as the
- * CMP protocol or the RA web. If this service is disabled according to the policy
+ * CMP protocol or the Public web. If this service is disabled according to the policy
  * stored in system configuration, the request is filtered and an HTTP response with
  * error code 403 is sent back to the client. Otherwise, the request is let through
  * unaltered.
@@ -46,6 +47,15 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
  */
 public class ServiceControlFilter implements Filter {
     private static final Logger log = Logger.getLogger(ServiceControlFilter.class);
+    private static final String WEBDIST_SERVICE_NAME = "Webdist";
+    private static final String WEBDIST_PARAMETER_KEY = "cmd";
+    private static final String WEBDIST_CRL = "crl"; 
+    private static final String WEBDIST_CRL_DELTA = "deltacrl";
+    private static final String WEBDIST_CACERT = "cacert";
+    private static final String WEBDIST_CACERT_CHAIN = "cachain"; 
+    
+    private AvailableProtocolsConfiguration availableProtocolsConfiguration;
+    
     private String serviceName;
 
     @EJB
@@ -68,10 +78,10 @@ public class ServiceControlFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
-        final AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
+        availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-
-        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
+        
+        if ((serviceName.equals(WEBDIST_SERVICE_NAME) && !webdistAllowed(httpRequest)) || !availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
             if (log.isDebugEnabled()) {
                 log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
             }
@@ -84,4 +94,30 @@ public class ServiceControlFilter implements Filter {
         }
         chain.doFilter(request, response);
     }
+    
+    /** Checks status of protocol to corresponding request parameter for the webdist servlet */
+    private boolean webdistAllowed(HttpServletRequest httpRequest) {
+        String parameter = httpRequest.getParameter(WEBDIST_PARAMETER_KEY);
+        if (parameter.equals(WEBDIST_CACERT) || parameter.equals(WEBDIST_CACERT_CHAIN)) {
+            return availableProtocolsConfiguration.getProtocolStatus(AvailableProtocols.CERT_DIST.getName());
+        } else if (parameter.equals(WEBDIST_CRL) || parameter.equals(WEBDIST_CRL_DELTA)) {
+            return availableProtocolsConfiguration.getProtocolStatus(AvailableProtocols.CRL_DIST.getName());
+        }
+        return false;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
