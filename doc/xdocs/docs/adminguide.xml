@@ -2648,16 +2648,20 @@ rejected immediately and an error code is returned.
 <p>
 The following protocols / services can be disabled:
 <ul>
-    <li>ACME</li>
-    <li>CMP</li>
-    <li>EST</li>
-    <li>OCSP</li>
-    <li>SCEP</li>
-    <li>Web Services</li>
+    <li>Certdist	- CA certificate servlet /ejbca/publicweb/webdist</li>
+    <li>Certstore 	- Certificate store servlet /certificates</li>
+    <li>CMP 		- CMP protocol servlet /ejbca/publicweb/cmp</li>
+    <li>CRLdist 	- CRL dist servlet /ejbca/publicweb/webdist</li>
+    <li>CRLstore 	- CRL Store servlet /crls</li>
+    <li>EST 		- EST protocol servlet /.well-known/est</li>
+    <li>OCSP		- OCSP Servlet /ejbca/publicweb/status/ocsp</li>
+    <li>Public Web 	- All functionality of public web /ejbca</li>
+    <li>SCEP 		- SCEP protocol servlet /ejbca/publicweb/apply/scep</li>
+    <li>Web Service - All web services calls requiring authentication /ejbca/ejbcaws</li>
 </ul> 
 </p>
 <p>
-All configurable protocols and services are enabled by default. Protocols can be disabled or re-enabled from the Admin GUI:
+All configurable protocols and services added &lt; EJBCA 6.11.0 enabled by default. Protocols can be disabled or re-enabled from the Admin GUI:
 <ol>
     <li>System Configuration</li>
     <li>Select the tab 'Protocol Configuration'</li>
@@ -2667,19 +2671,19 @@ All configurable protocols and services are enabled by default. Protocols can be
 </subsection>
 <subsection name="Protocol Configurration Over Peers">
 <p>
-Each instance can disable protocols locally as described above. Additionally, an administrator may disable protocols and services for each outgoing Peer connection, hence making it possible to control protocol 
+Each instance can disable protocols locally as described above. Additionally, an administrator may disable protocols and services for each outgoing Peer connection using access rules, hence making it possible to control protocol 
 access of remote instances. Disabling a protocol locally or for a Peer connection will always override an enabled configuration. E.g. if an external RA has web services disabled locally and the outgoing Peer 
-connection from the CA has configured web services as 'Enabled'. Any web service call to the external RA would be rejected anyway.
+connection from the CA has configured web services as 'Allowed'. Any web service call to the external RA would be rejected. Only protocols supporting Peers are remotely configurable using access rules. Currently this includes CMP, EST and Web services.
 </p>
 <p>
 Protocols for an outgoing Peer connection can be configured from in the Admin GUI:
 <ol>
     <li>Peer Systems</li>
-    <li>Select 'Manage' for the outgoing Peer (the Peer has to be enabled first)</li>
-    <li>Select the tab 'Protocol Access'</li>
-    <li>Check protocols to enable and uncheck protocols to disabled and save</li>
+    <li>Select 'Authorized Requests' for the outgoing Peer (the Peer has to be enabled first)</li>
+    <li>Under 'Process requests from protocols', check protocols to enable, uncheck protocols to disabled and save</li>
 </ol>
-In consistency with local configuration, all protocols are enabled by default for outgoing Peers.
+All protocols implemented &lt; EJBCA 6.11.0 are enabled by default for outgoing Peers. The access rules /protocol/* only applies to Peer connector roles. Denying a protocol for a specific administrator
+will take no effect.
 </p>
 </subsection>
 </section>
