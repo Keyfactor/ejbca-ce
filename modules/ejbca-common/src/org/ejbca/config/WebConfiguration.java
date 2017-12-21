@@ -267,6 +267,11 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("crlstore.enabled"));
     }
     
+    /** Returns true if the Certificate Store Servlet (search.cgi) is enabled. Default is false */
+    public static boolean isCertStoreEnabled() {
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("certstore.enabled"));
+    }
+    
     /** Returns the base URL path of the CRL store servlet, e.g. /ejbca/publicweb/crls */ 
     public static String getCrlStoreContextRoot() {
         String value = EjbcaConfigurationHolder.getString("crlstore.contextroot");

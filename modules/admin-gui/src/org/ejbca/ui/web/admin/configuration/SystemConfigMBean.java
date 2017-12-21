@@ -930,6 +930,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return WebConfiguration.isCrlStoreEnabled();
     }
     
+    /** @return true if CRLStore is deployed. Determined by crlstore.properties file */
+    public boolean isCertStoreAvailable() {
+        return WebConfiguration.isCertStoreEnabled();
+    }
+    
     /** @return true if EST is enabled. Should be false for EJBCA CE */
     public boolean isEstAvailable() {
         return getEjbcaWebBean().isEstConfigurationPresent();
@@ -968,6 +973,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             // This is only applicable to services/protocols which may be unavailable for some installations,
             // such as community edition or installations where CRLStore is disabled by .properties file.
             if (protocol.equals(AvailableProtocols.CRL_STORE.getName()) && !isCrlStoreAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.CERT_STORE.getName()) && !isCertStoreAvailable()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
