@@ -95,12 +95,10 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
     private void initialize() {
         for (int i = 0; i < AvailableProtocols.values().length; i++) {
             boolean defaultValue = true;
-            // All protocols added < 6.11.0 should be set to false (disabled) by default
-            if (AvailableProtocols.values()[i].getName().equals(AvailableProtocols.EST.getName())) {
-                defaultValue = false;
-            }
             setProtocolStatus(AvailableProtocols.values()[i].getName(), defaultValue);
         }
+        // All protocols added > 6.11.0 should be set to false (disabled) by default
+        setProtocolStatus(AvailableProtocols.EST.getName(), false);
     }
 
     /**
