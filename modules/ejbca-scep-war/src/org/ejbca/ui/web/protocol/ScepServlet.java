@@ -489,7 +489,7 @@ public class ScepServlet extends HttpServlet {
             errMsg += " Request was not signed with previous certificate's public key.";
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch(ClientCertificateRenewalException e) {
+        } catch(CertificateRenewalException e) {
             String errMsg = intres.getLocalizedMessage("scep.errorclientcertificaterenewal");
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -562,7 +562,7 @@ public class ScepServlet extends HttpServlet {
      * @throws IllegalKeyException 
      * @throws CryptoTokenOfflineException 
      * @throws CustomCertificateSerialNumberException 
-     * @throws ClientCertificateRenewalException if an error occurs during Client Certificate Renewal
+     * @throws CertificateRenewalException if an error occurs during Client Certificate Renewal
      * @throws SignatureException if a Client Certificate Renewal request was badly signed. 
      * @throws NoSuchProviderException 
      * @throws NoSuchAlgorithmException 
@@ -575,7 +575,7 @@ public class ScepServlet extends HttpServlet {
             CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
             AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            ClientCertificateRenewalException, SignatureException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
+            CertificateRenewalException, SignatureException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
             NoSuchProviderException {
       byte[] ret = null;
         if (log.isTraceEnabled()) {

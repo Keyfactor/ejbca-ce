@@ -76,7 +76,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
 	 * @throws IllegalKeyException (no rollback) if the passed in PublicKey does not fulfill requirements in CertificateProfile
 	 * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
 	 * @throws CertificateRevokeException if certificate was meant to be issued revoked, but could not. Causes rollback. 
-	 * @throws IllegalNameException if the certificate request contained an illegal name 
+	 * @throws IllegalNameException if the name specified in the certificate request contains illegal characters
      * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, or certificate profile does not allow it
      * @throws CertificateCreateException (rollback) (rollback) if certificate couldn't be created.
      * @throws CertificateExtensionException if any if the extensions (contained in the request) were invalid

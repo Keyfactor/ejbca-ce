@@ -226,14 +226,14 @@ public interface SignSession {
      * @return The newly created response or null.
      *
      * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
-     * @throws NoSuchEndEntityException       if the user does not exist.
+     * @throws NoSuchEndEntityException if the user does not exist.
      * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
      *             missing unique index in database, or certificate profile does not allow it
      * @throws CryptoTokenOfflineException if the CA's crypto token was offline
      * @throws AuthStatusException if the end entity's status is not on in which it may generate a certificate
      * @throws AuthLoginException if the provided password is not the same as in the database
      * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
-     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws CADoesntExistsException if the targeted CA does not exist
      * @throws SignRequestException if the provided request doesn't contain a username or a password.
      * @throws SignRequestSignatureException if the request was not correctly signed
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
@@ -242,7 +242,7 @@ public interface SignSession {
      * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
      * @throws CertificateRevokeException (rollback) if the certificate was meant to be issued revoked, but could not.
      * @throws CertificateCreateException (rollback) if the certificate couldn't be created for any various reason
-     * @throws IllegalNameException if the certificate request contained an illegal name
+     * @throws IllegalNameException  if the subject DN or SAN specified in the certificate request contains illegal characters
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request
      *
      */
