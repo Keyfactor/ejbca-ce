@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * directly.
  * A slot list and token labels for each slot is cached so that C_GetSlotList() only has to be called once and
  * so that C_GetTokenInfo() only has to be called once for each slot.
- * 
+ *
  * The {@link #getInstance(File)} method must be called before any PKCS#11 provider is created.
  *
  *  @version $Id$
@@ -142,7 +142,7 @@ public class Pkcs11Wrapper {
     }
 
     /**
-     * Get an instance of the class. 
+     * Get an instance of the class.
      * @param the p11 .so file.
      * @return the instance.
      * @throws IllegalArgumentException
@@ -230,7 +230,7 @@ public class Pkcs11Wrapper {
         } catch (InvocationTargetException e) {
             String msg = "Method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo threw an unknown exception.";
             log.error(msg, e);
-            throw new IllegalStateException(msg, e);
+            return null;
         }
         if (tokenInfo == null) {
             return null;
