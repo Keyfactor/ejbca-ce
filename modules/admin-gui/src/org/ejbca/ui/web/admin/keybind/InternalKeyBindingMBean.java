@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -60,17 +61,19 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
-import org.cesecore.keybind.InternalKeyBindingCache;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -1315,23 +1318,45 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      * @param cryptoTokenInfo
      * @return path to corresponding icons based on the followings:
      * 
-     *  Online if Keybinding is enabled, crypto token is active and keybinding exists in the cache
-     *  Pending if Keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
-     *  Offline if keybindig is disabled or crypto token is offline.
+     * Online if Keybinding is enabled, crypto token is active and keybinding exists in the cache
+     * Pending if Keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
+     * Offline if keybindig is disabled or crypto token is offline.
      *  
      */
     private String updateOperationalStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         switch (currentKeyBindingInfo.getStatus()) {
         case ACTIVE:
-            if (cryptoTokenInfo.isActive() && (InternalKeyBindingCache.INSTANCE.getEntry(currentKeyBindingInfo.getId()) != null)) {
-                return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
-            } else if (cryptoTokenInfo.isActive() && (InternalKeyBindingCache.INSTANCE.getEntry(currentKeyBindingInfo.getId()) == null)) {
-                return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
-            } else if (!cryptoTokenInfo.isActive()) {
-                return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+            if (currentKeyBindingInfo.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+                if (cryptoTokenInfo.isActive() && hasOcspCacheEntry(currentKeyBindingInfo.getCertificateId())) {
+                    return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+                } else if (cryptoTokenInfo.isActive() && !hasOcspCacheEntry(currentKeyBindingInfo.getCertificateId())) {
+                    return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
+                } else if (!cryptoTokenInfo.isActive()) {
+                    return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+                }
             }
         default:
             return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
         }
+    }
+
+    /**
+     * Checks if the ocsp key binding is in cache.
+     * @param fingerprint
+     * @return true if ocsp key binding exist in cache, false otherwise.
+     */
+    private boolean hasOcspCacheEntry(final String fingerprint) {
+        final CertificateDataWrapper certificateData = certificateStoreSession.getCertificateData(fingerprint);
+        final Certificate certificate = certificateData.getCertificate();
+
+        if (certificate instanceof X509Certificate) {
+            List<CertificateID> certIdList = OcspSigningCache.getCertificateIDFromCertificate((X509Certificate) certificate);
+            for (final CertificateID certificateID : certIdList) {
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certificateID);
+                if (ocspSigningCacheEntry != null && OcspSigningCache.INSTANCE.getEntry(certificateID).getOcspKeyBinding() != null)
+                    return true;
+            }
+        }
+        return false;
     }
 }
