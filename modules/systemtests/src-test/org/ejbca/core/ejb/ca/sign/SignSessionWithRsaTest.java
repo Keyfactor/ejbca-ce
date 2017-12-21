@@ -108,6 +108,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
@@ -132,6 +133,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -209,6 +211,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static KeyPair rsakeys;
     private static int rsacaid;
@@ -528,12 +531,12 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     }
 
     /**
-     * Tests multiple instances of one altName
+     * Tests multiple instances of one altName, and different types of altNames
      * 
      */
     @Test
-    public void testTestMultipleAltNames() throws Exception {
-        log.trace(">test09TestMultipleAltNames()");
+    public void testMultipleAltNames() throws Exception {
+        log.trace(">testMultipleAltNames()");
         // Create a good end entity profile (good enough), allowing multiple UPN names
         final String multipleAltNameEndEntityProfileName = "TESTMULALTNAME";
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
@@ -559,6 +562,121 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
+            EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
+                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name", 
+                    "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            userData.setPassword("foo123");
+            endEntityManagementSession.changeUser(internalAdmin, userData, false);   
+            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
+            assertNotNull("Failed to create certificate", cert);
+            String altNames = CertTools.getSubjectAlternativeName(cert);
+            log.debug("Altnames1: "+altNames);
+            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            assertEquals(2, list.size());
+            assertTrue(list.contains("foo@a.se"));
+            assertTrue(list.contains("foo@b.se"));
+            String name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            assertEquals("http://www.a.se/", name);
+            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            assertEquals("There should be 2 URIs", 2, names.size());
+            assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
+            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            assertEquals("tomas@a.se", name);
+            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            assertEquals(2, list.size());
+            assertTrue(list.contains("www.a.se"));
+            assertTrue(list.contains("www.b.se"));
+            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            assertEquals("10.1.1.1", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            assertEquals("1.1.1.2", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            assertEquals("tomas@xmpp.domain.com", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            assertEquals("_Service.Name", name);
+            // Change a user that we know...
+            EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
+                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas1@xmpp.domain.com,srvName=_Service1.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
+                    "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            endEntity.setPassword("foo123");
+            endEntityManagementSession.changeUser(internalAdmin, endEntity, false);   
+            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
+            assertNotNull("Failed to create certificate", cert);
+            altNames = CertTools.getSubjectAlternativeName(cert);
+            log.debug("Altnames2: "+altNames);
+            list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            assertEquals(2, list.size());
+            assertTrue(list.contains("foo@a.se"));
+            assertTrue(list.contains("foo@b.se"));
+            name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            assertEquals("http://www.a.se/", name);
+            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            assertEquals("There should be 2 URIs", 2, names.size());
+            assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
+            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            assertEquals("tomas@a.se", name);
+            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            assertEquals(2, list.size());
+            assertTrue(list.contains("www.a.se"));
+            assertTrue(list.contains("www.b.se"));
+            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            assertEquals("10.1.1.1", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            assertEquals("1.1.1.2", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            assertEquals("tomas1@xmpp.domain.com", name);
+            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            assertEquals("_Service1.Name", name);
+        } finally {
+            // Clean up
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
+        }
+        log.trace("<testMultipleAltNames()");
+    }
+
+    /**
+     * Tests multiple instances of one altName, and different types of altNames, where some are only available in EJBCA Enterprise
+     * 
+     */
+    @Test
+    public void testMultipleAltNamesEnterprise() throws Exception {
+        log.trace(">testMultipleAltNamesEnterprise()");
+        log.debug("Is running enterprise: "+enterpriseEjbBridgeSession.isRunningEnterprise());
+        Assume.assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise()); // This test should only run on Enterprise Edition
+        log.debug("Passed Enterprise test, running testMultipleAltNamesEnterprise");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        final String multipleAltNameEndEntityProfileName = "TESTMULALTNAME";
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.UNIFORMRESOURCEID);
+        profile.addField(DnComponents.UNIFORMRESOURCEID);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.RFC822NAME);
+        profile.addField(DnComponents.IPADDRESS);
+        profile.addField(DnComponents.UPN);
+        profile.addField(DnComponents.UPN);
+        profile.addField(DnComponents.REGISTEREDID);
+        profile.addField(DnComponents.XMPPADDR);
+        profile.addField(DnComponents.SRVNAME);
+        profile.addField(DnComponents.FASCN);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName, profile);
+        try {
+            int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
+            int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
+            // Change a user that we know...
+            // FASC-N is an Enterprise only feature for PIV, FIPS 201-2
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,uniformResourceId=urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,registeredID=1.1.1.2,xmppAddr=tomas@xmpp.domain.com,srvName=_Service.Name,fascN=0419d23210d8210c2c1a843085a16858300842108608823210c3e1", 
                     "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
@@ -638,7 +756,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
         }
-        log.trace("<test09TestMultipleAltNames()");
+        log.trace("<testMultipleAltNamesEnterprise()");
     }
 
     /** Tests creating a certificate with QC statement */
