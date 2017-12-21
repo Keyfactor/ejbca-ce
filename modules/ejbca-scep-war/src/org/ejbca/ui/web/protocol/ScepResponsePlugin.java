@@ -72,13 +72,13 @@ public interface ScepResponsePlugin {
      * @throws CAOfflineException if the CA was offline
      * @throws InvalidAlgorithmException f the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
-     * @throws ClientCertificateRenewalException if the last issued certificate hasn't passed half its validity date, or if it wasn't possible to change status for the end entity
+     * @throws CertificateRenewalException if the last issued certificate hasn't passed half its validity date, or if it wasn't possible to change status for the end entity
      */
     public abstract ResponseMessage performOperation(AuthenticationToken authenticationToken, ScepRequestMessage reqmsg,
             ScepConfiguration scepConfig, String alias) throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, IllegalKeyException, SignatureException, CustomCertificateSerialNumberException, SignRequestException,
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CertificateExtensionException, ClientCertificateRenewalException;
+            CertificateExtensionException, CertificateRenewalException;
 
 }
