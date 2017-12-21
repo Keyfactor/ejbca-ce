@@ -49,7 +49,7 @@
                                 styleClass="pure-button ra-button"
                                 disabled="#{empty raSearchEesBean.currentEndEntityDetails.next}" />
                             <h:commandButton action="#{raSearchEesBean.redirectToEdit}" value="#{msg.endentity_page_command_edit}"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities}"
+                                rendered="#{raAccessBean.authorizedToEditEndEntities and raSearchEesBean.apiEditCompatible}"
                                 styleClass="pure-button ra-button ra-searchEndEntityEdit" />
                         </h:panelGroup>
                     </h:panelGroup>

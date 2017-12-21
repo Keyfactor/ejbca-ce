@@ -636,4 +636,11 @@ public class RaSearchEesBean implements Serializable {
                 + currentEndEntityDetails.getUsername();
         return url;
     }
+
+    /**
+     * @return true if the API is compatible with End Entity editing 
+     */
+    public boolean isApiEditCompatible() {
+        return raMasterApiProxyBean.getApiVersion() >= 2;
+    }
 }
