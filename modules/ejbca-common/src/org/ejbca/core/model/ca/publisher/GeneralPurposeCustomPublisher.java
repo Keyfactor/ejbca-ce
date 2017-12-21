@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -267,21 +268,21 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         	log.trace("testConnection, Testing connection");
         }
         // Test if specified commands exist
-        if (crlExternalCommandFileName != null) {
+        if (StringUtils.isNotBlank(crlExternalCommandFileName)) {
             if (!(new File(crlExternalCommandFileName)).exists()) {
                 String msg = intres.getLocalizedMessage("publisher.commandnotfound", crlExternalCommandFileName);
                 log.error(msg);
                 throw new PublisherConnectionException(msg);
             }
         }
-        if (certExternalCommandFileName != null) {
+        if (StringUtils.isNotBlank(certExternalCommandFileName)) {
             if (!(new File(certExternalCommandFileName)).exists()) {
                 String msg = intres.getLocalizedMessage("publisher.commandnotfound", certExternalCommandFileName);
                 log.error(msg);
                 throw new PublisherConnectionException(msg);
             }
         }
-        if (revokeExternalCommandFileName != null) {
+        if (StringUtils.isNotBlank(revokeExternalCommandFileName)) {
             if (!(new File(revokeExternalCommandFileName)).exists()) {
                 String msg = intres.getLocalizedMessage("publisher.commandnotfound", revokeExternalCommandFileName);
                 log.error(msg);
