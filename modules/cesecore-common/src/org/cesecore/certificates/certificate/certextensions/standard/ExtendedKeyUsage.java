@@ -64,7 +64,7 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
 			ret = org.bouncycastle.asn1.x509.ExtendedKeyUsage.getInstance(seq);
 		}
 		if (ret == null) {
-			log.error("ExtendedKeyUsage missconfigured, no oids defined");
+			log.error("ExtendedKeyUsage missconfigured, ExtendedKeyUsage is configured to be used but no OIDs are defined in certificate profile");
 		}
 		return ret;
 	}	
