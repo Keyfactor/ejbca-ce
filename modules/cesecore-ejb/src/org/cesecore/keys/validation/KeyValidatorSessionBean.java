@@ -37,6 +37,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -482,7 +483,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                     admin.toString(), String.valueOf(ca.getCAId()), fingerprint, endEntityInformation.getUsername(), details);
                             performValidationFailedActions(index, message);
                         } else {
-                            final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKey.getEncoded());
+                            final byte[] keyBytes = publicKey.getEncoded();
+                            final String publicKeyEncoded = (keyBytes != null ? new String(Base64.encode(keyBytes)) : "null");
+                            final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKeyEncoded);
                             log.info(message);
                         }
                     } catch (ValidatorNotApplicableException e) {
