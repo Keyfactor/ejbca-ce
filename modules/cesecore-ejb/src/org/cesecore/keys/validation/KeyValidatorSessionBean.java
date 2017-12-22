@@ -774,14 +774,14 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
     
     /**
-     * Calling overloaded method performValidationFailedActions when parameter shortMessage should be null.
+     * Calling overloaded method performValidationFailedActions when parameter shortMessage should be the same as the message.
      * 
      * @param failedAction
      * @param message
      * @throws ValidationException
      */
     private void performValidationFailedActions(final int failedAction, final String message) throws ValidationException {
-        performValidationFailedActions(failedAction, message, null);
+        performValidationFailedActions(failedAction, message, message);
     }
        
     /** 
