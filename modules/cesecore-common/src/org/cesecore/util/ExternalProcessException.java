@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * The external process exception is the base exception to handle (platform dependent) external process calls ({@link ExternalProcessTools}. 
  * 
- * @version $Id: ExternalProcessException.java 17625 2017-12-12 07:12:06Z anjakobs $
+ * @version $Id$
  */
 public class ExternalProcessException extends RuntimeException {
 
