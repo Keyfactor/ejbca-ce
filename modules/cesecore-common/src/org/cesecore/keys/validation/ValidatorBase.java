@@ -238,6 +238,12 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     @Override
     public abstract String getTemplateFile();
 
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
+    public float getLatestVersion(){
+       return LATEST_VERSION;
+    }
+
     @Override
     public void upgrade() {
         if (log.isTraceEnabled()) {
