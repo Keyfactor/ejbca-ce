@@ -13,6 +13,7 @@
 
 package org.cesecore.keys.validation;
 
+import java.io.File;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -259,9 +260,17 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return a string list holding exit code at index 0, and the STDOUT and ERROUT appended.
      * @throws CertificateEncodingException if the certificates could not be encoded.
      */
-    private List<String> runExternalCommandInternal(String externalCommand, final List<Certificate> certificates) throws CertificateEncodingException {
+    private List<String> runExternalCommandInternal(String externalCommand, final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException {
         // White listing scripts paths could be done here, also arguments could be verified here, not to contain subexpressions!
         final String cmd = extractCommand( externalCommand);
+        // Test if specified script file exists (hits files and symbolic links, but no aliases).
+        if (StringUtils.isNotBlank(cmd)) {
+            if (!(new File(cmd)).exists()) {
+                String msg = intres.getLocalizedMessage("process.commandnotfound", cmd);
+                log.error(msg);
+                throw new ExternalProcessException(msg);
+            }
+        }
         final List<String> arguments = extractArguments(externalCommand);
         final List<String> out = new ArrayList<String>();
         try {

@@ -6227,7 +6227,7 @@ publisher "GPCP" and then "Edit" the same. Choose
 <li>Publisher type: General Purpose Custom Publisher</li>
 <li>Properties: </li>
 <ul>
-<li>Full pathname of X publishing script: For example "/fullpathname/exportscript.sh"</li>
+<li>Full pathname of X publishing script: For example "/fullpathname/exportscript.sh" for Unix/Linux or "C:/fullpathname/exportscript.bat" on MS Windows.</li>
 <li>Fail X publishing on script error code: Will treat the publishing as unsuccessful if the script returns with a non-zero error code.</li>
 <li>Fail X publishing on output to stderr: Will treat the publishing as unsuccessful if the script writes anything to standard error.</li>
 <li>Calculate Delta CRL locally: Described below.</li>

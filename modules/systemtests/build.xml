@@ -194,6 +194,8 @@
 		<copy todir="${build.test.dir}/resources" enablemultiplemappings="true">
 			<fileset dir="${resources.dir}" includes="**/*" />
 		</copy>
+		<chmod file="${build.test.dir}/resources/platform/unix/*.sh" perm="744"/>
+		<chmod file="${build.test.dir}/resources/platform/windows/*.bat" perm="744"/>
 	</target>
 
 	<target name="assert-notinproduction">

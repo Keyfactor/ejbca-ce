@@ -62,6 +62,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -362,7 +363,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     public void testValidateCertificteWithExternalCommand() throws Exception {
         log.trace(">testValidateCertificteWithExternalCommand()");
 
-        // ECA-6051 Impl. test.
         // A-1: Check validation of an external call with x.509 RSA public key while IssuancePhase#CERTIFICATE_VALIDATION phase.
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert(
@@ -370,6 +370,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
         ExternalCommandCertificateValidator validator = (ExternalCommandCertificateValidator) createCertificateValidator(ExternalCommandCertificateValidator.class, "external-command-cert-test-1-default", null, null, -1, null, -1,
                 KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileSession.getCertificateProfileId(TEST_CP_NAME));
+        validator.setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
         validator.setAllCertificateProfileIds(true);
         validator.setPhase(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
         validator.setFailOnErrorCode(true);
@@ -382,93 +383,120 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         setKeyValidatorsForCa(testCA, validatorId);
         
         try {
-            // A: Arguments does not contain place holder '%cert%' -> certificate is written to disk.
-            // A:1 Check call of an existing external command.
-            // Command is expanded to: 'echo <path>', command should succeed on MS Windows and Unix/Linux.
-            validator.setExternalCommand("echo");
-            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
-            try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-            } catch (ValidationException e) {
-                fail("External command certificate validator should sucessfully echo the path of the temporary file to STDOUT: " + e.getMessage());
-                e.printStackTrace(System.err);
-            }
+            // A: Arguments does not contain place holder '%cert%' -> certificate is written to disk 
+            // and the full path of temporary file is inserted as first parameter.
             
-            // A:2 Check call of non existing external command.
-            // Command is expanded to: 'th1sC0mmandD0esN0tExist <path>', command should not succeed.
-            validator.setExternalCommand("th1sC0mmandD0esN0tExist");
-            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
-            try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-                fail("External command certificate validator should not call a non existing command sucessfully: " + validator.getExternalCommand());
-            } catch (Exception e) {
-                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
-            }
-            
-            // A:3 Check call of non existing external command (failOnCode = true, failOnError = true).
-            // Command is expanded to: 'th1sC0mmandD0esN0tExist <path>', command should not succeed as well.
-            validator.setExternalCommand("th1sC0mmandD0esN0tExist");
-            validator.setFailOnErrorCode(false);
+            // A:1 Check error / exit behavior.
+            // A:1 Check call of an existing script without additional parameters and exit code 0 (failOnStandardError=false).
+            String cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk_exit_code_0");
+            validator.setExternalCommand(cmd);
             validator.setFailOnStandardError(false);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
                 keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+            } catch (ValidationException e) {
+                fail("External command certificate validator should successfully call an existing script with exit code 0, a log to ERROUT and failOnStandardError=false: " + e.getMessage());
+            }
+            
+//            // A:1b Let the same call fail (failOnStandardError=true, script contains log to ERROUT).
+//            validator.setFailOnStandardError(true);
+//            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+//            try {
+//                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+//                fail("External command certificate validator should not call a an existing command sucessfully with exit code 0 but a log to ERROUT and failOnStandardError=true: " + validator.getExternalCommand());
+//            } catch (Exception e) {
+//                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+//            }
+            
+            // A:1c Check call of an existing script without additional parameters and exit code 1 (failOnErrorCode=false).
+            cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk_exit_code_1");
+            validator.setExternalCommand(cmd);
+            validator.setFailOnStandardError(false);
+            validator.setFailOnErrorCode(false);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+            } catch (IllegalValidityException | ValidationException e) {
+                fail("External command certificate validator should sucessfully call an existing script with exit code 1, a log to ERROUT but failOnStandardError=false and failOnErrorCode=false: " + e.getMessage());
+            }
+            
+            // A:1d Let the same call fail (failOnErrorCode=true).
+            validator.setFailOnErrorCode(true);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+                fail("External command certificate validator should not call a an existing script sucessfully with exit code 1, a log to ERROUT, failOnStandardError=false but failOnErrorCode=true: " + cmd);
+            } catch (Exception e) {
+                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+            }
+            
+            // A:2a Check call of an existing script with additional parameters and exit code 0.
+            cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk") + " param1 0";
+            validator.setExternalCommand(cmd);
+            validator.setFailOnStandardError(false);
+            validator.setFailOnErrorCode(true);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+            } catch (IllegalValidityException | ValidationException e) {
+                fail("External command certificate validator should successfully call a script with exit code 0, a log to ERROUT but failOnStandardError=false and failOnErrorCode=true: " + e.getMessage());
+            }
+            
+            // A:2b Check call of an existing script with additional parameters and exit code > 0.
+            cmd = getFilePathFromClasspath("external_process_tools_with_write_to_disk") + " param1 1";
+            validator.setExternalCommand(cmd);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+                fail("External command certificate validator should not sucessfully call a script with exit code > 0, a log to ERROUT but failOnStandardError=false and failOnErrorCode=true: " + cmd);
+            } catch (Exception e) {
+                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+            }
+            
+            // A:3 Check call of non existing script.
+            cmd = "th1sC0mmandD0esN0tExist";
+            validator.setExternalCommand(cmd);
+            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+            try {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
                 fail("External command certificate validator should not call a non existing command sucessfully even if fail on error code and fail on error out are set to true: " + validator.getExternalCommand());
             } catch (Exception e) {
-                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
-            }
-            
-            // A:4 Check call of existing external command with invalid parameters (failOnCode = false, failOnError = false).
-            // Command is expanded to: '<command> <path> -abcdefghijklmnopqrstuvwxyz', command should succeed because of configuration.
-            if (SystemUtils.IS_OS_WINDOWS) {
-                validator.setExternalCommand("help -abcdefghijklmnopqrstuvwxyz");
-            } else {
-                validator.setExternalCommand("openssl -abcdefghijklmnopqrstuvwxyz");
-            }
-            validator.setFailOnErrorCode(false);
-            validator.setFailOnStandardError(false);
-            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
-            try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-            } catch (Exception e) {
-                fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code and fail on error out are set to false: " + validator.getExternalCommand());
-            }
-            
-            // A:4 Check call of existing external command with invalid parameters (failOnCode = true, failOnError = false).
-            // Command is expanded to: 'help <path> -abcdefghijklmnopqrstuvwxyz', command should succeed because of configuration.
-            validator.setExternalCommand("help -abcdefghijklmnopqrstuvwxyz");
-            validator.setFailOnErrorCode(true);
-            validator.setFailOnStandardError(false);
-            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
-            try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-                fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code is set to true: " + validator.getExternalCommand());
-            } catch (Exception e) {
-                assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
-            }
-            
-            // B: Arguments contains place holder '%cert%' -> certificate is written to STDIN
-            // B:1 Check call of an existing external command.
-            // Command is expanded to: 'cmd.exe /C echo "%cert%" | echo' on MS Windows, '/bin/sh -c echo "%cert%" | echo' on Unix/Linux. Command should succeed.
-            // Fix on MS Windows (echo %cert% | does not work!)
-            validator.setExternalCommand("echo %cert%");
-            validator.setFailOnErrorCode(true);
-            validator.setFailOnStandardError(true);
-            keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
-            try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-            } catch (ValidationException e) {
-                fail("External command certificate validator should sucessfully echo PEM certificate: " + e.getMessage());
-                e.printStackTrace(System.err);
+                 // RollbackException
+                 // assertTrue("An ExternalProcessException must have been thrown.", e instanceof ExternalProcessException);
             }
             
             // Further tests for %cert% will only succeed on Unix/Linux.
-            // ECA-6051 TODO
-            
+            if (!SystemUtils.IS_OS_WINDOWS) {
+                // B:1 Check PEM file in STDIN.
+                // B:1 Check call of an existing script without additional parameters and exit code 0 (failOnStandardError=false).
+                cmd = getFilePathFromClasspath("external_process_tools_dont_write_to_disk") + " param1 0 %cert%";
+                validator.setExternalCommand(cmd);
+                validator.setFailOnErrorCode(true);
+                validator.setFailOnStandardError(false);
+                keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+                try {
+                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                } catch (IllegalValidityException | ValidationException e) {
+                    fail("External command certificate validator should successfully call an existing script with exit code 0, a log to ERROUT but failOnStandardError=false: " + e.getMessage());
+                }
+                
+                // B:1 Check call of an existing script without additional parameters and exit code > 0 (failOnStandardError=false).
+                cmd = getFilePathFromClasspath("external_process_tools_dont_write_to_disk") + " param1 1 %cert%";
+                validator.setExternalCommand(cmd);
+                validator.setFailOnErrorCode(true);
+                validator.setFailOnStandardError(false);
+                keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
+                try {
+                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                    fail("External command certificate validator should not call a non existing command sucessfully if exit code > 0 and failOnErrorCode=true: " + cmd);
+                } catch (IllegalValidityException | ValidationException e) {
+                    assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
+                }
+            }
         } finally {
             CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
-            // Todo: remove certificates
+            // Remove certificates?
         }
         
         log.trace("<testValidateCertificteWithExternalCommand()");
@@ -1008,6 +1036,22 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         return result;
     }
 
+    /**
+     * Gets the platform dependent full path of the file in the class path.
+     * 
+     * @param classpath the class path (or filename -> put inside resources directory).
+     * @return the full path.
+     */
+    public final String getFilePathFromClasspath(final String classpath) {
+        final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
+        final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
+        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
+        final String result = KeyValidatorSessionTest.class.getClassLoader().getResource(path).getPath();
+        if (log.isDebugEnabled()) {
+            log.debug("Get file path by class path: " + classpath + " - " + result);
+        }
+        return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
+    }
     
 //    @Test
 //    public void testImportFromZip() throws Exception {
