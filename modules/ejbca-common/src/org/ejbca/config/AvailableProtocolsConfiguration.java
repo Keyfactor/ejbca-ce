@@ -44,6 +44,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         OCSP("OCSP", "/ejbca/publicweb/status/ocsp"),
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
+        RA_WEB("RA Web", "/ejbca/ra"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
