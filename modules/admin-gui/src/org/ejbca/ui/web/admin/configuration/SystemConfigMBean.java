@@ -984,8 +984,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             return available;
         }
         
-        /** @return user friendly status text. Enabled or disabled */
+        /** @return user friendly status text. 'Enabled', 'Disabled' or 'Unavailable' if module isn't deployed */
         public String getStatus() {
+            if (!isAvailable()) {
+                return "Unavailable";
+            }
             return enabled ? "Enabled" : "Disabled";
         }
     }
