@@ -62,7 +62,6 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -77,7 +76,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -137,8 +135,6 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-    private final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     // Helper objects.
     protected X509CA testCA;
@@ -392,8 +388,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setExternalCommand("echo");
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
-            } catch (IllegalValidityException | ValidationException e) {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+            } catch (ValidationException e) {
                 fail("External command certificate validator should sucessfully echo the path of the temporary file to STDOUT: " + e.getMessage());
                 e.printStackTrace(System.err);
             }
@@ -403,7 +399,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setExternalCommand("th1sC0mmandD0esN0tExist");
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
                 fail("External command certificate validator should not call a non existing command sucessfully: " + validator.getExternalCommand());
             } catch (Exception e) {
                 assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
@@ -416,7 +412,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setFailOnStandardError(false);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
                 fail("External command certificate validator should not call a non existing command sucessfully even if fail on error code and fail on error out are set to true: " + validator.getExternalCommand());
             } catch (Exception e) {
                 assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
@@ -433,7 +429,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setFailOnStandardError(false);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
             } catch (Exception e) {
                 fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code and fail on error out are set to false: " + validator.getExternalCommand());
             }
@@ -445,7 +441,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setFailOnStandardError(false);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
                 fail("External command certificate validator should call an existing command with invalid parameters sucessfully if fail on error code is set to true: " + validator.getExternalCommand());
             } catch (Exception e) {
                 assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
@@ -460,8 +456,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setFailOnStandardError(true);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
-            } catch (IllegalValidityException | ValidationException e) {
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+            } catch (ValidationException e) {
                 fail("External command certificate validator should sucessfully echo PEM certificate: " + e.getMessage());
                 e.printStackTrace(System.err);
             }
