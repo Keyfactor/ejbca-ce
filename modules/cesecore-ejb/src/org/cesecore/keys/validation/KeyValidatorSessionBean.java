@@ -503,8 +503,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
     
     @Override
-    public void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca, final EndEntityInformation endEntityInformation,
-            final X509Certificate certificate) throws ValidationException {
+    public void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
+            final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException {
         if (log.isDebugEnabled()) {
             log.debug("Validate certificate for phase " + phase);
         }
@@ -517,7 +517,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 if (baseValidator != null && baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
                     validator = (CertificateValidator) baseValidator;
                     name = validator.getProfileName();
-                    if (phase != validator.getPhase()) {
+                    if (phase.getIndex() != validator.getPhase()) {
                         continue;
                     }
                     if (validator instanceof CertificateProfileAwareValidator

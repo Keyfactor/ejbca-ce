@@ -457,7 +457,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 // Validate ValidatorPhase.CERTIFICATE_VALIDATION (X.509 CA only)
                 if (CAInfo.CATYPE_X509 == ca.getCAType()) {
                     try {
-                        keyValidatorSession.validateCertificate(admin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), ca, endEntityInformation, (X509Certificate) cert);
+                        keyValidatorSession.validateCertificate(admin, IssuancePhase.CERTIFICATE_VALIDATION, ca, endEntityInformation, (X509Certificate) cert);
                     } catch (ValidationException e) {
                         throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
                     }

@@ -16,7 +16,6 @@ import java.security.cert.X509Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
@@ -40,6 +39,6 @@ public interface CertificateValidationDomainService {
      * {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are
      *  stored in the cause, and message is null.
      */
-    void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca,
-            final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException, IllegalValidityException;
+    void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
+            final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException;
 }
