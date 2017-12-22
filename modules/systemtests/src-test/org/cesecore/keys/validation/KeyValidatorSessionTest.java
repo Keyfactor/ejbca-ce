@@ -62,7 +62,6 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -416,7 +415,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
                 keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-            } catch (IllegalValidityException | ValidationException e) {
+            } catch (Exception e) {
                 fail("External command certificate validator should sucessfully call an existing script with exit code 1, a log to ERROUT but failOnStandardError=false and failOnErrorCode=false: " + e.getMessage());
             }
             
@@ -438,7 +437,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
                 keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
-            } catch (IllegalValidityException | ValidationException e) {
+            } catch (Exception e) {
                 fail("External command certificate validator should successfully call a script with exit code 0, a log to ERROUT but failOnStandardError=false and failOnErrorCode=true: " + e.getMessage());
             }
             
@@ -458,7 +457,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             validator.setExternalCommand(cmd);
             keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
             try {
-                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
                 fail("External command certificate validator should not call a non existing command sucessfully even if fail on error code and fail on error out are set to true: " + validator.getExternalCommand());
             } catch (Exception e) {
                  // RollbackException
@@ -475,8 +474,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 validator.setFailOnStandardError(false);
                 keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
                 try {
-                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
-                } catch (IllegalValidityException | ValidationException e) {
+                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
+                } catch (Exception e) {
                     fail("External command certificate validator should successfully call an existing script with exit code 0, a log to ERROUT but failOnStandardError=false: " + e.getMessage());
                 }
                 
@@ -487,9 +486,9 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
                 validator.setFailOnStandardError(false);
                 keyValidatorProxySession.changeKeyValidator(internalAdmin, validator);
                 try {
-                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION.getIndex(), testCA, testUser, certificate);
+                    keyValidatorProxySession.validateCertificate(internalAdmin, IssuancePhase.CERTIFICATE_VALIDATION, testCA, testUser, certificate);
                     fail("External command certificate validator should not call a non existing command sucessfully if exit code > 0 and failOnErrorCode=true: " + cmd);
-                } catch (IllegalValidityException | ValidationException e) {
+                } catch (Exception e) {
                     assertTrue("A ValidationException must have been thrown.", e instanceof ValidationException);
                 }
             }
