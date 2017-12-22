@@ -166,8 +166,8 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public void validateCertificate(AuthenticationToken authenticationToken, int phase, CA ca, EndEntityInformation endEntityInformation,
-            X509Certificate certificate) throws ValidationException, IllegalValidityException {
+    public void validateCertificate(AuthenticationToken authenticationToken, IssuancePhase phase, CA ca, EndEntityInformation endEntityInformation,
+            X509Certificate certificate) throws ValidationException {
         keyValidatorSession.validateCertificate(authenticationToken, phase, ca, endEntityInformation, certificate);
     }
 

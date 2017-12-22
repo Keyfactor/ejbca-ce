@@ -179,9 +179,12 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
      * @param certificate the certificate to validate
-     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical errors are stored in the cause, and message is null.
+     * @throws ValidationException if the validation failed. If the validation failed action is set to abort certificate issuance 
+     *          {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical 
+     *          errors are stored in the cause, and message is null.
      */
-    void validateCertificate(final AuthenticationToken authenticationToken, final int phase, final CA ca, final EndEntityInformation endEntityInformation, final X509Certificate certificate)  throws ValidationException, IllegalValidityException;
+    void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
+            final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException;
 
     /** Removes the key validator data if it is not referenced by a CA.
      * If the validatorId does not exist, the method returns without doing anything.
