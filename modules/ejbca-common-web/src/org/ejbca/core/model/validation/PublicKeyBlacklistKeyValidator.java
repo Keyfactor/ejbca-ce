@@ -119,11 +119,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     }
     
     @Override
-    public float getLatestVersion() {
-        return LATEST_VERSION;
-    }
-
-    @Override
     public void upgrade() {
         super.upgrade();
         if (log.isTraceEnabled()) {
