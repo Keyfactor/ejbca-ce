@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
@@ -282,6 +283,20 @@ public final class ExternalProcessTools {
             }
         }
         return file;
+    }
+    
+    /**
+     * Extracts the exit code in the list (at index 0 prefixed with #EXIT_CODE_PREFIX).
+     * @param out the output of the external process.
+     * 
+     * @return the exit code.
+     */
+    public static final Integer extractExitCode(final List<String> out) {
+        Integer result = null;
+        if (CollectionUtils.isNotEmpty(out)) {
+            result = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
+        }
+        return result;
     }
 
     /**

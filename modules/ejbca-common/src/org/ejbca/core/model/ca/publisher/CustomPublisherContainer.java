@@ -118,6 +118,7 @@ public class CustomPublisherContainer extends BasePublisher {
     public Properties getProperties() throws IOException {
         final Properties properties = new Properties();
         final String propertyData = getPropertyData();
+        // Re-Factor: Here the strings are escaped: \\ -> \; \n -> new line, etc.
         if (propertyData != null) {
             properties.load(new ByteArrayInputStream(propertyData.getBytes()));
         }

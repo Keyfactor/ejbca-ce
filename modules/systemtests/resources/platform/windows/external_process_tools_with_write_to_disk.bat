@@ -1,3 +1,4 @@
+@ECHO OFF
 REM /*************************************************************************
 REM  *                                                                       *
 REM  *  CESeCore: CE Security Core                                           *
@@ -14,6 +15,7 @@ REM
 REM Test file for an external script logging to ERROUT and returning exit code 1. Parameter at position 1 is the full path of the certificate file.
 REM Parameter 3 must be integer and is returned as exit code.
 
+ECHO "External script called with full path of certificate file as parameter 1"
 ECHO "Parameter: %1"
 ECHO "Parameter: %2"
 ECHO "Parameter: %3"
