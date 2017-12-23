@@ -362,7 +362,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     public void testValidateCertificteWithExternalCommand() throws Exception {
         log.trace(">testValidateCertificteWithExternalCommand()");
 
-        // A-1: Check validation of an external call with x.509 RSA public key while IssuancePhase#CERTIFICATE_VALIDATION phase.
+        // Check validation of an external call with x.509 RSA public key while IssuancePhase#CERTIFICATE_VALIDATION phase.
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert(
                 "C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand", 365, null,
