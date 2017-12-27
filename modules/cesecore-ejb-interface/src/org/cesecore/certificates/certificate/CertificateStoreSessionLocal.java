@@ -79,7 +79,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
-     * @return null of no data for the specified fingerprint exists
+     * @return the sought certificate, or null if no data for the specified fingerprint exists
      */
     CertificateDataWrapper getCertificateData(final String fingerprint);
 
