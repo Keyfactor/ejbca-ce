@@ -1481,14 +1481,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final byte[] requestBody) throws NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtException = null;
-        
+        Integer apiVersion = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion()>=1) {
+            if (apiVersion == null) {
+                apiVersion = raMasterApi.getApiVersion();
+            }           
+            if (raMasterApi.isBackendAvailable() && apiVersion >= 2) {
                 try {
-                    byte[] result;
                     try {
-                        result = raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
-                        return result;
+                        return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
                     } catch (NoSuchAliasException e) {
                         //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
                         //later though.
