@@ -2641,7 +2641,7 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
 <section name="Modular Protocols Configuration">
 <p>
 EJBCA supports multiple protocols for certificate enrollment, status and web services. It might however be desirable to disable some of these for an EJBCA instance in order to reduce the attack surface. 
-E.g. an instance serving as an OCSP responder would not likely have any use for enrollment protocols, hence they can be disabled for that instance. Any requests to a disabled protocol or service are 
+E.g. an instance serving as an OCSP responder would not likely have any use for enrollment protocols, hence they can be disabled for that instance. Any request to a disabled protocol or service is 
 rejected immediately and an error code is returned.
 </p>
 <subsection name="Local Configuration">
