@@ -5417,18 +5417,18 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 		<subsection name="External Script Certificate Validator">
 			<p>
 				With this validator an external script can be called for the generated certificate. The exit code of the external call determines if validation has failed.
-				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course the user running EJBCA's 
+				This can be used not only to validate certificate criterias, but may be used to call other external commands or scripts. Of course the user running EJBCA's 
 				application server needs OS file system permissions to do so.
 			</p>
 			<p>
 				First token of the "External command" field must be the external command or script called, followed by its arguments, all separated by spaces.
 				<br></br>
-				The certificate is stored as temporary file on the EJBCA server an its full path is used as first argument. All subsequent arguments are shifted to the right.
+				The certificate is stored as a temporary file on the EJBCA server, and its full path is used as first argument. All subsequent arguments are shifted to the right.
 				<br></br>
-				If the place holder '%cert%' is used as any argument at any position, the certificate is not stored on the EJBCA server file system, instead the place holder is removed and the PEM encoded certificate is echoed into the STDIN of the called external command or script.
+				If the placeholder '%cert%' is used as an argument at any position, the certificate is not stored on the EJBCA server file system: instead the placeholder is removed and the PEM encoded certificate is fed to the external command or script via STDIN.
 			</p>
 			<note>
-					The platform for MS Windows and Unix/Linux is auto-detected and a default shell command and shell options are set.'
+					The platform for MS Windows and Unix/Linux is auto-detected and the default shell command and shell options are set:
 					<ul>
 						<li>MS Windows -> 'cmd.exe /C'</li>
 						<li>Unix/Linux -> '/bin/sh -c'</li>
@@ -5437,24 +5437,24 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			<p>
 				See the following samples for external commands for Unix/Linux platforms:
 			</p>
-<source>
-/usr/local/opt/script.sh -param1 -param2
-/usr/local/opt/script.sh -param1 -param2 %cert%
-openssl x509 -text -noout %cert%
-</source>
+			<source>
+				/usr/local/opt/script.sh -param1 -param2
+				/usr/local/opt/script.sh -param1 -param2 %cert%
+				openssl x509 -text -noout %cert%
+			</source>
 		</subsection>
 	</subsection>
 	<subsection name="Common Validator Settings">
 		<p>
-			To control the behaviour while certificate issuance, for every validator the following base restrictions can be applied:
+			To control the behaviour during certificate issuance, for every validator the following base restrictions can be applied:
 		</p>
 		<ul>
-			<li>Description - a general decription of the Validator, not used for any validation purposes.</li>
-				<li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
+			<li>Description - a general description of the Validator, not used for any validation purposes.</li>
+			<li>Apply for Certificate Profiles - Validate keys for these certificate profiles only. If nothing is selected in this list, no validation will be performed.</li>
 			<li>Apply for all Certificate Profiles - Validate keys for all certificate profiles, the list above will be ignored.</li>
-			<li>If Validation failed - Define behaviour if key validation fails (i.e. abort issuance, log error message to trigger monitoring systems, etc.). 
+			<li>If Validation failed - Define behaviour if key validation fails (e.g. abort issuance, log error message to trigger monitoring systems, etc.). 
 				All failed issuance also adds a record in the security audit log.</li>
-			<li>If Validator was not applicable: - Define behaviour if the input is not applicable for the selected validator (i.e. abort issuance, log error 
+			<li>If Validator was not applicable - Define behaviour if the input is not applicable for the selected validator (e.g. abort issuance, log error 
 				message to trigger monitoring systems, etc.). This handles the case when for example a CSR with ECC keys is passed to an RSA key validator.</li>
 		</ul>
 	</subsection>
