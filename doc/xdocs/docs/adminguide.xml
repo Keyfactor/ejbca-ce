@@ -5418,7 +5418,7 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			<p>
 				With this validator an external script can be called for the generated certificate. The exit code of the external call determines if validation has failed.
 				This can be used not only to validate certificate criterias, but may be used to call other external command or scripts. Of course the user running EJBCA's 
-				application server needs OS file system permittions to do so.
+				application server needs OS file system permissions to do so.
 			</p>
 			<p>
 				First token of the "External command" field must be the external command or script called, followed by its arguments, all separated by spaces.
