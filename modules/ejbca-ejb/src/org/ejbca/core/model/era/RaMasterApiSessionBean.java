@@ -1182,7 +1182,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // query.unwrap(org.hibernate.Query.class).getQueryString()
             // We don't have access to hibernate when building this class though, all querying should be moved to the ejbca-entity package.
             // See ECA-5341
-            String queryString = e.getQuery().toString();
+            final Query q = e.getQuery();
+            String queryString = null;
+            if (q != null) {
+                queryString = q.toString();
+            }
 //            try {
 //                queryString = e.getQuery().unwrap(org.hibernate.Query.class).getQueryString();
 //            } catch (PersistenceException pe) {
