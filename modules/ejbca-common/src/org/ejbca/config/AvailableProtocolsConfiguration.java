@@ -17,13 +17,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cesecore.configuration.ConfigurationBase;
 
 
 /**
- * This file handles configuration of available protocols
+ * Handles configuration of protocols supporting enable / disable
  *
  * @version $Id$
  *
@@ -37,6 +36,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      * Protocols currently supporting enable/disable configuration by EJBCA
      */
     public enum AvailableProtocols {
+        // If you add a protocol > 6.11.0 it should be disabled by default
         CERT_STORE("Certstore", "/certificates"),
         CMP("CMP", "/ejbca/publicweb/cmp"),
         CRL_STORE("CRLstore", "/crls"),
@@ -82,24 +82,9 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         }
     };
 
-    /**
-     * Initializes the configuration. All protocols will be enabled by default
-     */
+    /** Initializes the configuration */
     public AvailableProtocolsConfiguration() {
         super();
-        if(!isDataInitialized()) {
-            initialize();
-        }
-    }
-
-    /** All protocols will be enabled by default */
-    private void initialize() {
-        for (int i = 0; i < AvailableProtocols.values().length; i++) {
-            boolean defaultValue = true;
-            setProtocolStatus(AvailableProtocols.values()[i].getName(), defaultValue);
-        }
-        // All protocols added > 6.11.0 should be set to false (disabled) by default
-        setProtocolStatus(AvailableProtocols.EST.getName(), false);
     }
 
     /**
@@ -109,6 +94,11 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      */
     public boolean getProtocolStatus(String protocol) {
         Boolean ret = (Boolean)data.get(protocol);
+        // All protocols added > 6.11.0 should be disabled by default
+        if (ret == null && protocol.equals(AvailableProtocols.EST.getName())) {
+            setProtocolStatus(AvailableProtocols.EST.getName(), false);
+            return false;
+        }
         return ret == null ? true : ret;
     }
 
@@ -116,19 +106,11 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         data.put(protocol, status);
     }
 
-    private boolean isDataInitialized() {
-        boolean ret = !getAllProtocolsAndStatus().isEmpty();
-        return ret;
-    }
-
+    /** @return map containing the current status of all configurable protocols. */
     public LinkedHashMap<String, Boolean> getAllProtocolsAndStatus() {
         LinkedHashMap<String, Boolean> protocolStatusMap = new LinkedHashMap<>();
-
-        for (Entry<Object, Object> entry : data.entrySet()) {
-            if (entry.getKey().equals("version")) {
-                continue;
-            }
-            protocolStatusMap.put((String)entry.getKey(), (Boolean)entry.getValue());
+        for (AvailableProtocols protocol : AvailableProtocols.values()) {
+            protocolStatusMap.put(protocol.getName(), getProtocolStatus(protocol.getName()));
         }
         return protocolStatusMap;
     }
