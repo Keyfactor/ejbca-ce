@@ -2638,15 +2638,15 @@ Similarly the column serialNumber column of the table KeyRecoveryData matches th
     </subsection>
 </section>
 
-<section name="Modular Protocol Configuration">
+<section name="Modular Protocols Configuration">
 <p>
 EJBCA supports multiple protocols for certificate enrollment, status and web services. It might however be desirable to disable some of these for an EJBCA instance in order to reduce the attack surface. 
-E.g. an instance serving as an OCSP responder would not likely have any use for enrollment protocols, hence they can be disabled for that instance. Any request to a disabled protocol / service will be 
+E.g. an instance serving as an OCSP responder would not likely have any use for enrollment protocols, hence they can be disabled for that instance. Any requests to a disabled protocol or service are 
 rejected immediately and an error code is returned.
 </p>
 <subsection name="Local Configuration">
 <p>
-The following protocols / services can be disabled:
+The following protocols and services can be disabled:
 <ul>
     <li>Certstore 	- Certificate store servlet /certificates</li>
     <li>CMP 		- CMP protocol servlet /ejbca/publicweb/cmp</li>
@@ -2656,15 +2656,15 @@ The following protocols / services can be disabled:
     <li>Public Web 	- All functionality of public web /ejbca</li>
     <li>SCEP 		- SCEP protocol servlet /ejbca/publicweb/apply/scep</li>
     <li>Webdist 	- Web dist servlet /ejbca/publicweb/webdist</li>
-    <li>Web Service - All web services calls requiring authentication /ejbca/ejbcaws</li>
+    <li>Web Service - All web service calls requiring authentication /ejbca/ejbcaws</li>
 </ul> 
 </p>
 <p>
-All configurable protocols and services added &lt; EJBCA 6.11.0 enabled by default. Protocols can be disabled or re-enabled from the Admin GUI:
+All configurable protocols and services added &lt; EJBCA 6.11.0 are enabled by default. Protocols can be disabled or re-enabled from the Admin GUI:
 <ol>
     <li>System Configuration</li>
     <li>Select the tab 'Protocol Configuration'</li>
-    <li>Enable or disable the desired protocol / service</li>
+    <li>Enable or disable the desired protocol or service</li>
 </ol>
 </p>
 </subsection>
@@ -2672,7 +2672,8 @@ All configurable protocols and services added &lt; EJBCA 6.11.0 enabled by defau
 <p>
 Each instance can disable protocols locally as described above. Additionally, an administrator may disable protocols for each outgoing Peer connection using access rules, hence making it possible to control protocol 
 access of remote instances. Disabling a protocol locally or for a Peer connection will always override an enabled configuration. E.g. if an external RA has web services disabled locally and the outgoing Peer 
-connection from the CA has configured web services as 'Allowed'. Any web service call to the external RA would be rejected. Currently, only external instances using RA proxying and protocols supporting it (CMP, EST and Web services) are remotely configurable using acces rules, i.e. external RAs. For a Peer connected VA instance, protocols may only be disabled locally on that instance.
+connection from the CA has configured web services as 'Allowed'. Any web service call to the external RA would be rejected. Currently, only external instances using RA proxying and protocols supporting it (CMP, EST 
+and Web services) are remotely configurable using access rules, i.e. external RAs. For a Peer connected VA instance, protocols may only be disabled locally on that instance.
 </p>
 <p>
 Protocols for an outgoing Peer connection can be configured from in the Admin GUI:
@@ -2681,8 +2682,8 @@ Protocols for an outgoing Peer connection can be configured from in the Admin GU
     <li>Select 'Authorized Requests' for the outgoing Peer (the Peer has to be enabled first)</li>
     <li>Under 'Process requests from protocols', check protocols to enable, uncheck protocols to disabled and save</li>
 </ol>
-All protocols implemented &lt; EJBCA 6.11.0 are enabled by default for outgoing Peers. The access rules /protocol/* only applies to Peer connector roles. Denying a protocol for a specific administrator
-will take no effect.
+All protocols implemented &lt; EJBCA 6.11.0 are enabled by default for outgoing Peers. The access rules for /protocol/* only apply to Peer connector roles. Denying a protocol for a specific administrator 
+has no effect.
 </p>
 </subsection>
 </section>
