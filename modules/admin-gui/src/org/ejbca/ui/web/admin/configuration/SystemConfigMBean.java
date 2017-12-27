@@ -987,9 +987,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         /** @return user friendly status text. 'Enabled', 'Disabled' or 'Unavailable' if module isn't deployed */
         public String getStatus() {
             if (!isAvailable()) {
-                return getEjbcaWebBean().getText("PC_ACTION_UNAVAILABLE");
+                return getEjbcaWebBean().getText("PC_STATUS_UNAVAILABLE");
             }
-            return enabled ? getEjbcaWebBean().getText("PC_ACTION_ENABLE") : getEjbcaWebBean().getText("PC_ACTION_DISABLE");
+            return enabled ? getEjbcaWebBean().getText("PC_STATUS_ENABLED") : getEjbcaWebBean().getText("PC_STATUS_DISABLED");
         }
     }
 
