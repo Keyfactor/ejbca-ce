@@ -1340,8 +1340,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      * @return active logo if crypto token is active, offline logo otherwise.
      */
     private String updateGenericKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
-        if (cryptoTokenInfo.isActive())
+        if (cryptoTokenInfo.isActive()) {
             return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+        }
         return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
     }
 
@@ -1355,8 +1356,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      */
     private String updateOcspKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
-            if (hasOcspCacheEntry(currentKeyBindingInfo.getCertificateId()))
+            if (hasOcspCacheEntry(currentKeyBindingInfo.getCertificateId())) {
                 return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
+            }
             return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
         } else {
             return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
@@ -1365,18 +1367,20 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /**
      * Checks if the ocsp key binding is in cache.
-     * @param fingerprint
-     * @return true if ocsp key binding exists in cache, false otherwise.
+     * @param fingerprint the fingerprint of the sought certificate
+     * @return true if an ocsp key binding exists in the cache, false otherwise.
      */
     private boolean hasOcspCacheEntry(final String fingerprint) {
         final CertificateDataWrapper certificateData = certificateStoreSession.getCertificateData(fingerprint);
-        final Certificate certificate = certificateData.getCertificate();
-
-        if (certificate instanceof X509Certificate) {
-            List<CertificateID> certIdList = OcspSigningCache.getCertificateIDFromCertificate((X509Certificate) certificate);
-            for (final CertificateID certificateID : certIdList) {
-                if (OcspSigningCache.INSTANCE.getEntry(certificateID) != null)
-                    return (OcspSigningCache.INSTANCE.getEntry(certificateID).getOcspKeyBinding() != null);
+        if (certificateData != null) {
+            final Certificate certificate = certificateData.getCertificate();
+            if (certificate instanceof X509Certificate) {
+                List<CertificateID> certIdList = OcspSigningCache.getCertificateIDFromCertificate((X509Certificate) certificate);
+                for (final CertificateID certificateID : certIdList) {
+                    if (OcspSigningCache.INSTANCE.getEntry(certificateID) != null) {
+                        return (OcspSigningCache.INSTANCE.getEntry(certificateID).getOcspKeyBinding() != null);
+                    }
+                }
             }
         }
         return false;
