@@ -256,13 +256,6 @@ public class ScepServlet extends HttpServlet {
     } // doGet
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.SCEP.getName());
-        if (!protocolEnabled) {
-            log.info("SCEP Protocol is disabled");
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP is disabled");
-            return;
-        }
         String alias = getAlias(pathInfo);
         if(alias == null) {
             log.info("Wrong URL format. The SCEP URL should look like: " +

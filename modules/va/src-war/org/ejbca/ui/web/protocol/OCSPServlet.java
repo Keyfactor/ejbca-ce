@@ -79,16 +79,9 @@ public class OCSPServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.OCSP.getName());
         try {
             if (log.isTraceEnabled()) {
                 log.trace(">doGet()");
-            }
-            if (!protocolEnabled) {
-                log.info("OCSP Protocol is disabled");
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "OCSP is disabled");
-                return;
             }
             final String keyRenewalSignerDN =  request.getParameter("renewSigner");
             final boolean performKeyRenewal = keyRenewalSignerDN!=null && keyRenewalSignerDN.length()>0;           
