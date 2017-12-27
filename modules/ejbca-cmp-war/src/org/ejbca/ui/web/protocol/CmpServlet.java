@@ -70,13 +70,11 @@ public class CmpServlet extends HttpServlet {
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
-        boolean protocolEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).
-                getProtocolStatus(AvailableProtocols.CMP.getName());
         boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raCmpAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP);
         try {
-            if (!(protocolEnabled && isProtocolAuthorized)) {
-                log.info("Not authorized to CMP Protocol");
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "CMP is disabled");
+            if (!isProtocolAuthorized) {
+                log.info("CMP Protocol not authorized for this Peer");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "CMP Protocol not authorized for this Peer");
                 return;
             }
             final String alias = getAlias(request.getPathInfo());
