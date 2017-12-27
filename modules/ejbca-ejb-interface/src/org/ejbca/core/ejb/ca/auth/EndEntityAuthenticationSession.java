@@ -34,7 +34,7 @@ public interface EndEntityAuthenticationSession {
      * @return EndEntityInformation, never returns null
      *
      * @throws NoSuchEndEntityException if the user does not exist.
-     * @throws AuthStatusException if the end entity's status is not on in which it may generate a certificate
+     * @throws AuthStatusException if the end entity's status is not one of NEW, FAILED, IN_PROCESS or KEY_RECOVERY
      * @throws AuthLoginException If the password is incorrect.
      */
     EndEntityInformation authenticateUser(AuthenticationToken admin, String username, String password)
