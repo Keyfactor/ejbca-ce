@@ -30,13 +30,13 @@ import org.cesecore.configuration.ConfigurationBase;
 
 
 /**
- * This is a  class containing Est configuration parameters.
+ * This is a  class containing EST configuration parameters.
  *
- * @version $Id: EstConfiguration.java 25659 2017-04-05 12:19:30Z aveen4711 $
+ * @version $Id$
  */
 public class EstConfiguration extends ConfigurationBase implements Serializable {
 
-    private static final long serialVersionUID = -2787354158199916828L;
+    private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(EstConfiguration.class);
     
@@ -150,61 +150,61 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     }
 
     /**
-     * Get wheter we require a certificate for authentication
+     * @param alias the alias to check for
+     * 
+     * @return true if we require a certificate for authentication
      */
     public boolean getRequireCert(String alias) {
         String key = alias + "." + CONFIG_REQCERT;
         return StringUtils.equalsIgnoreCase(getValue(key, alias), "true");
     }
-    /**
-     * Set wheter we require a certificate for authentication
-     */
+
     public void setRequireCert(String alias, boolean reqCert) {
         String key = alias + "." + CONFIG_REQCERT;
         setValue(key, Boolean.toString(reqCert), alias);
     }
 
     /**
-     * Get wheter we require a username for authentication
+     * @param alias the alias to check for
+     * 
+     * @return username if any, or null if none
      */
-    public String getRequireUsername(String alias) {
+    public String geUsername(String alias) {
         String key = alias + "." + CONFIG_REQUSERNAME;
         return getValue(key, alias);
     }
-    /**
-     * Set wheter we require a username for authentication
-     */
-    public void setRequireUsername(String alias, String username) {
+
+    public void setUsername(String alias, String username) {
         String key = alias + "." + CONFIG_REQUSERNAME;
         setValue(key, username, alias);
     }
 
     /**
-     * Get wheter we require a password for authentication
+     * @param alias the alias to check for
+     * 
+     * @return password if any, or null if none
      */
-    public String getRequirePassword(String alias) {
+    public String getPassword(String alias) {
         String key = alias + "." + CONFIG_REQPASSWORD;
         return getValue(key, alias);
     }
-    /**
-     * Set wheter we require a password for authentication
-     */
-    public void setRequirePassword(String alias, String password) {
+
+    public void setPassword(String alias, String password) {
         String key = alias + "." + CONFIG_REQPASSWORD;
         setValue(key, password, alias);
     }
 
     /**
-     * Get wether we're allowed to reenroll with the same key
+     * @param alias the alias to check for
+     * 
+     * @return true if allowed to reenroll with the same key
      */
     public boolean getKurAllowSameKey(String alias) {
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
-    /**
-     * Set wether we're allowed to reenroll with same key
-     */
+
     public void setKurAllowSameKey(String alias, boolean allowSameKey) {
         String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         setValue(key, Boolean.toString(allowSameKey), alias);
@@ -286,8 +286,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                 log.debug("EST alias '" + alias + "' already exists.");
             }
             return;
-        }
-        
+        }     
         initialize(alias);
         aliases.add(alias);
         data.put(ALIAS_LIST, aliases);
