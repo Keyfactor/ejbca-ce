@@ -1166,6 +1166,10 @@ public class EjbcaWebBean implements Serializable {
         return authorizedEEProfileNamesAndIds;
     }
 
+    public Map<String, String> getAuthorizedEEProfilesAndIdsNoKeyId(final String endEntityAccessRule) {
+        return new TreeMap<>(informationmemory.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
+    }
+
     /**
      * Retrieve a collection of available certificate authority ids based on end entity profile id. The returned list may
      * contain an additional "KeyID" option which allows the end user to specify the CA in the CMP request.
@@ -1227,6 +1231,12 @@ public class EjbcaWebBean implements Serializable {
         return addKeyIdAndSort(certificateProfiles);
     }
 
+    public Collection<String> getCertificateProfilesNoKeyId(final String endEntityProfileId) {
+        final Collection<String> certificateProfiles = getAvailableCertProfilessOfEEProfile(endEntityProfileId);
+        certificateProfiles.remove(CmpConfiguration.PROFILE_USE_KEYID);
+        return certificateProfiles;
+    }
+
     private Collection<String> addKeyIdAndSort(final List<String> entries) {
         // No point in adding KeyId if there are no options to choose from
         if (entries.size() > 1) {
@@ -1262,7 +1272,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return estConfigurationPresent.booleanValue();
     }
-    
+
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();

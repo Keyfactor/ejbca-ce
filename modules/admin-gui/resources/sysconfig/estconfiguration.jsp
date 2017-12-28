@@ -219,15 +219,15 @@
 
 							// require cert
 							value = request.getParameter(CHECKBOX_EST_REQUIRECERT);
-							estConfigClone.setRequireCert(alias, value != null);
+							estConfigClone.setCert(alias, value != null);
 
 							// require username
 							value = request.getParameter(TEXTFIELD_EST_REQUIREUSERNAME);
-							estConfigClone.setRequireUsername(alias, value == null ? "" : value);
+							estConfigClone.setUsername(alias, value == null ? "" : value);
 
 							// require password
 							value = request.getParameter(TEXTFIELD_EST_REQUIREPASSWORD);
-							estConfigClone.setRequirePassword(alias, value == null ? "" : value);
+							estConfigClone.setPassword(alias, value == null ? "" : value);
 
 							// allow reenroll with same key
 							value = request.getParameter(CHECKBOX_EST_KUR_USESAMEKEYS);
