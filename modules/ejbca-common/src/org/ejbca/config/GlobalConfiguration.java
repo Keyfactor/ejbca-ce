@@ -96,7 +96,7 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
 
-    private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = true;
+    private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = false;
     
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
 
@@ -609,7 +609,7 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
     		}
     		if(data.get(ENABLEEXTERNALSCRIPTS) == null) {
-                data.put(ENABLEEXTERNALSCRIPTS, Boolean.TRUE);
+                data.put(ENABLEEXTERNALSCRIPTS, DEFAULTENABLEEXTERNALSCRIPTS);
     		}
     		if(data.get(ENABLEICAOCANAMECHANGE) == null) {
                 data.put(ENABLEICAOCANAMECHANGE, Boolean.FALSE);
