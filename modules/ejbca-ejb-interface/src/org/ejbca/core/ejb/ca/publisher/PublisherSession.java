@@ -79,6 +79,34 @@ public interface PublisherSession {
      */
     void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException, AuthorizationDeniedException;
 
+    /**
+     * Adds a publisher to the database.
+     * 
+     * @param admin AuthenticationToken of admin
+     * @param name the name of the publisher to add.
+     * @param publisher the publisher to add
+     * @return the publisher ID as added
+     * 
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
+    int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
+
+    /**
+     * Adds a publisher with the same content as the original.
+     * @throws PublisherDoesntExistsException if publisher does not exist
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     * @throws PublisherExistsException if publisher already exists.
+     */
+    void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException;
+
+    /**
+     * Renames a publisher.
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
+    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
+    
     /** Updates publisher data.
      *  
      * @param admin AuthenticationToken of admin.

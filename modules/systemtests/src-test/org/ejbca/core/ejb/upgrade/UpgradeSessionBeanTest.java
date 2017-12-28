@@ -75,11 +75,15 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -103,6 +107,7 @@ public class UpgradeSessionBeanTest {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberDataProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
@@ -864,6 +869,38 @@ public class UpgradeSessionBeanTest {
             deleteRole(null, roleNameSuperAdmin);
             deleteRole(null, roleNameLowAccess);
         }     
+    }
+    
+    @Test
+    public void testExternalScriptsSetting() throws AuthorizationDeniedException, PublisherExistsException {
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        boolean savedEnableExternalScripts = gc.getEnableExternalScripts();
+        gc.setEnableExternalScripts(true);
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, gc);
+        
+        try {
+            final CustomPublisherContainer cpc = new CustomPublisherContainer();
+            cpc.setClassPath(GeneralPurposeCustomPublisher.class.getName());
+            cpc.setPropertyData(GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME + "=/opt/example.sh");
+            cpc.setDescription("Description ABC 123");
+            cpc.setName(TESTCLASS);
+            publisherSession.addPublisher(alwaysAllowtoken, TESTCLASS, cpc);
+            
+            GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedFromVersion("6.10.1");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            upgradeSession.upgrade(null, "6.11.0", false);
+            
+            globalConfigSession.flushConfigurationCache(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            assertTrue("External scripts should have been enabled when a General Purpose Custom Publisher is present.", gc.getEnableExternalScripts());
+        } finally {
+            publisherSession.removePublisher(alwaysAllowtoken, TESTCLASS);
+            
+            gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            gc.setEnableExternalScripts(savedEnableExternalScripts);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, gc);
+        }
     }
     
     
