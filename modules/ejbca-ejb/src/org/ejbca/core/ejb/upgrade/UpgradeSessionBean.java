@@ -111,6 +111,8 @@ import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.upgrade.BasePublisherConverter;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
@@ -1282,6 +1284,34 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS, Role.STATE_ALLOW);
                 roleDataSession.persistRole(role);
             }
+        }
+        
+        log.debug("migrateDatabase6110: Checking if external scripts should remain enabled.");
+        boolean enableScripts = false;
+        final Map<Integer, BasePublisher> publishers = publisherSession.getAllPublishersInternal();
+        for (final BasePublisher publisher : publishers.values()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Checking publisher: " + publisher.getName());
+            }
+            if (GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Found General Purpose Custom Publisher: " + publisher.getName());
+                }
+                enableScripts = true;
+                break;
+            }
+        }
+        if (enableScripts) {
+            log.info("External scripts will remain enabled, since there's at least one General Purpose Custom Publisher.");
+            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            gc.setEnableExternalScripts(true);
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, gc);
+            } catch (AuthorizationDeniedException e) {
+                throw new IllegalStateException("Always allow token was denied access.", e);
+            }
+        } else {
+            log.info("External scripts will be disabled, since there are no General Purpose Custom Publishers. The setting can be changed under the 'System Configuration' page.");
         }
     }
     

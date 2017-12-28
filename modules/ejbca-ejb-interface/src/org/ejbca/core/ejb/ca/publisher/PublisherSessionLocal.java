@@ -17,12 +17,8 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
-import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
-import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 /**
  * Local interface for PublisherSession.
@@ -48,34 +44,6 @@ public interface PublisherSessionLocal extends PublisherSession {
     void testConnection(int publisherid) throws PublisherConnectionException; // NOPMD: this is not a JUnit test
 
     /**
-     * Adds a publisher to the database.
-     * 
-     * @param admin AuthenticationToken of admin
-     * @param name the name of the publisher to add.
-     * @param publisher the publisher to add
-     * @return the publisher ID as added
-     * 
-     * @throws PublisherExistsException if publisher already exists.
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
-     */
-    int addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
-
-    /**
-     * Adds a publisher with the same content as the original.
-     * @throws PublisherDoesntExistsException if publisher does not exist
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
-     * @throws PublisherExistsException if publisher already exists.
-     */
-    void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException;
-
-    /**
-     * Renames a publisher.
-     * @throws PublisherExistsException if publisher already exists.
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
-     */
-    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
-
-    /**
      * Retrieves a Map of all Publishers
      * 
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
@@ -84,6 +52,11 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @return Map of BasePublishers mapped by ID
      */
     Map<Integer, BasePublisher> getAllPublishers();
+    
+    /**
+     * Returns a Map of all Publishers. This method does not take into account if external scripts are disabled.
+     */
+    Map<Integer, BasePublisher> getAllPublishersInternal();
 
     /** @return mapping of publisher id (Integer) to publisher name (String). */
     HashMap<Integer,String> getPublisherIdToNameMap();
