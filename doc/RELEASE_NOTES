@@ -1,8 +1,22 @@
-EJBCA 6.11
+EJBCA 6.11.0
 -----------
 
-Notable highlights:
-- SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder.
+First and foremost, EJBCA 6.11 introduces a long awaited feature: support for the EST protocol. For those of you now in the know, EST is an 
+enrollment protocol similar to SCEP. Much like CMP and SCEP, EST can be configured through multiple aliases, and can like CMP also have calls proxied
+from an RA up a CA using the Peers Protocol. 
+
+The second main feature of this release is the concept of External Validators, a feature which has been widely requested by quite a few of our 
+enterprise users. An External Validator functions much like the existing validators (RSA, CAA, etc), but it runs on either a certificate or pre-
+certificate object and calls on local script on the local system. 
+
+We've also added a few of features to make VA/RA installations more secure in the DMZ. In order to guard against possible 0-days or protocol 
+vulnerabilities we've added added the Protocol Configuration-tab to System Configuration. Through this tab all incoming protocols or servlets can
+be disabled. Additionally, we've added access rules to allow prohibiting CMP and WS calls being sent from the RA/VA to the CA via Peers in case the 
+RA/VA runs the risk of being compromised. The second security feature is connected to the External Validator, adding a configuration value under
+System Configuration that disables both it and the General Purpose Custom Publisher. 
+
+Lastly, we've updated the VA so that SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder, see the 
+UPGRADE document for more information. 
 
 EJBCA 6.10.1.1 
 -----------
