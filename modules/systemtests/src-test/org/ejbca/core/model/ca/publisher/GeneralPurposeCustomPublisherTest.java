@@ -79,12 +79,7 @@ public class GeneralPurposeCustomPublisherTest {
     private String command;
     private String invalidOption;
     private String commandFailsafe;
-    
-//    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
-//            .getRemoteSession(GlobalConfigurationSessionRemote.class);
-//    
-//    final boolean oldEnableExternalScripts = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
-//    
+ 
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -92,7 +87,6 @@ public class GeneralPurposeCustomPublisherTest {
 
     @Before
     public void setUp() throws IOException, InterruptedException {
-//        ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).setEnableExternalScripts(true);
         admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
         gpcPublisher = new GeneralPurposeCustomPublisher();
         // Make sure an external command exists for testing purposes
@@ -112,7 +106,6 @@ public class GeneralPurposeCustomPublisherTest {
     public void tearDown() {
         admin = null;
         gpcPublisher = null;
-//        ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).setEnableExternalScripts(oldEnableExternalScripts);
     }
     
     /**
