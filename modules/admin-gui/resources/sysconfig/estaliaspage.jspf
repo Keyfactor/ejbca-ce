@@ -142,7 +142,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREUSERNAME_HELP\") %>"/></p>
 	  </td>
       <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_EST_REQUIREUSERNAME %>" value='<c:out value="<%= estConfigClone.getRequireUsername(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_EST_REQUIREUSERNAME %>" value='<c:out value="<%= estConfigClone.getUsername(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
@@ -154,7 +154,7 @@ function checkallfields() {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREPASSWORD_HELP\") %>"/></p>
 	  </td>
       <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_EST_REQUIREPASSWORD %>" value='<c:out value="<%= estConfigClone.getRequirePassword(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_EST_REQUIREPASSWORD %>" value='<c:out value="<%= estConfigClone.getPassword(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
