@@ -27,8 +27,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
