@@ -15,7 +15,7 @@ package org.cesecore.config;
 /**
  * Type for configurable calls to external scripts.
  * 
- * @version $Id: EnableExternalScriptsConfiguration.java 25001 2017-22-27 12:28:24Z anjakobs $
+ * @version $Id$
  */
 public interface EnableExternalScriptsConfiguration {
 
