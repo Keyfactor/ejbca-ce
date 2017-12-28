@@ -83,7 +83,7 @@ function checkallfields() {
           <% ceep = currentEndEntityProfileId; %>
           <% boolean eepselected = false; %>
           <% 
-          	Map<String, String> nameToIdMap = ejbcawebbean.getAuthorizedEEProfileNamesAndIds(AccessRulesConstants.CREATE_END_ENTITY);
+          	Map<String, String> nameToIdMap = ejbcawebbean.getAuthorizedEEProfilesAndIdsNoKeyId(AccessRulesConstants.CREATE_END_ENTITY);
             for(String endEntityProfileName : nameToIdMap.keySet()) { 
                 String endEntityProfileId = nameToIdMap.get(endEntityProfileName);
           %>   <option <% if(endEntityProfileId.equals(currentEndEntityProfileId)){ eepselected=true; %> selected <% } %> value='<c:out value="<%=endEntityProfileId %>"/>'>
@@ -112,7 +112,7 @@ function checkallfields() {
           <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
           <% 
           	if(ceep != null) {
-            	for(String cp : ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep)) {  %>
+            	for(String cp : ejbcawebbean.getCertificateProfilesNoKeyId(ceep)) {  %>
             		<option <% if(cp.equals(defcp)){ %> selected <% } %>
                   		value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
           <% 	} 
@@ -129,7 +129,7 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_EST_REQUIRECERT%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
-			<% if(estConfigClone.getRequireCert(alias)) out.write(" CHECKED "); %>
+			<% if(estConfigClone.getCert(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_EST_REQUIRECERT%>" />
 		<label for="<%=CHECKBOX_EST_REQUIRECERT%>"><c:out value="<%= ejbcawebbean.getText(\"YES\") %>" /></label>
       </td>

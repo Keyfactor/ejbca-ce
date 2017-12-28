@@ -154,12 +154,12 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      *
      * @return true if we require a certificate for authentication
      */
-    public boolean getRequireCert(String alias) {
+    public boolean getCert(String alias) {
         String key = alias + "." + CONFIG_REQCERT;
         return StringUtils.equalsIgnoreCase(getValue(key, alias), "true");
     }
 
-    public void setRequireCert(String alias, boolean reqCert) {
+    public void setCert(String alias, boolean reqCert) {
         String key = alias + "." + CONFIG_REQCERT;
         setValue(key, Boolean.toString(reqCert), alias);
     }
@@ -169,7 +169,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
      *
      * @return username if any, or null if none
      */
-    public String geUsername(String alias) {
+    public String getUsername(String alias) {
         String key = alias + "." + CONFIG_REQUSERNAME;
         return getValue(key, alias);
     }
