@@ -7030,6 +7030,18 @@ An error event like this should trigger an operator to take a look at the system
 </subsection>
 </section>
 
+<section name="External Scripts">
+<p>Publishers or validators can call external scripts stored as file on the local server. At the time This is
+<ul>
+<li>GeneralPurposeCustomPublisher</li>
+<li>ExternalCommandCertificateValidator</li>
+</ul>
+</p>
+<subsection name="Configure External Script Access">
+<p>The access to external scripts must enabled in the system configuration. If this feature is disabled the publishers or validators concerned are neither rendered on UI or procesed otherwise. Publishers or validators configured by the user keep unchanged if this feature is disabled.</p>
+</subsection>
+</section>
+
 <section name="Command Line Interfaces">
 <p>There are four types of command line interfaces (CLI) in EJBCA.
 <ul>

@@ -418,6 +418,23 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>	
 		</h:panelGrid>
+
+		<%-- External scripts (and commands) --%>
+
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+			<h:outputLabel for="header_externalscripts" value="#{web.text.EXTERNALSCRIPTS}" style="font-weight: bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_externalscripts"/>
+    		<h:panelGroup>
+				<h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
+				<%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20External%20Script%20Access") %>
+				<br/>
+				<h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.currentConfig.enableExternalScripts}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
+			</h:panelGroup>
+		</h:panelGrid>
 		
         <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
             <h:panelGroup>

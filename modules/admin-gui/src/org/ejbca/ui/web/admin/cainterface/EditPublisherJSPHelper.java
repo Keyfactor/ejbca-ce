@@ -25,12 +25,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
@@ -768,12 +770,16 @@ public class EditPublisherJSPHelper {
     }
     
     public List<String> getCustomClasses() {        
-        List<String> classes = new ArrayList<String>();
-        ServiceLoader<ICustomPublisher> svcloader = ServiceLoader.load(ICustomPublisher.class);
+        final List<String> classes = new ArrayList<String>();
+        final ServiceLoader<ICustomPublisher> svcloader = ServiceLoader.load(ICustomPublisher.class);
+        final boolean enabled = ((GlobalConfiguration) ejbcawebbean.getEjb().getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
+        String name = null;
         for (ICustomPublisher implInstance : svcloader) {
             if (!implInstance.isReadOnly()) {
-                String name = implInstance.getClass().getName();
-                classes.add(name);
+                name = implInstance.getClass().getName();
+                if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(name)) {
+                    classes.add(name);
+                }
             }
         }
         return classes;

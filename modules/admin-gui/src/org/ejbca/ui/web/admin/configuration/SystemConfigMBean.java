@@ -114,6 +114,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
+        private boolean enableExternalScripts;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
 
@@ -154,6 +155,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
+                this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
@@ -217,6 +219,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLine(boolean enableCommandLine) { this.enableCommandLine=enableCommandLine; }
         public boolean getEnableCommandLineDefaultUser() { return this.enableCommandLineDefaultUser; }
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
+        public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
+        public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<CTLogInfo> getCtLogs() {return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs=ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -707,6 +711,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
+                globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
