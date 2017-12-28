@@ -520,6 +520,16 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace("<renamePublisher()");
         }
     }
+    
+    @Override
+    public Map<Integer, BasePublisher> getAllPublishersInternal() {
+        final Map<Integer, BasePublisher> returnval = new HashMap<>();
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            final BasePublisher publisher = getPublisher(publisherData);
+            returnval.put(publisherData.getId(), publisher);
+        }
+        return returnval;
+    }
 
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
