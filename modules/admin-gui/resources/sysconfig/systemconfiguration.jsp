@@ -418,16 +418,16 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>	
 		</h:panelGrid>
-
-		<h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
-			<h:panelGroup>
-				&nbsp;
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
-			</h:panelGroup>
-		</h:panelGrid>
+		
+        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            <h:panelGroup>
+                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.saveCurrentConfig}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:commandButton value="#{web.text.CANCEL}" action="#{systemConfigMBean.flushCache}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" />
+            </h:panelGroup>
+        </h:panelGrid>
 	</h:form>
 	
 	
@@ -854,6 +854,29 @@ org.cesecore.authorization.AuthorizationDeniedException
                 &nbsp;
             </h:panelGroup>
             <h:commandButton value="#{web.text.IMPORT}" action="#{systemConfigMBean.importStatedump}"/>
+        </h:panelGrid>
+    </h:form>
+    
+    <%-- Global validator settings --%>
+    
+    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Validators'}">
+        <%-- External script directories --%>
+        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
+            <h:outputText value="#{web.text.EXTERNAL_SCRIPT_DIRECTORIES}" style="font-weight: bold; font-size:1.2em;"/>
+            <h:panelGroup />
+
+            <h:panelGroup>
+                <h:outputText value="#{web.text.ENABLE_WHITELIST}" styleClass="titles"/>
+                <%= ejbcawebbean.getHelpReference("/adminguide.html#Dummy") %>
+                <br/>
+                <h:outputText value="#{web.text.ENABLE_WHITELIST_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <h:panelGroup>
+                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.currentConfig.externalScriptConfiguration.isWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:outputLabel for="enableWhitelist" value="#{web.text.ENABLE}" />
+                <h:inputTextarea id="externalScriptDirectories" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" 
+                    value="#{systemConfigMBean.currentConfig.externalScriptConfiguration.whitelist}" cols="80" rows="5" />
+            </h:panelGroup>
         </h:panelGrid>
     </h:form>
 
