@@ -354,7 +354,8 @@ public class InformationMemory implements Serializable {
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
     public TreeMap<String, Integer> getAuthorizedPublisherNames() {
-        if (publishernames == null) {
+        // ECA-6440 Caching here causes a display error on the manage publishers page after disabling access to external scripts in the system configuration.
+//        if (publishernames == null) {
             publishernames = new TreeMap<String, Integer>(new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
@@ -370,8 +371,7 @@ public class InformationMemory implements Serializable {
             for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
                 publishernames.put(idtonamemap.get(id), id);
             }
-        }
-
+//        }
         return publishernames;
     }
 

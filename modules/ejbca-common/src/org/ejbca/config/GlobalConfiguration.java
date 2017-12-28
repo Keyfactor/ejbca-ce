@@ -23,9 +23,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.EnableExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.InternalEjbcaResources;
 
 
 /**
@@ -33,7 +34,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  *
  * @version $Id$
  */
-public class GlobalConfiguration extends ConfigurationBase implements Serializable {
+public class GlobalConfiguration extends ConfigurationBase implements EnableExternalScriptsConfiguration, Serializable {
 
     private static final long serialVersionUID = -2051789798029184421L;
 
@@ -44,8 +45,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
 
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
-    public static final String PREFEREDINTERNALRESOURCES = InternalEjbcaResources.PREFEREDINTERNALRESOURCES;
-    public static final String SECONDARYINTERNALRESOURCES = InternalEjbcaResources.SECONDARYINTERNALRESOURCES;
+    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
+    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
@@ -95,6 +96,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
 
+    private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = true;
+    
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
 
     // Default CT Logs
@@ -159,6 +162,8 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
     private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
 
+    private static final   String ENABLEEXTERNALSCRIPTS        = "enableexternalscripts";
+    
     // Configuration for Auto Enrollment
     private static final   String AUTOENROLL_USE = "autoenroll.use";
     private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
@@ -529,6 +534,11 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
        public void setEnableCommandLineInterfaceDefaultUser(final boolean value) { putBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, value); }
        public boolean getEnableCommandLineInterfaceDefaultUser() { return getBoolean(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER); }
 
+       @Override
+       public void setEnableExternalScripts(final boolean value) { putBoolean(ENABLEEXTERNALSCRIPTS, value); }
+       @Override
+       public boolean getEnableExternalScripts() { return getBoolean(ENABLEEXTERNALSCRIPTS, DEFAULTENABLEEXTERNALSCRIPTS); }
+       
     public boolean getPublicWebCertChainOrderRootFirst() {
         return getBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST);
     }
@@ -598,9 +608,12 @@ public class GlobalConfiguration extends ConfigurationBase implements Serializab
     		if(data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER) == null) {
     		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
     		}
+    		if(data.get(ENABLEEXTERNALSCRIPTS) == null) {
+                data.put(ENABLEEXTERNALSCRIPTS, Boolean.TRUE);
+    		}
     		if(data.get(ENABLEICAOCANAMECHANGE) == null) {
                 data.put(ENABLEICAOCANAMECHANGE, Boolean.FALSE);
-        }
+    		}
     		data.put(VERSION,  Float.valueOf(LATEST_VERSION));
     	}
     }
