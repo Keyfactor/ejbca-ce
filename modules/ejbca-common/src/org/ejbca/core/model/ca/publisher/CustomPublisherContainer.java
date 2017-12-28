@@ -45,7 +45,7 @@ public class CustomPublisherContainer extends BasePublisher {
 		
 	// Default Values
     
-    protected static final String CLASSPATH = "classpath";
+    public static final String CLASSPATH = "classpath";
     protected static final String PROPERTYDATA = "propertydata";
 		
     public CustomPublisherContainer(){

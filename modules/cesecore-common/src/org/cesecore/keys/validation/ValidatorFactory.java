@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.cesecore.keys.validation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import org.cesecore.keys.validation.Validator;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Reads in the implementations of the Validator interface.  
@@ -40,6 +42,20 @@ public enum ValidatorFactory {
     
     public Collection<Validator> getAllImplementations() {
         return identifierToImplementationMap.values();
+    }
+    
+    public Collection<Validator> getAllImplementations(final List<Class> excludeClasses) {
+        if (CollectionUtils.isNotEmpty(excludeClasses)) {
+            final Collection<Validator> result = new ArrayList<Validator>();
+            for (Validator validator : getAllImplementations()) {
+                if (!excludeClasses.contains(validator.getClass())) {
+                    result.add(validator);
+                }
+            }
+            return result;
+        } else {
+            return getAllImplementations();
+        }
     }
     
     public Validator getArcheType(String identifier) {

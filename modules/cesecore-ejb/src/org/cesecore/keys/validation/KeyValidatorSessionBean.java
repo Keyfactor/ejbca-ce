@@ -13,6 +13,7 @@
 
 package org.cesecore.keys.validation;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -55,6 +56,8 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.EnableExternalScriptsConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
@@ -81,6 +84,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -311,10 +316,19 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<Integer, Validator> getAllKeyValidators() {
-        final List<ProfileData> keyValidators = profileSession.findAllProfiles(Validator.TYPE_NAME);
+        final List<ProfileData> keyValidators = findAllProfiles(Validator.TYPE_NAME);
         final Map<Integer, Validator> result = new HashMap<>();
+        // GlobalConfiguration.GLOBAL_CONFIGURATION_ID
+        final boolean enabled = ((EnableExternalScriptsConfiguration) globalConfigurationSession.getCachedConfiguration("0")).getEnableExternalScripts();
         for (ProfileData data : keyValidators) {
+            if (!enabled && ExternalCommandCertificateValidator.class.getName().equals( ((Class<? extends Serializable>) data.getDataMap().get("profile.name")).getName())) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Skip " + data.getProfileType() + " with name " + data.getProfileName() + " because calls for external command certificate validators are disabled.");
+                }
+                continue;
+            }
             //Cast is safe since we know we retrieved the correct implementation
             result.put(data.getId(), (Validator) data.getProfile());
         }
@@ -329,7 +343,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     // Not used.
     @Override
     public Map<Integer, Validator> getKeyValidatorsById(Collection<Integer> ids) {
-        final List<ProfileData> keyValidators = profileSession.findAllProfiles(Validator.TYPE_NAME);
+        final List<ProfileData> keyValidators = findAllProfiles(Validator.TYPE_NAME);
         final Map<Integer, Validator> result = new HashMap<>();
         for (ProfileData data : keyValidators) {
             result.put(data.getId(), (Validator) data.getProfile());
@@ -345,7 +359,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     @Override
     public Map<Integer, String> getKeyValidatorIdToNameMap() {
         final HashMap<Integer, String> result = new HashMap<>();
-        for (ProfileData data : profileSession.findAllProfiles(Validator.TYPE_NAME)) {
+        for (ProfileData data : findAllProfiles(Validator.TYPE_NAME)) {
             result.put(data.getId(), data.getProfileName());
         }
         return result;
@@ -813,4 +827,28 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
 
+    /**
+     * Gets all profiles by type.
+     * 
+     * @param profileType the profile type.
+     * @return all profiles that match that type. {@link ExternalCommandCertificateValidator} is only included if calls to external scripts are enabled.
+     */
+    @SuppressWarnings("unchecked")
+    // profileType does not change here!
+    private final List<ProfileData> findAllProfiles(final String profileType) {
+        final List<ProfileData> profiles = profileSession.findAllProfiles(profileType);
+        final boolean enabled = ((EnableExternalScriptsConfiguration) globalConfigurationSession.getCachedConfiguration("0")).getEnableExternalScripts();
+        if (enabled) {
+            return profiles;
+        } else {
+            final List<ProfileData> result = new ArrayList<ProfileData>();
+            Class<? extends Serializable> profileClass;
+            for (ProfileData profile: profiles) {
+                if ((profileClass = (Class<? extends Serializable>) profile.getProfile().getDataMap().get("profile.type")) == null || !ExternalCommandCertificateValidator.class.getName().equals(profileClass.getName())) {
+                    result.add(profile);
+                }
+            }
+            return result;
+        }
+    }
 }

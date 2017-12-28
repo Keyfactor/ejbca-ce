@@ -117,6 +117,9 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     private static final String TEST_EE_PASSWORD = "start#123";
 
+//    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+//            .getRemoteSession(GlobalConfigurationSessionRemote.class);
+//    
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
@@ -362,6 +365,10 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     public void testValidateCertificteWithExternalCommand() throws Exception {
         log.trace(">testValidateCertificteWithExternalCommand()");
 
+        // Make sure calls to external scripts are enabled.
+//        final boolean oldEnableExternalScripts = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
+//        ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).setEnableExternalScripts(true);
+        
         // Check validation of an external call with x.509 RSA public key while IssuancePhase#CERTIFICATE_VALIDATION phase.
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert(
@@ -497,6 +504,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
             // Remove certificates?
         }
+        
+//        ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).setEnableExternalScripts(oldEnableExternalScripts);
         
         log.trace("<testValidateCertificteWithExternalCommand()");
     }

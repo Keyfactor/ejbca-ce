@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.validation.ExternalCommandCertificateValidator;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
@@ -59,6 +60,7 @@ import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -76,6 +78,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /** Class logger. */
     private static final Logger log = Logger.getLogger(ValidatorBean.class);
+
+    @EJB
+    private GlobalConfigurationSessionLocal configurationSession;
 
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
@@ -191,8 +196,12 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return List of the available key validator types
      */
     public List<SelectItem> getAvailableValidators() {
+        final List<Class> excludeClasses = new ArrayList<Class>();
+        if (!((GlobalConfiguration) configurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts()) {
+            excludeClasses.add(ExternalCommandCertificateValidator.class);
+        }
         final List<SelectItem> ret = new ArrayList<>();
-        for (final Validator validator : ValidatorFactory.INSTANCE.getAllImplementations()) {
+        for (final Validator validator : ValidatorFactory.INSTANCE.getAllImplementations(excludeClasses)) {
             ret.add(new SelectItem(validator.getValidatorTypeIdentifier(), validator.getLabel()));
         }
         Collections.sort(ret, new Comparator<SelectItem>() {

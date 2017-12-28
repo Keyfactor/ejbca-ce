@@ -44,10 +44,12 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -56,6 +58,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
@@ -83,6 +86,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -518,10 +523,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @Override
     public Map<Integer, BasePublisher> getAllPublishers() {
-        Map<Integer, BasePublisher> returnval = new HashMap<Integer, BasePublisher>();
+        final Map<Integer, BasePublisher> returnval = new HashMap<Integer, BasePublisher>();
+        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
+        BasePublisher publisher = null;
         for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
-            BasePublisher publisher = getPublisher(publisherData);
-            if (publisher != null) {
+            publisher = getPublisher(publisherData);
+            if (publisher != null && enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
                 returnval.put(publisherData.getId(), publisher);
             }
         }
@@ -531,9 +538,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public HashMap<Integer, String> getPublisherIdToNameMap() {
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        for (PublisherData publisher : PublisherData.findAll(entityManager)) {
-            returnval.put(publisher.getId(), publisher.getName());
+        final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
+        BasePublisher publisher = null;
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            publisher = getPublisher(publisherData);
+            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
+                returnval.put(publisherData.getId(), publisherData.getName());
+            }
         }
         return returnval;
     }
