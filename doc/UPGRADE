@@ -56,7 +56,14 @@ An upgrade can thus be done on Java 6 and JBoss 5.1.0 through EJBCA 3.x -> EJBCA
 From EJBCA 6.10 to EJBCA 6.11.0
 -------------------------------
 
-NOTE: SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder. If you are running a legacy responder that still 
+EJBCA 6.11 introduces the EST protocol to EJBCA. Note that as a security measure the EST responder is by default turned off (as will all new 
+protocols from now on) and needs to be activated under System Configuration. 
+
+EJBCA 6.11 upgrades the Peers Protocol with information about protocol (CMP, ETC, etc) rights. Due to a minor bug in the protocol versioning system 
+it's highly recommended to upgrade RAs/VAs before the CAs, though the consequences for performing the upgrade in the incorrect order is merely that 
+any CMP or WS proxying will cease to work during the upgrade. 
+
+SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder. If you are running a legacy responder that still 
 need to use these deprecated algorithms, you have to configure these in the setting 'ocsp.signaturealgorithm' in conf/ocsp.properties.
 
 
