@@ -65,10 +65,8 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
-import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -177,6 +175,7 @@ public class ScepServlet extends HttpServlet {
      *
      * @throws ServletException on error during initialization
      */
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
@@ -196,6 +195,7 @@ public class ScepServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         log.trace(">SCEP doPost()");
@@ -232,6 +232,7 @@ public class ScepServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">SCEP doGet()");
         if (log.isDebugEnabled()) {
