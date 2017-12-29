@@ -5444,7 +5444,7 @@ openssl x509 -text -noout -in %cert%
             </source>
 			<subsubsection name="Whitelisting of scripts">
 			<p>An administrator may want impose restrictions on which scrips can be executed or not for security reasons. It is possible to do this using a whitelist which can be configured
-			under the Validators tab in the System Configuration page. The whitelist should contain a list of paths to all scripts allowed to be executed by the External Command Certificate Validator.
+			under the 'External scripts' tab in the System Configuration's page. The whitelist should contain a list of paths to all scripts allowed to be executed by the External Command Certificate Validator.
 			If the whitelist is enabled by an administrator, any execution of scripts not excplicitly listed on the whitelist is prevented by EJBCA.</p>
 			<note>
 			If the External Scripts Whitelist has been enabled by an administrator and a Validator tries to execute a command which is not on the whitelist, the "Validator was not applicable" action 
