@@ -321,9 +321,10 @@ public class InformationMemory implements Serializable {
      * @return the publisheridtonamemap (HashMap)
      */
     public Map<Integer, String> getPublisherIdToNameMap() {
-        if (publisheridtonamemap == null) {
+     // ECA-6440 Caching here causes a display error on the manage publishers page after disabling access to external scripts in the system configuration.
+//        if (publisheridtonamemap == null) {
             publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
-        }
+//        }
         return publisheridtonamemap;
     }
 
