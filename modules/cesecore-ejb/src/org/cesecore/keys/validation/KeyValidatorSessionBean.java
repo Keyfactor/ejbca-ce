@@ -56,7 +56,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.config.EnableExternalScriptsConfiguration;
+import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -72,7 +72,7 @@ import org.cesecore.util.CertTools;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
-    
+
 	// NOTE: Should be replaced by a ManagedExecutorService when we drop support for JEE 6
     private static final ExecutorService executorService = Executors.newFixedThreadPool(64);
 
@@ -320,8 +320,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     public Map<Integer, Validator> getAllKeyValidators() {
         final List<ProfileData> keyValidators = findAllProfiles(Validator.TYPE_NAME);
         final Map<Integer, Validator> result = new HashMap<>();
-        // GlobalConfiguration.GLOBAL_CONFIGURATION_ID
-        final boolean enabled = ((EnableExternalScriptsConfiguration) globalConfigurationSession.getCachedConfiguration("0")).getEnableExternalScripts();
+        final boolean enabled = ((ExternalScriptsConfiguration) globalConfigurationSession
+                .getCachedConfiguration("0")).getEnableExternalScripts();
         for (ProfileData data : keyValidators) {
             if (!enabled && data.getProfile() instanceof ExternalCommandCertificateValidator) {
                 if (log.isTraceEnabled()) {
@@ -364,12 +364,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public Map<Integer, String> getKeyValidatorIdToNameMap(int applicableCa) {
         final HashMap<Integer, String> result = new HashMap<>();
         for (Entry<Integer,Validator> data : getAllKeyValidators().entrySet()) {
-            if (data.getValue().getApplicableCaTypes().contains((Integer) applicableCa)) {
+            if (data.getValue().getApplicableCaTypes().contains(applicableCa)) {
                 result.put(data.getKey(), data.getValue().getProfileName());
             }
         }
@@ -480,7 +480,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                 && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
                             continue;
                         }
-                        if (validator instanceof ValidityAwareValidator 
+                        if (validator instanceof ValidityAwareValidator
                                 && !filterValidityAwareValidator(validator, certificateValidity.getNotBefore(), certificateValidity.getNotAfter())) {
                             continue;
                         }
@@ -505,7 +505,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
                         // use method performValidationFailedActions because it's the same actions
-                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage()); 
+                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage());
                     } catch (ValidationException e) {
                         throw e;
                     }
@@ -518,7 +518,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
             final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException {
@@ -549,7 +549,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         final String fingerprint = CertTools.createPublicKeyFingerprint(certificate.getPublicKey(), "SHA-256");
                         log.info(intres.getLocalizedMessage("validator.certificate.isbeingprocessed", name, phase, endEntityInformation.getUsername(),
                                 fingerprint));
-                        final List<String> messages = validator.validate(ca, certificate);
+                        final ExternalScriptsConfiguration externalScriptsConfiguration = (ExternalScriptsConfiguration) globalConfigurationSession
+                                .getCachedConfiguration("0");
+                        final ExternalScriptsWhitelist externalScriptsWhitelist = ExternalScriptsWhitelist.fromText(
+                                externalScriptsConfiguration.getExternalScriptsWhitelist(),
+                                externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
+                        final List<String> messages = validator.validate(ca, certificate, externalScriptsWhitelist);
                         if (messages.size() > 0) { // Evaluation has failed.
                             final int index = validator.getFailedAction();
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_failed", name, messages);
@@ -664,9 +669,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 null, null, null, details);
     }
 
-    /** 
+    /**
      * Gets a validator by cache or database, can return null. Puts it into the cache, if not already present.
-     * 
+     *
      * @param id the validators id.
      * @param fromCache true if the validator can be taken from cache.
      * */
@@ -704,9 +709,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
 
-    /** 
+    /**
      * Adds a key validator or throws an exception.
-     * 
+     *
      * @param admin AuthenticationToken of administrator.
      * @param keyValidator the validator to add.
      * @return the profile ID
@@ -723,9 +728,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
 
-    /** 
+    /**
      * Assert the administrator is authorized to edit key validators.
-     * 
+     *
      * @param admin AuthenticationToken of administrator.
      * @throws AuthorizationDeniedException if the administrator is not authorized to.
      * */
@@ -738,7 +743,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     /**
      * Applies validity conditions (see {@link KeyValidatorDateConditions}) to the validator.
-     * 
+     *
      * @param validator the validator.
      * @param certificateNotBefore the certificates not before validity.
      * @param certificateNotAfter the certificates not after validity.
@@ -768,7 +773,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     /**
      * Applies certificate profile conditions to the validator.
-     * 
+     *
      * @param validator the validator.
      * @param certificateProfileId the certificate profile id.
      * @return false, if the conditions does not match.
@@ -789,10 +794,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     /**
      * Calling overloaded method performValidationFailedActions when parameter shortMessage should be the same as the message.
-     * 
+     *
      * @param failedAction
      * @param message
      * @throws ValidationException
@@ -800,13 +805,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     private void performValidationFailedActions(final int failedAction, final String message) throws ValidationException {
         performValidationFailedActions(failedAction, message, message);
     }
-       
-    /** 
+
+    /**
      * Post processes every validation depending on its failed action.
-     * 
+     *
      * @param failedAction the failed action index (see {@link KeyValidationFailedActions}).
      * @param message the message to log.
-     * @param shortMessage the error message to EJBCA Certificate Enrollment Error page 
+     * @param shortMessage the error message to EJBCA Certificate Enrollment Error page
      * @throws ValidationException if a failed validation has to be abort the certificate issuance.
      * */
     private void performValidationFailedActions(final int failedAction, final String message, final String shortMessage) throws ValidationException {
@@ -829,7 +834,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
 
     /**
      * Gets all profiles by type.
-     * 
+     *
      * @param profileType the profile type.
      * @return all profiles that match that type. {@link ExternalCommandCertificateValidator} is only included if calls to external scripts are enabled.
      */
@@ -837,7 +842,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     // profileType does not change here!
     private final List<ProfileData> findAllProfiles(final String profileType) {
         final List<ProfileData> profiles = profileSession.findAllProfiles(profileType);
-        final boolean enabled = ((EnableExternalScriptsConfiguration) globalConfigurationSession.getCachedConfiguration("0")).getEnableExternalScripts();
+        final boolean enabled = ((ExternalScriptsConfiguration) globalConfigurationSession
+                .getCachedConfiguration("0")).getEnableExternalScripts();
         if (enabled) {
             return profiles;
         } else {

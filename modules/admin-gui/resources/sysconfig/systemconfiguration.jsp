@@ -418,23 +418,6 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>	
 		</h:panelGrid>
-
-		<%-- External scripts (and commands) --%>
-
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-			<h:outputLabel for="header_externalscripts" value="#{web.text.EXTERNALSCRIPTS}" style="font-weight: bold; font-size:1.2em;"/>
-			<h:panelGroup id="header_externalscripts"/>
-    		<h:panelGroup>
-				<h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20External%20Script%20Access") %>
-				<br/>
-				<h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
-			</h:panelGroup>
-			<h:panelGroup>
-				<h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.currentConfig.enableExternalScripts}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-				<h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
-			</h:panelGroup>
-		</h:panelGrid>
 		
         <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
             <h:panelGroup>
@@ -876,23 +859,55 @@ org.cesecore.authorization.AuthorizationDeniedException
     
     <%-- Global validator settings --%>
     
-    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Validators'}">
-        <%-- External script directories --%>
+    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Validators'}">        
         <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
-            <h:outputText value="#{web.text.EXTERNAL_SCRIPT_DIRECTORIES}" style="font-weight: bold; font-size:1.2em;"/>
+            
+            <%-- Header --%>
+            
+            <h:outputText value="#{web.text.EXTERNALSCRIPTS}" style="font-weight: bold; font-size:1.2em;"/>
             <h:panelGroup />
-
+            
+            <%-- Enable/disable external scripts (and commands) --%>
+            
             <h:panelGroup>
-                <h:outputText value="#{web.text.ENABLE_WHITELIST}" styleClass="titles"/>
-                <%= ejbcawebbean.getHelpReference("/adminguide.html#Dummy") %>
+                <h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
+                <%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20External%20Script%20Access") %>
                 <br/>
-                <h:outputText value="#{web.text.ENABLE_WHITELIST_HELP}" styleClass="help"/>
+                <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
             </h:panelGroup>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.currentConfig.externalScriptConfiguration.isWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                <h:outputLabel for="enableWhitelist" value="#{web.text.ENABLE}" />
+                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.currentConfig.enableExternalScripts}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
+            </h:panelGroup>
+
+            <%-- External script directories --%>
+
+            <h:panelGroup>
+                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST}" styleClass="titles"/>
+                <%= ejbcawebbean.getHelpReference("/adminguide.html%23Post%20Processing%20Validators%20(Pre-Certificate%20or%20Certificate%20Validation)") %>
+                <br/>
+                <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
+            </h:panelGroup>
+            <h:panelGroup>
+                <h:selectBooleanCheckbox id="enableWhitelist" value="#{systemConfigMBean.validatorSettings.isExternalScriptsWhitelistEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:outputLabel for="enableWhitelist" value="#{web.text.USE_EXTERNAL_SCRIPTS_WHITELIST}" />
+                <br />
                 <h:inputTextarea id="externalScriptDirectories" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}" 
-                    value="#{systemConfigMBean.currentConfig.externalScriptConfiguration.whitelist}" cols="80" rows="5" />
+                    value="#{systemConfigMBean.validatorSettings.externalScriptsWhitelist}" cols="80" rows="8" />
+                <br />
+                <h:dataTable value="#{systemConfigMBean.validatorSettings.validationResult}" var="validationMessage">
+                    <h:column>
+                        <h:outputText value="#{validationMessage}" />
+                    </h:column>
+                </h:dataTable>
+            </h:panelGroup>
+        </h:panelGrid>
+        
+        <h:panelGrid columns="2" styleClass="edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+            <h:panelGroup />
+            <h:panelGroup>
+                <h:commandButton value="#{web.text.SAVE}" action="#{systemConfigMBean.validatorSettings.save}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:commandButton value="#{web.text.EXTERNAL_SCRIPTS_VALIDATE}" action="#{systemConfigMBean.validatorSettings.validateScripts}" />
             </h:panelGroup>
         </h:panelGrid>
     </h:form>

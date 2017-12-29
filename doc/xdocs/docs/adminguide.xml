@@ -5437,11 +5437,39 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			<p>
 				See the following samples for external commands for Unix/Linux platforms:
 			</p>
-			<source>
-				/usr/local/opt/script.sh -param1 -param2
-				/usr/local/opt/script.sh -param1 -param2 %cert%
-				openssl x509 -text -noout %cert%
-			</source>
+            <source>
+/usr/local/opt/script.sh -param1 -param2
+/usr/local/opt/script.sh -param1 -param2 %cert%
+openssl x509 -text -noout %cert%
+            </source>
+			<subsubsection name="Whitelisting of scripts">
+			<p>An administrator may want impose restrictions on which scrips can be executed or not for security reasons. It is possible to do this using a whitelist which can be configured
+			under the Validators tab in the System Configuration page. The whitelist should contain a list of paths to all scripts allowed to be executed by the External Command Certificate Validator.
+			If the whitelist is enabled by an administrator, any execution of scripts not excplicitly listed on the whitelist is prevented by EJBCA.</p>
+			<note>
+			If the External Scripts Whitelist has been enabled by an administrator and a Validator tries to execute a command which is not on the whitelist, the "Validator was not applicable" action 
+			is carried out.
+			</note>
+			<note>
+			The whitelist is always disabled when using the "Test" button to test an external command.
+			</note>
+			<p>The format of the whitelist is as follows: Each line should contain the full path of the whitelisted script. Lines beginning with the character '#' are treated as comments. The whitelist
+			can contain any number of scripts. An empty (enabled) whitelist will effectively block execution of all external scripts. Below follows an example of a syntactically valid whitelist:</p>
+            <source>
+# -----------------------------------------------------------------------
+# This is an example, this configuration does not necessarily make sense
+# -----------------------------------------------------------------------
+/bin/echo
+# X.509 Certificate Linter by Amazon 
+# https://github.com/awslabs/certlint
+/opt/certlint/certlint
+/opt/certlint/cablint
+# X.509 Certificate Linter based on CA/B Forum Baseline Requirements and RFC 5280 
+# https://github.com/zmap/zlint
+/opt/scripts/zLint.sh
+#/opt/scripts/IAmDisabled.sh
+            </source>
+			</subsubsection>
 		</subsection>
 	</subsection>
 	<subsection name="Common Validator Settings">
