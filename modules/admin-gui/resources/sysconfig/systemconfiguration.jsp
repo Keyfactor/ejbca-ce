@@ -859,7 +859,7 @@ org.cesecore.authorization.AuthorizationDeniedException
     
     <%-- Global validator settings --%>
     
-    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Validators'}">        
+    <h:form id="validatorsForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'External Scripts'}">        
         <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
             
             <%-- Header --%>
