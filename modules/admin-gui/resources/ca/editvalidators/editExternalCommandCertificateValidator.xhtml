@@ -42,7 +42,7 @@
 <h:outputLabel for="log_error_out" value="#{web.text.EXTERNALCERTIFICATEVALIDATORLOGERROROUT}" styleClass="subItem"/>
 <h:selectBooleanCheckbox id="log_error_out" value="#{validatorBean.validator.logErrorOut}" disabled="#{validatorsBean.viewOnly}" />
 <h:outputLabel for="external_command" value="#{web.text.EXTERNALCERTIFICATEVALIDATORCOMMAND}" />
-<h:inputText id="external_command" value="#{validatorBean.validator.externalCommand}" required="true" disabled="#{validatorsBean.viewOnly}" size="45"/>
+<h:inputText id="external_command" value="#{validatorBean.validator.externalCommand}" required="true" validator="#{validatorsBean.validateExternalCommand}" disabled="#{validatorsBean.viewOnly}" size="45"/>
 <h:outputLabel for="validator_test" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTEST}" style="font-weight: bold;" />
 <h:panelGroup id="validator_test"></h:panelGroup>
 <h:outputLabel for="validator_test_path" value="#{web.text.EXTERNALCERTIFICATEVALIDATORTESTPATH}" />

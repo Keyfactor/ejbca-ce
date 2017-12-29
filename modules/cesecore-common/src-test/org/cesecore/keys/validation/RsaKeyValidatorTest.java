@@ -12,8 +12,8 @@
  *************************************************************************/
 
 /**
- * Test class fot RSA key validator functional methods, see {@link RsaKeyValidator}.
- * 
+ * Test class for RSA key validator functional methods, see {@link RsaKeyValidator}.
+ *
  * @version $Id$
  */
 package org.cesecore.keys.validation;
@@ -43,7 +43,7 @@ import org.junit.Test;
 
 /**
  * Tests RSA key validator functions.
- * 
+ *
  * @version $Id$
  */
 public class RsaKeyValidatorTest {
@@ -89,58 +89,58 @@ public class RsaKeyValidatorTest {
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyExponentMin(exponent);
         // Test that a negative number can not be set for setPublicKeyExponentMin
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
+        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
                 keyValidator.getPublicKeyExponentMin(), new BigInteger(numStringPos) );
         // Test that a negative number can not be set for setPublicKeyExponentMax
         exponent = new BigInteger(numStringPos);
         keyValidator.setPublicKeyExponentMax(exponent);
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyExponentMax(exponent);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
+        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
                 keyValidator.getPublicKeyExponentMax(), new BigInteger(numStringPos)  );
         // Test that a negative number can not be set for setPublicKeyModulusMin
         exponent = new BigInteger(numStringPos);
         keyValidator.setPublicKeyModulusMin(exponent);
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyModulusMin(exponent);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
+        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
                 keyValidator.getPublicKeyModulusMin(),  new BigInteger(numStringPos));
         // Test that a negative number can not be set for setPublicKeyModulusMax
         exponent = new BigInteger(numStringPos);
         keyValidator.setPublicKeyModulusMax(exponent);
         exponent = new BigInteger(numStringNeg);
         keyValidator.setPublicKeyModulusMax(exponent);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
+        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
                 keyValidator.getPublicKeyModulusMax(), new BigInteger(numStringPos) );
         // Test that a negative number can not be set for setPublicKeyModulusMinFactor
         keyValidator.setPublicKeyModulusMinFactor(2);
         keyValidator.setPublicKeyModulusMinFactor(-4);
-        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ", 
+        Assert.assertEquals("Test should not fail, validator field can not be set to a negative value ",
                 keyValidator.getPublicKeyModulusMinFactor(), new Integer("2"));
         log.trace("<testNoNegativeNumbers()");
    }
-    
+
     /**
-     * Tests that it is not possible to set a smaller maximum exponent than currently set minimum exponent and vice versa. 
+     * Tests that it is not possible to set a smaller maximum exponent than currently set minimum exponent and vice versa.
      * @throws Exception Exception
      */
     @Test
     public void testPublicKeyExponentMinSmallerThanMax() throws Exception {
         log.trace(">testPublicKeyExponentMinSmallerThanMax()");
-        
+
         RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-set-min-smaller-max-test", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
-        
+
         // Test that min and max can be changed from null.
-        keyValidator.setPublicKeyExponentMinAsString("2"); 
-        keyValidator.setPublicKeyExponentMaxAsString("3"); 
+        keyValidator.setPublicKeyExponentMinAsString("2");
+        keyValidator.setPublicKeyExponentMaxAsString("3");
         Assert.assertEquals("It should be possible to set minimum exponent to 2 if maximum is null",
                 keyValidator.getPublicKeyExponentMinAsString(),"2");
         Assert.assertEquals("It should be possible to set maximum exponent to 3 if miniimum is 2",
                 keyValidator.getPublicKeyExponentMaxAsString(),"3");
         // Test not possible to set smaller max than min.
-        keyValidator.setPublicKeyExponentMaxAsString("1"); 
+        keyValidator.setPublicKeyExponentMaxAsString("1");
         Assert.assertEquals("It should not be possible to set maximum exponent to 1 if minimum is 2",
                 keyValidator.getPublicKeyExponentMaxAsString(),"3");
         // Test not possible to set larger min than max.
@@ -148,41 +148,41 @@ public class RsaKeyValidatorTest {
         Assert.assertEquals("It should not be possible to set minimum exponent to 4 if maximum is 3",
                 keyValidator.getPublicKeyExponentMinAsString(),"2");
         // Test possible to set same min as max.
-        keyValidator.setPublicKeyExponentMinAsString("3"); 
-        keyValidator.setPublicKeyExponentMaxAsString("5"); 
+        keyValidator.setPublicKeyExponentMinAsString("3");
+        keyValidator.setPublicKeyExponentMaxAsString("5");
         Assert.assertEquals("It should be possible to set minimum exponent to 3 if maximum is 3",
                 keyValidator.getPublicKeyExponentMinAsString(),"3");
         Assert.assertEquals("It should be possible to set maximum exponent to 5 if minimum is 3",
                 keyValidator.getPublicKeyExponentMaxAsString(),"5");
         // Test possible to set same max as min.
-        keyValidator.setPublicKeyExponentMaxAsString("3"); 
+        keyValidator.setPublicKeyExponentMaxAsString("3");
         Assert.assertEquals("It should be possible to set maximum exponent to 3 if minimum is 3",
                 keyValidator.getPublicKeyExponentMaxAsString(),"3");
-        
+
         log.trace("<testPublicKeyExponentMinSmallerThanMax()");
     }
-    
+
     /**
-     * Tests that it is not possible to set a smaller maximum modulus than currently set minimum modulus and vice versa. 
+     * Tests that it is not possible to set a smaller maximum modulus than currently set minimum modulus and vice versa.
      * @throws Exception Exception
      */
     @Test
     public void testPublicKeyModulusMinSmallerThanMax() throws Exception {
         log.trace(">testPublicKeyModulusMinSmallerThanMax()");
-        
+
         RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-set-min-smaller-max-test", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
-        
+
         // Test that min and max can be changed from null.
-        keyValidator.setPublicKeyModulusMinAsString("20"); 
-        keyValidator.setPublicKeyModulusMaxAsString("30"); 
+        keyValidator.setPublicKeyModulusMinAsString("20");
+        keyValidator.setPublicKeyModulusMaxAsString("30");
         Assert.assertEquals("It should be possible to set minimum modulus to 20 if maximum is null",
                 keyValidator.getPublicKeyModulusMinAsString(),"20");
         Assert.assertEquals("It should be possible to set maximum modulus to 30 if miniimum is 20",
                 keyValidator.getPublicKeyModulusMaxAsString(),"30");
         // Test not possible to set smaller max than min.
-        keyValidator.setPublicKeyModulusMaxAsString("10"); 
+        keyValidator.setPublicKeyModulusMaxAsString("10");
         Assert.assertEquals("It should not be possible to set maximum modulus to 10 if minimum is 20",
                 keyValidator.getPublicKeyModulusMaxAsString(),"30");
         // Test not possible to set larger min than max.
@@ -190,20 +190,20 @@ public class RsaKeyValidatorTest {
         Assert.assertEquals("It should not be possible to set minimum modulus to 40 if maximum is 30",
                 keyValidator.getPublicKeyModulusMinAsString(),"20");
         // Test possible to set same min as max.
-        keyValidator.setPublicKeyModulusMinAsString("30"); 
-        keyValidator.setPublicKeyModulusMaxAsString("50"); 
+        keyValidator.setPublicKeyModulusMinAsString("30");
+        keyValidator.setPublicKeyModulusMaxAsString("50");
         Assert.assertEquals("It should be possible to set minimum modulus to 30 if maximum is 30",
                 keyValidator.getPublicKeyModulusMinAsString(),"30");
         Assert.assertEquals("It should be possible to set maximum modulus to 50 if minimum is 30",
                 keyValidator.getPublicKeyModulusMaxAsString(),"50");
         // Test possible to set same max as min.
-        keyValidator.setPublicKeyModulusMaxAsString("30"); 
+        keyValidator.setPublicKeyModulusMaxAsString("30");
         Assert.assertEquals("It should be possible to set maximum modulus to 30 if minimum is 30",
                 keyValidator.getPublicKeyModulusMaxAsString(),"30");
-        
+
         log.trace("<testPublicKeyModulusMinSmallerThanMax()");
     }
-    
+
     @Test
     public void test01HasSmallerFactorThan() throws Exception {
         log.trace(">test01HasSmallerFactorThan()");
@@ -303,7 +303,7 @@ public class RsaKeyValidatorTest {
                 "Invalid: RSA public key modulus is odd.", messages.get(2));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key modulus is smaller than 17", messages.get(3));
-        // Need to set min to null before lowering max 
+        // Need to set min to null before lowering max
         keyValidator.setPublicKeyExponentMin(null);
         keyValidator.setPublicKeyExponentMax(exponent.subtract(BigInteger.ONE));
         keyValidator.setPublicKeyModulusMin(null);
@@ -313,7 +313,7 @@ public class RsaKeyValidatorTest {
                 "Invalid: RSA public key exponent is greater than 3", keyValidator.validate(publicKey, null).get(1));
         Assert.assertEquals("RSA parameters bounds failure message isn't right",
                 "Invalid: RSA public key modulus is greater than 15", keyValidator.validate(publicKey, null).get(3));
-        
+
         // A-3: Test RSA key validation failed because of modulus factor restriction.
         modulus = BigInteger.valueOf(25);
         exponent = BigInteger.valueOf(3);
@@ -352,7 +352,7 @@ public class RsaKeyValidatorTest {
         log.trace(">testRocaWeakKeys()");
         X509Certificate noroca = CertTools.getCertfromByteArray(noRocaCert, X509Certificate.class);
         X509Certificate roca = CertTools.getCertfromByteArray(rocaCert, X509Certificate.class);
-        
+
         RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
@@ -380,11 +380,11 @@ public class RsaKeyValidatorTest {
         assertEquals("Key validation should have failes", 1, messages.size());
         assertEquals("It should have been a ROCA failure.",
                 "Invalid: RSA public key modulus is a weak key according to CVE-2017-15361.", messages.get(0));
-        
+
         log.trace("<testRocaWeakKeys()");
 
     }
-    
+
     private void profileHasSmallerFactor(final int factor, final BigInteger... modulus) {
         log.trace(">profileHasSmallerFactor()");
 
@@ -400,7 +400,7 @@ public class RsaKeyValidatorTest {
 
         log.trace("<profileHasSmallerFactor()");
     }
-    
+
     private static byte[] noRocaCert = Base64
             .decode(("MIIEdDCCA1ygAwIBAgIIVjkVCQFZomowDQYJKoZIhvcNAQEFBQAwNTEWMBQGA1UE"
                     +"AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"

@@ -30,7 +30,7 @@ import org.cesecore.util.ExternalProcessTools;
 
 /**
  * External command certificate validator for multiple platforms.
- * 
+ *
  * @version $Id$
  */
 public class ExternalCommandCertificateValidator extends CertificateValidatorBase {
@@ -89,7 +89,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @Override
     public void init() {
         super.init();
-        if (null == data.get(EXTERNAL_COMMAND)) {
+        if (data.get(EXTERNAL_COMMAND) == null) {
             setExternalCommand(StringUtils.EMPTY);
         }
         if (data.get(FAIL_ON_ERROR_CODE) == null) {
@@ -130,7 +130,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     @Override
-    public List<String> validate(final CA ca, final Certificate certificate)
+    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsWhitelist externalScriptsWhitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         List<String> messages = new ArrayList<String>();
         log.debug("Validating certificate with external command " + getExternalCommand());
@@ -140,12 +140,9 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         // Add CA certificate chain, that may be processed.
         final List<Certificate> certificates = new ArrayList<Certificate>();
         certificates.add(certificate);
-//        if (ca != null && ca.getCertificateChain() != null) { // [&& ca.getCertificateChain() != null] required for tests!
-//            certificates.addAll(ca.getCertificateChain());
-//        }
         // Run external scripts (is used by publishers as well, writes certificate to disk!).
         final String cmd = getExternalCommand();
-        final List<String> out = runExternalCommandInternal(cmd, certificates);
+        final List<String> out = runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates);
         // Something bad must have happened so that no exit code is returned.
         if (out.size() < 1) {
             messages.add("Invalid: External command could not be initiated: '" + cmd + "'. Command failed.");
@@ -214,15 +211,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     public boolean isFailOnStandardError() {
         return ((Boolean) data.get(FAIL_ON_STANDARD_ERROR)).booleanValue();
     }
-    
+
     /**
      * Tests the external command with the uploaded test certificate (chain).
      * @return a list with size > 0 and the exit code in field with index 0 and STDOUT and ERROR appended subsequently.
      * @throws CertificateException if one of the certificates could not be parsed.
      */
-    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateEncodingException {
+    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateEncodingException, ValidatorNotApplicableException {
         log.info("Test external command certificate validator: " + getProfileName());
-        return runExternalCommandInternal(getExternalCommand(), getTestCertificates());
+        return runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates());
     }
 
     /**
@@ -248,21 +245,24 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     public void setTestStandardAndErrorOut(String testStandardAndErrorOut) {
         this.testStandardAndErrorOut = testStandardAndErrorOut;
     }
-    
+
     public String getPlatform() {
         return ExternalProcessTools.getPlatformString();
     }
-    
+
     /**
-     * Runs the external command 
+     * Runs the external command
      * @param externalCommand the external command.
      * @param certificates the list of certificates.
      * @return a string list holding exit code at index 0, and the STDOUT and ERROUT appended.
      * @throws CertificateEncodingException if the certificates could not be encoded.
      */
-    private List<String> runExternalCommandInternal(String externalCommand, final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException {
-        // White listing scripts paths could be done here, also arguments could be verified here, not to contain subexpressions!
-        final String cmd = extractCommand( externalCommand);
+    private List<String> runExternalCommandInternal(String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
+            final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
+        final String cmd = extractCommand(externalCommand);
+        if (!externalScriptsWhitelist.isPermitted(cmd)) {
+            throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
+        }
         // Test if specified script file exists (hits files and symbolic links, but no aliases).
         if (StringUtils.isNotBlank(cmd)) {
             if (!(new File(cmd)).exists()) {
@@ -274,7 +274,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> arguments = extractArguments(externalCommand);
         final List<String> out = new ArrayList<String>();
         try {
-            out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(), 
+            out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
                     isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, ExternalCommandCertificateValidator.class.getName()));
         } catch(ExternalProcessException e) {
             log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage(), e);
@@ -284,7 +284,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         }
         return out;
     }
-    
+
     private final String extractCommand(String cmd) {
         cmd = cmd.trim();
         final int index = cmd.indexOf(" ");
@@ -296,7 +296,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         }
         return cmd;
     }
-    
+
     private final List<String> extractArguments(String cmd) {
         cmd = cmd.trim();
         final List<String> arguments = new ArrayList<String>();

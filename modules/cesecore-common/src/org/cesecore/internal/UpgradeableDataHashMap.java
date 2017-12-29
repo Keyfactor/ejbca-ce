@@ -205,10 +205,36 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
 
 	// Helper methods for interacting with the stored data
 
-	/** @return the value for the specified key as a primitive (never null) boolean */
+    /**
+     * Retrieve a boolean value from the data map in a safe manner.
+     * @param key the key for the value to retrieve
+     * @param defaultValue the default value to return if the value with the specified key does
+     *                     not exist in the map or cannot be cast to a boolean
+     * @return the value mapped to the key specified as first parameter or the default value
+     *         specified as second parameter if retrieval failed
+     */
     protected boolean getBoolean(final String key, final boolean defaultValue) {
-        final Boolean ret = (Boolean) data.get(key);
-        return (ret==null || !(ret instanceof Boolean) ? defaultValue : ret);
+        final Object object = data.get(key);
+        if (object == null || !(object instanceof Boolean)) {
+            return defaultValue;
+        }
+        return (Boolean) object;
+    }
+
+    /**
+     * Retrieve a non-null string value from the data map in a safe manner.
+     * @param key the key for the value to retrieve
+     * @param defaultValue the default value to return if the value with the specified key does
+     *                     not exist in the map or cannot be cast to a string
+     * @return the value mapped to the key specified as first parameter or the default value
+     *         specified as second parameter if retrieval failed
+     */
+    protected String getString(final String key, final String defaultValue) {
+        final Object object = data.get(key);
+        if (object == null || !(object instanceof String)) {
+            return defaultValue;
+        }
+        return (String) object;
     }
 
     /** Set the value for the specified key as a primitive (never null) boolean */

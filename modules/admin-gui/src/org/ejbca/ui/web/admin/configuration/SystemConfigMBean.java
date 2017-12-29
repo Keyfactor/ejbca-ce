@@ -287,6 +287,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GlobalCesecoreConfiguration globalCesecoreConfiguration = null;
     private AdminPreference adminPreference = null;
     private GuiInfo currentConfig = null;
+    private ValidatorSettings validatorSettings;
     private List<SelectItem> availableCryptoTokens;
     private List<SelectItem> availableKeyAliases;
     private ListDataModel<String> nodesInCluster = null;
@@ -401,6 +402,34 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         return this.currentConfig;
+    }
+
+    /** @return current settings for the Validators tab */
+    public ValidatorSettings getValidatorSettings() {
+        if (validatorSettings == null) {
+            validatorSettings = new ValidatorSettings(new ValidatorSettings.ValidatorSettingsHelper() {
+                @Override
+                public GlobalConfiguration getGlobalConfiguration() {
+                    return SystemConfigMBean.this.getGlobalConfiguration();
+                }
+
+                @Override
+                public void addErrorMessage(final String languageKey, final Object... params) {
+                    SystemConfigMBean.this.addErrorMessage(languageKey, params);
+                }
+
+                @Override
+                public void addInfoMessage(final String languageKey) {
+                    SystemConfigMBean.this.addInfoMessage(languageKey);
+                }
+
+                @Override
+                public void persistConfiguration(final GlobalConfiguration globalConfiguration) throws AuthorizationDeniedException {
+                    getEjbcaWebBean().saveGlobalConfiguration(globalConfiguration);
+                }
+            });
+        }
+        return validatorSettings;
     }
 
     public String getSelectedTab() {
@@ -786,6 +815,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         availableCustomCertExtensionsConfig = null;
         selectedCustomCertExtensionID = 0;
         googleCtPolicy = null;
+        validatorSettings = null;
     }
 
     public void toggleUseAutoEnrollment() { currentConfig.setUseAutoEnrollment(!currentConfig.getUseAutoEnrollment()); }
@@ -934,17 +964,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isCrlStoreAvailable() {
         return WebConfiguration.isCrlStoreEnabled();
     }
-    
+
     /** @return true if CRLStore is deployed. Determined by crlstore.properties file */
     public boolean isCertStoreAvailable() {
         return WebConfiguration.isCertStoreEnabled();
     }
-    
+
     /** @return true if EST is enabled. Should be false for EJBCA CE */
     public boolean isEstAvailable() {
         return getEjbcaWebBean().isEstConfigurationPresent();
     }
-    
+
     public class ProtocolGuiInfo {
         private String protocol;
         private String url;
@@ -967,12 +997,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getUrl() {
             return url;
         }
-        
+
         /** @return true if protocol is enabled */
         public boolean isEnabled() {
             return enabled;
         }
-        
+
         /** @return true if service is available in the deployed instance */
         public boolean isAvailable() {
             // This is only applicable to services/protocols which may be unavailable for some installations,
@@ -988,7 +1018,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             return available;
         }
-        
+
         /** @return user friendly status text. 'Enabled', 'Disabled' or 'Unavailable' if module isn't deployed */
         public String getStatus() {
             if (!isAvailable()) {
@@ -1649,6 +1679,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable()) {
             availableTabs.add("Statedump");
+        }
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
+            availableTabs.add("Validators");
         }
         return availableTabs;
     }
