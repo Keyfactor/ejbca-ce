@@ -5440,7 +5440,7 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
             <source>
 /usr/local/opt/script.sh -param1 -param2
 /usr/local/opt/script.sh -param1 -param2 %cert%
-openssl x509 -text -noout %cert%
+openssl x509 -text -noout -in %cert%
             </source>
 			<subsubsection name="Whitelisting of scripts">
 			<p>An administrator may want impose restrictions on which scrips can be executed or not for security reasons. It is possible to do this using a whitelist which can be configured
