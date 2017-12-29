@@ -5450,9 +5450,6 @@ openssl x509 -text -noout %cert%
 			If the External Scripts Whitelist has been enabled by an administrator and a Validator tries to execute a command which is not on the whitelist, the "Validator was not applicable" action 
 			is carried out.
 			</note>
-			<note>
-			The whitelist is always disabled when using the "Test" button to test an external command.
-			</note>
 			<p>The format of the whitelist is as follows: Each line should contain the full path of the whitelisted script. Lines beginning with the character '#' are treated as comments. The whitelist
 			can contain any number of scripts. An empty (enabled) whitelist will effectively block execution of all external scripts. Below follows an example of a syntactically valid whitelist:</p>
             <source>
