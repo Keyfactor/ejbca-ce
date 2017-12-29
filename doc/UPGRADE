@@ -63,6 +63,10 @@ EJBCA 6.11 upgrades the Peers Protocol with information about protocol (CMP, ETC
 it's highly recommended to upgrade RAs/VAs before the CAs, though the consequences for performing the upgrade in the incorrect order is merely that 
 any CMP or WS proxying will cease to work during the upgrade. 
 
+We've made running external scripts from within EJBCA (the new External Command Certificate Validator, and the old General Purpose Custom Publisher) 
+configurable under System Configuration. This setting will be turned off by default, mostly to avoid confusion in environments where they can't be 
+applied. If you're currently running a General Purpose Custom Publisher, this setting will be set to active during upgrade. 
+
 SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder. If you are running a legacy responder that still 
 need to use these deprecated algorithms, you have to configure these in the setting 'ocsp.signaturealgorithm' in conf/ocsp.properties.
 
