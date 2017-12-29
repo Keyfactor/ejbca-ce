@@ -323,7 +323,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         // GlobalConfiguration.GLOBAL_CONFIGURATION_ID
         final boolean enabled = ((EnableExternalScriptsConfiguration) globalConfigurationSession.getCachedConfiguration("0")).getEnableExternalScripts();
         for (ProfileData data : keyValidators) {
-            if (!enabled && ExternalCommandCertificateValidator.class.getName().equals( ((Class<? extends Serializable>) data.getDataMap().get("profile.name")).getName())) {
+            if (!enabled && data.getProfile() instanceof ExternalCommandCertificateValidator) {
                 if (log.isTraceEnabled()) {
                     log.trace("Skip " + data.getProfileType() + " with name " + data.getProfileName() + " because calls for external command certificate validators are disabled.");
                 }
