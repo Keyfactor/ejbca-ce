@@ -5466,6 +5466,10 @@ openssl x509 -text -noout -in %cert%
 /opt/scripts/zLint.sh
 #/opt/scripts/IAmDisabled.sh
             </source>
+            <p>
+            This whitelist allows the three scripts '/opt/certlint/certlint', '/opt/certlint/cablint' and '/opt/scripts/zLint.sh' to be executed. There is no restriction on the parameters which can be given
+            as input to these scripts. Any input validation should be done in the script itself.
+            </p>
 			</subsubsection>
 		</subsection>
 	</subsection>
