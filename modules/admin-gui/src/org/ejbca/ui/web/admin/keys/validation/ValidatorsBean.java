@@ -20,6 +20,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.ejb.EJB;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,12 +32,14 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
+import org.cesecore.keys.validation.ExternalScriptsWhitelist;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -398,4 +403,22 @@ public class ValidatorsBean extends BaseManagedBean {
         }
     }
 
+    public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {
+        // TODO I want an ExternalScriptsConfiguration, but GlobalConfigurationSession is not available here?
+        final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
+        final ExternalScriptsWhitelist externalScriptsWhitelist = ExternalScriptsWhitelist.fromText(globalConfiguration.getExternalScriptsWhitelist(),
+                globalConfiguration.getIsExternalScriptsWhitelistEnabled());
+        final String[] arguments = ((String) object).split(" ");
+        if (arguments.length < 1) {
+            ((UIInput) uiComponent).setValid(false);
+            addErrorMessage("COMMAND_IS_EMPTY");
+            return;
+        }
+        final String command = arguments[0];
+        if (!externalScriptsWhitelist.isPermitted(command)) {
+            ((UIInput) uiComponent).setValid(false);
+            addErrorMessage("COMMAND_IS_NOT_PERMITTED");
+            return;
+        }
+    }
 }

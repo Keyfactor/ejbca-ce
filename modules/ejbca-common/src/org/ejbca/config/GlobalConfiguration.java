@@ -20,11 +20,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.config.EnableExternalScriptsConfiguration;
+import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.util.StringTools;
 
@@ -34,7 +35,7 @@ import org.cesecore.util.StringTools;
  *
  * @version $Id$
  */
-public class GlobalConfiguration extends ConfigurationBase implements EnableExternalScriptsConfiguration, Serializable {
+public class GlobalConfiguration extends ConfigurationBase implements ExternalScriptsConfiguration, Serializable {
 
     private static final long serialVersionUID = -2051789798029184421L;
 
@@ -97,7 +98,7 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
 
     private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = false;
-    
+
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
 
     // Default CT Logs
@@ -163,7 +164,7 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
 
     private static final   String ENABLEEXTERNALSCRIPTS        = "enableexternalscripts";
-    
+
     // Configuration for Auto Enrollment
     private static final   String AUTOENROLL_USE = "autoenroll.use";
     private static final   String AUTOENROLL_ADSERVER = "autoenroll.adserver";
@@ -198,6 +199,8 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     private static final   String ERRORPAGE             =  "errorpage";
     private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
+    private static final String EXTERNAL_SCRIPTS_WHITELIST = "external_scripts_whitelist";
+    private static final String IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED = "is_external_scripts_whitelist_enabled";
 
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
 
@@ -538,7 +541,7 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
        public void setEnableExternalScripts(final boolean value) { putBoolean(ENABLEEXTERNALSCRIPTS, value); }
        @Override
        public boolean getEnableExternalScripts() { return getBoolean(ENABLEEXTERNALSCRIPTS, DEFAULTENABLEEXTERNALSCRIPTS); }
-       
+
     public boolean getPublicWebCertChainOrderRootFirst() {
         return getBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST);
     }
@@ -621,5 +624,25 @@ public class GlobalConfiguration extends ConfigurationBase implements EnableExte
     @Override
     public String getConfigurationId() {
         return GLOBAL_CONFIGURATION_ID;
+    }
+
+    @Override
+    public String getExternalScriptsWhitelist() {
+        return getString(EXTERNAL_SCRIPTS_WHITELIST, StringUtils.EMPTY);
+    }
+
+    @Override
+    public void setExternalScriptsWhitelist(final String value) {
+        data.put(EXTERNAL_SCRIPTS_WHITELIST, value);
+    }
+
+    @Override
+    public boolean getIsExternalScriptsWhitelistEnabled() {
+        return getBoolean(IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED, false);
+    }
+
+    @Override
+    public void setIsExternalScriptsWhitelistEnabled(final boolean value) {
+        data.put(IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED, value);
     }
 }
