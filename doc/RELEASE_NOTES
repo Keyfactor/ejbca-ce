@@ -10,7 +10,7 @@ enterprise users. An External Validator functions much like the existing validat
 certificate object and calls on local script on the local system. 
 
 We've also added a few of features to make VA/RA installations more secure in the DMZ. In order to guard against possible 0-days or protocol 
-vulnerabilities we've added added the Protocol Configuration-tab to System Configuration. Through this tab all incoming protocols or servlets can
+vulnerabilities we've added the Protocol Configuration-tab to System Configuration. Through this tab all incoming protocols or servlets can
 be disabled. Additionally, we've added access rules to allow prohibiting CMP and WS calls being sent from the RA/VA to the CA via Peers in case the 
 RA/VA runs the risk of being compromised. The second security feature is connected to the External Validator, adding a configuration value under
 System Configuration that disables both it and the General Purpose Custom Publisher. 
