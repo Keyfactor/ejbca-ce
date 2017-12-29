@@ -511,7 +511,6 @@
                 <include name="publicweb.war" />
                 <include name="scep.war" />
                 <include name="est.war" />
-            	<include name="${in-test-mode-include}est-ejb.jar" />
                 <include name="healthcheck.war" />
                 <include name="clearcache.war" />
                 <include name="webdist.war" />
