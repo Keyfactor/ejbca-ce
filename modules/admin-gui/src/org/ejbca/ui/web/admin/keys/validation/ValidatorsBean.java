@@ -404,7 +404,6 @@ public class ValidatorsBean extends BaseManagedBean {
     }
 
     public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {
-        // TODO I want an ExternalScriptsConfiguration, but GlobalConfigurationSession is not available here?
         final GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
         final ExternalScriptsWhitelist externalScriptsWhitelist = ExternalScriptsWhitelist.fromText(globalConfiguration.getExternalScriptsWhitelist(),
                 globalConfiguration.getIsExternalScriptsWhitelistEnabled());
