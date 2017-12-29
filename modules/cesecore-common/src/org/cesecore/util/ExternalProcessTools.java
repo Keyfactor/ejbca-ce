@@ -184,6 +184,7 @@ public final class ExternalProcessTools {
             }
             // Launch external process.
             final Process externalProcess = Runtime.getRuntime().exec(cmdArray.toArray(new String[] {}), null, null);
+            externalProcess.getOutputStream().close(); // prevent process from trying to wait for user input (e.g. prompt for overwrite, or similar)
             final BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
             final BufferedReader stdOut = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
             String line = null;
