@@ -1786,6 +1786,130 @@ The messages listed here are those returned by the proxy independently of the CA
 
 </section>
 
+<section name="EST (Enterprise Only)">
+	<subsection name="Description">
+		<p>
+			EJBCA supports the Enrollment over Secure Transport (EST) protocol as defined in <a href="https://tools.ietf.org/html/rfc7030">RFC7030</a> 
+			since version 6.11. The purpose of EST is to provide a basic protocol for certificate enrollment and management much in the same way as SCEP, 
+			but provides several distinct advantages:			
+		</p>
+		<ul>
+			<li>
+				While SCEP communicates over HTTP and ensures integrity by wrapping the payload in an cryptographic envelope, EST requests are always 
+				over TLS and thus inherently secure.
+			</li>
+			<li>
+				EST supports ECC, while SCEP does not.
+			</li>
+			<li>
+				While SCEP requires a shared secret to authenticate CSRs, in EST authentication is implicit when negotiating the TLS connection. 
+			</li>
+			<li>
+				Certificate renewal is an integral part of EST, while in SCEP it's rather an afterthought. 
+			</li>
+			<li>
+				EST supports server side key generation, which SCEP does not. 
+			</li>
+		</ul>
+	</subsection>
+	<subsection name="Supported Operations">
+		<p>
+			EJBCA currently supports the following operations in EST:
+		</p>
+		<subsubsection name="cacerts">
+			<p>
+				A GET request returns a cert-only pkcs#7 blob containing the CA certificate (and possible chain) for the given alias that is used to 
+				issuing certificates via enrollment operation. This operation requires no authentication.
+			</p>
+		</subsubsection>
+		<subsubsection name="simpleenroll">
+			<p>
+				A POST request with a CSR in PKCS#10 format and Base64 encoded to be signed by the specificed CA for the given alias. May require a already 
+				existing client certificate for authentication and/or HTTP Basic authentication via username and password.
+			</p>
+		</subsubsection>
+		<subsubsection name="simplereneroll">
+			<p>
+				A POST request with a CSR in PKCS#10 format and Base64 encoded to be signed by the specified CA for the given alias. Requires authenticating 
+				with the original certificate and optional HTTP Basic authentication via username and password.
+			</p>
+		</subsubsection>
+	</subsection>
+	<subsection name="Configuration">
+		<subsubsection name="Access">
+			<p>
+				EJBCA's EST implementation makes use of the the Well-Known URI definition codified in <a href="https://tools.ietf.org/html/rfc5785">
+				RFC 5785</a>. Like SCEP and CMP, EJBCA supports using EST for for multiple CAs by the use of aliases. Each alias is then accessible 
+				via 
+			</p>
+			<source>
+/.well-known/est/&lt;alias&gt;/&lt;operation>&gt; 		
+			</source>				
+		</subsubsection>
+		<subsubsection name="Configuring Aliases">
+			<p>
+				The alias configuration screen should look familiar to anybody who has previously worked in SCEP or CMP: 
+			</p>
+			<p>
+				<img src="images/est_configuration.png" height="223" width="800" />
+			</p>		
+			<p>The configuration values are the following:</p>
+			<div class="DocTable">
+				<table>
+					<tr>
+						<td>Value</td>
+						<td>Description</td>
+				 	</tr>
+					<tr>
+						<td>Default CA</td>
+						<td>The CA that this alias will answer for.</td>
+					</tr>
+					<tr>
+						<td>End Entity Profile</td>
+						<td>The End Entity Profile that enrolling end entities will have applied to them.</td>
+					</tr>
+					<tr>
+						<td>Require Client Certificate</td>
+						<td>Sets if a client certificate is required to enroll. The client certificate does not need to be known by EJBCA, but 
+							the issuing CA is. The client certificate also needs to belong to a Role with full RA rights.</td>
+					</tr>
+					<tr>
+						<td>Client Username/Password</td>
+						<td>Sets a username and password to enroll. If a client certificate is required, these values will be checked as well.</td>
+					</tr>
+					<tr>
+						<td>Certificate Renewal With Same Keys</td>
+						<td>Configures whether a re-enrollment request may be performed for the same key set as before.</td>
+					</tr>
+				</table>
+			</div>		
+		</subsubsection>
+		
+	</subsection>
+	<subsection name="Testing">
+		<p>
+			Clone <a href="https://github.com/cisco/libest">libest</a> from Cisco and build according to instructions:
+		</p>
+		<source>
+$ cd examples/client
+$ # via environment specify the initial CA certificate to use for verifying TLS connection.
+$ cp &lt;path to server cert&gt; server.pem
+$ export EST_OPENSSL_CACERT=server.pem
+$ # Where to save certs
+$ mkdir certs
+$ # Optionally get new CA certificates
+$ ./estclient -g -s &lt;ip or hostname to EJBCA> -p 8442 -o certs --pem-output
+$ # certs should now contain a cacert-0-0.pem file
+$ # enroll with CA. publicCert.pem and privetKey.pem are the TLS client cert I wish to use for auth. RequestDN will be myclient
+$ ./estclient -e -s &lt;ip or hostname to EJBCA&gt; -p 8442 -o certs -c publicCert.pem -k privateKey.pem --pem-output --common-name myclient
+$ # certs will now contain a cert-0-0.pem and key-x-x.pem
+$ # client cert is about to expire, reenroll
+$ ./estclient -r -s &lt;ip or hostname to EJBCA&gt; -p 8442 -o tmp -c tmp/cert-0-0.pem -k tmp/key-x-x.pem --pem-output
+$ # certs should now contain an updated cert-0-0.pem	
+		</source>
+	</subsection>
+</section>
+
 <section name="OCSP">
 <p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
