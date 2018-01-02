@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
@@ -50,7 +50,7 @@ public class ListNewEndEntitiesCommand extends BaseRaCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+        for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                 getAuthenticationToken(), EndEntityConstants.STATUS_NEW)) {
             getLogger().info(
                     "New end entity: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail()

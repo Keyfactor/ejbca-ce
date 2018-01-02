@@ -522,7 +522,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
 
         boolean stopnow = false;
         do {
-            for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+            for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                     .findAllBatchUsersByStatusWithLimit(status)) {
                 if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
                         || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {

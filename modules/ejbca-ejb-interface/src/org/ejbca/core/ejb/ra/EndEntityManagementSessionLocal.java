@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import java.util.Collection;
-import java.util.List;
-
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -41,12 +38,6 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException;
     
-    /**
-     * Finds all users, limited by the maximum query count defined in the global configuration.
-     * 
-     * @return Collection of EndEntityInformation
-     */
-    Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin);
 
     /**
      * Methods that checks if a user exists in the database having the given
@@ -58,26 +49,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     boolean checkForCAId(int caid);
 
-    /**
-     * Method that checks if a user exists in the database having the given
-     * CertificateProfile id. This function is mainly for avoiding
-     * desynchronization when a CertificateProfile is deleted.
-     * 
-     * @param certificateprofileid the id of CertificateProfile to look for.
-     * @return a list of end entities using the certificate profile
-     */
-     List<String> findByCertificateProfileId(int certificateprofileid);
-    
-    /**
-     * Methods that returns a list of users in the database having the given
-     * EndEntityProfile id. This function is mainly for avoiding
-     * desynchronization when a end entity profile is deleted.
-     * 
-     * @param endentityprofileid the id of end entity profile to look for
-     * @return a list of UserDatas with the End Entity Profile
-     */
-    List<UserData> findByEndEntityProfileId(int endentityprofileid);
-    
+   
     /**
      * Methods that checks if a user exists in the database having the given
      * HardTokenProfile id. This function is mainly for avoiding
@@ -125,9 +97,6 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
 
-    /**
-     * Like {@link EndEntityManagementSession#findAllUsersByCaId}, but performs no auth check.
-     */
-    Collection<EndEntityInformation> findAllUsersByCaIdNoAuth(int caid);
+
 
 }

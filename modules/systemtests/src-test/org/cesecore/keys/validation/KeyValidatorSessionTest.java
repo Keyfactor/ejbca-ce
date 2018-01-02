@@ -83,6 +83,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -127,6 +128,8 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
 
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
+    private EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    
     private EndEntityManagementSessionRemote endEntityManagementSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
 
@@ -891,7 +894,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         user.setPassword(TEST_EE_PASSWORD);
         user.setEndEntityProfileId(endEntityProfileSession.getEndEntityProfileId(TEST_EEP_NAME));
         endEntityManagementSessionRemote.addUser(internalAdmin, user, false);
-        final Collection<EndEntityInformation> result = endEntityManagementSessionRemote.findAllUsersByCaId(internalAdmin, testCA.getCAId());
+        final Collection<EndEntityInformation> result = endEntityAccessSessionRemote.findAllUsersByCaId(internalAdmin, testCA.getCAId());
         assertNotNull(result);
         Object o = result.toArray()[0];
         assertNotNull(o);

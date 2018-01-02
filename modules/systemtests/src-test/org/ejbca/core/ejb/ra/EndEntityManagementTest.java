@@ -287,7 +287,7 @@ public class EndEntityManagementTest extends CaTestCase {
     public void testListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
-        Collection<EndEntityInformation> coll = endEntityManagementSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
+        Collection<EndEntityInformation> coll = endEntityAccessSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
         Iterator<EndEntityInformation> iter = coll.iterator();
         while (iter.hasNext()) {
 
@@ -297,7 +297,7 @@ public class EndEntityManagementTest extends CaTestCase {
             endEntityManagementSession.setUserStatus(admin, data.getUsername(), EndEntityConstants.STATUS_GENERATED);
         }
 
-        Collection<EndEntityInformation> coll1 = endEntityManagementSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
+        Collection<EndEntityInformation> coll1 = endEntityAccessSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.trace("<test05ListNewUser()");
     }

@@ -12,11 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /**
  * Provides find methods for EndEntityInformation objects. 
@@ -58,4 +61,52 @@ public interface EndEntityAccessSession {
      */
      List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException;
     
+     /**
+      * Finds all users with a specified status.
+      * 
+      * @param status the status to look for, from 'UserData'.
+      * @return Collection of EndEntityInformation
+      */
+     Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status);
+
+     /**
+      * Finds all users registered to a specified CA.
+      * 
+      * @param caid the caid of the CA, from 'UserData'.
+      * @return Collection of EndEntityInformation, or empty collection if the query is
+      *         illegal or no users exist
+      */
+     Collection<EndEntityInformation> findAllUsersByCaId(AuthenticationToken admin, int caid);
+
+     /**
+      * Finds all batch users with a specified status. Limited by the maximum query count define in the global configuration.
+      * 
+      * @param status the status, from 'UserData'.
+      * @return all EndEntityInformation objects or an empty list
+      */
+     List<EndEntityInformation> findAllBatchUsersByStatusWithLimit(int status);
+     
+     /**
+      * Method to execute a customized query on the ra user data. The parameter
+      * query should be a legal Query object.
+      * 
+      * @param query a number of statements compiled by query class to a SQL
+      *            'WHERE'-clause statement.
+      * @param caauthorizationstring is a string placed in the where clause of
+      *            SQL query indication which CA:s the administrator is
+      *            authorized to view.
+      * @param endentityprofilestring is a string placed in the where clause of
+      *            SQL query indication which endentityprofiles the
+      *            administrator is authorized to view.
+      * @param numberofrows the number of rows to fetch, use 0 for the maximum query count define in the global configuration.
+      * @param endentityAccessRule The end entity access rule that is necessary 
+      *            to execute the query
+      * @return a collection of EndEntityInformation.
+      * @throws IllegalQueryException when query parameters internal rules isn't
+      *            fulfilled.
+      * @see org.ejbca.util.query.Query
+      */
+     Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
+             String endentityprofilestring, int numberofrows, String endentityAccessRule) throws IllegalQueryException;
+
 }

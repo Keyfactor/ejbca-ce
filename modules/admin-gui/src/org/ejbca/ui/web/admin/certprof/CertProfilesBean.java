@@ -384,7 +384,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             } else if (numberOfEndEntitiesReferencingCP > 0) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");
-                final List<String> eeNames = getEjbcaWebBean().getEjb().getEndEntityManagementSession()
+                final List<String> eeNames = getEjbcaWebBean().getEjb().getEndEntityAccessSession()
                         .findByCertificateProfileId(certificateProfileId);
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DISPLAYINGFIRSTTENRESULTS") + numberOfEndEntitiesReferencingCP + " "
                         + getAsCommaSeparatedString(eeNames));
