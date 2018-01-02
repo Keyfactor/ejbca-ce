@@ -57,9 +57,12 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /** Selected key validator id. */
     private Integer selectedKeyValidatorId = null;
-
+    
     /** Selected key validator name. */
     private String keyValidatorName = StringUtils.EMPTY;
+
+    /** Current key validator id.*/
+    private int currentValidatorId = -1;
 
     private boolean renameInProgress = false;
     private boolean deleteInProgress = false;
@@ -116,7 +119,15 @@ public class ValidatorsBean extends BaseManagedBean {
         validatorItems = null;
         return StringUtils.EMPTY;
     }
+    
+    public int getCurrentValidatorId() {
+        return currentValidatorId;
+    }
 
+    public void setCurrentValidatorId(int currentValidatorId) {
+        this.currentValidatorId = currentValidatorId;
+    }
+    
     /**
      * Internal class for key validator items rendered as table.
      */

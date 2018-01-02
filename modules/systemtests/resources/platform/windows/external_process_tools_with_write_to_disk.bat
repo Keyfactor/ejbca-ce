@@ -16,7 +16,8 @@ REM Test file for an external script logging to ERROUT and returning exit code 1
 REM Parameter 3 must be integer and is returned as exit code.
 
 ECHO "External script called with full path of certificate file as parameter 1"
-ECHO "Parameter: %1"
+ECHO "Path: %0"
+ECHO "Certificate: %1"
 ECHO "Parameter: %2"
 ECHO "Parameter: %3"
 ECHO "Sample Error." 1>&2

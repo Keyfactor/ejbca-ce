@@ -59,6 +59,7 @@ import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -92,9 +93,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     // @javax.faces.bean.ManagedProperty(value="#{certProfilesBean}")
     private ValidatorsBean validatorsBean;
 
-    /** Selected key validator id.*/
-    private int currentValidatorId = -1;
-    
     /** Selected key validator. */
     private Validator validator = null;
 
@@ -102,7 +100,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
-        currentValidatorId = -1;
+        getValidatorsBean().setCurrentValidatorId(-1);
+        if (validator instanceof ExternalCommandCertificateValidator) {
+            ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
+        }
         validator = null;
     }
 
@@ -123,19 +124,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Gets the selected key validator id.
-     * @return the id.
-     */
-    public Integer getSelectedKeyValidatorId() {
-        return validatorsBean.getSelectedKeyValidatorId();
-    }
-
-    /**
      * Gets the selected key validator name.
      * @return the name.
      */
     public String getSelectedKeyValidatorName() {
-        return keyValidatorSession.getKeyValidatorName(getSelectedKeyValidatorId());
+        return keyValidatorSession.getKeyValidatorName(validatorsBean.getSelectedKeyValidatorId());
     }
 
     /**
@@ -143,16 +136,18 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the  validator.
      */
     public Validator getValidator() {
-        if (currentValidatorId != -1 && validator != null && getSelectedKeyValidatorId().intValue() != currentValidatorId) {
+        final int newId = validatorsBean.getSelectedKeyValidatorId();
+        final int oldId = validatorsBean.getCurrentValidatorId();
+        if (validator != null && oldId != newId) {
             reset();
         }
-        if (validator == null) {
+        if (validator == null && newId != -1) {
             if (log.isDebugEnabled()) {
-                log.debug("Request validator with id " + getSelectedKeyValidatorId());
+                log.debug("Request validator with id " + validatorsBean.getSelectedKeyValidatorId());
             }
-            currentValidatorId = getSelectedKeyValidatorId().intValue();
-            validator = keyValidatorSession.getValidator(currentValidatorId);
-        }
+            validatorsBean.setCurrentValidatorId(newId);
+            validator = keyValidatorSession.getValidator(newId);
+        } 
         return validator;
     }
 
@@ -177,7 +172,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         final String type = (String) ((HtmlSelectOneMenu) e.getComponent()).getValue();
         validator = ValidatorFactory.INSTANCE.getArcheType(type);
         validator.setDataMap(getValidator().getDataMap());
-        validator.setProfileId(getSelectedKeyValidatorId());
+        validator.setProfileId(validatorsBean.getSelectedKeyValidatorId());
         validator.setProfileName(getSelectedKeyValidatorName());
         FacesContext.getCurrentInstance().renderResponse();
     }
@@ -195,6 +190,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * 
      * @return List of the available key validator types
      */
+    @SuppressWarnings("rawtypes")
     public List<SelectItem> getAvailableValidators() {
         final List<Class> excludeClasses = new ArrayList<Class>();
         if (!((GlobalConfiguration) configurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts()) {
@@ -269,7 +265,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         if (!validator.getValidatorTypeIdentifier().equals(value)) {
             validator = ValidatorFactory.INSTANCE.getArcheType(value);
             validator.setDataMap(getValidator().getDataMap());
-            validator.setProfileId(getSelectedKeyValidatorId());
+            validator.setProfileId(validatorsBean.getSelectedKeyValidatorId());
             validator.setProfileName(getSelectedKeyValidatorName());
         }
     }
@@ -611,37 +607,52 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     public void setTestExternalCommandCertificateValidatorPath(final UploadedFile file) {
-    	if (log.isDebugEnabled()) {
-    	    log.debug("Uploaded test certificate file is: " + file);
-    	}
+    	final List<Certificate> certificates = new ArrayList<Certificate>();
         if (file != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Uploaded test certificate file is: " + file.getName());
+            }
             this.testExternalCommandCertificateValidatorPath = file;
             try {
-                final List<Certificate> certificates = CertTools.getCertsFromPEM(file.getInputStream(), Certificate.class);
-                ((ExternalCommandCertificateValidator) validator).setTestCertificates(certificates);
-                if (log.isDebugEnabled()) {
-                    log.info("Test certificates uploaded: " + certificates);
-                }
+                certificates.addAll(CertTools.getCertsFromPEM(file.getInputStream(), Certificate.class));
             } catch(IOException e) {
-                log.warn("Could not load file: " + e.getMessage(), e);
+                final String message = "Could not load file: " + e.getMessage();
+                addErrorMessage(message);
+                log.info(message, e);
             } catch(CertificateParsingException e) {
-                log.warn("Could not parse certificates: " + e.getMessage(), e);
+                final String message = "Could not parse certificate: " + e.getMessage();
+                addErrorMessage(message);
+                log.info(message, e);
             }
         }
+        if (log.isDebugEnabled()) {
+            log.info("Test certificates uploaded: " + certificates);
+        }
+        ((ExternalCommandCertificateValidator) validator).setTestCertificates(certificates);
     }
     
     public String testExternalCommandCertificateValidatorAction() throws Exception {
+        if (validator instanceof ExternalCommandCertificateValidator) {
+            ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
+        }
         if (testExternalCommandCertificateValidatorPath == null) {
             addErrorMessage("EXTERNALCERTIFICATEVALIDATORTESTPATHMISSING");
-            return "";
+        } else {
+            final List<String> lines = new ArrayList<String>();
+            try {
+                lines.addAll(((ExternalCommandCertificateValidator) validator).testExternalCommandCertificateValidatorAction());
+                ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.join(lines, getLineSeparator()));
+                if (log.isDebugEnabled()) {
+                    log.debug("Tested certificate with external command STDOUT/ERROUT:" + System.getProperty("line.separator") 
+                        + ((ExternalCommandCertificateValidator) validator).getTestStandardAndErrorOut());
+                }
+            } catch(ExternalProcessException e) { // External script not found or other severe errors.
+                addNonTranslatedErrorMessage(e.getMessage());
+            }
         }
-        final List<String> lines = ((ExternalCommandCertificateValidator) validator).testExternalCommandCertificateValidatorAction();
-        ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.join(lines, getLineSeparator()));
-        if (log.isDebugEnabled()) {
-            log.debug("Test certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + ((ExternalCommandCertificateValidator) validator).getTestStandardAndErrorOut());
-        }
+        testExternalCommandCertificateValidatorPath = null;
         FacesContext.getCurrentInstance().renderResponse();
-        return "";
+        return StringUtils.EMPTY;
     }
     
     public String getLineSeparator() {

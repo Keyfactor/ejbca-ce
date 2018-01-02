@@ -14,12 +14,14 @@ package org.cesecore.util;
 
 import java.util.List;
 
+import org.cesecore.CesecoreException;
+
 /**
  * The external process exception is the base exception to handle (platform dependent) external process calls ({@link ExternalProcessTools}. 
  * 
  * @version $Id$
  */
-public class ExternalProcessException extends RuntimeException {
+public class ExternalProcessException extends CesecoreException {
 
     private static final long serialVersionUID = 1L;
 
@@ -74,7 +76,7 @@ public class ExternalProcessException extends RuntimeException {
      * Parameterized constructor.
      * @param cause the cause.
      */
-    public ExternalProcessException(final Throwable cause) {
+    public ExternalProcessException(final Exception cause) {
         super(cause);
     }
 
