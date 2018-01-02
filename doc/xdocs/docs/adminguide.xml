@@ -1795,7 +1795,7 @@ The messages listed here are those returned by the proxy independently of the CA
 		</p>
 		<ul>
 			<li>
-				While SCEP communicates over HTTP and ensures integrity by wrapping the payload in an cryptographic envelope, EST requests are always 
+				While SCEP communicates over HTTP and ensures integrity by wrapping the payload in a cryptographic envelope, EST requests are always 
 				over TLS and thus inherently secure.
 			</li>
 			<li>
@@ -1818,13 +1818,13 @@ The messages listed here are those returned by the proxy independently of the CA
 		</p>
 		<subsubsection name="cacerts">
 			<p>
-				A GET request returns a cert-only pkcs#7 blob containing the CA certificate (and possible chain) for the given alias that is used to 
+				A GET request that returns a cert-only pkcs#7 blob containing the CA certificate (and possible chain) for the given alias that is used to 
 				issuing certificates via enrollment operation. This operation requires no authentication.
 			</p>
 		</subsubsection>
 		<subsubsection name="simpleenroll">
 			<p>
-				A POST request with a CSR in PKCS#10 format and Base64 encoded to be signed by the specificed CA for the given alias. May require a already 
+				A POST request with a CSR in PKCS#10 format and Base64 encoded to be signed by the specificed CA for the given alias. May require an already 
 				existing client certificate for authentication and/or HTTP Basic authentication via username and password.
 			</p>
 		</subsubsection>
@@ -1843,7 +1843,7 @@ The messages listed here are those returned by the proxy independently of the CA
 				via 
 			</p>
 			<source>
-/.well-known/est/&lt;alias&gt;/&lt;operation>&gt; 		
+/.well-known/est/&lt;alias&gt;/&lt;operation&gt; 		
 			</source>				
 		</subsubsection>
 		<subsubsection name="Configuring Aliases">
