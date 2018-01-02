@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
@@ -140,18 +141,23 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         // Add CA certificate chain, that may be processed.
         final List<Certificate> certificates = new ArrayList<Certificate>();
         certificates.add(certificate);
-        // Run external scripts (is used by publishers as well, writes certificate to disk!).
         final String cmd = getExternalCommand();
-        final List<String> out = runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates);
-        // Something bad must have happened so that no exit code is returned.
+        final List<String> out = new ArrayList<String>();
+        // Run external scripts (is used by publishers as well, writes certificate to disk!).
+        try {
+            out.addAll(runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates));
+        } catch(ValidatorNotApplicableException e) {
+            throw e;
+        } catch(ExternalProcessException e) {
+            throw new ValidatorNotApplicableException( "External command could not be called, because it does not exit, access was denied or another severe error occured.");
+        }
+        // Something bad must have happened so that no exit code was returned.
         if (out.size() < 1) {
             messages.add("Invalid: External command could not be initiated: '" + cmd + "'. Command failed.");
-        } else { // exit code -1 is command not found or access denied.
+        } else {
             final int exitCode = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
             if (exitCode > 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
                 messages.add("Invalid: External command terminated with exit code " + exitCode + ". Command failed.");
-            } else if (exitCode == -1) {
-                messages.add("Invalid: External command terminated with exit code -1 (command could not be found or access was denied). Command failed.");
             }
         }
         return messages;
@@ -216,10 +222,16 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * Tests the external command with the uploaded test certificate (chain).
      * @return a list with size > 0 and the exit code in field with index 0 and STDOUT and ERROR appended subsequently.
      * @throws CertificateException if one of the certificates could not be parsed.
+     * @throws ValidatorNotApplicableException if the validator could not be applicated (wrong CA or key type, external script path is not in white list).
+     * @throws ExternalProcessException if the external script path does not exist or accessible or the script call fails otherwise.
      */
-    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateEncodingException, ValidatorNotApplicableException {
-        log.info("Test external command certificate validator: " + getProfileName());
-        return runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates());
+    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateEncodingException, ValidatorNotApplicableException, ExternalProcessException {
+        final List<String> out = new ArrayList<String>();
+        if (CollectionUtils.isNotEmpty(getTestCertificates())) {
+            log.info("Test external command certificate validator: " + getProfileName());
+            out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
+        }
+        return out;
     }
 
     /**
@@ -263,11 +275,12 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         if (!externalScriptsWhitelist.isPermitted(cmd)) {
             throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
         }
-        // Test if specified script file exists (hits files and symbolic links, but no aliases).
+        // Test if specified script file exists and is executable (hits files and symbolic links, but no aliases).
         if (StringUtils.isNotBlank(cmd)) {
-            if (!(new File(cmd)).exists()) {
-                String msg = intres.getLocalizedMessage("process.commandnotfound", cmd);
-                log.error(msg);
+            if (!(new File(cmd)).canExecute()) {
+                // EXTERNALCERTIFICATEVALIDATORTESTPATHMISSING
+                final String msg = intres.getLocalizedMessage("process.commandnotfound", cmd);
+                log.warn(msg);
                 throw new ExternalProcessException(msg);
             }
         }
