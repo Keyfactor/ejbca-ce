@@ -281,7 +281,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
         final String cmd = extractCommand(externalCommand);
         if (!externalScriptsWhitelist.isPermitted(cmd)) {
-            throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
+             throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
         }
         // Test if specified script file exists and is executable (hits files and symbolic links, but no aliases).
         if (StringUtils.isNotBlank(cmd)) {
