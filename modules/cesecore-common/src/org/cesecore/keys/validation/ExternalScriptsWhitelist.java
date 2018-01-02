@@ -21,12 +21,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Class containing logic for a whitelist of scripts allowed to be executed by "External Command Validators".
  * @version $Id$
  */
 public class ExternalScriptsWhitelist {
+    
+    /** Class logger. */
+    private static final Logger log = Logger.getLogger(ExternalScriptsWhitelist.class);
+
     private final List<File> scripts;
     private final boolean isEnabled;
 
@@ -171,6 +176,9 @@ public class ExternalScriptsWhitelist {
             return true;
         }
         for (final String path : getScriptsPaths()) {
+            if (log.isDebugEnabled()) {
+                log.debug( "Compare command '" + command + "' with whitlisted path '" + path + "'.");
+            }
             if (StringUtils.equals(command, path)) {
                 return true;
             }
