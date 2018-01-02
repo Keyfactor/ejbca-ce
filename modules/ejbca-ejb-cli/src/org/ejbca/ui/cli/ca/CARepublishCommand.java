@@ -38,7 +38,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -146,7 +146,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
             if (eecertmode) {
                 // Get all users for this CA
-                Collection<EndEntityInformation> coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                Collection<EndEntityInformation> coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class)
                         .findAllUsersByCaId(getAuthenticationToken(), cainfo.getCAId());
                 Iterator<EndEntityInformation> iter = coll.iterator();
                 while (iter.hasNext()) {

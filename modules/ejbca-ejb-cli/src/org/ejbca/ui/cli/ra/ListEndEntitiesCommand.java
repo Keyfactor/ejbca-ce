@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -77,20 +77,20 @@ public class ListEndEntitiesCommand extends BaseRaCommand {
         }
         Collection<EndEntityInformation> coll = null;
         if (status == 0) {
-            coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(),
+            coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(),
                     EndEntityConstants.STATUS_NEW);
-            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                     getAuthenticationToken(), EndEntityConstants.STATUS_FAILED));
-            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                     getAuthenticationToken(), EndEntityConstants.STATUS_INITIALIZED));
-            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                     getAuthenticationToken(), EndEntityConstants.STATUS_INPROCESS));
-            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                     getAuthenticationToken(), EndEntityConstants.STATUS_GENERATED));
-            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+            coll.addAll(EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(
                     getAuthenticationToken(), EndEntityConstants.STATUS_REVOKED));
         } else {
-            coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(),
+            coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(),
                     status);
         }
         if (coll.size() == 0) {

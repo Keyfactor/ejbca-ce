@@ -81,7 +81,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberData;
@@ -128,7 +127,6 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.FieldValidator;
-import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -139,10 +137,6 @@ import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
 import org.ejbca.util.mail.MailSender;
-import org.ejbca.util.query.BasicMatch;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
-import org.ejbca.util.query.UserMatch;
 
 /**
  * Manages end entities in the database using UserData Entity Bean.
@@ -189,16 +183,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
 
-    /** Columns in the database used in select. */
-    private static final String USERDATA_CREATED_COL = "timeCreated";
+
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-    }
-    
-    private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
-        return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 
     private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
@@ -1821,58 +1810,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
        
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersByStatus(" + status + ")");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for users with status: " + status);
-        }
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
-        Collection<EndEntityInformation> returnval = null;
-        try {
-            returnval = query(admin, query, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
-        } catch (IllegalQueryException e) {
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("found " + returnval.size() + " user(s) with status=" + status);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersByStatus(" + status + ")");
-        }
-        return returnval;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<EndEntityInformation> findAllUsersByCaId(AuthenticationToken admin, int caid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersByCaId(" + caid + ")");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for users with caid: " + caid);
-        }
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
-        Collection<EndEntityInformation> returnval = null;
-        try {
-            returnval = query(admin, query, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
-        } catch (IllegalQueryException e) {
-            // Ignore ??
-            log.debug("Illegal query", e);
-            returnval = new ArrayList<EndEntityInformation>();
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("found " + returnval.size() + " user(s) with caid=" + caid);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersByCaId(" + caid + ")");
-        }
-        return returnval;
-    }
+   
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -1905,193 +1843,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         return ret;
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersWithLimit()");
-        }
-        Collection<EndEntityInformation> returnval = null;
-        try {
-            returnval = query(admin, null, null, null, 0, AccessRulesConstants.VIEW_END_ENTITY);
-        } catch (IllegalQueryException e) {
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersWithLimit()");
-        }
-        return returnval;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<EndEntityInformation> findAllBatchUsersByStatusWithLimit(int status) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersByStatusWithLimit()");
-        }
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
-        query.setParameter("status", status);
-        query.setMaxResults(getGlobalCesecoreConfiguration().getMaximumQueryCount());        
-        @SuppressWarnings("unchecked")
-        final List<UserData> userDataList = query.getResultList();
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
-        for (UserData ud : userDataList) {
-            EndEntityInformation endEntityInformation = ud.toEndEntityInformation();
-            if (endEntityInformation.getPassword() != null && endEntityInformation.getPassword().length() > 0) {
-                returnval.add(endEntityInformation);
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersByStatusWithLimit()");
-        }
-        return returnval;
-    }
-    
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<EndEntityInformation> findAllUsersByCaIdNoAuth(int caid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findAllUsersByCaIdNoAuth()");
-        }
-        final List<UserData> userDataList = UserData.findByCAId(entityManager, caid);
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
-        for (UserData ud : userDataList) {
-            returnval.add(ud.toEndEntityInformation());
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findAllUsersByCaIdNoAuth()");
-        }
-        return returnval;
-    }
-
-    /**
-     * 
-     * Help function used to retrieve user information. A query parameter of null indicates all users. If caauthorizationstring or
-     * endentityprofilestring are null then the method will retrieve the information itself.
-     * 
-     * 
-     * @param admin
-     * @param query
-     * @param withlimit
-     * @param caauthorizationstr
-     * @param endentityprofilestr
-     * @param numberofrows the number of rows to fetch, use 0 for the value defined in GlobalConfiguration 
-     * @param endentityAccessRule
-     * @return
-     * @throws IllegalQueryException
-     */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final String caauthorizationstr,
-            final String endentityprofilestr, final int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
-        boolean authorizedtoanyprofile = true;
-        final String caauthorizationstring = StringTools.strip(caauthorizationstr);
-        final String endentityprofilestring = StringTools.strip(endentityprofilestr);
-        final ArrayList<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
-        int fetchsize = getGlobalCesecoreConfiguration().getMaximumQueryCount();
-
-        if (numberofrows != 0) {
-            fetchsize = numberofrows;
-        }
-
-        // Check if query is legal.
-        if (query != null && !query.isLegalQuery()) {
-            throw new IllegalQueryException();
-        }
-
-        String sqlquery = "";
-        if (query != null) {
-            sqlquery = sqlquery + query.getQueryString();
-        }
-
-        final GlobalConfiguration globalconfiguration = getGlobalConfiguration();
-        String caauthstring = caauthorizationstring;
-        String endentityauth = endentityprofilestring;
-        RAAuthorization raauthorization = null;
-        if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
-            caauthstring = raauthorization.getCAAuthorizationString();
-            if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-                endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);
-            } else {
-                endentityauth = "";
-            }
-        }
-
-        if (!caauthstring.trim().equals("") && query != null) {
-            sqlquery = sqlquery + " AND " + caauthstring;
-        } else {
-            sqlquery = sqlquery + caauthstring;
-        }
-
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-            if (endentityauth == null || endentityauth.trim().equals("")) {
-                authorizedtoanyprofile = false;
-            } else {
-                if (caauthstring.trim().equals("") && query == null) {
-                    sqlquery = sqlquery + endentityauth;
-                } else {
-                    sqlquery = sqlquery + " AND " + endentityauth;
-                }
-            }
-        }
-        // Finally order the return values
-        sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
-        if (log.isDebugEnabled()) {
-            log.debug("generated query: " + sqlquery);
-        }
-        if (authorizedtoanyprofile) {
-            final javax.persistence.Query dbQuery = entityManager.createQuery("SELECT a FROM UserData a WHERE " + sqlquery);
-            if (fetchsize > 0) {
-                dbQuery.setMaxResults(fetchsize);
-            }           
-            @SuppressWarnings("unchecked")
-            final List<UserData> userDataList = dbQuery.getResultList();
-            for (UserData userData : userDataList) {
-                returnval.add(userData.toEndEntityInformation());
-            }
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("authorizedtoanyprofile=false");
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<query(): " + returnval.size());
-        }
-        return returnval;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<UserData> findByEndEntityProfileId(int endentityprofileid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">findByEndEntityProfileId(" + endentityprofileid + ")");
-        }
-        List<UserData> found = UserData.findByEndEntityProfileId(entityManager, endentityprofileid);
-        if (log.isTraceEnabled()) {
-            log.trace("<findByEndEntityProfileId(" + endentityprofileid + "), found: " + found.size());
-        }
-        return found;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<String> findByCertificateProfileId(int certificateprofileid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">checkForCertificateProfileId("+certificateprofileid+")");
-        }
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
-        query.setParameter("certificateProfileId", certificateprofileid);
-
-        List<String> result = new ArrayList<String>();
-        for(Object userDataObject : query.getResultList()) {
-                result.add(((UserData) userDataObject).getUsername());
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<checkForCertificateProfileId("+certificateprofileid+"): "+result.size());
-        }
-        return result;
-        
-    }
+   
    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override

@@ -57,6 +57,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -87,6 +88,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     private RevokeEndEntityCommand command0;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RevokeEndEntityCommandTest"));
 
+    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
@@ -119,8 +121,8 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
         try {
             assertFalse(eeSession.existsUser(USER_NAME));
             final EndEntityInformation userdata = new EndEntityInformation(USER_NAME, "C=SE, O=PrimeKey, CN=" + USER_NAME, caid, null, null,
-                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
-                    SecConst.TOKEN_SOFT_P12, 0, null);
+                    EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             eeSession.addUser(admin, userdata, false);
             assertTrue(eeSession.existsUser(USER_NAME));
@@ -128,7 +130,8 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             // Create a certificate for the user
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
-            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, userdata, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+            X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, userdata, req,
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate)resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             fingerprint = CertTools.getFingerprintAsString(cert);
@@ -141,7 +144,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, USER_NAME);
             final String caauthstring = null;
             final String eeprofilestr = null;
-            Collection<EndEntityInformation> col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.REVOKE_END_ENTITY);
+            Collection<EndEntityInformation> col = endEntityAccessSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.REVOKE_END_ENTITY);
             assertEquals(1, col.size());
             EndEntityInformation eei = col.iterator().next();
             assertEquals("CN="+USER_NAME+",O=PrimeKey,C=SE", eei.getDN());

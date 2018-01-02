@@ -170,6 +170,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -228,6 +229,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
@@ -427,7 +430,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Update End-Entities
-        final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaIdNoAuth(fromId);
+        final Collection<EndEntityInformation> endEntities = endEntityAccessSession.findAllUsersByCaIdNoAuth(fromId);
         for (EndEntityInformation endEntityInfo : endEntities) {
             try {
                 if (log.isDebugEnabled()) {
