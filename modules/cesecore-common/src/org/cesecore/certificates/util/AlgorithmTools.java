@@ -87,7 +87,9 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
             AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
-            AlgorithmConstants.SIGALG_SHA512_WITH_RSA
+            AlgorithmConstants.SIGALG_SHA512_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA
     ));
 
     /** Signature algorithms supported by DSA keys */
@@ -101,7 +103,9 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA,
-            AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA
+            AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA
     ));
 
     /** Signature algorithms supported by GOST keys */
@@ -154,7 +158,7 @@ public abstract class AlgorithmTools {
 
     /**
      * Get unique available named elliptic curves and their aliases.
-     * 
+     *
      * @param hasToBeKnownByDefaultProvider if the curve name needs to be known by the default provider (e.g. so Sun PKCS#11 can use it)
      * @return a Map with elliptic curve names as key and the key+any alias as the value.
      */
@@ -171,7 +175,7 @@ public abstract class AlgorithmTools {
 
         // Process additional curves that we specify
         for (String ecNamedCurve : AlgorithmConstants.EXTRA_EC_CURVES) {
-            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);            
+            processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
         }
         return processedCurveNames;
     }
@@ -224,7 +228,7 @@ public abstract class AlgorithmTools {
         if (ecNamedCurveParameterSpec!=null) {
             // This always returns 0, so try to use the field size as an estimate of the bit strength
             //return ECGOST3410NamedCurveTable.getParameterSpec(ecNamedCurve).getN().bitLength()
-            return ecNamedCurveParameterSpec.getCurve().getFieldSize(); 
+            return ecNamedCurveParameterSpec.getCurve().getFieldSize();
         }
         ecNamedCurveParameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
         if (ecNamedCurveParameterSpec==null) {
@@ -375,7 +379,7 @@ public abstract class AlgorithmTools {
                     log.debug("Found EC capable provider named: " + ecProvider.getName());
                 }
                 if (ecProvider.getName().startsWith("SunPKCS11-") && !ecProvider.getName().startsWith("SunPKCS11-NSS") ) {
-                    // Sometimes the P11 provider will not even know about EC, skip these providers. As an example the SunP11 
+                    // Sometimes the P11 provider will not even know about EC, skip these providers. As an example the SunP11
                     // provider in some version/installations will throw a:
                     // java.lang.RuntimeException: Cannot load SunEC provider
                     //   at sun.security.pkcs11.P11ECKeyFactory.getSunECProvider(P11ECKeyFactory.java:55)
@@ -424,7 +428,7 @@ public abstract class AlgorithmTools {
         final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
         final List<String> ret = new ArrayList<>();
         ret.add(namedEllipticCurve);
-    
+
         if (parameterSpec != null) { // GOST and DSTU aren't present in ECNamedCurveTable (and don't have aliases)
             @SuppressWarnings("unchecked")
             final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
@@ -452,23 +456,31 @@ public abstract class AlgorithmTools {
      */
     public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
         String encSigAlg = signatureAlgorithm;
-        if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA) ) {
+        if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA) ) {
-            // Even though SHA384 is used for ECDSA, pay it safe and use SHA256 for RSA since we do not trust all PKCS#11 implementations
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA)) {
+            // Even though SHA384 is used for ECDSA, play it safe and use SHA256 for RSA since we do not trust all PKCS#11 implementations
             // to be so new to support SHA384WithRSA
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-        } else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ) {
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         }
         return encSigAlg;
@@ -482,7 +494,9 @@ public abstract class AlgorithmTools {
      */
     public static boolean isCompatibleSigAlg(final PublicKey publicKey, final String signatureAlgorithm) {
         String algname = publicKey.getAlgorithm();
-        if (algname == null) algname = "";
+        if (algname == null) {
+            algname = "";
+        }
         boolean isGost3410 = algname.contains("GOST3410");
         boolean isDstu4145 = algname.contains("DSTU4145");
         boolean isSpecialECC = isGost3410 || isDstu4145;
@@ -585,7 +599,14 @@ public abstract class AlgorithmTools {
         // specify for a CA in EJBCA, for example SHA1WithECDSA is returned as only ECDSA, so we need some magic to fix it up.
         PublicKey publickey = cert.getPublicKey();
         if (publickey instanceof RSAPublicKey) {
-            if (certSignatureAlgorithm.indexOf("MGF1") == -1) {
+            if (certSignatureAlgorithm.contains("SHA3-")) {
+                if (certSignatureAlgorithm.contains("256")) {
+                    signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+                }
+                if (certSignatureAlgorithm.contains("512")) {
+                    signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+                }
+            } else if (certSignatureAlgorithm.indexOf("MGF1") == -1) {
                 if (certSignatureAlgorithm.indexOf("MD5") != -1) {
                     signatureAlgorithm = "MD5WithRSA";
                 } else if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
@@ -607,7 +628,13 @@ public abstract class AlgorithmTools {
         } else if (publickey instanceof DSAPublicKey) {
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
         } else {
-            if (certSignatureAlgorithm.indexOf("256") != -1) {
+            if (certSignatureAlgorithm.contains("SHA3-")) {
+                if (certSignatureAlgorithm.contains("256")) {
+                    return AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+                } else if (certSignatureAlgorithm.contains("512")) {
+                    return AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
+                }
+            } else if (certSignatureAlgorithm.indexOf("256") != -1) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             } else if (certSignatureAlgorithm.indexOf("224") != -1) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
@@ -645,8 +672,21 @@ public abstract class AlgorithmTools {
         if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA224.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha224WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA224;
         }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
+        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) ||
+                sigAlg.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA256;
+        }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256.getId())) {
+            return NISTObjectIdentifiers.id_sha3_256.getId();
+        }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512.getId())) {
+            return NISTObjectIdentifiers.id_sha3_512.getId();
+        }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId())) {
+            return NISTObjectIdentifiers.id_sha3_256.getId();
+        }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
+            return NISTObjectIdentifiers.id_sha3_512.getId();
         }
         if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA384.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA384;
@@ -663,7 +703,8 @@ public abstract class AlgorithmTools {
         return CMSSignedGenerator.DIGEST_SHA1;
     }
 
-    /** Calculates which signature algorithm to use given a key type and a digest algorithm
+    /**
+     * Calculates which signature algorithm to use given a key type and a digest algorithm
      *
      * @param digestAlg objectId of a digest algorithm, CMSSignedGenerator.DIGEST_SHA256 etc
      * @param keyAlg RSA, EC, DSA
@@ -703,6 +744,16 @@ public abstract class AlgorithmTools {
                 oid = NISTObjectIdentifiers.dsa_with_sha256;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA512) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
                 oid = NISTObjectIdentifiers.dsa_with_sha512;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_256.toString()) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                oid = NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_512.toString()) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                oid = NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_256.toString())
+                    && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC))) {
+                oid = NISTObjectIdentifiers.id_ecdsa_with_sha3_256;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_512.toString())
+                    && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC))) {
+                oid = NISTObjectIdentifiers.id_ecdsa_with_sha3_512;
             }
         }
         if (log.isDebugEnabled()) {
@@ -760,6 +811,14 @@ public abstract class AlgorithmTools {
             return AlgorithmConstants.SIGALG_SHA512_WITH_RSA;
         }
 
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256)) {
+            return AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+        }
+
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512)) {
+            return AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
+        }
+
         if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA1)) {
             return AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
         }
@@ -778,6 +837,14 @@ public abstract class AlgorithmTools {
 
         if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA512)) {
             return AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA;
+        }
+
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256)) {
+            return AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+        }
+
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512)) {
+            return AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
         }
         // GOST3410
         if(isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
