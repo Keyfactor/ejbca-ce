@@ -427,7 +427,7 @@ public class EjbcaWS implements IEjbcaWS {
         	final AuthenticationToken admin = getAdmin();
         	logAdminName(admin,logger);
         	final Query query = ejbcaWSHelperSession.convertUserMatch(admin, usermatch);
-        	final Collection<EndEntityInformation> result = endEntityManagementSession.query(admin, query, null,null, MAXNUMBEROFROWS, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
+        	final Collection<EndEntityInformation> result = endEntityAccessSession.query(admin, query, null,null, MAXNUMBEROFROWS, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
         	if (result.size() > 0) {
         		retval = new ArrayList<>(result.size());
         		for (final EndEntityInformation userdata : result) {

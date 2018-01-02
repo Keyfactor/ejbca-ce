@@ -37,6 +37,8 @@ import org.ejbca.util.query.Query;
 public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote{
 
     @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     
     @Override
@@ -48,6 +50,6 @@ public class EndEntityManagementProxySessionBean implements EndEntityManagementP
     @Override
     public Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
             String endentityprofilestring, int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
-        return endEntityManagementSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows, endentityAccessRule);
+        return endEntityAccessSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows, endentityAccessRule);
     }
 }

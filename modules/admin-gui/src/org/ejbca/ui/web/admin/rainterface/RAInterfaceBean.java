@@ -415,7 +415,7 @@ public class RAInterfaceBean implements Serializable {
 
     /** Method to find all users in database */
     public UserView[] findAllUsers(int index, int size) {
-       usersView.setUsers(endEntityManagementSession.findAllUsersWithLimit(administrator), informationmemory.getCAIdToNameMap());
+       usersView.setUsers(endEntityAccessSession.findAllUsersWithLimit(administrator), informationmemory.getCAIdToNameMap());
        return usersView.getUsers(index,size);
     }
 
@@ -492,7 +492,9 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public UserView[] filterByQuery(Query query, int index, int size, final String endentityAccessRule) throws IllegalQueryException {
-    	Collection<EndEntityInformation> userlist = endEntityManagementSession.query(administrator, query, informationmemory.getUserDataQueryCAAuthorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(endentityAccessRule),0, endentityAccessRule);
+        Collection<EndEntityInformation> userlist = endEntityAccessSession.query(administrator, query,
+                informationmemory.getUserDataQueryCAAuthorizationString(),
+                informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(endentityAccessRule), 0, endentityAccessRule);
     	usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
     	return usersView.getUsers(index,size);
     }
@@ -615,7 +617,7 @@ public class RAInterfaceBean implements Serializable {
     public String[] removeEndEntityProfile(String name) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         String[] messageArray = {"", "", ""};
         int profileId = endEntityProfileSession.getEndEntityProfileId(name);
-        List<UserData> users = endEntityManagementSession.findByEndEntityProfileId(profileId);
+        List<UserData> users = endEntityAccessSession.findByEndEntityProfileId(profileId);
         if (users.size() > 0) {
             messageArray[0] = "used";
         }
