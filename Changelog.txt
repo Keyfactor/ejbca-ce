@@ -1,7 +1,102 @@
+EJBCA 6.11.0, 2018-01-02
+---
+
+Bug
+    [ECA-6086] - Document CAA IODEF limitations
+    [ECA-6120] - Document that CAA Validator requires TCP ports to be open in firewall
+    [ECA-6187] - clientToolBox. SCEPTest compares the wrong types in responses
+    [ECA-6199] - AdminWeb: Partitioned approval "Request has been executed"
+    [ECA-6222] - Public key exponent  min value can be larger than max value for the RSA Key Validator.
+    [ECA-6223] - Possible to enter negative values in all numerical fields in RSA Key Validator
+    [ECA-6236] - Titles "Import CRL" and "Basic Functions" are not localized
+    [ECA-6237] - Display bug in Certificate Profile viewing
+    [ECA-6238] - GUI: Unknown language keys found in Audit Log
+    [ECA-6264] - Fix javadoc compilation errors
+    [ECA-6326] - Error when listing tokens on a HSM
+    [ECA-6330] - Error if default OCSP responder is set to NONE
+    [ECA-6345] - EJBCA Certificate Enrollment  Error page
+    [ECA-6348] - when trying to navigate RA Web nothing happens (Blank page). Error message occured in logs
+    [ECA-6371] - Status labels not localized in "Protocol Configuration"
+    [ECA-6374] - ECC Key Validator shows incorrect label
+    [ECA-6376] - Add fields in Partitioned Approval results in java.lang.NullPointerException
+    [ECA-6388] - RA Web: Role Members issued by External CAs states "Unknown CA"
+    [ECA-6391] - CT Log Lifetime table accepts negative values 
+    [ECA-6392] - Supervisor does not have access to certificate in audit log
+    [ECA-6417] - MAXFAILEDLOGINATTEMPTS in ExtendedInformation can be saved as a string if set via WS
+    [ECA-6421] - Regression: System Config cannot be saved, NPE
+    [ECA-6422] - Google Ct Policy is reset after flushing cache and saving
+    [ECA-6424] - Clicking on Add End Entity(request) in Approve actions page results in Internal Server Error
+    [ECA-6427] - Misplaced null check in EST operations session bean
+    [ECA-6429] - Regression: NPE in Admin GUI editing CVC CA that was created before validators
+    [ECA-6433] - RA Web: End Entity status change doesn't work from external RA
+    [ECA-6442] - Add dummy AlwaysAllowAuthenticationToken.InternalMatchValue in order to deserialize expired approval requests
+    [ECA-6445] - Upgrade of CAA Validator not triggered when ValidatorBase changed
+    [ECA-6449] - All form fields in End Entity Profiles page should have auto-complete disabled
+
+New Feature
+    [ECA-4220] - Support for EST protocol
+    [ECA-4650] - GUI: View functionality for default certificate profiles
+    [ECA-5869] - Add links to an End Entity's certificates in the RA EE Search page. 
+    [ECA-5870] - Allow for EE status change from the RA 
+    [ECA-5997] - StateDump Validators
+    [ECA-6051] - Add post-processing to Validator framework
+    [ECA-6083] - In the Create CA screen, add a warning to each key in the crypto token that is already used by another CA
+    [ECA-6279] - Add GUI support for CAA misissuance reports w. IODEF
+    [ECA-6280] - Add WS IODEF support in backend for CAA misissuance reports
+    [ECA-6293] - Implement datatype for IODEF
+    [ECA-6313] - Use XML converter for IODEF types
+    [ECA-6315] - Support for CVC certificate extensions
+    [ECA-6383] - Support for FIPS 201-2 PIV FASC-N subjectAltName
+    [ECA-6404] - Include CMP Transaction ID in the log of CMP Proxy
+    [ECA-6425] - Password generator in clientToolBox
+    [ECA-6447] - Add a configurable whitelist to external validators 
+    [ECA-6455] - Write documentation for EST 
+
+Task
+    [ECA-5944] - Go through RaMasterApi and verify that the presence of a certificate does not prevent forwarding of the request
+
+Improvement
+    [ECA-3838] - Move DummyApprovalRequest into a test module
+    [ECA-3844] - Move all CRUD methods from CAData into CaSessionBean
+    [ECA-4476] - Name constraints should be validated before approval request gets added
+    [ECA-6155] - Make "treat lookup failure as permission to issue" configurable for CAA lookups
+    [ECA-6229] - Clean up unused language keys
+    [ECA-6246] - Introduce protocol configurations in system config
+    [ECA-6247] - Deny access to disabled protocols globally
+    [ECA-6249] - Modular Protocol Configuration to the RA over Peers
+    [ECA-6257] - Code clean up in RA Preferences.
+    [ECA-6285] - Improve comment about 'web.errorpage.notification' in 'web.properties.sample'
+    [ECA-6286] - Standard Date/Time examples for the logs
+    [ECA-6291] - Language files clean up, sorting "Mostly Configuration Module"
+    [ECA-6329] - OcspKeybindings should display active status 
+    [ECA-6331] - Refactoring "HELPER" message keys in language files
+    [ECA-6333] - Document modular protocol configuration
+    [ECA-6366] - Add jboss-deployment-structure for BC provider on Oracle JDK for external RA SCEP server
+    [ECA-6367] - Add a constant for key purpose 0, defaultKey
+    [ECA-6368] - Remove old unused help links
+    [ECA-6369] - Change default OCSP signature algorithm to use SHA-256
+    [ECA-6370] - Update 'second' CSS style according to 'default' one
+    [ECA-6377] - Move profile ID constants into the correct classes
+    [ECA-6379] - Old list of Role Members is used when an Approval Request is created
+    [ECA-6396] - Specify Bouncy Castle provider explicitly for audit log verification
+    [ECA-6402] - Add test for expiration year filtering of CT Logs
+    [ECA-6405] - Notify user when RA is offline
+    [ECA-6407] - Modular protocol configuration over Peers using access rules
+    [ECA-6409] - Internal Key Bindings page throws exceptions when there's a crypto token error
+    [ECA-6410] - Modular protocol configuration improvements - Implement servlet filter
+    [ECA-6418] - Improve error handling for CV certificates
+    [ECA-6423] - Add Javadoc for CaConstants
+    [ECA-6428] - Modular protocol configuration improvements - UI, Configuration
+    [ECA-6430] - Custom CVC extensions in link certificates
+    [ECA-6432] - Improve error message to distinguish between client and server cert in peer connector
+    [ECA-6446] - Add a system configuration value for enabling External Command Validators
+    [ECA-6452] - "External Command" text frame in External Command Certificate Validator should be wider
+    [ECA-6457] - Create an upgrade routine that enables External Scripts (under System Configuration) only if any General Purpose Custom Publishers exist
+
 EJBCA 6.10.1.1, 2017-12-15
 ---
 
-BUG
+Bug
     [ECA-6426] - EJBCA needs "System upgrade" (from 6.8 -> 6.10.1) on a freshly installed database on the appliance
 
 EJBCA 6.10.1, 2017-12-11
