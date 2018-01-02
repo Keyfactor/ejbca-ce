@@ -301,6 +301,22 @@ public final class ExternalProcessTools {
     }
 
     /**
+     * Checks if the list contains logging to ERROUT.
+     * @param out the output of the external process.
+     * @return true if the list contains logging to ERROUT.
+     */
+    public static final boolean containsErrout(final List<String> out) {
+        if (CollectionUtils.isNotEmpty(out) && out.size() > 1) {
+            for (int i= 1,j=out.size();i<j;i++) {
+                if (out.get(i).startsWith(ERROUT_PREFIX)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Quotes the arguments list.
      * @param arguments the arguments list.
      */

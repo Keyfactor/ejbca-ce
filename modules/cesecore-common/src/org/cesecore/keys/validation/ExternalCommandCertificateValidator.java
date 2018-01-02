@@ -133,7 +133,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @Override
     public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsWhitelist externalScriptsWhitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
-        List<String> messages = new ArrayList<String>();
+        final List<String> messages = new ArrayList<String>();
         log.debug("Validating certificate with external command " + getExternalCommand());
         if (log.isDebugEnabled()) {
             log.debug("Validating certificate with external command (cert):" + certificate);
@@ -146,19 +146,27 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         // Run external scripts (is used by publishers as well, writes certificate to disk!).
         try {
             out.addAll(runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates));
-        } catch(ValidatorNotApplicableException e) {
-            throw e;
         } catch(ExternalProcessException e) {
             throw new ValidatorNotApplicableException( "External command could not be called, because it does not exit, access was denied or another severe error occured.");
         }
-        // Something bad must have happened so that no exit code was returned.
-        if (out.size() < 1) {
-            messages.add("Invalid: External command could not be initiated: '" + cmd + "'. Command failed.");
-        } else {
-            final int exitCode = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
-            if (exitCode > 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
-                messages.add("Invalid: External command terminated with exit code " + exitCode + ". Command failed.");
+        // Validator was applicable but something bad must have happened, no exit code was returned -> validation failed.
+        boolean broken = false;
+        if (CollectionUtils.isNotEmpty(out)) {
+            try {
+                final int exitCode = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
+                if (exitCode > 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
+                    messages.add("Invalid: External command exit code was " + exitCode + ". Command failed.");
+                } else if (isFailOnErrorCode() && ExternalProcessTools.containsErrout(out)) {
+                    messages.add("Invalid: External command logged to ERROUT. Exit code was " + exitCode + ". Command failed.");
+                }
+            } catch(Exception e2) { // In case exit code could not be parsed.
+                broken = true;
             }
+        } else {
+            broken = true;
+        }
+        if (broken) {
+            messages.add("Invalid: External command could not be initiated: '" + cmd + "'. Command failed.");
         }
         return messages;
     }
