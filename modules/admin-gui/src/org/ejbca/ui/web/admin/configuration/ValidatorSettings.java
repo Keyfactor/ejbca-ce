@@ -28,6 +28,7 @@ import org.ejbca.config.GlobalConfiguration;
  * in System Configuration.
  */
 public class ValidatorSettings {
+    
     public interface ValidatorSettingsHelper {
         GlobalConfiguration getGlobalConfiguration();
         void addErrorMessage(final String languageKey, final Object... params);
@@ -39,12 +40,22 @@ public class ValidatorSettings {
     private final ValidatorSettingsHelper validatorSettingsHelper;
     private ArrayList<String> validationResult = new ArrayList<>();
     private String externalScriptsWhitelist;
+    private boolean isExternalScriptsEnabled;
     private boolean isExternalScriptsWhitelistEnabled;
 
     public ValidatorSettings(final ValidatorSettingsHelper validatorSettingsHelper) {
         this.validatorSettingsHelper = validatorSettingsHelper;
         this.externalScriptsWhitelist = validatorSettingsHelper.getGlobalConfiguration().getExternalScriptsWhitelist();
+        this.isExternalScriptsEnabled = validatorSettingsHelper.getGlobalConfiguration().getEnableExternalScripts();
         this.isExternalScriptsWhitelistEnabled = validatorSettingsHelper.getGlobalConfiguration().getIsExternalScriptsWhitelistEnabled();
+    }
+
+    public boolean getIsExternalScriptsEnabled() {
+        return isExternalScriptsEnabled;
+    }
+
+    public void setIsExternalScriptsEnabled(final boolean isExternalScriptsEnabled) {
+        this.isExternalScriptsEnabled = isExternalScriptsEnabled;
     }
 
     public String getExternalScriptsWhitelist() {
@@ -76,6 +87,7 @@ public class ValidatorSettings {
                 return;
             }
             final GlobalConfiguration globalConfiguration = validatorSettingsHelper.getGlobalConfiguration();
+            globalConfiguration.setEnableExternalScripts(isExternalScriptsEnabled);
             globalConfiguration.setExternalScriptsWhitelist(externalScriptsWhitelist);
             globalConfiguration.setIsExternalScriptsWhitelistEnabled(isExternalScriptsWhitelistEnabled);
             validatorSettingsHelper.persistConfiguration(globalConfiguration);

@@ -876,7 +876,7 @@ org.cesecore.authorization.AuthorizationDeniedException
                 <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
             </h:panelGroup>
             <h:panelGroup>
-                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.currentConfig.enableExternalScripts}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+                <h:selectBooleanCheckbox id="enableExternalScripts" value="#{systemConfigMBean.validatorSettings.isExternalScriptsEnabled}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
                 <h:outputLabel for="enableExternalScripts" value="#{web.text.ACTIVATE}" />
             </h:panelGroup>
 
