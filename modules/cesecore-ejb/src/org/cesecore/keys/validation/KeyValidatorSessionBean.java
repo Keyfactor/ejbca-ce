@@ -316,7 +316,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map<Integer, Validator> getAllKeyValidators() {
         final List<ProfileData> keyValidators = findAllProfiles(Validator.TYPE_NAME);
         final Map<Integer, Validator> result = new HashMap<>();
@@ -556,14 +555,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                 externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
                         final List<String> messages = validator.validate(ca, certificate, externalScriptsWhitelist);
                         if (messages.size() > 0) { // Evaluation has failed.
-                            final int index = validator.getFailedAction();
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_failed", name, messages);
                             final Map<String, Object> details = new LinkedHashMap<String, Object>();
                             details.put("msg", message);
                             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
                                     authenticationToken.toString(), String.valueOf(ca.getCAId()), fingerprint, endEntityInformation.getUsername(),
                                     details);
-                            performValidationFailedActions(index, message);
+                            performValidationFailedActions(validator.getFailedAction(), message);
                         } else {
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_successful", name, fingerprint);
                             log.info(message);
@@ -574,8 +572,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage());
                     } catch (CertificateException e) {
                         throw new ValidationException("Certificate to validate could not be parsed or decoded: " + e.getMessage(), e);
-                    } catch (ValidationException e) {
-                        throw e;
                     }
                 }
             }
@@ -815,6 +811,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      * @throws ValidationException if a failed validation has to be abort the certificate issuance.
      * */
     private void performValidationFailedActions(final int failedAction, final String message, final String shortMessage) throws ValidationException {
+        if (log.isDebugEnabled()) {
+            log.debug("Perform post action " + failedAction + " - " + message);
+        }
         if (KeyValidationFailedActions.LOG_INFO.getIndex() == failedAction) {
             log.info(message);
         } else if (KeyValidationFailedActions.LOG_WARN.getIndex() == failedAction) {
@@ -822,9 +821,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == failedAction) {
             log.error(message);
         } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == failedAction) {
-            if (log.isDebugEnabled()) {
-                log.debug("Action ABORT_CERTIFICATE_ISSUANCE: " + message);
-            }
             throw new ValidationException(shortMessage);
         } else {
             // NOOP
