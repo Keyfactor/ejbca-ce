@@ -31,7 +31,10 @@ function checkallfields() {
 </script>
 
 <div align="center"> 
-  <h2><c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"ESTEDITALIAS\": \"EST_VIEW_ALIAS\")) %>" /></h2>
+  <h2>
+  	<c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"ESTEDITALIAS\": \"EST_VIEW_ALIAS\")) %>" />
+  	<%= ejbcawebbean.getHelpReference("/adminguide.html#EST%20(Enterprise%20Only)") %>
+  </h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"ESTALIAS\")+ \" : \" + alias %>" /></h3>
 </div>
 
@@ -161,9 +164,9 @@ function checkallfields() {
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"ESTALLOWKURWITHSAMEKEY\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Update%20Request%20(kur)") %>
-        </h3>
+        <h3>
+        	<c:out value="<%= ejbcawebbean.getText(\"ESTALLOWKURWITHSAMEKEY\") %>"/>
+     	</h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTALLOWKURWITHSAMEKEY_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
