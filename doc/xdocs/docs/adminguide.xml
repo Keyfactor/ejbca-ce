@@ -7191,7 +7191,7 @@ An error event like this should trigger an operator to take a look at the system
 </ul>
 </p>
 <subsection name="Configure External Script Access">
-<p>The access to external scripts must enabled in the system configuration. If this feature is disabled the publishers or validators concerned are 
+<p>The access to external scripts must be enabled in the system configuration. If this feature is disabled the publishers or validators concerned are 
 neither rendered in the UI nor processed otherwise. Publishers or validators configured by the user are kept unchanged if this feature is disabled.</p>
 </subsection>
 </section>
