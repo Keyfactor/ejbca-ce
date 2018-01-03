@@ -15,7 +15,7 @@ package org.cesecore.junit.util;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.Collection;
+import java.util.List;
 
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -55,7 +55,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
  */
 public class PKCS11TestRunner extends CryptoTokenRunner {
 
-    
+
     private static final String DEFAULT_TOKEN_PIN = "userpin1";
     private static final String ALIAS = "signKeyAlias åäöÅÄÖnâćŋA©Ba";
 
@@ -75,6 +75,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         super(klass);
     }
 
+    @Override
     public X509CA createX509Ca() throws Exception {
         X509CA x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(getSubjectDn(), SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), false,
                 true, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
@@ -95,7 +96,7 @@ public class PKCS11TestRunner extends CryptoTokenRunner {
         SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
         CertificateResponseMessage response = certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
                 org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
-        Collection<Certificate> certs = info.getCertificateChain();
+        List<Certificate> certs = info.getCertificateChain();
         certs.add(response.getCertificate());
         info.setCertificateChain(certs);
         caSession.editCA(alwaysAllowToken, info);

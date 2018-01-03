@@ -3,7 +3,7 @@
  *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
  *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
+ *  The use of the Proprietary Modules are subject to specific           *
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
@@ -26,7 +26,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -79,7 +78,7 @@ import com.thoughtworks.xstream.XStream;
 
 /**
  * Unit tests for the class DatabaseCliCommand
- * 
+ *
  * @version $Id$
  *
  */
@@ -237,7 +236,7 @@ public class DatabaseCliCommandTest {
         AccessTreeUpdateData result = results.get(0);
         assertEquals(accessTreeUpdateData.getAccessTreeUpdateNumber(), result.getAccessTreeUpdateNumber());
     }
-    
+
     @Test
     public void testExportTableXmlWithCaData() throws Exception {
         CAData caData = new CAData("CN=foo", "foo", 0, createTestCA("CN=foo", AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
@@ -272,8 +271,8 @@ public class DatabaseCliCommandTest {
     }
 
     /**
-     * Performs an import using the private method GetNextBatch for XML serialized objects 
-     * @throws Exception 
+     * Performs an import using the private method GetNextBatch for XML serialized objects
+     * @throws Exception
      */
     @SuppressWarnings("unchecked")
     private <T> List<T> performImportWithGetNextBatch(File exportFile) throws Exception {
@@ -286,7 +285,7 @@ public class DatabaseCliCommandTest {
 
     /**
      * Private utility method for creating a CA
-     * 
+     *
      * @param cadn
      * @param sigAlg
      * @return
@@ -321,7 +320,7 @@ public class DatabaseCliCommandTest {
         PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
         assertNotNull(cacert);
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
         x509ca.setCertificateChain(cachain);
         // Now our CA should be operational
@@ -357,7 +356,7 @@ public class DatabaseCliCommandTest {
         EntityTransaction entityTransactionMock = EasyMock.createMock(EntityTransaction.class);
         EasyMock.expect(entityTransactionMock.isActive()).andReturn(false).anyTimes();
         EasyMock.replay(entityTransactionMock);
-        
+
         EntityManager entityManagerMock = EasyMock.createMock(EntityManager.class);
         EasyMock.expect(entityManagerMock.createQuery(EasyMock.anyObject(String.class))).andReturn(queryMock).anyTimes();
         entityManagerMock.clear();

@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.ca;
 
 import static org.junit.Assert.assertEquals;
@@ -49,7 +49,6 @@ import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
-import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -120,20 +119,20 @@ import org.cesecore.util.StringTools;
 import org.junit.Test;
 
 /** JUnit test for X.509 CA
- * 
+ *
  * @version $Id$
  */
 public class X509CATest {
-  
+
 	public static final String CADN = "CN=TEST";
-	
+
 	// This will be an empty list of custom certificate extensions
 	private final AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
-	
+
 	public X509CATest() {
 		CryptoProviderTools.installBCProvider();
 	}
-	
+
 	@Test
 	public void testX509CABasicOperationsRSA() throws Exception {
 	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
@@ -142,13 +141,13 @@ public class X509CATest {
         // because this was used previously so need to be supported for upgraded systems.
         doTestX509CABasicOperations("SHA256WithRSAandMGF1");
 	}
-	
+
 	@Test
     public void testX509CABasicOperationsGOST() throws Exception {
 	    assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
-    
+
     @Test
     public void testX509CABasicOperationsDSTU() throws Exception {
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
@@ -165,7 +164,7 @@ public class X509CATest {
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
         X509Certificate cacert = (X509Certificate) x509ca.getCACertificate();
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        
+
         // Start by creating a PKCS7
         byte[] p7 = x509ca.createPKCS7(cryptoToken, cacert, true);
         assertNotNull(p7);
@@ -179,14 +178,14 @@ public class X509CATest {
         certstore = s.getCertificates();
         certs = certstore.getMatches(null);
         assertEquals(1, certs.size());
-        
+
 		// Create a certificate request (will be pkcs10)
         byte[] req = x509ca.createRequest(cryptoToken, null, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN, cp, cceConfig);
         PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
         String dn = p10.getSubject().toString();
         assertEquals(CADN, dn);
-        
+
         // Make a request with some pkcs10 attributes as well
 		Collection<ASN1Encodable> attributes = new ArrayList<>();
 		// Add a subject alternative name
@@ -199,7 +198,7 @@ public class X509CATest {
 		altnameattr.add(new DERSet(exts));
         // Add a challenge password as well
         ASN1EncodableVector pwdattr = new ASN1EncodableVector();
-        pwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
+        pwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
         ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
         pwdvalues.add(new DERUTF8String("foobar123"));
         pwdattr.add(new DERSet(pwdvalues));
@@ -222,7 +221,7 @@ public class X509CATest {
         } catch (UnsupportedOperationException e) {
             // Expected for a X509 CA
         }
-        
+
         // Generate a client certificate and check that it was generated correctly
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = genTestKeyPair(algName);
@@ -256,7 +255,7 @@ public class X509CATest {
         assertFalse(ku[7]);
         int bcku = CertTools.sunKeyUsageToBC(ku);
         assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
-        
+
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, revcerts, 1);
@@ -288,10 +287,10 @@ public class X509CATest {
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         ASN1Primitive obj = aIn.readObject();
-        CRLReason reason = CRLReason.getInstance((ASN1Enumerated)obj);
+        CRLReason reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
         //DEROctetString ostr = (DEROctetString)obj;
-        
+
         // Create a delta CRL
         revcerts = new ArrayList<RevokedCertInfo>();
         crl = x509ca.generateDeltaCRL(cryptoToken, revcerts, 3, 2);
@@ -321,15 +320,15 @@ public class X509CATest {
         octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         obj = aIn.readObject();
-        reason = CRLReason.getInstance((ASN1Enumerated)obj);
+        reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
 	}
-	
-    
-    
+
+
+
     /**
      * Tests the extension CRL Distribution Point on CRLs
-     * 
+     *
      */
 	@Test
 	public void testCRLDistPointOnCRL() throws Exception {
@@ -342,7 +341,7 @@ public class X509CATest {
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
         ca.updateCA(cryptoToken, cainfo, cceConfig);
-        
+
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
         X509CRLHolder crl = ca.generateCRL(cryptoToken, revcerts, 1);
         assertNotNull(crl);
@@ -354,7 +353,7 @@ public class X509CATest {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance((ASN1Sequence) aIn.readObject());
+        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
         DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL, ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
@@ -370,7 +369,7 @@ public class X509CATest {
 
     /**
      * Tests the extension Freshest CRL DP.
-     * 
+     *
      * @throws Exception
      *             in case of error.
      */
@@ -398,7 +397,7 @@ public class X509CATest {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance((ASN1Sequence) aIn.readObject());
+        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
         DistributionPoint[] distpoints = cdp.getDistributionPoints();
 
         assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
@@ -420,23 +419,23 @@ public class X509CATest {
     public void testStoreAndLoadRSA() throws Exception {
 	    doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
-    
+
     @Test
     public void testStoreAndLoadGOST() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
-    
+
     @Test
     public void testStoreAndLoadDSTU() throws Exception {
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
-	
+
 	private void doTestStoreAndLoad(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 		final X509CA ca = createTestCA(cryptoToken, CADN, algName, null, null);
-		
+
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = genTestKeyPair(algName);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -448,7 +447,7 @@ public class X509CATest {
 
         // Save CA data
 		Object o = ca.saveData();
-		
+
 		// Restore CA from data (and other things)
 		@SuppressWarnings({ "rawtypes", "unchecked" })
         X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
@@ -460,7 +459,7 @@ public class X509CATest {
         String keyhash1 = CertTools.getFingerprintAsString(publicKey1.getEncoded());
         assertEquals(authKeyId, authKeyId1);
         assertEquals(keyhash, keyhash1);
-        
+
         CAInfo cainfo = ca.getCAInfo();
         CAData cadata = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
 
@@ -471,14 +470,14 @@ public class X509CATest {
         String keyhash2 = CertTools.getFingerprintAsString(publicKey2.getEncoded());
         assertEquals(authKeyId, authKeyId2);
         assertEquals(keyhash, keyhash2);
-        
+
         // Check CAinfo and CAtokeninfo
         final CAInfo cainfo1 = ca.getCAInfo();
         final CAToken caToken1 = cainfo1.getCAToken();
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken1.getSignatureAlgorithm());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken1.getEncryptionAlgorithm());
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, caToken1.getKeySequenceFormat());
-        
+
         final CAInfo cainfo2 = ca2.getCAInfo();
         final CAToken caToken2 = cainfo2.getCAToken();
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, caToken2.getSignatureAlgorithm());
@@ -492,27 +491,27 @@ public class X509CATest {
 		final X509CA ca = createTestCA(cryptoToken, CADN);
 		assertEquals(ca.getExternalCAServiceTypes().size(), 0);
 		assertNull(ca.getExtendedCAServiceInfo(1));
-		
+
 		CAInfo info = ca.getCAInfo();
 		Collection<ExtendedCAServiceInfo> infos = new ArrayList<ExtendedCAServiceInfo>();
 		infos.add(new MyExtendedCAServiceInfo(0));
 		info.setExtendedCAServiceInfos(infos);
 		ca.updateCA(cryptoToken, info, cceConfig);
-		
+
 		assertEquals(ca.getExternalCAServiceTypes().size(), 1);
 		assertNotNull(ca.getExtendedCAServiceInfo(4711));
 		assertNull(ca.getExtendedCAServiceInfo(1));
 		assertNotNull("org.cesecore.certificates.ca.MyExtendedCAServiceInfo", ca.getExtendedCAServiceInfo(4711).getClass().getName());
-		
+
 		// Try to run it
 		assertEquals(0, MyExtendedCAService.didrun);
 		ca.extendedService(cryptoToken, new MyExtendedCAServiceRequest());
 		assertEquals(1, MyExtendedCAService.didrun);
 		ca.extendedService(cryptoToken, new MyExtendedCAServiceRequest());
 		assertEquals(2, MyExtendedCAService.didrun);
-		
+
 		// Does is store and load ok?
-		Object o = ca.saveData();		
+		Object o = ca.saveData();
 		// Restore CA from data (and other things)
 		@SuppressWarnings({ "rawtypes", "unchecked" })
         X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
@@ -530,7 +529,7 @@ public class X509CATest {
 		assertEquals(CAConstants.CA_OFFLINE, ca.getStatus());
 		assertEquals(CAConstants.CA_OFFLINE, ca.getCAInfo().getStatus());
 	}
-	
+
 	@Test
 	public void testCTRedactedLabels() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
@@ -563,7 +562,7 @@ public class X509CATest {
         altName = CertTools.getAltNameStringFromExtension(genext);
         assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", altName);
 	}
-	
+
 	@Test
 	public void testInvalidSignatureAlg() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
@@ -578,24 +577,24 @@ public class X509CATest {
 		CAToken token = new CAToken(0, new Properties());
 		ca.setCAToken(token);
 	}
-	
+
 	@Test
     public void testWrongCAKeyRSA() throws Exception {
         doTestWrongCAKey(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
     }
-    
+
     @Test
     public void testWrongCAKeyGOST() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
-	
+
 	@Test
     public void testWrongCAKeyDSTU() throws Exception {
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
         doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
-	
+
 	public void doTestWrongCAKey(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 	    X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
@@ -608,11 +607,11 @@ public class X509CATest {
 	    cp.setUseCertificatePolicies(true);
 	    Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
 	    assertNotNull(usercert);
-	    
-	    // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the 
+
+	    // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the
 	    // issued cert can not be verified by the CA certificate
         cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
-	    
+
 	    try {
 	        usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
 	        fail("should not work to issue this certificate");
@@ -630,7 +629,7 @@ public class X509CATest {
         PrivateKey privateKey = cryptoToken.getPrivateKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         X509Certificate cacert = CertTools.genSelfCert(CADN, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
 	    assertNotNull(cacert);
-	    Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
 	    cachain.add(cacert);
 	    x509ca.setCertificateChain(cachain);
         usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
@@ -639,7 +638,7 @@ public class X509CATest {
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, revcerts, 1);
         assertNotNull(crl);
 	}
-	
+
 	   /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
     @Test
     public void testRfc822NameWithPlus() throws Exception {
@@ -648,14 +647,14 @@ public class X509CATest {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
         final X509CA ca = createTestCA(cryptoToken, "CN=foo");
-        
+
         String emailPlain = "user@user.com";
         String emailEscaped = "user\\+plus@user.com";
         String emailUnescaped = "user+plus@user.com";
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-   
+
         // test with no plus character in email
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlain, emailPlain, 
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailPlain, emailPlain,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         Certificate certificate = null;
         try {
@@ -667,7 +666,7 @@ public class X509CATest {
         }
 
         // test with a user with escaped plus character in email
-        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailEscaped, emailEscaped, 
+        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailEscaped, emailEscaped,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
@@ -677,16 +676,16 @@ public class X509CATest {
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
-        
+
         // test with a user with unescaped plus character in email
-        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailUnescaped, emailUnescaped, 
+        user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=" + emailUnescaped, emailUnescaped,
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is 
-            // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is 
-            // "rfc822Name=user" 
+            // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is
+            // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is
+            // "rfc822Name=user"
             assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
             assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
             assertEquals("rfc822name=user", CertTools.getSubjectAlternativeName(certificate));
@@ -694,7 +693,7 @@ public class X509CATest {
             fail("Certificate could not be created: " + e.getMessage());
         }
     }
-	
+
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCertificateExtension() throws Exception {
@@ -718,7 +717,7 @@ public class X509CATest {
         final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setUseAuthorityInformationAccess(true); // enable certificate AIA
         Certificate certificate = null;
-        
+
         // 1. test with all values filled and both 'Use CA defined' switches are true
         ca.setCertificateAiaDefaultCaIssuerUri(caIssuerUris);
         ca.setDefaultOCSPServiceLocator(ocspUrls.get(0));
@@ -732,7 +731,7 @@ public class X509CATest {
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
-        
+
         // 2. test with all values filled and both 'Use CA defined' switches are false
         profile.setUseDefaultCAIssuer(false);
         profile.setUseDefaultOCSPServiceLocator(false);
@@ -742,8 +741,8 @@ public class X509CATest {
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
-        
-        // 3a. test with all values filled and 'Use CA defined' CA issuer switch true, the other false, 
+
+        // 3a. test with all values filled and 'Use CA defined' CA issuer switch true, the other false,
         profile.setUseDefaultCAIssuer(true);
         profile.setUseDefaultOCSPServiceLocator(false);
         try {
@@ -752,8 +751,8 @@ public class X509CATest {
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
-        
-        // 3b. test with all values filled and 'Use CA defined' OCSP service switch true, the other false, 
+
+        // 3b. test with all values filled and 'Use CA defined' OCSP service switch true, the other false,
         profile.setUseDefaultCAIssuer(false);
         profile.setUseDefaultOCSPServiceLocator(true);
         try {
@@ -763,15 +762,15 @@ public class X509CATest {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
     }
-    
+
     private final void assertCertificateAuthorityInformationAccess(Certificate certificate, List<String> caIssuerUris, List<String> ocspUrls) {
         List<String> testList = CertTools.getAuthorityInformationAccessCAIssuerUris(certificate);
         assertTrue("Certificate CA issuer URIs " + Arrays.toString(caIssuerUris.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), caIssuerUris.equals(testList));
         testList = CertTools.getAuthorityInformationAccessOcspUrls(certificate);
         assertTrue("Certificate OCSP service locators " + Arrays.toString(ocspUrls.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), ocspUrls.equals(testList));
     }
-        
-        
+
+
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
 	@Test
 	public void testAuthorityInformationAccessCrlExtension() throws Exception {
@@ -784,7 +783,7 @@ public class X509CATest {
 	    authorityInformationAccess.add("http://example.com/3");
 	    testCa.setAuthorityInformationAccess(authorityInformationAccess);
 	    Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-	    X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, revcerts, 0);	    
+	    X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, revcerts, 0);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
 	    Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
@@ -795,21 +794,21 @@ public class X509CATest {
 	        }
 	    }
 	}
-	
+
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
         final CryptoToken cryptoToken = getNewCryptoToken();
-        X509CA testCa = createTestCA(cryptoToken, "CN=foo");    
+        X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
         X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, revcerts, 0);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
-        assertEquals("A list was returned without any values present.", 0, result.size());        
+        assertEquals("A list was returned without any values present.", 0, result.size());
     }
-	
-    /** 
+
+    /**
      * Test that the CA refuses to issue certificates outside of the PrivateKeyUsagePeriod, but that it does issue a cert within this period.
      * This test has some timing, so it sleeps in total 11 seconds during the test.
      */
@@ -823,7 +822,7 @@ public class X509CATest {
         notBefore.add(Calendar.SECOND, 5); // 5 seconds in the future
         Calendar notAfter = Calendar.getInstance();
         notAfter.add(Calendar.SECOND, 10); // 10 seconds in the future gives us a 5 second window to generate a cert
-        X509CA testCa = createTestCA(cryptoToken, "CN=foo", "SHA256WithRSA", notBefore.getTime(), notAfter.getTime());    
+        X509CA testCa = createTestCA(cryptoToken, "CN=foo", "SHA256WithRSA", notBefore.getTime(), notAfter.getTime());
         // Issue a certificate before PrivateKeyUsagePeriod has started to be valid
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -855,19 +854,19 @@ public class X509CATest {
         }
     }
 
-    /** 
+    /**
      * Test that the CA can issue certificates with custom certificate extensions.
      */
     @Test
     public void testCustomCertificateExtension() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
-        X509CA testCa = createTestCA(cryptoToken, "CN=foo");    
+        X509CA testCa = createTestCA(cryptoToken, "CN=foo");
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
         X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, revcerts, 0);
         assertNotNull(testCrl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
-        assertEquals("A list was returned without any values present.", 0, result.size());        
+        assertEquals("A list was returned without any values present.", 0, result.size());
         // Issue a certificate with two different basic certificate extensions
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com,dnsName=foo.bar.com,directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -879,7 +878,7 @@ public class X509CATest {
         props1.put("dynamin", "false");
         props1.put("value", "Hello World");
         cceConfig.addCustomCertExtension(1, "2.16.840.1.113730.1.13", "NetscapeComment", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props1);
-        
+
         // one RAW with proper DER encoding
         Properties props2 = new Properties();
         props2.put("used", "true");
@@ -887,7 +886,7 @@ public class X509CATest {
         props2.put("dynamin", "false");
         props2.put("value", "301a300c060a2b060104018237140202300a06082b06010505070302");
         cceConfig.addCustomCertExtension(2, "1.2.3.4", "RawProper", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props2);
-        
+
         // one RAW with no DER encoding (actually invalid according to RFC5280)
         Properties props3 = new Properties();
         props3.put("used", "true");
@@ -895,7 +894,7 @@ public class X509CATest {
         props3.put("dynamin", "false");
         props3.put("value", "aabbccddeeff00");
         cceConfig.addCustomCertExtension(3, "1.2.3.5", "RawNoDer", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props3);
-        
+
         assertEquals(cceConfig.getCustomCertificateExtension(1).getOID(), "2.16.840.1.113730.1.13");
         assertEquals(cceConfig.getCustomCertificateExtension(2).getOID(), "1.2.3.4");
         assertEquals(cceConfig.getCustomCertificateExtension(3).getOID(), "1.2.3.5");
@@ -917,7 +916,7 @@ public class X509CATest {
         DERIA5String str = (DERIA5String)is2.readObject();
         is2.close();
         assertEquals("Hello World", str.getString());
-        
+
         byte[] ext2 = cert.getExtensionValue("1.2.3.4");
         is = new ASN1InputStream(ext2);
         oct = (ASN1OctetString) (is.readObject());
@@ -936,7 +935,7 @@ public class X509CATest {
         enc2 = seq2.getObjectAt(0);
         id = ASN1ObjectIdentifier.getInstance(enc2);
         assertEquals("1.3.6.1.5.5.7.3.2", id.getId());
-        
+
         byte[] ext3 = cert.getExtensionValue("1.2.3.5");
         is = new ASN1InputStream(ext3);
         oct = (ASN1OctetString) (is.readObject());
@@ -953,7 +952,7 @@ public class X509CATest {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final String caDN = "CN=Text CertificatePolicy Extension";
         final X509CA testCa = createTestCA(cryptoToken, caDN);
-        
+
         // Generate cert by calling generateCertificate directly
         Certificate cacert = testCa.getCACertificate(); // yeah, we just need to get a public key really fast
         final String subjectDN = "CN=cert policy extension test";
@@ -990,7 +989,7 @@ public class X509CATest {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         DERIA5String str = DERIA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/2", str.getString());
-        
+
         // The second Policy object has a CPS URI
         qualifier = pi.get(1).getPolicyQualifiers().getObjectAt(0);
         pqi = PolicyQualifierInfo.getInstance(qualifier);
@@ -999,11 +998,11 @@ public class X509CATest {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = DERIA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/3", str.getString());
-        
+
         // The third Policy object has only an OID
         qualifier = pi.get(2).getPolicyQualifiers();
         assertNull(qualifier);
-        
+
         // The fourth Policy object has a User Notice
         qualifier = pi.get(3).getPolicyQualifiers().getObjectAt(0);
         pqi = PolicyQualifierInfo.getInstance(qualifier);
@@ -1012,7 +1011,7 @@ public class X509CATest {
         // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
         UserNotice un = UserNotice.getInstance(pqi.getQualifier());
         assertEquals("My User Notice Text", un.getExplicitText().getString());
-        
+
         // The fifth Policy object has both a CPS URI and a User Notice
         qualifier = pi.get(4).getPolicyQualifiers().getObjectAt(0);
         pqi = PolicyQualifierInfo.getInstance(qualifier);
@@ -1030,7 +1029,7 @@ public class X509CATest {
         assertEquals("https://ejbca.org/CPS", str.getString());
 
     }
-    
+
     /**
      * Tests default value of "use printable string" option (should be disabled by default)
      * and tests that the option works.
@@ -1041,11 +1040,11 @@ public class X509CATest {
         final String caDN = "CN=foo CA,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
         final X509CA testCa = createTestCA(cryptoToken, caDN);
         assertFalse("\"Use Printable String\" should be turned off by default", testCa.getUsePrintableStringSubjectDN());
-        
+
         Certificate cert = testCa.getCACertificate();
         assertTrue("Certificate CN was not UTF-8 encoded by default.", getValueFromDN(cert, X509ObjectIdentifiers.commonName) instanceof DERUTF8String);
         assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
-        
+
         // Test generation by calling generateCertificate directly
         final String subjectDN = "CN=foo subject,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
         final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
@@ -1057,7 +1056,7 @@ public class X509CATest {
         assertTrue("Certificate JurisdictionLocality was not UTF-8 encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_LOCALITY) instanceof DERUTF8String);
         assertTrue("Certificate C was not PrintableString encoded.", getValueFromDN(cert, X509ObjectIdentifiers.countryName) instanceof DERPrintableString); // C is always PrintableString
         assertTrue("Certificate JurisdictionCountry was not PrintableString encoded.", getValueFromDN(cert, CeSecoreNameStyle.JURISDICTION_COUNTRY) instanceof DERPrintableString); // C is always PrintableString
-        
+
         // Now generate a new certificate with a PrintableString-encoded DN
         testCa.setUsePrintableStringSubjectDN(true);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
@@ -1076,15 +1075,15 @@ public class X509CATest {
     public void testDNOrder() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final String caDN = "CN=foo CA,O=Bar,JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,C=SE";
-        final X509CA testCa = createTestCA(cryptoToken, caDN);        
+        final X509CA testCa = createTestCA(cryptoToken, caDN);
         Certificate cert = testCa.getCACertificate();
         X500Principal princ = ((X509Certificate) cert).getSubjectX500Principal();
         X500Name name = X500Name.getInstance(princ.getEncoded());
         // The EV DN components do not have names in standard java/BC
         assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
-        
+
         // Test generation by calling generateCertificate directly
-        final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE"; 
+        final String subjectDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,CN=evssltest6.test.lan,SN=1234567890,OU=XY,O=MyOrg B.V.,L=Åmål,ST=Norrland,C=SE";
         final EndEntityInformation subject = new EndEntityInformation("testPrintableString", subjectDN, testCa.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cert = testCa.generateCertificate(cryptoToken, subject, cert.getPublicKey(), KeyUsage.digitalSignature | KeyUsage.keyEncipherment, null, "30d", certProfile, null, cceConfig);
@@ -1115,7 +1114,7 @@ public class X509CATest {
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
         X509Certificate cacert = (X509Certificate) x509ca.getCACertificate();
 
-        // Create a pkcs10 certificate request        
+        // Create a pkcs10 certificate request
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         X500Name x509dn = CertTools.stringToBcX500Name("CN=Override,O=PrimeKey,C=SE");
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1142,8 +1141,8 @@ public class X509CATest {
         assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
     }
-    
-    
+
+
     /**
      * Testing generating certificate with public key from providedRequestMessage (providedPublicKey and endEntityInformation.extendedInformation.certificateRequest must be null).
      */
@@ -1153,25 +1152,25 @@ public class X509CATest {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
-        // Create a pkcs10 certificate request (this algorithm will be used)        
+        // Create a pkcs10 certificate request (this algorithm will be used)
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        
+
         //Create CP and generate certificate
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
         Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
         assertNotNull(usercert);
-        
+
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
     }
-    
+
     /**
      * Testing that CSR algorithm is enforced from end entity information if there is one.
      */
@@ -1181,7 +1180,7 @@ public class X509CATest {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
-        // Create a pkcs10 certificate request (the algorithm will be overriden)        
+        // Create a pkcs10 certificate request (the algorithm will be overriden)
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1189,21 +1188,21 @@ public class X509CATest {
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
 
-        // Create separate key pair that is going to be enforced over one from request message        
+        // Create separate key pair that is going to be enforced over one from request message
         KeyPair keyPairEnforcedAlg = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         //Create CP and generate certificate
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
         Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, keyPairEnforcedAlg.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
         assertNotNull(usercert);
-        
+
         //RSA_1024 from requestMessage will be overriden with RSA_2048 from separately provided publicKey
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
     }
-    
+
     /**
      * Testing that CSR algorithm is enforced from end entity information if there is one.
      */
@@ -1213,14 +1212,14 @@ public class X509CATest {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
 
-        // Create a pkcs10 certificate request (the algorithm will be overriden)        
+        // Create a pkcs10 certificate request (the algorithm will be overriden)
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
 
-        // Create a pkcs10 certificate request that will be enforced (put inside endEntityInformation.extendedInformation)        
+        // Create a pkcs10 certificate request that will be enforced (put inside endEntityInformation.extendedInformation)
         KeyPair keyPairEnforcedAlg = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X500Name nameEnforcedAlg = CertTools.stringToBcX500Name("CN=EnforcedAlgCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequestEnforcedAlg = CertTools.genPKCS10CertificationRequest(algName, nameEnforcedAlg, keyPairEnforcedAlg.getPublic(), null, keyPairEnforcedAlg.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
@@ -1229,14 +1228,14 @@ public class X509CATest {
         EndEntityInformation endEntityInformation = new EndEntityInformation("username", "CN=EndEntityInformationCn,O=PrimeKey,C=SE", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         endEntityInformation.setExtendedInformation(new ExtendedInformation());
         endEntityInformation.getExtendedInformation().setCertificateRequest(certificationRequestEnforcedAlg.getEncoded());
-        
+
         //Create CP and generate certificate
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
         Certificate usercert = x509ca.generateCertificate(cryptoToken, endEntityInformation, requestMessage, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
         assertNotNull(usercert);
-        
+
         //RSA_1024 from requestMessage will be overriden with RSA_2048 from endEntityInformation.getCertificateRequest
         assertEquals("2048", AlgorithmTools.getKeySpecification(usercert.getPublicKey()));
         assertEquals(AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(usercert.getPublicKey()));
@@ -1259,7 +1258,7 @@ public class X509CATest {
         // Create CAToken
         Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS); 
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
 		CAToken caToken = new CAToken(cryptoToken.getId(), caTokenProperties);
 		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
@@ -1270,7 +1269,7 @@ public class X509CATest {
         // No extended services
         X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
-        cainfo.setDescription("JUnit RSA CA");        
+        cainfo.setDescription("JUnit RSA CA");
         X509CA x509ca = new X509CA(cainfo);
         x509ca.setCAToken(caToken);
         // A CA certificate
@@ -1279,7 +1278,7 @@ public class X509CATest {
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigAlg, true, keyusage, notBefore, notAfter, "BC");
 		assertNotNull(cacert);
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
         x509ca.setCertificateChain(cachain);
         // Now our CA should be operational
@@ -1299,7 +1298,7 @@ public class X509CATest {
         }
         return cryptoToken;
     }
-    
+
     private static KeyPair genTestKeyPair(String algName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
@@ -1313,11 +1312,11 @@ public class X509CATest {
             return KeyTools.genKeys("512", "RSA");
         }
     }
-    
+
     /** @return Algorithm name for test key pair */
     private static String getTestKeyPairAlgName(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
-            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) || 
+            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
             return algName;
@@ -1325,7 +1324,7 @@ public class X509CATest {
             return "SHA256withRSA";
         }
     }
-    
+
     private static String getTestKeySpec(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
@@ -1339,5 +1338,5 @@ public class X509CATest {
             return "1024"; // Assume RSA
         }
     }
-    
+
 }

@@ -691,7 +691,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         final int caid = cainfo.getCAId();
-        Collection<Certificate> certificatechain = createCertificateChain(admin, ca, cryptoToken, certprofile);
+        List<Certificate> certificatechain = createCertificateChain(admin, ca, cryptoToken, certprofile);
         int castatus = getCaStatus(cainfo);
         ca.setCertificateChain(certificatechain);
         if (log.isDebugEnabled()) {
@@ -757,11 +757,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return castatus;
     }
 
-    private Collection<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken,
+    private List<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken,
             CertificateProfile certprofile) throws CryptoTokenOfflineException {
         final CAInfo cainfo = ca.getCAInfo();
         final CAToken caToken = cainfo.getCAToken();
-        Collection<Certificate> certificatechain = null;
+        List<Certificate> certificatechain = null;
         final String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
         final String aliasCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         int caid = cainfo.getCAId();
@@ -815,7 +815,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 final Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
                         null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
                 // Build Certificate Chain
-                Collection<Certificate> rootcachain = signca.getCertificateChain();
+                List<Certificate> rootcachain = signca.getCertificateChain();
                 certificatechain = new ArrayList<Certificate>();
                 certificatechain.add(cacertificate);
                 certificatechain.addAll(rootcachain);
@@ -1438,7 +1438,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public ResponseMessage processRequest(AuthenticationToken admin, CAInfo cainfo, RequestMessage requestmessage)
             throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         final CA ca;
-        Collection<Certificate> certchain = null;
+        List<Certificate> certchain = null;
         CertificateResponseMessage returnval = null;
         int caid = cainfo.getCAId();
         // check authorization
@@ -1536,7 +1536,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     returnval.setCertificate(cacertificate);
 
                     // Build Certificate Chain
-                    Collection<Certificate> rootcachain = signca.getCertificateChain();
+                    List<Certificate> rootcachain = signca.getCertificateChain();
                     certchain = new ArrayList<Certificate>();
                     certchain.add(cacertificate);
                     certchain.addAll(rootcachain);
@@ -1624,7 +1624,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCACertificate(AuthenticationToken admin, String caname, Collection<CertificateWrapper> wrappedCerts)
             throws AuthorizationDeniedException, CAExistsException, IllegalCryptoTokenException, CertificateImportException {
-        Collection<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
+        List<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size() != 1) {
             // In the case there is a chain, we require a full chain leading up to a root
@@ -1707,7 +1707,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void updateCACertificate(final AuthenticationToken authenticationToken, final int caId, Collection<CertificateWrapper> wrappedCerts)
             throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
-        Collection<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
+        List<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size() != 1) {
             // In the case there is a chain, we require a full chain leading up to a root
@@ -1929,7 +1929,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
         }
-        Collection<Certificate> cachain = null;
+        List<Certificate> cachain = null;
         Certificate cacertificate = null;
         // check authorization
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CARENEW.resource())) {
@@ -2046,19 +2046,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 cachain.add(cacertificate);
 
                 // Save renewed certificate for later use (we'll need their Subject DN within CA renewal with name change)
-                Collection<Certificate> certificateChain = ca.getCertificateChain();
-                Certificate tmp = null;
-                if (certificateChain != null) {
-                    Iterator<Certificate> iterator = certificateChain.iterator();
-                    while (iterator.hasNext()) {
-                        tmp = iterator.next();
-                    }
-                }
-                List<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
-                if (renewedCertificateChain == null) {
-                    renewedCertificateChain = new ArrayList<Certificate>();
-                }
-                renewedCertificateChain.add(tmp);
+                final List<Certificate> certificateChain = ca.getCertificateChain();
+                final List<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain() != null ? ca.getRenewedCertificateChain()
+                        : new ArrayList<Certificate>();
+                renewedCertificateChain.add(certificateChain != null ? certificateChain.get(certificateChain.size() - 1) : null);
                 ca.setRenewedCertificateChain(renewedCertificateChain);
             } else {
                 // Resign with CA above.

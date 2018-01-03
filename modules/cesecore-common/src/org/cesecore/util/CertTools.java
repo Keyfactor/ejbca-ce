@@ -1381,7 +1381,7 @@ public abstract class CertTools {
      * @throws NoSuchProviderException
      * @throws CertificateException
      */
-    public static Collection<Certificate> getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException,
+    public static List<Certificate> getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException,
             NoSuchProviderException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertCollectionFromArray: " + provider);

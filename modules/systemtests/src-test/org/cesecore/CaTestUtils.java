@@ -81,17 +81,17 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 
 /**
- * Common class for test classes which need to create a CA.   
- * 
+ * Common class for test classes which need to create a CA.
+ *
  * @version $Id$
  *
  */
 public abstract class CaTestUtils {
 
-    
+
     /**
-     * Creates and stores a simple X509 CA 
-     * 
+     * Creates and stores a simple X509 CA
+     *
      * @param authenticationToken
      * @param cryptoTokenName
      * @param cadn
@@ -134,7 +134,7 @@ public abstract class CaTestUtils {
         return x509Ca;
     }
 
-    
+
     private static CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException,
             CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
@@ -160,13 +160,13 @@ public abstract class CaTestUtils {
                 cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                 "SHA256WithRSA", true);
         assertNotNull(cacert);
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
         x509ca.setCertificateChain(cachain);
         // Now our CA should be operational
         return x509ca;
     }
-    
+
     public static void removeCA(AuthenticationToken authenticationToken, String cryptoTokenName, String caName) throws AuthorizationDeniedException {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -183,7 +183,7 @@ public abstract class CaTestUtils {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         }
     }
-    
+
     public static void removeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -199,7 +199,7 @@ public abstract class CaTestUtils {
             throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException {
         return CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024", -1);
     }
-    
+
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec,
             int keyusage) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, CAInfo.SELFSIGNED, keyspec, keyusage);
@@ -229,7 +229,7 @@ public abstract class CaTestUtils {
             throw new IllegalStateException(e);
         }
         // A CA certificate
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
         if (genKeys) {
             final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId,
                     catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
@@ -329,7 +329,7 @@ public abstract class CaTestUtils {
         CardVerifiableCertificate cvccacert = new CardVerifiableCertificate(cv);
         Certificate cacert = cvccacert;
         assertNotNull(cacert);
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
         cvcca.setCertificateChain(cachain);
         // Now our CA should be operational
@@ -343,7 +343,7 @@ public abstract class CaTestUtils {
         // Skapa default-datum
         Calendar cal1 = Calendar.getInstance();
         Date validFrom = cal1.getTime();
-    
+
         Calendar cal2 = Calendar.getInstance();
         cal2.add(Calendar.MONTH, 3);
         Date validTo = cal2.getTime();
@@ -356,7 +356,7 @@ public abstract class CaTestUtils {
             CryptoTokenOfflineException, OperatorCreationException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11);
     }
-    
+
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws CertificateParsingException,
     CryptoTokenOfflineException, OperatorCreationException {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
