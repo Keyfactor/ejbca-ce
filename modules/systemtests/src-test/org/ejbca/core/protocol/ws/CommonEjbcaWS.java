@@ -2232,7 +2232,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void ejbcaVersion() throws Exception {
         final String version = ejbcaraws.getEjbcaVersion();
         // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 6.11";
+        final String expectedSubString = "EJBCA 6.12";
         assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString));
     }
 
@@ -2442,11 +2442,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             if(cert2 != null) {
                 internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
             }
-            try {
-                caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, testCaName).getCAId());
-            } catch (CADoesntExistsException e) {
-                log.debug("Clean up failed: " + e.getMessage());
+            CAInfo caInfo = caSession.getCAInfo(intAdmin, testCaName);
+            if (caInfo != null) {
+                caSession.removeCA(intAdmin, caInfo.getCAId());
             }
+
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
         }
