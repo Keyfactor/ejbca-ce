@@ -48,7 +48,7 @@ public class ExternalCommandCertificateValidatorTest {
         CryptoProviderTools.installBCProvider();
         log.trace("<setUp()");
     }
-    
+
     @Test
     public void testDisabledWhitelist() throws Exception {
         final ExternalCommandCertificateValidator validator = new ExternalCommandCertificateValidator();
@@ -104,10 +104,10 @@ public class ExternalCommandCertificateValidatorTest {
         validator.setDataMap(data);
         validator.validate(null, null, new ExternalScriptsWhitelist(path));
     }
-    
+
     /**
      * Gets the platform dependent full path of the file in the class path.
-     * 
+     *
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
@@ -115,14 +115,17 @@ public class ExternalCommandCertificateValidatorTest {
     private final String getFilePathFromClasspath(final String classpath) {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
         final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
-        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
-        final String result = new File( KeyValidatorSessionTest.class.getClassLoader().getResource(path).getFile()).getPath();
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        if (this.getClass().getClassLoader().getResource(path) == null) {
+            throw new RuntimeException("Add modules/systemtests/resources to classpath.");
+        }
+        final String result = new File(this.getClass().getClassLoader().getResource(path).getFile()).getPath();
         if (log.isDebugEnabled()) {
             log.debug("Get file path by class path: " + classpath + " - " + result);
         }
         return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
     }
-    
+
     private final X509Certificate createCert(final String cn) throws Exception {
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert(
