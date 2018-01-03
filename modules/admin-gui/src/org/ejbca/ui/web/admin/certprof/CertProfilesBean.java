@@ -375,8 +375,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final int certProfileType = certProfile.getType();
         // Count number of EEs that reference this CP
         if (certProfileType == CertificateConstants.CERTTYPE_ENDENTITY) {
-            final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityManagementSession()
-                    .countEndEntitiesUsingCertificateProfile(certificateProfileId);
+            final long numberOfEndEntitiesReferencingCP = getEjbcaWebBean().getEjb().getEndEntityAccessSession().countByCertificateProfileId(certificateProfileId);
             if (numberOfEndEntitiesReferencingCP > 1000) {
                 ret = false;
                 addErrorMessage("CERTPROFILEUSEDINENDENTITIES");

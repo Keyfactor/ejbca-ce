@@ -37,6 +37,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
@@ -62,6 +63,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private EntityManager entityManager;
 
     @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
@@ -78,7 +81,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     	boolean eichange = false;
         try {
             // Find the user with username username, or throw ObjectNotFoundException
-            final UserData data = UserData.findByUsername(entityManager, username);
+            final UserData data = endEntityAccessSession.findByUsername(username);
             if (data == null) {
             	throw new NoSuchEndEntityException("Could not find username " + username);
             }

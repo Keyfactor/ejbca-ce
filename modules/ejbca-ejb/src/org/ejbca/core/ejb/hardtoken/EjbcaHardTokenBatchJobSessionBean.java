@@ -28,6 +28,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
@@ -52,6 +53,9 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     private EntityManager entityManager;
 
     @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    
+    @EJB
     private HardTokenSessionLocal hardTokenSession;
 
     @Override
@@ -67,7 +71,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	}
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
-    			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
+    			List<UserData> userDataList = endEntityAccessSession.findNewOrKeyrecByHardTokenIssuerId(hardTokenIssuerId, 0);
     			if (!userDataList.isEmpty()) {
     				returnval = userDataList.get(0).toEndEntityInformation();
     				if (log.isDebugEnabled()) {    					
@@ -94,7 +98,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
-    			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
+    			List<UserData> userDataList = endEntityAccessSession.findNewOrKeyrecByHardTokenIssuerId( hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
     			for (UserData userData : userDataList) {
     				EndEntityInformation endEntityInformation = userData.toEndEntityInformation();
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, endEntityInformation);
@@ -123,7 +127,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
-    			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
+    			List<UserData> userDataList = endEntityAccessSession.findNewOrKeyrecByHardTokenIssuerId(hardTokenIssuerId, 0);
     			if (userDataList.size()>(index-1)) {
     				returnval = userDataList.get(index-1).toEndEntityInformation();
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, returnval);
@@ -146,7 +150,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	long count = 0;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
-    		count = UserData.countNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId);
+    		count = endEntityAccessSession.countNewOrKeyrecByHardTokenIssuerId(hardTokenIssuerId);
     	}
     	log.trace("<getNumberOfHardTokensToGenerate()");
     	return (int)count;
@@ -157,6 +161,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");
     	}
-    	return UserData.countByHardTokenIssuerId(entityManager, hardtokenissuerid) > 0;
+    	return endEntityAccessSession.countByHardTokenIssuerId(hardtokenissuerid) > 0;
     }
 }
