@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.pub;
 
 import java.io.File;
@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,7 +59,7 @@ public class ApplyBean implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger log = Logger.getLogger(ApplyBean.class);
-	
+
     private boolean initialized;
     private AuthenticationToken administrator;
     private String username = "";
@@ -66,9 +67,9 @@ public class ApplyBean implements Serializable {
     private String browser = "unknown";
     /** Is set to true by setUserOk if user exists and password is correct */
     private boolean userOk = false;
-	
+
 	private EjbLocalHelper ejbLocalHelper;
-	
+
 	/**
      * Creates a new instance of CaInterfaceBean
      */
@@ -99,10 +100,10 @@ public class ApplyBean implements Serializable {
     public int getTokenType(String username) throws Exception {
         int returnval = 0;
 
-		if(!username.equals(this.username) || this.endEntityInformation == null){        
+		if(!username.equals(this.username) || this.endEntityInformation == null){
 			this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
 		}
-		
+
         if (endEntityInformation != null) {
             returnval = endEntityInformation.getTokenType();
         }
@@ -122,12 +123,12 @@ public class ApplyBean implements Serializable {
      * @return caid
      */
 	public int getCAId(String username) throws Exception {
-		int returnval = 0;		
+		int returnval = 0;
 
-		if(!username.equals(this.username) || this.endEntityInformation == null){        
+		if(!username.equals(this.username) || this.endEntityInformation == null){
 			this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
 		}
-		
+
 		if (endEntityInformation != null) {
 			returnval = endEntityInformation.getCAId();
 		}
@@ -148,11 +149,11 @@ public class ApplyBean implements Serializable {
      * @return array of available bit lengths
      */
     public int[] availableBitLengths(String username) throws Exception {
-        int[] returnval = null;        
+        int[] returnval = null;
 
-        if(!username.equals(this.username) || this.endEntityInformation == null){        
+        if(!username.equals(this.username) || this.endEntityInformation == null){
         	this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
-        }  
+        }
 
         if (endEntityInformation != null) {
             int certprofile = endEntityInformation.getCertificateProfileId();
@@ -171,7 +172,7 @@ public class ApplyBean implements Serializable {
         			if (StringUtils.isNotEmpty(retdebug)) {
         				retdebug += ",";
         			}
-            		retdebug += returnval[i];        			
+            		retdebug += returnval[i];
         		}
         	}
         	if (log.isTraceEnabled()) {
@@ -182,7 +183,7 @@ public class ApplyBean implements Serializable {
     }
 
     /**
-     * Method that returns the avialable certificate profiles for the end entity profile 
+     * Method that returns the avialable certificate profiles for the end entity profile
      * a user is registered with. Returns null if user couldn't be found in database.
      *
      * @param username user whose certificate profiles are requested.
@@ -190,11 +191,11 @@ public class ApplyBean implements Serializable {
      * @return array of available certificate profile names
      */
     public String[] availableCertificateProfiles(String username) throws Exception {
-        String[] returnval = null;        
+        String[] returnval = null;
 
-        if(!username.equals(this.username) || this.endEntityInformation == null){        
+        if(!username.equals(this.username) || this.endEntityInformation == null){
         	this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
-        }  
+        }
 
         if (endEntityInformation != null) {
             EndEntityProfile eprof = ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfile(endEntityInformation.getEndEntityProfileId());
@@ -206,7 +207,7 @@ public class ApplyBean implements Serializable {
                     String name = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(id);
                 	names.add(name);
                 }
-                returnval = (String[])names.toArray(new String[names.size()]);            	
+                returnval = names.toArray(new String[names.size()]);
             }
         }
         this.username = username;
@@ -218,7 +219,7 @@ public class ApplyBean implements Serializable {
         			if (StringUtils.isNotEmpty(retdebug)) {
         				retdebug += ",";
         			}
-            		retdebug += returnval[i];        			
+            		retdebug += returnval[i];
         		}
         	}
         	if (log.isTraceEnabled()) {
@@ -229,7 +230,7 @@ public class ApplyBean implements Serializable {
     }
 
     /**
-     * Method that returns the certificate profile registered for the end entity. 
+     * Method that returns the certificate profile registered for the end entity.
      * Returns null if user couldn't be found in database.
      *
      * @param username user whose certificate profile is requested.
@@ -237,11 +238,11 @@ public class ApplyBean implements Serializable {
      * @return certificate profile name
      */
     public String getUserCertificateProfile(String username) throws Exception {
-        String returnval = null;        
+        String returnval = null;
 
-        if(!username.equals(this.username) || this.endEntityInformation == null){        
+        if(!username.equals(this.username) || this.endEntityInformation == null){
         	this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
-        }  
+        }
 
         if (endEntityInformation != null) {
             returnval = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(endEntityInformation.getCertificateProfileId());
@@ -283,7 +284,7 @@ public class ApplyBean implements Serializable {
     public boolean getUserOk() {
         return this.userOk;
     }
-    
+
     /**
      * Detects the browser type from the User-Agent HTTP header and returns it.
      * @return Either "netscape", "explorer" or "unknown"
@@ -294,20 +295,26 @@ public class ApplyBean implements Serializable {
             final boolean isGecko = userAgent.contains("Gecko");
             final boolean isIE = userAgent.contains("MSIE");
             final boolean isNewIE = userAgent.contains("Trident"); // IE11
-            
-            if (isIE && !isGecko) return "explorer";
-            if (isNewIE) return "explorer";
-            if (isGecko && !isNewIE) return "netscape";
-            /*
-             * TODO: IE 11.0 will emulate Firefox in some aspects and implement some HTML5 stuff
-             * (<keygen> is standardized in HTML5). When it has been released we should try it out.
-             * 
-             * See: http://msdn.microsoft.com/en-us/library/ie/bg182625%28v=vs.85%29.aspx
-             */
+
+            if (isIE && !isGecko) {
+                return "explorer";
+            }
+            if (isNewIE) {
+                return "explorer";
+            }
+            if (isGecko && !isNewIE) {
+                return "netscape";
+                /*
+                 * TODO: IE 11.0 will emulate Firefox in some aspects and implement some HTML5 stuff
+                 * (<keygen> is standardized in HTML5). When it has been released we should try it out.
+                 *
+                 * See: http://msdn.microsoft.com/en-us/library/ie/bg182625%28v=vs.85%29.aspx
+                 */
+            }
         }
         return "unknown";
     }
-    
+
     /**
      * Returns the detected browser type.
      * @see detectBrowser(Request)
@@ -317,7 +324,7 @@ public class ApplyBean implements Serializable {
         return browser;
     }
 
-    
+
     //--------------------------------------------------------------
     // Convenience methods used from JSTL.
     // In JSTL, there is no practical way of calling regular functions,
@@ -325,14 +332,14 @@ public class ApplyBean implements Serializable {
     // is easy. Since most methods in ApplyBean take a "username" argument,
     // we give the JSP page a way to set the username beforehand and then
     // access the other methods like properties.
-    
+
     private String defaultUsername = "";
-    
+
     /**
      * Sets the default user name. Some methods in this class come in two versions,
      * one that takes a String username and one without arguments. The version without
-     * argument uses the default user name set by this method. 
-     * 
+     * argument uses the default user name set by this method.
+     *
      * @param newUsername The new default user name
      */
     public void setDefaultUsername(String newUsername) {
@@ -341,7 +348,7 @@ public class ApplyBean implements Serializable {
 
     /**
      * Returns the token type for the default user.
-     * @see #setDefaultUsername(String) 
+     * @see #setDefaultUsername(String)
      * @see #getTokenType(String)
      * @return the token type for the default user.
      * @throws Exception if an error occurs
@@ -352,7 +359,7 @@ public class ApplyBean implements Serializable {
 
     /**
      * Returns the CA identity for the default user.
-     * @see #setDefaultUsername(String) 
+     * @see #setDefaultUsername(String)
      * @see #getCAId(String)
      * @return the CA Id for the default user.
      * @throws Exception if an error occurs
@@ -363,7 +370,7 @@ public class ApplyBean implements Serializable {
 
     /**
      * Returns the encryption key lengths available to the default user.
-     * @see #setDefaultUsername(String) 
+     * @see #setDefaultUsername(String)
      * @see #availableBitLengths(String)
      * @return the bit lengths available to the default user.
      * @throws Exception if an error occurs
@@ -371,10 +378,10 @@ public class ApplyBean implements Serializable {
 	public int[] getAvailableBitLengths() throws Exception {
 		return availableBitLengths(defaultUsername);
 	}
-	
+
 	/**
      * Returns the smallest available keylength.
-     * @see #getAvailableBitLengths() 
+     * @see #getAvailableBitLengths()
      * @return the minimum key length, or Integer.MAX_VALUE if there are no keylengths available.
      */
     public int getMinimumAvailableKeyLength() throws Exception {
@@ -389,7 +396,7 @@ public class ApplyBean implements Serializable {
         }
         return minimum;
     }
-    
+
     /**
      * Checks if there's more than one key length to choose from
      * @return true if there's more than one key length, or if no available key lengths could be found.
@@ -397,9 +404,9 @@ public class ApplyBean implements Serializable {
      */
     public int getNumberOfLengthsAvailable() throws Exception {
         int[] keylengths = getAvailableBitLengths();
-        return keylengths == null ? 0 : keylengths.length; 
+        return keylengths == null ? 0 : keylengths.length;
     }
-    
+
     public int getAvailableTokenKeySpecsSize() throws IllegalStateException, AuthorizationDeniedException {
         return getAvailableTokenKeySpecs().length;
     }
@@ -408,7 +415,7 @@ public class ApplyBean implements Serializable {
 	}
     public String[] getAvailableTokenKeySpecs(String username) throws IllegalStateException, AuthorizationDeniedException {
         final List<String> ret = new ArrayList<>();
-        if(!username.equals(this.username) || this.endEntityInformation == null){        
+        if(!username.equals(this.username) || this.endEntityInformation == null){
             this.endEntityInformation = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
         }
         this.username = username;
@@ -457,8 +464,13 @@ public class ApplyBean implements Serializable {
             final List<String> ecChoicesList = new ArrayList<>(ecChoices);
             Collections.sort(ecChoicesList);
             for (final String ecNamedCurve : ecChoicesList) {
+                final String canonicalCurveName = getCanonicalCurveNameByAlias(namedEcCurvesMap, ecNamedCurve);
+                if (canonicalCurveName == null) {
+                    log.warn("Certificate profile " + certificateProfile + " specifies a curve (" + ecNamedCurve + ") which does not exist.");
+                    continue;
+                }
                 ret.add(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve + ";"+AlgorithmConstants.KEYALGORITHM_ECDSA + " " +
-                        StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve)));
+                        StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(canonicalCurveName)));
             }
         }
         for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
@@ -490,6 +502,31 @@ public class ApplyBean implements Serializable {
     }
 
     /**
+     * <p>Retrieve the canonical curve name given an alias in a case-insensitive way.<p>
+     * <p>More specifically, given a map M := {canonical name -> [alias]} as the first argument and an alias A as the second argument,
+     * returns the canonical name C such that A ∈ {M.get(C)} or null if there is no such C.</p>
+     * @param aliases A map M between canonical curve names and their aliases
+     * @param alias The alias A whose canonical name we should look for
+     * @return A canonical name C such that A ∈ {M.get(C)} or null if no such C exists
+     */
+    private String getCanonicalCurveNameByAlias(final Map<String, List<String>> aliases, final String alias) {
+        for (final Entry<String, List<String>> entry : aliases.entrySet()) {
+            if (toLowerCase(entry.getValue()).contains(alias.toLowerCase())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private List<String> toLowerCase(final List<String> strings) {
+        final List<String> lowerCaseStrings = new ArrayList<String>();
+        for (final String string : strings) {
+            lowerCaseStrings.add(string.toLowerCase());
+        }
+        return lowerCaseStrings;
+    }
+
+    /**
      * Returns the default encryption key lengths.
      * @see #availableBitLengths(String)
      * @return the default bit lengths available.
@@ -498,10 +535,10 @@ public class ApplyBean implements Serializable {
 	public int[] getDefaultBitLengths() throws Exception {
 		return SecConst.DEFAULT_KEY_LENGTHS;
 	}
-	
+
     /**
      * Returns the certificate profiles available to the default user.
-     * @see #setDefaultUsername(String) 
+     * @see #setDefaultUsername(String)
      * @see #availableCertificateProfiles(String)
      * @return the certificate profile names available to the default user.
      * @throws Exception if an error occurs
@@ -509,10 +546,10 @@ public class ApplyBean implements Serializable {
 	public String[] getAvailableCertificateProfiles() throws Exception {
 		return availableCertificateProfiles(defaultUsername);
 	}
-	
+
 	/**
      * Returns true if a list of certificate profiles should be shown to the user.
-     * @see #getAvailableCertificateProfiles() 
+     * @see #getAvailableCertificateProfiles()
      */
     public boolean isCertificateProfileListShown() throws Exception {
         return getAvailableCertificateProfiles().length != 1;
@@ -532,26 +569,26 @@ public class ApplyBean implements Serializable {
     }
 
 	/** Returns the certificate profile the user is registered with
-	 * 
+	 *
 	 * @return certificate profile name
 	 * @throws Exception id an error occurs
 	 */
 	public String getUserCertificateProfile() throws Exception {
 		return getUserCertificateProfile(defaultUsername);
 	}
-	
+
 	/**
 	 * Checks if the "OpenVPN installer" option should be available.
 	 */
 	public boolean isOpenVPNInstallerConfigured() throws Exception {
-        // Check that the OpenVPN installer script exists 
+        // Check that the OpenVPN installer script exists
         final String script = WebConfiguration.getOpenVPNCreateInstallerScript();
         boolean exists = (script != null && new File(script).exists());
-        
+
         if (log.isDebugEnabled()) {
             log.debug("OpenVPN installer script does not exist, so the option will be hidden: " + script);
         }
-        
+
         return exists;
 	}
 
