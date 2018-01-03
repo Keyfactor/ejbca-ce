@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.ca;
 
 import java.security.cert.Certificate;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -39,7 +40,8 @@ public class CVCCAInfo extends CAInfo {
      * This constructor can be used when creating a CA.
      * This constructor uses defaults for the fields that are not specified.
      * */
-    public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, String encodedValidity, int signedby, Collection<Certificate> certificatechain, CAToken catoken) {
+    public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, String encodedValidity, int signedby,
+            List<Certificate> certificatechain, CAToken catoken) {
         this(subjectdn, name, status, new Date(), certificateprofileid,
                 encodedValidity, null, // expire time
                 CAInfo.CATYPE_CVC, signedby,
@@ -57,7 +59,7 @@ public class CVCCAInfo extends CAInfo {
                 true, // Finish user
                 new ArrayList<ExtendedCAServiceInfo>(), // Extended CA services
                 new HashMap<ApprovalRequestType, Integer>(),
-                true, // includeInHealthCheck 
+                true, // includeInHealthCheck
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -71,12 +73,12 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when creating CA and retrieving CA info.
 	 * Please use the shorter form if you do not need to set all of the values.
 	 */
-	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
-			String encodedValidity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
+	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid,
+            String encodedValidity, Date expiretime, int catype, int signedby, List<Certificate> certificatechain,
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
-			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
-			Collection<Integer> crlpublishers, Collection<Integer> keyValidators, 
-			boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
+			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
+			boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
@@ -91,7 +93,7 @@ public class CVCCAInfo extends CAInfo {
 		this.catype = catype;
 		this.signedby = signedby;
 		setCertificateChain(certificatechain);
-		this.catoken = catoken; 
+		this.catoken = catoken;
 		this.description = description;
 		this.revocationReason = revocationReason;
 		this.revocationDate = revocationDate;
@@ -101,9 +103,9 @@ public class CVCCAInfo extends CAInfo {
 		this.deltacrlperiod = deltacrlperiod;
 		this.crlpublishers = crlpublishers;
 		this.validators = keyValidators;
-		this.finishuser = finishuser;                     
+		this.finishuser = finishuser;
 		this.certificateprofileid = certificateprofileid;
-		this.extendedcaserviceinfos = extendedcaserviceinfos; 
+		this.extendedcaserviceinfos = extendedcaserviceinfos;
 		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
@@ -119,17 +121,17 @@ public class CVCCAInfo extends CAInfo {
      * Used by the web. Jsp and stuff like that.
 	 */
 	public CVCCAInfo(int caid, String encodedValidity, CAToken catoken, String description,
-			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
+			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
 			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
-			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
 		this.caid = caid;
 		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
-		this.description = description;    
+		this.description = description;
 		this.crlperiod = crlperiod;
 		this.crlIssueInterval = crlIssueInterval;
 		this.crlOverlapTime = crlOverlapTime;
@@ -137,7 +139,7 @@ public class CVCCAInfo extends CAInfo {
 		this.crlpublishers = crlpublishers;
 		this.validators = keyValidators;
 		this.finishuser = finishuser;
-		this.extendedcaserviceinfos = extendedcaserviceinfos; 
+		this.extendedcaserviceinfos = extendedcaserviceinfos;
 		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
 		this.doEnforceUniquePublicKeys = _doEnforceUniquePublicKeys;
@@ -146,5 +148,5 @@ public class CVCCAInfo extends CAInfo {
 		this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
-	}  
+	}
 }
