@@ -16,14 +16,11 @@ package org.ejbca.core.ejb.ra;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -36,10 +33,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
@@ -711,168 +706,4 @@ public class UserData extends ProtectedData implements Serializable {
     // End Database integrity protection methods
     //
 
-    //
-    // Search functions.
-    //
-
-    /** @return the found entity instance or null if the entity does not exist */
-    public static UserData findByUsername(EntityManager entityManager, String username) {
-        if (username == null) {
-            return null;
-        }
-        return entityManager.find(UserData.class, username);
-    }
-
-    /**
-     * Finds the UserDatas with the specified End Entity Profile.
-     * 
-     * @param entityManager an entity manager
-     * @param endEntityProfileId the endEntityProfileId to search for
-     * @return a list of found UserData objects, or an empty list if none found
-     */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findByEndEntityProfileId(EntityManager entityManager, int endEntityProfileId) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.endEntityProfileId=:endEntityProfileId");
-        query.setParameter("endEntityProfileId", endEntityProfileId);
-        return query.getResultList();
-    }
-
-    /**
-     * Finds the UserDatas with the specified CA ID.
-     * 
-     * @param entityManager an entity manager
-     * @param caId the CA ID to search for
-     * @return a list of found UserData objects, or an empty list if none found
-     */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findByCAId(EntityManager entityManager, int caId) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.caId=:caId");
-        query.setParameter("caId", caId);
-        return query.getResultList();
-    }
-
-    /**
-     * Finds the UserDatas with the specified Subject DN.
-     * 
-     * @param entityManager an entity manager
-     * @param subjectDN the subject DN to search for
-     * @return a list of found UserData objects, or an empty list if none found
-     */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
-        query.setParameter("subjectDN", subjectDN);
-        return query.getResultList();
-    }
-
-    /**
-     * Finds the UserDatas with the specified Subject DN and CA ID.
-     * 
-     * @param entityManager an entity manager
-     * @param subjectDN the subject DN to search for
-     * @param caId the CA ID to search for
-     * @return a list of found UserData objects, or an empty list if none found
-     */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
-        query.setParameter("subjectDN", subjectDN);
-        query.setParameter("caId", caId);
-        return query.getResultList();
-    }
-
-    /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findBySubjectEmail(EntityManager entityManager, String subjectEmail) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail");
-        query.setParameter("subjectEmail", subjectEmail);
-        return query.getResultList();
-    }
-
-    /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findByStatus(EntityManager entityManager, int status) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status");
-        query.setParameter("status", status);
-        return query.getResultList();
-    }
-
-    /** @return return the query results as a List. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findAll(EntityManager entityManager) {
-        final Query query = entityManager.createQuery("SELECT a FROM UserData a");
-        return query.getResultList();
-    }
-
-    /** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    @SuppressWarnings("unchecked")
-    public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
-        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
-        if (maxResults > 0) {
-            query.setMaxResults(maxResults);
-        }
-        return query.getResultList();
-    }
-
-    /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    public static long countNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
-        final Query query = entityManager
-                .createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
-        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
-    public static long countByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
-        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
-        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    public static String findSubjectEmailByUsername(EntityManager entityManager, String username) {
-        final Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
-        query.setParameter("username", username);
-        return (String) QueryResultWrapper.getSingleResult(query);
-    }
-
-    /** @return return a count of UserDatas with the specified Certificate Profile. */
-    public static long countByCertificateProfileId(EntityManager entityManager, int certificateProfileId) {
-        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
-        query.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** @return return a count of UserDatas with the specified CA. */
-    public static long countByCaId(EntityManager entityManager, int caId) {
-        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
-        query.setParameter("caId", caId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** @return return a count of UserDatas with the specified Hard Token Profile. */
-    public static long countByHardTokenProfileId(EntityManager entityManager, int hardTokenProfileId) {
-        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
-        query.setParameter("tokenType", hardTokenProfileId);
-        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** @return a list of subjectDNs that contain SN=serialnumber* for a CA and excludes a username. */
-    @SuppressWarnings("unchecked")
-    public static List<String> findSubjectDNsByCaIdAndNotUsername(final EntityManager entityManager, final int caId, final String username,
-            final String serialnumber) {
-        final Query query = entityManager
-                .createQuery("SELECT a.subjectDN FROM UserData a WHERE a.caId=:caId AND a.username!=:username AND a.subjectDN LIKE :serial");
-        query.setParameter("caId", caId);
-        query.setParameter("username", username);
-        query.setParameter("serial", "%SN="+ serialnumber + "%");
-        return query.getResultList();
-    }
 }

@@ -23,6 +23,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -42,6 +43,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
@@ -81,7 +83,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @Override
     public AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username)
             throws NotFoundException {
-        UserData user = UserData.findByUsername(entityManager, username);
+        UserData user = findByUsername(username);
         if (user == null) {
             throw new NotFoundException("End Entity of name " + username + " not found in database");
         } else {
@@ -101,7 +103,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + dn);
         }
-        final List<UserData> dataList = UserData.findBySubjectDN(entityManager, dn);
+        final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN", UserData.class);
+        query.setParameter("subjectDN", dn);
+        final List<UserData> dataList =  query.getResultList();
+        
         if (dataList.size() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot find user with subjectdn: " + dn);
@@ -116,7 +121,34 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return result;
     }
-
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<UserData> findNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId, int maxResults) {
+        final TypedQuery<UserData> query = entityManager
+                .createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)", UserData.class);
+        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
+        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
+        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
+        if (maxResults > 0) {
+            query.setMaxResults(maxResults);
+        }
+        return query.getResultList();
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<String> findSubjectDNsByCaIdAndNotUsername(final int caId, final String username,
+            final String serialnumber) {
+        final TypedQuery<String> query = entityManager
+                .createQuery("SELECT a.subjectDN FROM UserData a WHERE a.caId=:caId AND a.username!=:username AND a.subjectDN LIKE :serial", String.class);
+        query.setParameter("caId", caId);
+        query.setParameter("username", username);
+        query.setParameter("serial", "%SN="+ serialnumber + "%");
+        return query.getResultList();
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<EndEntityInformation> findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn)
@@ -130,7 +162,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerDN);
         }
-        final List<UserData> dataList = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerDN.hashCode());
+        
+        final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId", UserData.class);
+        query.setParameter("subjectDN", dn);
+        query.setParameter("caId", issuerDN.hashCode());
+        final List<UserData> dataList = query.getResultList();
         if (dataList.size() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerDN);
@@ -161,8 +197,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     public EndEntityInformation findUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUser(" + username + ")");
-        }
-        final UserData data = UserData.findByUsername(entityManager, username);
+        }        
+        final UserData data = findByUsername(username);
         if (data == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot find user with username='" + username + "'");
@@ -177,6 +213,15 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public UserData findByUsername(String username) {
+        if (username == null) {
+            return null;
+        }
+        return entityManager.find(UserData.class, username);
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserByEmail(" + email + ")");
@@ -184,7 +229,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with email: " + email);
         }
-        final List<UserData> result = UserData.findBySubjectEmail(entityManager, email);
+        
+        final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail", UserData.class);
+        query.setParameter("subjectEmail", email);
+        final List<UserData> result =  query.getResultList();
         if (result.size() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot find user with Email='" + email + "'");
@@ -326,7 +374,51 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return returnval;
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long countByCaId(int caId) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
+        query.setParameter("caId", caId);
+        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+    }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long countByCertificateProfileId(int certificateProfileId) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+        query.setParameter("certificateProfileId", certificateProfileId);
+        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long countByHardTokenIssuerId(int hardTokenIssuerId) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
+        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long countByHardTokenProfileId(int hardTokenProfileId) {
+        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
+        query.setParameter("tokenType", hardTokenProfileId);
+        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public long countNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId) {
+        final javax.persistence.Query query = entityManager
+                .createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
+        query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
+        query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
+        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
+        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
+        return ((Long) query.getSingleResult()).longValue(); // Always returns a result
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<EndEntityInformation> findAllBatchUsersByStatusWithLimit(int status) {
@@ -542,7 +634,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByCaIdNoAuth()");
         }
-        final List<UserData> userDataList = UserData.findByCAId(entityManager, caid);
+        final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.caId=:caId", UserData.class);
+        query.setParameter("caId", caid);
+        final List<UserData> userDataList = query.getResultList();
         final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
         for (UserData ud : userDataList) {
             returnval.add(ud.toEndEntityInformation());
@@ -559,7 +653,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isTraceEnabled()) {
             log.trace(">findByEndEntityProfileId(" + endentityprofileid + ")");
         }
-        List<UserData> found = UserData.findByEndEntityProfileId(entityManager, endentityprofileid);
+        final TypedQuery<UserData> query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.endEntityProfileId=:endEntityProfileId", UserData.class);
+        query.setParameter("endEntityProfileId", endentityprofileid);
+        List<UserData> found = query.getResultList();        
         if (log.isTraceEnabled()) {
             log.trace("<findByEndEntityProfileId(" + endentityprofileid + "), found: " + found.size());
         }

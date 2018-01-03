@@ -502,12 +502,6 @@ public interface EndEntityManagementSession {
      * @return true if certificate belongs to a user, false if no user with specified certificate exists
      */
     boolean checkIfCertificateBelongToUser(BigInteger certificatesnr, String issuerdn);
-
-    /**
-     * @param certificateprofileid the ID of the Certificate Profile to check against
-     * @return a count of the number of end entities
-     */
-    long countEndEntitiesUsingCertificateProfile(int certificateprofileid);
     
     /**
      * Method checking if username already exists in database. WARNING: do not

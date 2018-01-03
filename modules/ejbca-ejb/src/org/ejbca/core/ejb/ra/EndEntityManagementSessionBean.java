@@ -464,7 +464,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntity.getExtendedInformation());
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
-                if (UserData.findByUsername(entityManager, userData.getUsername()) != null) {
+                if (endEntityAccessSession.findByUsername(userData.getUsername()) != null) {
                     throw new EndEntityExistsException("User " + userData.getUsername() + " already exists.");
                 }
                 entityManager.persist(userData);
@@ -534,7 +534,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (username == null) {
             return false;
         }
-        final List<String> subjectDNs = UserData.findSubjectDNsByCaIdAndNotUsername(entityManager, caid, username, serialnumber);
+        final List<String> subjectDNs = endEntityAccessSession.findSubjectDNsByCaIdAndNotUsername(caid, username, serialnumber);
         // Even though we push down most of the work to the database we still have to verify the serialnumber here since
         // for example serialnumber '1' will match both "SN=1" and "SN=10" etc
         for (final String currentSubjectDN : subjectDNs) {
@@ -558,11 +558,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new IllegalArgumentException("Cannot rename an end entity to or from empty string.");
         }
         // Check that end entity exists and that the target username isn't already in use
-        final UserData currentUserData = UserData.findByUsername(entityManager, currentUsername);
+        final UserData currentUserData = endEntityAccessSession.findByUsername(currentUsername);
         if (currentUserData==null) {
             return false;
         }
-        if (UserData.findByUsername(entityManager, newUsername)!=null) {
+        if (endEntityAccessSession.findByUsername(newUsername) !=null) {
             throw new EndEntityExistsException("Unable to rename end entity, since end entity with username '" + newUsername + "' already exists.");
         }
         // Check authorization
@@ -729,7 +729,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">changeUser(calculated SIM " + altName + ")");
         }
-        UserData userData = UserData.findByUsername(entityManager, username);
+        UserData userData = endEntityAccessSession.findByUsername(username); 
         if (userData == null) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
             log.info(msg);
@@ -870,7 +870,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new NoSuchEndEntityException("End entity does not exist");
             }
             username = newUsername;
-            userData = UserData.findByUsername(entityManager, username);
+            userData = endEntityAccessSession.findByUsername(username);
         }      
         // Check if the subjectDN serialnumber already exists.
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
@@ -998,7 +998,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check if administrator is authorized to delete user.
         String caIdLog = null;
-        final UserData data1 = UserData.findByUsername(entityManager, username);
+        final UserData data1 = endEntityAccessSession.findByUsername(username);
         if (data1 != null) {
             final int caid = data1.getCaId();
             caIdLog = String.valueOf(caid);
@@ -1059,7 +1059,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // because the default number of allowed requests are 1
         int counter = 0;
         // Check if administrator is authorized to edit user.
-        UserData data1 = UserData.findByUsername(entityManager, username);
+        UserData data1 = endEntityAccessSession.findByUsername(username);
         if (data1 != null) {
             // Do the work of decreasing the counter
             ExtendedInformation ei = data1.getExtendedInformation();
@@ -1158,7 +1158,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         try {
             // Check if administrator is authorized to edit user.
-            UserData data1 = UserData.findByUsername(entityManager, username);
+            UserData data1 = endEntityAccessSession.findByUsername(username);
             if (data1 != null) {
                 final ExtendedInformation ei = data1.getExtendedInformation();
                 if (ei == null) {
@@ -1182,11 +1182,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
     }
-
-    @Override 
-    public long countEndEntitiesUsingCertificateProfile(int certificateprofileid) {
-       return UserData.countByCertificateProfileId(entityManager, certificateprofileid);
-    }
     
     @Override
     public void setUserStatus(final AuthenticationToken admin, final String username, final int status) throws AuthorizationDeniedException,
@@ -1202,7 +1197,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace(">setUserStatus(" + username + ", " + status + ")");
         }
         // Check if administrator is authorized to edit user.
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
             // This exception message is used to not leak information to the user
@@ -1319,7 +1314,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Find user
         String newpasswd = password;
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             throw new NoSuchEndEntityException("Could not find user " + username);
         }
@@ -1384,7 +1379,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace(">updateCAId(" + username + ", "+newCAId+")");
         }
         // Find user
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             throw new NoSuchEndEntityException("Could not find user " + username);
         }
@@ -1410,7 +1405,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         boolean ret = false;
         // Find user
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             throw new NoSuchEndEntityException("Could not find user " + username);
         }
@@ -1446,7 +1441,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException,
             WaitingForApprovalException, RemoveException, NoSuchEndEntityException {
-        final UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             throw new NoSuchEndEntityException("User '" + username + "' not found.");
         }
@@ -1510,7 +1505,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
         }
-        final UserData userData = UserData.findByUsername(entityManager, username);
+        final UserData userData = endEntityAccessSession.findByUsername(username);
         if (userData == null) {
             throw new NoSuchEndEntityException("Could not find user " + username);
         }
@@ -1759,7 +1754,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         
         if(approvalRequestID != 0) {
-            UserData userdata = UserData.findByUsername(entityManager, username);
+            UserData userdata = endEntityAccessSession.findByUsername(username);
             ExtendedInformation ei = userdata.getExtendedInformation();
             if(ei == null) {
                 ei = new ExtendedInformation();
@@ -1797,7 +1792,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final String username = certificateStoreSession.findUsernameByCertSerno(certificatesnr, issuerdn);
         if (username != null) {
-            if (UserData.findByUsername(entityManager, username) == null) {
+            if (endEntityAccessSession.findByUsername(username) == null) {
                 final String msg = intres.getLocalizedMessage("ra.errorcertnouser", issuerdn, certificatesnr.toString(16));
                 log.info(msg);
                 return false;
@@ -1851,7 +1846,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">checkForCAId()");
         }
-        final long count = UserData.countByCaId(entityManager, caid);
+        final long count = endEntityAccessSession.countByCaId(caid);
         if (count > 0) {
             if (log.isDebugEnabled()) {
                 log.debug("CA exists in end entities: " + count);
@@ -1866,7 +1861,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenProfileId()");
         }
-        return UserData.countByHardTokenProfileId(entityManager, profileid) > 0;
+        return endEntityAccessSession.countByHardTokenProfileId(profileid) > 0;
     }
 
     private void print(EndEntityProfile profile, EndEntityInformation userdata) {
@@ -2022,7 +2017,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new AuthorizationDeniedException(admin + " not authorized to key recovery for end entity profile id " + endEntityProfileId);
         }
         try {
-            final UserData data = UserData.findByUsername(entityManager, username);
+            final UserData data = endEntityAccessSession.findByUsername(username);
             if (data == null) {
                 log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
                 // This exception message is used to not leak information to the user
@@ -2050,7 +2045,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             ret = keyRecoverySession.markAsRecoverable(admin, certificate, endEntityProfileId);
         }
         try {
-            final UserData data = UserData.findByUsername(entityManager, username);
+            final UserData data = endEntityAccessSession.findByUsername(username);
             if (data == null) {
                 log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
                 // This exception message is used to not leak information to the user
