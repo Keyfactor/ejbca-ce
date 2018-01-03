@@ -27,6 +27,7 @@ public final class AlgorithmConstants {
     public static final String SIGALG_SHA384_WITH_RSA          = "SHA384WithRSA";
     public static final String SIGALG_SHA512_WITH_RSA          = "SHA512WithRSA";
     public static final String SIGALG_SHA3_256_WITH_RSA        = "SHA3-256withRSA";
+    public static final String SIGALG_SHA3_384_WITH_RSA        = "SHA3-384withRSA";
     public static final String SIGALG_SHA3_512_WITH_RSA        = "SHA3-512withRSA";
     public static final String SIGALG_SHA1_WITH_ECDSA          = "SHA1withECDSA";
     public static final String SIGALG_SHA224_WITH_ECDSA        = "SHA224withECDSA";
@@ -34,6 +35,7 @@ public final class AlgorithmConstants {
     public static final String SIGALG_SHA384_WITH_ECDSA        = "SHA384withECDSA";
     public static final String SIGALG_SHA512_WITH_ECDSA        = "SHA512withECDSA";
     public static final String SIGALG_SHA3_256_WITH_ECDSA      = "SHA3-256withECDSA";
+    public static final String SIGALG_SHA3_384_WITH_ECDSA      = "SHA3-384withECDSA";
     public static final String SIGALG_SHA3_512_WITH_ECDSA      = "SHA3-512withECDSA";
     public static final String SIGALG_SHA256_WITH_RSA_AND_MGF1 = "SHA256withRSAandMGF1";
     public static final String SIGALG_SHA1_WITH_RSA_AND_MGF1   = "SHA1withRSAandMGF1"; // Not possible to select in Admin-GUI
@@ -51,6 +53,7 @@ public final class AlgorithmConstants {
         SIGALG_SHA384_WITH_RSA,
         SIGALG_SHA512_WITH_RSA,
         SIGALG_SHA3_256_WITH_RSA,
+        SIGALG_SHA3_384_WITH_RSA,
         SIGALG_SHA3_512_WITH_RSA,
         SIGALG_SHA256_WITH_RSA_AND_MGF1,
         SIGALG_SHA1_WITH_ECDSA,
@@ -58,7 +61,8 @@ public final class AlgorithmConstants {
         SIGALG_SHA256_WITH_ECDSA,
         SIGALG_SHA384_WITH_ECDSA,
         SIGALG_SHA512_WITH_ECDSA,
-        SIGALG_SHA3_256_WITH_ECDSA, 
+        SIGALG_SHA3_256_WITH_ECDSA,
+        SIGALG_SHA3_384_WITH_ECDSA,
         SIGALG_SHA3_512_WITH_ECDSA,
         SIGALG_SHA1_WITH_DSA,
         SIGALG_GOST3411_WITH_ECGOST3410,
