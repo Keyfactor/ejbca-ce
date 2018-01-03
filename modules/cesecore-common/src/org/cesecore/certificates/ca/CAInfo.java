@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -39,7 +40,7 @@ public abstract class CAInfo implements Serializable {
     public static final int CATYPE_X509 = 1;
     public static final int CATYPE_CVC = 2;
 
-    /** 
+    /**
      * Constants indicating that the CA is selfsigned.
      */
     public static final int SELFSIGNED = 1;
@@ -68,7 +69,7 @@ public abstract class CAInfo implements Serializable {
     protected int signedby;
     protected Collection<CertificateWrapper> certificatechain;
     protected Collection<CertificateWrapper> renewedcertificatechain;
-    protected transient Collection<Certificate> certificatechainCached;
+    protected transient List<Certificate> certificatechainCached;
     protected transient Collection<Certificate> renewedcertificatechainCached;
     protected CAToken catoken;
     protected String description;
@@ -89,23 +90,23 @@ public abstract class CAInfo implements Serializable {
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
     /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
-    @Deprecated 
+    @Deprecated
     private Collection<Integer> approvalSettings;
     /**
-     * @deprecated since 6.8.0, where approval settings and profiles became interlinked. 
+     * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
-    @Deprecated 
+    @Deprecated
     private int approvalProfile;
-    
+
     /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
      * Needed for a while in order to be able to import old statedumps from 6.5 and earlier
      */
     @Deprecated
     protected int numOfReqApprovals;
-    
+
     private LinkedHashMap<ApprovalRequestType, Integer> approvals;
 
 
@@ -197,7 +198,7 @@ public abstract class CAInfo implements Serializable {
     /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the
      * RootCA certificate in the last position and the CAs certificate in the first.
      */
-    public Collection<Certificate> getCertificateChain() {
+    public List<Certificate> getCertificateChain() {
         if (certificatechain == null) {
             return null;
         }
@@ -207,11 +208,11 @@ public abstract class CAInfo implements Serializable {
         return certificatechainCached;
     }
 
-    public void setCertificateChain(Collection<Certificate> certificatechain) {
+    public void setCertificateChain(List<Certificate> certificatechain) {
         this.certificatechainCached = certificatechain;
         this.certificatechain = EJBTools.wrapCertCollection(certificatechain);
     }
-    
+
     public Collection<Certificate> getRenewedCertificateChain() {
         if (renewedcertificatechain == null) {
             return null;
@@ -306,7 +307,7 @@ public abstract class CAInfo implements Serializable {
     public void setCRLPublishers(Collection<Integer> crlpublishers) {
         this.crlpublishers = crlpublishers;
     }
-    
+
     public Collection<Integer> getValidators() {
         if (validators == null) {
         	// Make sure we never return null for upgraded CAs, avoiding possible NPE
@@ -319,11 +320,11 @@ public abstract class CAInfo implements Serializable {
         this.validators = validators;
     }
 
-    public boolean getKeepExpiredCertsOnCRL() { 
-        return this.keepExpiredCertsOnCRL; 
+    public boolean getKeepExpiredCertsOnCRL() {
+        return this.keepExpiredCertsOnCRL;
     }
-    public void setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) { 
-        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL; 
+    public void setKeepExpiredCertsOnCRL(boolean keepExpiredCertsOnCRL) {
+        this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
     }
 
     public boolean getFinishUser() {
@@ -343,7 +344,7 @@ public abstract class CAInfo implements Serializable {
     }
 
     /** Lists the extended CA services.
-     * 
+     *
      * @return Collection of ExtendedCAServiceInfo
      */
     public Collection<ExtendedCAServiceInfo> getExtendedCAServiceInfos() {
@@ -353,9 +354,9 @@ public abstract class CAInfo implements Serializable {
     public void setExtendedCAServiceInfos(Collection<ExtendedCAServiceInfo> extendedcaserviceinfos) {
         this.extendedcaserviceinfos = extendedcaserviceinfos;
     }
-    
+
     /**
-     * 
+     *
      * @return a map of approvals, mapped as approval setting (as defined in this class) : approval profile ID. Never returns null.
      */
     public Map<ApprovalRequestType, Integer> getApprovals() {
@@ -370,8 +371,8 @@ public abstract class CAInfo implements Serializable {
     }
 
     /**
-     * Returns the ID of an approval profile 
-     * 
+     * Returns the ID of an approval profile
+     *
      * @deprecated since 6.8.0. Use getApprovals() instead;
      */
     @Deprecated
@@ -381,21 +382,21 @@ public abstract class CAInfo implements Serializable {
 
     /**
      * Sets the ID of an approval profile.
-     * 
+     *
      * @deprecated since 6.8.0. Use setApprovals() instead;
      */
     @Deprecated
     public void setApprovalProfile(final int approvalProfileID) {
         this.approvalProfile = approvalProfileID;
     }
-    
-    
+
+
     /**
      * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
-     * action that requires approvals, default none 
-     * 
+     * action that requires approvals, default none
+     *
      * Never null
-     * 
+     *
      * @deprecated since 6.8.0. Use getApprovals() instead;
      */
     @Deprecated
@@ -406,14 +407,14 @@ public abstract class CAInfo implements Serializable {
     /**
      * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
      * action that requires approvals
-     * 
+     *
      * @deprecated since 6.8.0. Use getApprovals() instead;
      */
     @Deprecated
     public void setApprovalSettings(Collection<Integer> approvalSettings) {
         this.approvalSettings = approvalSettings;
     }
-    
+
     /**
      * @return true if the UserData used to issue a certificate should be kept in the database.
      */

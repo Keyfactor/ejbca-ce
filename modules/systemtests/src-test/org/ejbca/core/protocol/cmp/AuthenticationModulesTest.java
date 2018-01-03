@@ -137,7 +137,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * This will test the different cmp authentication modules.
- * 
+ *
  * @version $Id$
  *
  */
@@ -243,7 +243,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("this.cacert is null", this.cacert);
         PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, null, null);
         assertNotNull("Generating CrmfRequest failed.", msg);
-        // Using the CMP RA Authentication secret 
+        // Using the CMP RA Authentication secret
         PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
         assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
 
@@ -723,7 +723,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 .intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
-        // 
+        //
         // Try a request with no issuerDN in the certTemplate
         createUser(clientUsername, clientDN.toString(), clientPassword, true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -919,7 +919,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         }
     }
 
-    /** Test CMP initial request against EJBCA CMP in client mode (operationmode=normal) using End Entity certificate signature authentication, 
+    /** Test CMP initial request against EJBCA CMP in client mode (operationmode=normal) using End Entity certificate signature authentication,
      * i.e. the request is signed by a certificate of the same end entity making the request, and this signature is used for authenticating the end entity.
      * Test:
      * - Request signed by a fake certificate, i.e. one that is not in the database (FAIL)
@@ -927,7 +927,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * - Request signed by a proper certificate but where user status is not NEW (FAIL)
      * - Request signed by a proper, but revoked certificate (FAIL)
      * - A working request signed by a proper, unrevoked certificate and user status is NEW (SUCCESS)
-     * 
+     *
      * @throws Exception on some errors
      */
     @Test
@@ -1096,8 +1096,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     /**
-     * Test the error message returned when CMP request missing a PBE protection in RA mode (operationmode=ra) and HMAC authentication is configured. 
-     * 
+     * Test the error message returned when CMP request missing a PBE protection in RA mode (operationmode=ra) and HMAC authentication is configured.
+     *
      * @throws Exception on some errors
      */
     @Test
@@ -1128,8 +1128,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     /**
-     * Test the error message returned when CMP request missing a signature in RA mode (operationmode=ra) and EndEntityCertificate authentication is configured. 
-     * 
+     * Test the error message returned when CMP request missing a signature in RA mode (operationmode=ra) and EndEntityCertificate authentication is configured.
+     *
      * @throws Exception on some errors
      */
     @Test
@@ -1162,7 +1162,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     /**
      * Tests that EndEntityAuthentication module can be successfully used in client mode when the end entity's password is not stored in clear text.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1220,16 +1220,16 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     /**
-     * Tests the possibility to use different signature algorithms in CMP requests and responses if protection algorithm 
+     * Tests the possibility to use different signature algorithms in CMP requests and responses if protection algorithm
      * is specified.
-     * 
+     *
      * A CMP request is sent to a CA that uses ECDSA with SHA256 as signature and encryption algorithms:
-     * 
+     *
      * 1. Send a CRMF request signed using ECDSA with SHA256 algorithm and expects a response signed by the same algorithm
      * 2. Send a CMP Confirm message without protection. The response is expected to be signed using ECDSA (because that's the CA's key algorithm)
      *    and SHA1 (because that's the default digest algorithm)
      * 3. Sends a CMP Revocation request signed using ECDSA with SHA256 and expects a response signed by the same algorithm.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1238,7 +1238,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         //---------------------- Create the test CA
         // Create catoken
-        
+
         removeTestCA("CmpECDSATestCA");
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
@@ -1264,7 +1264,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         X509CA ecdsaCA = new X509CA(ecdsaCaInfo);
         ecdsaCA.setCAToken(catoken);
         // A CA certificate
-        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        List<Certificate> cachain = new ArrayList<Certificate>();
 
         final PublicKey publicKey = this.cryptoTokenManagementProxySession.getPublicKey(cryptoTokenId,
                 catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
@@ -1310,7 +1310,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             log.debug(e.getMessage());
         }
         int eepId = this.endEntityProfileSession.getEndEntityProfileId("ECDSAEEP");
-        
+
         //-------------- Set the necessary configurations
         this.cmpConfiguration.setRAEEProfile(ALIAS, String.valueOf(eepId));
         this.cmpConfiguration.setRACertProfile(ALIAS, "ECDSACP");
@@ -1407,10 +1407,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     /**
      * Tests the possibility to use different signature algorithms in CMP requests and responses.
-     * 
+     *
      * A CRMF request, signed using ECDSA with SHA1, is sent to a CA that uses RSA with SHA256 as signature algorithm.
      * The expected response is signed by RSA with SHA1.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1473,11 +1473,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     /**
      * Sending a Crmf Request in RA mode. The request is authenticated using HMAC and is expected to contain the EndEntityProfile 'EMPTY' in the KeyId field.
-     * The request should fail because specifying 'EMPTY' or 'ENDUSER' as the KeyId is not allowed in combination with RA mode and HMAC authentication module 
-     * 
+     * The request should fail because specifying 'EMPTY' or 'ENDUSER' as the KeyId is not allowed in combination with RA mode and HMAC authentication module
+     *
      * The test is only done for HMAC and not EndEntityCertificate because in the later, the use of profiles can be restricted through Administrator privileges.
      * Other authentication modules are not used in RA mode
-     */ 
+     */
     @Test
     public void test24HMACUnacceptedKeyId() throws Exception {
 
