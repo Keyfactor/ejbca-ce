@@ -89,6 +89,7 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA512_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA,
+            AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA
     ));
 
@@ -105,6 +106,7 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA,
+            AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA,
             AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA
     ));
 
@@ -464,12 +466,10 @@ public abstract class AlgorithmTools {
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
-        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA)) {
-            encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
+        } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA)) {
+            encSigAlg = AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA)) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
         } else if (signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
@@ -602,8 +602,9 @@ public abstract class AlgorithmTools {
             if (certSignatureAlgorithm.contains("SHA3-")) {
                 if (certSignatureAlgorithm.contains("256")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
-                }
-                if (certSignatureAlgorithm.contains("512")) {
+                } else if (certSignatureAlgorithm.contains("384")) {
+                    signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
+                } else if (certSignatureAlgorithm.contains("512")) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
                 }
             } else if (certSignatureAlgorithm.indexOf("MGF1") == -1) {
@@ -631,6 +632,8 @@ public abstract class AlgorithmTools {
             if (certSignatureAlgorithm.contains("SHA3-")) {
                 if (certSignatureAlgorithm.contains("256")) {
                     return AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+                } else if (certSignatureAlgorithm.contains("384")) {
+                    return AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA;
                 } else if (certSignatureAlgorithm.contains("512")) {
                     return AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA;
                 }
@@ -660,7 +663,6 @@ public abstract class AlgorithmTools {
     /**
      * Get the digest algorithm corresponding to the signature algorithm. This is used for the creation of
      * PKCS7 file. SHA1 shall always be used, but it is not working with GOST which needs GOST3411 digest.
-     *
      */
     public static String getDigestFromSigAlg(String sigAlg) {
         if (sigAlg.toUpperCase().contains("GOST") || sigAlg.toUpperCase().contains("DSTU")) {
@@ -679,10 +681,16 @@ public abstract class AlgorithmTools {
         if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256.getId())) {
             return NISTObjectIdentifiers.id_sha3_256.getId();
         }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384.getId())) {
+            return NISTObjectIdentifiers.id_sha3_384.getId();
+        }
         if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512.getId())) {
             return NISTObjectIdentifiers.id_sha3_512.getId();
         }
         if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId())) {
+            return NISTObjectIdentifiers.id_sha3_256.getId();
+        }
+        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId())) {
             return NISTObjectIdentifiers.id_sha3_256.getId();
         }
         if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
@@ -746,11 +754,16 @@ public abstract class AlgorithmTools {
                 oid = NISTObjectIdentifiers.dsa_with_sha512;
             } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_256.toString()) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_384.toString()) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                oid = NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384;
             } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_512.toString()) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512;
             } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_256.toString())
                     && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC))) {
                 oid = NISTObjectIdentifiers.id_ecdsa_with_sha3_256;
+            } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_384.toString())
+                    && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC))) {
+                oid = NISTObjectIdentifiers.id_ecdsa_with_sha3_384;
             } else if (digestAlg.equals(NISTObjectIdentifiers.id_sha3_512.toString())
                     && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC))) {
                 oid = NISTObjectIdentifiers.id_ecdsa_with_sha3_512;
@@ -815,6 +828,10 @@ public abstract class AlgorithmTools {
             return AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA;
         }
 
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384)) {
+            return AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA;
+        }
+
         if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512)) {
             return AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA;
         }
@@ -841,6 +858,10 @@ public abstract class AlgorithmTools {
 
         if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256)) {
             return AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA;
+        }
+
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384)) {
+            return AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA;
         }
 
         if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512)) {
