@@ -67,7 +67,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
  * JSF MBean backing the edit key validators page.
- *  
+ *
  * @version $Id$
  */
 // Declarations in faces-config.xml
@@ -97,7 +97,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     private Validator validator = null;
 
     private UploadedFile testExternalCommandCertificateValidatorPath;
-    
+
     /** Since this MBean is session scoped we need to reset all the values when needed. */
     private void reset() {
         getValidatorsBean().setCurrentValidatorId(-1);
@@ -147,13 +147,13 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             }
             validatorsBean.setCurrentValidatorId(newId);
             validator = keyValidatorSession.getValidator(newId);
-        } 
+        }
         return validator;
     }
 
     /**
      * Checks if the administrator is authorized the edit key validators.
-     * 
+     *
      * @return true if the administrator is authorized.
      */
     public boolean hasEditRights() {
@@ -161,8 +161,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Processes the key validation type changed event and renders the concrete key validator view. 
-     * 
+     * Processes the key validation type changed event and renders the concrete key validator view.
+     *
      * @param e the event.
      */
     public void validatorTypeChanged(AjaxBehaviorEvent e) {
@@ -176,7 +176,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         validator.setProfileName(getSelectedKeyValidatorName());
         FacesContext.getCurrentInstance().renderResponse();
     }
-    
+
     /**
      * Checks whether the Validator settings template is set to "Use custom settings".
      * @return true if custom settings are enabled
@@ -187,7 +187,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /**
      * Gets the available key validator types.
-     * 
+     *
      * @return List of the available key validator types
      */
     @SuppressWarnings("rawtypes")
@@ -221,7 +221,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
         return result;
     }
-    
+
     /**
      * Gets a list of select items of the certificate issuance process phases (see {@link IssuancePhase}).
      * @return the list.
@@ -234,7 +234,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
         return result;
     }
-    
+
     /**
      * Gets a list of select items of the certificate issuance process phases (see {@link IssuancePhase}).
      * @return the list.
@@ -249,7 +249,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /**
      * Gets the selected validator type.
-     * 
+     *
      * @return the selected type.
      */
     public String getValidatorType() {
@@ -259,7 +259,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             return null;
         }
     }
-    
+
     public void setValidatorType(String value) {
         // this re-creates the whole validator, so only do it if it actually changed type
         if (!validator.getValidatorTypeIdentifier().equals(value)) {
@@ -269,7 +269,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             validator.setProfileName(getSelectedKeyValidatorName());
         }
     }
-    
+
     /**
      * Validates the description field, see {@link ValidatorBase#getDescription()}.
      * @param context the faces context.
@@ -485,7 +485,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableNotBeforeConditions() {
         return conditionsToSelectItems();
     }
-    
+
     /**
      * Gets a list of select items of the available notAfter conditions.
      * @return the list.
@@ -549,9 +549,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         final String[] keys = map.keySet().toArray(new String[map.size()]);
         Arrays.sort(keys);
         result.put(getEjbcaWebBean().getText("AVAILABLEECDSABYBITS"), CertificateProfile.ANY_EC_CURVE);
-        List<String> curves;
         for (final String key : keys) {
-            curves = map.get(key);
+            final List<String> curves = map.get(key);
             if (log.isDebugEnabled()) {
                 log.debug("Availabe EC curve: " + curves);
             }
@@ -587,8 +586,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Processes the key validation base parameter options changed event and renders the concrete key validator view. 
-     * 
+     * Processes the key validation base parameter options changed event and renders the concrete key validator view.
+     *
      * @param e the event.
      */
     public void validatorTemplateChanged(AjaxBehaviorEvent e) throws AbortProcessingException {
@@ -601,7 +600,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         keyValidator.setKeyValidatorSettingsTemplate();
         FacesContext.getCurrentInstance().renderResponse();
     }
-    
+
     public UploadedFile getTestExternalCommandCertificateValidatorPath() {
         return testExternalCommandCertificateValidatorPath;
     }
@@ -630,7 +629,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
         ((ExternalCommandCertificateValidator) validator).setTestCertificates(certificates);
     }
-    
+
     public String testExternalCommandCertificateValidatorAction() throws Exception {
         if (validator instanceof ExternalCommandCertificateValidator) {
             ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
@@ -643,7 +642,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                 lines.addAll(((ExternalCommandCertificateValidator) validator).testExternalCommandCertificateValidatorAction());
                 ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.join(lines, getLineSeparator()));
                 if (log.isDebugEnabled()) {
-                    log.debug("Tested certificate with external command STDOUT/ERROUT:" + System.getProperty("line.separator") 
+                    log.debug("Tested certificate with external command STDOUT/ERROUT:" + System.getProperty("line.separator")
                         + ((ExternalCommandCertificateValidator) validator).getTestStandardAndErrorOut());
                 }
             } catch(ExternalProcessException e) { // External script not found or other severe errors.
@@ -654,7 +653,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         FacesContext.getCurrentInstance().renderResponse();
         return StringUtils.EMPTY;
     }
-    
+
     public String getLineSeparator() {
         return System.getProperty("line.separator");
     }
