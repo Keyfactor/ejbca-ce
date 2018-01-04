@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -464,13 +463,12 @@ public class ApplyBean implements Serializable {
             final List<String> ecChoicesList = new ArrayList<>(ecChoices);
             Collections.sort(ecChoicesList);
             for (final String ecNamedCurve : ecChoicesList) {
-                final String canonicalCurveName = getCanonicalCurveNameByAlias(namedEcCurvesMap, ecNamedCurve);
-                if (canonicalCurveName == null) {
-                    log.warn("Certificate profile " + certificateProfile + " specifies a curve (" + ecNamedCurve + ") which does not exist.");
+                if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
+                    log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the Public Web.");
                     continue;
                 }
                 ret.add(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve + ";"+AlgorithmConstants.KEYALGORITHM_ECDSA + " " +
-                        StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(canonicalCurveName)));
+                        StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve)));
             }
         }
         for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
@@ -499,31 +497,6 @@ public class ApplyBean implements Serializable {
             log.debug("<availableBitLengths(" + username + ") --> " + sb.toString());
         }
         return ret.toArray(new String[ret.size()]);
-    }
-
-    /**
-     * <p>Retrieve the canonical curve name given an alias in a case-insensitive way.<p>
-     * <p>More specifically, given a map M := {canonical name -> [alias]} as the first argument and an alias A as the second argument,
-     * returns the canonical name C such that A ∈ {M.get(C)} or null if there is no such C.</p>
-     * @param aliases A map M between canonical curve names and their aliases
-     * @param alias The alias A whose canonical name we should look for
-     * @return A canonical name C such that A ∈ {M.get(C)} or null if no such C exists
-     */
-    private String getCanonicalCurveNameByAlias(final Map<String, List<String>> aliases, final String alias) {
-        for (final Entry<String, List<String>> entry : aliases.entrySet()) {
-            if (toLowerCase(entry.getValue()).contains(alias.toLowerCase())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
-    private List<String> toLowerCase(final List<String> strings) {
-        final List<String> lowerCaseStrings = new ArrayList<String>();
-        for (final String string : strings) {
-            lowerCaseStrings.add(string.toLowerCase());
-        }
-        return lowerCaseStrings;
     }
 
     /**
