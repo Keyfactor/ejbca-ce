@@ -190,9 +190,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-			        final String username = getUsername(dn);
+			        String username = getUsername(dn);
 					final EndEntityInformation endEntityInformation;
 					if (StringUtils.isEmpty(username)) {
+					    // We did not find any username by extracting "username DN component" from the request DN, see if we have a user 
+					    // registered with this DN
 					    endEntityInformation = getUserDataByDN(dn);
 					} else {
 					    endEntityInformation = endEntityAccessSession.findUser(admin, username);
@@ -203,6 +205,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 							LOG.debug("Found username: "+endEntityInformation.getUsername());
 						}
 						crmfreq.setUsername(endEntityInformation.getUsername());
+                        username = endEntityInformation.getUsername(); // we may have found if from the DN above
 						
 						final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, 
 						                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
