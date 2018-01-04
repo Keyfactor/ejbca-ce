@@ -105,9 +105,9 @@ import org.junit.runners.MethodSorters;
 
 /**
  * This test runs in CMP client mode.
- * 
- * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
- * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the 
+ *
+ * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL,
+ * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the
  * test from Eclipse.
  *
  * @version $Id$
@@ -179,10 +179,10 @@ public class CrmfRequestTest extends CmpTestCase {
         this.cmpConfiguration.removeAlias(cmpAlias);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
-    
+
     @Override
     public String getRoleName() {
-        return this.getClass().getSimpleName(); 
+        return this.getClass().getSimpleName();
     }
 
     @Test
@@ -259,10 +259,10 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId, 
+        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId,
                                 PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
 
-        // 
+        //
         // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
         userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
         nonce = CmpMessageHelper.createSenderNonce();
@@ -334,7 +334,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertTrue("Verification failed.", veriStatus);
         log.trace("<test07SignedConfirmationMessage()");
     }
-    
+
     @Test
     public void testUnsignedConfirmationMessage() throws Exception {
         log.trace(">testUnsignedConfirmationMessage()");
@@ -364,7 +364,7 @@ public class CrmfRequestTest extends CmpTestCase {
         String cmpsntestUsername = "cmpsntest";
         String cmpsntest2Username = "cmpsntest2";
         final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true, this.caid, -1, -1);
-        
+
         try {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -381,7 +381,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
             // Now revoke the certificate!
             PKIMessage rev = genRevReq(ISSUER_DN, userDN1, cert.getSerialNumber(), this.cacert, nonce, transid, true, null, null);
-            assertNotNull(rev);        
+            assertNotNull(rev);
             rev = protectPKIMessage(rev, false, "foo123", 567);
             assertNotNull(rev);
             byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
@@ -429,7 +429,7 @@ public class CrmfRequestTest extends CmpTestCase {
         DEROctetString octs = new DEROctetString("foo123".getBytes());
         String keyid = CmpMessageHelper.getStringFromOctets(octs);
         assertEquals("foo123", keyid);
-            
+
         PKIHeaderBuilder headerbuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name("CN=Sender")), new GeneralName(new X500Name("CN=Recipient")));
         headerbuilder.setSenderKID(new DEROctetString("foo123".getBytes()));
         PKIHeader header = headerbuilder.build();
@@ -447,7 +447,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
-        
+
         // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
         final String sRequestName = "CN=another\0nullguy%00<do>";
         // Create a new good USER
@@ -484,12 +484,12 @@ public class CrmfRequestTest extends CmpTestCase {
                 log.debug("Failed to delete USER: " + escapedName);
             }
         }
-        
+
         // --------------- Send a CRMF request with a username with escapable characters --------------- //
         final String username = "another\0nullguy%00";
         final String sDN = "CN=" + username + ", C=SE, O=hejsan";
         KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         // Create a new good USER
         final X500Name dn = createCmpUser(username, sDN, false, this.caid, -1, -1);
 
@@ -557,12 +557,12 @@ public class CrmfRequestTest extends CmpTestCase {
             final X500Name userDN = new X500Name("C=SE,O=PrimeKey,CN=cmptest");
             EndEntityInformation user = new EndEntityInformation("cmptest", userDN.toString(), subcaID,
                     null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
-//                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+//                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     this.eepDnOverrideId, this.cpDnOverrideId,
                     SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");
             try {
-                this.endEntityManagementSession.addUser(ADMIN, user, true); 
+                this.endEntityManagementSession.addUser(ADMIN, user, true);
                 log.debug("created user: cmptest, foo123, " + userDN);
             } catch (EndEntityExistsException e) {
                 log.debug("User cmptest already exists.");
@@ -614,10 +614,10 @@ public class CrmfRequestTest extends CmpTestCase {
             this.caSession.removeCA(ADMIN, subcaID);
         }
     }
-    
+
     /** Tests server generated keys, which are requested by sending a missing request public key in the CRMF request
      * message, or a SubjectPublicKeyInfo with AlgorithmId but not key bits, as specified in:
-     * RFC4210 section 5.3.4 and Appendix D.4, RFC4211 Section 6.6 and Appendix B    
+     * RFC4210 section 5.3.4 and Appendix D.4, RFC4211 Section 6.6 and Appendix B
      */
     @Test
     public void test12ServerGeneratedKeys() throws Exception {
@@ -645,7 +645,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] transid = CmpMessageHelper.createSenderNonce();
 
             // 0.
-            
+
             // Send a CMP request with empty public key, signaling server key generation, but where server key generation is not allowed (the default) in the CMP alias
             // Should fail
             AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
@@ -662,7 +662,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
 
             // 1.
-            
+
             // Send a CMP request with empty public key, signaling server key generation, but where there is no protoclEncrKey to encrypt the response with
             // Should fail
             // Allow server key generation in the CMP alias
@@ -682,7 +682,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
 
             // 2.
-            
+
             // Add protocolEncKey that is not an RSA key, this will return an error as well
             KeyPair protocolEncKey = KeyTools.genKeys("secp256r1", "ECDSA");
             req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, null, protocolEncKey, cacert, nonce, transid, false,
@@ -697,7 +697,7 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
 
             // 3.
-            
+
             // Add protocolEncrKey or the correct type (RSA), but have request public key null, and not a single choice of keys in the Certificate Profile, should fail
             // Sending null means that the server should choose the keytype and size allowed by the certificate profile
             protocolEncKey = KeyTools.genKeys("1024", "RSA");
@@ -713,7 +713,7 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key algoritm, not possible to server generate keys");
 
             // 4.
-            
+
             // Set a single selection in the Certificate Profile and expect a good answer
             // Sending null means that the server should choose the keytype and size allowed by the certificate profile
             certificateProfile.setAvailableBitLengths(new int[] {1024});
@@ -733,7 +733,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(cert);
             fingerprint1 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
-            { 
+            {
                 final PKIBody pkiBody = pkiMessage.getBody();
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
@@ -766,7 +766,7 @@ public class CrmfRequestTest extends CmpTestCase {
             }
 
             // 5.
-            
+
             // Try with ECC keys
             // Sending null means that the server should choose the keytype and size allowed by the certificate profile
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
@@ -787,7 +787,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(cert);
             fingerprint2 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
-            { 
+            {
                 final PKIBody pkiBody = pkiMessage.getBody();
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
@@ -814,11 +814,11 @@ public class CrmfRequestTest extends CmpTestCase {
             }
 
             // 6.
-            
+
             // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
             // First we try specifying RSA key, but profile only allows ECDSA, should fail
             //
-            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey 
+            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey
             // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
             // Server should then get the algorithm from the SubjectPublicKeyInfo
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
@@ -842,7 +842,7 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "RSA key generation requested, but certificate profile specified does not allow RSA");
 
             // 7.
-            
+
             // Same as above, but profile allows multiple RSA key sizes, should fail
             //
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
@@ -864,7 +864,7 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key size, not possible to server generate keys");
 
             // 8.
-            
+
             // Try the same but with an unsupported algorithm, should fail
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
             // Start with RSA public key info, with empty BITString
@@ -882,9 +882,9 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm 1.2.840.113549.3.7");
 
             // 9.
-            
+
             // Instead of sending an empty public key, send a SubjectPublicKeyInfo with empty bitstring as specified in RFC4210:
-            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey 
+            // "Note that subjectPublicKeyInfo MAY be present and contain an AlgorithmIdentifier followed by a zero-length BIT STRING for the subjectPublicKey
             // "if it is desired to inform the CA/RA of algorithm and parameter preferences regarding the to-be-generated key pair"
             // Server should then get the algorithm from the SubjectPublicKeyInfo
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
@@ -910,7 +910,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(cert);
             fingerprint3 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
-            { 
+            {
                 final PKIBody pkiBody = pkiMessage.getBody();
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
@@ -936,7 +936,7 @@ public class CrmfRequestTest extends CmpTestCase {
             }
 
             // 10.
-            
+
             // Same as above with ECDSA, first specify a curve that isn't allowed in the profile
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
             certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
@@ -945,7 +945,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Try with an ECDSA public key info, with empty BITString
             // See RFC3279 for SubjectPublicKeyInfo OIDs and parameters for RSA, ECDSA etc
             // We'll specify the named curve we request here
-            X962Parameters params = new X962Parameters(X9ObjectIdentifiers.prime192v1); 
+            X962Parameters params = new X962Parameters(X9ObjectIdentifiers.prime192v1);
             spkInfo = new SubjectPublicKeyInfo(new AlgorithmIdentifier(
                     X9ObjectIdentifiers.id_ecPublicKey, params), new byte[0]);
             req = genCertReq(ISSUER_DN, userDN1, userDN1, null, /*keys*/null, spkInfo, protocolEncKey, cacert, nonce, transid, false,
@@ -957,10 +957,11 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: P-192");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest,
+                    "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: prime192v1");
 
             // 11.
-            
+
             // Change the profile to allow the curve we specify as params to SubjectPublicKeyInfo
             this.endEntityManagementSession.setUserStatus(ADMIN, cmptestUsername, EndEntityConstants.STATUS_NEW);
             certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECDSA"});
@@ -985,7 +986,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(cert);
             fingerprint4 = CertTools.getFingerprintAsString(cert);
             // We should also have a private key in the response
-            { 
+            {
                 final PKIBody pkiBody = pkiMessage.getBody();
                 final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
                 final CertResponse certResponse = certRepMessage.getResponse()[0];
@@ -1205,7 +1206,7 @@ public class CrmfRequestTest extends CmpTestCase {
      *				signedCertificate
      *					version: v3 (2)
      *					serialNumber : 0x00bad55b3947cb876dc391f7798438d2a5
-     *					signature (shaWithRSAEncryption) : 
+     *					signature (shaWithRSAEncryption) :
      *						Algorithm Id: 1.2.840.113549.1.1.5 (shaWithRSAEncryption)
      *					issuer: rdnSequence (0)
      *						rdnSequence: 4 items (id-at-commonName=Huawei Wireless Network Product CA,id-at-organizationalUnitName=Wireless Network Product Line,id-at-organizationName=Huawei,id-at-countryName=CN)
@@ -1493,7 +1494,7 @@ public class CrmfRequestTest extends CmpTestCase {
      *								Extension Id: 2.5.29.14 (id-ce-subjectKeyIdentifier)
      *								SubjectKeyIdentifier: 4C60DB752400513F2C5F659498FB55155E230045
      *							Extension (id-ce-basicConstraints)
-     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)	
+     *								Extension Id: 2.5.29.19 (id-ce-basicConstraints)
      *								BasicConstraintsSyntax
      *									cA: True
      *							Extension (id-ce-keyUsage)
