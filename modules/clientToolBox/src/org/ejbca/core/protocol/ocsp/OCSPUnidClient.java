@@ -248,7 +248,7 @@ public class OCSPUnidClient {
         if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
         	URL url = new URL(httpReqPath + '/' + b64);
-            con = (HttpURLConnection)url.openConnection();
+            con = (HttpURLConnection)getUrlConnection(url);
     	} else {
             // POST the OCSP request
             URL url = new URL(httpReqPath);
