@@ -1011,7 +1011,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // For yet unknown reasons, the setter is never when invoked during AJAX request
             certificateRequest = value.toString();
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            raLocaleBean.addMessageError("enroll_unknown_key_algorithm");            
+            raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
@@ -1337,8 +1337,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     final List<String> ecChoicesList = new ArrayList<>(ecChoices);
                     Collections.sort(ecChoicesList);
                     for (final String ecNamedCurve : ecChoicesList) {
+                        if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
+                            log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
+                            continue;
+                        }
                         availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                                + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
+                                        + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                     }
                 }
                 for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
@@ -1654,11 +1658,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setValidityInputComponent(final UIComponent validityInputComponent) {
         this.validityInputComponent = validityInputComponent;
     }
-    
+
     /**
      * Finds the UPN/RFC822 email and domain in an Ajax event, concatenates them and
      * sets the value of the appropriate FieldInstance.
-     * 
+     *
      * @param event the Ajax event
      */
     public void upnRfc(AjaxBehaviorEvent event) {
