@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -77,7 +76,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Managed bean that backs up the enrollwithrequestid.xhtml page
- * 
+ *
  * @version $Id$
  */
 @ManagedBean
@@ -107,7 +106,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private CertificateProfile certificateProfile;
     private String requestId;
     private String requestUsername;
-    private String selectedAlgorithm; 
+    private String selectedAlgorithm;
     private String certificateRequest;
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
@@ -186,7 +185,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isFinalizeEnrollmentRendered() {
-        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null && 
+        return (requestStatus == ApprovalDataVO.STATUS_APPROVED || requestStatus == ApprovalDataVO.STATUS_EXECUTED) && endEntityInformation != null &&
                 (endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW || endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY);
     }
 
@@ -194,12 +193,12 @@ public class EnrollWithRequestIdBean implements Serializable {
         generateCertificate();
         if (generatedToken != null) {
             try {
-                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);        
+                X509Certificate certificate = CertTools.getCertfromByteArray(generatedToken, X509Certificate.class);
                 byte[] pemToDownload = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
                 downloadToken(pemToDownload, "application/octet-stream", ".pem");
             } catch (CertificateParsingException | CertificateEncodingException e) {
                 log.info(e);
-            }            
+            }
         } else {
             log.debug("No token was generated an error meesage should have been logged");
         }
@@ -274,7 +273,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
         }
     }
-    
+
     protected void generateCertificate() {
         if (getEndEntityInformation().getExtendedInformation() == null) {
             getEndEntityInformation().setExtendedInformation(new ExtendedInformation());
@@ -331,7 +330,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             if (StringUtils.isEmpty(selectedAlgorithm)) {
                 raLocaleBean.addMessageError("enroll_no_key_algorithm");
                 log.info("No key algorithm was provided.");
-                return;            
+                return;
             }
             final String[] parts = StringUtils.split(selectedAlgorithm, '_');
             if (parts == null || parts.length < 2) {
@@ -442,11 +441,11 @@ public class EnrollWithRequestIdBean implements Serializable {
      * @return true if key algorithm is set in EEI or to be uploaded by CSR
      */
     public boolean isKeyAlgorithmPreSet() {
-        return  (endEntityInformation.getExtendedInformation() != null && endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null) || 
+        return  (endEntityInformation.getExtendedInformation() != null && endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null) ||
                 endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN ||
                 endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY;
     }
-    
+
     /**
      * Checks if a non-modifiable text displaying the previously set key algorithm should be shown.
      */
@@ -455,7 +454,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null &&
                endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
     }
-    
+
     /**
      * Checks if a CSR has been uploaded in an earlier stage (before the finalize enrollment stage)
      * @return true if a CSR is set in EEI
@@ -476,7 +475,7 @@ public class EnrollWithRequestIdBean implements Serializable {
         ec.setResponseContentLength(token.length);
         String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
-            fileName = "certificatetoken"; 
+            fileName = "certificatetoken";
         }
 
         final String filename = StringTools.stripFilename(fileName + fileExtension);
@@ -509,7 +508,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void setCertificateRequest(final String certificateRequest) {
         this.certificateRequest = certificateRequest;
     }
-    
+
     /** Backing method for upload CSR button (used for uploading pasted CSR) populating fields is handled by AJAX */
     public void uploadCsr() {
     }
@@ -533,17 +532,17 @@ public class EnrollWithRequestIdBean implements Serializable {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
             } catch (InvalidKeyException | NoSuchAlgorithmException e) {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
-            }            
+            }
         }
     }
-    
+
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         selectedAlgorithm = null;
         final String valueStr = value.toString();
         if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
             log.info("CSR uploaded was too large: "+valueStr.length());
-            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));            
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
         if (pkcs10CertificateRequest == null) {
@@ -580,7 +579,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     private CertificateProfile getCertificateProfile() {
-        if (this.certificateProfile == null) {            
+        if (this.certificateProfile == null) {
             EndEntityInformation ei = getEndEntityInformation();
             if (ei != null) {
                 this.certificateProfile = raMasterApiProxyBean.getCertificateProfile(ei.getCertificateProfileId());
@@ -614,10 +613,8 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final Set<String> ecChoices = new HashSet<>();
-                final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(false);
                 if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                    final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-                    for (final String ecNamedCurve : keys) {
+                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
                         if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
                             continue;
                         }
@@ -633,7 +630,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 Collections.sort(ecChoicesList);
                 for (final String ecNamedCurve : ecChoicesList) {
                     availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                            + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(ecNamedCurve))));
+                                    + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
             }
             for (final String algName : CesecoreConfiguration.getExtraAlgs()) {
@@ -662,7 +659,7 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     //-----------------------------------------------------------------
     //Getters/setters
-    
+
     /** @return EEI of current end entity*/
     public EndEntityInformation getEndEntityInformation() {
         return endEntityInformation;
@@ -682,12 +679,12 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void setRequestId(String requestId) {
         this.requestId = requestId;
     }
-    
+
     /** @return the request status*/
     public int getRequestStatus() {
         return requestStatus;
     }
-    
+
     /** @param requestStatus the request status to be set*/
     public void setRequestStatus(int requestStatus) {
         this.requestStatus = requestStatus;
@@ -697,7 +694,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public String getSelectedAlgorithm() {
         return selectedAlgorithm;
     }
-    
+
     /** @param selectedAlgorithm sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/
     public void setSelectedAlgorithm(String selectedAlgorithm) {
         this.selectedAlgorithm = selectedAlgorithm;
@@ -709,12 +706,12 @@ public class EnrollWithRequestIdBean implements Serializable {
     public byte[] getGeneratedToken() {
         return generatedToken;
     }
-    
+
     /** @param generatedToken byte array of generated token*/
     public void setGeneratedToken(byte[] generatedToken) {
         this.generatedToken = generatedToken;
     }
-    
+
     public String getPreSetKeyAlgorithm() {
         return endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() + " " + endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmSubType();
     }
