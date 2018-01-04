@@ -15,6 +15,7 @@ package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +35,7 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
@@ -53,6 +55,7 @@ import org.junit.Test;
  * @version $Id$
  */
 public class AlgorithmToolsTest {
+    private static final Logger log = Logger.getLogger(AlgorithmToolsTest.class);
 
     @Before
     public void setUp() throws Exception {
@@ -384,6 +387,22 @@ public class AlgorithmToolsTest {
         Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, true);
         assertEquals("GOST3411WITHDSTU4145", AlgorithmTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
         assertEquals("GOST3411withDSTU4145", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
+    }
+
+    @Test
+    public void testGetWellKnownCurveOids() {
+        // Extracted from debugger
+        final String[] wellKnownCurveNames = new String[] { "secp224r1", "brainpoolp224t1", "c2pnb368w1", "sect409k1", "brainpoolp224r1",
+                "c2tnb359v1", "sect233r1", "sect571k1", "c2pnb304w1", "brainpoolp512r1", "brainpoolp320r1", "brainpoolp512t1", "brainpoolp320t1",
+                "secp256k1", "c2tnb239v3", "c2tnb239v2", "c2tnb239v1", "prime239v3", "prime239v2", "sect283k1", "sect409r1", "prime239v1",
+                "prime256v1", "brainpoolp256t1", "sect283r1", "FRP256v1", "brainpoolp256r1", "secp384r1", "secp521r1", "brainpoolp384t1", "secp224k1",
+                "c2tnb431r1", "brainpoolp384r1", "sect239k1", "c2pnb272w1", "sm2p256v1", "sect233k1", "sect571r1"
+        };
+        for (final String wellKnownCurveName : wellKnownCurveNames) {
+            assertNotEquals("Could not retrieve OID for curve " + wellKnownCurveName, AlgorithmTools.getEcKeySpecOidFromBcName(wellKnownCurveName),
+                    wellKnownCurveName);
+            log.info("Successfully retrieved EC curve OID: " + AlgorithmTools.getEcKeySpecOidFromBcName(wellKnownCurveName));
+        }
     }
 
     private static class MockPublicKey implements PublicKey {
