@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -54,6 +55,7 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -795,6 +797,35 @@ public abstract class AlgorithmTools {
         } else {
             return true;
         }
+    }
+
+    /**
+     * Determine whether the curve alias given as argument is a known elliptic curve.
+     * @param alias an alias of the elliptic curve to look for
+     * @return true if the elliptic curve is known by this alias, false otherwise
+     */
+    public static boolean isKnownAlias(final String alias) {
+        return !getAllCurveAliasesFromAlias(alias).isEmpty();
+    }
+
+    /**
+     * <p>Perform a case-insensitive lookup of all known aliases for an elliptic curve given one known alias.</p>
+     * <p>To determine whether an alias is known, see {@link #isKnownCurveAlias}.</p>
+     * @return a sorted list of aliases for the elliptic curve specified, never null
+     */
+    public static List<String> getAllCurveAliasesFromAlias(final String alias) {
+        final String lowerCaseAlias = alias.toLowerCase();
+        for (final Entry<String, List<String>> name : getNamedEcCurvesMap(false).entrySet()) {
+            final String lowerCaseCanonicalName = name.getKey().toLowerCase();
+            final List<String> lowerCaseAliases = StringTools.toLowerCase(name.getValue());
+            if (StringUtils.equals(lowerCaseAlias, lowerCaseCanonicalName) || lowerCaseAliases.contains(lowerCaseAlias)) {
+                final List<String> aliases = new ArrayList<String>(name.getValue());
+                aliases.add(name.getKey());
+                Collections.sort(aliases);
+                return aliases;
+            }
+        }
+        return new ArrayList<>();
     }
 
     /**

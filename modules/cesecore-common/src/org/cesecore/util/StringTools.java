@@ -52,7 +52,7 @@ import org.cesecore.config.ConfigurationHolder;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
- * 
+ *
  * @version $Id$
  */
 public final class StringTools {
@@ -77,14 +77,14 @@ public final class StringTools {
 
     /**
      * Class that will be used to see if a character belong to a specific category.
-     * This is a singleton, with static initialization, meaning that it is thread safe. It also means that the 
+     * This is a singleton, with static initialization, meaning that it is thread safe. It also means that the
      * CesecoreConfiguration.getForbiddenCharacters() can not be changed dynamically, but a re-start of EJBCA is needed
      * if this calue is changed in the properties file
      *
      */
     public static class CharSet {
         public static CharSet INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
-        
+
         private Set<Character> charSet = null;
         /**
          * Create a set of characters from a char array.
@@ -105,7 +105,7 @@ public final class StringTools {
         boolean contains(char c) {
             return this.charSet.contains(Character.valueOf(c));
         }
-        
+
         /** Used to reset the value so we can JUnit test the class */
         public static void reset() {
             INSTANCE = new CharSet(CesecoreConfiguration.getForbiddenCharacters());
@@ -133,9 +133,22 @@ public final class StringTools {
     public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC = 8;
 
     /**
+     * Converts every string in a list to lower case.
+     * @param strings the strings to convert
+     * @return all strings converted to lower case
+     */
+    public static List<String> toLowerCase(final List<String> strings) {
+        final List<String> lowerCaseStrings = new ArrayList<String>();
+        for (final String string : strings) {
+            lowerCaseStrings.add(string.toLowerCase());
+        }
+        return lowerCaseStrings;
+    }
+
+    /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'. This method is used for various Strings, like
      * SubjectDNs.
-     * 
+     *
      * @param str the string whose contents will be stripped.
      * @return the stripped version of the input string.
      */
@@ -144,7 +157,7 @@ public final class StringTools {
     }
 
     /**
-     * Strips '<' and '>' as well as all special characters from a string by replacing them with a forward slash, '/'. 
+     * Strips '<' and '>' as well as all special characters from a string by replacing them with a forward slash, '/'.
      * @param str the string whose contents will be stripped.
      * @return the stripped version of the input string.
      */
@@ -152,7 +165,7 @@ public final class StringTools {
         String xssStripped = strip(str, stripXSS);
         return strip(xssStripped);
     }
-    
+
     /**
      * Strips characters that are not allowed in filenames
      * @param str the string whose contents will be stripped.
@@ -167,7 +180,7 @@ public final class StringTools {
      * any character that is in the 'stripThis' set will be replaced with '/'.
      * any character that is escaped (preceded with '\') and not in the {@value #allowedEscapeChars} set will be replaced with '/'.
      * when a character is replaced with '/' and also escaped then the preceding escape character '\' will be removed.
-     * 
+     *
      * @param str the original string
      * @param stripThis set of characters that should be stripped.
      * @return the stripped string
@@ -208,7 +221,7 @@ public final class StringTools {
 
     /**
      * Checks if a string contains characters that would be potentially dangerous to use in an SQL query.
-     * 
+     *
      * @param str the string whose contents would be stripped.
      * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
@@ -216,11 +229,11 @@ public final class StringTools {
     public static  Set<String> hasSqlStripChars(final String str) {
     	return hasStripChars(str, stripSqlChars);
     }
-    
+
     /**
      * Checks if a string contains characters that would be potentially dangerous to use in a non-parameterized SQL query,
      * assuming the the '-char is properly handled (escaped).
-     * 
+     *
      * @param str the string whose contents would be stripped.
      * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
@@ -228,10 +241,10 @@ public final class StringTools {
     public static  Set<String> hasSqlStripCharsAssumingSingleQuoteEscape(final String str) {
         return hasStripChars(str, stripSqlCharsSingleQuoteEscaped);
     }
-    
+
     /**
      * Checks if a string contains characters that would be potentially dangerous to use as DN, username etc.
-     * 
+     *
      * @param str the string whose contents would be stripped.
      * @return the offending characters with descriptions, or an empty set otherwise.
      * @see #strip
@@ -239,7 +252,7 @@ public final class StringTools {
     public static  Set<String> hasStripChars(final String str) {
     	return hasStripChars(str, CharSet.INSTANCE);
     }
-    
+
     /**
      * Check if 'str' has any chars that should be stripped by a call to {@link #strip(String, CharSet)}.
      * @param str the string to be tested.
@@ -277,7 +290,7 @@ public final class StringTools {
 
     /**
      * Checks if a character is an allowed escape character according to allowedEscapeChars
-     * 
+     *
      * @param ch the char to check
      * @return true if char is an allowed escape character, false if now
      */
@@ -287,7 +300,7 @@ public final class StringTools {
 
     /**
      * Strips all whitespace including space, tabs, newlines etc from the given string.
-     * 
+     *
      * @param str the string
      * @return the string with all whitespace removed
      * @since 2.1b1
@@ -301,7 +314,7 @@ public final class StringTools {
 
     /**
      * Converts ip-adress octets, according to ipStringToOctets to human readable string in form 10.1.1.1 for ipv4 adresses.
-     * 
+     *
      * @param octets
      * @return ip address string, null if input is invalid
      * @see #ipStringToOctets(String)
@@ -335,9 +348,9 @@ public final class StringTools {
     /**
      * Converts an IP-address string to octets of binary ints. ipv4 is of form a.b.c.d, i.e. at least four octets for example 192.168.5.54 ipv6 is of
      * form a:b:c:d:e:f:g:h, for example 2001:0db8:85a3:0000:0000:8a2e:0370:7334
-     * 
+     *
      * Result is tested with openssl, that it's subjectAltName displays as intended.
-     * 
+     *
      * @param str string form of ip-address
      * @return octets, empty array if input format is invalid, never null
      */
@@ -363,7 +376,7 @@ public final class StringTools {
      * uses pattern matching to see if the given string could be a valid IP address.
      * Snitched from http://www.java2s.com/Code/Java/Network-Protocol/DetermineifthegivenstringisavalidIPv4orIPv6address.htm
      * Under LGPLv2 license.
-     * 
+     *
      * @param ipAddress A string that is to be examined to verify whether or not
      *  it could be a valid IP address.
      * @return <code>true</code> if the string is a value that is a valid IP address,
@@ -386,7 +399,7 @@ public final class StringTools {
 
     /**
      * Takes input and converts to Base64 on the format "B64:<base64 endoced string>", if the string is not null or empty.
-     * 
+     *
      * @param s String to base64 encode
      * @return Base64 encoded string, or original string if it was null or empty
      */
@@ -396,7 +409,7 @@ public final class StringTools {
 
     /**
      * Takes input and converts to Base64 on the format "B64:<base64 endoced string>", if the string is not null or empty.
-     * 
+     *
      * @param s String to base64 encode
      * @param dontEncodeAsciiPrintable if the String is made up of pure ASCII printable characters, we will not B64 encode it
      * @return Base64 encoded string, or original string if it was null or empty
@@ -418,7 +431,7 @@ public final class StringTools {
 
     /**
      * Takes input and converts from Base64 if the string begins with B64:, i.e. is on format "B64:<base64 encoded string>".
-     * 
+     *
      * @param s String to Base64 decode
      * @return Base64 decoded string, or original string if it was not base 64 encoded
      */
@@ -458,7 +471,7 @@ public final class StringTools {
     /**
      * Makes a string "hard" to read. Does not provide any real security, but at least lets you hide passwords so that people with no malicious
      * intent don't accidentally stumble upon information they should not have.
-     * 
+     *
      * @param s string to obfuscate
      * @return an obfuscated string, or same as input if null or empty
      */
@@ -506,7 +519,7 @@ public final class StringTools {
     }
     /**
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
-     * 
+     *
      * @param s obfuscated string, usually (but not necessarily) starts with OBF:
      * @return plain text string, or original if it was empty
      */
@@ -534,8 +547,8 @@ public final class StringTools {
     private static String getEncryptionVersion() {
         return "encv1";
     }
-    
-    /** 
+
+    /**
      * Method takes an encrypted string (by using the methods in this class) and returns the method used to encrypt the string with
      * @param in indata that is encrypted/obfuscated
      * @return "legacy" for old data, "encv1" or later to describe a specific version
@@ -547,7 +560,7 @@ public final class StringTools {
             if (strs == null || strs.length != 4) {
                 log.warn("Input contains : but is not an encryption string from EJBCA (with 4 fields).");
             } else {
-                return strs[0];                
+                return strs[0];
             }
         } else {
             try {
@@ -556,11 +569,11 @@ public final class StringTools {
                 // it means it was not hex encoded
                 return "none";
             }
-            
+
         }
-        return "legacy";        
+        return "legacy";
     }
-    
+
     private static byte[] getSalt() {
         final boolean legacy = defaultP.equals(ConfigurationHolder.getString("password.encryption.key"));
         if (legacy) {
@@ -578,7 +591,7 @@ public final class StringTools {
     private static byte[] getDefaultSalt() {
         return "1958473059684739584hfurmaqiekcmq".getBytes(StandardCharsets.UTF_8);
     }
-    
+
     private static final String defaultP = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf");
 
     private static int getDefaultCount() {
@@ -602,7 +615,7 @@ public final class StringTools {
      *
      * Note that this method does provide limited security (e.g. DBA's won't be able to access encrypted passwords in database)
      * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
-     * @throws InvalidKeySpecException 
+     * @throws InvalidKeySpecException
      */
     public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
@@ -612,7 +625,7 @@ public final class StringTools {
     }
 
     /**
-     * 
+     *
      * @param in clear text string to encrypt
      * @param p encryption passphrase
      * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
@@ -652,7 +665,7 @@ public final class StringTools {
     }
 
     /**
-     * 
+     *
      * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
      * @param p decryption passphrase
      * @return decrypted clear text string
@@ -672,7 +685,7 @@ public final class StringTools {
             String[] strs = StringUtils.split(in, ':');
             if (strs == null || strs.length != 4) {
                 log.warn("Input contains : but is not an encryption string from EJBCA (with 4 fields).");
-                return in;                
+                return in;
             }
             salt = Hex.decode(strs[1].getBytes(StandardCharsets.UTF_8));
             count = Integer.valueOf(strs[2]);
@@ -828,7 +841,7 @@ public final class StringTools {
      * <p>
      * Strings that contains semicolon has to be quoted. Unbalanced quotes (the end quote is missing) is handled as if there was a quote at the end of
      * the string.
-     * 
+     *
      * <pre>
      * Examples:
      * splitURIs("a;b;c") =&gt; [a, b, c]
@@ -837,7 +850,7 @@ public final class StringTools {
      * </pre>
      * <p>
      * See org.ejbca.core.model.ca.certextensions.TestCertificateExtensionManager#test03TestSplitURIs() for more examples.
-     * 
+     *
      * @param dispPoints The semicolon separated string and which optionally uses double-quotes
      * @return A collection of strings
      */
@@ -874,7 +887,7 @@ public final class StringTools {
 
     /**
      * Parses the given string according to a specific format based on the certificate-data stored in the LogEntryData table in the database.
-     * 
+     *
      * @param certdata the string containing the certificate details
      * @return a String array with two elements, the first is the certificate serialnumber and the second one is the certificate issuerDN
      */
@@ -883,7 +896,7 @@ public final class StringTools {
             return null;
         }
 
-        final String dnStrings = "([a-zA-Z0-9]+|(([0-9]+\\.)*[0-9]+))"; 
+        final String dnStrings = "([a-zA-Z0-9]+|(([0-9]+\\.)*[0-9]+))";
         final String formats[] = { "(^[0-9A-Fa-f]+), ?((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
                 "(^[0-9A-Fa-f]+) : DN : \"([^\"]*)\"( ?: SubjectDN : \"[^\"]*\")?"
 
@@ -912,7 +925,7 @@ public final class StringTools {
         /*
          * In EJBCA 6.3.2 and earlier we allowed "[^a-zA-Z0-9.:-_]". There is however no source
          * that non IP-addresses would be allowed.
-         * 
+         *
          * Closest thing to a standardized example is available in RFC 7239 where the example
          *  "X-Forwarded-For: 192.0.2.43, 2001:db8:cafe::17"
          * is used.
@@ -931,8 +944,8 @@ public final class StringTools {
         }
         return names.toString();
     }
-    
-    /** Method that checks if an array contains a string, ignoring case 
+
+    /** Method that checks if an array contains a string, ignoring case
      * @param l array that we hope contains the string s (ignoring case)
      * @param s string that we hope is in the array l (ignoring case)
      * @return true if the string (ignoring case) is contained in the array
@@ -945,9 +958,9 @@ public final class StringTools {
         }
         return false;
     }
-//    /** Method that parses a date by format strings. 
+//    /** Method that parses a date by format strings.
 //     * @param dateString the date string.
-//     * @param formatStrings the format strings. 
+//     * @param formatStrings the format strings.
 //     * @return the date if it as possible to parse it, otherwise null. */
 //    public static final Date tryParseDate(final String dateString, final List <String> formatStrings) {
 //        Date result = null;
@@ -963,7 +976,7 @@ public final class StringTools {
 //        }
 //        return result;
 //    }
-    
+
     /**
      * Transforms a string of ids into a list of integer.
      * @param ids the id string
@@ -979,7 +992,7 @@ public final class StringTools {
         }
         return result;
     }
-    
+
     /**
      * Checks a string for legal chars (not containing "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g").
      * @param value the string value
@@ -989,8 +1002,8 @@ public final class StringTools {
         final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
         return Pattern.matches(blackList, value);
     }
-    
-    /** @return false of if the string contains any characters that are neither a letter (unicode) or an asciiPrintable character */ 
+
+    /** @return false of if the string contains any characters that are neither a letter (unicode) or an asciiPrintable character */
     public static boolean isAlphaOrAsciiPrintable(String str) {
         if (str == null) {
             return false;
@@ -1002,5 +1015,5 @@ public final class StringTools {
             }
         }
         return true;
-    } 
+    }
 }
