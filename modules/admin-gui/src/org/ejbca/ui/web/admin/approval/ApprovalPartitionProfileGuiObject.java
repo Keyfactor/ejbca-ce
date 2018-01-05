@@ -31,19 +31,21 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  */
 public class ApprovalPartitionProfileGuiObject implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private ListDataModel<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
 
     private final String approvalProfileIdentifier;
     private final int partitionId;
+    private final String partitionName;
 
-    public ApprovalPartitionProfileGuiObject(final String approvalProfileIdentifier, final int partitionId,
+    public ApprovalPartitionProfileGuiObject(final String approvalProfileIdentifier, final int partitionId, final String partitionName,
             List<DynamicUiProperty<? extends Serializable>> propertyValues) {
         //Pass property values as a parameter because it may need some outside poking
         setProfilePropertyList(new ListDataModel<>(propertyValues));
         this.approvalProfileIdentifier = approvalProfileIdentifier;
         this.partitionId = partitionId;
+        this.partitionName = partitionName;
     }
 
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
@@ -88,6 +90,10 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
 
     public int getPartitionId() {
         return partitionId;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
     }
 
 }

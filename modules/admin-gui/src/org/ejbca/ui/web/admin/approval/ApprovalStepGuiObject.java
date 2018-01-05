@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
+import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
 
 /**
  * A display POJO for approval sequences.
@@ -47,7 +48,8 @@ public class ApprovalStepGuiObject {
         this.stepNumber = ordinal;
         this.partitionGuiObjects = new ArrayList<>();
         for (Integer partitionId : partitionProperties.keySet()) {
-            partitionGuiObjects.add(new ApprovalPartitionProfileGuiObject(approvalProfileIdentifier, partitionId, partitionProperties.get(partitionId)));
+            String partitionName = approvalStep.getPartition(partitionId).getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString();
+            partitionGuiObjects.add(new ApprovalPartitionProfileGuiObject(approvalProfileIdentifier, partitionId, partitionName, partitionProperties.get(partitionId)));
         }
         this.nextStep = approvalStep.getNextStep();
         this.previousStep = approvalStep.getPreviousStep();
