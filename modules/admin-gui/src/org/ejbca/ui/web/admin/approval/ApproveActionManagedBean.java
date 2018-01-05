@@ -425,9 +425,11 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     for (ApprovalPartition approvalPartition : step.getPartitions().values()) {
                         try {
                             if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                                authorizedPartitions.add(
-                                        new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                                approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                        approvalPartition.getPartitionIdentifier(),
+                                        approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
+                                        getPartitionProperties(approvalPartition)));
                             }
                         } catch (AuthenticationFailedException e) {
                             //We shouldn't have gotten here in the UI with an invalid token
@@ -457,7 +459,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
                             authorizedPartitions
                                     .add(new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                            approvalPartition.getPartitionIdentifier(), getPartitionProperties(approvalPartition)));
+                                            approvalPartition.getPartitionIdentifier(),  approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(), getPartitionProperties(approvalPartition)));
                         }
                         if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
                             partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());

@@ -223,6 +223,7 @@ function viewcert(link){
 		<h:dataTable value="#{approvalActionManagedBean.approvalPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 				footerClass="tableFooter">
 				<h:column>	
+					<h:outputText value="#{partition.partitionName}"/>
 					<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
 						 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">
 						<h:column>								
