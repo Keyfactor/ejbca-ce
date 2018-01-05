@@ -1158,6 +1158,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-caa-cli" />
     </target>
 
+	<target name="ejbca-webtest" depends="deprecated:check" if="webtest.exists" description="Builds EJBCA web test module">
+		<ant dir="modules" target="ejbca-webtest" />
+	</target>
+	
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
     </target>

@@ -161,6 +161,7 @@
 	<property name="mod.caa-cli.lib" location="${mod.dist.caa-cli.dir}/caa-cli.jar" />
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
+	<property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
@@ -410,4 +411,7 @@
 		<available file="${mod.ct.path}/build.xml" />
     </condition>
 
+	<condition property="mod.webtest.exists">
+		<available file="${mod.webtest.path}/build.xml" />
+	</condition>
 </project>
