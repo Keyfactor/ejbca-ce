@@ -122,6 +122,7 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--  
@@ -152,7 +153,9 @@ function getPasswordAndSubmit(formname) {
 </head>
 
 <body>
-
+<jsp:include page="../adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
   <h1><%= ejbcawebbean.getText("CASTRUCTUREANDCRL") %></h1>
 
   	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
@@ -226,17 +229,17 @@ function getPasswordAndSubmit(formname) {
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;
  %>
-       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : "%> <c:out value="<%= caname %>" /> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
-                                                                            <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
+       <H5><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : "%> <c:out value="<%= caname %>" /> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
+                                                                            <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWINFO")%></a></H5>    
  
-        <table> 
+        <table class="outline-buttons-table"> 
           <% int row = 0;
              for(int j = chainsize-1; j >= 0; j--){
                if(j == chainsize -1){              
           %>
           <tr id="Row<%=row%2%>">
             <td>
-              <%= ejbcawebbean.getText("ROOTCA") + " : "%> 
+              <%= ejbcawebbean.getText("ROOTCA") + ": "%> 
             </td>
             <td>
                <% out.write(HTMLTools.htmlescape(CertTools.getSubjectDN(certificatechain[j]))); %>                  
@@ -276,10 +279,10 @@ function getPasswordAndSubmit(formname) {
 					<input type="hidden" name="issuer" value='<c:out value="<%= subjectdn %>" />'/>
 					<input type="hidden" name="password" value=""/>
               </form>
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>&nbsp;&nbsp;&nbsp;
-			  <a href="javascript: getPasswordAndSubmit('<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>');"><%= ejbcawebbean.getText("DOWNLOADJKS")%></a>
+              <a class="outline-button" href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
+              <a class="outline-button" href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
+              <a class="outline-button" href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>&nbsp;&nbsp;&nbsp;
+			  <a class="outline-button" href="javascript: getPasswordAndSubmit('<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>');"><%= ejbcawebbean.getText("DOWNLOADJKS")%></a>
             </td>   
           </tr>
           <% }
@@ -331,7 +334,7 @@ function getPasswordAndSubmit(formname) {
 	  <% // Display createcrl if admin is authorized
       if(createcrlrights){ %>
 		<br />
-		<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
+		<form class="hidden" name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
             <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
 			<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
@@ -354,15 +357,16 @@ function getPasswordAndSubmit(formname) {
 		</form>
 	<% } %>
 		<br />
-		<hr />
 	<%  number++;
 	} %>
    
+   </div> <!-- Container -->
 
 		<% // Include Footer 
    		String footurl =  globalconfiguration.getFootBanner(); %>
    
   		<jsp:include page="<%= footurl %>" />
 		</form>
+	</div> <!-- main-wrapper -->
 	</body>
 </html>

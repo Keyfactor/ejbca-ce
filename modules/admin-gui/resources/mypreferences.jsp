@@ -34,15 +34,13 @@
 
   final String THIS_FILENAME                          = globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
 
-  String forwardurl = globalconfiguration.getMainFilename(); 
-
   RequestHelper.setDefaultCharacterEncoding(request);
     // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
        // Cancel current values and go back to old ones.
        //ejbcawebbean.initialize(request,"/administrator");
       
-%>  <jsp:forward page="<%= forwardurl %>"/>
+%>  <jsp:forward page="."/>
 <%  }
      if( request.getParameter(BUTTON_SAVE) != null){
         // Save global configuration.
@@ -79,7 +77,7 @@
         }
         
 %>          
- <jsp:forward page="<%=forwardurl %>"/>
+ <jsp:forward page="."/>
 <%   }
 
 
@@ -93,6 +91,9 @@
 </head>
 
 <body>
+<jsp:include page="adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
 
 <h1><c:out value="<%= ejbcawebbean.getText(\"ADMINISTRATORPREFERENCES\") %>" /></h1>
 
@@ -221,8 +222,8 @@
     <%-- Form buttons --%>
     
     <tr  id="Row1"> 
-      <td width="49%" valign="top">&nbsp;</td>
-      <td width="51%" valign="top"> 
+      <td class="no-border" width="49%" valign="top">&nbsp;</td>
+      <td class="no-border" width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" value='<c:out value="<%= ejbcawebbean.getText(\"SAVE\") %>"/>'>
         &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CANCEL %>" value='<c:out value="<%= ejbcawebbean.getText(\"CANCEL\") %>"/>'>
@@ -232,10 +233,12 @@
   </table>
   
 </form>
+</div> <!-- Container -->
 <% // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
- 
+
+</div> <!-- main-wrapper -->
 </body>
 </html>

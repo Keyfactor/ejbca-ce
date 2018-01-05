@@ -22,6 +22,7 @@
   <title><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>"/>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration.getAdminWebPath()%>ejbcajslib.js"></script>
   <style type="text/css">
   	input[type='checkbox'].checkBoxOverlay {
@@ -48,6 +49,10 @@
 </head>
 <f:view>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 	<div class="message">
 		<h:messages layout="table" errorClass="alert" infoClass="infoMessage"/>
 	</div>
@@ -127,7 +132,7 @@
 		
 		<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_STEPS}"/>	</h3>
 		<%--Retrieve GUI layout from the currently chosen approval profile archetype --%>
-		<h:dataTable value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+		<h:dataTable styleClass="superTable" value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
 			footerClass="tableFooter">
 			<h:column>			
 				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >						
@@ -137,9 +142,9 @@
 								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}">
 								<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" />
 								<h:panelGroup>
-									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif" 
+									<h:commandButton styleClass="reorderButton" value="▲" 
 										rendered="#{step.previousStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepUp}"/>
-									<h:commandButton image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif" 
+									<h:commandButton styleClass="reorderButton" value="▼"
 										rendered="#{step.nextStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepDown}"/>
 								</h:panelGroup>
 							</h:panelGrid>
@@ -231,7 +236,7 @@
 							</h:column>
 							<h:column>
 								<f:facet name="header">
-    								<h:panelGroup layout="block" style="text-align: right;">
+    								<h:panelGroup layout="block" styleClass="button-group" style="text-align: right;">
     									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
     										disabled="#{step.numberOfPartitions == 1}"
     				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
@@ -275,13 +280,13 @@
 			<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
 				rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
 		</h:panelGroup>
-		<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+		<h:panelGrid columns="2" styleClass="no-border" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 	
 			<%-- Buttons --%>
 			<h:panelGroup>
 				&nbsp;
 			</h:panelGroup>
-			<h:panelGroup>
+			<h:panelGroup styleClass="no-border">
 				<h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
 				<h:commandButton value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
@@ -289,11 +294,12 @@
 	
 		</h:panelGrid>
 	</h:form>
-
+</div> <!-- container -->
 
 <%
    String footurl=globalconfiguration.getFootBanner();%>
   <jsp:include page="<%=footurl%>"/>
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

@@ -4,7 +4,6 @@
 
 %>
 
-
 <h1><%= (ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) ? ejbcawebbean.getText("ESTMANAGEALIASES") : ejbcawebbean.getText("EST_VIEW_ALIASES"))%></h1>
 
 <form name="editestaliases" method="post"  action="<%= THIS_FILENAME%>">
@@ -40,7 +39,7 @@
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=SELECT_ALIASES%>" style="width: 50em" size="15"  >
+        <select class="select-list" name="<%=SELECT_ALIASES%>" style="width: 50em" size="15"  >
           <%for(String currentalias : aliases) { %>     
             	<option value="<c:out value="<%= currentalias %>"/>"> 
                 <c:out value="<%= currentalias %>"/>
@@ -91,4 +90,3 @@
   <% } %>
 
 </form>
-

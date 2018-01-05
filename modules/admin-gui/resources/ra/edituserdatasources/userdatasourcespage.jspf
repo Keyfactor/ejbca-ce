@@ -3,7 +3,6 @@
   
 %>
 
-
 <h1><%= ejbcawebbean.getText("MANAGEUSERDATASOURCES") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Framework%20for%20External%20User%20Data%20Sources") %></h1>
 
 <form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
@@ -33,7 +32,7 @@
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" style="width: 50em" size="15"  >
+        <select class="select-list" name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" style="width: 50em" size="15"  >
           <% Iterator iter = userdatasourcenames.keySet().iterator();
              while(iter.hasNext()){
                String userdatasourcename = (String) iter.next(); %>

@@ -26,6 +26,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 	href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
 <meta http-equiv="Content-Type"
 	content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
+<link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
 <script type="text/javascript">
 <!--
 function viewcert(link){
@@ -39,7 +40,9 @@ function viewcert(link){
 
 <f:view>
 	<body>
-
+	<jsp:include page="../adminmenu.jsp" />
+	<div class="main-wrapper">
+        <div class="container">
 		<h1>
 			<h:outputText value="#{web.text.APPROVEACTIONS}" />
 		</h1>
@@ -48,13 +51,13 @@ function viewcert(link){
 			<p align="center">
 				<h:outputText value="#{web.text.SEARCHFORACTION}" />
 				&nbsp;
-				<h:selectOneMenu id="status"
+				<h:selectOneMenu styleClass="approveationlist-select" id="status"
 					value="#{listApproveActionManagedBean.selectedStatus}">
 					<f:selectItems
 						value="#{listApproveActionManagedBean.availableStatus}" />
 				</h:selectOneMenu>
 				<h:outputText value="#{web.text.REQUESTEDWITHIN}" />
-				<h:selectOneMenu id="timespan"
+				<h:selectOneMenu styleClass="approveationlist-select" id="timespan"
 					value="#{listApproveActionManagedBean.selectedTimeSpan}">
 					<f:selectItems
 						value="#{listApproveActionManagedBean.availableTimeSpans}" />
@@ -87,9 +90,8 @@ function viewcert(link){
 						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="requestDate">
-										<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestDate}"/>
-										<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestDate}"/>
-									<h:outputText value="#{web.text.REQUESTDATE}" />
+								    <h:outputText value="#{web.text.REQUESTDATE}" />
+							    	<h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByRequestDate}" value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
 								</t:commandSortHeader>
 							</f:facet>
 							<h:outputText value="#{approveActionDataVOView.requestDate}" />
@@ -98,9 +100,8 @@ function viewcert(link){
 						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="approveActionName">
-									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByApproveActionName}"/>
-									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByApproveActionName}"/>
-									<h:outputText value="#{web.text.APPROVEACTIONNAME}" />
+								    <h:outputText value="#{web.text.APPROVEACTIONNAME}" />
+								    <h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByApproveActionName}" value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
 								</t:commandSortHeader>
 							</f:facet>
 							<h:commandLink immediate="true"
@@ -113,9 +114,8 @@ function viewcert(link){
 						<h:column>
 							<f:facet name="header">
 								<t:commandSortHeader columnName="requestUsername">
-									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestUsername}"/>
-									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByRequestUsername}"/>
-									<h:outputText value="#{web.text.REQUESTINGADMIN}" />
+								    <h:outputText value="#{web.text.REQUESTINGADMIN}" />
+								    <h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByRequestUsername}" value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
 								</t:commandSortHeader>
 							</f:facet>
 							<h:commandLink immediate="true"
@@ -132,8 +132,7 @@ function viewcert(link){
 							<f:facet name="header">
 								<t:commandSortHeader columnName="status">
 									<h:outputText value="#{web.text.STATUS}" />
-									<h:graphicImage url="#{web.image['uparrow.gif']}" rendered="#{listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByStatus}"/>
-									<h:graphicImage url="#{web.image['downarrow.gif']}" rendered="#{!listApproveActionManagedBean.ascending and listApproveActionManagedBean.sortedByStatus}"/>
+									<h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByStatus}" value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
 								</t:commandSortHeader>
 							</f:facet>
 							<h:outputText value="#{approveActionDataVOView.status}" />
@@ -147,24 +146,12 @@ function viewcert(link){
 							styleClass="scroller" paginator="true" paginatorMaxPages="9"
 							paginatorTableClass="paginator"
 							paginatorActiveColumnStyle="font-weight:bold;">
-							<f:facet name="first">
-								<h:graphicImage url="#{web.image['arrow-first.gif']}" />
-							</f:facet>
-							<f:facet name="last">
-								<h:graphicImage url="#{web.image['arrow-last.gif']}" />
-							</f:facet>
-							<f:facet name="previous">
-								<h:graphicImage url="#{web.image['arrow-previous.gif']}" />
-							</f:facet>
-							<f:facet name="next">
-								<h:graphicImage url="#{web.image['arrow-next.gif']}" />
-							</f:facet>
-							<f:facet name="fastforward">
-								<h:graphicImage url="#{web.image['arrow-ff.gif']}" />
-							</f:facet>
-							<f:facet name="fastrewind">
-								<h:graphicImage url="#{web.image['arrow-fr.gif']}" />
-							</f:facet>
+							<f:facet name="first"><h:outputText escape="false" value="&nbsp;&#9646;&#9664;&nbsp;"/></f:facet>
+							<f:facet name="last"><h:outputText escape="false" value="&nbsp;&#9654;&#9646;&nbsp;"/></f:facet>
+							<f:facet name="previous"><h:outputText escape="false" value="&nbsp;&#9664;&nbsp;"/></f:facet>
+							<f:facet name="next"><h:outputText escape="false" value="&nbsp;&#9654;&nbsp;"/></f:facet>
+							<f:facet name="fastforward"><h:outputText escape="false" value="&nbsp;&#9654;&#9654;&nbsp;"/></f:facet>
+							<f:facet name="fastrewind"><h:outputText escape="false" value="&nbsp;&#9664;&#9664;&nbsp;"/></f:facet>
 						</t:dataScroller>
 						<t:dataScroller id="scroll_2" for="data" rowsCountVar="rowsCount"
 							displayedRowsCountVar="displayedRowsCountVar"
@@ -180,12 +167,13 @@ function viewcert(link){
 			</p>
 		</h:form>
 		<hr />
+		</div> <!-- container -->
 
 		<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 
 		<jsp:include page="<%= footurl %>" />
-
+    </div> <!-- main-wrapper -->
 	</body>
 </f:view>
 </html>

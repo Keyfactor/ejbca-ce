@@ -8,18 +8,18 @@
 	TreeMap publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
 	Iterator iter = publishernames.keySet().iterator();
 %>
-
 <div class="status" id="publishqueuestatus" >
 		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/userguide.html#Publish%20queue%20status") %></h4>
-		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
+		<table class="grid"><thead>
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
 			<tr>
-				<th style="text-align:left;"><%=ejbcawebbean.getText("PUBLISHER")%></th>
+				<th><%=ejbcawebbean.getText("PUBLISHER")%></th>
 				<th><abbr title="<%=ejbcawebbean.getText("QUEUELENGTH")%>"><%=ejbcawebbean.getText("QUEUELENGTH_ABBR")%></abbr></th>
-			</tr>
+			</tr></thead><tbody>
 		<%  if(!iter.hasNext()) { %>
 				<tr>
-					<td colspan="2"><em><%=ejbcawebbean.getText("NOPUBLISHERS")%></em></td>
+					<td><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+					<td></td>
 				</tr>
 			<% } else {
 				while(iter.hasNext()) {
@@ -28,14 +28,14 @@
 			%>
 				<tr>	
 					<td><c:out value="<%=name %>"/></td>
-					<td style="text-align:center;"><%=queueLength %></td>
+					<td><%=queueLength %></td>
 				</tr>
 			<% }
 			} 
 			} else { %>
 				<tr>	
-					<td colspan="2"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
+					<td><%=ejbcawebbean.getText("CANBEENABLED") %></td>
 				</tr>
 		<%  } %>
-		</table>
+		</tbody></table>
 </div>

@@ -11,20 +11,19 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 <%
 	cabean.initialize(ejbcawebbean);
 %>
-
 <div class="status" id="crlstatus" >
         <h4><%=ejbcawebbean.getText("CAHEALTH")%> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Status") %></h4>
-		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
+		<table class="grid"><thead>
 			<%	if(ejbcawebbean.getAdminPreference().getFrontpageCaStatus()) { %>
 			<tr>
-				<th style="text-align:left;"><%=ejbcawebbean.getText("CANAME")%></th>
+				<th><%=ejbcawebbean.getText("CANAME")%></th>
 				<th><%=ejbcawebbean.getText("CASERVICE")%></th>
 				<th><%=ejbcawebbean.getText("CRLSTATUS")%></th>
-			</tr>
+			</tr></thead><tbody>
 				<%	for (CaCrlStatusInfo caCrlStatusInfo : cabean.getAuthorizedInternalCaCrlStatusInfos()) {	%>
 					<tr>	
 						<td><c:out value="<%=caCrlStatusInfo.getCaName() %>"/></td>
-						<td style="text-align:center;">
+						<td>
 							<% if (caCrlStatusInfo.isCaService()) { %>
 								<img src="<%=ejbcawebbean.getImagefileInfix("status-ca-active.png")%>"
 									alt="<%=ejbcawebbean.getText("CASERVICE_ON")%>"
@@ -35,7 +34,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 									title="<%=ejbcawebbean.getText("CASERVICE_OFF_TITLE")%>" />
 							<% } %>
 						</td>
-						<td style="text-align:center;">
+						<td>
 							<% if (caCrlStatusInfo.isCrlStatus()) { %>
 								<img src="<%=ejbcawebbean.getImagefileInfix("status-crl-uptodate.png")%>"
 									alt="<%=ejbcawebbean.getText("CRLSTATUS_ON")%>"
@@ -50,8 +49,8 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 				<%	}
 			   } else { %>
 			   		<tr>	
-						<td colspan="3"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
+						<td><%=ejbcawebbean.getText("CANBEENABLED") %></td>
 					</tr>
 			   <% } %>
-		</table>
+		</tbody></table>
 </div>

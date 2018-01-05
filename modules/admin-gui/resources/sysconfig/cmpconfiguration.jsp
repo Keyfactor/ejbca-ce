@@ -122,10 +122,14 @@
   <title><c:out value="<%= gc.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%= gc.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
+<jsp:include page="../adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
 
 <%
 	// Determine action 
@@ -513,12 +517,14 @@
 <%}
   if( includefile.equals("cmpaliasespage.jspf")){ %>
    <%@ include file="cmpaliasespage.jspf" %> 
-<%}
-
+<%} %>
+</div> <!-- Container -->
+<%
    // Include Footer 
    String footurl =   gc.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 
+</div> <!-- main-wrapper -->
 </body>
 </html>

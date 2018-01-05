@@ -32,7 +32,7 @@
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=EditPublisherJSPHelper.SELECT_PUBLISHER%>" style="width: 50em" size="15"  >
+        <select class="select-list" name="<%=EditPublisherJSPHelper.SELECT_PUBLISHER%>" style="width: 50em" size="15"  >
           <% for(String publishername : publishernames.keySet()){ %>  
             <option value="<c:out value="<%= publishername %>"/>">
                 <c:out value="<%= publishername %>"/> 

@@ -1,35 +1,72 @@
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@page pageEncoding="ISO-8859-1" errorPage="errorpage.jsp"%>
-<%@page import="org.ejbca.config.GlobalConfiguration"%>
-<%@page import="org.ejbca.config.WebConfiguration"%>
-<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
-<%@page import="org.ejbca.ui.web.RequestHelper"%>
-<% response.setContentType("text/html; charset="+WebConfiguration.getWebContentEncoding()); %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page pageEncoding="ISO-8859-1"%>
+<% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
+<%@page errorPage="errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,java.net.InetAddress,java.net.UnknownHostException,
+    org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
 %>
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= WebConfiguration.getWebContentEncoding() %>" />
+  <!--[if IE]><link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getIeFixesCssFile() %>" /><![endif]-->
 </head>
 
-<frameset rows="100,*" cols="*" frameborder="NO" border="0" framespacing="0"> 
-  <frame name="<%= globalconfiguration.HEADERFRAME %>" scrolling="NO" noresize src="<%= globalconfiguration.getHeadBanner() %>" >
-  <frameset cols="250,*" frameborder="NO" border="0" framespacing="0" rows="*"> 
-    <frame name="<%= globalconfiguration.MENUFRAME %>" noresize scrolling="NO" src="<%= globalconfiguration.getAdminWebPath() +
-                                                                                        globalconfiguration.getMenuFilename() %>">
-    <frame name="<%= globalconfiguration.MAINFRAME %>" src="<%= globalconfiguration.getAdminWebPath() + globalconfiguration.getMainFilename() %>">
-  </frameset>
-</frameset>
-<noframes>
 <body>
-  <h1><%= ejbcawebbean.getText("ERRORNOBROWSER") %></h1>
+
+<jsp:include page="adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
+
+<div class="version-info">
+	<%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION %>
+<%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("EXPORTABLE") %></div>
+<%	} %>
+	<noscript>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("JAVASCRIPTDISABLED") %></div>
+	</noscript>
+<%	if (ejbcawebbean.isPostUpgradeRequired()) { %>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("POSTUPGRADE_REQUIRED") %></div>
+<%	} %>
+</div> 
+
+<h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " "%> <c:out value="<%= ejbcawebbean.getUsersCommonName() %>"/> <%= " " + ejbcawebbean.getText("TOEJBCA")%></h3> 
+
+<div id="information">
+	<div><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "%><code><c:out value="<%= ejbcawebbean.getHostName()%>"/></code></div> 
+	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><c:out value="<%= ejbcawebbean.getServerTime()%>"/></code></div>
+</div>
+
+<div id="home">
+   <table>
+   <tr>
+   
+   <td>
+<%@ include file="statuspages/cacrlstatuses.jspf" %>
+    </td>
+
+   <td>
+<%@ include file="statuspages/publisherqueuestatuses.jspf" %>
+    </td>
+    
+    </tr>
+    </table>
+</div>
+</div> <!-- Container -->
+
+<% // Include Footer 
+   String footurl =   globalconfiguration.getFootBanner(); %>
+   
+  <jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
-</noframes>
 </html>

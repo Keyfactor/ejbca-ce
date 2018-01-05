@@ -19,6 +19,10 @@
   }
 %>
 <body> 
+<jsp:include page="../../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 <div align="center">   
    <h2><%= ejbcawebbean.getText(headlines[filemode]) %></h2>
    <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>

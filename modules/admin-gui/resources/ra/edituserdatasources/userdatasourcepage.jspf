@@ -111,7 +111,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("MODIFYABLEFIELDS") %> 
       </td>
       <td width="60%"> 
-        <select name="<%=userdatasourcehelper.SELECT_MODIFYABLEFIELDS%>" size="7" multiple >
+        <select class="select-list" name="<%=userdatasourcehelper.SELECT_MODIFYABLEFIELDS%>" size="7" multiple >
            <% TreeMap modifyableFieldTexts = userdatasourcehelper.getModifyableFieldTexts(); 
               Set modifiableFields = userdatasourcedata.getModifiableFields();
               Iterator iter = modifyableFieldTexts.keySet().iterator(); 
@@ -134,7 +134,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("APPLICABLECAS") %>
       </td>
       <td width="60%"> 
-        <select name="<%=userdatasourcehelper.SELECT_APPLICABLECAS%>" size="7" multiple >
+        <select class="select-list" name="<%=userdatasourcehelper.SELECT_APPLICABLECAS%>" size="7" multiple >
            <% Collection usedcas = userdatasourcedata.getApplicableCAs(); 
               if(userdatasourcehelper.issuperadministrator){ %>
            <option  value="<%= BaseUserDataSource.ANYCA %>" 

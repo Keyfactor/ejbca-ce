@@ -333,62 +333,62 @@
     }
    }
  
-   if( request.getParameter(SORTBY_USERNAME_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_USERNAME_ACC) != null ){
      // Sortby username accending
      sortby = SORTBY_USERNAME_ACC;
      rabean.sortUserData(SortBy.USERNAME,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_USERNAME_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_USERNAME_DEC) != null ){
      // Sortby username decending
      sortby = SORTBY_USERNAME_DEC;
      rabean.sortUserData(SortBy.USERNAME,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_CA_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_CA_ACC) != null ){
      // Sortby CA accending
      sortby = SORTBY_CA_ACC;
      rabean.sortUserData(SortBy.CA,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_CA_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_CA_DEC) != null ){
      // Sortby username decending
      sortby = SORTBY_CA_DEC;
      rabean.sortUserData(SortBy.CA,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_COMMONNAME_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_COMMONNAME_ACC) != null ){
      // Sortby username accending
      sortby = SORTBY_COMMONNAME_ACC;
      rabean.sortUserData(SortBy.COMMONNAME,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_COMMONNAME_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_COMMONNAME_DEC) != null ){
      // Sortby username accending
      sortby = SORTBY_COMMONNAME_DEC;
      rabean.sortUserData(SortBy.COMMONNAME,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_ACC) != null ){
      // Sortby username accending
      sortby = SORTBY_ORGANIZATIONALUNIT_ACC;
      rabean.sortUserData(SortBy.ORGANIZATIONALUNIT,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATIONALUNIT_DEC) != null ){
      // Sortby username accending
      sortby = SORTBY_ORGANIZATIONALUNIT_DEC;
      rabean.sortUserData(SortBy.ORGANIZATIONALUNIT,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATION_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATION_ACC) != null ){
      // Sortby username accending
      sortby = SORTBY_ORGANIZATION_ACC;
      rabean.sortUserData(SortBy.ORGANIZATION,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_ORGANIZATION_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_ORGANIZATION_DEC) != null ){
      // Sortby username accending
      sortby = SORTBY_ORGANIZATION_DEC;
      rabean.sortUserData(SortBy.ORGANIZATION,SortBy.DECENDING);
    }
-   if( request.getParameter(SORTBY_STATUS_ACC+".x") != null ){
+   if( request.getParameter(SORTBY_STATUS_ACC) != null ){
      // Sortby username accending
      sortby = SORTBY_STATUS_ACC;
      rabean.sortUserData(SortBy.STATUS,SortBy.ACCENDING);
    }
-   if( request.getParameter(SORTBY_STATUS_DEC+".x") != null ){
+   if( request.getParameter(SORTBY_STATUS_DEC) != null ){
      // Sortby username accending
      sortby = SORTBY_STATUS_DEC;
      rabean.sortUserData(SortBy.STATUS,SortBy.DECENDING);

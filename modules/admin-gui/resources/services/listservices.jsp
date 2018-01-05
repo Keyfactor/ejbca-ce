@@ -20,12 +20,17 @@
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 
 <f:view>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 
 <h1><h:outputText value="#{web.text.MANAGESERVICES}"/></h1>
 
@@ -39,7 +44,7 @@
 		</h:panelGroup>
 	
 		<h:panelGroup>
-			<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
+			<h:selectOneListbox styleClass="select-list" id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
 				<f:selectItems value="#{listServicesManagedBean.availableServices}"/>
 			</h:selectOneListbox>
 		</h:panelGroup>
@@ -67,7 +72,7 @@
 		</h:panelGroup>
 	</h:panelGrid>
 		
-	<h:panelGrid styleClass="actions" width="100%" rendered="#{listServicesManagedBean.hasEditRights}">
+	<h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{listServicesManagedBean.hasEditRights}">
 		<h:panelGroup>
 			<h3><h:outputText value="#{web.text.ADDSERVICE}"/></h3>
 		</h:panelGroup>
@@ -79,12 +84,14 @@
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>
+	</div> <!-- container -->
 
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
    
 	<jsp:include page="<%= footurl %>" />
 
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

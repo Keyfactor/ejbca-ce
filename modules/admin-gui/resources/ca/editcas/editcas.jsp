@@ -260,6 +260,7 @@ org.ejbca.ui.web.ParameterException
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <%
@@ -825,12 +826,14 @@ org.ejbca.ui.web.ParameterException
 <%}
   if( includefile.equals("importcacert.jspf")){ %>
    <%@ include file="importcacert.jspf" %> 
-<%}
-
+<%} %>
+</div> <!-- Container -->
+<%
    // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 
+</div> <!-- main-wrapper -->
 </body>
 </html>

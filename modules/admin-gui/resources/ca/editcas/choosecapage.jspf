@@ -20,7 +20,10 @@ function confirmcadeletion() {
 }
 //-->
 </script>
+<jsp:include page="../../adminmenu.jsp" />
 
+<div class="main-wrapper">
+<div class="container">
 <h1><%= ejbcawebbean.getText("MANAGECAS") %></h1>
 
 <form name="editcas" method="post"  action="<%= THIS_FILENAME%>">
@@ -112,7 +115,7 @@ function confirmcadeletion() {
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
+        <select name="<%=SELECT_CAS%>" style="width: 50em" size="15" class="select-list" >
           <% for (final String nameofca : canames.keySet()) {
               	 int currentCaId = canames.get(nameofca).intValue();
                  CAInfo cainfo2 = cabean.getCAInfoNoAuth(currentCaId).getCAInfo();

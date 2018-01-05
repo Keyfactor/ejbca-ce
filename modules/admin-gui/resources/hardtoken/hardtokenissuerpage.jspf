@@ -22,6 +22,7 @@ function checkallfields(){
 }
 -->
 </script>
+
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENISSUER") %></h2>
   <h3><c:out value='<%= ejbcawebbean.getText("HARDTOKENISSUER") + " : " + issuerdata.getAlias() %>'/></h3>
@@ -69,7 +70,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("AVAILABLEHARDTOKENPROFILES") %> 
       </td>
       <td width="70%"> 
-        <select name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="7" multiple >
+        <select class="select-list" name="<%=SELECT_AVAILABLEHARDTOKENPROFILES %>" size="7" multiple >
             <% Iterator profiles = hardtokenprofiles.keySet().iterator();
                while(profiles.hasNext()){ 
                  String profilename = (String) profiles.next();

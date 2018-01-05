@@ -90,7 +90,7 @@ function checkallfields() {
 </script>
 
 
-
+<div class="container">
 <div align="center"> 
   <h2><c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"CMPEDITALIAS\": \"CMP_VIEW_ALIAS\")) %>" /></h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALIAS\")+ \" : \" + alias %>" /></h3>
@@ -699,3 +699,4 @@ function checkallfields() {
 
   </table>
 </form>
+</div> <!-- Container -->

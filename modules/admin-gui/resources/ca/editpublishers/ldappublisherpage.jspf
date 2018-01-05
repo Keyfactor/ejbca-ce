@@ -320,7 +320,7 @@
          <%= ejbcawebbean.getText("USEFIELDSINDN") %>
       </td>
       <td width="55%" valign="top">   
-        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> >       
+        <select class="select-list" name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %> >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
                List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
                String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);

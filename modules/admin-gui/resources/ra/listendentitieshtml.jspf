@@ -3,6 +3,7 @@
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
@@ -82,7 +83,10 @@ function confirmrevocation(){
 </head>
 
 <body>
+<jsp:include page="../adminmenu.jsp" />
 
+<div class="main-wrapper">
+<div class="container">
 <h1><c:out value="<%= ejbcawebbean.getText(\"SEARCHENDENTITIES\") %>" /></h1>
 
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
@@ -241,64 +245,64 @@ function confirmrevocation(){
     <td width="5%"><c:out value="<%= ejbcawebbean.getText(\"SELECT\") %>"/>
      </td>
     <td width="11%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
+                          <input type="submit" name="<%=SORTBY_USERNAME_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>
+                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="10%"><% if(sortby.equals(SORTBY_CA_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CA_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
+                          <input type="submit" name="<%=SORTBY_CA_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_CA_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_CA_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
+                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="19%">
                    <% if(sortby.equals(SORTBY_COMMONNAME_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_COMMONNAME_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="17%">
                    <% if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
                    <% }else{
                          if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="18%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/> 
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/> 
                    <% }else{ 
                          if(sortby.equals(SORTBY_ORGANIZATION_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="12%"><% if(sortby.equals(SORTBY_STATUS_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_STATUS_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
+                          <input type="submit" name="<%=SORTBY_STATUS_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_STATUS_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_STATUS_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_STATUS_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
+                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
                    <%    }
                        } %>
     </td>
@@ -456,7 +460,7 @@ function confirmrevocation(){
        <%   } 
           }catch(AuthorizationDeniedException ade){} %>        
          <br /> <c:out value="<%= ejbcawebbean.getText(\"CRL_ENTRY_REVOCATIONREASON\") %>"/>&nbsp;
-        <select name="<%=SELECT_REVOKE_REASON %>" >
+        <select class="margin-top" name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>
                <option value='<%= i%>'><c:out value="<%= ejbcawebbean.getText(SecConst.reasontexts[i]) %>"/></option>
@@ -481,7 +485,7 @@ function confirmrevocation(){
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value='<c:out value="<%= ejbcawebbean.getText(\"CHANGESTATUSTO\") %>"/>'
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br />
-        <select name="<%=SELECT_CHANGE_STATUS %>">
+        <select class="margin-top" name="<%=SELECT_CHANGE_STATUS %>">
          <option selected value='<%= Integer.toString(EndEntityConstants.STATUS_NEW) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>"/></option>
      <!--   <option value='<%= Integer.toString(EndEntityConstants.STATUS_FAILED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>"/></option>  -->
        <!--  <option value='<%= Integer.toString(EndEntityConstants.STATUS_INITIALIZED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSINITIALIZED\") %>"/></option>  -->
@@ -498,11 +502,12 @@ function confirmrevocation(){
 
   <% } %>
   </form>
-
+</div> <!-- container -->
 
   <%// Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </html>

@@ -57,6 +57,7 @@ function checkallfields(){
 -->
 
 </script>
+<div class="container">
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENPROF") %></h2>
   <h3><c:out value='<%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %>'/></h3>
@@ -219,3 +220,4 @@ function checkallfields(){
     
   </table>
  </form>
+ </div> <!-- container -->
