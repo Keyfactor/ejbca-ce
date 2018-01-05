@@ -693,7 +693,7 @@ public abstract class AlgorithmTools {
             return NISTObjectIdentifiers.id_sha3_256.getId();
         }
         if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId())) {
-            return NISTObjectIdentifiers.id_sha3_256.getId();
+            return NISTObjectIdentifiers.id_sha3_384.getId();
         }
         if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
             return NISTObjectIdentifiers.id_sha3_512.getId();
