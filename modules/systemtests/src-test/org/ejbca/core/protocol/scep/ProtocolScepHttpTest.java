@@ -728,13 +728,9 @@ public class ProtocolScepHttpTest {
     @Test
     public void test14ScepRequestRolloverCert() throws Exception {
         try {
-            final X509CAInfo subcainfo;
-            try {
-                subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
-            } catch (CADoesntExistsException cadee) {
-                assumeTrue("Not running test since test13ScepGetNextCACertSubCA failed to create a sub CA", false);
-                throw new IllegalStateException(); // Not reached
-            }
+            //FIXME: This test is dependend on the previous one running
+            final X509CAInfo subcainfo = (X509CAInfo) caSession.getCAInfo(admin, ROLLOVER_SUB_CA);
+
             final int subCAId = subcainfo.getCAId();
             final X509Certificate subcaRolloverCert = (X509Certificate) caSession.getFutureRolloverCertificate(subCAId);
             final X509Certificate subcaCurrentCert = (X509Certificate) caSession.getCAInfo(admin, subCAId).getCertificateChain().iterator().next();

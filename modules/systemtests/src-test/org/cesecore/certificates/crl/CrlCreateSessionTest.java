@@ -349,26 +349,26 @@ public class CrlCreateSessionTest {
             if (cryptoTokenId != null) {
                 CryptoTokenTestUtils.removeCryptoToken(authenticationToken, cryptoTokenId);
             }
-            try {
-                int caid = caSession.getCAInfo(authenticationToken, subcaname).getCAId();
-                
+            CAInfo caInfo = caSession.getCAInfo(authenticationToken, subcaname);
+            if (caInfo != null) {
+                int caid = caInfo.getCAId();
                 // Delete sub CA CRLs
                 while (true) {
                     final byte[] crl = crlStoreSession.getLastCRL(subcadn, true); // delta CRLs
-                    if (crl == null) { break; }
+                    if (crl == null) {
+                        break;
+                    }
                     internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
                 }
-                
                 while (true) {
                     final byte[] crl = crlStoreSession.getLastCRL(subcadn, false); // base CRLs
-                    if (crl == null) { break; }
+                    if (crl == null) {
+                        break;
+                    }
                     internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
                 }
-                
                 // Delete sub CA
                 caSession.removeCA(authenticationToken, caid);
-            } catch (CADoesntExistsException cade) {
-                // NOPMD ignore
             }
         }
     }

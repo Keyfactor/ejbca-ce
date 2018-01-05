@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -156,10 +157,11 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
-		String caname;
-		try {
-			caname = caSession.getCAInfoInternal(userdata.getCAId()).getName();
-		} catch (CADoesntExistsException e) {
+		CAInfo caInfo = caSession.getCAInfoInternal(userdata.getCAId());
+		final String caname;
+		if(caInfo != null)  {
+			caname = caInfo.getName();
+		} else {
 			caname = "NotExist";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));

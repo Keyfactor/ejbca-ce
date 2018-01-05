@@ -1082,14 +1082,9 @@ public class EjbcaWebBean implements Serializable {
         CmpConfiguration returnValue = new CmpConfiguration(cmpConfiguration);
         //Build a lookup map due to the fact that default CA is stored as a SubjectDNs
         Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
-        for(int caId : caSession.getAllCaIds()) {
-            try {
-                CAInfo caInfo = caSession.getCAInfoInternal(caId);
-                subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Newly retrieved CA not found.", e);
-            }
-
+        for (int caId : caSession.getAllCaIds()) {
+            CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
         }
         Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
@@ -1387,14 +1382,9 @@ public class EjbcaWebBean implements Serializable {
         EstConfiguration returnValue = new EstConfiguration(estConfiguration);
         //Build a lookup map due to the fact that default CA is stored as a SubjectDNs
         Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
-        for(int caId : caSession.getAllCaIds()) {
-            try {
-                CAInfo caInfo = caSession.getCAInfoInternal(caId);
-                subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Newly retrieved CA not found.", e);
-            }
-
+        for (int caId : caSession.getAllCaIds()) {
+            CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
         }
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
         aliasloop: for (String alias : new ArrayList<>(estConfiguration.getAliasList())) {

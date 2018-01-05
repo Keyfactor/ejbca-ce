@@ -776,6 +776,10 @@ public class EjbcaWS implements IEjbcaWS {
 			// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
 			// First get to the CVCA certificate that has the parameters
 			CAInfo info = caSession.getCAInfo(admin, CertTools.getIssuerDN(cert).hashCode());
+            if (info == null) {
+                throw new CADoesntExistsException("CA with id " + CertTools.getIssuerDN(cert).hashCode() + " doesn't exist.");
+            }
+
 			Collection<java.security.cert.Certificate> cacerts = info.getCertificateChain();
 			if (cacerts != null) {
 				log.debug("Found CA certificate chain of length: "+cacerts.size());
@@ -920,59 +924,67 @@ public class EjbcaWS implements IEjbcaWS {
 
 						// If there are no old certificate, continue processing as usual, using the sent in username/password hoping the
 						// status is NEW and password is correct.
-					} else { // if (StringUtils.equals(holderRef, caRef))
-						// Subject and issuerDN is CN=Mnemonic,C=Country
-						String dn = "CN="+caRef.getMnemonic()+",C="+caRef.getCountry();
-						log.debug("Authenticated request is not self signed, we will try to verify it using a CVCA certificate: "+dn);
-						try {
-						    CAInfo info = caSession.getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
-						    Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
-						    if (certs != null) {
-						        log.debug("Found "+certs.size()+" certificates in chain for CA with DN: "+dn);
-						        Iterator<java.security.cert.Certificate> iterator = certs.iterator();
-						        if (iterator.hasNext()) {
-						            // The CA certificate is first in chain
-						            java.security.cert.Certificate cert = iterator.next();
-						            if (log.isDebugEnabled()) {
-						                log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "+CertTools.getFingerprintAsString(cert));
-						            }
-						            try {
-						                // The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
-						                authreq.verify(cert.getPublicKey());
-						                log.debug("Verified outer signature");
-						                verifiedOuter = true;
-						                // Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
-						                try {
-						                    // Check certificate validity and set end entity status/password.
+                    } else { // if (StringUtils.equals(holderRef, caRef))
+                        // Subject and issuerDN is CN=Mnemonic,C=Country
+                        String dn = "CN=" + caRef.getMnemonic() + ",C=" + caRef.getCountry();
+                        log.debug("Authenticated request is not self signed, we will try to verify it using a CVCA certificate: " + dn);
+
+                        CAInfo info = caSession.getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
+                        if (info == null) {
+                            log.info("No CA found to authenticate request: " + dn);
+                            throw new CADoesntExistsException("CA with id " + CertTools.stringToBCDNString(dn).hashCode() + " doesn't exist.");
+                        } else {
+                            Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
+                            if (certs != null) {
+                                log.debug("Found " + certs.size() + " certificates in chain for CA with DN: " + dn);
+                                Iterator<java.security.cert.Certificate> iterator = certs.iterator();
+                                if (iterator.hasNext()) {
+                                    // The CA certificate is first in chain
+                                    java.security.cert.Certificate cert = iterator.next();
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "
+                                                + CertTools.getFingerprintAsString(cert));
+                                    }
+                                    try {
+                                        // The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
+                                        authreq.verify(cert.getPublicKey());
+                                        log.debug("Verified outer signature");
+                                        verifiedOuter = true;
+                                        // Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
+                                        try {
+                                            // Check certificate validity and set end entity status/password.
                                             // This will throw one of several exceptions if the certificate is invalid
                                             ejbcaWSHelperSession.checkValidityAndSetUserPassword(admin, cert, username, password);
                                         } catch (EndEntityProfileValidationException e) {
                                             throw new UserDoesntFullfillEndEntityProfile(e);
                                         }
-						            } catch (InvalidKeyException e) {
-						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());
-						                log.warn(msg, e);
-						            } catch (CertificateException e) {
-						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());
-						                log.warn(msg, e);
-						            } catch (NoSuchAlgorithmException e) {
-						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());
-						                log.warn(msg, e);
-						            } catch (NoSuchProviderException e) {
-						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());
-						                log.warn(msg, e);
-						            } catch (SignatureException e) {
-						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());
-						                log.warn(msg, e);
-						            }
-						        }
-						    } else {
-						        log.info("No CA certificate found to authenticate request: "+dn);
-						    }
-						}catch (CADoesntExistsException e) {
-						    log.info("No CA found to authenticate request: "+dn);
-						}
-					}
+                                    } catch (InvalidKeyException e) {
+                                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(),
+                                                e.getMessage());
+                                        log.warn(msg, e);
+                                    } catch (CertificateException e) {
+                                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(),
+                                                e.getMessage());
+                                        log.warn(msg, e);
+                                    } catch (NoSuchAlgorithmException e) {
+                                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(),
+                                                e.getMessage());
+                                        log.warn(msg, e);
+                                    } catch (NoSuchProviderException e) {
+                                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(),
+                                                e.getMessage());
+                                        log.warn(msg, e);
+                                    } catch (SignatureException e) {
+                                        String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(),
+                                                e.getMessage());
+                                        log.warn(msg, e);
+                                    }
+                                }
+                            } else {
+                                log.info("No CA certificate found to authenticate request: " + dn);
+                            }
+                        }
+                    }
 					// if verification failed because we could not verify the outer signature at all it is an error
 					if (!verifiedOuter) {
 						String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "No certificate found that could authenticate request");
@@ -2009,8 +2021,12 @@ public class EjbcaWS implements IEjbcaWS {
 
 						genCertificates.add(cert);
 						// Generate Keystore
+						CAInfo info = caSession.getCAInfo(admin, cAInfo.getCAId());
+						if (info == null) {
+                            throw new CADoesntExistsException("CA with id " + cAInfo.getCAId() + " doesn't exist.");
+                        } 
 						// Fetch CA Cert Chain.
-						Collection<java.security.cert.Certificate> chain =  caSession.getCAInfo(admin, cAInfo.getCAId()).getCertificateChain();
+						Collection<java.security.cert.Certificate> chain =  info.getCertificateChain();
 						String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
 						if (alias == null){
 							alias = userData.getUsername();
@@ -2375,6 +2391,9 @@ public class EjbcaWS implements IEjbcaWS {
 			int caId = 0;
 			if(cAName  != null){
 				CAInfo cAInfo = caSession.getCAInfo(admin, cAName);
+                if (cAInfo == null) {
+                    throw new CADoesntExistsException("CA with name " + cAName + " doesn't exist.");
+                } 
 				caId = cAInfo.getCAId();
 			} else {
 				caId = ((X509CertificateAuthenticationToken)admin).getCertificate().getSubjectDN().getName().hashCode();
@@ -2634,6 +2653,9 @@ public class EjbcaWS implements IEjbcaWS {
 			AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
             CAInfo cainfo = caSession.getCAInfo(admin, caname);
+            if (cainfo == null) {
+                throw new CADoesntExistsException("CA with name " + caname + " doesn't exist.");
+            }
             publishingCrlSession.forceCRL(admin, cainfo.getCAId());
             publishingCrlSession.forceDeltaCRL(admin, cainfo.getCAId());
 		} catch (AuthorizationDeniedException e) {
@@ -2653,6 +2675,9 @@ public class EjbcaWS implements IEjbcaWS {
             AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
             CAInfo cainfo = caSession.getCAInfo(admin, caname);
+            if (cainfo == null) {
+                throw new CADoesntExistsException("CA with name " + caname + " doesn't exist.");
+            }
             byte[] ret = crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
             return ret;
         } catch (AuthorizationDeniedException e) {
@@ -2833,6 +2858,9 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			CAInfo info = caSession.getCAInfo(admin, caname);
+			if(info == null) {
+			    throw new CADoesntExistsException("CA with name " + caname + " doesn't exist.");
+			}
 			if (info.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE){
 				return retval;
 			}

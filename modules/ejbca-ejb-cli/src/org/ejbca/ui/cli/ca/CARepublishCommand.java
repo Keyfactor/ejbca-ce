@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -86,13 +85,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
         try {
             // Get the CAs info and id
-            CAInfo cainfo;
-            try {
-                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
-            } catch (CADoesntExistsException e) {
-                getLogger().info("CA with name '" + caname + "' does not exist.");
-                return CommandResult.FUNCTIONAL_FAILURE;
-            }
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
                 return CommandResult.FUNCTIONAL_FAILURE;

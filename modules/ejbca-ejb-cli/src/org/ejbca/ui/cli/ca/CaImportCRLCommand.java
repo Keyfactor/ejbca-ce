@@ -119,6 +119,10 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             }
             // Fetch CA and related info
             final CAInfo cainfo = getCAInfo(getAuthenticationToken(), caname);
+            if(cainfo == null) {
+                log.error("CA by name of " + caname + " could not be found.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
             final X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
             final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
             log.info("CA: " + issuer);

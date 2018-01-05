@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -84,19 +83,16 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             CAInfo ca;
             try {
                 ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
-            } catch (CADoesntExistsException e) {
-                getLogger().error("CA '" + caName + "' does not exist.");
-                return CommandResult.FUNCTIONAL_FAILURE;
+                if (ca == null) {
+                    getLogger().error("CA '" + caName + "' does not exist.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
             } catch (AuthorizationDeniedException e) {
                 getLogger().error("CLI user not authorized to CA '" + caName);
                 return CommandResult.AUTHORIZATION_FAILURE;
             }
-            if (ca != null) {
-                caid = ca.getCAId();
-            } else {
-                getLogger().error("CA '" + caName + "' does not exist.");
-                return CommandResult.FUNCTIONAL_FAILURE;
-            }
+            caid = ca.getCAId();
+
         }
         CryptoProviderTools.installBCProvider();
         // Mapping used to translate certificate profile ids when importing end entity profiles. Used when the profile id of a cert profile changes
@@ -240,20 +236,18 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (String currentCA : cas) {
                                             Integer currentCAInt = Integer.parseInt(currentCA);
                                             // The constant ALLCAS will not be searched for among available CAs
-                                            try {
-                                                if (currentCAInt.intValue() != SecConst.ALLCAS) {
-                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(
-                                                            getAuthenticationToken(), currentCAInt);
-                                                }
-                                                availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
-                                            } catch (CADoesntExistsException e) {
-                                                getLogger().warn(
-                                                        "CA with id " + currentCA + " was not found and will not be used in end entity profile '"
-                                                                + profilename + "'.");
-                                                if (defaultCA.equals(currentCA)) {
-                                                    defaultCA = "";
+
+                                            if (currentCAInt.intValue() != SecConst.ALLCAS) {
+                                                if (!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(currentCAInt)) {
+                                                    getLogger().warn("CA with id " + currentCA
+                                                            + " was not found and will not be used in end entity profile '" + profilename + "'.");
+                                                    if (defaultCA.equals(currentCA)) {
+                                                        defaultCA = "";
+                                                    }
                                                 }
                                             }
+                                            availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+
                                         }
                                         if (availableCAs.equals("")) {
                                             if (caid == null) {
@@ -295,10 +289,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (Integer currentCA : cas) {
                                             // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
                                             if (currentCA != CertificateProfile.ANYCA) {
-                                                try {
-                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(
-                                                            getAuthenticationToken(), currentCA);
-                                                } catch (CADoesntExistsException e) {
+                                                if (!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(currentCA)) {
                                                     casToRemove.add(currentCA);
                                                 }
                                             }

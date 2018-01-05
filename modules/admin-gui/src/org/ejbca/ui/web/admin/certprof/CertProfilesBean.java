@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -643,9 +642,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
             for (Integer currentCA : cas) {
                 // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
                 if (currentCA != CertificateProfile.ANYCA) {
-                    try {
-                        getEjbcaWebBean().getEjb().getCaSession().getCAInfo(getAdmin(), currentCA);
-                    } catch (CADoesntExistsException e) {
+                    if(!getEjbcaWebBean().getEjb().getCaSession().existsCa(currentCA)) {
                         casToRemove.add(currentCA);
                     }
                 }

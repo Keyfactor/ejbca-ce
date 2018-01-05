@@ -24,7 +24,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.Role;
@@ -93,10 +92,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         final CAInfo caInfo;
         try {
             caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
-        } catch (CADoesntExistsException e) {
-            getLogger().error("No such CA '" + caName + "'.");
-            return CommandResult.FUNCTIONAL_FAILURE;
-        } catch (AuthorizationDeniedException e) {
+        }  catch (AuthorizationDeniedException e) {
             log.error("ERROR: CLI user not authorized to CA");
             return CommandResult.AUTHORIZATION_FAILURE;
         }

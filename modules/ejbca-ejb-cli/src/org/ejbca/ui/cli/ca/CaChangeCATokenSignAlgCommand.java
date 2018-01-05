@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -61,6 +60,11 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
         String caName = parameters.get(CA_NAME_KEY);
         try {
             CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+            if(cainfo == null) {
+                log.error("No such CA with by name " + caName);
+                log.error(getCaList());
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
             String signAlg = parameters.get(SIGALG_KEY);
             log.info("Setting new signature algorithm: " + signAlg);
             final CAToken caToken = cainfo.getCAToken();
@@ -73,11 +77,8 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
             log.error("CLI User was not authorized to modify CA " + caName);
             log.trace("<execute()");
             return CommandResult.AUTHORIZATION_FAILURE;
-        } catch (CADoesntExistsException e) {
-            log.error("No such CA with by name " + caName);
-            log.error(getCaList());
-            return CommandResult.FUNCTIONAL_FAILURE;
         } 
+
         log.trace("<execute()");
         return CommandResult.SUCCESS;
      

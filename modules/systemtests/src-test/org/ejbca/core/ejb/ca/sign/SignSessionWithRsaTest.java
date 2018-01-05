@@ -504,10 +504,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     }
 
     private void createReverseEndEntity() throws Exception {
-        CAInfo inforsareverse = null;
-        try {
-            inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
-        } catch (CADoesntExistsException e) {
+        CAInfo  inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
+        if(inforsareverse == null) {
             CaTestCase.createTestRSAReverseCa(internalAdmin);
             inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         }

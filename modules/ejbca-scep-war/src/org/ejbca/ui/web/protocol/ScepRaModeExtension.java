@@ -17,7 +17,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -69,17 +68,17 @@ public class ScepRaModeExtension implements ScepOperationPlugin {
 
         // Try to find the CA name from the issuerDN in the request. If we can't find it, we use the default
         String issuerDN = certificateStoreSession.getCADnFromRequest(reqmsg);
-        String caName = null;
-        try {
-            caName = caSession.getCAInfoInternal(issuerDN.hashCode()).getName();
+        String caName = null;     
+        if (!caSession.existsCa(issuerDN.hashCode())) {
+            caName = caSession.getCAIdToNameMap().get(issuerDN.hashCode());
             if (log.isDebugEnabled()) {
                 log.debug("Found a CA name '" + caName + "' from issuerDN: " + issuerDN);
             }
-        } catch (CADoesntExistsException e) {
+        } else {
             caName = scepConfiguration.getRADefaultCA(configAlias);
             log.info("Did not find a CA name from issuerDN: " + issuerDN + ", using the default CA '" + caName + "'");
         }
-        
+ 
         if (StringUtils.isEmpty(caName)) {
             log.error("No CA was set in the scep.propeties file.");
             return false;
@@ -89,12 +88,12 @@ public class ScepRaModeExtension implements ScepOperationPlugin {
         CA ca;
         try {
             cainfo = caSession.getCAInfo(admin, caName);
+            if(cainfo == null) {
+                log.error("Could not find CA: " + caName);
+                return false;
+            }
             ca = caSession.getCA(admin, caName);
-        } catch (CADoesntExistsException e1) {
-            log.error("Could not find CA: " + caName);
-            log.error(e1.getLocalizedMessage(), e1);
-            return false;
-        } catch (AuthorizationDeniedException e1) {
+        }  catch (AuthorizationDeniedException e1) {
             log.error("Administator is not authorized for CA: " + caName);
             log.error(e1.getLocalizedMessage(), e1);
             return false;

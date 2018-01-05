@@ -55,6 +55,7 @@ public interface CaSessionLocal extends CaSession {
     
     /** @return the found entity instance or null if the entity does not exist */
     CAData findById(final Integer cAId);
+   
     /**
      * @throws CADoesntExistsException if the entity does not exist
      * @return the found entity instance
@@ -92,11 +93,10 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param caid identifies the CA
-     * @return the CA object
-     * @throws CADoesntExistsException if no CA was found
+     * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCA(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+    CA getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
   
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -110,11 +110,10 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param name name of the CA that we are searching for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException if CA with name does not exist
+     * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCA(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
+    CA getCA(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
     
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -128,11 +127,10 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param caid identifies the CA
-     * @return CA value object, never null
-     * @throws CADoesntExistsException if CA with caid does not exist
+     * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCAForEdit(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+    CA getCAForEdit(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -146,11 +144,10 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param name name of the CA that we are searching for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException if CA with name does not exist
+     * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCAForEdit(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
+    CA getCAForEdit(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /** Changes a CA in the database. Can change mostly everything except caid, caname and subject DN. When editing a CA the CA token will usually be taken off line.
      * So you need to activate the CA token after editing, if auto-activation of the CA token is not enabled. 
@@ -200,24 +197,19 @@ public interface CaSessionLocal extends CaSession {
      *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
      * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
      *             a completely distinct object, for edit, and not a shared cached instance.
-     * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if no CA was found
+     * @return CA value object, or null if it doesn't exist.
      */
-    CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException;
+    CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache);
 
     /**
      * Internal (local only) method for getting CAInfo, to avoid access control logging for internal operations.
      * 
      * Note! No authorization checks performed in this internal method
      * 
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if no CA was found
+     * @param caid numerical id of CA (subjectDN.hashCode()) that we search for
+     * @return CA value object, or null if it doesn't exist.
      */
-    CAInfo getCAInfoInternal(final int caid) throws CADoesntExistsException;
+    CAInfo getCAInfoInternal(final int caid);
 
     /**
      * Internal (local only) method to get the CA object without logging the authorization check.
@@ -231,11 +223,10 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @param admin AuthenticationToken of admin
      * @param caid identifies the CA
-     * @return the CA object
-     * @throws CADoesntExistsException if no CA was found
+     * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCANoLog(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+    CA getCANoLog(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Local access CRUD method for persisting the CA object to the database and removes any old

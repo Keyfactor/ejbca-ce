@@ -769,11 +769,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public void loadCertificates(BigInteger serno, int caId) throws AuthorizationDeniedException {
-    	try {
 			loadCertificates(serno, caSession.getCAInfo(administrator, caId).getSubjectDN());
-		} catch (CADoesntExistsException e) {
-			log.info("Requested CA info for nonexisting CA with id " + caId);
-		}
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws AuthorizationDeniedException {
@@ -1312,18 +1308,17 @@ public class RAInterfaceBean implements Serializable {
             for (String currentCA : cas) {
                 Integer currentCAInt = Integer.parseInt(currentCA);
                 // The constant ALLCAS will not be searched for among available CAs
-                try {
-                    if (currentCAInt.intValue() != SecConst.ALLCAS) {
-                        caSession.getCAInfo(administrator, currentCAInt);
-                    }
-                    availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
-                } catch (CADoesntExistsException e) {
-                    log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '"
-                            + profilename + "'.");
-                    if (defaultCA.equals(currentCA)) {
-                        defaultCA = "";
+                if (currentCAInt.intValue() != SecConst.ALLCAS) {
+                    if (caSession.existsCa(currentCAInt)) {
+                        availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+                    } else {
+                        log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
+                        if (defaultCA.equals(currentCA)) {
+                            defaultCA = "";
+                        }
                     }
                 }
+
             }
             if (availableCAs.equals("")) {
                 log.error("No CAs left in end entity profile '" + profilename + "'. Using ALLCAs.");

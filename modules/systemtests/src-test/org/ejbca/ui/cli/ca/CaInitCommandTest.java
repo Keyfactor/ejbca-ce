@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,7 +59,6 @@ import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -149,15 +149,7 @@ public class CaInitCommandTest {
             CertificateProfile apa = certificateProfileSessionRemote.getCertificateProfile(CERTIFICATE_PROFILE_NAME);
             assertNotNull(apa);
             caInitCommand.execute(CUSTOM_PROFILE_ARGS);
-
-            // Following line should throw an exception.
-            boolean caught = false;
-            try {
-                caSession.getCAInfo(admin, CA_NAME);
-            } catch (CADoesntExistsException e) {
-                caught = true;
-            }
-            Assert.assertTrue("CA was created using created using non ROOTCA or SUBCA certificate profile.", caught);
+            assertNull("CA was created using created using non ROOTCA or SUBCA certificate profile.", caSession.getCAInfo(admin, CA_NAME));
 
         } finally {
             certificateProfileSessionRemote.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
@@ -203,31 +195,27 @@ public class CaInitCommandTest {
     public void testCreateSubCa() throws AuthorizationDeniedException {
         final String rootCaName = "rootca";
         final String subCaName = "subca";
-        final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
-      
+        final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };     
+        assertEquals(CommandResult.SUCCESS, caInitCommand.execute(ROOT_CA_ARGS));
+        CAInfo rootCaInfo = caSession.getCAInfo(admin, rootCaName);
+        int rootCaId = rootCaInfo.getCAId();
         try {
-            assertEquals(CommandResult.SUCCESS, caInitCommand.execute(ROOT_CA_ARGS));
-            CAInfo rootCaInfo = caSession.getCAInfo(admin, rootCaName);
-            int rootCaId = rootCaInfo.getCAId();
+            final String[] SUB_CA_ARGS = { subCaName, "CN=subca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "--signedby",
+                    Integer.toString(rootCaId) };
+            assertEquals(CommandResult.SUCCESS, caInitCommand.execute(SUB_CA_ARGS));
+            CAInfo subCaInfo = caSession.getCAInfo(admin, subCaName);
+            int subCaId = subCaInfo.getCAId();
             try {
-                final String[] SUB_CA_ARGS = { subCaName, "CN=subca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "--signedby",
-                        Integer.toString(rootCaId) };
-                assertEquals(CommandResult.SUCCESS, caInitCommand.execute(SUB_CA_ARGS));
-                CAInfo subCaInfo = caSession.getCAInfo(admin, subCaName);
-                int subCaId = subCaInfo.getCAId();
-                try {
-                    assertEquals("SubCA was not signed by Root CA", rootCaId, subCaInfo.getSignedBy());
-                } finally {
-                    caSession.removeCA(admin, subCaId);
-                    cryptoTokenManagementSession.deleteCryptoToken(admin, subCaInfo.getCAToken().getCryptoTokenId());
-                }
+                assertEquals("SubCA was not signed by Root CA", rootCaId, subCaInfo.getSignedBy());
             } finally {
-                caSession.removeCA(admin, rootCaId);
-                cryptoTokenManagementSession.deleteCryptoToken(admin, rootCaInfo.getCAToken().getCryptoTokenId());
+                caSession.removeCA(admin, subCaId);
+                cryptoTokenManagementSession.deleteCryptoToken(admin, subCaInfo.getCAToken().getCryptoTokenId());
             }
-        } catch (CADoesntExistsException e) {
-            throw new RuntimeException("Root CA wasn't created, can't continue.", e);
+        } finally {
+            caSession.removeCA(admin, rootCaId);
+            cryptoTokenManagementSession.deleteCryptoToken(admin, rootCaInfo.getCAToken().getCryptoTokenId());
         }
+        
 
     }
     

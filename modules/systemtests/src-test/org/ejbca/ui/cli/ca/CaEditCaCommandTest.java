@@ -14,12 +14,11 @@
 package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -74,15 +73,11 @@ public class CaEditCaCommandTest {
     @Test
     public void testRenameCa() throws AuthorizationDeniedException {
         final String newName = "CaEditCaCommandTestNewName";
-        final String[] changeCaNameArgs = { CA_NAME, "name", newName};
+        final String[] changeCaNameArgs = { CA_NAME, "name", newName };
         caEditCommand.execute(changeCaNameArgs);
-        try {
-            CAInfo info = caSession.getCAInfo(admin, caid);
-            assertEquals("CA name change did not happen.", newName, info.getName());
-        } catch (CADoesntExistsException e) {
-            fail("CA could not be found after name change");
-        }
-        
+        CAInfo info = caSession.getCAInfo(admin, caid);
+        assertNotNull("CA could not be found after name change", info);
+        assertEquals("CA name change did not happen.", newName, info.getName());
     }
     
 }

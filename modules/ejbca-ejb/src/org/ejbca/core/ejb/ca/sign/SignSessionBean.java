@@ -179,11 +179,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<Certificate> getCertificateChain(int caid) {
-        try {
-            return caSession.getCAInfoInternal(caid).getCertificateChain();
-        } catch (CADoesntExistsException e) {
-            throw new EJBException(e);
-        }
+        return caSession.getCAInfoInternal(caid).getCertificateChain();
     }
 
     @Override
@@ -714,16 +710,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (req.getIssuerDN() != null) {
             String dn = certificateStoreSession.getCADnFromRequest(req);
 
-            try {
-                if (doLog) {
-                    ca = caSession.getCA(admin, dn.hashCode());
-                } else {
-                    ca = caSession.getCANoLog(admin, dn.hashCode());
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
-                }
-            } catch (CADoesntExistsException e) {
+            if (doLog) {
+                ca = caSession.getCA(admin, dn.hashCode());
+            } else {
+                ca = caSession.getCANoLog(admin, dn.hashCode());
+            }
+            if (ca == null) {
                 // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
                 if (req.getUsername() != null) {
                     ca = getCAFromUsername(admin, req, doLog);
@@ -735,6 +727,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new CADoesntExistsException(msg);
                 }
             }
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+            }
+
         } else if (req.getUsername() != null) {
             ca = getCAFromUsername(admin, req, doLog);
             if (log.isDebugEnabled()) {

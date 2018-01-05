@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -81,9 +80,7 @@ public class RolloverWorker extends BaseWorker {
                     caAdminSession.rolloverCA(getAdmin(), ca.getCAId());
                 }
             }
-        } catch (CADoesntExistsException e) {
-            log.error("Error checking CA for rollover: ", e);
-        } catch (AuthorizationDeniedException e) {
+        }  catch (AuthorizationDeniedException e) {
             log.error("Error checking CA for rollover: ", e);
         } catch (CryptoTokenOfflineException e) {
             log.error("Error rolling over CA: ", e);

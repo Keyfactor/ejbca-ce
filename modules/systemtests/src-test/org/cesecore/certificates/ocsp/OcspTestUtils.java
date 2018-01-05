@@ -76,15 +76,9 @@ public class OcspTestUtils {
             CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            int caCryptoTokenId;
-            try {
-                caCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caCryptoTokenId);
-                caSession.removeCA(authenticationToken, x509ca.getCAId());
-            } catch (CADoesntExistsException e) {
-                //CA doesn't exist, ignore.
-            }
-
+            int caCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
+            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, caCryptoTokenId);
+            caSession.removeCA(authenticationToken, x509ca.getCAId());
         }
     }
 
