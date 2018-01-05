@@ -105,16 +105,18 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     /*===HARD TOKEN FUNCTIONALITY===*/
     
     public boolean isAuthorizedToEditHardTokenIssuers() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), "/hardtoken_functionality/edit_hardtoken_issuers");
+        return getGlobalConfiguration().getIssueHardwareTokens() &&
+                authorizationSession.isAuthorizedNoLogging(getAdmin(), "/hardtoken_functionality/edit_hardtoken_issuers");
     }
     
     public boolean isAuthorizedToEditHardTokenProfiles() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), "/hardtoken_functionality/edit_hardtoken_profiles");
+        return getGlobalConfiguration().getIssueHardwareTokens() &&
+                authorizationSession.isAuthorizedNoLogging(getAdmin(), "/hardtoken_functionality/edit_hardtoken_profiles");
     }
     
     public boolean isAuthorizedToViewHTHeader() {
-        return isAuthorizedToEditHardTokenIssuers()
-                || isAuthorizedToEditHardTokenProfiles();
+        return getGlobalConfiguration().getIssueHardwareTokens() &&
+                (isAuthorizedToEditHardTokenIssuers() || isAuthorizedToEditHardTokenProfiles());
     }
     
     /*===SUPERVISION FUNCTIONS===*/
