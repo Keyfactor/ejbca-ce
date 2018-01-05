@@ -23,9 +23,13 @@
   <title><h:outputText value="#{web.ejbcaTitle}"/><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>"/>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration.getAdminWebPath()%>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../../adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
 	<h1><h:outputText value="#{web.text.MANAGECERTIFICATEPROFILES}"/></h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<h:form id="editcertificateprofiles">
@@ -43,6 +47,7 @@
 			</h:column>
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
+				<h:panelGroup styleClass="button-group">
 				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionView}"/>
 				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
@@ -52,6 +57,7 @@
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{certProfilesBean.actionAddFromTemplate}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
+				</h:panelGroup>
 				<f:facet name="footer" >
 					<h:commandButton value="#{web.text.ADD}" action="#{certProfilesBean.actionAdd}" disabled="#{certificateProfile.fixed or certProfilesBean.authorizedToOnlyView}"/>
 				</f:facet>
@@ -117,9 +123,10 @@
 		</h:panelGrid>
 	</h:form>
 	</h:panelGroup>
-
+</div> <!-- container -->
 
 	<jsp:include page="<%=globalconfiguration.getFootBanner()%>"/>
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

@@ -58,7 +58,7 @@
                 <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
                 <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
-                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth" headerClass="listHeader" rowClasses="Row0,Row1"
+                <h:dataTable id="list" value="#{roleMembersBean.roleMembers}" var="roleMember" styleClass="fullwidth, grid" headerClass="listHeader" rowClasses="Row0,Row1"
                     columnClasses="caColumn alignmiddle,typeColumn alignmiddle,typeColumn alignmiddle,valueColumn alignmiddle,valueColumn alignmiddle,commandColumn alignmiddle">
                     <h:column>
                         <f:facet name="header">

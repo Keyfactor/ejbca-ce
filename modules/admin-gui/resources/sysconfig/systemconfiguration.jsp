@@ -45,6 +45,7 @@ org.cesecore.authorization.AuthorizationDeniedException
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <style type="text/css">
   	input[type='checkbox'].checkBoxOverlay {
@@ -70,6 +71,9 @@ org.cesecore.authorization.AuthorizationDeniedException
   </style>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+<div class="main-wrapper">
+    <div class="container">
 	<h1>
 		<h:outputText value="#{web.text.SYSTEMCONFIGURATION}"/>
 	</h1>
@@ -586,7 +590,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 				</h3>
 				<h:dataTable value="#{systemConfigMBean.ctLogManager.getCtLogsByLabel(label)}" 
 				    var="ctlog"
-				    styleClass="grid" style="border-collapse: collapse; right: auto; left: auto;">
+				    styleClass="grid ctlogTable">
 					<h:column>
 		   				<f:facet name="header">
 		   				   <h:outputText value="#{web.text.CTLOGCONFIGURATION_URL}"/>
@@ -654,8 +658,8 @@ org.cesecore.authorization.AuthorizationDeniedException
             <h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
             <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}" 
                 title="#{web.text.FORMAT_URI}"
-                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                size="45"/>
+                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" 
+                styleClass="wideCTLogInput" />
 		    <h:panelGroup>
 		        <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEYFILE}" 
                        rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
@@ -804,7 +808,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h:outputLabel for="raLogoFile" value="#{web.text.LOGOIMPORTFROM}"/>
 			<t:inputFileUpload id="raLogoFile" value="#{systemConfigMBean.raLogoFile}"/>
 		</h:panelGrid>
-		<h:panelGrid columns="1" columnClasses="gridColumnLeft">
+		<h:panelGrid columns="1" columnClasses="gridColumnLeft" styleClass="padding-top">
 			<h:outputText value="#{web.text.COLUMNNAMETITLE}"/>
 		</h:panelGrid>
 		<h:panelGrid columns="2" columnClasses="gridColoumLeft,gridColumnRight">
@@ -911,10 +915,12 @@ org.cesecore.authorization.AuthorizationDeniedException
             </h:panelGroup>
         </h:panelGrid>
     </h:form>
+    </div> <!-- Container -->
 
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

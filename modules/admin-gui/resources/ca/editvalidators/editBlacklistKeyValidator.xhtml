@@ -27,7 +27,7 @@
 <h:outputLabel for="keyvalidator_settings" value="#{web.text.BLACKLISTKEYVALIDATORSETTINGS}" style="font-weight: bold;" />
 <h:panelGroup id="keyvalidator_settings"></h:panelGroup>
 <h:outputLabel for="keyAlgorithms" value="#{web.text.BLACKLISTKEYVALIDATORKEYALGORITHMS}"/>
-<h:selectManyListbox id="keyAlgorithms" value="#{validatorBean.validator.keyAlgorithms}" size="3" required="true" disabled="#{validatorsBean.viewOnly}">
+<h:selectManyListbox styleClass="select-list" id="keyAlgorithms" value="#{validatorBean.validator.keyAlgorithms}" size="3" required="true" disabled="#{validatorsBean.viewOnly}">
 	<f:selectItems value="#{validatorBean.availableKeyAlgorithms}"/>
 </h:selectManyListbox>
 <ui:include src="certificateValidity.xhtml" />

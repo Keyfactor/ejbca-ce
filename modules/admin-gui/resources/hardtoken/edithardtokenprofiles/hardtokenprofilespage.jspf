@@ -4,7 +4,6 @@
   
 %>
 
-
 <h1><%= ejbcawebbean.getText("MANAGEHARDTOKENPROFILES") %></h1>
 
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
@@ -41,7 +40,7 @@
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_HARDTOKENPROFILES%>" style="width: 50em" size="15"  >
+        <select class="select-list" name="<%=EditHardTokenProfileJSPHelper.SELECT_HARDTOKENPROFILES%>" style="width: 50em" size="15"  >
           <% Iterator iter = hardtokenprofiles.keySet().iterator();
              while(iter.hasNext()){
                String profilename = (String) iter.next(); %>
@@ -89,4 +88,3 @@
   </table>
 
 </form>
-

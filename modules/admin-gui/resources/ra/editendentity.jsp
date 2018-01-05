@@ -1036,7 +1036,7 @@ function checkUseInBatch(){
          <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
         &nbsp;&nbsp;&nbsp;
-        <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />
+        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />
       </td>
       <td>&nbsp;</td>
     </tr>
@@ -1443,7 +1443,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
 	 <td>
-         <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange='fillCAField()'>
+         <select class="select-list" name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" tabindex="<%=tabindex++%>" onchange='fillCAField()'>
          <%
            String[] availablecertprofiles = profile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
            if( availablecertprofiles != null){
@@ -1464,7 +1464,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("CA") %></td>
 	 <td>
-         <select name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
+         <select class="select-list" name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
          </select>
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="disabled" CHECKED></td>
@@ -1473,7 +1473,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("TOKEN") %></td>
 	 <td>
-         <select name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+         <select class="select-list" name="<%= SELECT_TOKEN %>" size="1" tabindex="<%=tabindex++%>" onchange='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                                                                                              if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>'>
          <%
            if( availabletokens != null){

@@ -33,16 +33,21 @@ org.cesecore.keybind.InternalKeyBindingRules
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDING}"/>
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Internal%20Key%20Bindings") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<div>
-		<h:panelGrid columns="2">
+		<h:panelGrid columns="2" styleClass="margin-bottom">
 			<h:outputLink value="adminweb/keybind/keybindings.jsf?type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
 				<h:outputText value="#{internalKeyBindingMBean.backLinkTranslatedText}"/>
 			</h:outputLink>
@@ -207,9 +212,13 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h:commandButton value="#{web.text.CREATE}" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
 	<h:commandButton value="#{web.text.SAVE}" action="#{internalKeyBindingMBean.saveCurrent}" rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.creatingNew}"/>
 	</h:form>
+	
+	</div> <!-- container -->
+	
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

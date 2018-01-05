@@ -68,10 +68,15 @@
   <title><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration .getAdminWebPath()%>ejbcajslib.js"></script>
 </head>
 
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 
 <%
     RequestHelper.setDefaultCharacterEncoding(request);
@@ -202,12 +207,15 @@
   if( includefile.equals("hardtokenissuerpage.jspf")){
 %>
    <%@ include file="hardtokenissuerpage.jspf" %> 
-<%}
+<%} %>
+</div> <!-- Container -->
 
+<%
    // Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
 
+</div> <!-- main-wrapper -->
 </body>
 </html>

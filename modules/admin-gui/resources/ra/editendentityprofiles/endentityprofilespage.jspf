@@ -6,7 +6,7 @@
 
 %>
 
-
+<div class="container">
 <h1><%= ejbcawebbean.getText(( authorizedToEdit ? "MANAGEENDENTITYPROFILES" : "VIEWENDENTITYPROFILES" )) %></h1>
 
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
@@ -59,7 +59,7 @@
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=SELECT_PROFILE%>" style="width: 50em" size="15"  >
+        <select class="select-list" name="<%=SELECT_PROFILE%>" style="width: 50em" size="15"  >
           <% for (Entry<String, String> entry : profiles.entrySet()) {
                String profilename = entry.getKey();
                String profileid = entry.getValue();
@@ -97,7 +97,7 @@
    <% if(authorizedToEdit) { %>
   <table class="actions">
     <tr> 
-      <td width="100%"><h3><%= ejbcawebbean.getText("ADDPROFILE") %></h3></td>
+      <td width="100%"><h3 class="margin-top"><%= ejbcawebbean.getText("ADDPROFILE") %></h3></td>
     </tr>
     <tr> 
       <td width="100%"> 
@@ -115,8 +115,9 @@
   	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
 <%int row = 0;%>
+<hr/>
 <form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
-	<table class="action" width="70%" border="0" cellspacing="3" cellpadding="3">
+	<table class="action small-action" width="70%">
 		<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORT_EXPORT %>'>
 		 <% if(authorizedToEdit) { %>
 		<tr id="Row<%=row++%2%>"> 
@@ -124,30 +125,30 @@
 				<%= ejbcawebbean.getText("IMPORTPROFILESFROM") %>&nbsp;
 				<%= ejbcawebbean.getHelpReference("/userguide.html#Import/Export%20End%20Entity%20Profiles") %>
 			</td>
-			<td width="55%" valign="top">
+			<td width="55%">
 				<input TYPE="FILE" NAME="<%= FILE_IMPORTFILE %>">
 			</td>
-			<td width="15%" valign="top">
+			<td width="15%">
 				<input type="submit" name="<%= BUTTON_IMPORT_PROFILES %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORT") %>" >
 			</td>
 		</tr>
 		<% } %>
 		<tr id="Row<%=row++%2%>"> 
-		    <td width="30%" valign="top" align="right">
+		    <td width="30%"align="right">
 				<c:url var="pem" value="adminweb/profilesexport" >
 					<c:param name="profileType" value="eep" />
 				</c:url>
 				<a href="${pem}"><%= ejbcawebbean.getText("EXPORTROFILES") %>...</a>
 		    </td>
-			<td width="55%" valign="top">
+			<td width="55%">
 				&nbsp;
 			</td>
-			<td width="15%" valign="top">
+			<td width="15%">
 				&nbsp;
 			</td>
 		</tr>
 
 	</table>
 </form>
-
-
+</div> <!-- container -->
+<hr />

@@ -23,9 +23,14 @@
   <title><h:outputText value="#{web.ejbcaTitle}"/><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>"/>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration.getAdminWebPath()%>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 	<h1><h:outputText value="#{web.text.MANAGEAPPROVALPROFILES}"/></h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<h:form id="editapprovalprofiles">
@@ -42,11 +47,13 @@
 			</h:column>
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
+				<div class="button-group">
 				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionView}"/>
 				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionDelete}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.RENAME}" action="#{approvalProfilesMBean.actionRename}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{approvalProfilesMBean.actionAddFromTemplate}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+				</div>
 				<f:facet name="footer">
 					<h:commandButton value="#{web.text.ADD}" action="#{approvalProfilesMBean.actionAdd}" disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
 				</f:facet>
@@ -102,9 +109,11 @@
 		
 		
 	</h:form>
+	</div> <!-- container -->
 
 
 	<jsp:include page="<%=globalconfiguration.getFootBanner()%>"/>
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

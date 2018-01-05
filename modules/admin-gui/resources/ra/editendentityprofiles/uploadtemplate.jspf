@@ -23,6 +23,10 @@ function check()
   	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
   	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
+<jsp:include page="../../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 <div align="center">
    <h2><%= ejbcawebbean.getText("UPLOADUSERDATATEMP") %></h2>
    <h3><%= ejbcawebbean.getText("ENDENTITYPROFILE")+ " : "%> <c:out value="<%= profile %>"/></h3>

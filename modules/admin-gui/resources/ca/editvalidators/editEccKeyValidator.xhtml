@@ -32,7 +32,7 @@
 	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
 </h:selectOneMenu>
 <h:outputLabel for="keyvalidatorcurves" value="#{web.text.ECCKEYVALIDATORAVAILABLECURVES}" />
-<h:selectManyListbox id="keyvalidatorcurves" value="#{validatorBean.validator.curves}" size="10" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
+<h:selectManyListbox styleClass="select-list" id="keyvalidatorcurves" value="#{validatorBean.validator.curves}" size="10" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
 	<f:selectItems value="#{validatorBean.availableEcCurves}" />
 </h:selectManyListbox>
 <h:outputLabel for="eccUsePublicKeyFullValidation" value="#{web.text.ECCKEYVALIDATORUSEFULLPUBLICKEYVALIDATION}" styleClass="subItem"/>

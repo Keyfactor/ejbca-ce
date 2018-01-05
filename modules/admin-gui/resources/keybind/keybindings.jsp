@@ -34,9 +34,14 @@ org.cesecore.keybind.InternalKeyBindingRules
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 	<h:outputText value="" rendered="#{internalKeyBindingMBean.pageLoadResetTrigger}"/>
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
@@ -199,9 +204,13 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:commandButton action="#{internalKeyBindingMBean.saveResponderIdType}" rendered="#{internalKeyBindingMBean.allowedToEdit}" value="#{web.text.INTERNALKEYBINDING_SET}"/>
 		</h:panelGrid>
 	</h:form>
+	
+	</div> <!-- container -->
+	
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

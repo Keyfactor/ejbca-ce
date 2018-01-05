@@ -33,7 +33,7 @@
 	<f:selectItems value="#{validatorBean.availableValidatorSettingsTemplates}" />
 </h:selectOneMenu>
 <h:outputLabel for="keyValidatorBitLengths" value="#{web.text.RSAKEYVALIDATORAVAILABLEBITLENGTHS}" />
-<h:selectManyListbox id="keyValidatorBitLengths" value="#{validatorBean.validator.bitLengths}" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
+<h:selectManyListbox styleClass="select-list" id="keyValidatorBitLengths" value="#{validatorBean.validator.bitLengths}" disabled="#{validatorsBean.viewOnly or !validatorBean.customBaseSettingsEnabled}">
 	<f:selectItems value="#{validatorBean.validator.availableBitLengths}" />
 </h:selectManyListbox>
 <h:outputLabel for="rsaPublicKeyExponentOnlyAllowOdd" value="#{web.text.RSAKEYVALIDATORPUBLICEXPONENTONLYALLOWODD}" styleClass="subItem"/>
