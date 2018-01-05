@@ -97,6 +97,7 @@
 					<include name="modules/va/publisher/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+                    <include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -158,6 +159,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/ejbca-webtest">
+            <matches string="${test-fullname}" pattern="^modules/ejbca-webtest/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" />
@@ -238,6 +242,11 @@
     	<antcall target="createreport"/>
     </target>
     
+    <target name="test:webtest" description="run all JUnit web tests." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" />
+        <antcall target="createreport"/>
+    </target>
+
     <target name="createreport">
 		<junitreport todir="${reports.dir}">
 			<fileset dir="${reports.dir}">

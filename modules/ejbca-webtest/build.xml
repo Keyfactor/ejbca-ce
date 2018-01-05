@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="webtest" default="build">
+	<description>
+		Standalone web tests interacting with EJBCA
+	</description>
+
+	<dirname property="this.dir" file="${ant.file.webtest}"/>
+	<import file="${this.dir}/../systemtests/build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-test.dir" location="${this.dir}/build-test"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-test.dir" location="${this.dir}/src-test"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="conf.dir" location="${this.dir}/conf"/>
+	<property name="lib.webtest" value="${this.dir}/../../lib/ext/webtest"/>
+	
+	<path id="compile.classpath">
+		<fileset dir="${lib.webtest}" includes="**/*.jar"/>
+	</path>
+	
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="systemtests.classpath.nojee"/>
+		<path location="${build.dir}/classes"/>
+		<path location="${build-test.dir}"/>
+		<path location="${build.dir}/conf"/>
+		<path location="${build.dir}/resources"/>
+	</path>
+
+	<target name="build">
+		<mkdir dir="${build.dir}/classes"/>
+		<mkdir dir="${build.dir}/conf"/>
+		<mkdir dir="${build.dir}/resources"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath"/>
+        </javac>
+    	<copy todir="${build.dir}/conf" failonerror="true">
+            <fileset dir="${conf.dir}"/>
+		</copy>
+ 		<!-- Copy and keep permissions for geckodriver in order to be executable -->
+		<exec executable="cp">
+		    <arg line="-R ${resources.dir} ${build.dir}"/>
+		</exec>
+	</target>
+	
+    <target name="compile-tests" depends="build, with.clover">
+    	<mkdir dir="${build-test.dir}"/>
+		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="UTF-8" classpathref="test.classpath"/>
+ <!--   	<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/> -->
+    </target>
+	
+	<target name="test" depends="compile-tests" description="Run all tests for this module">
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class"/>
+            </batchtest>
+		</junit>
+    </target>
+	
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=EcaQa64_PublicWebMenuItems" unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-test.dir}"/>
+	</target>
+
+</project>
