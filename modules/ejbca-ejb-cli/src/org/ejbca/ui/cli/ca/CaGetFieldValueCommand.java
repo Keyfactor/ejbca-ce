@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -61,11 +60,12 @@ public class CaGetFieldValueCommand extends BaseCaAdminCommand {
         final String field = parameters.get(FIELD_KEY);
         try {
             final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), name);
+            if(cainfo == null) {
+                log.info("CA '" + name + "' does not exist.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
             fieldEditor.getBeanValue(field, cainfo);
-            return CommandResult.SUCCESS;
-        } catch (CADoesntExistsException e) {
-            log.info("CA '" + name + "' does not exist.");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.SUCCESS;  
         } catch (AuthorizationDeniedException e) {
             log.error("CLI User was not authorized to CA " + name);
             return CommandResult.AUTHORIZATION_FAILURE;

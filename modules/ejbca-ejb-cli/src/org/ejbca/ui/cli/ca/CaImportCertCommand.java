@@ -404,8 +404,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             }
         } catch (AuthorizationDeniedException e) {
             existingCas = "ERROR: CLI user not authorized to fetch available CAs>";
-        } catch (CADoesntExistsException e) {
-            throw new IllegalStateException("CA couldn't be retrieved even though it was just referenced.");
         }
         sb.append("Existing CAs: " + existingCas + "\n");
         String endEntityProfiles = "";

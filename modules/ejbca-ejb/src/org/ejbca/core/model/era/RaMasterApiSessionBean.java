@@ -261,25 +261,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean isBackendAvailable() {
-        try {
-            if (activeCaIdCache != -1) {
-                if (caSession.getCAInfoInternal(activeCaIdCache).getStatus() == CAConstants.CA_ACTIVE) {
+        if (activeCaIdCache != -1) {
+            CAInfo activeCa = caSession.getCAInfoInternal(activeCaIdCache);
+            if (activeCa != null) {
+                if (activeCa.getStatus() == CAConstants.CA_ACTIVE) {
                     return true;
                 }
+            } else {
+                activeCaIdCache = -1;
+                log.debug("Fail to get info for cached CA with ID " + activeCaIdCache);
             }
-        } catch (CADoesntExistsException e) {
-            activeCaIdCache = -1;
-            log.debug("Fail to get cached CA's info. " + e.getMessage());
+
         }
+
         // If the cached activeCaIdCache was not active, or didn't exist, we move on to check all in the list
         for (int caId : caSession.getAllCaIds()) {
-            try {
-                if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
-                    activeCaIdCache = caId; // Remember this value for the next time
-                    return true;
-                }
-            } catch (CADoesntExistsException e) {
-                log.debug("Fail to get existing CA's info. " + e.getMessage());
+            if (caSession.getCAInfoInternal(caId).getStatus() == CAConstants.CA_ACTIVE) {
+                activeCaIdCache = caId; // Remember this value for the next time
+                return true;
             }
         }
         return false;
@@ -575,17 +574,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } else {
             try {
                 final CAInfo cainfo = caSession.getCAInfo(authenticationToken, advo.getCAId());
-                caName = cainfo.getName();
+                if (cainfo != null) {
+                    caName = cainfo.getName();
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Appproval request " + advo.getId() + " references CA ID " + advo.getCAId() + " which doesn't exist");
+                    }
+                    caName = "Missing CA ID " + advo.getCAId();
+                }
             } catch (AuthorizationDeniedException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Administrator " + authenticationToken + " was denied access to CA " + advo.getCAId() + ". Returning null instead of the approval with ID " + advo.getId());
+                    log.debug("Administrator " + authenticationToken + " was denied access to CA " + advo.getCAId()
+                            + ". Returning null instead of the approval with ID " + advo.getId());
                 }
                 return null;
-            } catch (CADoesntExistsException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Appproval request " + advo.getId() + " references CA ID " + advo.getCAId() + " which doesn't exist");
-                }
-                caName = "Missing CA ID " + advo.getCAId();
             }
         }
 
@@ -948,12 +950,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         final List<String> issuerDns = new ArrayList<>();
         for (final int caId : authorizedLocalCaIds) {
-            try {
-                final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
-                issuerDns.add(issuerDn);
-            } catch (CADoesntExistsException e) {
-                log.warn("Could not find CA with id " + caId + " during search operation. " + e.getMessage());
-            }
+            final String issuerDn = CertTools.stringToBCDNString(StringTools.strip(caSession.getCAInfoInternal(caId).getSubjectDN()));
+            issuerDns.add(issuerDn);
         }
         if (issuerDns.isEmpty()) {
             // Empty response since there were no authorized CAs
@@ -1631,7 +1629,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 endEntityManagementSessionLocal.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
             }
-        } catch (NoSuchEndEntityException | CADoesntExistsException | EndEntityProfileValidationException e) {
+        } catch (NoSuchEndEntityException | EndEntityProfileValidationException e) {
             throw new IllegalStateException(e);
         }
     }

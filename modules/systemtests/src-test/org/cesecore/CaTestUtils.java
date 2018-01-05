@@ -171,13 +171,11 @@ public abstract class CaTestUtils {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        int caid;
-        try {
-            caid = caSession.getCAInfo(authenticationToken, caName).getCAId();
-            caSession.removeCA(authenticationToken, caid);
-        } catch (CADoesntExistsException e) {
-            //NOPMD Ignore
+        CAInfo caInfo = caSession.getCAInfo(authenticationToken, caName);
+        if (caInfo != null) {
+            caSession.removeCA(authenticationToken, caInfo.getCAId());
         }
+
         Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         if (cryptoTokenId != null) {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);

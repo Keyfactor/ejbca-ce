@@ -45,7 +45,6 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -492,49 +491,46 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     + " to 6.6.0+ status by retrieving an approval profile from either the certificate profile or the CA.");
                 }
                 ApprovalProfile approvalProfile;
-                try {
-                    //For the sake of upgrade, we're forced to use instanceof to find the relevant certificate profile ID, based on the behavior in 
-                    //6.5.x 
-                    CertificateProfile certificateProfile = null;
-                    if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
-                        //See legacy instantiation in CAAdminSessionBean
-                        certificateProfile = certificateProfileSession
-                                .getCertificateProfile(caSession.getCAInfoInternal(approvalRequest.getCAId()).getCertificateProfileId());
-                    } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-                        //See legacy instantiation in EndEntityManagementSessionBean
-                        certificateProfile = certificateProfileSession.getCertificateProfile(
-                                ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation().getCertificateProfileId());
-                    } else if(approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-                        //See legacy instantiation in EndEntityManagementSessionBean
-                        EndEntityInformation endEntityInformation = endEntityAccessSession
-                                .findUser(((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername());
-                        certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                    } else if(approvalRequest instanceof EditEndEntityApprovalRequest) {
-                        //See legacy instantiation in EndEntityManagementSessionBean
-                        certificateProfile = certificateProfileSession.getCertificateProfile(
-                                ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
-                    } else if(approvalRequest instanceof GenerateTokenApprovalRequest) {
-                        //TODO: Handle 100% uptime for hard token requests under ECA-5078
-                    } else if(approvalRequest instanceof KeyRecoveryApprovalRequest) {
-                        //See legacy instantiation in KeyRecoverySessionBean
-                        final CertificateInfo certificateInfor = certificateStoreSession.getCertificateInfo(
-                                CertTools.getFingerprintAsString(((KeyRecoveryApprovalRequest) approvalRequest).getRequestAdminCert()));
-                        certificateProfile = certificateProfileSession.getCertificateProfile(certificateInfor.getCertificateProfileId());
-                    } else if(approvalRequest instanceof RevocationApprovalRequest) {
-                        //See legacy instantiation in RevocationSessionBean
-                        EndEntityInformation endEntityInformation = endEntityAccessSession
-                                .findUser(((RevocationApprovalRequest) approvalRequest).getUsername());
-                        certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                    } else if(approvalRequest instanceof ViewHardTokenDataApprovalRequest) {
-                        //TODO: Handle 100% uptime for hard token requests under ECA-5078
-                    }
-                    approvalProfile = approvalProfileSession.getApprovalProfileForAction(
-                            ApprovalRequestType.getFromIntegerValue(approvalRequest.getApprovalRequestType()),
-                            caSession.getCAInfoInternal(approvalRequest.getCAId()), certificateProfile);
-                } catch (CADoesntExistsException e) {
-                    throw new IllegalStateException("Persisted approval request with ID " + approvalData.getApprovalid()
-                            + " was created for CA with ID " + approvalRequest.getCAId() + ", which appears to not exist.");
+
+                //For the sake of upgrade, we're forced to use instanceof to find the relevant certificate profile ID, based on the behavior in 
+                //6.5.x 
+                CertificateProfile certificateProfile = null;
+                if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
+                    //See legacy instantiation in CAAdminSessionBean
+                    certificateProfile = certificateProfileSession
+                            .getCertificateProfile(caSession.getCAInfoInternal(approvalRequest.getCAId()).getCertificateProfileId());
+                } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+                    //See legacy instantiation in EndEntityManagementSessionBean
+                    certificateProfile = certificateProfileSession.getCertificateProfile(
+                            ((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation().getCertificateProfileId());
+                } else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
+                    //See legacy instantiation in EndEntityManagementSessionBean
+                    EndEntityInformation endEntityInformation = endEntityAccessSession
+                            .findUser(((ChangeStatusEndEntityApprovalRequest) approvalRequest).getUsername());
+                    certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
+                } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+                    //See legacy instantiation in EndEntityManagementSessionBean
+                    certificateProfile = certificateProfileSession.getCertificateProfile(
+                            ((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
+                } else if (approvalRequest instanceof GenerateTokenApprovalRequest) {
+                    //TODO: Handle 100% uptime for hard token requests under ECA-5078
+                } else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+                    //See legacy instantiation in KeyRecoverySessionBean
+                    final CertificateInfo certificateInfor = certificateStoreSession.getCertificateInfo(
+                            CertTools.getFingerprintAsString(((KeyRecoveryApprovalRequest) approvalRequest).getRequestAdminCert()));
+                    certificateProfile = certificateProfileSession.getCertificateProfile(certificateInfor.getCertificateProfileId());
+                } else if (approvalRequest instanceof RevocationApprovalRequest) {
+                    //See legacy instantiation in RevocationSessionBean
+                    EndEntityInformation endEntityInformation = endEntityAccessSession
+                            .findUser(((RevocationApprovalRequest) approvalRequest).getUsername());
+                    certificateProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
+                } else if (approvalRequest instanceof ViewHardTokenDataApprovalRequest) {
+                    //TODO: Handle 100% uptime for hard token requests under ECA-5078
                 }
+                approvalProfile = approvalProfileSession.getApprovalProfileForAction(
+                        ApprovalRequestType.getFromIntegerValue(approvalRequest.getApprovalRequestType()),
+                        caSession.getCAInfoInternal(approvalRequest.getCAId()), certificateProfile);
+             
                 approvalRequest.setApprovalProfile(approvalProfile);
                 approvalInformation.setApprovalRequest(approvalRequest);
                 approvalSession.updateApprovalRequest(approvalData.getId(), approvalRequest);

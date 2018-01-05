@@ -34,7 +34,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -279,11 +278,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<Integer> ret = new ArrayList<Integer>();
         // Add all CryptoToken ids referenced by CAs
         for (int caId : caSession.getAllCaIds()) {
-            try {
-                ret.add(Integer.valueOf(caSession.getCAInfoInternal(caId).getCAToken().getCryptoTokenId()));
-            } catch (CADoesntExistsException e) {
-                log.warn("Referenced CA has suddenly disappearded unexpectedly. caid=" + caId);
-            }
+            ret.add(Integer.valueOf(caSession.getCAInfoInternal(caId).getCAToken().getCryptoTokenId()));
         }
         // Add all CryptoToken ids referenced by InternalKeyBindings
         for (final String internalKeyBindingType : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {

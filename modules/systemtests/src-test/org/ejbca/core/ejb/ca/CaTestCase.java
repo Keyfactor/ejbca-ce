@@ -250,24 +250,22 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         final CaSessionRemote caSession = getCaSession();
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        // Search for requested CA
-        try {
-            caSession.getCAInfo(internalAdmin, caName);
+        if(caSession.existsCa(caName)) {
             log.debug("CA with name " + caName+" already exists, returning true from createTestCA.");
             return true;
-        } catch (CADoesntExistsException e) {
-            log.debug("CA with name " + caName+" does not exist, move on to try to rename a CA with same Id");
-            // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
-        
+                
         try {
-            CAInfo cainfo = caSession.getCAInfo(internalAdmin, dn.hashCode() );
-            caSession.renameCA(internalAdmin, cainfo.getName(), caName);
-            log.debug("CA with name " + cainfo.getName()+" was renamed to "+caName+"', returning true from createTestCA.");
-            return true;
+            CAInfo cainfo = caSession.getCAInfo(internalAdmin, dn.hashCode());
+            if (cainfo != null) {
+                caSession.renameCA(internalAdmin, cainfo.getName(), caName);
+                log.debug("CA with name " + cainfo.getName() + " was renamed to " + caName + "', returning true from createTestCA.");
+                return true;
+            }
         } catch (CADoesntExistsException e) {
-            log.debug("CA with id " + dn.hashCode()+" can not be renamed to '"+caName+"', because strangely CAinfo id and name does not match (or multiple threads are messing with the same CA.");
-            // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
+            log.debug("CA with id " + dn.hashCode() + " can not be renamed to '" + caName
+                    + "', because strangely CAinfo id and name does not match (or multiple threads are messing with the same CA.");
+            // Ignore this state, continue instead. 
         }
         
         final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, caName, String.valueOf(keyStrength));
@@ -359,12 +357,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         int cryptoTokenId = 0;
-        try {
-            CA ca = caTestSession.getCA(internalAdmin, caName);
+        CA ca = caTestSession.getCA(internalAdmin, caName);
+        if (ca != null) {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
-        } catch (CADoesntExistsException e) {
-            log.debug("CA with name " + caName + " does not exist and can not be removed (probably not a problem here).");
         }
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
@@ -376,12 +372,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         int cryptoTokenId = 0;
-        try {
-            CA ca = caTestSession.getCA(internalAdmin, caId);
+        CA ca = caTestSession.getCA(internalAdmin, caId);
+        if (ca != null) {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
-        } catch (CADoesntExistsException e) {
-            log.debug("CA with id " + caId + " does not exist and can not be removed (probably not a problem here).");
         }
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caId);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
@@ -594,9 +588,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     /** Creates a root CA if one doesn't already exist */
     protected static void createDefaultCvcEccCaDomestic(int rootProfileId, int subcaProfileId) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         CaSessionRemote caSession = CaTestCase.getCaSession();
-        try {
-            caSession.getCAInfo(internalAdmin, TEST_CVC_ECC_CA_NAME);
-        } catch(CADoesntExistsException e) {
+        if(!caSession.existsCa(TEST_CVC_ECC_CA_NAME)) {
             createDefaultCvcEccCa(rootProfileId);
         }
         removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
@@ -659,15 +651,14 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     /** Preemptively remove CA in case it was created by a previous run. */
     protected static void removeOldCa(String caName, String dn) throws AuthorizationDeniedException {
         final CaSessionRemote caSession = CaTestCase.getCaSession();
-        try {
-            CAInfo info = caSession.getCAInfo(internalAdmin, caName);
+        CAInfo info = caSession.getCAInfo(internalAdmin, caName);
+        if (info != null) {
             final int cryptoTokenId = info.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, info.getCAId());
             cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
-            internalCertificateStoreSession.removeCertificatesBySubject(dn);
-        } catch (CADoesntExistsException e) {
-            // NOPMD: we ignore this
         }
+        internalCertificateStoreSession.removeCertificatesBySubject(dn);
+
     }
     
     protected static void removeOldCa(String caName) throws AuthorizationDeniedException {

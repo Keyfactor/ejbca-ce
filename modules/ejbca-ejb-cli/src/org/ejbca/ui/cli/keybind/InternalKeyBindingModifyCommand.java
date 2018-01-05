@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
@@ -133,8 +132,11 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                         value = trustArgument.substring(indexOfEqualsSign + 1);
                     }
                 }
-                try {
-                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                if (caInfo == null) {
+                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+
+                } else {
                     if (value == null) {
                         removeTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
                     } else {
@@ -145,8 +147,6 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                             getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
                         }
                     }
-                } catch (CADoesntExistsException e) {
-                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
                 }
             }
         }
@@ -169,8 +169,11 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                         value = trustArgument.substring(indexOfEqualsSign + 1);
                     }
                 }
-                try {
-                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                if (caInfo == null) {
+                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+
+                } else {
                     if (value == null) {
                         addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
                     } else {
@@ -181,9 +184,8 @@ public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingComman
                             getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
                         }
                     }
-                } catch (CADoesntExistsException e) {
-                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
-                } 
+                }
+
             }
         }
         // Extract nextKeyPair

@@ -58,10 +58,8 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
         try {
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo;
-            try {
-                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
-            } catch (CADoesntExistsException e) {
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            if(cainfo == null) {
                 log.error("CA " + caname + " cannot be found");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }

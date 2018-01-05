@@ -31,7 +31,7 @@ import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -89,9 +89,12 @@ public class ApprovalDataVOView implements Serializable {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
         try {
-			return ejbLocalHelper.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
-		} catch (CADoesntExistsException e) {
-			log.error("Can not get CA with id: "+data.getCAId(), e);
+            CAInfo caInfo = ejbLocalHelper.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId());
+            if(caInfo != null) {
+                return caInfo.getName();
+            } else {
+                log.error("Can not get CA with id: "+data.getCAId());
+            }
 		} catch (AuthorizationDeniedException e) {
 			log.error("Can not get CA with id: "+data.getCAId(), e);
 		}

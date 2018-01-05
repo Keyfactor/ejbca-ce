@@ -1064,29 +1064,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         // If the certificate is present in the local database, we try to find a human readable description from the certificate
                         try {
                             final CAInfo caInfo = caSession.getCAInfoInternal(tokenIssuerId);
-                            final String issuerDn = caInfo.getSubjectDN();
-                            final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn, new BigInteger(tokenMatchValue, 16));
-                            if (certificate!=null) {
-                                final List<String> commonNames = CertTools.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
-                                if (!commonNames.isEmpty()) {
-                                    // Use the first found CN of the mapped certificate
-                                    description = commonNames.get(0);
-                                }
+                            if (caInfo == null) {
+                                log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '"
+                                        + tokenMatchValue + "' is issued by a CA with ID " + tokenIssuerId
+                                        + " that is unknown to this system. Migrating admin anyway.");
                             } else {
-                                description = "external client certificate";
-                                // Since we made the database lookup, take the chance to inform about meaningless configuration
-                                if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                                    log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
-                                            "' does match a local certificate even though this is required by the '"+WebConfiguration.CONFIG_REQCERTINDB+"' setting." +
-                                            "Migrating admin anyway.");
+                                final String issuerDn = caInfo.getSubjectDN();
+                                final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn,
+                                        new BigInteger(tokenMatchValue, 16));
+                                if (certificate != null) {
+                                    final List<String> commonNames = CertTools.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
+                                    if (!commonNames.isEmpty()) {
+                                        // Use the first found CN of the mapped certificate
+                                        description = commonNames.get(0);
+                                    }
+                                } else {
+                                    description = "external client certificate";
+                                    // Since we made the database lookup, take the chance to inform about meaningless configuration
+                                    if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                                        log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '"
+                                                + tokenMatchValue + "' does match a local certificate even though this is required by the '"
+                                                + WebConfiguration.CONFIG_REQCERTINDB + "' setting." + "Migrating admin anyway.");
+                                    }
                                 }
                             }
                         } catch (NumberFormatException e) {
-                            log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
-                                    "' could not be interpreted as a hex value. Admin will not be migrated.");
-                        } catch (CADoesntExistsException e) {
-                            log.info("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue +
-                                    "' is issued by a CA with ID " + tokenIssuerId + " that is unknown to this system. Migrating admin anyway.");
+                            log.warn("Admin in role '" + roleName + "' of type " + tokenType + " with serial number match value '" + tokenMatchValue
+                                    + "' could not be interpreted as a hex value. Admin will not be migrated.");
                         }
                     }
                     if (tokenMatchOperator == AccessMatchType.TYPE_NOT_EQUALCASE.getNumericValue() ||

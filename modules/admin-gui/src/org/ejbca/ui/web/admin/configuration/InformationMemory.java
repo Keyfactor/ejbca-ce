@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -206,12 +205,7 @@ public class InformationMemory implements Serializable {
     public TreeMap<String, Integer> getExternalCAs() {
         TreeMap<String, Integer> externalcas = new TreeMap<String, Integer>();
         for (Integer caId : caauthorization.getAuthorizedCAIds()) {
-            CAInfo caInfo;
-            try {
-                caInfo = caSession.getCAInfoInternal(caId);
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Should not be able to happen, CA ID was just retrieved from the database.", e);
-            }
+            CAInfo caInfo = caSession.getCAInfoInternal(caId);          
             if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                 externalcas.put(caInfo.getName(), caId);
             }

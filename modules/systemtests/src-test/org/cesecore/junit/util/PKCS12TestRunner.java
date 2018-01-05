@@ -19,7 +19,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -80,16 +80,15 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             try {
                 cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId);
-                if (ca != null) {
-                    final int caCryptoTokenId = caSession.getCAInfo(alwaysAllowToken, ca.getCAId()).getCAToken().getCryptoTokenId();
+                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, ca.getCAId());
+                if (caInfo != null) {
+                    final int caCryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
                     cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, caCryptoTokenId);
                     caSession.removeCA(alwaysAllowToken, ca.getCAId());
                 }
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
-            } catch (CADoesntExistsException e) {
-                //NOPMD Ignore
-            }
+            } 
         }
         internalCertificateStoreSession.removeCertificatesBySubject(getSubjectDn());
         casToRemove.remove(ca.getCAId());

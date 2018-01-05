@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
@@ -202,10 +203,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
+		CAInfo caInfo = caSession.getCAInfoInternal(newuserdata.getCAId());
 		String caname;
-		try {
-			caname = caSession.getCAInfoInternal(newuserdata.getCAId()).getName();
-		} catch (CADoesntExistsException e) {
+		if(caInfo != null) {
+			caname = caInfo.getName();
+		} else {
 			caname = "NotExist";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
@@ -250,13 +252,16 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES", dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL", orguserdata.getEmail()));
 		String caname;
-		try {
-			caname = caSession.getCAInfo(admin,  orguserdata.getCAId()).getName();
-		} catch (CADoesntExistsException e) {
-			caname = "NotExist";
-		} catch (AuthorizationDeniedException e) {
-			caname = "AuthDenied";
-		}
+        try {
+            CAInfo caInfo = caSession.getCAInfo(admin, orguserdata.getCAId());
+            if (caInfo != null) {
+                caname = caInfo.getName();
+            } else {
+                caname = "NotExist";
+            }
+        } catch (AuthorizationDeniedException e) {
+            caname = "AuthDenied";
+        }
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));

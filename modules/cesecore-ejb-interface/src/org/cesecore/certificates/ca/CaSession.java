@@ -160,11 +160,10 @@ public interface CaSession {
      * 
      * @param admin administrator calling the method
      * @param name human readable name of CA
-     * @return CAInfo value object, never null
-     * @throws CADoesntExistsException if CA with name does not exist
+     * @return CAInfo value object, null if it doesn't exist
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
-    CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException;
+    CAInfo getCAInfo(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Returns a value object containing non-sensitive information about a CA
@@ -172,11 +171,10 @@ public interface CaSession {
      * 
      * @param admin administrator calling the method
      * @param caid numerical unique id of CA
-     * @return CAInfo value object, never null
-     * @throws CADoesntExistsException if CA with caid does not exist
+     * @return CAInfo value object, null if it doesn't exist
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
-    CAInfo getCAInfo(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+    CAInfo getCAInfo(AuthenticationToken admin, int caid) throws  AuthorizationDeniedException;
 
     /**
      * Method used to remove a CA from the system. You should first check that
