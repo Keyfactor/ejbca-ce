@@ -85,6 +85,7 @@
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
@@ -510,6 +511,10 @@
 	
 	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, cli-util" description="Creates a CLI jar for CAA lookups">
 		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="false"></ant>
+	</target>
+	
+	<target name="ejbca-webtest" if="mod.webtest.exists" description="Builds EJBCA web test module">
+		<ant antfile="${mod.webtest.path}/build.xml" target="build" inheritall="false"></ant>
 	</target>
 	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">
