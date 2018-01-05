@@ -238,7 +238,7 @@ function viewcert(link){
 					   			<h:inputTextarea disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-	                                value="#{property.value.value}">
+	                                value="#{property.value}">
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
 					   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
