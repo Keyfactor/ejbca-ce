@@ -21,6 +21,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -164,9 +165,11 @@ public class AddEndEntityCommand extends BaseRaCommand {
 
         int caid = 0;
         try {
-            caid = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname).getCAId();
-        } catch (CADoesntExistsException e) {
-            // NOPMD: let it be 0, we will print a suitable error message below
+            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            if (caInfo != null) {
+                // let it be 0, we will print a suitable error message below
+                caid = caInfo.getCAId();
+            }
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to CA " + caname);
             error = true;

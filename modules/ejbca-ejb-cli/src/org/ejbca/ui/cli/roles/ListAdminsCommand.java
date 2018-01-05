@@ -22,7 +22,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.Role;
@@ -102,9 +101,11 @@ public class ListAdminsCommand extends BaseRolesCommand {
                 try {
                     final CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                             roleMember.getTokenIssuerId());
-                    caName = "'" + info.getName() +  "'";
-                } catch (CADoesntExistsException e) {
-                    caName = "[Unknown CA with ID " + roleMember.getTokenIssuerId() + "]";
+                    if (info == null) {
+                        caName = "[Unknown CA with ID " + roleMember.getTokenIssuerId() + "]";
+                    } else {
+                        caName = "'" + info.getName() + "'";
+                    }
                 } catch (AuthorizationDeniedException e) {
                     caName = "[(Name redacted) CA with ID " + roleMember.getTokenIssuerId() + "]";
                 }

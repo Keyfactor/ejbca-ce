@@ -31,7 +31,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -316,7 +315,7 @@ public class RegisterReqBean {
         try {
             CAInfo caInfo = ejbLocalHelper.getCaSession().getCAInfo(admin, endEntityProfile.getDefaultCA());
             approvalProfile = ejbLocalHelper.getApprovalProfileSession().getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, caInfo, certificateProfile);
-        } catch (AuthorizationDeniedException | CADoesntExistsException e) {
+        } catch (AuthorizationDeniedException e) {
             log.info("Self Registration: Could not get Approval Profile", e);
         }
         if (approvalProfile == null) {
@@ -603,11 +602,9 @@ public class RegisterReqBean {
         }
         
         final CaSessionLocal casession = ejbLocalHelper.getCaSession();
-        CAInfo cainfo = null;
-        try {
-            cainfo = casession.getCAInfoInternal(caid);
-        } catch (CADoesntExistsException e1) {
-            errors.add("CA with ID " + caid + " does not exist. " + e1.getMessage());
+        CAInfo cainfo = casession.getCAInfoInternal(caid);
+        if(cainfo == null) {
+            errors.add("CA with ID " + caid + " does not exist.");
             return;
         }
         final ApprovalProfile approvalProfile = getApprovalProfile(cainfo, certProfileId);        

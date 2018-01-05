@@ -171,9 +171,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         CAInfo result = null;
         try {
             result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
-        } catch (CADoesntExistsException e) {
-            log.debug("Error retriving CA " + caname + " info.", e);
-        } catch (AuthorizationDeniedException e) {
+        }  catch (AuthorizationDeniedException e) {
             log.error("Authorization denied", e);
         }
         if (result == null) {
@@ -274,8 +272,6 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
                     }
                     casList += TAB + info.getName() + ":" + cryptoTokenName + ":" + info.getCAToken().getSignatureAlgorithm() + "\n";
                 }
-            } catch (CADoesntExistsException e) {
-                //This can't happen
             } catch (AuthorizationDeniedException e) {
                 casList = "Current CLI user does not have authorization to any CAs.\n";
                 break;

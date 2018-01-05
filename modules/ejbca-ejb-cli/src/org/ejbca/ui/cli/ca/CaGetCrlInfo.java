@@ -17,7 +17,6 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.crl.CRLInfo;
@@ -51,9 +50,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
                 cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId);
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("CLI user was not authorized to retrieved CA.", e);
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Previously retrieved CA does not exist", e);
-            }
+            } 
             final StringBuilder sb = new StringBuilder();
             sb.append("\"").append(cainfo.getName()).append("\" \"").append(cainfo.getSubjectDN()).append("\"");
             final CRLInfo crlInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(),

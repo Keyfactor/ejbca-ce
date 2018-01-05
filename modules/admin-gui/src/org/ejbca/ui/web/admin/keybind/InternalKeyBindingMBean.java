@@ -57,7 +57,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -523,7 +522,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
                         // Check that the current CA certificate is the issuer of the IKB certificate
                         certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
-                    } catch (CADoesntExistsException | AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException |
+                    } catch (AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException |
                             NoSuchProviderException | SignatureException e) {
                         // The CA is for the purpose of "internal" renewal not available to this administrator.
                         // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate

@@ -394,6 +394,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Get CAInfo, to be able to read configuration
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
         final CAInfo caInfo = caSession.getCAInfoInternal(caid, null, true);
+        if(caInfo == null) {
+            throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
+        }       
         
         // Check name constraints
         if (caInfo instanceof X509CAInfo && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
@@ -1217,10 +1220,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status, final int approvalRequestID, 
             final AuthenticationToken lastApprovingAdmin) throws ApprovalException, WaitingForApprovalException {
         final int caid = data1.getCaId();
-        CAInfo cainfo = null;
-        try {
-            cainfo = caSession.getCAInfoInternal(caid, null, true);
-        } catch (CADoesntExistsException e) { /* Do nothing, just send null to getApprovalProfiles() */ }
+        CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
         
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
@@ -1454,17 +1454,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
         if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
             // Check if approvals is required.
-            CAInfo cainfo = null;
-            try {
-                cainfo = caSession.getCAInfoInternal(caid, null, true);
-            } catch (CADoesntExistsException e) {
+            CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+            if(cainfo == null) {
                 // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the user.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation
                 log.info("Trying to revokeAndDelete an End Entity connected to a CA, with ID " + caid + ", that does not exist.");
-                if (log.isDebugEnabled()) {
-                    log.debug("CADoesntExistsException for caid " + caid + ": ", e);
-                }
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data.getCertificateProfileId());
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo,
@@ -1522,17 +1517,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
 
         // Check if approvals is required.
-        CAInfo cainfo = null;
-        try {
-            cainfo = caSession.getCAInfoInternal(caid, null, true);
-        } catch (CADoesntExistsException e1) {
+        CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+        if(cainfo == null) {
             // If CA does not exist, the user is a bit "weird", but things can happen in reality and CAs can disappear
             // So the CA not existing should not prevent us from revoking the user.
             // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
             log.info("Trying to revoke an End Entity connected to a CA, with ID "+caid+", that does not exist.");
-            if (log.isDebugEnabled()) {
-                log.debug("CADoesntExistsException for caid "+caid+": ", e1);
-            }
         }
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(userData.getCertificateProfileId());
         final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, certProfile);
@@ -1710,17 +1700,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (endEntityProfileId != -1 && certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
             // We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
-            CAInfo cainfo = null;
-            try {
-                cainfo = caSession.getCAInfoInternal(caid, null, true);
-            } catch (CADoesntExistsException e) {
+            CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+            if(cainfo == null) {
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
                 log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
-                if (log.isDebugEnabled()) {
-                    log.debug("CADoesntExistsException for caid "+caid+": ", e);
-                }
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, 

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -72,13 +71,14 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 caIds = caSession.getAllCaIds();
             }
             for(Integer caid : caIds) {
-                CAInfo caInfo;
+                CAInfo caInfo;  
                 try {
                     caInfo = caSession.getCAInfo(getAdmin(), caid);
-                } catch (CADoesntExistsException e) {
-                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, null));
-                    continue;
-                } catch (AuthorizationDeniedException e) {
+                    if(caInfo == null) {
+                        log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, null));
+                        continue;
+                    }
+                }  catch (AuthorizationDeniedException e) {
                     log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId"));
                     continue;
                 }

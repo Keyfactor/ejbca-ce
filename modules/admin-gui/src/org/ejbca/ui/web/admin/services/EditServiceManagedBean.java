@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -290,8 +289,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
         for (Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
-            } catch (CADoesntExistsException e) {
-                log.debug("CA does not exist: " + caid);
             } catch (AuthorizationDeniedException e) {
                 log.debug("Not authorized to CA: " + caid);
             }
@@ -321,9 +318,8 @@ public class EditServiceManagedBean extends BaseManagedBean {
         for (final Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caid);
-                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName(), null, caInfo.getCAType()!=CAInfo.CATYPE_X509 || caInfo.getStatus()!=CAConstants.CA_EXTERNAL));
-            } catch (CADoesntExistsException e) {
-                log.debug("CA does not exist: " + caid);
+                availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName(), null,
+                        caInfo.getCAType() != CAInfo.CATYPE_X509 || caInfo.getStatus() != CAConstants.CA_EXTERNAL));
             } catch (AuthorizationDeniedException e) {
                 log.debug("Not authorized to CA: " + caid);
             }

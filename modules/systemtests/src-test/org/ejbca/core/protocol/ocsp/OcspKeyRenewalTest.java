@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -202,15 +201,12 @@ public class OcspKeyRenewalTest {
         authenticationKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
                 TESTCLASSNAME + "-ssl", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // We need to issue the SSL certificate from an issuer trusted by the server (AdminCA1/ManagementCA)
-        try {
-            managementCaId = caSession.getCAInfo(authenticationToken, "AdminCA1").getCAId();
-        } catch (CADoesntExistsException e) {
-            try {
-                managementCaId = caSession.getCAInfo(authenticationToken, "ManagementCA").getCAId();
-            } catch (CADoesntExistsException e2) {
-                // Test relying on SSL will fail
-            }
+        CAInfo caInfo = caSession.getCAInfo(authenticationToken, "AdminCA1");
+        if (caInfo == null) {
+            caInfo = caSession.getCAInfo(authenticationToken, "ManagementCA");
         }
+        managementCaId = caInfo.getCAId();
+   
         // Create a new AuthenticationKeyBinding
         log.debug("SSL CA Id: " + managementCaId);
         if (managementCaId != 0) {

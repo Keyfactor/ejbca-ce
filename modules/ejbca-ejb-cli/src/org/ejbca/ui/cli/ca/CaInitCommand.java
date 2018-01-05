@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
@@ -377,13 +376,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
         try {
             String signedByStr = "Signed by: ";
             if ((signedByCAId != CAInfo.SELFSIGNED) && (signedByCAId != CAInfo.SIGNEDBYEXTERNALCA)) {
-                try {
-                    CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class)
-                            .getCAInfo(getAuthenticationToken(), signedByCAId);
-                    signedByStr += cainfo.getName();
-                } catch (CADoesntExistsException e) {
-                    throw new IllegalArgumentException("CA with id " + signedByCAId + " does not exist.");
+                CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), signedByCAId);
+                if (cainfo == null) {
+                    getLogger().error("CA with id " + signedByCAId + " does not exist.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
+                signedByStr += cainfo.getName();
+
             } else if (signedByCAId == CAInfo.SELFSIGNED) {
                 signedByStr += "Self signed";
             } else if (signedByCAId == CAInfo.SIGNEDBYEXTERNALCA) {
@@ -575,44 +574,42 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 log.error("Algorithm was not valid: " + e.getMessage());
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
-            try {
-                if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
-                    getLogger()
-                            .info("Not re-reading CAInfo, since explicit ECC parameters were used, which is not serializable on Java 6. Use Web GUI for further interactions.");
-                } else {
-                    CAInfo newInfo;
+            if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
+                getLogger().info(
+                        "Not re-reading CAInfo, since explicit ECC parameters were used, which is not serializable on Java 6. Use Web GUI for further interactions.");
+            } else {
+                CAInfo newInfo;
 
-                    newInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+                newInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
 
-                    int caid = newInfo.getCAId();
-                    getLogger().info("CAId for created CA: " + caid);
-                }
-                if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-                    getLogger().info("Creating a CA signed by an external CA, creating certificate request.");
-                    CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
-                    if (info.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-                        log.error("Creating a CA signed by an external CA should result in CA having status, CA_WAITING_CERTIFICATE_RESPONSE. Terminating process, please troubleshoot.");
-                        return CommandResult.FUNCTIONAL_FAILURE;
-                    }
-                    byte[] request;
-                    try {
-                        request = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).makeRequest(getAuthenticationToken(),
-                                info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-                    } catch (CertPathValidatorException e) {
-                        log.error("Error creating certificate request for CA:" + e.getMessage());
-                        return CommandResult.FUNCTIONAL_FAILURE;
-                    }
-                    final String filename = info.getName() + "_csr.der";
-                    FileOutputStream fos = new FileOutputStream(filename);
-                    fos.write(request);
-                    fos.close();
-                    getLogger().info("Created CSR for CA, to be sent to external CA. Wrote CSR to file '" + filename + "'.");
-                } else {
-                    getLogger().info("Created and published initial CRL.");
-                }
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Newly created CA does not exist.", e);
+                int caid = newInfo.getCAId();
+                getLogger().info("CAId for created CA: " + caid);
             }
+            if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+                getLogger().info("Creating a CA signed by an external CA, creating certificate request.");
+                CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+                if (info.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                    log.error(
+                            "Creating a CA signed by an external CA should result in CA having status, CA_WAITING_CERTIFICATE_RESPONSE. Terminating process, please troubleshoot.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
+                byte[] request;
+                try {
+                    request = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).makeRequest(getAuthenticationToken(),
+                            info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                } catch (CertPathValidatorException e) {
+                    log.error("Error creating certificate request for CA:" + e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
+                final String filename = info.getName() + "_csr.der";
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(request);
+                fos.close();
+                getLogger().info("Created CSR for CA, to be sent to external CA. Wrote CSR to file '" + filename + "'.");
+            } else {
+                getLogger().info("Created and published initial CRL.");
+            }
+     
             getLogger().info("CA initialized");
             getLogger().info("Note that any open browser sessions must be restarted to interact with this CA.");
         } catch (AuthorizationDeniedException e) {

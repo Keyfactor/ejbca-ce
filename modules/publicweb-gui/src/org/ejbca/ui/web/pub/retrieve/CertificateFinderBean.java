@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -99,11 +98,9 @@ public class CertificateFinderBean {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCAInfo() currentCA = " + mCurrentCA);
 		}
-		CAInfo cainfo = null;
-		try {
-			cainfo = caSession.getCAInfoInternal(mCurrentCA);
-		} catch (CADoesntExistsException e) {
-			log.info("CA does not exist : "+mCurrentCA, e);
+		CAInfo cainfo = caSession.getCAInfoInternal(mCurrentCA);
+		if(cainfo == null) {
+		    log.info("CA does not exist : "+mCurrentCA);
 		}
 		return cainfo;
 	}

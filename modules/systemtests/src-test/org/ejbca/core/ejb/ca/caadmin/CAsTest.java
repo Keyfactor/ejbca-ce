@@ -580,12 +580,8 @@ public class CAsTest extends CaTestCase {
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
             cainfo.setDescription("JUnit RSA CA Signed by external");
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
-            try {
-                caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-                fail("External CA exists in database. Test can't continue.");
-            } catch (CADoesntExistsException e) {
-                // Life is awesome
-            }
+            assertNull("External CA exists in database. Test can't continue.", caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL"));
+
             caAdminSession.createCA(admin, cainfo);
 
             CAInfo info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -711,12 +707,7 @@ public class CAsTest extends CaTestCase {
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
             cainfo.setDescription("JUnit RSA CA Signed by external");
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
-            try {
-                caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-                fail("External CA exists in database. Test can't continue.");
-            } catch (CADoesntExistsException e) {
-                // Life is awesome
-            }
+            assertNull("External CA exists in database. Test can't continue.", caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL"));
             caAdminSession.createCA(admin, cainfo);
 
             CAInfo info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1269,11 +1260,12 @@ public class CAsTest extends CaTestCase {
     @Test
     public void testExternalCaCertificateImport() throws Exception {
         final String TEST_NAME = this.getClass().getSimpleName() + "." + "testCaCertificateImport";
-        // Start with preemptive cleanup
-        try {
-            caSession.removeCA(admin, caSession.getCAInfo(admin, TEST_NAME).getCAId());
-        } catch (CADoesntExistsException e) {
-            // Great! No such CA to remove...
+        {
+            // Start with preemptive cleanup
+            CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
+            if (caInfo != null) {
+                caSession.removeCA(admin, caInfo.getCAId());
+            }
         }
         try {
             final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -1337,10 +1329,9 @@ public class CAsTest extends CaTestCase {
                 // Expected
             }
         } finally {
-            try {
-                caSession.removeCA(admin, caSession.getCAInfo(admin, TEST_NAME).getCAId());
-            } catch (CADoesntExistsException e) {
-                // Great! No such CA to remove...
+            CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
+            if (caInfo != null) {
+                caSession.removeCA(admin, caInfo.getCAId());
             }
         }
     }

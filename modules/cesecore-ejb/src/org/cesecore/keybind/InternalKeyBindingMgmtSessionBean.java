@@ -990,8 +990,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     // No need to check other CAs even if the right CA cert was not found
                     break;
                 }
-            } catch (CADoesntExistsException e) {
-                log.debug("CA with caId " + caId + " disappeared during this operation.");
             } catch (NoSuchElementException e) {
                 log.debug("CA with caId " + caId + " has no certificate chain.");
             }

@@ -929,11 +929,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CAInfo getCAInfoByName(String caname) {
         try {
             return caSession.getCAInfo(admin, caname);
-        } catch (CADoesntExistsException e) {
-            this.errorMessage = "CA '" + caname + "' does not exist";
-            if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " - " + e.getLocalizedMessage());
-            }
         } catch (AuthorizationDeniedException e) {
             this.errorMessage = "Authorization denied for CA: " + caname;
             if(log.isDebugEnabled()) {
@@ -946,11 +941,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CAInfo getCAInfoByIssuer(String issuerDN) {
         try {
             return caSession.getCAInfo(admin, issuerDN.hashCode());
-        } catch (CADoesntExistsException e) {
-            this.errorMessage = "CA '" + issuerDN + "' does not exist";
-            if(log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " - " + e.getLocalizedMessage());
-            }
         } catch (AuthorizationDeniedException e) {
             this.errorMessage = "Authorization denied for CA: " + issuerDN;
             if(log.isDebugEnabled()) {

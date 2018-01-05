@@ -27,7 +27,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -266,8 +265,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
 	                caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
 	                caAdminSession.editCA(authenticationToken, caInfo);
-	            } catch (CADoesntExistsException e) {
-	                super.addNonTranslatedErrorMessage(e.getMessage());
 	            } catch (AuthorizationDeniedException e) {
 	                super.addNonTranslatedErrorMessage(e.getMessage());
 	            }

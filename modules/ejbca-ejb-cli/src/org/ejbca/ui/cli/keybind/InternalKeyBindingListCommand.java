@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -150,8 +149,6 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
             } catch (AuthorizationDeniedException e) {
                 log.error("CLI user not authorized to view key bindings.");
                 return CommandResult.AUTHORIZATION_FAILURE;
-            } catch (CADoesntExistsException e) {
-                throw new IllegalStateException("Retrieved keybinding without a valid CA", e);
             }
         }
         return CommandResult.SUCCESS;

@@ -106,7 +106,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -280,92 +279,93 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // Add all potential CA's as OCSP responders to the staging area
                 for (final Integer caId : caSession.getAllCaIds()) {
                     final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
-                    try {
-                        final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
-                        if (caInfo.getCAType() == CAInfo.CATYPE_CVC ) {
-                            // Bravely ignore OCSP for CVC CAs
+
+                    final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
+                    if (caInfo.getCAType() == CAInfo.CATYPE_CVC) {
+                        // Bravely ignore OCSP for CVC CAs
+                        continue;
+                    }
+                    if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+                        //Cache active CAs as signers
+                        if (log.isDebugEnabled()) {
+                            log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
+                        }
+                        final CAToken caToken = caInfo.getCAToken();
+                        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
+                        if (cryptoToken == null) {
+                            log.info("Excluding CA with id " + caId + " for OCSP signing consideration due to missing CryptoToken.");
                             continue;
-                        } 
-                        if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
-                            //Cache active CAs as signers
-                            if (log.isDebugEnabled()) {
-                                log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
-                            }
-                            final CAToken caToken = caInfo.getCAToken();
-                            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
-                            if (cryptoToken == null) {
-                                log.info("Excluding CA with id " + caId + " for OCSP signing consideration due to missing CryptoToken.");
-                                continue;
-                            }
-                            for (final Certificate certificate : caInfo.getCertificateChain()) {
-                                caCertificateChain.add((X509Certificate) certificate);
-                            }
-                            final String keyPairAlias;
-                            try {
-                                keyPairAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                            } catch (CryptoTokenOfflineException e) {
-                                log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN
-                                        + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
-                                continue;
-                            }
-                            final PrivateKey privateKey;
-                            try {
-                                privateKey = cryptoToken.getPrivateKey(keyPairAlias);
-                            } catch (CryptoTokenOfflineException e) {
-                                log.warn("Referenced private key with alias " + keyPairAlias
-                                        + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
-                                continue;
-                            }
-                            if (privateKey == null) {
-                                log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id " + caId);
-                                continue;
-                            }
-                            final String signatureProviderName = cryptoToken.getSignProviderName();
-                            if (caCertificateChain.size() > 0) {
-                                X509Certificate caCertificate = caCertificateChain.get(0);
-                                final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
-                                OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                                        signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
-                                // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
-                                // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
-                                if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
-                                    log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
-                                            + CertTools.getSerialNumber(caCertificate) + " has a revoked certificate with reason " + caCertificateStatus.revocationReason + ".");
-                                }
-                                //Check if CA cert is expired
-                                if (!CertTools.isCertificateValid(caCertificate)) {
-                                    log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
-                                            + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date " + CertTools.getNotAfter(caCertificate) + ".");
-                                }
-                            } else {
-                                log.warn("CA with ID " + caId
-                                        + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
-                            }
-                        } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
-                            // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
-                            for (final Certificate certificate : caInfo.getCertificateChain()) {
-                                caCertificateChain.add((X509Certificate) certificate);
-                            }
-                            final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0), false);
+                        }
+                        for (final Certificate certificate : caInfo.getCertificateChain()) {
+                            caCertificateChain.add((X509Certificate) certificate);
+                        }
+                        final String keyPairAlias;
+                        try {
+                            keyPairAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                        } catch (CryptoTokenOfflineException e) {
+                            log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN
+                                    + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                            continue;
+                        }
+                        final PrivateKey privateKey;
+                        try {
+                            privateKey = cryptoToken.getPrivateKey(keyPairAlias);
+                        } catch (CryptoTokenOfflineException e) {
+                            log.warn("Referenced private key with alias " + keyPairAlias
+                                    + " could not be used. CryptoToken is off-line for CA with id " + caId + ": " + e.getMessage());
+                            continue;
+                        }
+                        if (privateKey == null) {
+                            log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id " + caId);
+                            continue;
+                        }
+                        final String signatureProviderName = cryptoToken.getSignProviderName();
+                        if (caCertificateChain.size() > 0) {
+                            X509Certificate caCertificate = caCertificateChain.get(0);
+                            final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
+                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain,
+                                    null, privateKey, signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
                             // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
-                            // signing will still fail even if the signing cert is valid. 
+                            // signing will still fail even if the signing cert is valid. Shouldn't happen, but log it just in case.
                             if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
-                                log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
-                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate with reason " + caCertificateStatus.revocationReason + ".");
+                                log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
+                                        + CertTools.getSerialNumber(caCertificate) + " has a revoked certificate with reason "
+                                        + caCertificateStatus.revocationReason + ".");
                             }
                             //Check if CA cert is expired
-                            if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
-                                log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
-                                        + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date " + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
+                            if (!CertTools.isCertificateValid(caCertificate)) {
+                                log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
+                                        + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date "
+                                        + CertTools.getNotAfter(caCertificate) + ".");
                             }
-                            //Add an entry with just a chain and nothing else
-                            OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
-                                    null, null, null,  ocspConfiguration.getOcspResponderIdType()));
-  
+                        } else {
+                            log.warn("CA with ID " + caId
+                                    + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
                         }
-                    } catch (CADoesntExistsException e) {
-                        // Should only happen if the CA was deleted between the getAvailableCAs and the last one
-                        log.warn("CA with Id " + caId + " disappeared during reload operation.");
+                    } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                        // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
+                        for (final Certificate certificate : caInfo.getCertificateChain()) {
+                            caCertificateChain.add((X509Certificate) certificate);
+                        }
+                        final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificateChain.get(0),
+                                false);
+                        // Check if CA cert has been revoked (only key compromise as returned above). Always make this check, even if this CA has an OCSP signing certificate, because
+                        // signing will still fail even if the signing cert is valid. 
+                        if (caCertificateStatus.equals(CertificateStatus.REVOKED)) {
+                            log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                    + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has a revoked certificate with reason "
+                                    + caCertificateStatus.revocationReason + ".");
+                        }
+                        //Check if CA cert is expired
+                        if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
+                            log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
+                                    + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
+                                    + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
+                        }
+                        //Add an entry with just a chain and nothing else
+                        OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain.get(0), caCertificateStatus, null, null,
+                                null, null, null, ocspConfiguration.getOcspResponderIdType()));
+
                     }
                 }
                 // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before

@@ -24,7 +24,6 @@ import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -71,13 +70,12 @@ public class CryptoTokenTestUtils {
         X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
                 + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
-        try {
-            final int oldCaCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
+        CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, x509ca.getCAId());
+        if (oldCaInfo != null) {
+            final int oldCaCryptoTokenId = oldCaInfo.getCAToken().getCryptoTokenId();
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, oldCaCryptoTokenId);
-        } catch (CADoesntExistsException e) {
-            // Ok. The old test run cleaned up everything properly.
+            caSession.removeCA(authenticationToken, x509ca.getCAId());
         }
-        caSession.removeCA(authenticationToken, x509ca.getCAId());
         // Now add the test CA so it is available in the tests
         caSession.addCA(authenticationToken, x509ca);
         return x509ca;

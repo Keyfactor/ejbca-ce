@@ -29,7 +29,6 @@ import javax.faces.model.ListDataModel;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -255,14 +254,10 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         List<Integer> allCas = caSession.getAllCaIds();
         List<String> result = new ArrayList<String>();
-        for(int caid : allCas) {
-            try {
-                CAInfo cainfo = caSession.getCAInfoInternal(caid);
-                if(cainfo.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {
-                    result.add(cainfo.getName());
-                }
-            } catch (CADoesntExistsException e) {
-                // Ignore
+        for (int caid : allCas) {
+            CAInfo cainfo = caSession.getCAInfoInternal(caid);
+            if (cainfo.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {
+                result.add(cainfo.getName());
             }
         }
         return result;

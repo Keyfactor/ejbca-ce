@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -84,8 +83,6 @@ import org.junit.Test;
  *
  */
 public class CaAdminSessionBeanTest {
-
-    private static final Logger log = Logger.getLogger(CaAdminSessionBeanTest.class);
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -208,11 +205,9 @@ public class CaAdminSessionBeanTest {
             final Certificate returnedCert = cainfo.getCertificateChain().iterator().next();
             assertEquals("Returned cert did not match imported cert", brainpoolCert, returnedCert);
         } finally {
-            try {
-                final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, TEST_BC_CERT_CA);
+            final CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, TEST_BC_CERT_CA);
+            if (cainfo != null) {
                 caSession.removeCA(alwaysAllowToken, cainfo.getCAId());
-            } catch (CADoesntExistsException e) {
-                // NOPMD ignore
             }
             internalCertStoreSession.removeCertificatesBySubject("CN=" + TEST_BC_CERT_CA);
         }
@@ -283,10 +278,9 @@ public class CaAdminSessionBeanTest {
             testInvalidKeySpecsInternal(true, TEST_NAME, x509CaInfo, new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA},
                     new String[] {"secp256r1"}, new int[] {512}, KEY_ALIAS_EC, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         } finally {
-            try {
-                caSession.removeCA(alwaysAllowToken, caSession.getCAInfo(alwaysAllowToken, TEST_NAME).getCAId());
-            } catch (CADoesntExistsException e) {
-                log.debug(e.getMessage());
+            CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, TEST_NAME);
+            if(caInfo != null) {
+                caSession.removeCA(alwaysAllowToken, caInfo.getCAId());
             }
             cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenManagementSession.getIdFromName(TEST_NAME));
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, TEST_NAME);

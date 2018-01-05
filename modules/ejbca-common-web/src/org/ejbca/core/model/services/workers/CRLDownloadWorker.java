@@ -24,7 +24,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -77,7 +76,7 @@ public class CRLDownloadWorker extends BaseWorker {
             }
             try {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caId);
-                if (caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                if (caInfo != null && caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                     final X509Certificate caCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
                     // Parse the configured external CDP into a URL
                     final String cdp = ((X509CAInfo)caInfo).getExternalCdp();
@@ -136,8 +135,6 @@ public class CRLDownloadWorker extends BaseWorker {
                 } else {
                     log.info("'" + caInfo.getName() + "' is not an external X509 CA. Ignoring.");
                 }
-            } catch (CADoesntExistsException e) {
-                log.warn("Configured CA with id " + caId + " no longer exists and will not be processed.");
             } catch (CRLException e) {
                 log.error("Last known CRL read from the database for CA Id " + caId + " has encoding problems.", e);
             } catch (CrlStoreException e) {

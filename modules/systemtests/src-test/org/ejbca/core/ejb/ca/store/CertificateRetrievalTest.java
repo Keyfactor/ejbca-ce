@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -410,13 +410,11 @@ public class CertificateRetrievalTest {
         assertNotNull("failed to list certs", certs);
         assertEquals("cert list should be empty", 0, certs.size());
         
-        int caid;
-        try {
-            caid = caSession.getCAInfo(admin, "ManagementCA").getCAId();
-        } catch (CADoesntExistsException e1) {
-            caid = caSession.getCAInfo(admin, "AdminCA1").getCAId();
+        CAInfo caInfo = caSession.getCAInfo(admin, "ManagementCA");
+        if(caInfo == null) {
+            caInfo = caSession.getCAInfo(admin, "AdminCA1");
         }
-        
+        int caid = caInfo.getCAId();
         EndEntityInformation userdata = new EndEntityInformation(username,  dn, caid, "", null,
             EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
             EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,

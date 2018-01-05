@@ -54,7 +54,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -740,15 +739,12 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         final String subjectDn = "CN="+username;
         final BigInteger serialNumber = BigInteger.valueOf(username.hashCode()); // Just some value
         try {
-            CAInfo cainfo;
-            try {
-                cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
-            } catch (CADoesntExistsException e) {
-                try {
-                    cainfo = caSession.getCAInfo(alwaysAllowToken, "AdminCA1");
-                } catch (CADoesntExistsException e1) {
-                    throw new IllegalStateException("Couldn't find either ManagementCA or AdminCA1");
-                }
+            CAInfo cainfo = caSession.getCAInfo(alwaysAllowToken, "ManagementCA");
+            if(cainfo == null) {
+                cainfo = caSession.getCAInfo(alwaysAllowToken, "AdminCA1");
+            }
+            if(cainfo == null) {
+                throw new IllegalStateException("Couldn't find either ManagementCA or AdminCA1");
             }
 
             final Certificate cacert = cainfo.getCertificateChain().iterator().next();

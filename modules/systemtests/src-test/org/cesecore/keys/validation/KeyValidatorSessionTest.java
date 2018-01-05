@@ -927,12 +927,10 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
     }
 
     private void removeCAIfExist(final String name) throws Exception {
-        try {
-            final CAInfo caInfo = caSession.getCAInfo(internalAdmin, name);
+        final CAInfo caInfo = caSession.getCAInfo(internalAdmin, name);
+        if (caInfo != null) {
             log.info("CA " + name + " exists and will be removed.");
             caSession.removeCA(internalAdmin, caInfo.getCAId());
-        } catch (CADoesntExistsException e) {
-            // NOOP
         }
     }
 

@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -90,9 +88,7 @@ public class ImportDataCommand extends EjbcaCliUserCommandBase {
             }
             String significantIssuerDN = props.getProperty("significantissuerdn");
             int cAId = significantIssuerDN.hashCode();
-            try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), cAId);
-            } catch (CADoesntExistsException e) {
+            if(!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(cAId)) {
                 log.error("ERROR: the property significantissuerdn '" + significantIssuerDN + "' does not exist as CA in the system.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
@@ -151,10 +147,7 @@ public class ImportDataCommand extends EjbcaCliUserCommandBase {
             }
         } catch (IOException e) {
             throw new IllegalStateException("Unknown IOException was caught.", e);
-        } catch (AuthorizationDeniedException e) {
-            log.error("CLI user not authorized to import data.");
-            return CommandResult.AUTHORIZATION_FAILURE;
-        }
+        } 
         return CommandResult.SUCCESS;
 
     }

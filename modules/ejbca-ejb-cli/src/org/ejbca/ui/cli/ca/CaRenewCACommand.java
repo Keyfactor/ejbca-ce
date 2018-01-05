@@ -149,12 +149,12 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                 log.error("ERROR: Could not create keys, crypto token was unavailable: " + e.getMessage());
             }
             getLogger().info("New certificate created:");
-            try {
-                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
-            } catch (CADoesntExistsException e) {
-                log.error(e.getMessage(), e);
+            cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            if (cainfo == null) {
+                log.error("CA of name " + caname + " does not exist.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
+
             final Object newCertificate = cainfo.getCertificateChain().iterator().next();
             if (newCertificate instanceof Certificate) {
                 printCertificate((Certificate) newCertificate);
