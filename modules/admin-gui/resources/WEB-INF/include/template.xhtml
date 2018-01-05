@@ -42,61 +42,86 @@
         <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}/#{web.ejbcaWebBean.cssFile}"/>
         <script type="text/javascript" src="#{facesContext.externalContext.context.contextPath}/ejbcajslib.js"></script>
         <link rel="shortcut icon" type="image/png" href="#{facesContext.externalContext.context.contextPath}/images/favicon.png"/>
-        <style type="text/css">
-            /* CSS to push down 40px footer to bottom of page when there is too little content. */
-            html, body {
-                margin: 0;
-                padding: 0;
-                height: 100%;
-            }
-            #messagesAndContent {
-                min-height: 100%;
-                padding-left: 30px;
-                padding-right: 15px;
-            }
-            #contentBlock {
-                overflow: auto;
-                padding-top: 7px;
-                padding-bottom: 40px;
-            }
-            #footerBlock {
-                position: relative;
-                margin-top: -47px;
-	            height: 40px;
-                padding-left: 30px;
-                padding-right: 15px;
-	            clear: both;
-                text-align: center;
-            }
-            #footerInner {
-                line-height: 40px;
-                vertical-align: middle;
-                height: 40px;
-            }
-            #modalBlock {
-                position: fixed;
-                left: 0px;
-                top: 0px;
-                width: 100%;
-                height: 100%;
-                background-color: #fefefec0;
-                text-align: center;
-            }
-            #modalInner {
-                position: static;
-                display: inline-block;
-                text-align: left;
-                margin: 10% auto;
-                max-width: 90%;
-                width: auto;
-                padding: 20px;
-                background-color: #fefefe;
-                border: 1px solid #aeaeae;
-                border-radius: 5px;
-            }
-        </style>
     </h:head>
-    <h:body dir="ltr" styleClass="ltrDirection">
+    <h:body dir="ltr" styleClass="ltrDirection isJsf">
+    
+    <ui:insert name="banner">
+      <iframe id="topFrame" name="topFrame" width="100%" height="100" scrolling="no" src="#{adminMenuBean.headBannerUrl}">
+        <h1>Administration</h1>
+      </iframe>
+    </ui:insert>
+    
+    <h:panelGroup id="navigation" layout="block" styleClass="navbar">
+      <h:outputLink styleClass="homeLink" value="#{facesContext.externalContext.context.contextPath}/"><h:outputText value="#{web.text['NAV_HOME']}"/></h:outputLink>      
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewCAHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_CAFUNCTIONS']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/caactivation.jsf" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text['NAV_CAACTIVATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/cafunctions.jsp" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text['NAV_CASTRUCTUREANDCRL']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/editcertificateprofiles/editcertificateprofiles.jsf" rendered="#{adminMenuBean.authorizedToViewCertificateProfile}"><h:outputText value="#{web.text['NAV_CERTIFICATEPROFILES']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/editcas/editcas.jsp" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text['NAV_CAS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/cryptotoken/cryptotokens.jsf" rendered="#{adminMenuBean.authorizedToViewCryptotoken}"><h:outputText value="#{web.text['NAV_CRYPTOTOKENS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/editpublishers/editpublishers.jsp" rendered="#{adminMenuBean.authorizedToViewPublishers}"><h:outputText value="#{web.text['NAV_PUBLISHERS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ca/editvalidators/editvalidators.xhtml" rendered="#{adminMenuBean.authorizedToViewValidators}"><h:outputText value="#{web.text['NAV_VALIDATORS']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewRAHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_RAFUNCTIONS']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity}"><h:outputText value="#{web.text['NAV_ADDENDENTITY']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ra/editendentityprofiles/editendentityprofiles.jsp" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}"><h:outputText value="#{web.text['NAV_ENDENTITYPROFILES']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ra/listendentities.jsp" rendered="#{adminMenuBean.authorizedToViewEndEntity}"><h:outputText value="#{web.text['NAV_SEARCHENDENTITIES']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/ra/edituserdatasources/edituserdatasources.jsp" rendered="#{adminMenuBean.authorizedToEditUserDataSources}"><h:outputText value="#{web.text['NAV_USERDATASOURCES']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewHTHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_HARDTOKENFUNCTIONS']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/hardtoken/edithardtokenissuers.jsp" rendered="#{adminMenuBean.authorizedToEditHardTokenIssuers}"><h:outputText value="#{web.text['NAV_HARDTOKENISSUERS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/hardtoken/edithardtokenprofiles/edithardtokenprofiles.jsp" rendered="#{adminMenuBean.authorizedToEditHardTokenProfiles}"><h:outputText value="#{web.text['NAV_HARDTOKENPROFILES']}"/></h:outputLink>         
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSupervisionFunctionsHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_SUPERVISIONFUNCTIONS']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/approval/editapprovalprofiles.jsf" rendered="#{adminMenuBean.authorizedToViewApprovalProfiles}"><h:outputText value="#{web.text['NAV_APPROVALPROFILES']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/approval/approveactionlist.jsf" rendered="#{adminMenuBean.authorizedToApproveActions}"><h:outputText value="#{web.text['NAV_APPROVEACTIONS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/audit/search.jsf" rendered="#{adminMenuBean.authorizedToViewLog}"><h:outputText value="#{web.text['NAV_AUDIT']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSystemFunctionsHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_SYSTEMFUNCTIONS']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/administratorprivileges/roles.xhtml" rendered="#{adminMenuBean.authorizedToViewRoles}"><h:outputText value="#{web.text['NAV_ROLES']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/keybind/keybindings.jsf" rendered="#{adminMenuBean.authorizedViewInternalKeyBindings}"><h:outputText value="#{web.text['NAV_KEYBINDINGS']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/peerconnector/peerconnectors.jsf" rendered="#{adminMenuBean.authorizedToViewPeerConnectors}"><h:outputText value="#{web.text['NAV_PEERCONNECTOR']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/services/listservices.jsf" rendered="#{adminMenuBean.authorizedToViewServices}"><h:outputText value="#{web.text['NAV_SERVICES']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSystemConfigurationHeader}">
+        <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_SYSTEMCONFIGURATION']}"/></h:panelGroup>
+        <h:panelGroup layout="block" styleClass="section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/cmpconfiguration.jsp" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_CMPCONFIGURATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/estconfiguration.jsp" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_ESTCONFIGURATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/scepconfiguration.jsf" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_SCEPCONFIGURATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/systemconfiguration.jsf" rendered="#{adminMenuBean.authorizedToConfigureSystem}"><h:outputText value="#{web.text['NAV_SYSTEMCONFIGURATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/upgrade.xhtml" rendered="#{adminMenuBean.authorizedToConfigureSystem and adminMenuBean.upgradeRequired}"><h:outputText value="#{web.text['NAV_SYSTEMUPGRADE']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+      <h:panelGroup layout="block" styleClass="misc-section">
+        <h:panelGroup layout="block" styleClass="misc-section-header">...</h:panelGroup>
+        <h:panelGroup layout="block" styleClass="misc-section-content">
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/mypreferences.jsp"><h:outputText value="#{web.text['NAV_MYPREFERENCES']}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb"><h:outputText value="#{web.text['RAWEB']}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}"><h:outputText value="#{web.text['PUBLICWEB']}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text['DOCUMENTATION']}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text['LOGOUT']}"/></h:outputLink>
+        </h:panelGroup>
+      </h:panelGroup>
+    </h:panelGroup>
+    
+    <h:panelGroup layout="block" styleClass="main-wrapper">
+    <h:panelGroup layout="block" styleClass="container">
         <h:panelGroup layout="block" id="messagesAndContent">
             <h:panelGroup layout="block" id="messagesBlock">
                 <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
@@ -107,6 +132,8 @@
                     <h:outputText value="If you see this then whatever you're looking at couldn't be rendered."/>
                 </ui:insert>
             </h:panelGroup>
+        </h:panelGroup>
+        
         </h:panelGroup>
 
         <h:panelGroup layout="block" id="footerBlock" styleClass="footerBlock">
@@ -127,6 +154,8 @@
             </h:panelGroup>
         </h:panelGroup>
         </h:panelGroup>
+        
+    </h:panelGroup>
     </h:body>
     </f:view>
 </html>

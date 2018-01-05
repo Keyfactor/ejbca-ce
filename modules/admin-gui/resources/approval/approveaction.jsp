@@ -21,6 +21,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
@@ -169,7 +170,7 @@ function viewcert(link){
 	<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{not empty approvalActionManagedBean.previousPartitions}">
 		<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_PREVIOUS }"/></h3>
 		<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_HIDDEN }"  style="font-size: 0.7em;"/>
-		<h:dataTable value="#{approvalActionManagedBean.previousPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+		<h:dataTable styleClass="superTable" value="#{approvalActionManagedBean.previousPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 			<h:column>	
 				<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
 					 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">

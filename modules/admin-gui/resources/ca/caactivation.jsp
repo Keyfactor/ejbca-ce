@@ -37,15 +37,19 @@ org.ejbca.core.model.authorization.AccessRulesConstants
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 <f:view>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
 	<h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form>
-	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actCas" footerClass="actCasFooter" headerClass="actCasHeader">
+	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actCas margin-bottom" footerClass="actCasFooter" headerClass="actCasHeader">
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_NAME}"/></h:panelGroup></f:facet>
 			<h:outputLink rendered="#{tokenAndCa.first && tokenAndCa.cryptoToken.existing}" value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoToken.cryptoTokenId}&ref=caactivation">
@@ -104,9 +108,11 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}" rendered="#{cAActivationMBean.authorizedToBasicFunctions }" />
 	</h:panelGrid>
 	</h:form>
+	</div> <!-- Container -->
  
 	<%/* Include footer */%>
 	<jsp:include page="<%= globalconfiguration.getFootBanner() %>" />
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

@@ -34,9 +34,14 @@ org.cesecore.authorization.control.AuditLogRules
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+
+<div class="main-wrapper">
+<div class="container">
 
 <h1><h:outputText value="#{web.text.AUDITHEADER}" /></h1>
 
@@ -104,7 +109,7 @@ org.cesecore.authorization.control.AuditLogRules
 	</p>
 
 	<%-- Audit log: Conditions bar --%>
-	<h:panelGroup>
+	<h:panelGroup styleClass="margin-top">
 		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLink remove" value="❌ #{web.text.CONDITIONS_CLEAR}"/>
 		<h:selectBooleanCheckbox immediate="true" value="#{auditor.automaticReload}"/><h:outputText value=" #{web.text.AUDIT_AUTORELOAD}"/>
 	</h:panelGroup>
@@ -163,8 +168,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['timeStamp']}"/>
-					<h:commandButton action="#{auditor.reorderAscByTime}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByTime}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByTime}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByTime}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
@@ -173,8 +178,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['eventType']}"/>
-					<h:commandButton action="#{auditor.reorderAscByEvent}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByEvent}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByEvent}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByEvent}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{web.text[(auditLogEntry.eventTypeValue)]}"/>
@@ -183,8 +188,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['eventStatus']}"/>
-					<h:commandButton action="#{auditor.reorderAscByStatus}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByStatus}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByStatus}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByStatus}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{web.text[(auditLogEntry.eventStatusValue)]}"/>
@@ -193,8 +198,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['authToken']}"/>
-					<h:commandButton action="#{auditor.reorderAscByAuthToken}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByAuthToken}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByAuthToken}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByAuthToken}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.authToken}"/>
@@ -204,8 +209,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['service']}"/>
-					<h:commandButton action="#{auditor.reorderAscByService}" styleClass="commandLink" value="↓"/>
-					<h:commandButton action="#{auditor.reorderDescByService}" styleClass="commandLink" value="↑"/>
+					<h:commandButton action="#{auditor.reorderAscByService}" styleClass="commandLink" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByService}" styleClass="commandLink" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.serviceTypeValue}"/>
@@ -215,8 +220,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['module']}"/>
-					<h:commandButton action="#{auditor.reorderAscByModule}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByModule}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByModule}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByModule}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{web.text[(auditLogEntry.moduleTypeValue)]}"/>
@@ -225,8 +230,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['customId']}"/>
-					<h:commandButton action="#{auditor.reorderAscByCustomId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByCustomId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByCustomId}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByCustomId}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}&returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
@@ -236,8 +241,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['searchDetail1']}"/>
-					<h:commandButton action="#{auditor.reorderAscBySearchDetail1}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscBySearchDetail1}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&caid=#{auditLogEntry.customId}&returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
@@ -246,8 +251,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['searchDetail2']}"/>
-					<h:commandButton action="#{auditor.reorderAscBySearchDetail2}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscBySearchDetail2}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}&returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
@@ -256,8 +261,8 @@ org.cesecore.authorization.control.AuditLogRules
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['nodeId']}"/>
-					<h:commandButton action="#{auditor.reorderAscByNodeId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByNodeId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByNodeId}" value="▼" styleClass="sortButton"/>
+					<h:commandButton action="#{auditor.reorderDescByNodeId}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.nodeId}"/>
@@ -296,11 +301,13 @@ org.cesecore.authorization.control.AuditLogRules
 	</p>
 	</h:form >
 </div>
+</div> <!-- container -->
 
 <%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
 
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

@@ -35,9 +35,13 @@ org.cesecore.authorization.control.CryptoTokenRules
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+<jsp:include page="../adminmenu.jsp" />
+<div class="main-wrapper">
+<div class="container">
 	<h1>
 	    <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}" rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
 		<h:outputText value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
@@ -144,7 +148,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFileAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		<h:panelGroup/>
-		<h:panelGroup>
+		<h:panelGroup styleClass="margin-top">
 			<h:commandButton action="#{cryptoTokenMBean.cancelCurrentCryptoToken}" value="#{web.text.CRYPTOTOKEN_CANCEL}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode && cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 			<h:commandButton action="#{cryptoTokenMBean.saveCurrentCryptoToken}" value="#{web.text.CRYPTOTOKEN_SAVE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
@@ -204,9 +208,11 @@ org.cesecore.authorization.control.CryptoTokenRules
 	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}" action="#{cryptoTokenMBean.generateNewKeyPair}" rendered="#{cryptoTokenMBean.allowedToModify}"/>
 	</h:panelGrid>
 	</h:form>
+	</div> <!-- Container -->
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

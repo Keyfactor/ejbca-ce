@@ -782,6 +782,7 @@
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript">
 
   <% if(!noprofiles){ %>
@@ -1174,7 +1175,10 @@ function checkallfields(){
 <body onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>
                  fillCAField();'>
-
+  
+  <jsp:include page="../adminmenu.jsp" />
+  <div class="main-wrapper">
+  <div class="container">
   <h1><c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/></h1>
 
   <% if(noprofiles){ %>
@@ -1983,7 +1987,7 @@ function checkallfields(){
 	  <td align="right">
 	  &nbsp;
 	  </td>
-	  <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value='<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>' tabindex="<%=tabindex++%>"
+	  <td class="padding-top"><input type="submit" name="<%= BUTTON_ADDUSER %>" value='<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>' tabindex="<%=tabindex++%>"
 				onClick='return checkallfields()'>
 		  &nbsp;&nbsp;&nbsp;
 		  <input type="reset" name="<%= BUTTON_RESET %>" value='<c:out value="<%= ejbcawebbean.getText(\"RESET\") %>"/>' tabindex="<%=tabindex++%>"></td>
@@ -2024,11 +2028,11 @@ function edituser(row){
   <% if(addedusers == null || addedusers.length == 0){     %>
   <!-- nothing to do -->
   <% } else{ %>
-  <div class="message info"><c:out value="<%= ejbcawebbean.getText(\"PREVIOUSLYADDEDENDENTITIES\") %>"/></div>
+  <div class="message"><c:out value="<%= ejbcawebbean.getText(\"PREVIOUSLYADDEDENDENTITIES\") %>"/></div>
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
   </p>
-  <table width="100%" border="0" cellspacing="1" cellpadding="0">
+  <table class="bold-headings" width="100%" border="0" cellspacing="1" cellpadding="0">
   <tr> 
     <td width="10%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
     </td>
@@ -2054,10 +2058,10 @@ function edituser(row){
     <td width="20%"><c:out value="<%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %>"/></td>
     <td width="20%"><c:out value="<%= addedusers[i].getSubjectDNField(DNFieldExtractor.O,0) %>"/></td>
     <td width="25%">
-        <a style="cursor:pointer;" onclick='viewuser(<%= i %>)'>
+        <a onclick='viewuser(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"VIEWENDENTITY\") %>"/></u></a>
         &nbsp;
-        <a style="cursor:pointer;" onclick='edituser(<%= i %>)'>
+        <a onclick='edituser(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"EDITENDENTITY\") %>"/></u></a>
     </td>
   </tr>
@@ -2068,10 +2072,13 @@ function edituser(row){
  <%    }
      }%>
   </form>
+  
+  </div> <!-- container -->
 
   <%// Include Footer 
    String footurl =   globalconfiguration .getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
+</div> <!-- main-wrapper -->
 </body>
 </html>

@@ -23,6 +23,7 @@
   <title><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>"/>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration.getAdminWebPath()%>ejbcajslib.js"></script>
   <style type="text/css">
   	input[type='checkbox'].checkBoxOverlay {
@@ -49,6 +50,10 @@
 </head>
 <f:view>
 <body>
+<jsp:include page="../../adminmenu.jsp" />
+
+<div class="main-wrapper">
+  <div class="container">
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 
 <div align="center">
@@ -90,7 +95,7 @@
 		<h:outputLabel for="selectavailablekeyalgorithms" value="#{web.text.AVAILABLEKEYALGORITHMS}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20key%20algorithms") %>
 		</h:panelGroup>
-		<h:selectManyListbox id="selectavailablekeyalgorithms" value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}" size="5" disabled="#{certProfilesBean.viewOnly}">
+		<h:selectManyListbox styleClass="select-list" id="selectavailablekeyalgorithms" value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}" size="5" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableKeyAlgorithmsAvailable}"/>
 		</h:selectManyListbox>
 
@@ -98,7 +103,7 @@
 			<h:outputLabel for="selectavailableeccurves" value="#{web.text.AVAILABLEECDSACURVES}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20ECDSA%20curves") %>
 		</h:panelGroup>
-		<h:selectManyListbox id="selectavailableeccurves" value="#{certProfileBean.certificateProfile.availableEcCurves}" size="5" disabled="#{certProfilesBean.viewOnly}">
+		<h:selectManyListbox styleClass="select-list" id="selectavailableeccurves" value="#{certProfileBean.certificateProfile.availableEcCurves}" size="5" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableEcCurvesAvailable}"/>
 		</h:selectManyListbox>
 
@@ -106,7 +111,7 @@
 			<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20bit%20lengths") %>
 		</h:panelGroup>
-		<h:selectManyListbox id="selectavailablebitlengths" value="#{certProfileBean.certificateProfile.availableBitLengths}" size="5" styleClass="number" disabled="#{certProfilesBean.viewOnly}">
+		<h:selectManyListbox id="selectavailablebitlengths" value="#{certProfileBean.certificateProfile.availableBitLengths}" size="5" styleClass="number select-list" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}"/>
 		</h:selectManyListbox>
 
@@ -448,7 +453,7 @@
 					disabled="#{!certProfileBean.certificateProfile.useExtendedKeyUsage or certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="cbextendedkeyusagecritical" value="#{web.text.EXT_CRITICAL}"/>
 			</h:panelGroup>
-			<h:selectManyListbox id="selectextendedkeyusage" value="#{certProfileBean.certificateProfile.extendedKeyUsageOids}" size="10"
+			<h:selectManyListbox styleClass="select-list" id="selectextendedkeyusage" value="#{certProfileBean.certificateProfile.extendedKeyUsageOids}" size="10"
 				rendered="#{certProfileBean.certificateProfile.useExtendedKeyUsage}" disabled="#{certProfilesBean.viewOnly}">
 				<f:selectItems value="#{certProfileBean.extendedKeyUsageOidsAvailable}"/>
 			</h:selectManyListbox>
@@ -1002,7 +1007,7 @@
 
 		<%-- Enabled CT logs selection --%>
 		<h:outputLabel rendered="#{certProfileBean.ctEnabled}" for="selectctlabels" value="#{web.text.EXT_CT_ENABLEDLABELS}" styleClass="subItem"/>
-		<h:selectManyListbox rendered="#{certProfileBean.ctEnabled}" id="selectctlabels" value="#{certProfileBean.enabledCtLabels}"
+		<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.ctEnabled}" id="selectctlabels" value="#{certProfileBean.enabledCtLabels}"
 			size="#{certProfileBean.distinctCTLabelsAvailableSize}" style="min-width: 280px;" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.distinctCtLabelsAvailable}"/>
 		</h:selectManyListbox>
@@ -1118,7 +1123,7 @@
 		<%-- Custom Certificate Extensions --%>
 		<h:outputLabel rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" for="selectusedcertificateextensions"
 			value="#{web.text.USEDCERTEXTENSIONS}"/>
-		<h:selectManyListbox rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" id="selectusedcertificateextensions" disabled="#{certProfilesBean.viewOnly}"
+		<h:selectManyListbox styleClass="select-list" rendered="#{!empty certProfileBean.availableCertificateExtensionsAvailable}" id="selectusedcertificateextensions" disabled="#{certProfilesBean.viewOnly}"
 			value="#{certProfileBean.certificateProfile.usedCertificateExtensions}" size="#{certProfileBean.availableCertificateExtensionsAvailableSize}" converter="javax.faces.Integer">
 			<f:selectItems value="#{certProfileBean.availableCertificateExtensionsAvailable}"/>
 		</h:selectManyListbox>
@@ -1199,7 +1204,7 @@
 				<h:selectBooleanCheckbox id="cvcAccessRightDg4" value="#{certProfileBean.cvcAccessRightDg4}" disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="cvcAccessRightDg4" value="#{web.text.CVCACCESSDG4}"/>
 			</h:panelGrid>
-			<h:selectManyListbox id="selectcvcaccessrights_at" rendered="#{certProfileBean.cvcTerminalTypeAt}" enabledClass="cvcoption_at"
+			<h:selectManyListbox styleClass="select-list" id="selectcvcaccessrights_at" rendered="#{certProfileBean.cvcTerminalTypeAt}" enabledClass="cvcoption_at"
 				 value="#{certProfileBean.cvcLongAccessRights}" size="8" converter="javax.faces.Integer" disabled="#{certProfilesBean.viewOnly}">
 				<f:selectItems value="#{certProfileBean.cvcAccessRightsAtAvailable}"/>
 			</h:selectManyListbox>
@@ -1214,7 +1219,7 @@
 	</h:panelGrid>
 
 
-	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+	<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="99.5%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Approvals --%>
 
@@ -1223,7 +1228,7 @@
 
 	</h:panelGrid>
 
-	<h:dataTable value="#{certProfileBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
+	<h:dataTable styleClass="edit" value="#{certProfileBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
 		border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" style="padding-right: 4px;">
 		<h:column>	
 			<h:outputText value="#{requestItem.getDisplayText()}"/>
@@ -1237,7 +1242,7 @@
 	</h:dataTable>	
 
 
-	<h:panelGrid columns="2" styleClass="edit" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 
 		<%-- Other data --%>
 
@@ -1296,7 +1301,7 @@
 					value="#{certProfileBean.certificateProfile.useSubjectDNSubSet?web.text.BOOL_TRUE:web.text.BOOL_FALSE}" disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="checkusesubjectdnsubset" value="#{web.text.RESTRICT}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
-			<h:selectManyListbox rendered="#{certProfileBean.certificateProfile.useSubjectDNSubSet}" disabled="#{certProfilesBean.viewOnly}"
+			<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.certificateProfile.useSubjectDNSubSet}" disabled="#{certProfilesBean.viewOnly}"
 				id="selectsubjectdnsubset" value="#{certProfileBean.certificateProfile.subjectDNSubSet}" size="10">
 				<f:selectItems value="#{certProfileBean.subjectDNSubSetAvailable}"/>
 			</h:selectManyListbox>
@@ -1312,20 +1317,20 @@
 					disabled="#{certProfilesBean.viewOnly}"/>
 				<h:outputLabel for="checkusesubjectaltnamesubset" value="#{web.text.RESTRICT}…" styleClass="checkBoxOverlay"/>
 			</h:panelGroup>
-			<h:selectManyListbox rendered="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}" disabled="#{certProfilesBean.viewOnly}"
+			<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.certificateProfile.useSubjectAltNameSubSet}" disabled="#{certProfilesBean.viewOnly}"
 				id="selectsubjectaltnamesubset" value="#{certProfileBean.certificateProfile.subjectAltNameSubSet}" size="6" converter="javax.faces.Integer">
 				<f:selectItems value="#{certProfileBean.subjectAltNameSubSetAvailable}"/>
 			</h:selectManyListbox>
 		</h:panelGrid>
 
 		<h:outputLabel for="selectavailablecas" value="#{web.text.AVAILABLECAS}"/>
-		<h:selectManyListbox id="selectavailablecas" value="#{certProfileBean.certificateProfile.availableCAs}" size="#{certProfileBean.availableCAsAvailableSize}"
+		<h:selectManyListbox styleClass="select-list" id="selectavailablecas" value="#{certProfileBean.certificateProfile.availableCAs}" size="#{certProfileBean.availableCAsAvailableSize}"
 			converter="javax.faces.Integer" style="min-width: 280px;" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableCAsAvailable}"/>
 		</h:selectManyListbox>
 		
 		<h:outputLabel rendered="#{certProfileBean.typeEndEntity}" for="selectavailablepublishers" value="#{web.text.PUBLISHERS}"/>
-		<h:selectManyListbox rendered="#{certProfileBean.typeEndEntity}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}"
+		<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.typeEndEntity}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}"
 			size="#{certProfileBean.publisherListAvailableSize}" converter="javax.faces.Integer" style="min-width: 280px;"
 			disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.publisherListAvailable}"/>
@@ -1354,11 +1359,12 @@
 
 	</h:panelGrid>
 </h:form>
-
+</div> <!-- Container -->
 
 <%
    String footurl=globalconfiguration.getFootBanner();%>
   <jsp:include page="<%=footurl%>"/>
+</div> <!-- main-wrapper -->
 </body>
 </f:view>
 </html>

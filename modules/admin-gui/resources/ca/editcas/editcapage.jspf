@@ -359,6 +359,11 @@ function toggleCANameChange(){
 
 </script>
 <body <% if(!editca || isUninitialized) out.write(" onload='fillCertProfileField()' "); %>> 
+<jsp:include page="../../adminmenu.jsp" />
+
+
+<div class="main-wrapper">
+<div class="container">
 <div align="center"> 
   <% if (editca && hasEditRights) { //Editing %> 
   <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
@@ -1376,7 +1381,7 @@ function toggleCANameChange(){
        <%= ejbcawebbean.getText("PUBLISHERS") %> <br />&nbsp;
      </td>
      <td width="50%"> 
-       <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
+       <select class="select-list" name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> >
           <%   Collection usedpublishers = null;
                if(editca) usedpublishers = cainfo.getCRLPublishers(); 
                Iterator iter = publisheridtonamemap.keySet().iterator(); 
@@ -1555,7 +1560,7 @@ function toggleCANameChange(){
        <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
      </td>
      <td width="50%"> 
-       <select name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> style="min-width: 10em" >
+       <select class="select-list" name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> style="min-width: 10em" >
           <% Collection usedKeyValidators = null;
                if(editca) {
                    usedKeyValidators = cainfo.getValidators(); 
@@ -1653,29 +1658,29 @@ function toggleCANameChange(){
         <td width="51%" valign="top">
         <% if (!isexternal) {
             if (editca && !isUninitialized && hasEditRights) { %>
-                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+                <input type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
         <%  } else if (editca && isUninitialized && hasEditRights) {
                 if (cryptoTokenIdParam != null) { %>
-                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>"> 
+                    <input type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+                    <input type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>"> 
                 <% } else if (isUninitialized) { %>
                     <p><strong><%= ejbcawebbean.getText("CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE") %></strong></p>
-                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+                    <input type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
                 <% } else { %>
                     <p><strong><%= ejbcawebbean.getText("CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE") %></strong></p> 
                 <% } %>
         <%  } else if (hasCreateRights){ %>
-                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
+                <input type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
         <%  } %>     
             &nbsp;&nbsp;&nbsp;
-            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+            <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <% } else { %>
         <%  if (catype==CAInfo.CATYPE_X509 && hasEditRights) {  %>
-            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE_EXTERNALCA %>"  value="<%= ejbcawebbean.getText("SAVE") %>">
+            <input type="submit" name="<%= BUTTON_SAVE_EXTERNALCA %>"  value="<%= ejbcawebbean.getText("SAVE") %>">
             &nbsp;&nbsp;&nbsp;
-            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+            <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <%  } else { %>
-            <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
+            <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
         <%  } %>
         <% } %>
         </td>

@@ -28,7 +28,6 @@ function checkselected(){
 -->
 </script>
 
-
 <h1><%= ejbcawebbean.getText("MANAGEHARDTOKENISSUERS") %></h1>
 
 <form name="editissuers" method="post"  action="<%= THIS_FILENAME%>">
@@ -55,7 +54,7 @@ function checkselected(){
     </tr>
     <tr> 
       <td width="40%">
-        <select name="<%=SELECT_ISSUER%>" style="width: 50em" size="12">
+        <select class="select-list" name="<%=SELECT_ISSUER%>" style="width: 50em" size="12">
           <% Iterator i = issuerdatas.keySet().iterator();
              while(i.hasNext()){  
                String curalias = (String) i.next();
@@ -91,22 +90,22 @@ function checkselected(){
 
   <table class="actions">
     <tr> 
-      <td width="150px">
+      <td>
         &nbsp;
       </td>
-      <td width="*"><h3><%= ejbcawebbean.getText("ADDISSUER") %></h3></td>
+      <td><h3><%= ejbcawebbean.getText("ADDISSUER") %></h3></td>
     </tr>
     <tr> 
-      <td width="150px" align="right">
+      <td>
         <%= ejbcawebbean.getText("ALIAS") %>
         &nbsp;
       </td>
-      <td width="*"> 
+      <td> 
         <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
       </td>
     </tr> 
     <tr>
-      <td width="150px" align="right" style="white-space: nowrap;">
+      <td style="white-space: nowrap;">
         <%= ejbcawebbean.getText("ROLE") %>
         &nbsp;
       </td>
@@ -115,7 +114,7 @@ function checkselected(){
        if(authroles.isEmpty()) {
 		BUTTON_DISABLED = "disabled";
        } %>
-      <td width="*"> 
+      <td> 
         <select name="<%=SELECT_ROLE%>"<%= BUTTON_DISABLED %>>
 	        <%if(authroles.isEmpty()) { %>
 		        <option>
@@ -133,10 +132,10 @@ function checkselected(){
       </td>
     </tr> 
      <tr>
-      <td width="150px">
+      <td>
         &nbsp;
       </td>
-      <td width="*">
+      <td>
         <input type="submit" name="<%= BUTTON_ADD_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields())' value="<%= ejbcawebbean.getText("ADDISSUER")%>"<%= BUTTON_DISABLED %>>&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_RENAME_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("RENAME") %>"<%= BUTTON_DISABLED %>>&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CLONE_ISSUER%>" onClick='return (checkfieldforlegalchars("document.editissuers.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERSINALIAS",true) %>")  && checkfields() && checkselected())'  value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>"<%= BUTTON_DISABLED %>>
@@ -145,4 +144,3 @@ function checkselected(){
   </table>
 
 </form>
-

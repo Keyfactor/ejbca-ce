@@ -103,27 +103,12 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
-    /* By default the list is empty but it is possible to add logs here.
-    static {
-        try {
-            // The Base64 data is the public key.
-            final CTLogInfo log = new CTLogInfo(
-                "http://ct.googleapis.com/pilot/ct/v1/",
-                Base64.decode(
-                    ("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfahLEimAoz2t01p3uMziiLOl/fHT\n"+
-                     "DM0YDOhBRuiBARsV4UvxG2LdNgoIGLrtCzWE0J5APC2em4JlvR8EEEFMoA==\n").getBytes("ASCII")));
-            CTLOGS_DEFAULT.put(log.getLogId(), log);
-        } catch (UnsupportedEncodingException e) { } // NOPMD can't do anything here
-    }*/
 
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
     public static final  int      SE                 = 1;
 
     // Public constants.
-    public static final  String HEADERFRAME         = "topFrame";  // Name of header browser frame
-    public static final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
-    public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
     // Private constants
@@ -193,10 +178,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final   String STATEDUMP_LOCKDOWN  = "statedump_lockdown";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
-    private static final   String MAINFILENAME          =  "mainfilename";
-    private static final   String INDEXFILENAME         =  "indexfilename";
-    private static final   String MENUFILENAME          =  "menufilename";
-    private static final   String ERRORPAGE             =  "errorpage";
     private static final   String IECSSFILENAMEPOSTFIX  =  "iecssfilenamepostfix";
     private static final String GOOGLE_CT_POLICY = "google_ct_policy";
     private static final String EXTERNAL_SCRIPTS_WHITELIST = "external_scripts_whitelist";
@@ -254,10 +235,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        data.put(HARDTOKEN_PATH,tempadminpath+"hardtoken");
 
        data.put(LANGUAGEFILENAME,"languagefile");
-       data.put(MAINFILENAME,"main.jsp");
-       data.put(INDEXFILENAME,"index.jsp");
-       data.put(MENUFILENAME,"adminmenu.jsp");
-       data.put(ERRORPAGE,"errorpage.jsp");
        data.put(IECSSFILENAMEPOSTFIX,"_ie-fixes");
 
        setHeadBanner(DEFAULTHEADBANNER);
@@ -389,10 +366,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public   String getHardTokenPath() {return (String) data.get(HARDTOKEN_PATH);}
 
     public   String getLanguageFilename(){return (String) data.get(LANGUAGEFILENAME);}
-    public   String getMainFilename(){return (String) data.get(MAINFILENAME);}
-    public   String getIndexFilename(){return (String) data.get(INDEXFILENAME);}
-    public   String getMenuFilename(){return (String) data.get(MENUFILENAME);}
-    public   String getErrorPage(){return (String) data.get(ERRORPAGE);}
     public   String getIeCssFilenamePostfix(){return (String) data.get(IECSSFILENAMEPOSTFIX);}
 
     public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
