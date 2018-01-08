@@ -244,7 +244,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                                         defaultCA = "";
                                                     }
                                                 } else {
-                                                    availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+                                                    availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; 
                                                 }
                                             } else {
                                                 availableCAs += (availableCAs.equals("") ? "" : ";") + SecConst.ALLCAS;
