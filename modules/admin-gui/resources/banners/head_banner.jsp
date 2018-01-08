@@ -14,6 +14,18 @@
 	<link rel="stylesheet" type="text/css" media="all" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />" />
 </head>
 
+<%
+/*
+    Note that the head banner is now hard coded since EJBCA 6.12.0.
+    
+    If you want to customize the head banner, please copy/rename this file
+    (otherwise it won't be included) and change the setting under System
+    Configuration.
+    
+    If a custom head banner is configured, then it will be included in a
+    100px high 100% wide <iframe> at the top of each page.
+*/
+%>
 <body id="header">
 	<div id="banner">
 		<a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>" target="_top"><img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<c:out value="<%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %>" />" /></a>

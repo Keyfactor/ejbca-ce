@@ -3,9 +3,11 @@ org.cesecore.authorization.AuthorizationDeniedException,
 org.cesecore.authorization.control.AuditLogRules,
 org.cesecore.authorization.control.CryptoTokenRules,
 org.cesecore.authorization.control.StandardRules,
+org.cesecore.keybind.InternalKeyBindingRules,
 org.ejbca.config.GlobalConfiguration,
+org.ejbca.config.InternalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
-org.cesecore.keybind.InternalKeyBindingRules
+org.ejbca.util.HTMLTools
 "%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -84,11 +86,19 @@ org.cesecore.keybind.InternalKeyBindingRules
   boolean systemheaderprinted =false;
   boolean configheaderprinted = false;
 
-%>
 
+  if (globalconfiguration.isNonDefaultHeadBanner()) { %>
     <iframe id="topFrame" name="topFrame" scrolling="no" width="100%" height="100" src="<%= globalconfiguration.getHeadBanner() %>">
         <h1>Administration</h1>
     </iframe>
+<% } else { %>
+    <div id="header">
+        <div id="banner">
+            <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>"><img src="<%= ejbcawebbean.getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
+            <span>Administration</span>
+        </div>
+	</div>
+<% } %>
 
 	<div id="navigation">
 	<ul class="navbar">
