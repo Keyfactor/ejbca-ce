@@ -316,6 +316,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
         // trying to add/edit the user
 		final CAInfo cainfo = caSession.getCAInfoInternal(-1,userdata.getCaName(), true);
+		if(cainfo == null) {
+		    throw new CADoesntExistsException("No CA found by name of " + userdata.getCaName());
+		}
 		final int caid = cainfo.getCAId();
 		if (caid == 0) {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");

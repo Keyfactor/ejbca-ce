@@ -236,7 +236,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (String currentCA : cas) {
                                             Integer currentCAInt = Integer.parseInt(currentCA);
                                             // The constant ALLCAS will not be searched for among available CAs
-
                                             if (currentCAInt.intValue() != SecConst.ALLCAS) {
                                                 if (!EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(currentCAInt)) {
                                                     getLogger().warn("CA with id " + currentCA
@@ -244,9 +243,13 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                                     if (defaultCA.equals(currentCA)) {
                                                         defaultCA = "";
                                                     }
+                                                } else {
+                                                    availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
                                                 }
+                                            } else {
+                                                availableCAs += (availableCAs.equals("") ? "" : ";") + SecConst.ALLCAS;
                                             }
-                                            availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
+                                           
 
                                         }
                                         if (availableCAs.equals("")) {

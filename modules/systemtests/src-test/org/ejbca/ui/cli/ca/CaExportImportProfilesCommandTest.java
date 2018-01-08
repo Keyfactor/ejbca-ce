@@ -129,7 +129,7 @@ public class CaExportImportProfilesCommandTest {
             prof = eeProfileSession.getEndEntityProfile(profilename);
             assertNotNull(prof);
             availcas = prof.getAvailableCAs();
-            assertEquals("There should be two available CA in the profile: "+availcas, 2, availcas.size());
+            assertEquals("There should be two available CA in the profile: " + availcas, 2, availcas.size());
             assertTrue("EE profile "+caid+" should exist", availcas.contains(Integer.toString(caid)));
             assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
             assertEquals("DefaultCA should be our test CA", caid, prof.getDefaultCA());
@@ -143,8 +143,8 @@ public class CaExportImportProfilesCommandTest {
             prof = eeProfileSession.getEndEntityProfile(profilename);
             assertNotNull(prof);
             availcas = prof.getAvailableCAs();
-            assertEquals("There should only be one (ANYCA) available CA in the profile: "+availcas, 1, availcas.size());
-            assertFalse("EE profile "+caid+" should not exist", availcas.contains(Integer.toString(caid)));
+            assertEquals("There should only be one (ANYCA) available CA in the profile: " + availcas, 1, availcas.size());
+            assertFalse("CA "+caid+" should not exist", availcas.contains(Integer.toString(caid)));
             assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
             assertEquals("DefaultCA should not be our test CA", SecConst.ALLCAS, prof.getDefaultCA());
         } finally {

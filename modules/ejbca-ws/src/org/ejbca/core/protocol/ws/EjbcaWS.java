@@ -1736,9 +1736,11 @@ public class EjbcaWS implements IEjbcaWS {
 
     @SuppressWarnings("deprecation")
     @Override
-	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revokePreviousCards)
-		throws CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
-		final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<>();
+    public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests,
+            HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revokePreviousCards) throws CADoesntExistsException,
+            AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException, UserDoesntFullfillEndEntityProfile,
+            ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
+    	final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<>();
 		AuthenticationToken admin = getAdmin(true);
 		int endEntityProfileId = 0;
 		boolean hardTokenExists = false;
@@ -1756,8 +1758,7 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 			significantcAInfo = caSession.getCAInfo(intAdmin, userDataWS.getCaName());
 		if(significantcAInfo == null){
-			throw getEjbcaException("Error the given CA : " + userDataWS.getCaName() + " could not be found.",
-					logger, ErrorCode.CA_NOT_EXISTS, null);
+			throw new CADoesntExistsException("Error the given CA : " + userDataWS.getCaName() + " could not be found.");
 		}
 
 		EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(intAdmin, userDataWS.getUsername());
