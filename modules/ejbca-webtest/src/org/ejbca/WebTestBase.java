@@ -19,7 +19,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
+import org.ejbca.utils.ConfigurationConstants;
 import org.ejbca.utils.ConfigurationHolder;
 
 import java.util.concurrent.TimeUnit;
@@ -43,15 +43,21 @@ public abstract class WebTestBase {
     /**
      * Sets up firefox driver and firefox profile is certificate is required
      * @param requireCert if certificate is required
+     * @param profile browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
-    public static void setUp(boolean requireCert) {
+    public static void setUp(boolean requireCert, String profile) {
         // Init properties
         setGlobalConstants();
         // Init gecko driver
         config.setGeckoDriver();
         if (requireCert) {
             ProfilesIni allProfiles = new ProfilesIni();
-            FirefoxProfile firefoxProfile = allProfiles.getProfile(config.getProperty("profile.firefox.default"));
+            FirefoxProfile firefoxProfile;
+            if (profile != null) {
+                firefoxProfile = allProfiles.getProfile(config.getProperty(profile));
+            } else {
+                firefoxProfile = allProfiles.getProfile(config.getProperty(ConfigurationConstants.PROFILE_FIREFOX_DEFAULT));
+            }
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setProfile(firefoxProfile);
@@ -73,17 +79,17 @@ public abstract class WebTestBase {
     private static void setGlobalConstants() {
         config = new ConfigurationHolder();
         config.loadAllProperties();
-        ejbcaDomain = config.getProperty("appserver.domainname");
-        ejbcaPort = config.getProperty("appserver.port");
-        ejbcaSslPort = config.getProperty("appserver.secureport");
+        ejbcaDomain = config.getProperty(ConfigurationConstants.APPSERVER_DOMAIN);
+        ejbcaPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT);
+        ejbcaSslPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
     }
 
     public String getCaName() {
-        return config.getProperty("ejbca.ca.name");
+        return config.getProperty(ConfigurationConstants.EJBCA_CANAME);
     }
 
     public String getCaDn() {
-        return config.getProperty("ejbca.ca.dn");
+        return config.getProperty(ConfigurationConstants.EJBCA_CADN);
     }
 
     public String getPublicWebUrl() {

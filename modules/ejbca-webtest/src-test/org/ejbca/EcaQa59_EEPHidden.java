@@ -63,7 +63,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         oneMonthsFromNow.add(Calendar.MONTH, 1);
         currentDateString = new SimpleDateFormat("yyyy-MM-dd").format(currentDate);
         oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
-        setUp(true);
+        setUp(true, null);
         webDriver = getWebDriver();
     }
 
