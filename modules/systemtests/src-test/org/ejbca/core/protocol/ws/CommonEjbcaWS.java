@@ -559,7 +559,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
         assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 1);
+        assertEquals("Exactly one result should have been returned", 1, userdatas.size());
         UserDataVOWS userdata = userdatas.get(0);
         assertTrue(userdata.getUsername().equals(userName));
         assertTrue(userdata.getPassword() == null);
