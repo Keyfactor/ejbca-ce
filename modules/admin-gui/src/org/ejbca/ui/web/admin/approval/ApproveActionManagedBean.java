@@ -143,9 +143,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	private HashMap<Integer, String> statustext = null;
 	private Map<Integer, Action> partitionActions;
 
-	ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
-	Set<Integer> partitionsAuthorizedToApprove = null;
-	ListDataModel<ApprovalPartitionProfileGuiObject> previousPartitions = null;
+	private ListDataModel<ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
+	private Set<Integer> partitionsAuthorizedToApprove = null;
+	private ListDataModel<ApprovalPartitionProfileGuiObject> previousPartitions = null;
 
 	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
@@ -453,13 +453,19 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if (partitionsAuthorizedToView == null) {
             List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
             partitionsAuthorizedToApprove = new HashSet<>();
+            //Make sure we're not reading stale data
+            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
+            ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
             if (getCurrentStep() != null) {
-                for (ApprovalPartition approvalPartition : getCurrentStep().getPartitions().values()) {
+                for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
+                    ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                     try {
                         if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                            authorizedPartitions
-                                    .add(new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                            approvalPartition.getPartitionIdentifier(),  approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(), getPartitionProperties(approvalPartition)));
+                            authorizedPartitions.add(
+                                    new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                            approvalPartition.getPartitionIdentifier(),
+                                            approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
+                                            getPartitionProperties(approvalPartition)));
                         }
                         if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
                             partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
