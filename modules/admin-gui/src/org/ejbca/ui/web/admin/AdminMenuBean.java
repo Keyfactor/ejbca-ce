@@ -25,6 +25,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
@@ -198,11 +199,22 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public String getHeadBannerUrl() {
-        String url = getGlobalConfiguration().getHeadBanner();
-        if (url.matches("[^:/]+://") || url.startsWith("/")) {
-            return url;
-        } else {
-            return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + url;
-        }
+        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getHeadBanner();
+    }
+    
+    public boolean isNonDefaultHeadBanner() {
+        return getGlobalConfiguration().isNonDefaultHeadBanner();
+    }
+    
+    public String getAppNameCapital() {
+        return InternalConfiguration.getAppNameCapital();
+    }
+    
+    public String getLogoUrl() {
+        return getEjbcaWebBean().getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png");
+    }
+    
+    public String getAdminWebUrl() {
+        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
     }
 }
