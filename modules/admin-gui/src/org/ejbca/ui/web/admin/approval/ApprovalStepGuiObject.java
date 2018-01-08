@@ -48,7 +48,11 @@ public class ApprovalStepGuiObject {
         this.stepNumber = ordinal;
         this.partitionGuiObjects = new ArrayList<>();
         for (Integer partitionId : partitionProperties.keySet()) {
-            String partitionName = approvalStep.getPartition(partitionId).getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString();
+            String partitionName = "";
+            DynamicUiProperty<? extends Serializable> nameProperty = approvalStep.getPartition(partitionId).getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+            if(nameProperty != null) {
+                partitionName = nameProperty.getValueAsString();
+            }
             partitionGuiObjects.add(new ApprovalPartitionProfileGuiObject(approvalProfileIdentifier, partitionId, partitionName, partitionProperties.get(partitionId)));
         }
         this.nextStep = approvalStep.getNextStep();
