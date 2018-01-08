@@ -22,6 +22,7 @@
 	<path id="test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="systemtests.classpath.nojee"/>
+		<path refid="common.classpath"/>
 		<path location="${build.dir}/classes"/>
 		<path location="${build-test.dir}"/>
 		<path location="${build.dir}/conf"/>
