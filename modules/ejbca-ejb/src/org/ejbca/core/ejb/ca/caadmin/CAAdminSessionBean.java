@@ -2235,6 +2235,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Get CA info.
         CA ca = caSession.getCAForEdit(admin, caid);
+        if(ca == null) {
+            throw new CADoesntExistsException("No CA with id " + caid + " found");
+        }
         try {
             // Revoke all issued CA certificates for this CA
             final List<CertificateDataWrapper> cacerts = certificateStoreSession.getCertificateDatasBySubject(ca.getSubjectDN());
