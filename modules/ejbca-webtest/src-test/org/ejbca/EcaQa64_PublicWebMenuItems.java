@@ -36,7 +36,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
     
     @BeforeClass
     public static void init() {
-        setUp(true);
+        setUp(true, null);
         webDriver = getWebDriver();
     }
 
