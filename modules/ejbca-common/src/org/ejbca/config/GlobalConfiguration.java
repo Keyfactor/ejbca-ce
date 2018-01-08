@@ -190,6 +190,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        super();
 
        setEjbcaTitle(DEFAULTEJBCATITLE);
+       setHeadBanner(DEFAULTHEADBANNER);
+       setFootBanner(DEFAULTFOOTBANNER);
        setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
@@ -236,10 +238,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
        data.put(LANGUAGEFILENAME,"languagefile");
        data.put(IECSSFILENAMEPOSTFIX,"_ie-fixes");
-
-       setHeadBanner(DEFAULTHEADBANNER);
-       setFootBanner(DEFAULTFOOTBANNER);
-
     }
 
     public void initializeAdminWeb() {
@@ -329,23 +327,26 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     // Methods for manipulating the headbanner filename.
     public   String getHeadBanner() {return (String) data.get(HEADBANNER);}
-    public   String getHeadBannerFilename(){
-      String returnval = (String) data.get(HEADBANNER);
-      return returnval.substring(returnval.lastIndexOf('/')+1);
-    }
     public   void setHeadBanner(String head){
-      data.put(HEADBANNER, ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" + head);
+      data.put(HEADBANNER, fullHeadBannerPath(head));
+    }
+    public boolean isNonDefaultHeadBanner() {
+        return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(data.get(HEADBANNER));
+    }
+    private String fullHeadBannerPath(final String head) {
+        return ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" +
+                (head != null ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
     }
 
 
     // Methods for manipulating the headbanner filename.
     public   String getFootBanner() {return (String) data.get(FOOTBANNER);}
-    public   String getFootBannerFilename(){
-      String returnval = (String) data.get(FOOTBANNER);
-      return returnval.substring(returnval.lastIndexOf('/')+1);
-    }
     public   void setFootBanner(String foot){
-      data.put(FOOTBANNER, "/" + ((String) data.get(BANNERS_PATH)) + "/" +foot);
+      data.put(FOOTBANNER, fullFootBannerPath(foot));
+    }
+    private String fullFootBannerPath(final String foot) {
+        return "/" + ((String) data.get(BANNERS_PATH)) + "/" +
+                (foot != null ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
     }
 
     // Methods for manipulating the title.
