@@ -46,6 +46,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -487,18 +488,12 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final GlobalConfiguration globalconfiguration = getGlobalConfiguration();
         String caauthstring = caauthorizationstring;
         String endentityauth = endentityprofilestring;
-        if (caauthorizationstring == null) {
-            caauthstring = getCaAuthorizationString(admin);
-        }
-            
-            
-            if( endentityprofilestring == null) {
-
+        RAAuthorization raauthorization = null;
+        if (caauthorizationstring == null || endentityprofilestring == null) {
+            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+            caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-               
-                
-                endentityauth = 
-                        getEndEntityProfileAuthorizationString(admin, endentityAccessRule);
+                endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true, endentityAccessRule);
             } else {
                 endentityauth = "";
             }
