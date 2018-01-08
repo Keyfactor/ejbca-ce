@@ -684,8 +684,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
             usermatch.setMatchvalue("noneExsisting");
             final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
-            assertTrue(userdatas.size() == 0);
+            assertNotNull(userdatas != null);
+            assertEquals(0, userdatas.size());
         }
         {// Find an exising user
             final UserMatch usermatch = new UserMatch();
@@ -694,7 +694,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             usermatch.setMatchvalue(CA1_WSTESTUSER1);
 
             final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
+            assertNotNull(userdatas);
             assertEquals(1, userdatas.size());
         }
         {// Find by O
@@ -703,7 +703,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
             usermatch.setMatchvalue("2Te");
             final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
+            assertNotNull(userdatas);
             assertEquals(1, userdatas.size());
             assertTrue(userdatas.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
         }
