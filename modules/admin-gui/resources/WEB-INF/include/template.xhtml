@@ -102,7 +102,7 @@
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_SYSTEMCONFIGURATION']}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/cmpconfiguration.jsp" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_CMPCONFIGURATION']}"/></h:outputLink>
-          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/estconfiguration.jsp" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_ESTCONFIGURATION']}"/></h:outputLink>
+          <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/estconfiguration.jsp" rendered="#{adminMenuBean.authorizedToViewEstConfiguration}"><h:outputText value="#{web.text['NAV_ESTCONFIGURATION']}"/></h:outputLink>
           <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/scepconfiguration.jsf" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text['NAV_SCEPCONFIGURATION']}"/></h:outputLink>
           <h:outputLink value="#{facesContext.externalContext.context.contextPath}/sysconfig/systemconfiguration.jsf" rendered="#{adminMenuBean.authorizedToConfigureSystem}"><h:outputText value="#{web.text['NAV_SYSTEMCONFIGURATION']}"/></h:outputLink>
           <h:outputLink value="#{facesContext.externalContext.context.contextPath}/upgrade.xhtml" rendered="#{adminMenuBean.authorizedToConfigureSystem and adminMenuBean.upgradeRequired}"><h:outputText value="#{web.text['NAV_SYSTEMUPGRADE']}"/></h:outputLink>

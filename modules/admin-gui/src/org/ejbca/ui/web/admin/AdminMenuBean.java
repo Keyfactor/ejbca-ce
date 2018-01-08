@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.bean.RequestScoped;
 
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
@@ -28,7 +28,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
-@ViewScoped // Local variables will live as long as actions on the backed page return "" or void.
+@RequestScoped
 @ManagedBean
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
@@ -39,13 +39,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     
-    private GlobalConfiguration globalConfiguration = null;
-    
     private GlobalConfiguration getGlobalConfiguration() {
-        if (globalConfiguration == null) {
-            globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        }
-        return globalConfiguration;
+        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
 
     /*===CA FUNCTIONS===*/
@@ -151,7 +146,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewPeerConnectors() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW);
+        return getEjbcaWebBean().isPeerConnectorPresent() && authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_PEERCONNECTOR_VIEW);
     }
     
     public boolean isAuthorizedToViewServices() {
@@ -171,6 +166,10 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
     
+    public boolean isAuthorizedToViewEstConfiguration() {
+        return getEjbcaWebBean().isEstConfigurationPresent() && isAuthorizedToViewSystemConfiguration();
+    }
+    
     public boolean isAuthorizedToConfigureSystem() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) 
                 || authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource()) 
@@ -183,6 +182,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public boolean isAuthorizedToViewSystemConfigurationHeader() {
         return isAuthorizedToViewSystemConfiguration()
+                || isAuthorizedToViewEstConfiguration()
                 || isAuthorizedToConfigureSystem()
                 || isUpgradeRequired();
     }
@@ -198,6 +198,11 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public String getHeadBannerUrl() {
-        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getHeadBanner();
+        String url = getGlobalConfiguration().getHeadBanner();
+        if (url.matches("[^:/]+://") || url.startsWith("/")) {
+            return url;
+        } else {
+            return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + url;
+        }
     }
 }
