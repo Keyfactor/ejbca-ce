@@ -326,7 +326,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
 
     // Methods for manipulating the headbanner filename.
-    public   String getHeadBanner() {return (String) data.get(HEADBANNER);}
+    public   String getHeadBanner() {return fullHeadBannerPath((String) data.get(HEADBANNER));}
     public   void setHeadBanner(String head){
       data.put(HEADBANNER, fullHeadBannerPath(head));
     }
@@ -340,7 +340,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
 
     // Methods for manipulating the headbanner filename.
-    public   String getFootBanner() {return (String) data.get(FOOTBANNER);}
+    public   String getFootBanner() {return fullFootBannerPath((String) data.get(FOOTBANNER));}
     public   void setFootBanner(String foot){
       data.put(FOOTBANNER, fullFootBannerPath(foot));
     }
