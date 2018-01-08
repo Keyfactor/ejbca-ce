@@ -299,6 +299,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             }
         }
         ca = caSession.getCA(admin, caId);
+        if(ca == null) {
+            throw new CADoesntExistsException("CA with ID " + caId + " does not exist.");
+        }
         return ca;
     }  
 }
