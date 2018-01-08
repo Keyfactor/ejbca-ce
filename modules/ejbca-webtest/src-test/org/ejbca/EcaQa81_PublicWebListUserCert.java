@@ -38,7 +38,7 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
     @BeforeClass
     public static void init() {
-        setUp(false);
+        setUp(false, null);
         webDriver = getWebDriver();
     }
 
