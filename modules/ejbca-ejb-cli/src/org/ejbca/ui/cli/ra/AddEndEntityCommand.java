@@ -167,7 +167,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         try {
             CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
             if (caInfo != null) {
-                // let it be 0, we will print a suitable error message below
+                // let it be 0 if not found, we will print a suitable error message below
                 caid = caInfo.getCAId();
             }
         } catch (AuthorizationDeniedException e) {
