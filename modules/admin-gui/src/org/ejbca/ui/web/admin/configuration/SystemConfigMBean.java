@@ -761,7 +761,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
 
-
             } catch (AuthorizationDeniedException | InvalidConfigurationException e) {
                 String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
                 log.info(msg);
@@ -780,6 +779,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
+            
+            // GlobalConfiguration validates and modifies some fields when they are set, so these fields need to be updated.
+            // Also, this ensures that the values shown are those actually stored in the database.
+            flushCache(); // must be done last
         }
     }
 
