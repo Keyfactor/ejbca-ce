@@ -2614,7 +2614,8 @@ ejbcaClientToolBox.sh ocsp
 
 <section name="EJBCA Validation/Conformance Tool (EJBCA Enterprise only)">
 <p>
-The ValidationTool is a standalone client-side application for certificates and OCSP response validation and conformance checks. 
+The ValidationTool is a standalone client-side application for certificates and OCSP response validation and conformance checks.
+It can with benefit be run together with the <a href="adminguide.html#Publisher%20for%20sampling%20of%20issued%20certificates">Certificate Sampler Custom Publisher</a>. 
 </p>
 <p>
 For details see the <a href="validationtool.html">ValidationTool manual</a>.
