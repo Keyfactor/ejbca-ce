@@ -77,15 +77,9 @@ public class EjbcaJSFHelper {
       */
      public void authorizedToApprovalPages() throws AuthorizationDeniedException{
 		  // Check Authorization
- 		boolean approveendentity = false;
- 		boolean approvecaaction = false;
- 		try{
- 			approveendentity = getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
- 		}catch(AuthorizationDeniedException e){}
- 		try{
- 			approvecaaction = getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.REGULAR_APPROVECAACTION);
- 		}catch(AuthorizationDeniedException e){}		
- 		if(!approveendentity && !approvecaaction){
+        boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
+ 		if (!approveendentity && !approvecaaction) {
  			throw new AuthorizationDeniedException("Not authorized to view approval pages");
  		}
      }

@@ -33,10 +33,10 @@ public interface CryptoTokenManagementSessionLocal extends CryptoTokenManagement
     CryptoTokenInfo getCryptoTokenInfo(int cryptoTokenId);
 
     /**
-     * Checks if a crypto token is active. 
+     * Checks if a crypto token is present and active. 
      * 
      * @param cryptoTokenId the ID of the crypto token
-     * @return true if it is active and exists.
+     * @return true if it exists, is present and is active.
      */
     boolean isCryptoTokenStatusActive(int cryptoTokenId);
 }

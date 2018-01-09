@@ -248,7 +248,6 @@ public class ValidatorsBean extends BaseManagedBean {
         if (StringUtils.isNotBlank(name)) {
             try {
                 keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
-                getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 actionCancel();
             } catch (KeyValidatorExistsException e) {
                 addErrorMessage("VALIDATORALREADY", name);
@@ -299,7 +298,6 @@ public class ValidatorsBean extends BaseManagedBean {
         if (name.length() > 0) {
             try {
                 keyValidatorSession.cloneKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
-                getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 setKeyValidatorName(StringUtils.EMPTY);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
@@ -331,11 +329,10 @@ public class ValidatorsBean extends BaseManagedBean {
     /**
      * Delete confirm action.
      */
-    public void actionDeleteConfirm() throws AuthorizationDeniedException, CouldNotRemoveKeyValidatorException {
+    public void actionDeleteConfirm() {
         try {
             keyValidatorSession.removeKeyValidator(getAdmin(), getSelectedKeyValidatorId());
             keyValidatorSession.flushKeyValidatorCache();
-            getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to remove key validator.");
         } catch (CouldNotRemoveKeyValidatorException e) {
@@ -363,12 +360,11 @@ public class ValidatorsBean extends BaseManagedBean {
     /**
      * Rename confirm action.
      */
-    public void actionRenameConfirm() throws AuthorizationDeniedException {
+    public void actionRenameConfirm() {
         final String name = getKeyValidatorName();
         if (name.length() > 0) {
             try {
                 keyValidatorSession.renameKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
-                getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
                 setKeyValidatorName(StringUtils.EMPTY);
             } catch (KeyValidatorDoesntExistsException e) {
                 addErrorMessage("VALIDATORDOESNOTEXIST", name);

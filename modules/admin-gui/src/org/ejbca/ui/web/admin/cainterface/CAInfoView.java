@@ -107,7 +107,7 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
         	cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
         }
         while(publisherIds.hasNext()) {
-			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(publisherIds.next());
+			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + publishersidtonamemap.get(publisherIds.next());
         }
         
         cainfodata[VALIDATORS] = StringUtils.EMPTY;
@@ -119,7 +119,7 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
             cainfodata[VALIDATORS] = ejbcawebbean.getText("NONE");
         }
         while(keyValidatorIds.hasNext()) {
-            cainfodata[VALIDATORS] = cainfodata[VALIDATORS] + ", " + (String) keyValidatorsIdToNameMap.get(keyValidatorIds.next());
+            cainfodata[VALIDATORS] = cainfodata[VALIDATORS] + ", " + keyValidatorsIdToNameMap.get(keyValidatorIds.next());
         }
         
 		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row

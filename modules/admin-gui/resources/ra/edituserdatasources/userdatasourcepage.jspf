@@ -2,8 +2,8 @@
   BaseUserDataSource userdatasourcedata = userdatasourcehelper.userdatasourcedata;
    
 
-  Map authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
-  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map authorizedcas = ejbcawebbean.getCANames();  
+  Map caidtonamemap = ejbcawebbean.getCAIdToNameMap();
     
   int[] userdatasourcetypes = {
                           CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER};

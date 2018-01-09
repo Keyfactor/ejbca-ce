@@ -3,7 +3,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
-                org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
+                org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.cesecore.certificates.endentity.EndEntityConstants, org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.certificates.util.DNFieldExtractor,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException, org.ejbca.core.model.ra.raadmin.EndEntityFieldValidatorException, org.ejbca.core.model.ra.raadmin.EndEntityValidationHelper,
                 org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator,
@@ -251,7 +251,7 @@
          profile = request.getParameter(SELECT_PROFILE);
          if(profile != null){
            if(!profile.trim().equals("")){
-             if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){
+             if(!profile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)){
                try {
                   // Check if this profile exists
                   ejbcarabean.getEndEntityProfileId(profile);
@@ -279,7 +279,7 @@
           profile = request.getParameter(SELECT_PROFILE);
           if(profile != null){
             if(!profile.trim().equals("")){
-              if(!profile.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+              if(!profile.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)){ 
                 profiledeletefailed = ejbcarabean.removeEndEntityProfile(profile); 
               }else{
                 triedtodeleteemptyprofile=true;
@@ -294,7 +294,7 @@
        String oldprofilename = request.getParameter(SELECT_PROFILE);
        if(oldprofilename != null && newprofilename != null){
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
-           if(!oldprofilename.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+           if(!oldprofilename.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)){ 
              try{
                ejbcarabean.renameEndEntityProfile(oldprofilename.trim(),newprofilename.trim());
              }catch( EndEntityProfileExistsException e){
@@ -327,7 +327,7 @@
        String oldprofilename = request.getParameter(SELECT_PROFILE);
        if(oldprofilename != null && newprofilename != null){
          if(!newprofilename.trim().equals("") && !oldprofilename.trim().equals("")){
-             if(!oldprofilename.equals(EndEntityProfileDataHandler.EMPTY_PROFILE)){ 
+             if(!oldprofilename.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)){ 
                try{ 
                  ejbcarabean.cloneEndEntityProfile(oldprofilename.trim(),newprofilename.trim());
                }catch( EndEntityProfileExistsException e){

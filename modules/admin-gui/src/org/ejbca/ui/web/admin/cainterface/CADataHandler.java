@@ -15,8 +15,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -52,9 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keybind.CertificateImportException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
@@ -63,8 +59,8 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -72,7 +68,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
  * A class help administrating CAs. 
@@ -86,7 +81,6 @@ public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);
 
     private AuthenticationToken administrator;
-    private InformationMemory info;
     
     private RoleDataSessionLocal roleDataSession;
     private RoleMemberDataSessionLocal roleMemberDataSession;
@@ -96,6 +90,7 @@ public class CADataHandler implements Serializable {
     private EndEntityProfileSession endEntityProfileSession;
     private EndEntityManagementSessionLocal endEntitySession;
     private final KeyValidatorSessionLocal keyValidatorSession;
+    private final PublisherSessionLocal publisherSession;
 
     private EjbcaWebBean ejbcawebbean;
     
@@ -108,18 +103,17 @@ public class CADataHandler implements Serializable {
        this.endEntitySession = ejb.getEndEntityManagementSession();
        this.certificateProfileSession = ejb.getCertificateProfileSession();
        this.endEntityProfileSession = ejb.getEndEntityProfileSession();
-       this.administrator = authenticationToken;
-       this.info = ejbcawebbean.getInformationMemory();       
-       this.ejbcawebbean = ejbcawebbean;
        this.keyValidatorSession = ejb.getKeyValidatorSession();
+       this.publisherSession = ejb.getPublisherSession();
+       this.administrator = authenticationToken;
+       this.ejbcawebbean = ejbcawebbean;
     }
     
   /**
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */    
-  public void createCA(CAInfo cainfo) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, InvalidAlgorithmException{
+  public void createCA(CAInfo cainfo) throws CAExistsException, CryptoTokenOfflineException, AuthorizationDeniedException, InvalidAlgorithmException{
     caadminsession.createCA(administrator, cainfo);
-    info.cAsEdited();
   }
 
   /**
@@ -145,24 +139,22 @@ public class CADataHandler implements Serializable {
           privateEncryptionKeyAlias = null;
       }
       caadminsession.importCAFromKeyStore(administrator, caname, p12file, keystorepass, keystorepass, privateSignatureKeyAlias, privateEncryptionKeyAlias);  
-      info.cAsEdited();
   }
 
   /**
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CertificateImportException {
+  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
       Collection<Certificate> certs = null;
       try {
           certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
       } catch (CertificateException e) {
           log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
           // See if it is a single binary certificate
-          certs = new ArrayList<Certificate>();
+          certs = new ArrayList<>();
           certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
       }
       caadminsession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
-      info.cAsEdited();
   }
 
   /**
@@ -176,11 +168,10 @@ public class CADataHandler implements Serializable {
 		  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
 		  // See if it is a single binary certificate
 		  Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
-		  certs = new ArrayList<Certificate>();
+		  certs = new ArrayList<>();
 		  certs.add(cert);
 	  }
 	  caadminsession.importCACertificate(administrator, caname, EJBTools.wrapCertCollection(certs));
-	  info.cAsEdited();
   }
 
   /**
@@ -194,7 +185,6 @@ public class CADataHandler implements Serializable {
 	      cainfo.setSubjectDN(oldinfo.getSubjectDN());
 	  }
 	  caadminsession.editCA(administrator, cainfo);  
-	  info.cAsEdited();
   }
 
     /**
@@ -204,21 +194,14 @@ public class CADataHandler implements Serializable {
      * @param  caInfo CAInfo class containing updated information for the CA to initialize
      * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
      * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys 
-     * @throws InvalidKeyException if the cryptotoken owned by this CA lacks keystores
      * @throws CADoesntExistsException if the CA defined by caInfo doesn't exist.
      * @throws InvalidAlgorithmException 
-     * @throws CryptoTokenAuthenticationFailedException 
-     * @throws CAExistsException 
-     * @throws CAOfflineException 
-     * @throws CertificateRevokeException 
-     * @throws UnsupportedEncodingException 
      */
     public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException, InvalidAlgorithmException {
         CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
         caInfo.setName(oldinfo.getName());
         
         caadminsession.initializeCa(administrator, caInfo);
-        info.cAsEdited();
     }
   
     /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */  
@@ -229,7 +212,6 @@ public class CADataHandler implements Serializable {
                 isCaIdInUseByRoleOrRoleMember(caId);   
         if (!caIdIsPresent) {
             caSession.removeCA(administrator, caId);
-            info.cAsEdited();
         }
         return !caIdIsPresent;
     }
@@ -263,45 +245,44 @@ public class CADataHandler implements Serializable {
           } catch (CAExistsException e) {
               return true;
           }  
-          info.cAsEdited();
       }
       return false;
   }
 
-  public CAInfoView getCAInfo(String name) throws CADoesntExistsException, AuthorizationDeniedException {
+  public CAInfoView getCAInfo(String name) throws AuthorizationDeniedException {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfo(administrator, name);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
   
-  public CAInfoView getCAInfoNoAuth(String name) throws CADoesntExistsException {
+  public CAInfoView getCAInfoNoAuth(String name) {
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfoInternal(-1, name, true);
     if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
+      cainfoview = new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     } 
     return cainfoview;
   }
   
-  public CAInfoView getCAInfoNoAuth(final int caid) throws CADoesntExistsException {
+  public CAInfoView getCAInfoNoAuth(final int caid) {
       final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-      return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
+      return new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
     }
   
 
-  public CAInfoView getCAInfo(final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+  public CAInfoView getCAInfo(final int caid) throws AuthorizationDeniedException {
     final CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-    return new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
+    return new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
   }
 
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
   public Map<Integer, String> getCAIdToNameMap(){
-    return info.getCAIdToNameMap();
+    return caSession.getCAIdToNameMap();
   }
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
@@ -311,13 +292,13 @@ public class CADataHandler implements Serializable {
           try {
               certChain = CertTools.getCertsFromPEM(new ByteArrayInputStream(caChainBytes), Certificate.class);
               if (certChain.size()==0) {
-                  throw new Exception("Awkward code flow.."); // TODO
+                  throw new IllegalStateException("Certificate chain contained no certificates");
               }
           } catch (Exception e) {
               // Maybe it's just a single binary CA cert
               try {
                   Certificate cert = CertTools.getCertfromByteArray(caChainBytes, Certificate.class);
-                  certChain = new ArrayList<Certificate>();
+                  certChain = new ArrayList<>();
                   certChain.add(cert);
               } catch (CertificateParsingException e2) {
                   // Ok.. so no chain was supplied.. we go ahead anyway..
@@ -333,14 +314,14 @@ public class CADataHandler implements Serializable {
   }
 
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
-  public byte[] createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException{
+  public byte[] createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException{
       return caadminsession.createAuthCertSignRequest(administrator, caid, request);
   }     
   
-  /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse() */  
+  /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse */  
   public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias, boolean futureRollover) throws Exception{
 	  try {
-          final List<Certificate> certChain = new ArrayList<Certificate>();
+          final List<Certificate> certChain = new ArrayList<>();
 		  try {
 		      certChain.addAll(CertTools.getCertsFromPEM(new ByteArrayInputStream(certBytes), Certificate.class));
           } catch (CertificateException e) {
@@ -355,7 +336,6 @@ public class CADataHandler implements Serializable {
 		  final X509ResponseMessage resmes = new X509ResponseMessage();
 		  resmes.setCertificate(caCertificate);
 		  caadminsession.receiveResponse(administrator, caid, resmes, certChain.subList(1, certChain.size()), nextSignKeyAlias, futureRollover);
-		  info.cAsEdited(); 		  
 	  } catch (Exception e) {
 	      // log the error here, since otherwise it may be hidden by web pages...
 		  log.error("Error receiving response: ", e);
@@ -372,7 +352,6 @@ public class CADataHandler implements Serializable {
       if(result instanceof X509ResponseMessage){
          returnval = ((X509ResponseMessage) result).getCertificate();      
       }            
-      info.cAsEdited();
       
       return returnval;      
   }
@@ -392,7 +371,6 @@ public class CADataHandler implements Serializable {
               // Use existing keys
               caadminsession.renewCA(administrator, caid, nextSignKeyAlias, null, createLinkCertificate);
           }
-          info.cAsEdited();
           return true;
       }
   }
@@ -408,7 +386,6 @@ public class CADataHandler implements Serializable {
               // Use existing keys
               caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
           }
-          info.cAsEdited();
           return true;
       }
   }
@@ -416,12 +393,10 @@ public class CADataHandler implements Serializable {
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
   public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
       caadminsession.revokeCA(administrator, caid, reason);
-      info.cAsEdited();
   }
       
   /**
    *  @throws CADoesntExistsException 
- * @see org.ejbca.core.ejb.ca.caadmin.CAAdmiSessionBean
    */  
  public void publishCA(int caid) throws AuthorizationDeniedException, CADoesntExistsException {
  	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
@@ -446,7 +421,7 @@ public class CADataHandler implements Serializable {
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());
     caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-    caadminsession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
+    caadminsession.publishCRL(administrator, cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
  
  /**
@@ -463,11 +438,11 @@ public class CADataHandler implements Serializable {
     caadminsession.renewAndRevokeCmsCertificate(administrator, caid);
  }
  
- public void activateCAToken(int caid) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
+ public void activateCAToken(int caid) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
    caadminsession.activateCAService(administrator, caid);
  }
  
- public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException, IllegalCryptoTokenException, CADoesntExistsException, CryptoTokenAuthenticationFailedException{
+ public void deactivateCAToken(int caid) throws AuthorizationDeniedException, CADoesntExistsException {
     caadminsession.deactivateCAService(administrator, caid);	
  }
  

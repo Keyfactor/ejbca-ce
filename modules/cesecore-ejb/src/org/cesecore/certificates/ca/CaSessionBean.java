@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
@@ -503,15 +504,15 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<String> getActiveCANames(final AuthenticationToken admin) {
-        return new ArrayList<String>(getActiveCAIdToNameMap(admin).values());
+        return new ArrayList<>(getActiveCAIdToNameMap(admin).values());
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<Integer, String> getActiveCAIdToNameMap(final AuthenticationToken authenticationToken) {
-        final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        final HashMap<Integer, String> returnval = new HashMap<>();
         for (int caId : getAllCaIds()) {
-            if (authorizedToCA(authenticationToken, caId)) {
+            if (authorizedToCANoLogging(authenticationToken, caId)) {
                 CAInfo caInfo = getCAInfoInternal(caId);
                 if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
                     returnval.put(caInfo.getCAId(), caInfo.getName());
@@ -526,7 +527,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public List<Integer> getAuthorizedCaIds(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
-        final ArrayList<Integer> returnval = new ArrayList<Integer>();
+        final ArrayList<Integer> returnval = new ArrayList<>();
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
                 returnval.add(caid);
@@ -539,10 +540,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public Collection<String> getAuthorizedCaNames(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
-        final TreeSet<String> names = new TreeSet<String>();
+        final TreeSet<String> names = new TreeSet<>();
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
                 names.add(getCAInfoInternal(caid).getName());
+            }
+        }
+        return names;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public TreeMap<String,Integer> getAuthorizedCaNamesToIds(final AuthenticationToken admin) {
+        final Collection<Integer> availableCaIds = getAllCaIds();
+        final TreeMap<String,Integer> names = new TreeMap<>();
+        for (Integer caid : availableCaIds) {
+            if (authorizedToCANoLogging(admin, caid)) {
+                final CAInfo caInfo = getCAInfoInternal(caid);
+                names.put(caInfo.getName(), caInfo.getCAId());
             }
         }
         return names;
