@@ -16,17 +16,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import java.nio.charset.Charset;
 import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.junit.After;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests base64 encoding and decoding
- * 
+ *
  * @version $Id$
  */
 public class Base64Test {
@@ -278,10 +279,6 @@ public class Base64Test {
         log.trace("<setUp()");
     }
 
-    @After
-    public void tearDown() throws Exception {
-    }
-
     @Test
     public void testBase64Small() throws Exception {
         // Testcert is on long line of base 64 encoded stuff
@@ -320,7 +317,15 @@ public class Base64Test {
         str2 = StringUtils.deleteWhitespace(str2);
         // now it should be same
         assertEquals(str1, str2);
-
     }
 
+    @Test(expected = DecoderException.class)
+    public void testIncorrectPadding1() {
+        Base64.decode("DAxFSkJDQSBTYW".getBytes(Charset.forName("UTF-8")));
+    }
+
+    @Test(expected = DecoderException.class)
+    public void testIncorrectPadding2() {
+        Base64.decode("DAxFSkJDQSBTYW=".getBytes(Charset.forName("UTF-8")));
+    }
 }

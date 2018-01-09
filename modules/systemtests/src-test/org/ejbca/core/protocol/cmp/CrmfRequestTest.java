@@ -324,9 +324,9 @@ public class CrmfRequestTest extends CmpTestCase {
         cmpConfRes.setSignKeyInfo(this.testx509ca.getCertificateChain(), this.keys.getPrivate(), null);
         cmpConfRes.setSender(new GeneralName(USER_DN));
         cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
-        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");
-        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY");
-        cmpConfRes.setTransactionId("DAxFS");
+        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW==");
+        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY==");
+        cmpConfRes.setTransactionId("MTMzNwo=");
         cmpConfRes.create();
         byte[] resp = cmpConfRes.getResponseMessage();
         PKIMessage msg = PKIMessage.getInstance(ASN1Primitive.fromByteArray(resp));
@@ -342,9 +342,9 @@ public class CrmfRequestTest extends CmpTestCase {
         //cmpConfRes.setSignKeyInfo(this.testx509ca.getCertificateChain(), this.keys.getPrivate(), null);
         cmpConfRes.setSender(new GeneralName(USER_DN));
         cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
-        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");
-        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY");
-        cmpConfRes.setTransactionId("DAxFS");
+        cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW==");
+        cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY==");
+        cmpConfRes.setTransactionId("MTMzNwo=");
         cmpConfRes.create();
         byte[] resp = cmpConfRes.getResponseMessage();
         PKIMessage msg = PKIMessage.getInstance(ASN1Primitive.fromByteArray(resp));
