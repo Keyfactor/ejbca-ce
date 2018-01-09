@@ -24,6 +24,7 @@
 org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
+org.ejbca.util.HTMLTools,
 org.cesecore.authorization.control.StandardRules,
 org.cesecore.authorization.AuthorizationSessionLocal,
 org.cesecore.authorization.AuthorizationDeniedException
@@ -918,8 +919,12 @@ org.cesecore.authorization.AuthorizationDeniedException
     </div> <!-- Container -->
 
 	<%	// Include Footer 
-	String footurl = globalconfiguration.getFootBanner(); %>
-	<jsp:include page="<%= footurl %>" />
+	String footurl = globalconfiguration.getFootBanner();
+	if (pageContext.getServletContext().getResource(footurl) != null) { %>
+		<jsp:include page="<%= footurl %>" />
+	<% } else { %>
+		<div>ERROR! Failed to include footer file "<%= HTMLTools.htmlescape(footurl) %>". (default value is: <%= HTMLTools.htmlescape(GlobalConfiguration.DEFAULTFOOTBANNER) %>)</div>
+	<% } %>
 </div> <!-- main-wrapper -->
 </body>
 </f:view>
