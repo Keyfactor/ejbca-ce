@@ -70,9 +70,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
     // Default name of headbanner in web interface.
-    private static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
+    public static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
     // Default name of footbanner page in web interface.
-    private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
+    public static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp"; // used from systemconfiguration.jsp
 
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
@@ -335,7 +335,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
     private String fullHeadBannerPath(final String head) {
         return ((String) data.get(ADMINPATH)) + ((String) data.get(BANNERS_PATH)) + "/" +
-                (head != null ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
+                (StringUtils.isNotBlank(head) ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
     }
 
 
@@ -346,7 +346,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
     private String fullFootBannerPath(final String foot) {
         return "/" + ((String) data.get(BANNERS_PATH)) + "/" +
-                (foot != null ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
+                (StringUtils.isNotBlank(foot) ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
     }
 
     // Methods for manipulating the title.
