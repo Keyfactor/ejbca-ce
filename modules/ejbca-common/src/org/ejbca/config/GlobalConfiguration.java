@@ -262,9 +262,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	           WebConfiguration.getHostName() + ":" +
     	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
     	           InternalConfiguration.getAppNameLower() + "/";
-   }
+    }
 
-    public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
+    public String getAdminWebPath() {
+        return getString(ADMINPATH, "adminweb");
+    }
 
     public String getStandardCRLDistributionPointURI(){
         return getStandardCRLDistributionPointURINoDN() + DEFAULTCRLDISTURIPATHDN;
