@@ -19,5 +19,5 @@ Only used to get rid of warnings when running some CLIs
 (EJB CLI and Statedump), on versions of JBoss/WildFly that uses SLF4j.
 slf4j-log4j12-1.7.25.jar (Apache/MIT/BSD/CDDL)
 
-httpclient (here) is only used SigningDailyRollingFileAppender and is from the Apache Http Components project, using the Apache license:
+httpclient (here) is only used by SigningDailyRollingFileAppender and is from the Apache Http Components project, using the Apache license:
 commons-httpclient-3.1.jar
