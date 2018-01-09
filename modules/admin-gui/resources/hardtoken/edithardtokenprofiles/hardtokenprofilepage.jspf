@@ -3,11 +3,11 @@
   HardTokenProfile profiledata = edithardtokenprofile.profiledata;
    
 
-  Map authorizedcas = ejbcawebbean.getInformationMemory().getCANames();
-  TreeMap authorizedcertprofiles = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
+  Map authorizedcas = ejbcawebbean.getCANames();
+  TreeMap authorizedcertprofiles = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
   authorizedcertprofiles.put("No Certificate", CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
  
-  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map caidtonamemap = ejbcawebbean.getCAIdToNameMap();
     
   int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID, TurkishEIDProfile.TYPE_TURKISHEID};
   String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID", "TURKISHEID"};

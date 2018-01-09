@@ -24,14 +24,14 @@ org.apache.commons.lang.StringUtils,
 org.cesecore.authorization.AuthorizationDeniedException,
 org.cesecore.authorization.control.StandardRules,
 org.cesecore.certificates.ca.CAConstants,
+org.cesecore.certificates.ca.CAInfo,
 org.cesecore.certificates.crl.CRLInfo,
 org.cesecore.keys.token.CryptoToken,
 org.cesecore.util.CertTools,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
 org.ejbca.ui.web.RequestHelper,
-org.ejbca.util.HTMLTools,
-org.ejbca.ui.web.admin.cainterface.CAInfoView
+org.ejbca.util.HTMLTools
 "%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -71,10 +71,7 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
   final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration.getCaPath() 
                                                   + "/cacert";
   final String DOWNLOADCRL_LINK             = globalconfiguration.getCaPath() + "/getcrl/getcrl";
-  boolean createcrlrights = false;
-  try{
-     createcrlrights = ejbcawebbean.isAuthorizedNoLog(StandardRules.CREATECRL.resource());
-  }catch(AuthorizationDeniedException e){}
+  boolean createcrlrights = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CREATECRL.resource());
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -114,8 +111,9 @@ org.ejbca.ui.web.admin.cainterface.CAInfoView
     }
   }
 
-  TreeMap<String, Integer> canames = ejbcawebbean.getInformationMemory().getAllCANames();
-  TreeMap<String, Integer> extcanames = ejbcawebbean.getInformationMemory().getExternalCAs();
+  // Get authorized CAs and external CAs
+  TreeMap<String, Integer> canames = ejbcawebbean.getCANames();
+  TreeMap<String, Integer> extcanames = ejbcawebbean.getExternalCANames();
 
 %>
 <head>
@@ -162,13 +160,8 @@ function getPasswordAndSubmit(formname) {
   	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
 <% // Import CRLs of external CAs
-  	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
+  	 List<String> extCaNameList = new ArrayList<>(extcanames.keySet());
 	 if(extCaNameList.size() > 0) {
-	  	 Collections.sort(extCaNameList, new Comparator<String>() {
-  		   	public int compare(String o1, String o2) {
-  	   		    return o1.compareToIgnoreCase(o2);
-  	   		}
-  		 });
   		 %>
   	 
   		 <h2><%= ejbcawebbean.getText("IMPORTCRL_TITLE") %></h2>  	 
@@ -216,16 +209,13 @@ function getPasswordAndSubmit(formname) {
      int number = 0;
      for(String caname : caNameList) { 
        int caid = ((Integer) canames.get(caname)).intValue();
-       CAInfoView cainfo = null;
-       try {
-           cainfo = cabean.getCAInfo(caid);
-       } catch (AuthorizationDeniedException e) {
-           continue; // We are obviously not authorized to this CA
-       }
+       CAInfo cainfo = null;
+       // canames contains authorized CAs only, so no need to do an auth check again
+       cainfo = cabean.getCAInfoFastNoAuth(caid);
        if (cainfo == null) {
          continue;	// Something wrong happened retrieving this CA?       
        }
-       String subjectdn = cainfo.getCAInfo().getSubjectDN();
+       String subjectdn = cainfo.getSubjectDN();
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;
  %>
@@ -292,7 +282,7 @@ function getPasswordAndSubmit(formname) {
         <br />
         
         <!-- Full CRLs --> 
-        <% CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
+        <% CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo, false);
            if(crlinfo == null){ 
              out.write(ejbcawebbean.getText("NOCRLHAVEBEENGENERATED"));
            }else{
@@ -309,9 +299,9 @@ function getPasswordAndSubmit(formname) {
 		<% } %>
 
 		<% // Delta CRLs 
- 	    CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
+ 	    CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo, true);
 	    if(deltacrlinfo == null){ 
-     		if (cainfo.getCAInfo().getDeltaCRLPeriod() > 0) {
+     		if (cainfo.getDeltaCRLPeriod() > 0) {
     	    	out.write(ejbcawebbean.getText("NODELTACRLHAVEBEENGENERATED"));
      	    } else {
      	    	out.write(ejbcawebbean.getText("DELTACRLSNOTENABLED"));
@@ -339,16 +329,16 @@ function getPasswordAndSubmit(formname) {
 			<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
 			<%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
-       		<% if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE ) {	%>
+       		<% if ( cainfo.getStatus() == CAConstants.CA_ACTIVE ) {	%>
 				<input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
        		<% }else{
            		out.write(ejbcawebbean.getText("CAISNTACTIVE"));
          		} 
-       		if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
+       		if(cainfo.getDeltaCRLPeriod() > 0) { %>
 			<br />
 			<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
 			<%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
-      		<% if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) { %>
+      		<% if ( cainfo.getStatus() == CAConstants.CA_ACTIVE) { %>
 				<input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
        		<% } else {
             	out.write(ejbcawebbean.getText("CAISNTACTIVE"));

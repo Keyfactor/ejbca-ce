@@ -85,8 +85,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @Override
     public void addEndEntityProfile(final AuthenticationToken admin, final int profileid, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
-        if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
-            final String msg = INTRES.getLocalizedMessage("ra.erroraddprofilefixed", profilename, EMPTY_ENDENTITYPROFILENAME);
+        if (profilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
+            final String msg = INTRES.getLocalizedMessage("ra.erroraddprofilefixed", profilename, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
             LOG.info(msg);
             throw new EndEntityProfileExistsException(msg);
         } else if (!isFreeEndEntityProfileId(profileid)) {
@@ -125,7 +125,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @Override
     public void cloneEndEntityProfile(final AuthenticationToken admin, final String orgname, final String newname) throws AuthorizationDeniedException, EndEntityProfileExistsException {
-        if (newname.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
+        if (newname.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
         	LOG.info(msg);
             throw new EndEntityProfileExistsException();
@@ -258,7 +258,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.trace(">getEndEntityProfileNoClone(" + profilename + ")");
         }
         EndEntityProfile returnval = null;
-        if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
+        if (profilename.equals(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
             returnval = new EndEntityProfile(true);
         } else {
             final Integer id = EndEntityProfileCache.INSTANCE.getNameIdMapCache(entityManager).get(profilename);
@@ -504,7 +504,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @Override
     public void renameEndEntityProfile(final AuthenticationToken admin, final String oldprofilename, final String newprofilename) throws AuthorizationDeniedException, EndEntityProfileExistsException {
-        if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
+        if (newprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
         	LOG.info(msg);
             throw new EndEntityProfileExistsException();

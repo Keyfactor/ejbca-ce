@@ -51,6 +51,14 @@ public interface CryptoTokenManagementSession {
 
     /** @return true if the CryptoToken with the specified ID has been activated. */
     boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
+    
+    /**
+     * Checks if a crypto token is present. 
+     * 
+     * @param cryptoTokenId the ID of the crypto token
+     * @return true if it is exists and is present
+     */
+    boolean isCryptoTokenPresent(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
     /**
      * Creates a crypto token with a known ID. Note that using an already existing ID will lead to an error at a later state. 

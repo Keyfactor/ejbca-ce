@@ -29,12 +29,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,9 +62,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -79,14 +83,20 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
+import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -104,32 +114,20 @@ public class EjbcaWebBean implements Serializable {
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
 
-    // Public Constants.
-    public static final int AUTHORIZED_RA_VIEW_RIGHTS = 0;
-    public static final int AUTHORIZED_RA_EDIT_RIGHTS = 1;
-    public static final int AUTHORIZED_RA_CREATE_RIGHTS = 2;
-    public static final int AUTHORIZED_RA_DELETE_RIGHTS = 3;
-    public static final int AUTHORIZED_RA_REVOKE_RIGHTS = 4;
-    public static final int AUTHORIZED_RA_HISTORY_RIGHTS = 5;
-    public static final int AUTHORIZED_HARDTOKEN_VIEW_RIGHTS = 6;
-    public static final int AUTHORIZED_CA_VIEW_CERT = 7;
-    public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
-
-    private static final String[] AUTHORIZED_RA_RESOURCES = { AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRulesConstants.REGULAR_EDITENDENTITY,
-            AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRulesConstants.REGULAR_REVOKEENDENTITY,
-            AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRulesConstants.REGULAR_VIEWHARDTOKENS,
-            AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRulesConstants.REGULAR_KEYRECOVERY };
-
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
+    private final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
     private final AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
+    private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
     private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
+    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+    private final HardTokenSessionLocal hardTokenSession = ejbLocalHelper.getHardTokenSession();
+    private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
     private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
     private final RoleSessionLocal roleSession = ejbLocalHelper.getRoleSession();
-    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final UpgradeSessionLocal upgradeSession = ejbLocalHelper.getUpgradeSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
@@ -147,10 +145,8 @@ public class EjbcaWebBean implements Serializable {
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
     private String certificatefingerprint; // Unique key to identify the admin.. usually a hash of the admin's certificate
-    private InformationMemory informationmemory;
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
-    private final Boolean[] raauthorized = new Boolean[AUTHORIZED_RA_RESOURCES.length];
     private AuthenticationToken administrator;
     private String requestServerName;
 
@@ -171,9 +167,6 @@ public class EjbcaWebBean implements Serializable {
         reloadCmpConfiguration();
         reloadAvailableExtendedKeyUsagesConfiguration();
         reloadAvailableCustomCertExtensionsConfiguration();
-        if (informationmemory == null) {
-            informationmemory = new InformationMemory(administrator, globalconfiguration, availableExtendedKeyUsagesConfig, availableCustomCertExtensionsConfig, this);
-        }
     }
 
     /* Sets the current user and returns the global configuration */
@@ -187,7 +180,7 @@ public class EjbcaWebBean implements Serializable {
             if (certificates == null || certificates.length == 0) {
                 throw new AuthenticationFailedException("Client certificate required.");
             } else {
-                final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                final Set<X509Certificate> credentials = new HashSet<>();
                 credentials.add(certificates[0]);
                 final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
                 administrator = authenticationSession.authenticate(subject);
@@ -214,7 +207,7 @@ public class EjbcaWebBean implements Serializable {
             if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
                 throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
             }
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<>();
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
                 details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
             }
@@ -399,11 +392,12 @@ public class EjbcaWebBean implements Serializable {
      * Checks if the admin have authorization to view the resource Does not return false if not authorized, instead throws an
      * AuthorizationDeniedException.
      *
-     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
+     * @deprecated Don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
      *
      * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
+    @Deprecated
     public boolean isAuthorized(String... resources) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorized(administrator, resources)) {
             throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
@@ -415,11 +409,12 @@ public class EjbcaWebBean implements Serializable {
      * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
      * authorized, instead throws an AuthorizationDeniedException.
      *
-     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
+     * @deprecated Don't use as is in a new admin GUI. Use {@link #isAuthorizedNoLogSilent(String...)} instead.
      *
      * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
+    @Deprecated
     public boolean isAuthorizedNoLog(String... resources) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
             throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
@@ -436,26 +431,6 @@ public class EjbcaWebBean implements Serializable {
      */
     public boolean isAuthorizedNoLogSilent(String... resources) {
         return authorizationSession.isAuthorizedNoLogging(administrator, resources);
-    }
-
-    /**
-     * A more optimized authorization version to check if the admin have authorization to view the url without performing any logging. AUTHORIZED_RA..
-     * constants should be used. Does not return false if not authorized, instead throws an AuthorizationDeniedException.
-     *
-     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
-     *
-     * @return true is authorized to resource, never return false instead throws AuthorizationDeniedException.
-     * @throws AuthorizationDeniedException is not authorized to resource
-     */
-    public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
-        if (raauthorized[resource] == null) {
-            raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLogging(administrator, AUTHORIZED_RA_RESOURCES[resource]));
-        }
-        final boolean returnval = raauthorized[resource].booleanValue();
-        if (!returnval) {
-            throw new AuthorizationDeniedException("Not authorized to " + resource);
-        }
-        return returnval;
     }
 
     public String getBaseUrl() {
@@ -482,7 +457,7 @@ public class EjbcaWebBean implements Serializable {
 
     /* Returns the global configuration */
     public GlobalConfiguration getGlobalConfiguration() {
-        return this.informationmemory.getGlobalConfiguration();
+        return globalconfiguration;
     }
 
     /**
@@ -656,20 +631,15 @@ public class EjbcaWebBean implements Serializable {
     public void reloadGlobalConfiguration() {
         globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalconfiguration.initializeAdminWeb();
-        if (informationmemory != null) {
-            informationmemory.systemConfigurationEdited(globalconfiguration);
-        }
     }
 
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, gc);
-        informationmemory.systemConfigurationEdited(gc);
         reloadGlobalConfiguration();
     }
 
     public void saveGlobalConfiguration() throws Exception {
         globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
-        informationmemory.systemConfigurationEdited(globalconfiguration);
     }
 
     /**
@@ -709,25 +679,195 @@ public class EjbcaWebBean implements Serializable {
         return adminspreferences.existsAdminPreference(certificatefingerprint);
     }
 
-    public void addAdminPreference(AdminPreference ap) throws IOException, AdminExistsException {
+    public void addAdminPreference(AdminPreference ap) throws AdminExistsException {
         currentadminpreference = ap;
         adminspreferences.addAdminPreference(certificatefingerprint, ap);
         adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
                 currentadminpreference.getSecondaryLanguage());
     }
+    
+    public TreeMap<String,Integer> getHardTokenProfiles() {
+        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();                 
+        for (Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){               
+            final String name = hardTokenSession.getHardTokenProfileName(id.intValue());
+            hardtokenprofiles.put(name, id);
+        }
+        return hardtokenprofiles;  
+    }
+    
+    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
+        return hardTokenSession.getHardTokenIssuers(administrator);
+    }
+    
+    public Map<Integer,String> getCAIdToNameMap() {
+        return caSession.getCAIdToNameMap();
+    }
 
-    public Collection<Integer> getAuthorizedCAIds() {
-        return this.informationmemory.getAuthorizedCAIds();
+    public List<Integer> getAuthorizedCAIds() {
+        return caSession.getAuthorizedCaIds(administrator);
+    }
+    
+    public TreeMap<String,Integer> getCANames() {
+        return caSession.getAuthorizedCaNamesToIds(administrator);
+    }
+    
+    public TreeMap<String,Integer> getExternalCANames() {
+        TreeMap<String,Integer> ret = new TreeMap<>();
+        for (CAInfo caInfo : caSession.getAuthorizedCaInfos(administrator)) {
+            if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                ret.put(caInfo.getName(), caInfo.getCAId());
+            }
+        }
+        return ret;
+    }
+    
+    public TreeMap<String,Integer> getActiveCANames() {
+        TreeMap<String, Integer> ret = new TreeMap<>();
+        Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(administrator);
+        for (Integer id : idtonamemap.keySet()) {
+            ret.put(idtonamemap.get(id), id);
+        }
+        return ret;
     }
 
     /** @return authorized CA Ids sorted by CA name alphabetically*/
     public Collection<Integer> getAuthorizedCAIdsByName() {
-        return this.informationmemory.getAuthorizedCAIdsByName();
+        return caSession.getAuthorizedCaNamesToIds(administrator).values();
     }
-
 
     public boolean isAuthorizedToAllCAs() {
         return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
+    }
+    
+    public String getCertificateProfileName(final int profileId) {
+        return certificateProfileSession.getCertificateProfileName(profileId);
+    }
+    
+    /**
+     * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
+     */
+    public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();  
+        final List<Integer> authorizedIds;
+        if (globalconfiguration.getIssueHardwareTokens()) {         
+            authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_HARDTOKEN);
+        } else {
+            authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
+        }
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
+    
+    /**
+     * Returns authorized sub CA certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();  
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SUBCA);      
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
+
+    /**
+     * Returns authorized root CA certificate profile names as a treemap of name (String) -> id (Integer)
+     */
+    public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);      
+        final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (final int id : authorizedIds) {
+            ret.put(idtonamemap.get(id),id);
+        }
+        return ret;
+    }
+    
+    /**
+     * Method returning the all available approval profiles id to name.
+     *
+     * @return the approvalprofiles-id-to-name-map (HashMap)
+     */
+    public Map<Integer, String> getApprovalProfileIdToNameMap() {
+        Map<Integer, String> approvalProfileMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+        approvalProfileMap.put(-1, getText("NONE"));
+        return approvalProfileMap;
+    }
+    
+    public List<Integer> getSortedApprovalProfileIds() {
+        List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
+        Collections.sort(sortedProfiles, new Comparator<ApprovalProfile>() {
+            @Override
+            public int compare(ApprovalProfile o1, ApprovalProfile o2) {
+                if (o1 == null) { return o2 == null ? 0 : -1; }
+                else if (o2 == null) { return 1; }
+                return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
+            }
+        });
+        List<Integer> result = new ArrayList<>();
+        result.add(-1);
+        for(ApprovalProfile approvalProfile : sortedProfiles) {
+            result.add(approvalProfile.getProfileId());
+        }
+        return result;
+    }
+    
+    /**
+     * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
+     */
+    public TreeMap<String, Integer> getAuthorizedPublisherNames() {
+        final TreeMap<String,Integer> ret = new TreeMap<>(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    if (o1 == null) { return o2 == null ? 0 : -1; }
+                    else if (o2 == null) { return 1; }
+                    int result = o1.compareToIgnoreCase(o2);
+                    if (result == 0) {
+                        result = o1.compareTo(o2);
+                    }
+                    return result;
+                }
+            });
+        final Map<Integer, String> idtonamemap = publisherSession.getPublisherIdToNameMap();
+        for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
+            ret.put(idtonamemap.get(id), id);
+        }
+        return ret;
+    }
+    
+    /**
+     * Method returning the all available publishers id to name.
+     *
+     * @return the publisheridtonamemap (HashMap) sorted by value
+     */
+    public Map<Integer, String> getPublisherIdToNameMapByValue() {
+        final Map<Integer,String> publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
+        final List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
+        Collections.sort(publisherIdToNameMapList, new Comparator<Map.Entry<Integer, String>>() {
+            @Override
+            public int compare(Map.Entry<Integer, String> o1, Map.Entry<Integer, String> o2) {
+                if (o1 == null) { return o2 == null ? 0 : -1; }
+                else if (o2 == null) { return 1; }
+                return o1.getValue().compareToIgnoreCase(o2.getValue());
+            }
+        });
+        Map<Integer, String> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<Integer, String> entry : publisherIdToNameMapList) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+    
+    /**
+     * Returns authorized end entity profile names as a treemap of name (String) -> id (String)
+     */
+    public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
+        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        return raAuthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
     public void changeAdminPreference(AdminPreference ap) throws AdminDoesntExistException {
@@ -753,10 +893,6 @@ public class EjbcaWebBean implements Serializable {
                 currentadminpreference.getSecondaryLanguage());
     } // saveDefaultAdminPreference
 
-    public InformationMemory getInformationMemory() {
-        return this.informationmemory;
-    }
-
     public AuthenticationToken getAdminObject() {
         return this.administrator;
     }
@@ -765,7 +901,7 @@ public class EjbcaWebBean implements Serializable {
      * Method returning all CA ids with CMS service enabled
      */
     public Collection<Integer> getCAIdsWithCMSServiceActive() {
-        ArrayList<Integer> retval = new ArrayList<Integer>();
+        ArrayList<Integer> retval = new ArrayList<>();
         Collection<Integer> caids = caSession.getAuthorizedCaIds(administrator);
         Iterator<Integer> iter = caids.iterator();
         while (iter.hasNext()) {
@@ -1081,7 +1217,7 @@ public class EjbcaWebBean implements Serializable {
         //Copy the configuration, because modifying parameters is nasty
         CmpConfiguration returnValue = new CmpConfiguration(cmpConfiguration);
         //Build a lookup map due to the fact that default CA is stored as a SubjectDNs
-        Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
+        Map<String, String> subjectDnToCaNameMap = new HashMap<>();
         for (int caId : caSession.getAllCaIds()) {
             CAInfo caInfo = caSession.getCAInfoInternal(caId);
             subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
@@ -1122,7 +1258,7 @@ public class EjbcaWebBean implements Serializable {
                 }
                 //Certificate Profiles are tested implicitly, since we can't choose any CP which isn't part of the EEP, and we can't choose the EEP if we don't have access to its CPs.
             }
-            TreeMap<String, Integer> caNameToIdMap = getInformationMemory().getAllCANames();
+            TreeMap<String, Integer> caNameToIdMap = caSession.getAuthorizedCaNamesToIds(administrator);
             for (String caName : caNames) {
                 if(caName != null) { //CA might have been removed
                     Integer caId = caNameToIdMap.get(caName);
@@ -1148,12 +1284,13 @@ public class EjbcaWebBean implements Serializable {
      * Retrieve a mapping between authorized end entity profile names and their ids which can be displayed in the GUI.
      * The returned map will contain an additional "KeyID" entry which allows the end user to specify the end entity
      * in the CMP request.
-     * @param endentityAccessRule the access rule used for authorization
+     * @param endEntityAccessRule the access rule used for authorization
      * @return a map {end entity name} => {end entity id} with authorized end entities
      */
-    public Map<String, String> getAuthorizedEEProfileNamesAndIds(final String endentityAccessRule) {
+    public Map<String, String> getAuthorizedEEProfileNamesAndIds(final String endEntityAccessRule) {
+        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         final TreeMap<String, String> authorizedEEProfileNamesAndIds = new TreeMap<>(
-                informationmemory.getAuthorizedEndEntityProfileNames(endentityAccessRule));
+                raAuthorization.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
         // Add KeyId option. If used, extract the EE profile name from the senderKID field of the CMP request.
         // Important to add KeyId entry to a fresh copy, since the "Add End Entity" page will try to load end
         // entity profiles from this map.
@@ -1162,7 +1299,8 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public Map<String, String> getAuthorizedEEProfilesAndIdsNoKeyId(final String endEntityAccessRule) {
-        return new TreeMap<>(informationmemory.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
+        final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+        return new TreeMap<>(raAuthorization.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
     }
 
     /**
@@ -1177,7 +1315,7 @@ public class EjbcaWebBean implements Serializable {
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
-            final List<String> certificateAuthorities = new ArrayList<>(informationmemory.getAllCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId));
@@ -1187,12 +1325,12 @@ public class EjbcaWebBean implements Serializable {
         final Collection<String> certificateAuthorityIds = endEntityProfile.getAvailableCAs();
         if (certificateAuthorityIds.contains("1")) {
             // End entity contains "Any CA"
-            final List<String> certificateAuthorities = new ArrayList<>(informationmemory.getAllCANames().keySet());
+            final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final List<String> certificateAuthorities = new ArrayList<>();
         for (final String id : certificateAuthorityIds) {
-            final CA ca = caSession.getCA(administrator, Integer.parseInt(id));
+            final CA ca = caSession.getCANoLog(administrator, Integer.parseInt(id));
             certificateAuthorities.add(ca.getName());
         }
         return addKeyIdAndSort(certificateAuthorities);
@@ -1242,10 +1380,10 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public TreeMap<String, Integer> getVendorCAOptions() {
-        if(EjbcaConfiguration.getIsInProductionMode()) {
-            return informationmemory.getExternalCAs();
+        if (EjbcaConfiguration.getIsInProductionMode()) {
+            return getExternalCANames();
         } else {
-            return (TreeMap<String, Integer>) informationmemory.getCANames();
+            return getCANames();
         }
     }
 
@@ -1381,7 +1519,7 @@ public class EjbcaWebBean implements Serializable {
         //Copy the configuration, because modifying parameters is nasty
         EstConfiguration returnValue = new EstConfiguration(estConfiguration);
         //Build a lookup map due to the fact that default CA is stored as a SubjectDNs
-        Map<String, String> subjectDnToCaNameMap = new HashMap<String, String>();
+        Map<String, String> subjectDnToCaNameMap = new HashMap<>();
         for (int caId : caSession.getAllCaIds()) {
             CAInfo caInfo = caSession.getCAInfoInternal(caId);
             subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
@@ -1395,7 +1533,7 @@ public class EjbcaWebBean implements Serializable {
                 caNames.add(subjectDnToCaNameMap.get(defaultCaSubjectDn));
             }
 
-            TreeMap<String, Integer> caNameToIdMap = getInformationMemory().getAllCANames();
+            TreeMap<String, Integer> caNameToIdMap = caSession.getAuthorizedCaNamesToIds(administrator);
             for (String caName : caNames) {
                 if(caName != null) { //CA might have been removed
                     Integer caId = caNameToIdMap.get(caName);
@@ -1431,15 +1569,11 @@ public class EjbcaWebBean implements Serializable {
     public void reloadAvailableExtendedKeyUsagesConfiguration() {
         availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
-        if (informationmemory != null) {
-            informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
-        }
     }
 
     public void saveAvailableExtendedKeyUsagesConfiguration(AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
-        informationmemory.availableExtendedKeyUsagesConfigEdited(availableExtendedKeyUsagesConfig);
     }
 
     //*****************************************************************
@@ -1456,16 +1590,12 @@ public class EjbcaWebBean implements Serializable {
     public void reloadAvailableCustomCertExtensionsConfiguration() {
         availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
-        if (informationmemory != null) {
-            informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
-        }
     }
 
     public void saveAvailableCustomCertExtensionsConfiguration(AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, cceConfig);
         availableCustomCertExtensionsConfig = cceConfig;
-        informationmemory.availableCustomCertExtensionsConfigEdited(availableCustomCertExtensionsConfig);
     }
 
     //*******************************

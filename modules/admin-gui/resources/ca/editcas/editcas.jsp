@@ -65,7 +65,6 @@ org.ejbca.ui.web.admin.cainterface.CADataHandler,
 org.ejbca.ui.web.RequestHelper,
 org.ejbca.ui.web.RevokedInfoView,
 org.ejbca.ui.web.admin.cainterface.CAInfoView,
-org.ejbca.ui.web.admin.configuration.InformationMemory,
 org.ejbca.ui.web.admin.cainterface.CAInterfaceBean,
 org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.ui.web.ParameterException
@@ -253,7 +252,6 @@ org.ejbca.ui.web.ParameterException
   int row = 0;
 
   Map<Integer,String> caidtonamemap = cabean.getCAIdToNameMap();
-  InformationMemory info = ejbcawebbean.getInformationMemory();
 
 %>
 <head>

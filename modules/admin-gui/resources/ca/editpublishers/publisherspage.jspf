@@ -1,5 +1,5 @@
 <%
-	TreeMap<String, Integer> publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames(); 
+	TreeMap<String, Integer> publishernames = ejbcawebbean.getAuthorizedPublisherNames(); 
 
 %>
 

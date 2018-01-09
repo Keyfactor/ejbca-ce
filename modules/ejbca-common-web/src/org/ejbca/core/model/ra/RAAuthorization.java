@@ -192,13 +192,6 @@ public class RAAuthorization implements Serializable {
       authprofilenames = null;
 	  authprofileswithmissingcas = null;
     }
-
-    /**
-     * Help function used to check end entity profile authorization.
-     */
-    public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
-        return isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
-    }
 }
 
 

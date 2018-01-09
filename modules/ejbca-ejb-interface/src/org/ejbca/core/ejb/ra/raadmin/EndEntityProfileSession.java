@@ -28,8 +28,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
  */
 public interface EndEntityProfileSession {
 
-    static final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
-
     /**
      * Adds a profile to the database. Will automatically set a valid ID. 
      *

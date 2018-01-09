@@ -324,7 +324,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @Override
     public boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         return isCryptoTokenStatusActive(cryptoTokenId);
     }
 
@@ -335,6 +335,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             return false;
         }
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
+    }
+    
+    @Override
+    public boolean isCryptoTokenPresent(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+        return cryptoToken != null;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -465,7 +472,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public List<KeyPairInfo> getKeyPairInfos(final AuthenticationToken authenticationToken, final int cryptoTokenId)
             throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         final List<KeyPairInfo> ret = new ArrayList<KeyPairInfo>();
         for (final String alias : getKeyPairAliasesInternal(cryptoToken)) {
@@ -481,7 +488,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException,
             AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         if (!getKeyPairAliasesInternal(cryptoToken).contains(alias)) {
             return null;
@@ -496,7 +503,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public PublicKeyWrapper getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException,
             CryptoTokenOfflineException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         return new PublicKeyWrapper(getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias));
     }
 
@@ -527,7 +534,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public List<String> getKeyPairAliases(final AuthenticationToken authenticationToken, final int cryptoTokenId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        assertAuthorizationNoLog(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         return getKeyPairAliasesInternal(cryptoToken);
     }
@@ -736,7 +743,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", resource, authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-
+    }
+    
+    private void assertAuthorizationNoLog(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource)
+            throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, resource)) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", resource, authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
     }
 
     /** @return a CryptoToken for the requested Id if exists. Never returns null. */

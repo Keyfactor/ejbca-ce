@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -107,6 +108,14 @@ public interface CaSession {
       * @return a Collection<String> of available CA names
       */
      Collection<String> getAuthorizedCaNames(AuthenticationToken admin);
+     
+     /**
+      * Like {@link #getAuthorizedCaNames(AuthenticationToken)}, but returns a TreeMap which includes the CA Id as well.
+      * @param admin AuthenticationToken of admin
+      * @return a Collection<String> of available CA names
+      * @see #getAuthorizedCaNames
+      */
+     TreeMap<String,Integer> getAuthorizedCaNamesToIds(AuthenticationToken admin);
      
      /**
       * Method returning info objects for all CA's available to the system that the administrator is authorized to. 
