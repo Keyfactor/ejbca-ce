@@ -126,6 +126,8 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         assertTrue("Unexpected title in 'Edit End Entity Profile'", editEepTitle.getText().equals("End Entity Profile : Hidden"));
 
         // Set all desired values in EEP. Set values will be validated in next step (add end entity)
+        Select dropDownCa =  new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultca']")));
+        dropDownCa.selectByVisibleText(getCaName());
         webDriver.findElement(By.id("checkboxusemaxfailedlogins")).click();
         webDriver.findElement(By.id("checkboxsusetarttime")).click();
         webDriver.findElement(By.id("checkboxuseendtime")).click();
@@ -150,22 +152,20 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     @Test
     public void testC_checkEep() {
         webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
-        configLink.click();
+        WebElement addEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
+        addEeLink.click();
 
         // Check expected values preset by EEP
         Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
         dropDownEepPreSelect.selectByVisibleText(eepName);
         Select dropDownEep =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
         Select dropDownCp =  new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")));
-        Select dropDownCa =  new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")));
         Select dropDownToken =  new Select(webDriver.findElement(By.xpath("//select[@name='selecttoken']")));
         Select dropDownNumOfAllowedRequests =  new Select(webDriver.findElement(By.xpath("//select[@name='selectallowedrequests']")));
         Select dropDownRevocationReason =  new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
         assertTrue("End entity profile: " + eepName + " was not selected", dropDownEep.getAllSelectedOptions().get(0).getText().equals(eepName));
         assertTrue("Maximum number of failed login attempts not set to 'Unlimited'", webDriver.findElement(By.id("radiomaxfailedloginsunlimited")).isSelected());
         assertTrue("CP 'ENDUSER' was not selected by default", dropDownCp.getAllSelectedOptions().get(0).getText().equals("ENDUSER"));
-        assertTrue(getCaName() + "Was not selected by as default CA", dropDownCa.getAllSelectedOptions().get(0).getText().equals(getCaName()));
         assertTrue("Token type 'User Generated' was not selected by default", dropDownToken.getAllSelectedOptions().get(0).getText().equals("User Generated"));
         assertTrue("Certificate Validity Start Time was not set to todays date", webDriver.findElement(By.xpath("//input[@name='textfieldstarttime']")).getAttribute("value").contains(currentDateString));
         assertTrue("Certificate Validity End Time was not set to 1 month from todays date", webDriver.findElement(By.xpath("//input[@name='textfieldendtime']")).getAttribute("value").contains(oneMonthsFromNowString));
@@ -197,6 +197,8 @@ public class EcaQa59_EEPHidden extends WebTestBase {
 
         Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
         dropDownEepPreSelect.selectByVisibleText(eepName);
+        Select dropDownCaPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")));
+        dropDownCaPreSelect.selectByVisibleText(getCaName());
         webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(endEntityName);
         webDriver.findElement(By.xpath("//input[@name='textfieldpassword']")).sendKeys("foo123");
         webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']")).sendKeys("foo123");
