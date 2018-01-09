@@ -45,7 +45,6 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
     @AfterClass
     public static void exit() {
         webDriver.quit();
-//        tearDown();
     }
 
     @Test
