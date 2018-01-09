@@ -16,11 +16,13 @@
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 }
 body {
-	margin: .5em 1em .5em 2em;
-	padding: 0em;
+	margin: 0;
+	padding: 0;
 	background-color: #FFF;
 	color: #000;
 	font-size: 11pt;
+	/* push down footer to bottom of page when there is too little content. */
+	height: 100%;
 }
 code, code *, pre, pre *, .monospace {
 	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", Courier, monospace;
@@ -38,6 +40,62 @@ p.help {
 	color: rgba(0,0,0,.6);
 }
 
+/* Used in template.xhtml */
+#messagesAndContent {
+    min-height: 100%;
+    padding-left: 30px;
+    padding-right: 15px;
+}
+#contentBlock {
+    padding-top: 7px;
+    padding-bottom: 40px;
+}
+#footerBlock {
+    position: relative;
+    margin-top: -47px;
+    height: 40px;
+    padding-left: 30px;
+    padding-right: 15px;
+    clear: both;
+    text-align: center;
+}
+#footerInner {
+    line-height: 40px;
+    vertical-align: middle;
+    height: 40px;
+}
+#modalBlock {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #fefefec0;
+    text-align: center;
+}
+#modalInner {
+    position: static;
+    display: inline-block;
+    text-align: left;
+    margin: 10% auto;
+    max-width: 90%;
+    width: auto;
+    padding: 20px;
+    background-color: #fefefe;
+    border: 1px solid #aeaeae;
+    border-radius: 5px;
+}
+
+/*--------------------------------------------------------------------------*/
+/* TOP BANNER */
+#topFrame {
+	display: block;
+	height: 100px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
 
 /*--------------------------------------------------------------------------*/
 /* NAVIGATION */
@@ -55,6 +113,9 @@ body#menu {
 	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
 	font-size: 9pt;
 	font-weight: bold;
+	
+	width: 17em;
+	float: left;
 }
 
 #navigation ul {
@@ -65,10 +126,10 @@ body#menu {
 	list-style-type: none;
 }
 
-#navigation li.section {
+#navigation .section {
 	margin: .5em 0em .75em 0em;
 }
-#navigation li.section strong {
+#navigation li.section strong, #navigation .section-header {
 	font-size: 11pt;
 	text-shadow: .1em .1em .2em rgba(0,0,0,.2);
 	-o-text-shadow: .1em .1em .2em #BBB;
@@ -76,25 +137,24 @@ body#menu {
 	-khtml-text-shadow: .1em .1em .2em #BBB;
 	-webkit-text-shadow: .1em .1em .2em rgba(0,0,0,.2);
 }
-#navigation li.section ul {
+#navigation li.section ul, #navigation .section-content {
 	margin-top: .25em;
 }
 
 #navigation a {
 	display: block;
-/*	padding: .08em .25em .15em .25em;	/* Vertical space higher */
-	padding: .04em .25em .08em .25em;	/* More compact */
+	padding: .04em .25em .08em .4em;
 	text-decoration: none;
-}
-#navigation ul a {
 	margin-left: -.4em;
-	padding-left: .4em;
 	border: 1px solid transparent;
 }
-#navigation ul ul a {
+#navigation ul ul a, #navigation .section-content a {
 	margin-left: 0em;
 	padding-left: .5em;
 	border-left-width: 1em;
+}
+#navigation .misc-section-header {
+	display: none;
 }
 
 #navigation a:link,
@@ -176,6 +236,9 @@ div#footer {
 
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
+.main-wrapper {
+	margin: .5em 1em .5em 18em;
+}
 
 h1 {
 	margin-top: 0em;
@@ -976,6 +1039,14 @@ table#config tr td:first-child {
 }
 .tableFooter-approval-step {
 	text-align: left;
+}
+
+.sortButton, .reorderButton {
+	background: none transparent;
+	border: none;
+	outline: none;
+	margin: 0;
+	padding: 0;
 }
 
 /* --- Table: List/Actions */
