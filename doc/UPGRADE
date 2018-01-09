@@ -70,6 +70,7 @@ applied. If you're currently running a General Purpose Custom Publisher, this se
 SHA1WithRSA and SHA1WithECDSA are no longer acceptable signature algorithms for an OCSP responder. If you are running a legacy responder that still 
 need to use these deprecated algorithms, you have to configure these in the setting 'ocsp.signaturealgorithm' in conf/ocsp.properties.
 
+Incorrectly padded base64 encoded strings are no longer accepted by Bouncy Castle's base64 decoder used in EJBCA. 
 
 From EJBCA 6.10.0 to EJBCA 6.10.1
 -------------------------------
