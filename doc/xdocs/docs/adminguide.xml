@@ -7208,7 +7208,7 @@ neither rendered in the UI nor processed otherwise. Publishers or validators con
 <ul>
 <li>The Local CLI that can only be run on the CA machine.</li>
 <li>ClientToolBox with commands that can be run remotely, for example the Web Service CLI.</li>
-<li>The Local Database CLI , which provides direct access to a local database.</li>
+<li>The Local Database CLI, which provides direct access to a local database.</li>
 <li>The Validation/Conformance Check Tool </li>
 </ul>
 </p>
