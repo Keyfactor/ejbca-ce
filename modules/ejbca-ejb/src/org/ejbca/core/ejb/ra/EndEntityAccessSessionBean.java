@@ -549,62 +549,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
         return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-    }
-
-    /**
-     * Method that checks the administrators CA privileges and returns a string that should be used in where clause of userdata SQL queries.
-     *
-     * @return a string of administrators CA privileges that should be used in the where clause of SQL queries.
-     */
-    private String getCaAuthorizationString(final AuthenticationToken authenticationToken) {
-        String authcastring = "";
-        final List<Integer> authorizedCaIds = caSession.getAuthorizedCaIds(authenticationToken);
-        if (authorizedCaIds.isEmpty()) {
-            // Setup a condition that can never be true if there are no authorized CAs
-            authcastring = "(0=1)";
-        } else {
-            for (final Integer caId : caSession.getAuthorizedCaIds(authenticationToken)) {
-                if (authcastring.equals("")) {
-                    authcastring = " cAId = " + caId.toString();
-                } else {
-                    authcastring = authcastring + " OR cAId = " + caId.toString();
-                }
-            }
-            if (!authcastring.isEmpty()) {
-                authcastring = "( " + authcastring + " )";
-            }
-        }
-
-        return authcastring;
-    }
-    
-    /**
-     * Method that checks the administrators end entity profile privileges and returns a string that should be used in where clause of userdata SQL queries.
-     *
-     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
-     */
-    private String getEndEntityProfileAuthorizationString(final AuthenticationToken authenticationToken, String endentityAccessRule) {
-        String authendentityprofilestring = null;
-        final List<Integer> profileIds = new ArrayList<Integer>(
-                endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, endentityAccessRule));
-        if (!endentityAccessRule.startsWith(AccessRulesConstants.VIEW_END_ENTITY)) {
-            // Additionally require view access to all the profiles
-            for (final Integer profileid : new ArrayList<Integer>(profileIds)) {
-                if (!authorizationSession.isAuthorizedNoLogging(authenticationToken,
-                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + AccessRulesConstants.VIEW_END_ENTITY)) {
-                    profileIds.remove(profileid);
-                }
-            }
-        }
-        for (final int profileId : profileIds) {
-            if (authendentityprofilestring == null) {
-                authendentityprofilestring = " endEntityProfileId = " + profileId;
-            } else {
-                authendentityprofilestring = authendentityprofilestring + " OR endEntityProfileId = " + profileId;
-            }
-        }
-        return authendentityprofilestring;
-    }
+    }    
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
