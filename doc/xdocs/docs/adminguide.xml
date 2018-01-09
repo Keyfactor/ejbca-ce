@@ -5539,6 +5539,9 @@ has permitted issuance of certificates to issuer primekey.com, with messages:
 			only one such validator has been implemented: the External Command Certificate Validator.
 		</p>
 		<subsection name="External Script Certificate Validator">
+			<note>
+					In order to see and be able to add/configure the External Script Validator you must <i>Enable External Script Access</i> under System Configuration->External Scripts. 
+			</note>		
 			<p>
 				With this validator an external script can be called for the generated certificate. The exit code of the external call determines if validation has failed.
 				This can be used not only to validate certificate criterias, but may be used to call other external commands or scripts. Of course the user running EJBCA's 
@@ -6363,6 +6366,9 @@ to make the configuration more user-friendly in the AdminGUI.
 </p>
 </subsubsection>
 <subsubsection name="Publishing with an external application">
+<note>
+In order to see and be able to add/configure the General Purpose Custom Publisher you must <i>Enable External Script Access</i> under System Configuration->External Scripts. 
+</note>		
 <p>
 A lightweight alternative to developing a new custom publisher for exporting CRLs,
 certificates and revokations is to use the General Purpose Custom Publisher (GPCP).
