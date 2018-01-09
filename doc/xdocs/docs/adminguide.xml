@@ -5357,6 +5357,7 @@ Modify the matching role and ensure that "Accept long hanging connections (Exter
 	<p>
 		To explore Validators, look under the <i>Validators</i> menu item under the <i>CA Functions</i> header.		 
 	</p>
+	<p>Another way of doing validation is to use the <a href="#Validation/Conformance%20Check%20Tool%20(EJBCA%20Enterprise%20only)">Validation/Conformance Check Tool</a> performing custom validation on a sampling of certificates.</p>
 	<subsection name="Audit Logging">
 		<p>
 			All validation results are audit logged and also logged in the server logs for more detail (log level can be configured). 
@@ -7333,7 +7334,9 @@ provide example configuration and documentation for the various options.</p>
 <subsection name="Validation/Conformance Check Tool (EJBCA Enterprise only)">
 <p>
 The <a href="userguide.html#EJBCA%20Validation/Conformance%20Tool%20(EJBCA%20Enterprise%20only)">Validation/Conformance Tool</a> is a tool for running tests on issued certificates or OCSP responses to see that they match the configured criteria.
-</p>x
+It can with benefit be run together with the <a href="#Publisher%20for%20sampling%20of%20issued%20certificates">Certificate Sampler Custom Publisher</a>.
+</p>
+<p>Another way of doing validation is to use the <a href="#Validators">Validators</a> built into EJBCA.</p>
 </subsection>
 </section>
 
