@@ -69,8 +69,8 @@ public enum EndEntityProfileCache {
     private final ReentrantLock lock = new ReentrantLock(false);
     
     private EndEntityProfileCache() {
-    	idNameMapCacheTemplate.put(Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
-    	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE));
+    	idNameMapCacheTemplate.put(Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE), EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+    	nameIdMapCacheTemplate.put(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE));
     }
 
     /**

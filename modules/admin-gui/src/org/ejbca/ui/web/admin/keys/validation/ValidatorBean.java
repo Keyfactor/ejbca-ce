@@ -406,7 +406,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public String save() {
         try {
             keyValidatorSession.changeKeyValidator(getAdmin(), validator);
-            getEjbcaWebBean().getInformationMemory().keyValidatorsEdited();
             addInfoMessage("VALIDATORSAVED");
             reset();
             return "done";

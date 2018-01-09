@@ -415,11 +415,9 @@ if(configheaderprinted){
 
 <%
     // If authorized to edit user preferences then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
+      if (ejbcawebbean.isAuthorizedNoLogSilent(MAIN_RESOURCE)){ %>
 				<li id="cat8"><a href="<%= MYPREFERENCES_LINK %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
 <%   }
-   }catch(AuthorizationDeniedException e){}
 %>
 
 		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb"><%=ejbcawebbean.getText("RAWEB") %></a>

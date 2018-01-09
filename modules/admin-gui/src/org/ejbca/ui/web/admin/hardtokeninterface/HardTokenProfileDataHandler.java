@@ -32,13 +32,13 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
-import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
  * A class handling the hardtoken profile data.
  *
  * @version $Id$
  */
+@Deprecated
 public class HardTokenProfileDataHandler implements Serializable {
 
     private static final long serialVersionUID = -2864964753767713852L;
@@ -49,18 +49,16 @@ public class HardTokenProfileDataHandler implements Serializable {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private CaSession caSession; 
     private AuthenticationToken administrator;
-    private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSessionLocal authorizationSession, 
-            EndEntityManagementSessionLocal endEntityManagementSession, CaSession caSession, InformationMemory info) {
+            EndEntityManagementSessionLocal endEntityManagementSession, CaSession caSession) {
        this.hardtokensession = hardtokensession;           
        this.authorizationSession = authorizationSession;
        this.certificateProfileSession = certificatesession;
        this.endEntityManagementSession = endEntityManagementSession;
        this.caSession = caSession;
        this.administrator = administrator;          
-       this.info = info;       
     }
     
        /** Method to add a hard token profile. 
@@ -72,7 +70,6 @@ public class HardTokenProfileDataHandler implements Serializable {
       if(authorizedToProfile(profile, true)){
     	if(checkXMLEncoding(profile)){
           hardtokensession.addHardTokenProfile(administrator, name, profile);
-          this.info.hardTokenDataEdited();
           success=true;
     	}  
          
@@ -93,7 +90,6 @@ public class HardTokenProfileDataHandler implements Serializable {
       if(authorizedToProfile(profile, true)){
     	  if(checkXMLEncoding(profile)){   	  
     		  hardtokensession.changeHardTokenProfile(administrator, name,profile);   
-    		  this.info.hardTokenDataEdited();
     		  success=true;
     	  } 
       }else {
@@ -116,7 +112,6 @@ public class HardTokenProfileDataHandler implements Serializable {
 	  }
       if(authorizedToProfileName(name, true)){    
 		hardtokensession.removeHardTokenProfile(administrator, name);
-		this.info.hardTokenDataEdited();
 		returnval = false;
       }else {
         throw new AuthorizationDeniedException("Not authorized to remove hard token profile");
@@ -128,7 +123,6 @@ public class HardTokenProfileDataHandler implements Serializable {
     public void renameHardTokenProfile(String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException{
      if(authorizedToProfileName(oldname, true)){    
 		hardtokensession.renameHardTokenProfile(administrator, oldname,newname);
-	   this.info.hardTokenDataEdited();
      }else {
        throw new AuthorizationDeniedException("Not authorized to rename hard token profile");
      }
@@ -138,7 +132,6 @@ public class HardTokenProfileDataHandler implements Serializable {
     public void cloneHardTokenProfile(String originalname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException{         
       if(authorizedToProfileName(originalname, false)){
         hardtokensession.cloneHardTokenProfile(administrator, originalname,newname);
-        this.info.hardTokenDataEdited();
       }else {
          throw new AuthorizationDeniedException("Not authorized to clone hard token profile");
       }

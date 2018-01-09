@@ -3,12 +3,12 @@
 <%@page import="org.apache.commons.lang.StringUtils"%>
 
 <%               
-  TreeMap<String,Integer> rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
-  TreeMap<String,Integer> subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();      
-  Map<String,Integer> casigners = info.getActiveCANames();
-  Map<Integer,String> publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMapByValue();
+  TreeMap<String,Integer> rootcaprofiles = ejbcawebbean.getAuthorizedRootCACertificateProfileNames();
+  TreeMap<String,Integer> subcaprofiles = ejbcawebbean.getAuthorizedSubCACertificateProfileNames();      
+  Map<String,Integer> casigners = ejbcawebbean.getActiveCANames();
+  Map<Integer,String> publisheridtonamemap = ejbcawebbean.getPublisherIdToNameMapByValue();
   Map<Integer, String> keyValidatorMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap();
-  Map<Integer, String> approvalProfileMap = ejbcawebbean.getInformationMemory().getApprovalProfileIdToNameMap();
+  Map<Integer, String> approvalProfileMap = ejbcawebbean.getApprovalProfileIdToNameMap();
 
   Collection<AvailableCryptoToken> availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
@@ -985,7 +985,7 @@ function toggleCANameChange(){
             <td>
                 <% if (editca && !isUninitialized) {
                     if (cainfo.getCertificateProfileId() != 0) {
-                        out.write(info.getCertificateProfileName(cainfo.getCertificateProfileId()));
+                        out.write(ejbcawebbean.getCertificateProfileName(cainfo.getCertificateProfileId()));
                     } else {
                         out.write(ejbcawebbean.getText("NOTUSED"));
                     }
@@ -1528,7 +1528,7 @@ function toggleCANameChange(){
     	<td width="50%">
     		<select name="<%=SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue()%>" size="1" <%= (hasEditRights ? "" : "disabled") %> >
          	 <%      		   
-               List<Integer> approvalProfileIds = ejbcawebbean.getInformationMemory().getSortedApprovalProfileIds();
+               List<Integer> approvalProfileIds = ejbcawebbean.getSortedApprovalProfileIds();
                for(Integer approvalProfile : approvalProfileIds) { %>
         	 	<option  value="<%= approvalProfile %>" 
                 <% if(editca) {

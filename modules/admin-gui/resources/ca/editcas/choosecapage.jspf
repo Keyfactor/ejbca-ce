@@ -1,5 +1,5 @@
 <%
-  TreeMap<String,Integer> canames     = info.getAllCANames(); 
+  TreeMap<String,Integer> canames     = ejbcawebbean.getCANames(); 
 
 %>
 
@@ -118,9 +118,9 @@ function confirmcadeletion() {
         <select name="<%=SELECT_CAS%>" style="width: 50em" size="15" class="select-list" >
           <% for (final String nameofca : canames.keySet()) {
               	 int currentCaId = canames.get(nameofca).intValue();
-                 CAInfo cainfo2 = cabean.getCAInfoNoAuth(currentCaId).getCAInfo();
+                 int status = cabean.getCAStatusNoAuth(currentCaId);
                  
-                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(CAConstants.getStatusText(cainfo2.getStatus())) + ")"; %>
+                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(CAConstants.getStatusText(status)) + ")"; %>
              	<%if(cabean.isAuthorizedToCa(currentCaId)) { %>
             		<option value="<c:out value="<%= canames.get(nameofca) %>"/>"> 
                 		<c:out value="<%= nameandstatus %>"/>

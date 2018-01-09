@@ -44,7 +44,6 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 
 /**
@@ -60,7 +59,6 @@ public class HardTokenInterfaceBean implements Serializable {
     private HardTokenBatchJobSession hardtokenbatchsession;
     private RoleSessionLocal roleSession;
     private AuthenticationToken admin;
-    private InformationMemory informationmemory;
     private boolean initialized = false;
     private HardTokenView[] result;
     private HardTokenProfileDataHandler hardtokenprofiledatahandler;
@@ -87,9 +85,8 @@ public class HardTokenInterfaceBean implements Serializable {
             CaSessionLocal caSession = ejbLocalHelper.getCaSession();
             roleSession = new EjbLocalHelper().getRoleSession();
             initialized = true;
-            this.informationmemory = ejbcawebbean.getInformationMemory();
             this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession,
-                    authorizationSession, endEntityManagementSession, caSession, informationmemory);
+                    authorizationSession, endEntityManagementSession, caSession);
         }
     }
 
@@ -170,6 +167,10 @@ public class HardTokenInterfaceBean implements Serializable {
         return roleIdToNameMap;
     }
     
+    public String getHardTokenProfileName(final int profileId) {
+        return hardtokensession.getHardTokenProfileName(profileId);
+    }
+    
     public List<Role> getHardTokenIssuingRoles() {
         return roleSession.getAuthorizedRolesWithAccessToResource(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
     }
@@ -180,7 +181,6 @@ public class HardTokenInterfaceBean implements Serializable {
                 if (!hardtokensession.addHardTokenIssuer(admin, alias, roleId, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
                 }
-                informationmemory.hardTokenDataEdited();
             }
         }
     }
@@ -191,7 +191,6 @@ public class HardTokenInterfaceBean implements Serializable {
             if (!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer)) {
                 throw new HardTokenIssuerDoesntExistsException();
             }
-            informationmemory.hardTokenDataEdited();
         }
     }
 
@@ -205,7 +204,6 @@ public class HardTokenInterfaceBean implements Serializable {
             issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(issuerid);
             if (!issuerused) {
                 hardtokensession.removeHardTokenIssuer(admin, alias);
-                informationmemory.hardTokenDataEdited();
             }
         }
         return !issuerused;
@@ -217,7 +215,6 @@ public class HardTokenInterfaceBean implements Serializable {
             if (!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
-            informationmemory.hardTokenDataEdited();
         }
     }
 
@@ -227,7 +224,6 @@ public class HardTokenInterfaceBean implements Serializable {
             if (!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
-            informationmemory.hardTokenDataEdited();
         }
     }
 

@@ -244,7 +244,7 @@
     		       			if((value==null) || (value.length() == 0)) {
     		       				cmpConfigClone.setCMPDefaultCA(alias, "");
     		       			} else {
-    		                	String cadn = cabean.getCAInfo(value).getCAInfo().getSubjectDN();
+    		                	String cadn = cabean.getCASubjectDNNoAuth(value);
     		                	cmpConfigClone.setCMPDefaultCA(alias, cadn);
     		       			}
     		       						

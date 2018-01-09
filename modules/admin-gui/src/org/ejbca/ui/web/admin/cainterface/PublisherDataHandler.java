@@ -24,13 +24,15 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
  * A class handling the hardtoken profile data in the webinterface.
+ * 
+ * @deprecated since 6.12.0. Use PublisherSession directly instead
  *
  * @version $Id$
  */
+@Deprecated
 public class PublisherDataHandler implements Serializable {
 
     private static final long serialVersionUID = -5646053740072121787L;
@@ -39,29 +41,25 @@ public class PublisherDataHandler implements Serializable {
     private CAAdminSession caadminsession;
     private CertificateProfileSession certificateProfileSession;
     private AuthenticationToken administrator;
-    private InformationMemory info;
 
     /** Creates a new instance of PublisherDataHandler */
     public PublisherDataHandler(AuthenticationToken administrator, PublisherSessionLocal publishersession, CAAdminSession caadminsession,
-            CertificateProfileSession certificateProfileSession, InformationMemory info) {
+            CertificateProfileSession certificateProfileSession) {
         this.publishersession = publishersession;
         this.caadminsession = caadminsession;
         this.certificateProfileSession = certificateProfileSession;
         this.administrator = administrator;
-        this.info = info;
     }
 
     /** Method to add a publisher. Throws PublisherExitsException if profile already exists  */
     public void addPublisher(String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         publishersession.addPublisher(administrator, name, publisher);
-        this.info.publishersEdited();
 
     }
 
     /** Method to change a publisher. */
     public void changePublisher(String name, BasePublisher publisher) throws AuthorizationDeniedException {
         publishersession.changePublisher(administrator, name, publisher);
-        this.info.publishersEdited();
     }
 
     /** Method to remove a publisher, returns true if deletion failed.*/
@@ -72,7 +70,6 @@ public class PublisherDataHandler implements Serializable {
         if (!caadminsession.exitsPublisherInCAs(publisherid)
                 && !certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherid)) {
             publishersession.removePublisher(administrator, name);
-            this.info.publishersEdited();
             returnval = false;
         }
 
@@ -82,26 +79,18 @@ public class PublisherDataHandler implements Serializable {
     /** Metod to rename a publisher */
     public void renamePublisher(String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException {
         publishersession.renamePublisher(administrator, oldname, newname);
-        this.info.publishersEdited();
 
     }
 
     public void clonePublisher(String originalname, String newname) throws AuthorizationDeniedException, PublisherDoesntExistsException,
             PublisherExistsException {
         publishersession.clonePublisher(administrator, originalname, newname);
-        this.info.publishersEdited();
     }
 
     public void testConnection(String name) throws PublisherConnectionException {
         publishersession.testConnection(publishersession.getPublisherId(name));
 
     }
-
-    /** Method to get a reference to a publisher. */
-    public BasePublisher getPublisher(int id) {
-        return publishersession.getPublisher(id);
-    }
-
     public BasePublisher getPublisher(String name) {
         return publishersession.getPublisher(name);
     }

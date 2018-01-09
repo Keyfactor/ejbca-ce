@@ -36,6 +36,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -424,33 +425,33 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         log.trace(">test12OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {
-        	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, profile);
-        	fail("Was able to add profile named " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME, profile);
+        	fail("Was able to add profile named " + EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	final int eepId = endEntityProfileSession.getEndEntityProfileId(EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	final int eepId = endEntityProfileSession.getEndEntityProfileId(EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
         	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, eepId, "somerandomname", profile);
         	fail("Was able to add profile with EEP Id " + eepId);
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.cloneEndEntityProfile(roleMgmgToken, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
-        	fail("Clone to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        	endEntityProfileSession.cloneEndEntityProfile(roleMgmgToken, "ignored", EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+        	fail("Clone to " + EndEntityConstants.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
-        	fail("Rename to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, "ignored", EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+        	fail("Rename to " + EndEntityConstants.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, "ignored"	);
-        	fail("Rename from " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME, "ignored"	);
+        	fail("Rename from " + EndEntityConstants.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }

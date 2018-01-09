@@ -1,6 +1,6 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <%
-   java.util.Map<String, Integer> canames = ejbcawebbean.getInformationMemory().getCANames();
+   java.util.Map<String, Integer> canames = ejbcawebbean.getCANames();
    java.util.TreeMap<String, Integer> vendorcas = ejbcawebbean.getVendorCAOptions();
    int row = 0;
    
@@ -560,7 +560,7 @@ function checkallfields() {
                  	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_DISABLED\") %>"/></option>
            <%         	  
            	for( String caname : canames.keySet() ) {
-           		  String cadn = cabean.getCAInfo(caname).getCAInfo().getSubjectDN();
+           		  String cadn = cabean.getCASubjectDNNoAuth(caname);
            %>     <option <% if(currentCA.equals(cadn)) { %> selected <% } %>
                   value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
            <% } %>

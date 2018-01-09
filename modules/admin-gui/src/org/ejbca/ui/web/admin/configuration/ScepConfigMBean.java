@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
@@ -32,6 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.ScepConfiguration;
@@ -231,6 +231,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     private final AuthenticationToken authenticationToken = getAdmin();
+    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
     private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = getEjbcaWebBean().getEnterpriseEjb();
@@ -276,7 +277,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     /** Build a list sorted by name from the existing SCEP configuration aliases */
     public ListDataModel<ScepAliasGuiInfo> getAliasGuiList() {
         flushCache();
-        final List<ScepAliasGuiInfo> list = new ArrayList<ScepAliasGuiInfo>();
+        final List<ScepAliasGuiInfo> list = new ArrayList<>();
         for (String alias : scepConfig.getAliasList()) {
             list.add(new ScepAliasGuiInfo(scepConfig, alias));
             Collections.sort(list, new Comparator<ScepAliasGuiInfo>() {
@@ -285,7 +286,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                     return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
                 }
             });
-            aliasGuiList = new ListDataModel<ScepAliasGuiInfo>(list);
+            aliasGuiList = new ListDataModel<>(list);
         }
         // If show the list, then we are on the main page and want to flush the cache
         currentAlias = null;
@@ -412,7 +413,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of usable operational modes */
     public List<SelectItem> getAvailableModes() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem(ScepConfiguration.Mode.RA.getResource(), ScepConfiguration.Mode.RA.getResource()));
         ret.add(new SelectItem(ScepConfiguration.Mode.CA.getResource(), ScepConfiguration.Mode.CA.getResource()));
         return ret;
@@ -420,8 +421,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of all CA names */
     public List<SelectItem> getAvailableCAs() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Set<String> cas = getEjbcaWebBean().getInformationMemory().getAllCANames().keySet();
+        final List<SelectItem> ret = new ArrayList<>();
+        final Collection<String> cas = caSession.getAuthorizedCaNames(authenticationToken);
         for (String caname : cas) {
             ret.add(new SelectItem(caname, caname));
         }
@@ -432,7 +433,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAuthorizedEEProfileNames() {
         Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
         Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         for (Integer id: endEntityProfileIds) {
             String name = nameMap.get(id);
             ret.add(new SelectItem(name, name));
@@ -447,7 +448,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
         EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         Collection<String> cpids = p.getAvailableCertificateProfileIds();
         for(String cpid : cpids) {
             String cpname = certProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
@@ -464,8 +465,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         }
         EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
 
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Map<Integer, String> caidname = getEjbcaWebBean().getInformationMemory().getCAIdToNameMap();
+        final List<SelectItem> ret = new ArrayList<>();
+        Map<Integer, String> caidname = getEjbcaWebBean().getCAIdToNameMap();
         ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
         Iterator<String> itr = caids.iterator();
         while (itr.hasNext()) {
@@ -480,7 +481,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableSchemes() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("DN", "DN Part"));
         ret.add(new SelectItem("RANDOM", "RANDOM (Generates a 12 characters long random username)"));
         ret.add(new SelectItem("FIXED", "FIXED"));
@@ -489,7 +490,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getDnParts() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("CN", "CN"));
         ret.add(new SelectItem("UID", "UID"));
         ret.add(new SelectItem("OU", "OU"));

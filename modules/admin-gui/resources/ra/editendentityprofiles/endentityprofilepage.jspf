@@ -8,8 +8,8 @@
   if(profiledata == null){
     profiledata = ejbcarabean.getEndEntityProfile(profile);
   }
-   TreeMap eecertificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
-   TreeMap subcacertificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedSubCACertificateProfileNames();
+   TreeMap eecertificateprofilenames = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
+   TreeMap subcacertificateprofilenames = ejbcawebbean.getAuthorizedSubCACertificateProfileNames();
    boolean used = false;
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
@@ -23,7 +23,7 @@
    String[] printerNames = ejbcarabean.listPrinters();
    
    if(globalconfiguration.getIssueHardwareTokens()){
-      TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();      
+      TreeMap<String,Integer> hardtokenprofiles = ejbcawebbean.getHardTokenProfiles();      
 
       tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
       tokenids   = new int[tokentexts.length];
@@ -31,21 +31,22 @@
         tokentexts[i]= RAInterfaceBean.tokentexts[i];
         tokenids[i] = RAInterfaceBean.tokenids[i];
       }
-      Iterator iter = hardtokenprofiles.keySet().iterator();
+      Iterator<String> iter = hardtokenprofiles.keySet().iterator();
       int index=0;
       while(iter.hasNext()){       
         String name = (String) iter.next();
         tokentexts[index+RAInterfaceBean.tokentexts.length]= name;
-        tokenids[index+RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
+        tokenids[index+RAInterfaceBean.tokentexts.length] = hardtokenprofiles.get(name).intValue();
         index++;
       }
 
-      hardtokenissueraliases = new String[ejbcawebbean.getInformationMemory().getHardTokenIssuers().keySet().size()];
-      Iterator issueriter = ejbcawebbean.getInformationMemory().getHardTokenIssuers().keySet().iterator();
+      TreeMap<String,HardTokenIssuerInformation> hardTokenIssuers = ejbcawebbean.getHardTokenIssuers();
+      hardtokenissueraliases = new String[hardTokenIssuers.keySet().size()];
+      Iterator<String> issueriter = hardTokenIssuers.keySet().iterator();
       
       hardtokenissuerids = new int[hardtokenissueraliases.length];
       for(int i=0; i < hardtokenissueraliases.length; i++){
-        hardtokenissueraliases[i] = (String) issueriter.next();
+        hardtokenissueraliases[i] = issueriter.next();
         hardtokenissuerids[i]= tokenbean.getHardTokenIssuerId(hardtokenissueraliases[i]);
       }
    }

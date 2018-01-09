@@ -1607,8 +1607,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return a list of all CA names and caids */
     public List<SelectItem> getAvailableCAs() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
-        Map<Integer, String> caidToName = getEjbcaWebBean().getInformationMemory().getCAIdToNameMap();
+        final List<SelectItem> ret = new ArrayList<>();
+        Map<Integer, String> caidToName = caSession.getCAIdToNameMap();
         List<Integer> allCaIds = caSession.getAllCaIds();
         for(int caid : allCaIds) {
             if (caSession.authorizedToCANoLogging(getAdmin(), caid)) {
@@ -1622,7 +1622,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableLanguages() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         final String[] availableLanguages = getEjbcaWebBean().getAvailableLanguages();
         final String[] availableLanguagesEnglishNames = getEjbcaWebBean().getLanguagesEnglishNames();
         final String[] availableLanguagesNativeNames = getEjbcaWebBean().getLanguagesNativeNames();

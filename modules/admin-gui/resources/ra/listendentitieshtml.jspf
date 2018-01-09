@@ -377,34 +377,26 @@ function confirmrevocation(){
 
         <A  style="cursor:pointer;" onclick='viewuser(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"VIEWENDENTITY\") %>"/></u> </A> 
-      <% try{ 
-           if((rabean.authorizedToEditUser(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
-               && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
+       <% if ((rabean.authorizedToEditUser(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
+               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITENDENTITY)){ %>
         <A  style="cursor:pointer;" onclick='edituser(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"EDITENDENTITY\") %>"/></u> </A>
-        <% } 
-         }catch(AuthorizationDeniedException ade){} 
-         try{ 
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
+        <% }
+           if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)){ %>
         <A  style="cursor:pointer;" onclick='viewcert(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"VIEWCERTIFICATES\") %>"/></u> </A>
         <% }
-         }catch(AuthorizationDeniedException ade){}
-         try{ 
-           if(globalconfiguration.getIssueHardwareTokens() &&
+           if (globalconfiguration.getIssueHardwareTokens() &&
               (rabean.authorizedToViewHardToken(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
-               && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_HARDTOKEN_VIEW_RIGHTS)){ %>
+               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)){ %>
         <A  style="cursor:pointer;" onclick='viewtoken(<%= i %>)'>
         <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHARDTOKENS\") %>"/></u> </A>
         <% }
-         }catch(AuthorizationDeniedException ade){}
-         try{ 
-           if((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
-               && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_HISTORY_RIGHTS)){ %>
+           if ((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
+               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)){ %>
          <a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.jsf?username=<%= users[i].getUsername() %>'>
         <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHISTORY\") %>"/></u> </a>
-        <%   } 
-           }catch(AuthorizationDeniedException ade){} %>
+        <% } %>
       </td>
   </tr>
  <%      }
@@ -450,15 +442,13 @@ function confirmrevocation(){
     <tr>
       <td  valign="top">
       <% try{ 
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){ %>
+           if (ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKESELECTED\") %>"/>'
                onClick='return confirmrevocation()'>&nbsp;&nbsp;&nbsp;
-      <% try{
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_DELETE_RIGHTS)){ %>
+      <% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_DELETEENDENTITY)){ %>
         <input type="submit" name="<%=BUTTON_DELETEREVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKEANDDELETE\") %>"/>'
                onClick='return confirmdeleterevoke()'>&nbsp;&nbsp;&nbsp;
-       <%   } 
-          }catch(AuthorizationDeniedException ade){} %>        
+      <% }  %>        
          <br /> <c:out value="<%= ejbcawebbean.getText(\"CRL_ENTRY_REVOCATIONREASON\") %>"/>&nbsp;
         <select class="margin-top" name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
@@ -472,17 +462,15 @@ function confirmrevocation(){
 
       </td>
       <td  valign="top">
-      <% try{ 
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_DELETE_RIGHTS)){ %>
+      <%
+         if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_DELETEENDENTITY)){ %>
         <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"DELETESELECTED\") %>"/>'
                onClick='return confirmdelete()'>
-       <%   } 
-          }catch(AuthorizationDeniedException ade){} %>
+       <% }  %>
         &nbsp;&nbsp;&nbsp;
       </td>      
       <td  valign="top">
-      <%/* try{ 
-           if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
+      <%/* if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITENDENTITY)){ %>
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value='<c:out value="<%= ejbcawebbean.getText(\"CHANGESTATUSTO\") %>"/>'
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br />
         <select class="margin-top" name="<%=SELECT_CHANGE_STATUS %>">
@@ -494,8 +482,7 @@ function confirmrevocation(){
         <!--  <option value='<%= Integer.toString(EndEntityConstants.STATUS_REVOKED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSREVOKED\") %>"/></option>  -->
          <option value='<%= Integer.toString(EndEntityConstants.STATUS_HISTORICAL) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSHISTORICAL\") %>"/></option>
         </select>
-       <% }  
-        }catch(AuthorizationDeniedException ade){} */%>&nbsp;
+       <% } */%>&nbsp;
       </td>
     </tr>
   </table>

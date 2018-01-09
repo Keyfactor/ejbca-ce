@@ -29,6 +29,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
@@ -135,7 +136,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 final boolean useKeyIdForCertificateProfile = StringUtils.equals(cmpConfiguration.getRACertProfile(confAlias), CmpConfiguration.PROFILE_USE_KEYID);
                 if (useKeyIdForEndEntityProfile || useKeyIdForCertificateProfile) {
                     final String keyId = CmpMessageHelper.getStringFromOctets(pkiMessage.getHeader().getSenderKID());
-                    if ((useKeyIdForEndEntityProfile && StringUtils.equals(keyId, EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME)) ||
+                    if ((useKeyIdForEndEntityProfile && StringUtils.equals(keyId, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME)) ||
                             (useKeyIdForCertificateProfile && StringUtils.equals(keyId, CertificateProfile.ENDUSERPROFILENAME))) {
                         errorMessage = "Unaccepted KeyId '" + keyId + "' in CMP request";
                         LOG.info(errorMessage);

@@ -2,8 +2,8 @@
   BasePublisher publisherdata = publisherhelper.getPublisherdata();
    
 
-  Map authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
-  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map authorizedcas = ejbcawebbean.getCANames();  
+  Map caidtonamemap = ejbcawebbean.getCAIdToNameMap();
   int row = 0;
 %>
 <script type="text/javascript">

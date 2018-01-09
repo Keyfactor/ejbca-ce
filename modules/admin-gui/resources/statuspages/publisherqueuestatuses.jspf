@@ -5,7 +5,7 @@
 	cabean.initialize(ejbcawebbean);
 	publisherhelper.initialize(request,ejbcawebbean, cabean);
 	
-	TreeMap publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
+	TreeMap<String,Integer> publishernames = ejbcawebbean.getAuthorizedPublisherNames();
 	Iterator iter = publishernames.keySet().iterator();
 %>
 <div class="status" id="publishqueuestatus" >

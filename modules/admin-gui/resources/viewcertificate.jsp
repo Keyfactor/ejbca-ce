@@ -70,9 +70,7 @@
   int currentindex                = 0;
   int caid                        = 0;
 
-  try{
-    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_KEYRECOVERY_RIGHTS);
-  }catch(AuthorizationDeniedException ade){}
+  usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -145,7 +143,7 @@
      noparameter=false;
      int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
      certificatedata = rabean.getCertificate(currentindex);
-     if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
+     if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) 
         && (!certificatedata.isRevoked()||certificatedata.isRevokedAndOnHold()) ) {
 		try {
 	    	rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername(),reason);
@@ -179,7 +177,7 @@
 		certificatedata = rabean.getCertificate(currentindex);
 
 		if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) 
-			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevokedAndOnHold()){
+			&& ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificatedata.isRevokedAndOnHold()){
 				//-- call to unrevoke method
 				try {
 					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername());
@@ -674,7 +672,7 @@ function confirmrepublish(){
           </td>
           <td>
        <%  try{
-            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){
+            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){
 				if ( !certificatedata.isRevoked() || certificatedata.isRevokedAndOnHold() ){
 					//-- Certificate can be revoked or suspended
 		%>    

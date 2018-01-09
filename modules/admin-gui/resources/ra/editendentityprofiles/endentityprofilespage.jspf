@@ -1,6 +1,6 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <% 
-  TreeMap<String,String> profiles = ejbcarabean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
+  TreeMap<String,String> profiles = ejbcawebbean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
   List<String> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
   boolean authorizedToEdit = ejbcarabean.authorizedToEditEndEntityProfiles();
 

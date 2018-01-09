@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -107,7 +106,7 @@ public class ViewEndEntityHelper implements Serializable{
      * @param request is a reference to the http request.
      */
     public void initialize(EjbcaWebBean ejbcawebbean,  
-    		               RAInterfaceBean rabean, CAInterfaceBean cabean) throws  Exception{
+    		               RAInterfaceBean rabean, CAInterfaceBean cabean) throws Exception {
 
       if(!initialized){
 
@@ -116,21 +115,18 @@ public class ViewEndEntityHelper implements Serializable{
         this.cabean = cabean;
         initialized = true;
         
-        if(ejbcawebbean.getGlobalConfiguration().getIssueHardwareTokens()){
-            TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
-
+        if (ejbcawebbean.getGlobalConfiguration().getIssueHardwareTokens()){
+            final TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getHardTokenProfiles();
             tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
             tokenids   = new int[tokentexts.length];
-            for(int i=0; i < RAInterfaceBean.tokentexts.length; i++){
+            for (int i=0; i < RAInterfaceBean.tokentexts.length; i++){
               tokentexts[i]= RAInterfaceBean.tokentexts[i];
               tokenids[i] = RAInterfaceBean.tokenids[i];
             }
-            Iterator<String> iter = hardtokenprofiles.keySet().iterator();
             int index=0;
-            while(iter.hasNext()){       
-              String name = (String) iter.next();
-              tokentexts[index+RAInterfaceBean.tokentexts.length]= name;
-              tokenids[index+RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
+            for (String name : hardtokenprofiles.keySet()) {
+              tokentexts[index+RAInterfaceBean.tokentexts.length] = name;
+              tokenids[index+RAInterfaceBean.tokentexts.length] = hardtokenprofiles.get(name).intValue();
               index++;
             }
          }
@@ -231,8 +227,8 @@ public class ViewEndEntityHelper implements Serializable{
     		    userdatas[0] = currentuser;    		  
     		  }
     		  for(int i=0; i< hist.size();i++){
-    			  CertReqHistory next = ((CertReqHistory) hist.get(i));
-    			  userdatas[i+currentexists] = new UserView(next.getEndEntityInformation(),ejbcawebbean.getInformationMemory().getCAIdToNameMap());
+    			  CertReqHistory next = hist.get(i);
+    			  userdatas[i+currentexists] = new UserView(next.getEndEntityInformation(), ejbcawebbean.getCAIdToNameMap());
     		  }
 			  
     	  }

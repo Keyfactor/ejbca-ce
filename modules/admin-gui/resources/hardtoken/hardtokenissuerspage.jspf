@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <% 
-  TreeMap issuerdatas   = ejbcawebbean.getInformationMemory().getHardTokenIssuers();
+  TreeMap<String,HardTokenIssuerInformation> issuerdatas = ejbcawebbean.getHardTokenIssuers();
 
 %>
 

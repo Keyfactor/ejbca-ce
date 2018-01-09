@@ -1,7 +1,7 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
-<% TreeMap<String, String> endentityprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY); 
-   TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
-   Map caids = ejbcawebbean.getInformationMemory().getCANames();
+<% TreeMap<String, String> endentityprofileids = ejbcawebbean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY); 
+   TreeMap certificateprofileids = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
+   Map caids = ejbcawebbean.getCANames();
  
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"}; //Do not change the order of the connectors is this array. In the SQL Query: AND=0, OR=1, ANDNOT=2, ORNOT=3. These values are defined in org.ejbca.util.query.Query, so unless you change these values in the Query class, do not change the order of the connectors in this array
    String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN",
