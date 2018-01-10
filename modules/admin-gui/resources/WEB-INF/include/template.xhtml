@@ -64,7 +64,6 @@
     </ui:insert>
     
     <h:panelGroup id="navigation" layout="block" styleClass="navbar">
-      <!-- TODO externalContext might not work if there's a reverse proxy in front of EJBCA -->
       <h:outputLink styleClass="homeLink" value="#{adminMenuBean.adminWebUrl}/"><h:outputText value="#{web.text['NAV_HOME']}"/></h:outputLink>      
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewCAHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text['NAV_CAFUNCTIONS']}"/></h:panelGroup>
