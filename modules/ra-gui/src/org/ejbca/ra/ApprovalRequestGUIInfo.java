@@ -261,6 +261,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     // Whether the current admin can approve this request
     private boolean canApprove;
     private boolean canEdit;
+    private boolean canView;
     private final boolean authorizedToRequestType;
     
     public ApprovalRequestGUIInfo(final RaApprovalRequestInfo request, final RaLocaleBean raLocaleBean, final RaAccessBean raAccessBean) {
@@ -404,6 +405,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         canApprove = nextApprovalStep != null && (!request.isEditedByMe() || allowSelfEdit) && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
         // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
         canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
+        canView = authorizedToRequestType && request.isVisibleToMe();
         
         previousSteps = new ArrayList<>();
         for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {
@@ -455,6 +457,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     
     public boolean isCanApprove() { return canApprove; }
     public boolean isCanEdit() { return canEdit; }
+    public boolean isCanView() {return canView;}
     public boolean isEditedByMe() { return request.isEditedByMe(); }
     public boolean isRequestedByMe() { return request.isRequestedByMe(); }
     public boolean isApprovedByMe() { return request.isApprovedByMe(); }

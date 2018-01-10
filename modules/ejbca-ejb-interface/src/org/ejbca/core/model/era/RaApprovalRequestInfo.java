@@ -68,6 +68,7 @@ public class RaApprovalRequestInfo implements Serializable {
     private final boolean lastEditedByMe;
     private boolean approvedByMe;
     private final boolean editable;
+    private boolean isVisibleByMe;
     private final List<TimeAndAdmin> editedByAdmins;
 
     // Current approval step
@@ -157,6 +158,9 @@ public class RaApprovalRequestInfo implements Serializable {
                     if (approvalProfile.canApprovePartition(authenticationToken, partition)) {
                         nextApprovalStep = nextStep;
                         nextApprovalStepPartition = partition;
+                        break;
+                    } else if (approvalProfile.canViewPartition(authenticationToken, partition)) {
+                        isVisibleByMe = true;
                         break;
                     }
                 } catch (AuthenticationFailedException e) {
@@ -292,6 +296,10 @@ public class RaApprovalRequestInfo implements Serializable {
         return nextStepAllowedRoles;
     }
 
+    public boolean isVisibleToMe() {
+        return isVisibleByMe;
+    }
+    
     /** Is waiting for the given admin to do something */
     public boolean isWaitingForMe(final AuthenticationToken admin) {
         if (requestedByMe) {
