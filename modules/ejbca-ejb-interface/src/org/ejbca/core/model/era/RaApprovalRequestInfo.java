@@ -161,7 +161,6 @@ public class RaApprovalRequestInfo implements Serializable {
                         break;
                     } else if (approvalProfile.canViewPartition(authenticationToken, partition)) {
                         isVisibleByMe = true;
-                        break;
                     }
                 } catch (AuthenticationFailedException e) {
                     // If this admin cannot approve this partition, check the next partition
