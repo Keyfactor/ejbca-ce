@@ -190,9 +190,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      *
      * @return List of the available key validator types
      */
-    @SuppressWarnings("rawtypes")
     public List<SelectItem> getAvailableValidators() {
-        final List<Class> excludeClasses = new ArrayList<Class>();
+        final List<Class<?>> excludeClasses = new ArrayList<>();
         if (!((GlobalConfiguration) configurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts()) {
             excludeClasses.add(ExternalCommandCertificateValidator.class);
         }
