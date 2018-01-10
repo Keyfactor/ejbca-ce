@@ -169,7 +169,7 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
             log.debug("Validating public key with algorithm " + publicKey.getAlgorithm() + ", format " + publicKey.getFormat() + ", implementation "
                     + publicKey.getClass().getName());
         }
-        if (!AlgorithmConstants.KEYALGORITHM_ECDSA.equals(publicKey.getAlgorithm()) || !(publicKey instanceof ECPublicKey)) {
+        if (!(AlgorithmConstants.KEYALGORITHM_ECDSA.equals(publicKey.getAlgorithm()) || AlgorithmConstants.KEYALGORITHM_EC.equals(publicKey.getAlgorithm())) || !(publicKey instanceof ECPublicKey)) {
             final String message = "Invalid: Public key is not ECC algorithm or could not be parsed: " + publicKey.getAlgorithm() + ", format "
                     + publicKey.getFormat();
             messages.add(message);
