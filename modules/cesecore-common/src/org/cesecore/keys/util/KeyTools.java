@@ -167,7 +167,7 @@ public final class KeyTools {
         } catch (NoSuchProviderException e) {
             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
         }
-        if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+        if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA) || StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_EC)) {
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
                 // Check if we have an OID for this named curve
