@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -50,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -144,7 +146,8 @@ public class EjbcaWebBean implements Serializable {
     private ServletContext servletContext = null;
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
-    private String certificatefingerprint; // Unique key to identify the admin.. usually a hash of the admin's certificate
+    private String certificatefingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
+    private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
@@ -169,40 +172,70 @@ public class EjbcaWebBean implements Serializable {
         reloadAvailableCustomCertExtensionsConfiguration();
     }
 
+    private X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
+        final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("javax.servlet.request.X509Certificate");
+        return certificates == null || certificates.length==0 ? null : certificates[0];
+    }
+
+    private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
+        final String sslSessionIdServletsStandard;
+        final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("javax.servlet.request.ssl_session_id");
+        if (sslSessionIdServletsStandardObject!=null && sslSessionIdServletsStandardObject instanceof byte[]) {
+            // Wildfly 9 stores the TLS sessions as a raw byte array. Convert it to a hex String.
+            sslSessionIdServletsStandard = new String(Hex.encode((byte[]) sslSessionIdServletsStandardObject), StandardCharsets.UTF_8);
+        } else {
+            sslSessionIdServletsStandard = (String) sslSessionIdServletsStandardObject; 
+        }
+        final String sslSessionIdJBoss7 = (String)httpServletRequest.getAttribute("javax.servlet.request.ssl_session");
+        return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
+    }
+
     /* Sets the current user and returns the global configuration */
     public GlobalConfiguration initialize(HttpServletRequest request, String... resources) throws Exception {
-        if (!initialized) {
+        // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
+        final X509Certificate certificate = getClientX509Certificate(request);
+        final String fingerprint = CertTools.getFingerprintAsString(certificate);
+        final String currentTlsSessionId = getTlsSessionId(request);
+        // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate). 
+        // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
+        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificatefingerprint)) {
+            if (log.isDebugEnabled() && initialized) {
+                // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
+                log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificatefingerprint+", new cert fp: "+fingerprint);
+            }
             requestServerName = getRequestServerName(request);
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
-            final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            if (certificates == null || certificates.length == 0) {
+            if (certificate == null) {
                 throw new AuthenticationFailedException("Client certificate required.");
             } else {
                 final Set<X509Certificate> credentials = new HashSet<>();
-                credentials.add(certificates[0]);
+                credentials.add(certificate);
                 final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
                 administrator = authenticationSession.authenticate(subject);
                 if (administrator == null) {
-                    throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificates[0]));
+                    throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
                 }
             }
             commonInit();
+            // Set the current TLS session 
+            authenticationTokenTlsSessionId = currentTlsSessionId;
             adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
             // Check if certificate and user is an RA Admin
-            final String userdn = CertTools.getSubjectDN(certificates[0]);
+            final String userdn = CertTools.getSubjectDN(certificate);
             final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
             usercommonname = dn.getField(DNFieldExtractor.CN, 0);
             if (log.isDebugEnabled()) {
                 log.debug("Verifying authorization of '" + userdn + "'");
             }
-            final String issuerDN = CertTools.getIssuerDN(certificates[0]);
-            final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
-            final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
-            certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
+            final String issuerDN = CertTools.getIssuerDN(certificate);
+            final String sernostr = CertTools.getSerialNumberAsString(certificate);
+            final BigInteger serno = CertTools.getSerialNumber(certificate);
+            // Set current TLS certificate fingerprint
+            certificatefingerprint = fingerprint;
             // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
             if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
                 throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
@@ -222,7 +255,7 @@ public class EjbcaWebBean implements Serializable {
                 details.put("reason", "Certificate has no access");
                 auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
                         administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
-                throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificates[0]));
+                throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
             }
             // Continue with login
             if (details.isEmpty()) {
