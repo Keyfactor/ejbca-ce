@@ -44,7 +44,7 @@ public enum ValidatorFactory {
         return identifierToImplementationMap.values();
     }
     
-    public Collection<Validator> getAllImplementations(final List<Class> excludeClasses) {
+    public Collection<Validator> getAllImplementations(final List<Class<?>> excludeClasses) {
         if (CollectionUtils.isNotEmpty(excludeClasses)) {
             final Collection<Validator> result = new ArrayList<Validator>();
             for (Validator validator : getAllImplementations()) {
