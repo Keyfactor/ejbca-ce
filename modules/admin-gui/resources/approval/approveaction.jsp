@@ -183,7 +183,7 @@ function viewcert(link){
 				   				<f:converter converterId="stringConverter"/>
 				   			</h:inputText>
 				   			<h:inputTextarea disabled="true" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-                                value="#{property.value}">
+                                value="#{property.value.value}">
                             	<f:converter converterId="stringConverter"/>
                             </h:inputTextarea>
 				   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
@@ -239,7 +239,7 @@ function viewcert(link){
 					   			<h:inputTextarea disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 					   				rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-	                                value="#{property.value}">
+	                                value="#{property.value.value}">
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
 					   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
