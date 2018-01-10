@@ -299,12 +299,6 @@ public class AlgorithmToolsTest {
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA1WithRSAAndMGF1", AuthorizationRoleEnum.IS));
         CardVerifiableCertificate cvsha256mgf = new CardVerifiableCertificate(CertificateGenerator.
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA256WithRSAAndMGF1", AuthorizationRoleEnum.IS));
-//      CardVerifiableCertificate cvsha3_256_rsa = new CardVerifiableCertificate(CertificateGenerator.
-//              createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AuthorizationRoleEnum.IS));
-//      CardVerifiableCertificate cvsha3_384_rsa = new CardVerifiableCertificate(CertificateGenerator.
-//              createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, AuthorizationRoleEnum.IS));
-//      CardVerifiableCertificate cvsha3_512_rsa = new CardVerifiableCertificate(CertificateGenerator.
-//              createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AuthorizationRoleEnum.IS));
         assertEquals("SHA1WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1));
     	assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha256));
     	assertEquals("SHA1WITHRSAANDMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1mgf));
@@ -356,12 +350,6 @@ public class AlgorithmToolsTest {
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA224WithECDSA", AuthorizationRoleEnum.IS));
         CardVerifiableCertificate cvsha256ecc = new CardVerifiableCertificate(CertificateGenerator.
                 createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA256WithECDSA", AuthorizationRoleEnum.IS));
-//        CardVerifiableCertificate cvsha3_256_ecc = new CardVerifiableCertificate(CertificateGenerator.
-//                createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, AuthorizationRoleEnum.IS));
-//      CardVerifiableCertificate cvsha3_384_ecc = new CardVerifiableCertificate(CertificateGenerator.
-//                createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, AuthorizationRoleEnum.IS));
-//        CardVerifiableCertificate cvsha3_512_ecc = new CardVerifiableCertificate(CertificateGenerator.
-//                createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, AuthorizationRoleEnum.IS));
     	assertEquals("SHA1WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha1ecc));
     	assertEquals("SHA224WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha224ecc));
     	assertEquals("SHA256WITHECDSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(cvsha256ecc));
