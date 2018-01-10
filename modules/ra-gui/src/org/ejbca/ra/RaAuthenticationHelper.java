@@ -58,7 +58,7 @@ public class RaAuthenticationHelper implements Serializable {
         final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         if (authenticationToken==null || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId)) {
             if (log.isTraceEnabled()) {
-                log.error("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
+                log.trace("New TLS session IDs or authenticationToken: currentClientTlsSessionID: "+currentTlsSessionId+", authenticationTokenTlsSessionId: "+authenticationTokenTlsSessionId);
             }
             // Set the current TLS session 
             authenticationTokenTlsSessionId = currentTlsSessionId;
