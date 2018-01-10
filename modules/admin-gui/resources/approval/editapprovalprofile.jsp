@@ -181,7 +181,7 @@
 						   				<f:validator validatorId="#{property.validatorType}"/>
 						   			</h:inputText>
                                     <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
-                                        value="#{property.value}" style="width: 100%" >
+                                        value="#{property.value.value}" style="width: 100%" >
                                         <f:converter converterId="stringConverter"/>
                                         <f:validator validatorId="#{property.validatorType}"/>
                                     </h:inputTextarea>
