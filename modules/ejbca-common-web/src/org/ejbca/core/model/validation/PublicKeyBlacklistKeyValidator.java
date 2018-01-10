@@ -15,12 +15,15 @@ package org.ejbca.core.model.validation;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.ValidationException;
@@ -157,7 +160,12 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
 
         if (null != entry) {
             // Filter for key specifications.
-            if (getKeyAlgorithms().contains("-1") || getKeyAlgorithms().contains(getKeySpec(publicKey))) {
+            final Set<String> keyAlgs = new HashSet<>(getKeyAlgorithms());
+            if (keyAlgs.contains(AlgorithmConstants.KEYALGORITHM_EC) || keyAlgs.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                keyAlgs.add(AlgorithmConstants.KEYALGORITHM_EC);
+                keyAlgs.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
+            }
+            if (getKeyAlgorithms().contains("-1") || keyAlgs.contains(getKeySpec(publicKey))) {
                 keySpecMatched = true;
             }
         }
