@@ -16,7 +16,9 @@
 
 <%
 /*
-    Note that the head banner is now hard coded since EJBCA 6.12.0.
+    Note since EJBCA 6.12.0: A hard coded head banner is built in into the default
+    template, to avoid having to include this file through an <iframe> element.
+    The hard coded variant is used when the head banner is set to "head_banner.jsp".
     
     If you want to customize the head banner, please copy/rename this file
     (otherwise it won't be included) and change the setting under System
