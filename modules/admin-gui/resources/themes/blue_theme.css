@@ -1,1 +1,1936 @@
-body{height:100%;text-align:center;overflow:auto}body,html,input,select,table,textarea{padding:0;margin:0;background-color:#fff;color:#000;font-size:16px;text-rendering:optimizeLegibility;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif}.monospace,code,code *,pre,pre *{font-family:"DejaVu Sans Mono","Liberation Mono",Consolas,"Courier New",Courier,monospace}a img{border-width:0}p.help{font-size:.7em;line-height:.7em;white-space:normal;color:#606060;color:rgba(0,0,0,.6)}.main-wrapper{-webkit-box-sizing:border-box;box-sizing:border-box;min-height:100%;padding:0 0 118px;position:relative}.container,.contentBlock{width:100%;margin:0;padding:0;text-align:left}@media (max-width:992px) and (min-width:768px){.container,.contentBlock{width:750px;margin:0 auto}}@media (max-width:1200px) and (min-width:992px){.container,.contentBlock{width:970px;margin:0 auto}}@media (min-width:1200px){.container,.contentBlock{width:1170px;margin:0 auto}}.hidden{display:none}input[type=image]{background-color:transparent;max-height:20px;width:auto;vertical-align:middle}.results td input[type=image]{padding-right:.5em}th.results input[type=image]{padding-left:.5em}.svg{height:20px;width:auto}.svg-large{height:30px;width:auto}b,strong{font-family:"Open Sans","Source Sans Pro","Source Sans Pro Black",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;font-style:normal}em,i{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;font-style:normal}u{text-decoration:none;color:#1f589f}h1{font:38px "Source Sans Pro Light","Source Sans Pro ExtraLight","Source Sans Pro","Open Sans Light",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:lighter}h2{font:30px "Source Sans Pro Light","Source Sans Pro ExtraLight","Source Sans Pro","Open Sans Light",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:lighter}h3{font:24px "Source Sans Pro","Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}h4{font:20px "Source Sans Pro","Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}h5{font:18px "Source Sans Pro","Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}h6{font:16px "Source Sans Pro","Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}p{font:14px "Open Sans","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}a:link,a:visited{color:#1f589f;font-weight:400;text-decoration:none}a:active,a:hover{text-decoration:underline;cursor:pointer}hr{border-top:1px solid #ccc;margin-top:2rem;margin-bottom:2rem;border-bottom:none}button,input[type=button],input[type=reset],input[type=submit]{background:#1f589f;padding:8px 15px 8px 15px;border:1px solid transparent;color:#fff;font-size:16px;font-family:'Source Sans Pro','Open Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;-webkit-appearance:button;text-align:center;white-space:nowrap;vertical-align:middle;overflow:visible;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;display:inline-block}button:hover,input[type=button]:hover,input[type=reset]:hover,input[type=submit]:hover{background:#2b74ce;box-shadow:none;-moz-box-shadow:none;-webkit-box-shadow:none;cursor:pointer}button:disabled,button[disabled=disabled],input[type=button]:disabled,input[type=button][disabled=disabled],input[type=reset]:disabled,input[type=reset][disabled=disabled],input[type=submit]:disabled,input[type=submit][disabled=disabled]{background-color:#4f74a1;color:#fff;cursor:not-allowed}.button-group button,.button-group input[type=button],.button-group input[type=reset],.button-group input[type=submit],.gridColumn2 input[type=submit]{border:1px solid #1a4c89}.outline-button{color:#1f589f;background-color:transparent;text-align:center;white-space:nowrap;vertical-align:middle;cursor:pointer;line-height:1.5;overflow:visible;border:1px solid #1f589f;padding:8px 15px 8px 15px;font:16px "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;display:inline-block}.outline-button:hover{color:#fff;background-color:#1f589f}input[type=date],input[type=datetime],input[type=email],input[type=number],input[type=password],input[type=search],input[type=text],input[type=time],input[type=url],select,textarea{box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;border:1px solid #bebebe;padding:7px;margin:0;-webkit-transition:all .3s ease-in-out;-moz-transition:all .3s ease-in-out;-ms-transition:all .3s ease-in-out;-o-transition:all .3s ease-in-out;outline:0}input[type=date]:required,input[type=datetime]:required,input[type=email]:required,input[type=number]:required,input[type=password]:required,input[type=search]:required,input[type=text]:required,input[type=time]:required,input[type=url]:required,select:required,textarea:required{-webkit-box-shadow:0 0 3px #e35046;box-shadow:0 0 3px #e35046;border:1px solid #e35046}input[type=date]:focus,input[type=datetime]:focus,input[type=email]:focus,input[type=number]:focus,input[type=password]:focus,input[type=search]:focus,input[type=text]:focus,input[type=time]:focus,input[type=url]:focus,select:focus,textarea:focus{-webkit-box-shadow:0 0 3px #1f589f;box-shadow:0 0 3px #1f589f;border:1px solid #1f589f}input[type=date]:disabled,input[type=date][disabled:disabled],input[type=datetime]:disabled,input[type=datetime][disabled:disabled],input[type=email]:disabled,input[type=email][disabled:disabled],input[type=number]:disabled,input[type=number][disabled:disabled],input[type=password]:disabled,input[type=password][disabled:disabled],input[type=search]:disabled,input[type=search][disabled:disabled],input[type=text]:disabled,input[type=text][disabled:disabled],input[type=time]:disabled,input[type=time][disabled:disabled],input[type=url]:disabled,input[type=url][disabled:disabled],select:[disabled:disabled],select:disabled,textarea:[disabled:disabled],textarea:disabled{cursor:not-allowed;background-color:#e6e6e6}select{background-color:#fff;display:inline-block;font:inherit;line-height:1.5em;padding:.5em 3.5em .5em 1em;margin:0;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-appearance:none;-moz-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#1f589f 50%),linear-gradient(135deg,#1f589f 50%,transparent 50%),linear-gradient(to right,#ccc,#ccc);background-position:calc(100% - 20px) calc(1em + 2px),calc(100% - 15px) calc(1em + 2px),calc(100% - 2.5em) .5em;background-size:5px 5px,5px 5px,1px 1.5em;background-repeat:no-repeat}select:focus{background-image:linear-gradient(45deg,#1f589f 50%,transparent 50%),linear-gradient(135deg,transparent 50%,#1f589f 50%),linear-gradient(to right,#ccc,#ccc);background-position:calc(100% - 15px) 1em,calc(100% - 20px) 1em,calc(100% - 2.5em) .5em;background-size:5px 5px,5px 5px,1px 1.5em;background-repeat:no-repeat;outline:0}select.select-list{background-image:none}.approveationlist-select{margin:0 10px}#banner{margin:8px 8px;padding:0;color:#333;white-space:nowrap;text-shadow:.04em .04em 0 rgba(0,0,0,.1);-o-text-shadow:.04em .04em 0 #ddd;-moz-text-shadow:.04em .04em 0 rgba(0,0,0,.1);-khtml-text-shadow:.04em .04em 0 #ddd;-webkit-text-shadow:.04em .04em 0 rgba(0,0,0,.1);background-color:#fff;color:#000;overflow:hidden;text-align:left}#banner img{max-height:84px;margin-top:0}#banner h1{margin:0;display:inline-block;vertical-align:1.375rem}div#footer,div.footerBlock{text-align:center;height:18px;bottom:0;left:0;position:absolute;width:100%;font-size:.875em}#footer a:link,#footer a:visited,div.footerBlock a:link,div.footerBlock a:visited{color:#1f589f;text-decoration:none},#footer a:active,#footer a:focus,#footer a:hover,div.footerBlock a:active,div.footerBlock a:focus,div.footerBlock a:hover{text-decoration:underline}.version-info{text-align:right;font-size:x-small;font-family:"Open Sans","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}input,select,textarea{font-size:1rem}input[type=date]:required,input[type=datetime]:required,input[type=email]:required,input[type=number]:required,input[type=obligatory],input[type=search]:required,input[type=text]:required,input[type=time]:required,input[type=url]:required,select:required,textarea:required{-webkit-box-shadow:0 0 3px #e35046;box-shadow:0 0 3px #e35046;border:1px solid #e35046}select option:active,select option:focus,select option:hover{background-color:#ccc}select.number{text-align:right}select.acronym{text-align:center}input.selectButton{margin-right:5px}input.selectButton.largeSelectButton{padding:5px}div.message{text-align:center}table~.message{font:24px "Source Sans Pro","Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;margin-top:3rem}.message~#editglobalsettings{margin-top:1rem}.hexa{text-transform:uppercase}table td,table th{margin:0;padding:2px 3px;border:none;vertical-align:top}table h3{margin-top:0}.actCas,table.grid,table.results{border-collapse:collapse;background:#fff;border-radius:3px;max-width:600px;padding:5px;width:100%;-webkit-box-shadow:0 5px 10px rgba(0,0,0,.1);box-shadow:0 5px 10px rgba(0,0,0,.1);-webkit-animation:float 5s infinite;animation:float 5s infinite}.actCas th,table.grid th,table.results th{white-space:nowrap;color:#fff;background:#1f589f;border-bottom:3px solid #9ea7af;border-right:1px solid #343a45;font-size:20px;font-weight:400;padding:18px;text-align:left;text-shadow:0 1px 1px rgba(0,0,0,.1);vertical-align:middle}.actCas th a,.results th a,table.grid th a{color:#fff}.actCas th:first-child,.results th:first-child,table.grid th:first-child{border-top-left-radius:3px}.actCas th:last-child,.results th:last-child,table.grid th:last-child{border-top-right-radius:3px;border-right:none}.actCas tr,.results tr,table.grid tr{border-top:1px solid #ccc;border-bottom:1px solid #ccc;color:#666b85;font-size:16px;font-weight:400;text-shadow:0 1px 1px rgba(256,256,256,.1)}.actCas tr:hover td,.results tr:hover td,table.grid tr:hover td{background:#4e5066;color:#fff;border-top:1px solid #22262e}.results thead tr:hover td{border-top:none}.actCas tr:hover td a,.actCast tr:hover td u,.results tr:hover td a,.results tr:hover td u,table.grid tr:hover td a,table.grid tr:hover td u{color:#fff}.actCas tr:first-child,.results tr:first-child,table.grid tr:first-child{border-top:none}.actCas tr:last-child,.results tr:last-child,table.grid tr:last-child{border-bottom:none}.actCas tr:nth-child(odd) td,.results tr:nth-child(odd) td,table.grid tr:nth-child(odd) td{background:#e6e6e6}.actCas tr:nth-child(odd):hover td,.results tr:nth-child(odd):hover td,table.grid tr:nth-child(odd):hover td{background:#4e5066}.actCas tr:last-child td:first-child,.results tr:last-child td:first-child,table.grid tr:last-child td:first-child{border-bottom-left-radius:3px}.actCas tr:last-child td:last-child,.results tr:last-child td:last-child,table.grid tr:last-child td:last-child{border-bottom-right-radius:3px}.actCas td,.results td,table.grid td{background:#fff;padding:14px;text-align:left;vertical-align:middle;font-weight:300;font-size:16px;text-shadow:-1px -1px 1px rgba(0,0,0,.1);border-right:1px solid #ccc}.actCas td:last-child,.results td:last-child,table.grid td:last-child{border-right:0}.actCasFooter,table.grid tfoot{border-top:1px solid #ccc}.actCas .tfoot tr:active,.actCas .tfoot tr:focus,.actCas .tfoot tr:hover,.results .tfoot tr:active,.results .tfoot tr:focus,.results .tfoot tr:hover,table.grid tfoot tr:active,table.grid tfoot tr:focus,table.grid tfoot tr:hover{background-color:#4e5066}.actCas table td,.results table td,table.grid table td{border:none;background-color:transparent}.actCas table table tbody tr,.results table tbody tr,table.grid table tbody tr{background-color:transparent}table.bold-headings tbody tr:first-child{font-family:"Open Sans","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:700}.numberCell{display:block;text-align:right}form table fieldset{display:inline;padding:.1em .5em .2em 0;border:1px solid #9ea7af;border:1px solid rgba(0,0,0,.15);border-radius:.8em;-o-border-radius:.8em;-moz-border-radius:.8em;-khtml-border-radius:.8em;-webkit-border-radius:.8em;background-color:#e6e6e6;background-color:rgba(0,0,0,.02)}table .titles{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-size:1.05em;font-weight:400}table .help{line-height:1.4em;white-space:normal;color:#606060;color:rgba(0,0,0,.6)}table p.help{margin:.2em .1em}table#addendentity .help{font-size:.8em}.gridColumn1{white-space:nowrap}.gridColumn2{white-space:nowrap}.gridCenter{text-align:center}.gridColoumRight{text-align:right;width:50%}.gridColumnLeft{text-align:left;vertical-align:middle}table.actions,table.list{width:100%;margin:0;padding:0;border:0}table.actions tr td,table.list tr td{padding-bottom:.2em;line-height:2em}table.actions tr td h3,table.list tr td h3{margin-bottom:-.25em}table.actions{margin:2rem 0}#accessRulesForm table.fullwidth,table.action,table.edit,table.edit-bottom,table.edit-ctnd,table.edit-top,table.no-border,table.view{margin:.75em -2px 0 -2px;border-spacing:3px 1px}table.edit-bottom,table.subsection{margin-top:-1px}#accessRulesForm table.fullwidth td,table.action td,table.edit td,table.edit-bottom td,table.edit-ctnd td,table.edit-top td,table.no-border td,table.view td{padding:.25em .5em;line-height:1.6rem}#config #Row0 td,.edit-top .Row1 td{background-color:#e6e6e6}#config #Row1 td{background-color:#fff}.editColumn1{width:35%;text-align:right}.editColumnSystem1{width:35%;text-align:left}.editColumn2{width:65%}.editColumn1-Approval-profile{width:17%;text-align:right}.editColumn2-Approval-profile{width:65%}.editColumn1-Approval-steps{width:20%;text-align:right}.editColumn2-Approval-steps{width:45%}.editColumnSystem2{width:65%;text-align:left}.column-checkbox1{width:3%;text-align:left}.column-checkbox2{width:15%;text-align:left}.column-checkbox3{text-align:left}.column-align-right{text-align:right}table tr.section td,table tr.title td{font-size:1.25em}table tr td .dn{white-space:pre-wrap}table tr td .attribute{white-space:pre!important}table tr td code.fingerprint{font-size:1.05em}table.edit tr.section td,table.edit tr:first-child td,table.edit-bottom tr.section td,table.edit-top tr:first-child td{background-color:#1f589f;border-top:3px solid #9ea7af;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.1)}table.no-border tr.section td,table.no-border tr:first-child td{background-color:#1f589f;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.1)}table.edit tr:first-child td.field,table.edit-top tr:first-child td.field,table.no-border tr:first-child td.field{text-align:right}table.edit tr:last-child td,table.edit-bottom tr:last-child td,table.no-border tr:last-child td{background-color:#fff;color:#000}.edit-top tbody .Row1 td{background-color:#e6e6e6}table.edit tr.title td,table.edit-bottom tr.title td,table.edit-top tr.title td,table.no-border tr.title td{color:#fff;background-color:#1f589f}.title a{color:#fff}table.action tr td{vertical-align:middle}table.action tr.section td,table.action tr:first-child td{background-color:#2b74ce;border-top:3px solid #1f589f;color:#1f60a9}table.action tr:last-child td{background-color:#2b74ce;border-bottom:3px solid #1f589f;color:#1f60a9}table.small-action{border:none;margin:2rem 0}table.small-action tr:first-child td{background-color:#fff;border:none;color:#000}table.small-action tr:last-child td{background-color:#fff;border:none;color:#000}table.small-action tbody #Row0 td a{border:none;padding:0;text-decoration:none;background-color:transparent;display:inline-block}table.small-action tbody #Row0 td a:active,table.small-action tbody #Row0 td a:hover{color:#1f589f;text-decoration:underline;cursor:pointer;background-color:transparent}td.alignmiddle select{margin-bottom:6px}table.view{margin-top:.25em}table.view tr td{padding:.15em .5em!important;line-height:1.4em}table.view tr.section td,table.view tr:first-child td{background-color:#e5e5e5;border-top:3px solid #ccc;color:#000}table.view tr:last-child td{background-color:#e5e5e5;border-bottom:3px solid #ccc;color:#000}table.view tr.title td{background-color:#f2f2f2;background-image:-webkit-gradient(linear,left top,left bottom,from(rgba(229,229,229,1)),to(rgba(229,229,229,0)));background-image:linear-gradient(top,rgba(229,229,229,1) 0,rgba(229,229,229,0) 100%);color:#000}table.action table,table.edit table,table.edit-bottom table,table.edit-top table,table.no-border table,table.view table{background-color:transparent;border-spacing:0}table.action table tr td,table.edit table tr td,table.edit-bottom table tr td,table.edit-top table tr td,table.no-border table tr td,table.view table tr td{padding:0 .5em .1em 0!important;background-color:transparent!important;border:0 none transparent!important;color:#000!important}table.search tr td{padding:.25em .5em .1em 0;line-height:1.75em}table.search tr td select option.separator{border-top:1px solid #a0a0a0;border-color:rgba(0,0,0,.3);background-color:#d0d0d0;background-color:rgba(0,0,0,.1);color:#404040;color:rgba(0,0,0,.65);font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}table.search tr td select.day{text-align:right}table.search tr td select.year{text-align:center}table.search tr td select.time{text-align:center}table.results{min-width:1100px;margin-bottom:1rem}table.results thead tr td{white-space:nowrap;background-color:#1f589f!important;color:#fff;border-top:none}table.results tbody tr td{vertical-align:middle}table.results tbody tr td a{white-space:nowrap}h3#welcome{font-weight:400}div#information{margin-top:.5em}div#home{margin-top:1.5em}#home>table>tbody>tr>td{margin:0;padding:0}div.status{background-color:#fff;font-family:'Open Sans','Source Sans Pro',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-size:16px;font-weight:400;text-rendering:optimizeLegibility;display:block}div.status h4{color:#000;display:block;margin:auto;max-width:600px;padding:2px;font-family:"Source Sans Pro Light","Source Sans Pro ExtraLight","Source Sans Pro",'Open Sans Light',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:lighter;font-size:16px;padding-bottom:.5rem}div.status h4 a:active,div.status h4 a:focus,div.status h4 a:hover,div.status h4 a:link,div.status h4 a:visited{font-weight:500}div.status h4,div.status table td,div.status table th{white-space:nowrap}div.status table td img{width:16px;height:16px;margin-top:.1em}form#cryptotokens table{border-collapse:collapse;right:auto;left:auto}form#cryptotokens img.statusIcon{border-width:0}.actCasFooter{font-family:"Open Sans",'Source Sans Pro',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-style:italic;font-size:x-small!important;text-align:right!important}div#code{margin-top:1.5em}div#code input{margin-left:.35em}div#code input[type=submit]{margin-left:1em}select option.cvcoption_header{background:#ffc;font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;border-bottom:1px solid #000;padding:3px;color:#000}table#endentityprofile.edit tr td:first-child{vertical-align:middle;text-align:center}table#addendentity tr td{padding:.15em .3em;vertical-align:middle;white-space:nowrap;font-size:1.2em}table#addendentity tr.section td,table#addendentity tr.title td{font-size:1.35em}table#addendentity tr td:last-child{text-align:center}table#logconfiguration{margin-bottom:.25em}table#logconfiguration td{padding:.2em;font-size:.9em}table#logconfiguration td span{display:block;margin-bottom:.5em}table#logconfiguration td h3{margin:.2em 0;text-align:center}table#logconfiguration td.field{padding-left:.4em;text-align:left}table#logconfiguration td.checkbox{text-align:center}table#logconfigbuttons td{padding:.5em .25em}table#logconfigbuttons td input[type=button]{margin-top:.3em;margin-right:.5em}table#logconfigbuttons td input[type=submit]{margin-right:1em}#search2 input.noBorder{border:0}#search2 input.numberInputBig{width:6em;text-align:right}#search2 input.numberInputSmall{width:4em;text-align:right}#search2 td{white-space:nowrap}form#groupList p{margin-top:1.25em}form#groupList p a.commandLink{font-size:1em}form#groupList table{border-collapse:collapse}form#groupList table tr.listRow2{background-color:#f7f9fd}form#groupList table tbody tr:active,form#groupList table tbody tr:focus,form#groupList table tbody tr:hover{background-color:#ffb}form#groupList table td,form#groupList table th{white-space:nowrap}form#groupList table th{padding-bottom:.35em}form#groupList table td{padding:.35em;border:1px solid #d0def1;font-size:1.1em;font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400}form#groupList table td a{margin:.5em;padding:.15em .3em;border:1px solid transparent;font-size:inherit!important}form#groupList table td a:active,form#groupList table td a:focus,form#groupList table td a:hover{background-color:#fff;border:1px solid #a00;border-radius:.25em;-o-border-radius:.25em;-moz-border-radius:.25em;-khtml-border-radius:.25em;-webkit-border-radius:.25em}form#accessRulesForm table{margin-top:3px}form#accessRulesForm table table{margin:0}form#accessRulesForm table table thead tr:first-child th{background-color:#1f589f!important;border-top:3px solid #9ea7af;color:#fff}form#accessRulesForm table table thead tr th{text-align:center}form#accessRulesForm table table thead tr th:first-child{text-align:left}table#config{margin-top:.25em}table#config tr td{padding:.4em .4em;line-height:1.4em}table#config tr td:first-child{vertical-align:top}#Row0,.Row0{color:#000;font-size:1rem;background-color:#e6e6e6;margin:auto;max-width:600px;padding:5px;width:100%}#Row1,.Row1{color:#000;font-size:1rem;background-color:#fff;margin:auto;max-width:600px;padding:5px;width:100%}#Row0 td{padding:14px;vertical-align:middle;font-size:16px}#Row1 td{padding:14px}.outline-buttons-table tbody tr td a{color:#1f589f;background-color:transparent;text-align:center;white-space:nowrap;vertical-align:middle;cursor:pointer;line-height:1.5;overflow:visible;border:1px solid #1f589f;padding:8px 15px 8px 15px;font:16px "Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;display:inline-block}.outline-buttons-table tbody tr td a:hover{color:#fff;background-color:#1f589f}.label{vertical-align:top;text-align:right}.field{vertical-align:top;text-align:left}.listCaption{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;color:#fff;background:#1f589f;border-bottom:3px solid #9ea7af;border-right:1px solid #343a45;font-size:20px;font-weight:300;padding:18px;text-align:left;text-shadow:0 1px 1px rgba(0,0,0,.1);vertical-align:middle;font-weight:400}.listHeader{font-size:1.1em;font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;text-align:left}.subheader{color:#777;font-size:.7em;font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;text-align:left;font-weight:400}.superTable{background-color:#e6e6e6;border:none;border-collapse:collapse}.superTable td{padding:0}.subTable{background-color:#e6e6e6}.tableFooter{font-size:.7em;line-height:.7em;white-space:normal;color:#606060;color:rgba(0,0,0,.6);padding:5px 10px}.tableFooter-approval-step{text-align:left}.listColumn1{text-align:left;width:40%}.listColumn2{text-align:left;width:60%}td#InfoRow0{color:#000;font-size:9pt;background-color:#fff}td#InfoRow1{color:#000;font-size:9pt;background-color:#cfc}td#ErrorRow0{color:#000;font-size:9pt;background-color:#fff}td#ErrorRow1{color:#000;font-size:9pt;background-color:#fcc}tr#LogTextRow0{color:#000;font-size:7pt;background-color:#fff}tr#LogTextRow1{color:#000;font-size:7pt;background-color:#e5ecff}.caColumn{text-align:left;width:20%}.withColumn{text-align:left;width:35%}.typeColumn{text-align:left;width:20%}.valueColumn{text-align:left;width:15%}.commandColumn{text-align:left;width:5%}.rulesColumn1{text-align:left;width:50%}.rulesColumn2{text-align:center;width:50%}table.selectStateRadio td *{vertical-align:middle}#rolemembers\:list td,#rolemembers\:list th{font-size:80%;line-height:1;padding:.5em .2em 1em}#rolemembers\:list\:caId,#rolemembers\:list\:matchWith{font-size:.8rem;max-width:22rem}#rolemembers\:list\:description,#rolemembers\:list\:tokenMatchValue{font-size:.9rem}#rolemembers\:list th input[type=submit]{background-color:#fff;color:#1f589f;-webkit-box-shadow:2px 2px 4px #888;box-shadow:2px 2px 4px #888}#rolemembers\:list th input[type=submit]:hover{-webkit-box-shadow:2px 2px 6px #fff;box-shadow:2px 2px 6px #fff;border:1px solid #ccc}.selectStateRadio{background-color:transparent}@media(min-width:1280){.wideCTLogInput{width:380px}}@media(max-width:1200){.ctlogTable thead th{font-size:.875rem;padding:.875rem}.ctlogTable input{font-size:.75rem}.ctlogTable tr td{padding:0,375rem;font-size:.875rem}}body.popup{margin:1em;padding:0;background-color:#fff;color:#000;font-size:11pt}.popup h2,.popup h3,.popup h4{text-align:center}.popup h2{margin-top:.5em;margin-bottom:.5em}.popup h3{margin-top:.5em;margin-bottom:.5em}.popup h4{margin-top:.5em;margin-bottom:.5em}.popup table{width:100%;border:0 none}.popup table tr td{padding:.1em .3em}.popup table tr.section td,.popup table tr.title td{font-size:1.2em}.popup table tr td:first-child{white-space:nowrap}.popup#viewendentity table.view{margin-top:.5em}.popup#viewendentity table.view table{margin:0 -.5em}.popup#viewendentity table.view table tr td{padding-left:.6em!important}.popup#viewendentity table.view table tr:nth-child(2n) td{background-color:#eee!important;background-color:rgba(0,0,0,.03)!important}.popup#editendentity table.edit{margin-top:.5em}.popup#editendentity table.edit tr td{padding:.15em .3em;vertical-align:middle;white-space:nowrap}.popup#editendentity table.edit tr td:last-child{text-align:center}.popup#viewcertificate table.view tr.title td{font-size:1em}.popup#viewcertificate table.view tr:first-child td{font-size:1.2em}.popup#viewhistory h2,.popup#viewhistory h3,.popup#viewhistory h4{text-align:left}.popup#viewhistory table tbody tr td:first-child{white-space:normal}.alert{font-size:16px;font-family:"Open Sans","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;color:#73221c;background-color:#f8dad8;border-color:#f5cac7;padding:.75rem 1.25rem;margin-bottom:1rem;border:1px solid transparent;border-radius:.25rem;line-height:1.5}.info,.infoMessage{color:#1f589f;font-size:16px;background-color:transparent;font-family:"Open Sans","Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;font-weight:400;background-color:#e6e6e6;border-color:#ccc;padding:.75rem 1.25rem;margin-bottom:1rem;border:1px solid transparent;border-radius:.25rem;line-height:1.5}.commandLink{text-align:right;margin-left:.5em;margin-right:.5em}.commandButton{vertical-align:bottom;margin-left:.5em;margin-right:.5em}.commandLink.reload{background-color:#53983c}.commandLink.remove{background-color:#e35046}div.tabLinks{clear:both;width:inherit;margin:20px 0 22px;border-bottom:1px solid #ddd;color:#000;min-height:32px;line-height:2.6}a.tabLinkfalse,a.tabLinktrue{margin-right:2px;line-height:1.42857143;padding:10px 15px;border-radius:4px 4px 0 0;font-size:16px;font-family:'Open Sans','Source Sans Pro',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Helvetica,Geneva,sans-serif;white-space:nowrap}a.tabLinkfalse{font-weight:400;color:#1f589f}a.tabLinktrue{color:#343a45;background-color:#fff;border:1px solid #ddd;border-bottom-color:transparent}a.tabLinkfalse:hover{curosor:pointer;background-color:#ccc;text-decoration:none}.propertyTable{border:0;right:auto;left:auto;margin-bottom:1.5rem}.informationalSection{font-style:normal;padding:.5em;border-radius:.3em;background:#fcfcfc;margin-bottom:1em}.readablewidth{max-width:1000px}.fullwidth{width:100%}.alignright{text-align:right}.alignmiddle{vertical-align:middle}.expandOnClick{width:25em;height:1em;display:block;overflow:hidden;white-space:nowrap}.expandOnClick:after{content:"..."}.expandOnClick:focus{width:100%;display:inline;overflow:auto;color:#000;white-space:pre-wrap;cursor:pointer}.expandOnClick:focus:after{content:""}#navigation{opacity:100%;z-index:500;min-height:45px}.navbar{background-color:#1f589f;z-index:500;list-style:none;margin:0;list-style-position:inside;overflow:hidden;padding:0 6px 0 0;min-height:45px}.navbar a{float:left;font-size:16px;color:#fff;text-align:center;padding:14px 16px;text-decoration:none;font-family:'Source Sans Pro','Open Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}.homeLink img{display:none}.homeLink::before{content:"Home"}.dropdown{float:left;overflow:hidden}.dropdown .dropbtn,.dropdown>.dropbtn{font-size:16px;border:none;outline:0;color:#fff;padding:14px 16px;background-color:inherit;font-family:'Source Sans Pro','Open Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}@media (max-width:1338px){.dropdown .dropbtn,.navbar a{font-size:14px}}.dropdown:hover .dropbtn,.navbar a:hover{background-color:#2b74ce}.dropdown>.dropbtn::after{content:"\25BE";padding-left:.5em}.dropdown-content{display:none;position:absolute;background-color:#f9f9f9;min-width:160px;-webkit-box-shadow:0 8px 16px 0 rgba(0,0,0,.2);box-shadow:0 8px 16px 0 rgba(0,0,0,.2);z-index:1;margin-top:2px}.dropdown-content a{float:none;color:#000;padding:12px 16px;text-decoration:none;display:block;text-align:left;font-family:'Source Sans Pro','Open Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-weight:400}.dropdown-content a:hover{background-color:#ccc}.dropdown:hover .dropdown-content{display:block}#modalBlock{position:fixed;left:0;top:0;width:100%;height:100%;background-color:#fefefec0;text-align:center}#modalInner{position:static;display:inline-block;text-align:left;margin:10% auto;max-width:90%;width:auto;padding:20px;background-color:#fefefe;border:1px solid #aeaeae;border-radius:5px}#search p table tfoot tr td .commandLink{margin-top:1rem}.margin-top{margin-top:2rem}.margin-bottom{margin-bottom:2rem}.small-margin-bottom{margin-bottom:1rem!important}.padding-top{padding-top:2rem}.padding-bottom{padding-bottom:2rem}.tiny-padding{padding-left:.5em}.margin-left{margin-left:1rem}.no-border tbody tr td{border:none}table.edit tbody .Row0 td{background-color:#fff;border:none}td.no-border{border:none!important}#internalkeybinding\:trustedCertificates{margin-top:1rem;font-weight:400}.help-link{border:none;padding:0;text-decoration:none;background-color:transparent;display:inline-block}.lone-edit-heading{margin-bottom:0;color:#fff;width:99.5%}.lone-edit-heading td{background-color:#1f589f;color:#fff}.lone-edit-heading~table.edit{margin-top:0}.lone-edit-heading~table.edit tr td{background-color:#e6e6e6}.lone-edit-heading~table.edit tr:first-child td{color:#000}
+body {
+	height: 100%;
+	text-align: center;
+	overflow: auto
+}
+
+body, html, input, select, table, textarea {
+	padding: 0;
+	margin: 0;
+	background-color: #fff;
+	color: #000;
+	font-size: 16px;
+	text-rendering: optimizeLegibility;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Helvetica, Geneva, sans-serif
+}
+
+.monospace, code, code *, pre, pre * {
+	font-family: "DejaVu Sans Mono", "Liberation Mono", Consolas,
+		"Courier New", Courier, monospace
+}
+
+a img {
+	border-width: 0
+}
+
+p.help {
+	font-size: .7em;
+	line-height: .7em;
+	white-space: normal;
+	color: #606060;
+	color: rgba(0, 0, 0, .6)
+}
+
+.main-wrapper {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	min-height: 100%;
+	padding: 0 0 118px;
+	position: relative
+}
+
+.container, .contentBlock {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	text-align: left
+}
+
+@media ( max-width :992px) and (min-width:768px) {
+	.container, .contentBlock {
+		width: 750px;
+		margin: 0 auto
+	}
+}
+
+@media ( max-width :1200px) and (min-width:992px) {
+	.container, .contentBlock {
+		width: 970px;
+		margin: 0 auto
+	}
+}
+
+@media ( min-width :1200px) {
+	.container, .contentBlock {
+		width: 1170px;
+		margin: 0 auto
+	}
+}
+
+.hidden {
+	display: none
+}
+
+input[type=image] {
+	background-color: transparent;
+	max-height: 20px;
+	width: auto;
+	vertical-align: middle
+}
+
+.results td input[type=image] {
+	padding-right: .5em
+}
+
+th.results input[type=image] {
+	padding-left: .5em
+}
+
+.svg {
+	height: 20px;
+	width: auto
+}
+
+.svg-large {
+	height: 30px;
+	width: auto
+}
+
+b, strong {
+	font-family: "Open Sans", "Source Sans Pro", "Source Sans Pro Black",
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400;
+	font-style: normal
+}
+
+em, i {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400;
+	font-style: normal
+}
+
+u {
+	text-decoration: none;
+	color: #1f589f
+}
+
+h1 {
+	font: 38px "Source Sans Pro Light", "Source Sans Pro ExtraLight",
+		"Source Sans Pro", "Open Sans Light", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: lighter
+}
+
+h2 {
+	font: 30px "Source Sans Pro Light", "Source Sans Pro ExtraLight",
+		"Source Sans Pro", "Open Sans Light", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: lighter
+}
+
+h3 {
+	font: 24px "Source Sans Pro", "Open Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+h4 {
+	font: 20px "Source Sans Pro", "Open Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+h5 {
+	font: 18px "Source Sans Pro", "Open Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+h6 {
+	font: 16px "Source Sans Pro", "Open Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+p {
+	font: 14px "Open Sans", "Source Sans Pro", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+a:link, a:visited {
+	color: #1f589f;
+	font-weight: 400;
+	text-decoration: none
+}
+
+a:active, a:hover {
+	text-decoration: underline;
+	cursor: pointer
+}
+
+hr {
+	border-top: 1px solid #ccc;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	border-bottom: none
+}
+
+button, input[type=button], input[type=reset], input[type=submit] {
+	background: #1f589f;
+	padding: 8px 15px 8px 15px;
+	border: 1px solid transparent;
+	color: #fff;
+	font-size: 16px;
+	font-family: 'Source Sans Pro', 'Open Sans', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	-webkit-appearance: button;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	overflow: visible;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	display: inline-block
+}
+
+button:hover, input[type=button]:hover, input[type=reset]:hover, input[type=submit]:hover
+	{
+	background: #2b74ce;
+	box-shadow: none;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	cursor: pointer
+}
+
+button:disabled, button[disabled=disabled], input[type=button]:disabled,
+	input[type=button][disabled=disabled], input[type=reset]:disabled,
+	input[type=reset][disabled=disabled], input[type=submit]:disabled,
+	input[type=submit][disabled=disabled] {
+	background-color: #4f74a1;
+	color: #fff;
+	cursor: not-allowed
+}
+
+.button-group button, .button-group input[type=button], .button-group input[type=reset],
+	.button-group input[type=submit], .gridColumn2 input[type=submit] {
+	border: 1px solid #1a4c89
+}
+
+.outline-button {
+	color: #1f589f;
+	background-color: transparent;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	line-height: 1.5;
+	overflow: visible;
+	border: 1px solid #1f589f;
+	padding: 8px 15px 8px 15px;
+	font: 16px "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	display: inline-block
+}
+
+.outline-button:hover {
+	color: #fff;
+	background-color: #1f589f
+}
+
+input[type=date], input[type=datetime], input[type=email], input[type=number],
+	input[type=password], input[type=search], input[type=text], input[type=time],
+	input[type=url], select, textarea {
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	border: 1px solid #bebebe;
+	padding: 7px;
+	margin: 0;
+	-webkit-transition: all .3s ease-in-out;
+	-moz-transition: all .3s ease-in-out;
+	-ms-transition: all .3s ease-in-out;
+	-o-transition: all .3s ease-in-out;
+	outline: 0
+}
+
+input[type=date]:required, input[type=datetime]:required, input[type=email]:required,
+	input[type=number]:required, input[type=password]:required, input[type=search]:required,
+	input[type=text]:required, input[type=time]:required, input[type=url]:required,
+	select:required, textarea:required {
+	-webkit-box-shadow: 0 0 3px #e35046;
+	box-shadow: 0 0 3px #e35046;
+	border: 1px solid #e35046
+}
+
+input[type=date]:focus, input[type=datetime]:focus, input[type=email]:focus,
+	input[type=number]:focus, input[type=password]:focus, input[type=search]:focus,
+	input[type=text]:focus, input[type=time]:focus, input[type=url]:focus,
+	select:focus, textarea:focus {
+	-webkit-box-shadow: 0 0 3px #1f589f;
+	box-shadow: 0 0 3px #1f589f;
+	border: 1px solid #1f589f
+}
+
+input[type=date]:disabled, input[type=date][disabled :disabled], input[type=datetime]:disabled,
+	input[type=datetime][disabled :disabled], input[type=email]:disabled,
+	input[type=email][disabled :disabled], input[type=number]:disabled,
+	input[type=number][disabled :disabled], input[type=password]:disabled,
+	input[type=password][disabled :disabled], input[type=search]:disabled,
+	input[type=search][disabled :disabled], input[type=text]:disabled,
+	input[type=text][disabled :disabled], input[type=time]:disabled, input[type=time][disabled
+	:disabled], input[type=url]:disabled, input[type=url][disabled
+	:disabled], select:[disabled :disabled], select:disabled, textarea:[disabled
+	:disabled], textarea:disabled {
+	cursor: not-allowed;
+	background-color: #e6e6e6
+}
+
+select {
+	background-color: #fff;
+	display: inline-block;
+	font: inherit;
+	line-height: 1.5em;
+	padding: .5em 3.5em .5em 1em;
+	margin: 0;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background-image: linear-gradient(45deg, transparent 50%, #1f589f 50%),
+		linear-gradient(135deg, #1f589f 50%, transparent 50%),
+		linear-gradient(to right, #ccc, #ccc);
+	background-position: calc(100% - 20px) calc(1em + 2px),
+		calc(100% - 15px) calc(1em + 2px), calc(100% - 2.5em) .5em;
+	background-size: 5px 5px, 5px 5px, 1px 1.5em;
+	background-repeat: no-repeat
+}
+
+select:focus {
+	background-image: linear-gradient(45deg, #1f589f 50%, transparent 50%),
+		linear-gradient(135deg, transparent 50%, #1f589f 50%),
+		linear-gradient(to right, #ccc, #ccc);
+	background-position: calc(100% - 15px) 1em, calc(100% - 20px) 1em,
+		calc(100% - 2.5em) .5em;
+	background-size: 5px 5px, 5px 5px, 1px 1.5em;
+	background-repeat: no-repeat;
+	outline: 0
+}
+
+select.select-list {
+	background-image: none
+}
+
+.approveationlist-select {
+	margin: 0 10px
+}
+
+#banner {
+	margin: 8px 8px;
+	padding: 0;
+	color: #333;
+	white-space: nowrap;
+	text-shadow: .04em .04em 0 rgba(0, 0, 0, .1);
+	-o-text-shadow: .04em .04em 0 #ddd;
+	-moz-text-shadow: .04em .04em 0 rgba(0, 0, 0, .1);
+	-khtml-text-shadow: .04em .04em 0 #ddd;
+	-webkit-text-shadow: .04em .04em 0 rgba(0, 0, 0, .1);
+	background-color: #fff;
+	color: #000;
+	overflow: hidden;
+	text-align: left
+}
+
+#banner img {
+	max-height: 84px;
+	margin-top: 0
+}
+
+#banner h1 {
+	margin: 0;
+	display: inline-block;
+	vertical-align: 1.375rem
+}
+
+div#footer, div.footerBlock {
+	text-align: center;
+	height: 18px;
+	bottom: 0;
+	left: 0;
+	position: absolute;
+	width: 100%;
+	font-size: .875em
+}
+
+#footer a:link, #footer a:visited, div.footerBlock a:link, div.footerBlock a:visited
+	{
+	color: #1f589f;
+	text-decoration: none
+}
+
+,
+#footer a:active, #footer a:focus, #footer a:hover, div.footerBlock a:active,
+	div.footerBlock a:focus, div.footerBlock a:hover {
+	text-decoration: underline
+}
+
+.version-info {
+	text-align: right;
+	font-size: x-small;
+	font-family: "Open Sans", "Source Sans Pro", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400
+}
+
+input, select, textarea {
+	font-size: 1rem
+}
+
+input[type=date]:required, input[type=datetime]:required, input[type=email]:required,
+	input[type=number]:required, input[type=obligatory], input[type=search]:required,
+	input[type=text]:required, input[type=time]:required, input[type=url]:required,
+	select:required, textarea:required {
+	-webkit-box-shadow: 0 0 3px #e35046;
+	box-shadow: 0 0 3px #e35046;
+	border: 1px solid #e35046
+}
+
+select option:active, select option:focus, select option:hover {
+	background-color: #ccc
+}
+
+select.number {
+	text-align: right
+}
+
+select.acronym {
+	text-align: center
+}
+
+input.selectButton {
+	margin-right: 5px
+}
+
+input.selectButton.largeSelectButton {
+	padding: 5px
+}
+
+div.message {
+	text-align: center
+}
+
+table ~.message {
+	font: 24px "Source Sans Pro", "Open Sans", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	margin-top: 3rem
+}
+
+.message ~#editglobalsettings {
+	margin-top: 1rem
+}
+
+.hexa {
+	text-transform: uppercase
+}
+
+table td, table th {
+	margin: 0;
+	padding: 2px 3px;
+	border: none;
+	vertical-align: top
+}
+
+table h3 {
+	margin-top: 0
+}
+
+.actCas, table.grid, table.results {
+	border-collapse: collapse;
+	background: #fff;
+	border-radius: 3px;
+	max-width: 600px;
+	padding: 5px;
+	width: 100%;
+	-webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+	box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+	-webkit-animation: float 5s infinite;
+	animation: float 5s infinite
+}
+
+.actCas th, table.grid th, table.results th {
+	white-space: nowrap;
+	color: #fff;
+	background: #1f589f;
+	border-bottom: 3px solid #9ea7af;
+	border-right: 1px solid #343a45;
+	font-size: 20px;
+	font-weight: 400;
+	padding: 18px;
+	text-align: left;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+	vertical-align: middle
+}
+
+.actCas th a, .results th a, table.grid th a {
+	color: #fff
+}
+
+.actCas th:first-child, .results th:first-child, table.grid th:first-child
+	{
+	border-top-left-radius: 3px
+}
+
+.actCas th:last-child, .results th:last-child, table.grid th:last-child
+	{
+	border-top-right-radius: 3px;
+	border-right: none
+}
+
+.actCas tr, .results tr, table.grid tr {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	color: #666b85;
+	font-size: 16px;
+	font-weight: 400;
+	text-shadow: 0 1px 1px rgba(256, 256, 256, .1)
+}
+
+.actCas tr:hover td, .results tr:hover td, table.grid tr:hover td {
+	background: #4e5066;
+	color: #fff;
+	border-top: 1px solid #22262e
+}
+
+.results thead tr:hover td {
+	border-top: none
+}
+
+.actCas tr:hover td a, .actCast tr:hover td u, .results tr:hover td a,
+	.results tr:hover td u, table.grid tr:hover td a, table.grid tr:hover td u
+	{
+	color: #fff
+}
+
+.actCas tr:first-child, .results tr:first-child, table.grid tr:first-child
+	{
+	border-top: none
+}
+
+.actCas tr:last-child, .results tr:last-child, table.grid tr:last-child
+	{
+	border-bottom: none
+}
+
+.actCas tr:nth-child(odd) td, .results tr:nth-child(odd) td, table.grid tr:nth-child(odd) td
+	{
+	background: #e6e6e6
+}
+
+.actCas tr:nth-child(odd):hover td, .results tr:nth-child(odd):hover td,
+	table.grid tr:nth-child(odd):hover td {
+	background: #4e5066
+}
+
+.actCas tr:last-child td:first-child, .results tr:last-child td:first-child,
+	table.grid tr:last-child td:first-child {
+	border-bottom-left-radius: 3px
+}
+
+.actCas tr:last-child td:last-child, .results tr:last-child td:last-child,
+	table.grid tr:last-child td:last-child {
+	border-bottom-right-radius: 3px
+}
+
+.actCas td, .results td, table.grid td {
+	background: #fff;
+	padding: 14px;
+	text-align: left;
+	vertical-align: middle;
+	font-weight: 300;
+	font-size: 16px;
+	text-shadow: -1px -1px 1px rgba(0, 0, 0, .1);
+	border-right: 1px solid #ccc
+}
+
+.actCas td:last-child, .results td:last-child, table.grid td:last-child
+	{
+	border-right: 0
+}
+
+.actCasFooter, table.grid tfoot {
+	border-top: 1px solid #ccc
+}
+
+.actCas .tfoot tr:active, .actCas .tfoot tr:focus, .actCas .tfoot tr:hover,
+	.results .tfoot tr:active, .results .tfoot tr:focus, .results .tfoot tr:hover,
+	table.grid tfoot tr:active, table.grid tfoot tr:focus, table.grid tfoot tr:hover
+	{
+	background-color: #4e5066
+}
+
+.actCas table td, .results table td, table.grid table td {
+	border: none;
+	background-color: transparent
+}
+
+.actCas table table tbody tr, .results table tbody tr, table.grid table tbody tr
+	{
+	background-color: transparent
+}
+
+table.bold-headings tbody tr:first-child {
+	font-family: "Open Sans", "Source Sans Pro", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 700
+}
+
+.numberCell {
+	display: block;
+	text-align: right
+}
+
+form table fieldset {
+	display: inline;
+	padding: .1em .5em .2em 0;
+	border: 1px solid #9ea7af;
+	border: 1px solid rgba(0, 0, 0, .15);
+	border-radius: .8em;
+	-o-border-radius: .8em;
+	-moz-border-radius: .8em;
+	-khtml-border-radius: .8em;
+	-webkit-border-radius: .8em;
+	background-color: #e6e6e6;
+	background-color: rgba(0, 0, 0, .02)
+}
+
+table .titles {
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-size: 1.05em;
+	font-weight: 400
+}
+
+table .help {
+	line-height: 1.4em;
+	white-space: normal;
+	color: #606060;
+	color: rgba(0, 0, 0, .6)
+}
+
+table p.help {
+	margin: .2em .1em
+}
+
+table#addendentity .help {
+	font-size: .8em
+}
+
+.gridColumn1 {
+	white-space: nowrap
+}
+
+.gridColumn2 {
+	white-space: nowrap
+}
+
+.gridCenter {
+	text-align: center
+}
+
+.gridColoumRight {
+	text-align: right;
+	width: 50%
+}
+
+.gridColumnLeft {
+	text-align: left;
+	vertical-align: middle
+}
+
+table.actions, table.list {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0
+}
+
+table.actions tr td, table.list tr td {
+	padding-bottom: .2em;
+	line-height: 2em
+}
+
+table.actions tr td h3, table.list tr td h3 {
+	margin-bottom: -.25em
+}
+
+table.actions {
+	margin: 2rem 0
+}
+
+#accessRulesForm table.fullwidth, table.action, table.edit, table.edit-bottom,
+	table.edit-ctnd, table.edit-top, table.no-border, table.view {
+	margin: .75em -2px 0 -2px;
+	border-spacing: 3px 1px
+}
+
+table.edit-bottom, table.subsection {
+	margin-top: -1px
+}
+
+#accessRulesForm table.fullwidth td, table.action td, table.edit td,
+	table.edit-bottom td, table.edit-ctnd td, table.edit-top td, table.no-border td,
+	table.view td {
+	padding: .25em .5em;
+	line-height: 1.6rem
+}
+
+#config #Row0 td, .edit-top .Row1 td {
+	background-color: #e6e6e6
+}
+
+#config #Row1 td {
+	background-color: #fff
+}
+
+.editColumn1 {
+	width: 35%;
+	text-align: right
+}
+
+.editColumnSystem1 {
+	width: 35%;
+	text-align: left
+}
+
+.editColumn2 {
+	width: 65%
+}
+
+.editColumn1-Approval-profile {
+	width: 17%;
+	text-align: right
+}
+
+.editColumn2-Approval-profile {
+	width: 65%
+}
+
+.editColumn1-Approval-steps {
+	width: 20%;
+	text-align: right
+}
+
+.editColumn2-Approval-steps {
+	width: 45%
+}
+
+.editColumnSystem2 {
+	width: 65%;
+	text-align: left
+}
+
+.column-checkbox1 {
+	width: 3%;
+	text-align: left
+}
+
+.column-checkbox2 {
+	width: 15%;
+	text-align: left
+}
+
+.column-checkbox3 {
+	text-align: left
+}
+
+.column-align-right {
+	text-align: right
+}
+
+table tr.section td, table tr.title td {
+	font-size: 1.25em
+}
+
+table tr td .dn {
+	white-space: pre-wrap
+}
+
+table tr td .attribute {
+	white-space: pre !important
+}
+
+table tr td code.fingerprint {
+	font-size: 1.05em
+}
+
+table.edit tr.section td, table.edit tr:first-child td, table.edit-bottom tr.section td,
+	table.edit-top tr:first-child td {
+	background-color: #1f589f;
+	border-top: 3px solid #9ea7af;
+	color: #fff;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, .1)
+}
+
+table.no-border tr.section td, table.no-border tr:first-child td {
+	background-color: #1f589f;
+	color: #fff;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, .1)
+}
+
+table.edit tr:first-child td.field, table.edit-top tr:first-child td.field,
+	table.no-border tr:first-child td.field {
+	text-align: right
+}
+
+table.edit tr:last-child td, table.edit-bottom tr:last-child td, table.no-border tr:last-child td
+	{
+	background-color: #fff;
+	color: #000
+}
+
+.edit-top tbody .Row1 td {
+	background-color: #e6e6e6
+}
+
+table.edit tr.title td, table.edit-bottom tr.title td, table.edit-top tr.title td,
+	table.no-border tr.title td {
+	color: #fff;
+	background-color: #1f589f
+}
+
+.title a {
+	color: #fff
+}
+
+table.action tr td {
+	vertical-align: middle
+}
+
+table.action tr.section td, table.action tr:first-child td {
+	background-color: #2b74ce;
+	border-top: 3px solid #1f589f;
+	color: #1f60a9
+}
+
+table.action tr:last-child td {
+	background-color: #2b74ce;
+	border-bottom: 3px solid #1f589f;
+	color: #1f60a9
+}
+
+table.small-action {
+	border: none;
+	margin: 2rem 0
+}
+
+table.small-action tr:first-child td {
+	background-color: #fff;
+	border: none;
+	color: #000
+}
+
+table.small-action tr:last-child td {
+	background-color: #fff;
+	border: none;
+	color: #000
+}
+
+table.small-action tbody #Row0 td a {
+	border: none;
+	padding: 0;
+	text-decoration: none;
+	background-color: transparent;
+	display: inline-block
+}
+
+table.small-action tbody #Row0 td a:active, table.small-action tbody #Row0 td a:hover
+	{
+	color: #1f589f;
+	text-decoration: underline;
+	cursor: pointer;
+	background-color: transparent
+}
+
+td.alignmiddle select {
+	margin-bottom: 6px
+}
+
+table.view {
+	margin-top: .25em
+}
+
+table.view tr td {
+	padding: .15em .5em !important;
+	line-height: 1.4em
+}
+
+table.view tr.section td, table.view tr:first-child td {
+	background-color: #e5e5e5;
+	border-top: 3px solid #ccc;
+	color: #000
+}
+
+table.view tr:last-child td {
+	background-color: #e5e5e5;
+	border-bottom: 3px solid #ccc;
+	color: #000
+}
+
+table.view tr.title td {
+	background-color: #f2f2f2;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(229, 229, 229,
+		1)), to(rgba(229, 229, 229, 0)));
+	background-image: linear-gradient(top, rgba(229, 229, 229, 1) 0,
+		rgba(229, 229, 229, 0) 100%);
+	color: #000
+}
+
+table.action table, table.edit table, table.edit-bottom table, table.edit-top table,
+	table.no-border table, table.view table {
+	background-color: transparent;
+	border-spacing: 0
+}
+
+table.action table tr td, table.edit table tr td, table.edit-bottom table tr td,
+	table.edit-top table tr td, table.no-border table tr td, table.view table tr td
+	{
+	padding: 0 .5em .1em 0 !important;
+	background-color: transparent !important;
+	border: 0 none transparent !important;
+	color: #000 !important
+}
+
+table.search tr td {
+	padding: .25em .5em .1em 0;
+	line-height: 1.75em
+}
+
+table.search tr td select option.separator {
+	border-top: 1px solid #a0a0a0;
+	border-color: rgba(0, 0, 0, .3);
+	background-color: #d0d0d0;
+	background-color: rgba(0, 0, 0, .1);
+	color: #404040;
+	color: rgba(0, 0, 0, .65);
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400
+}
+
+table.search tr td select.day {
+	text-align: right
+}
+
+table.search tr td select.year {
+	text-align: center
+}
+
+table.search tr td select.time {
+	text-align: center
+}
+
+table.results {
+	min-width: 1100px;
+	margin-bottom: 1rem
+}
+
+table.results thead tr td {
+	white-space: nowrap;
+	background-color: #1f589f !important;
+	color: #fff;
+	border-top: none
+}
+
+table.results tbody tr td {
+	vertical-align: middle
+}
+
+table.results tbody tr td a {
+	white-space: nowrap
+}
+
+h3#welcome {
+	font-weight: 400
+}
+
+div#information {
+	margin-top: .5em
+}
+
+div#home {
+	margin-top: 1.5em
+}
+
+#home>table>tbody>tr>td {
+	margin: 0;
+	padding: 0
+}
+
+div.status {
+	background-color: #fff;
+	font-family: 'Open Sans', 'Source Sans Pro', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-size: 16px;
+	font-weight: 400;
+	text-rendering: optimizeLegibility;
+	display: block
+}
+
+div.status h4 {
+	color: #000;
+	display: block;
+	margin: auto;
+	max-width: 600px;
+	padding: 2px;
+	font-family: "Source Sans Pro Light", "Source Sans Pro ExtraLight",
+		"Source Sans Pro", 'Open Sans Light', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: lighter;
+	font-size: 16px;
+	padding-bottom: .5rem
+}
+
+div.status h4 a:active, div.status h4 a:focus, div.status h4 a:hover,
+	div.status h4 a:link, div.status h4 a:visited {
+	font-weight: 500
+}
+
+div.status h4, div.status table td, div.status table th {
+	white-space: nowrap
+}
+
+div.status table td img {
+	width: 16px;
+	height: 16px;
+	margin-top: .1em
+}
+
+form#cryptotokens table {
+	border-collapse: collapse;
+	right: auto;
+	left: auto
+}
+
+form#cryptotokens img.statusIcon {
+	border-width: 0
+}
+
+.actCasFooter {
+	font-family: "Open Sans", 'Source Sans Pro', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-style: italic;
+	font-size: x-small !important;
+	text-align: right !important
+}
+
+div#code {
+	margin-top: 1.5em
+}
+
+div#code input {
+	margin-left: .35em
+}
+
+div#code input[type=submit] {
+	margin-left: 1em
+}
+
+select option.cvcoption_header {
+	background: #ffc;
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400;
+	border-bottom: 1px solid #000;
+	padding: 3px;
+	color: #000
+}
+
+table#endentityprofile.edit tr td:first-child {
+	vertical-align: middle;
+	text-align: center
+}
+
+table#addendentity tr td {
+	padding: .15em .3em;
+	vertical-align: middle;
+	white-space: nowrap;
+	font-size: 1.2em
+}
+
+table#addendentity tr.section td, table#addendentity tr.title td {
+	font-size: 1.35em
+}
+
+table#addendentity tr td:last-child {
+	text-align: center
+}
+
+table#logconfiguration {
+	margin-bottom: .25em
+}
+
+table#logconfiguration td {
+	padding: .2em;
+	font-size: .9em
+}
+
+table#logconfiguration td span {
+	display: block;
+	margin-bottom: .5em
+}
+
+table#logconfiguration td h3 {
+	margin: .2em 0;
+	text-align: center
+}
+
+table#logconfiguration td.field {
+	padding-left: .4em;
+	text-align: left
+}
+
+table#logconfiguration td.checkbox {
+	text-align: center
+}
+
+table#logconfigbuttons td {
+	padding: .5em .25em
+}
+
+table#logconfigbuttons td input[type=button] {
+	margin-top: .3em;
+	margin-right: .5em
+}
+
+table#logconfigbuttons td input[type=submit] {
+	margin-right: 1em
+}
+
+#search2 input.noBorder {
+	border: 0
+}
+
+#search2 input.numberInputBig {
+	width: 6em;
+	text-align: right
+}
+
+#search2 input.numberInputSmall {
+	width: 4em;
+	text-align: right
+}
+
+#search2 td {
+	white-space: nowrap
+}
+
+form#groupList p {
+	margin-top: 1.25em
+}
+
+form#groupList p a.commandLink {
+	font-size: 1em
+}
+
+form#groupList table {
+	border-collapse: collapse
+}
+
+form#groupList table tr.listRow2 {
+	background-color: #f7f9fd
+}
+
+form#groupList table tbody tr:active, form#groupList table tbody tr:focus,
+	form#groupList table tbody tr:hover {
+	background-color: #ffb
+}
+
+form#groupList table td, form#groupList table th {
+	white-space: nowrap
+}
+
+form#groupList table th {
+	padding-bottom: .35em
+}
+
+form#groupList table td {
+	padding: .35em;
+	border: 1px solid #d0def1;
+	font-size: 1.1em;
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400
+}
+
+form#groupList table td a {
+	margin: .5em;
+	padding: .15em .3em;
+	border: 1px solid transparent;
+	font-size: inherit !important
+}
+
+form#groupList table td a:active, form#groupList table td a:focus, form#groupList table td a:hover
+	{
+	background-color: #fff;
+	border: 1px solid #a00;
+	border-radius: .25em;
+	-o-border-radius: .25em;
+	-moz-border-radius: .25em;
+	-khtml-border-radius: .25em;
+	-webkit-border-radius: .25em
+}
+
+form#accessRulesForm table {
+	margin-top: 3px
+}
+
+form#accessRulesForm table table {
+	margin: 0
+}
+
+form#accessRulesForm table table thead tr:first-child th {
+	background-color: #1f589f !important;
+	border-top: 3px solid #9ea7af;
+	color: #fff
+}
+
+form#accessRulesForm table table thead tr th {
+	text-align: center
+}
+
+form#accessRulesForm table table thead tr th:first-child {
+	text-align: left
+}
+
+table#config {
+	margin-top: .25em
+}
+
+table#config tr td {
+	padding: .4em .4em;
+	line-height: 1.4em
+}
+
+table#config tr td:first-child {
+	vertical-align: top
+}
+
+#Row0, .Row0 {
+	color: #000;
+	font-size: 1rem;
+	background-color: #e6e6e6;
+	margin: auto;
+	max-width: 600px;
+	padding: 5px;
+	width: 100%
+}
+
+#Row1, .Row1 {
+	color: #000;
+	font-size: 1rem;
+	background-color: #fff;
+	margin: auto;
+	max-width: 600px;
+	padding: 5px;
+	width: 100%
+}
+
+#Row0 td {
+	padding: 14px;
+	vertical-align: middle;
+	font-size: 16px
+}
+
+#Row1 td {
+	padding: 14px
+}
+
+.outline-buttons-table tbody tr td a {
+	color: #1f589f;
+	background-color: transparent;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	line-height: 1.5;
+	overflow: visible;
+	border: 1px solid #1f589f;
+	padding: 8px 15px 8px 15px;
+	font: 16px "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	display: inline-block
+}
+
+.outline-buttons-table tbody tr td a:hover {
+	color: #fff;
+	background-color: #1f589f
+}
+
+.label {
+	vertical-align: top;
+	text-align: right
+}
+
+.field {
+	vertical-align: top;
+	text-align: left
+}
+
+.listCaption {
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	color: #fff;
+	background: #1f589f;
+	border-bottom: 3px solid #9ea7af;
+	border-right: 1px solid #343a45;
+	font-size: 20px;
+	font-weight: 300;
+	padding: 18px;
+	text-align: left;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+	vertical-align: middle;
+	font-weight: 400
+}
+
+.listHeader {
+	font-size: 1.1em;
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400;
+	text-align: left
+}
+
+.subheader {
+	color: #777;
+	font-size: .7em;
+	font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Helvetica, Geneva, sans-serif;
+	font-weight: 400;
+	text-align: left;
+	font-weight: 400
+}
+
+.superTable {
+	background-color: #e6e6e6;
+	border: none;
+	border-collapse: collapse
+}
+
+.superTable td {
+	padding: 0
+}
+
+.subTable {
+	background-color: #e6e6e6
+}
+
+.tableFooter {
+	font-size: .7em;
+	line-height: .7em;
+	white-space: normal;
+	color: #606060;
+	color: rgba(0, 0, 0, .6);
+	padding: 5px 10px
+}
+
+.tableFooter-approval-step {
+	text-align: left
+}
+
+.listColumn1 {
+	text-align: left;
+	width: 40%
+}
+
+.listColumn2 {
+	text-align: left;
+	width: 60%
+}
+
+td#InfoRow0 {
+	color: #000;
+	font-size: 9pt;
+	background-color: #fff
+}
+
+td#InfoRow1 {
+	color: #000;
+	font-size: 9pt;
+	background-color: #cfc
+}
+
+td#ErrorRow0 {
+	color: #000;
+	font-size: 9pt;
+	background-color: #fff
+}
+
+td#ErrorRow1 {
+	color: #000;
+	font-size: 9pt;
+	background-color: #fcc
+}
+
+tr#LogTextRow0 {
+	color: #000;
+	font-size: 7pt;
+	background-color: #fff
+}
+
+tr#LogTextRow1 {
+	color: #000;
+	font-size: 7pt;
+	background-color: #e5ecff
+}
+
+.caColumn {
+	text-align: left;
+	width: 20%
+}
+
+.withColumn {
+	text-align: left;
+	width: 35%
+}
+
+.typeColumn {
+	text-align: left;
+	width: 20%
+}
+
+.valueColumn {
+	text-align: left;
+	width: 15%
+}
+
+.commandColumn {
+	text-align: left;
+	width: 5%
+}
+
+.rulesColumn1 {
+	text-align: left;
+	width: 50%
+}
+
+.rulesColumn2 {
+	text-align: center;
+	width: 50%
+}
+
+table.selectStateRadio td * {
+	vertical-align: middle
+}
+
+#rolemembers\:list td, #rolemembers\:list th {
+	font-size: 80%;
+	line-height: 1;
+	padding: .5em .2em 1em
+}
+
+#rolemembers\:list\:caId, #rolemembers\:list\:matchWith {
+	font-size: .8rem;
+	max-width: 22rem
+}
+
+#rolemembers\:list\:description, #rolemembers\:list\:tokenMatchValue {
+	font-size: .9rem
+}
+
+#rolemembers\:list th input[type=submit] {
+	background-color: #fff;
+	color: #1f589f;
+	-webkit-box-shadow: 2px 2px 4px #888;
+	box-shadow: 2px 2px 4px #888
+}
+
+#rolemembers\:list th input[type=submit]:hover {
+	-webkit-box-shadow: 2px 2px 6px #fff;
+	box-shadow: 2px 2px 6px #fff;
+	border: 1px solid #ccc
+}
+
+.selectStateRadio {
+	background-color: transparent
+}
+
+@media ( min-width :1280) {
+	.wideCTLogInput {
+		width: 380px
+	}
+}
+
+@media ( max-width :1200) {
+	.ctlogTable thead th {
+		font-size: .875rem;
+		padding: .875rem
+	}
+	.ctlogTable input {
+		font-size: .75rem
+	}
+	.ctlogTable tr td {
+		padding: 0, 375rem;
+		font-size: .875rem
+	}
+}
+
+body.popup {
+	margin: 1em;
+	padding: 0;
+	background-color: #fff;
+	color: #000;
+	font-size: 11pt
+}
+
+.popup h2, .popup h3, .popup h4 {
+	text-align: center
+}
+
+.popup h2 {
+	margin-top: .5em;
+	margin-bottom: .5em
+}
+
+.popup h3 {
+	margin-top: .5em;
+	margin-bottom: .5em
+}
+
+.popup h4 {
+	margin-top: .5em;
+	margin-bottom: .5em
+}
+
+.popup table {
+	width: 100%;
+	border: 0 none
+}
+
+.popup table tr td {
+	padding: .1em .3em
+}
+
+.popup table tr.section td, .popup table tr.title td {
+	font-size: 1.2em
+}
+
+.popup table tr td:first-child {
+	white-space: nowrap
+}
+
+.popup#viewendentity table.view {
+	margin-top: .5em
+}
+
+.popup#viewendentity table.view table {
+	margin: 0 -.5em
+}
+
+.popup#viewendentity table.view table tr td {
+	padding-left: .6em !important
+}
+
+.popup#viewendentity table.view table tr:nth-child(2n) td {
+	background-color: #eee !important;
+	background-color: rgba(0, 0, 0, .03) !important
+}
+
+.popup#editendentity table.edit {
+	margin-top: .5em
+}
+
+.popup#editendentity table.edit tr td {
+	padding: .15em .3em;
+	vertical-align: middle;
+	white-space: nowrap
+}
+
+.popup#editendentity table.edit tr td:last-child {
+	text-align: center
+}
+
+.popup#viewcertificate table.view tr.title td {
+	font-size: 1em
+}
+
+.popup#viewcertificate table.view tr:first-child td {
+	font-size: 1.2em
+}
+
+.popup#viewhistory h2, .popup#viewhistory h3, .popup#viewhistory h4 {
+	text-align: left
+}
+
+.popup#viewhistory table tbody tr td:first-child {
+	white-space: normal
+}
+
+.alert {
+	font-size: 16px;
+	font-family: "Open Sans", "Source Sans Pro", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400;
+	color: #73221c;
+	background-color: #f8dad8;
+	border-color: #f5cac7;
+	padding: .75rem 1.25rem;
+	margin-bottom: 1rem;
+	border: 1px solid transparent;
+	border-radius: .25rem;
+	line-height: 1.5
+}
+
+.info, .infoMessage {
+	color: #1f589f;
+	font-size: 16px;
+	background-color: transparent;
+	font-family: "Open Sans", "Source Sans Pro", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	font-weight: 400;
+	background-color: #e6e6e6;
+	border-color: #ccc;
+	padding: .75rem 1.25rem;
+	margin-bottom: 1rem;
+	border: 1px solid transparent;
+	border-radius: .25rem;
+	line-height: 1.5
+}
+
+.commandLink {
+	text-align: right;
+	margin-left: .5em;
+	margin-right: .5em
+}
+
+.commandButton {
+	vertical-align: bottom;
+	margin-left: .5em;
+	margin-right: .5em
+}
+
+.commandLink.reload {
+	background-color: #53983c
+}
+
+.commandLink.remove {
+	background-color: #e35046
+}
+
+div.tabLinks {
+	clear: both;
+	width: inherit;
+	margin: 20px 0 22px;
+	border-bottom: 1px solid #ddd;
+	color: #000;
+	min-height: 32px;
+	line-height: 2.6
+}
+
+a.tabLinkfalse, a.tabLinktrue {
+	margin-right: 2px;
+	line-height: 1.42857143;
+	padding: 10px 15px;
+	border-radius: 4px 4px 0 0;
+	font-size: 16px;
+	font-family: 'Open Sans', 'Source Sans Pro', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
+		Geneva, sans-serif;
+	white-space: nowrap
+}
+
+a.tabLinkfalse {
+	font-weight: 400;
+	color: #1f589f
+}
+
+a.tabLinktrue {
+	color: #343a45;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-bottom-color: transparent
+}
+
+a.tabLinkfalse:hover {
+	curosor: pointer;
+	background-color: #ccc;
+	text-decoration: none
+}
+
+.propertyTable {
+	border: 0;
+	right: auto;
+	left: auto;
+	margin-bottom: 1.5rem
+}
+
+.informationalSection {
+	font-style: normal;
+	padding: .5em;
+	border-radius: .3em;
+	background: #fcfcfc;
+	margin-bottom: 1em
+}
+
+.readablewidth {
+	max-width: 1000px
+}
+
+.fullwidth {
+	width: 100%
+}
+
+.alignright {
+	text-align: right
+}
+
+.alignmiddle {
+	vertical-align: middle
+}
+
+.expandOnClick {
+	width: 25em;
+	height: 1em;
+	display: block;
+	overflow: hidden;
+	white-space: nowrap
+}
+
+.expandOnClick:after {
+	content: "..."
+}
+
+.expandOnClick:focus {
+	width: 100%;
+	display: inline;
+	overflow: auto;
+	color: #000;
+	white-space: pre-wrap;
+	cursor: pointer
+}
+
+.expandOnClick:focus:after {
+	content: ""
+}
+
+#navigation {
+	opacity: 100%;
+	z-index: 500;
+	min-height: 45px
+}
+
+.navbar {
+	background-color: #1f589f;
+	z-index: 500;
+	list-style: none;
+	margin: 0;
+	list-style-position: inside;
+	overflow: hidden;
+	padding: 0 6px 0 0;
+	min-height: 45px
+}
+
+.navbar a {
+	float: left;
+	font-size: 16px;
+	color: #fff;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-family: 'Source Sans Pro', 'Open Sans', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif
+}
+
+.homeLink img {
+	display: none
+}
+
+.homeLink::before {
+	content: "Home"
+}
+
+.dropdown {
+	float: left;
+	overflow: hidden
+}
+
+.dropdown .dropbtn, .dropdown>.dropbtn {
+	font-size: 16px;
+	border: none;
+	outline: 0;
+	color: #fff;
+	padding: 14px 16px;
+	background-color: inherit;
+	font-family: 'Source Sans Pro', 'Open Sans', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif
+}
+
+@media ( max-width :1338px) {
+	.dropdown .dropbtn, .navbar a {
+		font-size: 14px
+	}
+}
+
+.dropdown:hover .dropbtn, .navbar a:hover {
+	background-color: #2b74ce
+}
+
+.dropdown>.dropbtn::after {
+	content: "\25BE";
+	padding-left: .5em
+}
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #f9f9f9;
+	min-width: 160px;
+	-webkit-box-shadow: 0 8px 16px 0 rgba(0, 0, 0, .2);
+	box-shadow: 0 8px 16px 0 rgba(0, 0, 0, .2);
+	z-index: 1;
+	margin-top: 2px
+}
+
+.dropdown-content a {
+	float: none;
+	color: #000;
+	padding: 12px 16px;
+	text-decoration: none;
+	display: block;
+	text-align: left;
+	font-family: 'Source Sans Pro', 'Open Sans', -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+	font-weight: 400
+}
+
+.dropdown-content a:hover {
+	background-color: #ccc
+}
+
+.dropdown:hover .dropdown-content {
+	display: block
+}
+
+#modalBlock {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #fefefec0;
+	text-align: center
+}
+
+#modalInner {
+	position: static;
+	display: inline-block;
+	text-align: left;
+	margin: 10% auto;
+	max-width: 90%;
+	width: auto;
+	padding: 20px;
+	background-color: #fefefe;
+	border: 1px solid #aeaeae;
+	border-radius: 5px
+}
+
+#search p table tfoot tr td .commandLink {
+	margin-top: 1rem
+}
+
+.margin-top {
+	margin-top: 2rem
+}
+
+.margin-bottom {
+	margin-bottom: 2rem
+}
+
+.small-margin-bottom {
+	margin-bottom: 1rem !important
+}
+
+.padding-top {
+	padding-top: 2rem
+}
+
+.padding-bottom {
+	padding-bottom: 2rem
+}
+
+.tiny-padding {
+	padding-left: .5em
+}
+
+.margin-left {
+	margin-left: 1rem
+}
+
+.no-border tbody tr td {
+	border: none
+}
+
+table.edit tbody .Row0 td {
+	background-color: #fff;
+	border: none
+}
+
+td.no-border {
+	border: none !important
+}
+
+#internalkeybinding\:trustedCertificates {
+	margin-top: 1rem;
+	font-weight: 400
+}
+
+.help-link {
+	border: none;
+	padding: 0;
+	text-decoration: none;
+	background-color: transparent;
+	display: inline-block
+}
+
+.lone-edit-heading {
+	margin-bottom: 0;
+	color: #fff;
+	width: 99.5%
+}
+
+.lone-edit-heading td {
+	background-color: #1f589f;
+	color: #fff
+}
+
+.lone-edit-heading ~table.edit {
+	margin-top: 0
+}
+
+.lone-edit-heading ~table.edit tr td {
+	background-color: #e6e6e6
+}
+
+.lone-edit-heading ~table.edit tr:first-child td {
+	color: #000
+}
