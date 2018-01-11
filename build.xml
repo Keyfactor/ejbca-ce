@@ -838,6 +838,8 @@
 		    	<exclude name="modules/statedump/**" />
 		    	<!-- Exclude ACME until 6.12 -->
 		    	<exclude name="modules/acme/**" />
+		    	<!-- Exclude Web Tests -->
+		    	<exclude name="modules/ejbca-webtest/**"/>
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
