@@ -461,10 +461,11 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                     try {
                         if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
+                            final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
                             authorizedPartitions.add(
                                     new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
                                             approvalPartition.getPartitionIdentifier(),
-                                            approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME).getValueAsString(),
+                                            nameProperty != null ? nameProperty.getValueAsString() : "-",
                                             getPartitionProperties(approvalPartition)));
                         }
                         if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
