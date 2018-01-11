@@ -8,6 +8,7 @@ Bug
     [ECA-6495] - EC Validator doesn't recognize keys with "EC" as algorithm
     [ECA-6496] - RA Web, improve session re-authentication checks
     [ECA-6498] - Minor security issue
+    [ECA-6504} - Null Pointer Exception when opening executed approval in Admin GUI
 
 New Feature
     [ECA-6454] - Add NoCacheFilter to Public Web 
