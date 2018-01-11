@@ -85,7 +85,6 @@
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
@@ -100,6 +99,7 @@
 		<antcall target="peerconnectorclean"/>
 		<antcall target="acmeclean"/>
 		<antcall target="caaclean"/>
+		<antcall target="webtestclean"/>
 		<antcall target="estclean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
@@ -157,6 +157,9 @@
     <target name="caaclean" if="${mod.caa.exists}">
         <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
+	<target name="webtestclean" if="${mod.webtest.exists}">
+        <ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
     <target name="estclean" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>	
