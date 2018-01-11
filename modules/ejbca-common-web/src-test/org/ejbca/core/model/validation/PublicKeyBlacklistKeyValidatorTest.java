@@ -18,12 +18,15 @@
  */
 package org.ejbca.core.model.validation;
 
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.util.CryptoProviderTools;
@@ -110,10 +113,36 @@ public class PublicKeyBlacklistKeyValidatorTest {
 
     @Test
     public void testMatchBlacklistedPublicKeyEC() throws Exception {
-        log.trace(">testMatchBlacklistedPublicKeyEC()");
+        KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+        // Test public key blacklist validation OK with empty blacklist.        
+        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
+                "Description", null, -1, null, -1, -1, new Integer[] {});
+        keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist           
+        // B: Test public key blacklist validation NOK with match.
+        List<String> algorithms = new ArrayList<String>();
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
+        keyValidator.setKeyAlgorithms(algorithms);
+        {
+            // Manual update of cache entry
+            final PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+            entry.setFingerprint(keyPair.getPublic());
+            BlacklistData data = new BlacklistData(entry);
+            PublicKeyBlacklistEntryCache.INSTANCE.updateWith(123, data.getProtectString(0).hashCode(), entry.getFingerprint(), entry);
+        }
+        List<String> messages = keyValidator.validate(keyPair.getPublic(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertTrue("Key valildation should have failed because of public key fingerprint match.",
+                messages.size() == 1);
+        
+    }
+    /**
+     * Same as testMatchBlacklistedPublicKeyEC, but specifies he algorithm as ECDSA instead of EC
+     */
+    @Test
+    public void testMatchBlacklistedPublicKeyECDSA() throws Exception {
+        log.trace(">testMatchBlacklistedPublicKeyECDSA()");
 
-        KeyPair keyPair = KeyTools.genKeys("secp256r1", "ECDSA");
-
+        KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         // A: Test public key blacklist validation OK with empty blacklist.        
         PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
                 "Description", null, -1, null, -1, -1, new Integer[] {});
@@ -148,7 +177,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         Assert.assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",
                 messages.size() == 0);
         
-        log.trace("<testMatchBlacklistedPublicKeyEC()");
+        log.trace("<testMatchBlacklistedPublicKeyECDSA()");
     }
 
     /**
