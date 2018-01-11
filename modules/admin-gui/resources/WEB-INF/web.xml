@@ -83,7 +83,7 @@
         <init-param>
             <description>Maximum size of uploads</description>
             <param-name>uploadMaxFileSize</param-name>
-            <param-value>101k</param-value>
+            <param-value>1000k</param-value>
         </init-param>
         <init-param>
             <description>Maximum size of uploads before using disk</description>
