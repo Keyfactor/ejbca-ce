@@ -48,11 +48,11 @@
 			<h:column headerClass="gridColumn2">
 				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
 				<div class="button-group">
-				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionView}"/>
-				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionDelete}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.RENAME}" action="#{approvalProfilesMBean.actionRename}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{approvalProfilesMBean.actionAddFromTemplate}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+					<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionView}"/>
+					<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+					<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionDelete}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+					<h:commandButton value="#{web.text.RENAME}" action="#{approvalProfilesMBean.actionRename}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
+					<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{approvalProfilesMBean.actionAddFromTemplate}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 				</div>
 				<f:facet name="footer">
 					<h:commandButton value="#{web.text.ADD}" action="#{approvalProfilesMBean.actionAdd}" disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
