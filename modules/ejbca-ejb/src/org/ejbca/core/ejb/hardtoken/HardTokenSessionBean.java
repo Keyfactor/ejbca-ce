@@ -686,9 +686,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
         }
         String returnval = null;
-        org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
-        if (htih != null) {
-            returnval = htih.getAlias();
+        if (id != 0) {
+            org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
+            if (htih != null) {
+                returnval = htih.getAlias();
+            }
         }
         log.trace("<getHardTokenIssuerAlias()");
         return returnval;
