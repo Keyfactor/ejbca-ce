@@ -20,6 +20,9 @@ static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecert
 
 static final String SELECT_DEFAULTCA                      = "selectdefaultca";
 static final String SELECT_AVAILABLECAS                   = "selectavailablecas";
+
+static final String CHECKBOX_VALIDATION_SUBJECTDN  = "checkboxvalidationsubjectdn";
+static final String TEXTFIELD_VALIDATION_SUBJECTDN = "textfieldsubjectdnvalidation";
 %>
 
 <script type="text/javascript">
@@ -32,6 +35,17 @@ function checkNonModifiableEmptyEmail() {
     } else {
         return 0;
     }
+}
+
+function checkValidationRegExpNotEmpty(regExpFieldIndex) {
+	var checkbox = eval("document.editprofile.<%= CHECKBOX_VALIDATION_SUBJECTDN %>" + regExpFieldIndex);
+	var editbox = eval("document.editprofile.<%= TEXTFIELD_VALIDATION_SUBJECTDN %>" + regExpFieldIndex);
+	
+    if (checkbox.checked && editbox.value === "") {
+        return 1;
+	} else {
+		return 0;
+	}
 }
 
 function checkDefaultAmongAvailable() {

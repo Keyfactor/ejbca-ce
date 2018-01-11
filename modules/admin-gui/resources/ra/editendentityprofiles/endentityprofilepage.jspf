@@ -82,6 +82,14 @@ function checkallfields(){
     var illegalfields = 0;
     var fieldname;
 
+    for (var i=0; i < numbersubjectdnfields; i++) {
+    	illegalfields += checkValidationRegExpNotEmpty(i);
+    }
+    
+    if (illegalfields > 0) {
+        alert("<%=ejbcawebbean.getText("EESUBJDNVALIDATIONEMPTY", true)%>");
+    }
+    
     for(var i=0; i < numbersubjectdnfields; i++){
       if( dnfieldtypes[i] != <%= DnComponents.dnIdToProfileId(DNFieldExtractor.E) %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
