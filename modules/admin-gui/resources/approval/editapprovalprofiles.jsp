@@ -20,7 +20,7 @@
 %>
 <f:view>
 <head>
-  <title><h:outputText value="#{web.ejbcaTitle}"/><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
+  <title><h:outputText value="#{web.ejbcaTitle}"/></title>
   <base href="<%=ejbcawebbean.getBaseUrl()%>"/>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%=ejbcawebbean.getCssFile() %>' />"/>
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
