@@ -21,7 +21,6 @@ import org.openqa.selenium.WebElement;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,7 +42,6 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
     @AfterClass
     public static void exit() {
         webDriver.quit();
-        //        tearDown();
     }
 
     @Test
@@ -51,6 +49,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
         int expectedNumberOfMenuItems = 13;
         int expectedNumberOfMenuHeaders = 5;
         HashMap<String, String> foundMenuHeaders = new HashMap<>();
+        HashMap<String, String> foundMenuItems = new HashMap<>();
 
         webDriver.get(getPublicWebUrl());
         List<WebElement> menuHeaders = webDriver.findElements(By.xpath("//div[@class='menuheader']"));
@@ -58,8 +57,14 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
         for (WebElement header : menuHeaders) {
             foundMenuHeaders.put(header.getText(), header.getText());
         }
-
-        assertEquals("Unexpected number of menu items", expectedNumberOfMenuItems, allMenuItems.size());
+        for (WebElement menuItem : allMenuItems) {
+            foundMenuItems.put(menuItem.getText(), menuItem.getText());
+        }
+        // This is configurable for EJBCA (not available by default config)
+        if (foundMenuItems.containsKey("Renew Browser Certificate")) {
+            expectedNumberOfMenuItems++;
+        }
+        assertEquals("Unexpected number of menu items", expectedNumberOfMenuItems, foundMenuItems.size());
         assertEquals("Unexpected number of menu headers", expectedNumberOfMenuHeaders, foundMenuHeaders.size());
         assertTrue("Menu header missing from public web menu", foundMenuHeaders.containsKey("Enroll"));
         assertTrue("Menu header missing from public web menu", foundMenuHeaders.containsKey("Register"));
@@ -76,13 +81,17 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
         assertEquals("Unexpected name of documentation link", docsLink.getText(), "Documentation");
         docsLink.click();
         // Documentation link is opened in another tab
-        ArrayList<String> tabs = new ArrayList<String> (webDriver.getWindowHandles());
-        webDriver.switchTo().window(tabs.get(1));
+        String currentTab = webDriver.getWindowHandle();
+        for (String tab: webDriver.getWindowHandles()) {
+            if (!tab.equals(currentTab)) {
+                webDriver.switchTo().window(tab);
+            }
+        }
         assertEquals("Link didn't redirect to documentation page", "/ejbca/doc/concepts.html", WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()));
 
 
     }
-
+    
     @Test
     public void testAdminWebLink() {
         webDriver.get(getPublicWebUrl());
