@@ -136,7 +136,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    
+
 
 	private String comment = "";
 	private ApprovalDataVOView approvalDataVOView = new ApprovalDataVOView();
@@ -353,7 +353,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     		addErrorMessage("AUTHORIZATIONDENIED");
     	}
     }
-    
+
     public String getComment() {
     	return "";
     }
@@ -454,9 +454,9 @@ public class ApproveActionManagedBean extends BaseManagedBean {
             List<ApprovalPartitionProfileGuiObject> authorizedPartitions = new ArrayList<>();
             partitionsAuthorizedToApprove = new HashSet<>();
             //Make sure we're not reading stale data
-            ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
-            ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
+            final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfile(approvalDataVOView.getApprovalProfile().getProfileId());
             if (getCurrentStep() != null) {
+                final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
                 for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
                     ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
                     try {
@@ -595,21 +595,21 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     public void updateApprovalRequest(final int uniqueId) {
 
         ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(approvalDataVOView.getApprovalId());
-        
+
         if (approvalDataVO == null) {
             log.warn("Approval request already expired or invalid!");
             return;
         }
-        
+
         ApprovalRequest currentApprovalRequest = approvalDataVO.getApprovalRequest();
-        
+
         ApprovalProfile approvalProfileFromRequest = currentApprovalRequest.getApprovalProfile();
         ApprovalProfile approvalProfileFromSession = approvalProfileSession.getApprovalProfile(currentApprovalRequest.getApprovalProfile().getProfileId().intValue());
-        
+
         // Set the updated approval profile in current request.
         currentApprovalRequest.setApprovalProfile(updateApprovalProfile(approvalProfileFromRequest));
         approvalSession.updateApprovalRequest(approvalDataVO.getId(), currentApprovalRequest);
-        
+
         // To update the roles and make authorization possible
         try {
             approvalProfileSession.changeApprovalProfile(getAdmin(), updateApprovalProfile(approvalProfileFromSession));
@@ -619,15 +619,15 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
         updateApprovalRequestData(uniqueId);
     }
-    
+
     /**
      * Updates the approval profile based on the role changes in session.
-     * 
+     *
      * @param approvalProfile
      * @return
      */
     private ApprovalProfile updateApprovalProfile(final ApprovalProfile approvalProfile) {
-        
+
         for (ApprovalStep approvalStep : approvalProfile.getSteps().values()) {
             for (ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                 for (DynamicUiProperty<? extends Serializable> property : approvalPartition.getPropertyList().values()) {
@@ -651,7 +651,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 
                         propertyClone.setPossibleValues(updatedRoleInformation);
                         updateEncodedValues(propertyClone, property);
-                        
+
                         approvalPartition.removeProperty(property.getName());
                         approvalPartition.addProperty(propertyClone);
 
@@ -666,10 +666,10 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                 }
             }
         }
-        
+
         return approvalProfile;
     }
-    
+
      /**
       * Update role members based on latest from role member session.
       *
