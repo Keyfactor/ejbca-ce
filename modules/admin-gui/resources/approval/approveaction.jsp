@@ -293,19 +293,6 @@ function viewcert(link){
 	</h:panelGroup>	
 
      <h:panelGroup layout="block" style="padding: 5px 10px">
-    	<table border="0" cellpadding="1" width="100%">
-			<col width="20%">
-	  		<col width="80%">
-			<tr>
-				<td>
-					<h:outputText value="#{web.text.APCOMMENT}:"/>
-				</td>
-				<td>
-			        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionManagedBean.comment}"
-			        	disabled="#{!approvalActionManagedBean.approvable}"/>
-	        	</td>
-	        </tr>
-		</table>
 	 </h:panelGroup>
     <h:panelGroup style="padding: 5px 10px" layout="block">
     	<h:commandButton id="buttonSave" value="#{web.text.APPROVAL_SAVE_STATE}" actionListener="#{approvalActionManagedBean.saveState}"
