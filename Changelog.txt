@@ -1,3 +1,21 @@
+EJBCA 6.11.0.1, 2018-01-11
+---
+
+Bug
+    [ECA-6470] - Regression: Editing of approval profiles with multiple steps is broken
+    [ECA-6472] - Approval Requests with view rights don't turn up under the pending tab
+    [ECA-6490] - All approval partitions are visible when approving in the CA GUI
+    [ECA-6495] - EC Validator doesn't recognize keys with "EC" as algorithm
+    [ECA-6496] - RA Web, improve session re-authentication checks
+    [ECA-6498] - Minor security issue
+
+New Feature
+    [ECA-6454] - Add NoCacheFilter to Public Web 
+    
+Improvement
+    [ECA-6482] - RA Style Improvements
+    [ECA-6497] - Improve authentication checks in Admin Web
+
 EJBCA 6.11.0, 2018-01-02
 ---
 
