@@ -4,7 +4,6 @@ Patch release with some last minute fixes before the release of Appliance 2.7.2.
 	* A couple of minor regressions in relation to handling Approval Profiles in the CA and RA GUIs
 	* Improved re-authentication checks in the CA and RA GUIs
 	* Allowing the EC Key Validator to pass keys encoded with algorithm name "EC", as well as "ECDSA"
-	* Some general style improvements to the RA
 
 EJBCA 6.11.0
 -----------
