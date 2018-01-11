@@ -18,8 +18,10 @@ package org.ejbca.utils;
  * Configuration constants for EJBCA web tests
  * @version $Id$
  */
-public abstract class ConfigurationConstants {
+public final class ConfigurationConstants {
 
+    private ConfigurationConstants() {};
+    
     // Browser Profile Constants
     public static final String PROFILE_FIREFOX_DEFAULT      = "profile.firefox.default";
     public static final String PROFILE_FIREFOX_AUDIOR       = "profile.firefox.auditor";
