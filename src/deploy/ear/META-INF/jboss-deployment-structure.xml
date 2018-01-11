@@ -2,12 +2,14 @@
     <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
   
     <deployment>
-        <!-- Make sun/security/pkcs11/wrapper exported, so we don't need to edit 
-        modules/system/layers/base/sun/jdk/main/module.xml -->
+        <!-- Make sun/security/pkcs11/wrapper and sun/security/action exported, so we don't need to edit 
+        modules/system/layers/base/sun/jdk/main/module.xml.
+        pkcs11/wrapper is needed for HSM support and security/action is needed for CMP TCP (which is deprecated but still used) -->
         <dependencies>
             <system export="true">
                 <paths>
                     <path name="sun/security/pkcs11/wrapper"/>
+                    <path name="sun/security/action"/>
                 </paths>
             </system>
         </dependencies> 
