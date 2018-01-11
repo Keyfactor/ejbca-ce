@@ -29,6 +29,10 @@ import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
+/**
+ * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
+ * @version $Id$
+ */
 @RequestScoped
 @ManagedBean
 public class AdminMenuBean extends BaseManagedBean implements Serializable {
