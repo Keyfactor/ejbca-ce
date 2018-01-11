@@ -93,8 +93,7 @@ public abstract class WebTestBase {
     }
 
     public String getPublicWebUrl() {
-        String ret = "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
-        return ret;
+        return "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
     }
 
     public String getAdminWebUrl() {
