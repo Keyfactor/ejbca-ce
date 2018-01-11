@@ -833,14 +833,7 @@ public class EjbcaWebBean implements Serializable {
     
     public List<Integer> getSortedApprovalProfileIds() {
         List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
-        Collections.sort(sortedProfiles, new Comparator<ApprovalProfile>() {
-            @Override
-            public int compare(ApprovalProfile o1, ApprovalProfile o2) {
-                if (o1 == null) { return o2 == null ? 0 : -1; }
-                else if (o2 == null) { return 1; }
-                return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
-            }
-        });
+        Collections.sort(sortedProfiles);
         List<Integer> result = new ArrayList<>();
         result.add(-1);
         for(ApprovalProfile approvalProfile : sortedProfiles) {
@@ -853,18 +846,7 @@ public class EjbcaWebBean implements Serializable {
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
     public TreeMap<String, Integer> getAuthorizedPublisherNames() {
-        final TreeMap<String,Integer> ret = new TreeMap<>(new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    if (o1 == null) { return o2 == null ? 0 : -1; }
-                    else if (o2 == null) { return 1; }
-                    int result = o1.compareToIgnoreCase(o2);
-                    if (result == 0) {
-                        result = o1.compareTo(o2);
-                    }
-                    return result;
-                }
-            });
+        final TreeMap<String,Integer> ret = new TreeMap<>();
         final Map<Integer, String> idtonamemap = publisherSession.getPublisherIdToNameMap();
         for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
             ret.put(idtonamemap.get(id), id);
