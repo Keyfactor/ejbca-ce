@@ -298,6 +298,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #db.keepinternalcakeystores=true
 
 # When upgrading a 100% up-time cluster, all nodes should be deployed with ca.keepocspextendedservice=true.
-# Once all nodes are running > 6.0, set to true to increase efficiency and portability.
+# Once all nodes are running > 6.0, set to false to increase efficiency and portability.
 # Default: false
 #ca.keepocspextendedservice=true
