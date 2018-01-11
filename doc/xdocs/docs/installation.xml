@@ -625,12 +625,8 @@ For previous versions of EJBCA, look in the documentation for older releases for
 <p>Note that the TCP transport of the CMP protocol is deprecated in the standard draft. TCP transport may be removed in future EJBCA releases.</p>
 <p>
 JBoss 7/EAP 6 isolates away  most sun classes. This means that the CMP TCP library is not able to get system properties.
-The needed classes can be made available by editing the file
-<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0) or modules/system/layers/base/sun/jdk/main/module.xml (JBoss 7.2/EAP6.1))</i> and adding the following package to the list of system export paths:
+Since version 6.12.0 EJBCA configures JBoss to expose these classes (sun/security/action) by using a jboss-deployment-structure.xml. This makes configuration in modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0) or modules/system/layers/base/sun/jdk/main/module.xml (JBoss EAP 6.1 and later and WildFly) not needed. For previous versions of EJBCA, look in the documentation for older releases for detailed information. 
 </p>
-<source>
-&lt;path name="sun/security/action"/&gt;
-</source>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 URI encoding and WSDL location">
