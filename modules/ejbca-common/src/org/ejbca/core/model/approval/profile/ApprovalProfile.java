@@ -30,7 +30,7 @@ import org.ejbca.core.model.approval.ApprovalException;
  * 
  * @version $Id$
  */
-public interface ApprovalProfile extends Profile, Serializable, Cloneable {
+public interface ApprovalProfile extends Profile, Serializable, Cloneable, Comparable<ApprovalProfile> {
 
     static final String TYPE_NAME = "APPROVAL_PROFILE";
 

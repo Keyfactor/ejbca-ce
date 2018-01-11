@@ -167,6 +167,14 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         clone.setFirstStep(getFirstStepId());
         return clone;
     }
+    
+    @Override
+    public int compareTo(final ApprovalProfile approvalProfile) {
+        if (approvalProfile == null) { return 1; }
+        final String name = getProfileName();
+        if (name == null) { return -1; }
+        return name.compareToIgnoreCase(approvalProfile.getProfileName());
+    }
 
     @Override
     public void setSteps(Map<Integer, ApprovalStep> stepsToBeEncoded) {
@@ -200,10 +208,10 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public ApprovalPartition addNotificationProperties(final ApprovalPartition approvalPartition, String recipient, String sender, String subject, String body) {
         // TODO: It would be nice with the email-address type
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, recipient));
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_SENDER, sender));
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
-        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, recipient));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_NOTIFICATION_EMAIL_SENDER, sender));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
         return approvalPartition;
     }
     
@@ -215,9 +223,9 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public ApprovalPartition addUserNotificationProperties(final ApprovalPartition approvalPartition, String sender, String subject, String body) {
         // TODO: It would be nice with the email-address type
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER, sender));
-        approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
-        approvalPartition.addProperty(new DynamicUiProperty<MultiLineString>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER, sender));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, subject));
+        approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
         return approvalPartition;
     }
 
