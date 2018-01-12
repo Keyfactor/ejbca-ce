@@ -55,6 +55,7 @@
 		<pathelement location="${mod.systemtest-common.lib}"/>
 		<pathelement location="${mod.systemtest-interface.lib}"/>
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
+		<pathelement location="${mod.systemtests.path}/resources"/>
 	</path>
 
 	<path id="systemtests.classpath">
