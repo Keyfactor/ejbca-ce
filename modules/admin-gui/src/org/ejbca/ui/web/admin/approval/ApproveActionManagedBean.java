@@ -83,14 +83,13 @@ import org.ejbca.util.query.Query;
 @ViewScoped
 @ManagedBean(name="approvalActionManagedBean")
 public class ApproveActionManagedBean extends BaseManagedBean {
-
     private static final long serialVersionUID = 1940920496104779323L;
     private static final Logger log = Logger.getLogger(ApproveActionManagedBean.class);
     private static final InternalResources intres = InternalResources.getInstance();
 
     private enum Action {
-        APPROVE(intres.getLocalizedMessage("general.approve")), REJECT(intres.getLocalizedMessage("general.reject")), NO_ACTION(
-                intres.getLocalizedMessage("general.noaction"));
+        APPROVE(intres.getLocalizedMessage("general.approve")), 
+        REJECT(intres.getLocalizedMessage("general.reject"));
 
        private static List<SelectItem> selectItems;
        private final String label;
@@ -114,7 +113,6 @@ public class ApproveActionManagedBean extends BaseManagedBean {
        public static List<SelectItem> asSelectItems() {
            return selectItems;
        }
-
     }
 
     @EJB
@@ -205,7 +203,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
         if(result != null) {
             return result;
         } else {
-            return Action.NO_ACTION;
+            return Action.APPROVE;
         }
     }
 
@@ -261,8 +259,6 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                             case REJECT:
                                 approvalExecutionSession.reject(admin, approvalDataVOView.getApprovalId(), approval);
                                 isRejected = true;
-                                break;
-                            case NO_ACTION:
                                 break;
                             default:
                                 break;
