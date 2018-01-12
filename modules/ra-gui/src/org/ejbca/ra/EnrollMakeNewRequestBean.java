@@ -261,10 +261,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /** @return true if approvals are required as determined by state of dependencies by checking the RA API. */
-    private boolean isApprovalRequired(){
-        // TODO: ECA-5240 will remove the need for making this API call
+    private boolean isApprovalRequired() {
         try {
-            return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(), ApprovalRequestType.ADDEDITENDENTITY, getCAInfo().getCAId(), getAuthorizedCertificateProfiles().get(Integer.parseInt(getSelectedCertificateProfile())).getId()) != null;
+            return raMasterApiProxyBean.getApprovalProfileForAction(raAuthenticationBean.getAuthenticationToken(),
+                    ApprovalRequestType.ADDEDITENDENTITY, getCAInfo().getCAId(),
+                    getAuthorizedCertificateProfiles().get(Integer.parseInt(getSelectedCertificateProfile())).getId()) != null;
         } catch (AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
