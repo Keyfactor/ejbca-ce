@@ -13,6 +13,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.ws.EjbcaWSTest;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -38,6 +39,8 @@ public class ProtocolConfigTest {
     
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST)
+            ;
     private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolConfigTest"));
     
     private static String httpReqPath;
@@ -77,8 +80,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
         
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.OCSP.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -95,8 +98,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.SCEP.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -113,8 +116,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.PUBLIC_WEB.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -131,8 +134,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.RA_WEB.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -149,8 +152,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.CMP.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -167,8 +170,14 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.EST.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        
+        if (enterpriseEjbBridgeSession.isRunningEnterprise()) {
+            assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+            assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        } else {
+            assertEquals("EST seems to be available in EJBCA CE", 404, resp.getStatusLine().getStatusCode());
+        }
+        
     }
     
     /**
@@ -185,8 +194,8 @@ public class ProtocolConfigTest {
         globalConfigurationSession.saveConfiguration(admin, protcolConfig);
        
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPath + AvailableProtocols.getContextPathByName(AvailableProtocols.WEB_DIST.getName()));
-        assertEquals("", 403, resp.getStatusLine().getStatusCode());
-        assertEquals("", EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
+        assertEquals("Unexpected response after disabling protocol", 403, resp.getStatusLine().getStatusCode());
+        assertEquals(EXPECTED_403_REASON, resp.getStatusLine().getReasonPhrase());
     }
     
     /**
@@ -214,7 +223,7 @@ public class ProtocolConfigTest {
             expectedException = e;
         }
         
-        assertNotNull(expectedException);
+        assertNotNull("Unexpected response after disabling protocol", expectedException);
         assertEquals(EXPECTED_WS_MESSAGE, expectedException.getMessage());
     }
 }
