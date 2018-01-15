@@ -208,10 +208,14 @@ function checkallfields() {
 							}
 						%>  <% if(!authorizedToEdit) { out.write(" disabled "); } %> />
 					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACSPECIFYSECRET\") %>" /></label>
-					<input type="text" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' <% if(!authorizedToEdit) { out.write("disabled"); } %>
+		            <% if(!authorizedToEdit) { // Don't output the actual password in edit mode %>
+		             <c:out value="*****" />
+		          <% } else { //if(!authorizedToEdit) %>
+					 <input type="password" autocomplete="off" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' <% if(!authorizedToEdit) { out.write("disabled"); } %>
         				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
         				onmousedown="document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked = true; this.readOnly = false; this.focus()"
         				 >
+         		  <% } %>
         		<% } %>
         		<br/>
 		<% if(!pbe) { %>
