@@ -156,9 +156,13 @@ function checkallfields() {
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ESTREQUIREPASSWORD_HELP\") %>"/></p>
 	  </td>
-      <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_EST_REQUIREPASSWORD %>" value='<c:out value="<%= estConfigClone.getPassword(alias) %>"/>' 
+      <td width="50%">
+      <% if(!authorizedToEdit) { // Don't output the actual password in edit mode %>
+        <c:out value="*****" />
+      <% } else { //if(!authorizedToEdit) %>
+        <input type="password" autocomplete="off" name="<%=TEXTFIELD_EST_REQUIREPASSWORD %>" value='<c:out value="<%= estConfigClone.getPassword(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+      <% } %>  
       </td>
     </tr>
     
