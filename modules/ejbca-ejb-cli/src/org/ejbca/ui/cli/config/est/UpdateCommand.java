@@ -33,7 +33,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * @version $Id: UpdateCommand.java 26534 2017-09-13 16:33:04Z anatom $
+ * @version $Id$
  *
  */
 public class UpdateCommand extends BaseEstConfigCommand {
