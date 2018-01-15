@@ -31,7 +31,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * @version $Id: UploadFileCommand.java 19974 2014-10-09 15:19:06Z mikekushner $
+ * @version $Id$
  *
  */
 public class UploadFileCommand extends BaseEstConfigCommand {
