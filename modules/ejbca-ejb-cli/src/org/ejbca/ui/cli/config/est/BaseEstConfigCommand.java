@@ -19,7 +19,7 @@ import org.ejbca.ui.cli.config.ConfigBaseCommand;
 /**
  * Shows the current server configuration
  * 
- * @version $Id: BaseCmpConfigCommand.java 19968 2014-10-09 13:13:58Z mikekushner $
+ * @version $Id$
  */
 public abstract class BaseEstConfigCommand extends ConfigBaseCommand {
      

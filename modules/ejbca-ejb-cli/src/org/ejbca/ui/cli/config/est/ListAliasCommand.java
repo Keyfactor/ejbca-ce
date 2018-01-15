@@ -19,7 +19,7 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
- * @version $Id: ListAliasCommand.java 23180 2016-04-12 20:41:14Z mikekushner $
+ * @version $Id$
  *
  */
 public class ListAliasCommand extends BaseEstConfigCommand {

@@ -24,7 +24,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * @version $Id: DumpAliasCommand.java 19902 2014-09-30 14:32:24Z anatom $
+ * @version $Id$
  *
  */
 public class DumpAliasCommand extends BaseEstConfigCommand {
