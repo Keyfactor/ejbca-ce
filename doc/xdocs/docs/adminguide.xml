@@ -1900,13 +1900,34 @@ $ mkdir certs
 $ # Optionally get new CA certificates
 $ ./estclient -g -s &lt;ip or hostname to EJBCA> -p 8442 -o certs --pem-output
 $ # certs should now contain a cacert-0-0.pem file
-$ # enroll with CA. publicCert.pem and privetKey.pem are the TLS client cert I wish to use for auth. RequestDN will be myclient
+$ # enroll with CA. publicCert.pem and privetKey.pem are the TLS client cert I wish to use for auth. RequestDN will be 'CN=myclient'
 $ ./estclient -e -s &lt;ip or hostname to EJBCA&gt; -p 8442 -o certs -c publicCert.pem -k privateKey.pem --pem-output --common-name myclient
 $ # certs will now contain a cert-0-0.pem and key-x-x.pem
 $ # client cert is about to expire, reenroll
 $ ./estclient -r -s &lt;ip or hostname to EJBCA&gt; -p 8442 -o tmp -c tmp/cert-0-0.pem -k tmp/key-x-x.pem --pem-output
 $ # certs should now contain an updated cert-0-0.pem	
 		</source>
+<p>Example enrollment, getting CA certificate first and then getting a client certificate, using username/password authentication (the EST client acts as an RA).</p>
+<p>EST configuration is an EST alias with name 'est' and settings:</p>
+<ul>
+<li>Default CA: EST CA</li>
+<li>End Entity Profile: EST EE Profile (with only CN required DN attribute)</li>
+<li>Certificate Profile: Profile Default</li>
+<li>Require Client Certificate: false</li>
+<li>Client Username: estadmin</li>
+<li>Client Password: foo123</li>
+<li>Certificate Renewal with Same Keys: false</li>
+</ul>
+<p>Download the CA certificate of the EJBCA TLS connection (usually the default is Management CA) and set the environment variable needed for estclient:</p>
+<source>
+export EST_OPENSSL_CACERT=/tmp/ManagementCA.cacert.pem
+</source>
+<p>Run the following estclient commands to generate a key and get a certificate from the CA:</p>
+<source>
+mkdir certs
+./estclient -g -s 127.0.0.1 -p 8442 -o certs --pem-output
+./estclient -e -s 127.0.0.1 -p 8442 -o certs -u estadmin -h foo123 --pem-output --common-name myclient
+</source>
 	</subsection>
 </section>
 
