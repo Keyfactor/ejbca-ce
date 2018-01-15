@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.configdump.ejb;
 
+import java.io.IOException;
+
+import org.ejbca.configdump.ConfigdumpException;
+
 /**
  * Configdump is an internal PrimeKey tool.
  * 
@@ -20,5 +24,7 @@ package org.ejbca.configdump.ejb;
 public interface ConfigdumpSession {
     
     static final String CONFIGDUMP_MODULE = "configdump-ejb";
+    
+    void performExport() throws ConfigdumpException, IOException;
 
 }
