@@ -215,10 +215,10 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             if(data.containsKey(key)) {
                 return (String) data.get(key);
             } else {
-                log.error("Could not find key '" + key + "' in the EST configuration data");
+                log.info("Could not find key '" + key + "' in the EST configuration data");
             }
         } else {
-            log.error("EST alias '" + alias + "' does not exist");
+            log.info("EST alias '" + alias + "' does not exist");
         }
         return null;
     }
@@ -231,10 +231,13 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
                     log.debug("Added '" + key + "=" + value + "' to the EST configuration data");
                 }
             } else {
-                log.error("Key '" + key + "' does not exist in the EST configuration data");
+                data.put(key, value);
+                if(log.isDebugEnabled()) {
+                    log.debug("Key '" + key + "' does not exist in the EST configuration data, adding it");
+                }
             }
         } else {
-            log.error("EST alias '" + alias + "' does not exist");
+            log.info("EST alias '" + alias + "' does not exist");
         }
     }
 
