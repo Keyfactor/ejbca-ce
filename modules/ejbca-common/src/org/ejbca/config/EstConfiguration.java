@@ -265,6 +265,9 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             Set<String> aliases = getAliasList();
             return aliases.contains(alias);
         }
+        if(log.isDebugEnabled()) {
+            log.debug("EST alias '" + alias+"' does not exist.");
+        }
         return false;
     }
 
