@@ -15,6 +15,7 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -66,6 +67,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_REQPASSWORD = "";
     private static final String DEFAULT_ALLOWUPDATEWITHSAMEKEY = "true";
 
+    // This List is used in the command line handling of updating a config value to ensure a correct value.
+    public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
 
     /** Creates a new instance of EstConfiguration */
     public EstConfiguration()  {
