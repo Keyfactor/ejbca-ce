@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -122,7 +123,7 @@ public class SigningFileOutputStream extends FileOutputStream {
     	if (!signValidate.verify(signedData)) {
     		throw new AuditLogExporterException("export file signature mismatch");
     	}
-    	FileUtils.writeStringToFile(new File(signatureFilename), new String(Base64.encode(signedData)));
+    	FileUtils.writeStringToFile(new File(signatureFilename), new String(Base64.encode(signedData)), Charset.defaultCharset());
     	return signatureFilename;
     }
 }
