@@ -126,10 +126,10 @@ org.cesecore.authorization.control.StandardRules
 
 		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputText  value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	    	<h:inputSecret redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}">
 	    		<f:validator validatorId="legalCharsValidator"/>
-	    	</h:inputText>
-	    	<h:outputText value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+	    	</h:inputSecret>
+	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 
 		<h:outputLabel for="rascheme" value="#{web.text.SCEP_RA_NAME_GEN_SCHEME}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
