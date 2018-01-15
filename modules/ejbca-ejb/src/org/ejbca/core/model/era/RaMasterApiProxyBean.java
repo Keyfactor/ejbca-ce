@@ -1481,12 +1481,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final byte[] requestBody) throws NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
         NoSuchAliasException caughtException = null;
-        Integer apiVersion = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
-            if (apiVersion == null) {
-                apiVersion = raMasterApi.getApiVersion();
-            }           
-            if (raMasterApi.isBackendAvailable() && apiVersion >= 2) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 2) { // EST in version 2 and later
                 try {
                     try {
                         return raMasterApi.estDispatch(operation, alias, cert, username, password, requestBody);
@@ -1505,6 +1501,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (caughtException != null) {
             throw caughtException;
         } else {
+        	// No suitable RaMasterAPIs were found?
+        	log.info("No suitable RA Master APIs were found among the ones we have: "+raMasterApis.length);
+        	if (log.isDebugEnabled()) {
+        	    for (final RaMasterApi raMasterApi : raMasterApis) {
+        	        log.info("isBackendAvailable: "+raMasterApi.isBackendAvailable()+", apiVersion="+raMasterApi.getApiVersion()+", class: "+raMasterApi.getClass().getName());
+        	    }
+        	}
             return null;
         }
     }
