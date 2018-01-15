@@ -88,6 +88,7 @@
 		<antcall target="cmpproxyclean"/>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
+		<antcall target="configdumpclean"/>
 		<antcall target="cmpclientclean"/>
 		<antcall target="ctclean"/>
 		<antcall target="certsafeclean"/>
@@ -126,6 +127,11 @@
 		<echo message="Cleaning statedump"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
+	
+	<target name="configdumpclean" if="${mod.configdump.exists}">
+			<echo message="Cleaning configdump"/>
+			<ant antfile="${mod.configdump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		</target>
 			
 	<condition property="cmpclient.exists">
 		<available file="${mod.cmpclient.path}/build.xml" />
@@ -475,7 +481,7 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb" description="Build EJBCA EJB module">
+	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb, configdump-ejb" description="Build EJBCA EJB module">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -540,6 +546,16 @@
 	
     <target name="statedump-ejb" depends="peerconnector" if="${mod.statedump.exists}">
         <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    </target>
+	
+	<target name="configdump" depends="ejbca-ejb-cli, va-publisher, peerconnector, buildservicemanifestbuilder">
+		<echo  message="${mod.configdump.path}/build.xml" />
+		<fail message="ConfigDump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
+		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+    <target name="configdump-ejb" depends="peerconnector" if="${mod.configdump.exists}">
+        <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 
 	<target name="cmpclient" depends="ejbca-ejb-cli, buildservicemanifestbuilder">
