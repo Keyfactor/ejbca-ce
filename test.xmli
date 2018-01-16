@@ -55,6 +55,8 @@
     <target name="optionaltestct" if="${ct.exists}"><ant antfile="build.xml" dir="modules/ct" target="test" /></target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
     <target name="optionalteststatedump" if="${statedump.exists}"><antcall target="statedump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/statedump" target="test" /></target>
+    <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
+    <target name="optionaltestconfigdump" if="${configdump.exists}"><antcall target="configdump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/configdump" target="test" /></target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}"><ant antfile="build.xml" dir="modules/peerconnector" target="test" /></target>
     <condition property="vapublisher.exists"><available file="modules/va/publisher" /></condition>
@@ -85,6 +87,7 @@
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
+					<include name="modules/configdump/src-test/**/${test.runone}.java" />
 					<include name="modules/ct/src-test/**/${test.runone}.java" />
 					<include name="modules/peerconnector/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-common/src-test/**/${test.runone}.java" />
@@ -114,6 +117,9 @@
     	</condition>
     	<condition property="module" value="modules/statedump">
     		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/configdump">
+    		<matches string="${test-fullname}" pattern="^modules/configdump/.*$"/>
     	</condition>
     	<condition property="module" value="modules/ct">
     		<matches string="${test-fullname}" pattern="^modules/ct/.*$"/>
@@ -224,6 +230,11 @@
     
     <target name="test:statedump" description="run JUnit Statedump test." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/statedump" target="test" />
+    	<antcall target="createreport"/>
+    </target>
+    
+    <target name="test:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
+    	<ant antfile="build.xml" dir="modules/configdump" target="test" />
     	<antcall target="createreport"/>
     </target>
     
