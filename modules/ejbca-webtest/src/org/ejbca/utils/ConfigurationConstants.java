@@ -28,6 +28,7 @@ public final class ConfigurationConstants {
     public static final String PROFILE_FIREFOX_CAADMIN      = "profile.firefox.caadmin";
     public static final String PROFILE_FIREFOX_CUSTOM       = "profile.firefox.custom";
     public static final String PROFILE_FIREFOX_RAADMIN      = "profile.firefox.raadmin";
+    public static final String PROFILE_FIREFOX_RAADMINALT   = "profile.firefox.raadminalt";
     public static final String PROFILE_FIREFOX_SUPERADMIN   = "profile.firefox.superadmin";
     public static final String PROFILE_FIREFOX_SUPERVISOR   = "profile.firefox.supervisor";
     
