@@ -22,7 +22,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.config.GlobalConfiguration;
 
 /**
- * A class representing a admins personal preferenses.
+ * A class representing a admins personal preferences.
  *
  * @version $Id$
  */
