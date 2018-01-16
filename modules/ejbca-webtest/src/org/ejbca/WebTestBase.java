@@ -38,7 +38,7 @@ public abstract class WebTestBase {
     private static String ejbcaPort;
 
     private static WebDriver webDriver;
-    public static WebDriverWait webDriverWait;
+    private static WebDriverWait webDriverWait;
 
     /**
      * Sets up firefox driver and firefox profile is certificate is required
@@ -67,7 +67,7 @@ public abstract class WebTestBase {
             webDriver = new FirefoxDriver();
         }
 
-        webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         webDriverWait = new WebDriverWait(webDriver, 5, 50);
     }
 
@@ -92,6 +92,14 @@ public abstract class WebTestBase {
         return config.getProperty(ConfigurationConstants.EJBCA_CADN);
     }
 
+    /**
+     * @param constantKey profile key from ConfigurationConstants
+     * @return the profile name
+     */
+    public String getProfileName(String constantKey) {
+        return config.getProperty(constantKey);
+    }
+    
     public String getPublicWebUrl() {
         return "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
     }
@@ -106,5 +114,9 @@ public abstract class WebTestBase {
     
     public static WebDriver getWebDriver() {
         return webDriver;
+    }
+    
+    public static WebDriverWait getWebDriverWait() {
+        return webDriverWait;
     }
 }
