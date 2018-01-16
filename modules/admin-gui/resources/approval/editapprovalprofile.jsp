@@ -272,7 +272,7 @@
 					<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_PARTITION}" action="#{approvalProfileMBean.addPartition}"
                         rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
 				    <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_STEP}" action="#{approvalProfileMBean.deleteStep}"
-				    	rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
+				    	rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}" disabled="#{approvalProfileMBean.approvalProfile.numberOfSteps eq 1}"/>
 				</h:panelGroup>	
 			</h:column>	
 		</h:dataTable>
