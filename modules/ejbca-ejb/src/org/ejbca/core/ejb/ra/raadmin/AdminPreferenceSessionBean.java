@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -82,6 +83,25 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             log.trace("<getAdminPreference()");
         }
         return ret;
+    }
+    
+    @Override
+    public List<AdminPreference> getAdminPreferences() {
+        if (log.isTraceEnabled()) {
+            log.trace(">getAdminPreference()");
+        }        
+        List<AdminPreference> adminPreferences = new ArrayList<>();
+        final List<AdminPreferencesData> adminPreferencesData = AdminPreferencesData.findAll(entityManager);
+        
+        if (adminPreferencesData != null && !adminPreferencesData.isEmpty()) {
+            for(final AdminPreferencesData adminPreferenceData : adminPreferencesData) {
+                adminPreferences.add(adminPreferenceData.getAdminPreference());
+            }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<getAdminPreference()");
+        }        
+        return adminPreferences;
     }
 
     @Override
