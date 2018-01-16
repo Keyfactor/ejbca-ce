@@ -120,7 +120,7 @@
             
             <h:outputLabel for="selfApproveEdit" value ="#{web.text.SELF_APPROVE_EDIT}"/>
             <h:panelGroup>
-            	<h:selectBooleanCheckbox value="#{approvalProfileMBean.allowSelfEdit}"/>
+            	<h:selectBooleanCheckbox id="selfApproveEdit" value="#{approvalProfileMBean.allowSelfEdit}"/>
             	<br/>
                 <h:panelGroup styleClass="help">
                     <h:outputText value="#{web.text.SELF_APPROVE_EDIT_HELP}"/>
