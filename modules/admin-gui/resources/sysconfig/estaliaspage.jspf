@@ -95,6 +95,7 @@ function checkallfields() {
           <% } %>
           <% if(!eepselected) { %> <option selected value='<c:out value="-1"/>'><c:out value="Non-existing End Entity Profile with ID: "/><c:out value="<%= currentEndEntityProfileId %>"/></option> <% } %>
         </select>
+       	<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" style="display:none">
         <noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
