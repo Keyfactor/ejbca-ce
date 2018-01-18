@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -333,8 +332,9 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
         Integer currentStyleId = adminPreference.getPreferedRaStyleId();
 
-        if (currentStyleId != null)
+        if (currentStyleId != null) {
             return currentStyleId;
+        }
         return null;
 
     }
@@ -368,8 +368,9 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
 
         Locale currentLocale = adminPreference.getPreferedRaLanguage();
 
-        if (currentLocale != null)
+        if (currentLocale != null) {
             return currentLocale;
+        }
 
         return getDefaultAdminPreference().getPreferedRaLanguage();
     }
