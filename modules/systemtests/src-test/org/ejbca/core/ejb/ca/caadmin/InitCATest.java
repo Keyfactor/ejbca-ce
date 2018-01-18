@@ -172,7 +172,7 @@ public class InitCATest extends CaTestCase {
             
             EndEntityProfile eeProf = new EndEntityProfile();
             eeProf.setAvailableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
-            eeProf.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(origCaId));
+            eeProf.setDefaultCA(origCaId);
             endEntityProfileSession.addEndEntityProfile(admin, ENDENTITY_PROFILE_NAME, eeProf);
             
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
