@@ -61,6 +61,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.AsymmetricKeyUnwrapper;
 import org.bouncycastle.operator.jcajce.JceAsymmetricKeyUnwrapper;
+import org.bouncycastle.operator.jcajce.JceInputDecryptorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.CaTestUtils;
@@ -750,7 +751,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
                 PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
                 assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
                 // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
                 assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
@@ -797,7 +798,8 @@ public class CrmfRequestTest extends CmpTestCase {
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
                 PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(
+                        new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
                 assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
                 // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
                 assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
@@ -920,7 +922,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
                 PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
                 assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
                 // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
                 assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
@@ -996,7 +998,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 byte[] secKeyBytes = (byte[])unwrapper.generateUnwrappedKey(encValue.getKeyAlg(), encValue.getEncSymmKey().getBytes()).getRepresentation();
                 // recover private key
                 PKCS8EncryptedPrivateKeyInfo respInfo = new PKCS8EncryptedPrivateKeyInfo(encValue.getEncValue().getBytes());
-                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider("BC").build(secKeyBytes));
+                PrivateKeyInfo keyInfo = respInfo.decryptPrivateKeyInfo(new JceInputDecryptorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(secKeyBytes));
                 assertEquals(keyInfo.getPrivateKeyAlgorithm(), encValue.getIntendedAlg());
                 // Verify that we didn't get our protocol encr key back (which should be impossible since we never sent the private key over)
                 assertFalse(Arrays.areEqual(protocolEncKey.getPrivate().getEncoded(), keyInfo.getEncoded()));
