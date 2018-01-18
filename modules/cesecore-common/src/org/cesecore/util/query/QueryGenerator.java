@@ -266,7 +266,7 @@ public final class QueryGenerator implements Serializable {
                     + name);
         }
         if (!availableFields.contains(name)) {
-            throw new QueryParameterException("parameter is not valid field"
+            throw new QueryParameterException("parameter is not valid field "
                     + name);
         }
     }
