@@ -745,6 +745,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return ret;
     }
     
+    public void setDefaultCA(final int caId) {
+        setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(caId));
+    }
+    
     /** 
      * @return the certificate profileId configured as default certificate profile, or -1 if no default certificate profile exists
      */
