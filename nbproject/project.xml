@@ -39,12 +39,6 @@ auxiliary.show.customizer.message=<message>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>modules/buildtools/src</label>
-                    <type>java</type>
-                    <location>modules/buildtools/src</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
                     <label>modules/certsafe/src</label>
                     <type>java</type>
                     <location>modules/certsafe/src</location>
@@ -348,12 +342,6 @@ auxiliary.show.customizer.message=<message>
                     <label>modules/va/src-war</label>
                     <type>java</type>
                     <location>modules/va/src-war</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
-                    <label>modules/buildtools/src-test</label>
-                    <type>java</type>
-                    <location>modules/buildtools/src-test</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
@@ -708,10 +696,6 @@ auxiliary.show.customizer.message=<message>
                         <location>modules/batchenrollment-gui/src</location>
                     </source-folder>
                     <source-folder style="packages">
-                        <label>modules/buildtools/src</label>
-                        <location>modules/buildtools/src</location>
-                    </source-folder>
-                    <source-folder style="packages">
                         <label>modules/certsafe/src</label>
                         <location>modules/certsafe/src</location>
                     </source-folder>
@@ -916,10 +900,6 @@ auxiliary.show.customizer.message=<message>
                         <location>modules/va/src-war</location>
                     </source-folder>
                     <source-folder style="packages">
-                        <label>modules/buildtools/src-test</label>
-                        <location>modules/buildtools/src-test</location>
-                    </source-folder>
-                    <source-folder style="packages">
                         <label>src/samples/plugins/mywebapps/src</label>
                         <location>src/samples/plugins/mywebapps/src</location>
                     </source-folder>
@@ -1039,7 +1019,6 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/admin-gui/src</package-root>
                 <package-root>modules/appserver-ext/src</package-root>
                 <package-root>modules/batchenrollment-gui/src</package-root>
-                <package-root>modules/buildtools/src</package-root>
                 <package-root>modules/certsafe/src</package-root>
                 <package-root>modules/cesecore-common/src</package-root>
                 <package-root>modules/cesecore-ejb-interface/src</package-root>
@@ -1147,7 +1126,6 @@ auxiliary.show.customizer.message=<message>
                 <source-level>1.7</source-level>
             </compilation-unit>
             <compilation-unit>
-                <package-root>modules/buildtools/src-test</package-root>
                 <package-root>modules/cesecore-common/src-test</package-root>
                 <package-root>modules/cesecore-ejb-interface/src-test</package-root>
                 <package-root>modules/cesecore-ejb/src-test</package-root>
