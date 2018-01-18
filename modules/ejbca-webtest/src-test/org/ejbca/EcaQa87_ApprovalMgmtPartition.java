@@ -76,11 +76,11 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     public static void exit() throws AuthorizationDeniedException {
         Role role1 = roleSession.getRole(admin, null, roleName);
         if (role1 != null) {
-            roleSession.deleteRoleIdempotent(admin, role1.getRoleId());
+//            roleSession.deleteRoleIdempotent(admin, role1.getRoleId());
         }
         Role role2 = roleSession.getRole(admin, null, roleName2);
         if (role2 != null) {
-            roleSession.deleteRoleIdempotent(admin, role2.getRoleId());
+//            roleSession.deleteRoleIdempotent(admin, role2.getRoleId());
         }
         CAInfo caInfo = caSession.getCAInfo(admin, caName);
         if (caInfo != null) {
@@ -90,7 +90,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
         for (Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
             if (approvalProfile.getValue().equals(approvalProfileName)) {
-                approvalProfileSession.removeApprovalProfile(admin, approvalProfile.getKey());
+               // approvalProfileSession.removeApprovalProfile(admin, approvalProfile.getKey());
             }
         }
         webDriver.quit();
@@ -264,13 +264,13 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         
         List<WebElement> stepOnePartOneAdminSelect = stepOnePartitions.get(0).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
         new Select(stepOnePartOneAdminSelect.get(0)).selectByVisibleText(roleName);
-        new Select(stepOnePartOneAdminSelect.get(0)).selectByVisibleText("Anybody");
+        new Select(stepOnePartOneAdminSelect.get(1)).selectByVisibleText("Anybody");
         List<WebElement> stepOnePartTwoAdminSelect = stepOnePartitions.get(1).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
         new Select(stepOnePartTwoAdminSelect.get(0)).selectByVisibleText(roleName2);
-        new Select(stepOnePartTwoAdminSelect.get(0)).selectByVisibleText("Anybody");
+        new Select(stepOnePartTwoAdminSelect.get(1)).selectByVisibleText("Anybody");
         List<WebElement> stepTwoPartOneAdminSelect = stepTwoPartitions.get(0).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
         new Select(stepTwoPartOneAdminSelect.get(0)).selectByVisibleText(roleName);
-        new Select(stepTwoPartOneAdminSelect.get(0)).selectByVisibleText("Anybody");
+        new Select(stepTwoPartOneAdminSelect.get(1)).selectByVisibleText("Anybody");
     }
 
     @Test
@@ -323,8 +323,26 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         assertEquals("Unexpected partition name in view mode", "2:A", stepTwoPartitions.get(0).
                 findElement(By.xpath(".//td[@class='editColumn2-Approval-steps']/input[contains(@type,'text')]")).getAttribute("value"));
         
-        List<WebElement> stepOnePartOneRoles = new Select(stepOnePartitions.get(0).findElement(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"))).getAllSelectedOptions();
-        selectedRolesOnly(stepOnePartOneRoles, Arrays.asList("Anybody", roleName));
+        List<WebElement> stepOnePartOneRoles = stepOnePartitions.get(0).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
+        List<WebElement> stepOnePartTwoRoles = stepOnePartitions.get(1).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
+        List<WebElement> stepTwoPartOneRoles = stepTwoPartitions.get(0).findElements(By.xpath(".//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
+        
+        assertEquals("Step 1, Partition 1: Unexpected number of selected 'May Approve' admins", 1, new Select(stepOnePartOneRoles.get(0)).getAllSelectedOptions().size());
+        assertEquals("Step 1, Partition 1: Unexpected number of selected 'May View' admins", 1, new Select(stepOnePartOneRoles.get(1)).getAllSelectedOptions().size());
+        assertEquals("Step 1, Partition 1: Unexpected selected 'May Approve' admin", roleName, new Select(stepOnePartOneRoles.get(0)).getFirstSelectedOption().getText());
+        assertEquals("Step 1, Partition 1: Unexpected selected 'May View' admin", "Anybody", new Select(stepOnePartOneRoles.get(1)).getFirstSelectedOption().getText());
+        
+        assertEquals("Step 1, Partition 2: Unexpected number of selected 'May Approve' admins", 1, new Select(stepOnePartTwoRoles.get(0)).getAllSelectedOptions().size());
+        assertEquals("Step 1, Partition 2: Unexpected number of selected 'May View' admins", 1, new Select(stepOnePartTwoRoles.get(1)).getAllSelectedOptions().size());
+        assertEquals("Step 1, Partition 2: Unexpected selected 'May Approve' admin", roleName2, new Select(stepOnePartTwoRoles.get(0)).getFirstSelectedOption().getText());
+        assertEquals("Step 1, Partition 2: Unexpected selected 'May View' admin", "Anybody", new Select(stepOnePartTwoRoles.get(1)).getFirstSelectedOption().getText());
+        
+        assertEquals("Step 2, Partition 1: Unexpected number of selected 'May Approve' admins", 1, new Select(stepTwoPartOneRoles.get(0)).getAllSelectedOptions().size());
+        assertEquals("Step 2, Partition 1: Unexpected number of selected 'May View' admins", 1, new Select(stepTwoPartOneRoles.get(1)).getAllSelectedOptions().size());
+        assertEquals("Step 2, Partition 1: Unexpected selected 'May Approve' admin", roleName, new Select(stepTwoPartOneRoles.get(0)).getFirstSelectedOption().getText());
+        assertEquals("Step 2, Partition 1: Unexpected selected 'May View' admin", "Anybody", new Select(stepTwoPartOneRoles.get(1)).getFirstSelectedOption().getText());
+        
+//        selectedRolesOnly(stepOnePartOneRoles, Arrays.asList("Anybody", roleName));
 
     }
 
