@@ -34,26 +34,26 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 
 /**
- * PartitionedApprovalProfile represents an approval archetype where each approval is partitioned into several subtasks, assigned to one or more roles. 
- * 
+ * PartitionedApprovalProfile represents an approval archetype where each approval is partitioned into several subtasks, assigned to one or more roles.
+ *
  * @version $Id$
  *
  */
 public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     private static final long serialVersionUID = 6991912129797327010L;
-        
+
     private static final Logger log = Logger.getLogger(PartitionedApprovalProfile.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
-    
+
     public static final RoleInformation ANYBODY = RoleInformation.fromRoleMembers(-1, null, "Anybody", new ArrayList<RoleMember>());
-    
+
     public static final int EXECUTION_STEP_ID = 0;
     public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_ROLES_WITH_APPROVAL_RIGHTS = "roles_with_approval_rights";
     public static final String PROPERTY_ROLES_WITH_VIEW_RIGHTS = "roles_with_view_rights";
-    
+
     private static final Set<String> predefinedProperties = new HashSet<>(Arrays.asList(PROPERTY_NAME, PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS));
 
     /**
@@ -62,7 +62,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     private static final String TYPE_IDENTIFIER = "PARTITIONED_APPROVAL";
 
     public PartitionedApprovalProfile() {
-        //Public constructor needed deserialization 
+        //Public constructor needed deserialization
         super();
     }
 
@@ -70,15 +70,15 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         super(name);
         initialize();
     }
-    
+
     /*
-     * This method only needs to be called by the factory method (and some unit tests), because it sets a ton of boilerplate stuff which isn't 
+     * This method only needs to be called by the factory method (and some unit tests), because it sets a ton of boilerplate stuff which isn't
      * required by already initialized profiles.
      */
     @Override
     public void initialize() {
         super.initialize();
-        //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors. 
+        //Default step, which is the default execution step. It contains a single partition, and only a list of approved executors.
         ApprovalStep executionStep = new ApprovalStep(EXECUTION_STEP_ID);
         addStep(executionStep);
         setFirstStep(executionStep.getStepIdentifier());
@@ -102,7 +102,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public boolean canApprovalExecute(final Collection<Approval> approvalsPerformed) throws ApprovalException, AuthenticationFailedException {
-        // Walk through all steps and their respective partitions, verify that the collection of approvals satisfies them. 
+        // Walk through all steps and their respective partitions, verify that the collection of approvals satisfies them.
         ApprovalStep step = getFirstStep();
         while(step != null) {
             if(!isStepSatisfied(step, approvalsPerformed)) {
@@ -115,7 +115,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return true;
     }
-    
+
     @Override
     public int getOrdinalOfStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
@@ -133,7 +133,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return -1;
     }
-    
+
     @Override
     public ApprovalStep getStepBeingEvaluated(Collection<Approval> approvalsPerformed) throws AuthenticationFailedException {
         ApprovalStep step = getFirstStep();
@@ -149,7 +149,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return null;
     }
-    
+
     @Override
     public boolean canApprovePartition(final AuthenticationToken authenticationToken, final ApprovalPartition approvalPartition) throws AuthenticationFailedException {
         if(approvalPartition != null) {
@@ -181,7 +181,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return false;
     }
-    
+
     @Override
     public boolean canAnyoneApprovePartition(final ApprovalPartition approvalPartition) {
         @SuppressWarnings("unchecked")
@@ -193,7 +193,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return false;
     }
-    
+
     @Override
     public List<String> getAllowedRoleNames(final ApprovalPartition approvalPartition) {
         final List<String> ret = new ArrayList<>();
@@ -204,7 +204,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         }
         return ret;
     }
-    
+
     @Override
     public boolean canViewPartition(AuthenticationToken authenticationToken, ApprovalPartition approvalPartition)
             throws AuthenticationFailedException {
@@ -228,12 +228,12 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public int getRemainingApprovals(Collection<Approval> approvalsPerformed) {
-        //Return the total number of partitions lacking approval, minus the number of approvals performed (presume that no approvals performed overlap) 
+        //Return the total number of partitions lacking approval, minus the number of approvals performed (presume that no approvals performed overlap)
         int remainingApprovalsInAllPartitions = 0;
         for (final ApprovalStep approvalStep : getSteps().values()) {
             for (final ApprovalPartition approvalPartition : approvalStep.getPartitions().values()) {
                 int remainingApprovalsInPartition = getRemainingApprovalsInPartition(approvalsPerformed, approvalStep.getStepIdentifier(),
-                        approvalPartition.getPartitionIdentifier());               
+                        approvalPartition.getPartitionIdentifier());
                 if (remainingApprovalsInPartition >= 0) {
                     remainingApprovalsInAllPartitions += remainingApprovalsInPartition;
                 } else {
@@ -246,7 +246,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     public boolean isStepSizeFixed() {
-        // Partitioned Approval Profiles can have as many steps as you like. 
+        // Partitioned Approval Profiles can have as many steps as you like.
         return false;
     }
 
@@ -257,26 +257,26 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
 
     @Override
     protected ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition) {
-        //All partitions for this profile have some default fields: a name and a list of Roles with access 
+        //All partitions for this profile have some default fields: a name and a list of Roles with access
         approvalPartition.addProperty(new DynamicUiProperty<String>(PROPERTY_NAME, ""));
-        
-        //Add approving roles, with "Anybody" as the default Role. 
+
+        //Add approving roles, with "Anybody" as the default Role.
         DynamicUiProperty<RoleInformation> approvalRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, ANYBODY,
                 new HashSet<RoleInformation>());
         //Will make this property into a multi-select instead of single select.
         approvalRoles.setHasMultipleValues(true);
-        //Tell whatever bean is using this property to fill it with authorized roles. 
+        //Tell whatever bean is using this property to fill it with authorized roles.
         approvalRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
         approvalPartition.addProperty(approvalRoles);
-        
-        //Add roles with view rights, with "Anybody" as the default Role. 
+
+        //Add roles with view rights, with "Anybody" as the default Role.
         DynamicUiProperty<RoleInformation> viewRoles = new DynamicUiProperty<RoleInformation>(PROPERTY_ROLES_WITH_VIEW_RIGHTS, ANYBODY,
                 new HashSet<RoleInformation>());
         //Will make this property into a multi-select instead of single select.
         viewRoles.setHasMultipleValues(true);
-        //Tell whatever bean is using this property to fill it with authorized roles. 
+        //Tell whatever bean is using this property to fill it with authorized roles.
         viewRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
-        approvalPartition.addProperty(viewRoles);        
+        approvalPartition.addProperty(viewRoles);
         return approvalPartition;
     }
 
@@ -284,13 +284,13 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     protected String[] getImplementationHiddenProperties() {
         return new String[]{PROPERTY_NAME, PROPERTY_ROLES_WITH_APPROVAL_RIGHTS, PROPERTY_ROLES_WITH_VIEW_RIGHTS};
     }
-    
+
 
     @Override
     public Set<String> getReadOnlyProperties() {
         return new HashSet<>(Arrays.asList(PROPERTY_NAME));
     }
-    
+
     @Override
     public boolean arePartitionsFixed() {
         return false;
@@ -299,5 +299,13 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     @Override
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return super.isPropertyPredefined(stepIdentifier, partitionIdentifier, propertyName) || predefinedProperties.contains(propertyName);
+    }
+
+    public List<ApprovalStep> getStepList() {
+        final List<ApprovalStep> approvalSteps = new ArrayList<>();
+        for (ApprovalStep step = getFirstStep(); step != null; step = getStep(step.getNextStep())) {
+            approvalSteps.add(step);
+        }
+        return approvalSteps;
     }
 }
