@@ -497,6 +497,7 @@
                 <include name="httpcore-*.jar" />
                 <include name="httpmime-*.jar" />
                 <include name="json-simple-*.jar" />
+            	<include name="snakeyaml-*.jar" />
             	<include name="dns*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
