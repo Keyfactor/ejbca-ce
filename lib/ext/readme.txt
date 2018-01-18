@@ -21,3 +21,5 @@ slf4j-log4j12-1.7.25.jar (Apache/MIT/BSD/CDDL)
 
 httpclient (here) is only used by SigningDailyRollingFileAppender and is from the Apache Http Components project, using the Apache license:
 commons-httpclient-3.1.jar
+
+ServiceManifestBuilder is a homegrown lib used to compile service manifests. LGPL. 

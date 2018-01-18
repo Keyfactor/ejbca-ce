@@ -45,7 +45,6 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
-    	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
