@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.ejb.Local;
 
@@ -76,8 +77,10 @@ public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
     
     /**
      * 
-     * @return list of all admin preferences defined in the current ejbca instance.
+     * @return map containing all admin preferences defined in the current ejbca instance
+     *         and their human readable name as String.
+     *         
      */
-    List<AdminPreference> getAdminPreferences();
+    Map<String, AdminPreference> getAdminPreferences();
 
 }
