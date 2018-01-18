@@ -23,6 +23,7 @@ import org.junit.Test;
  */
 public class AccessUserAspectDataTest {
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testGeneratePrimaryKeyWhereRoleNameAndMatchValueAreTheSame() {
         int alpha = AccessUserAspectData.generatePrimaryKey("foo", 1337, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
@@ -32,6 +33,7 @@ public class AccessUserAspectDataTest {
         assertTrue("Two identical primary keys were produced for different values", alpha != beta);
     }
     
+    @SuppressWarnings("deprecation")
     @Test
     public void testGeneratePrimaryKeyWhereRoleNameAndMatchValueAreSwitched() {
         int alpha = AccessUserAspectData.generatePrimaryKey("foo", 1337, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
