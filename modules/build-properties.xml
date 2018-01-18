@@ -140,9 +140,6 @@
 	<property name="mod.cmpclient.dist" location="${ejbca.dist.path}/cmpclient" />
 	<property name="mod.cmpclient.lib" location="${mod.cmpclient.dist}/cmpclient.jar" />
 	<property name="mod.cmpclient.path" location="${mod.path}/cmpclient" />
-	<property name="mod.buildtools.path" location="${mod.path}/buildtools" />
-	<property name="mod.buildtools.build" location="${mod.buildtools.path}/build" />
-	<property name="mod.buildtools.dist" location="${ejbca.dist.path}/buildtools" />
 	<property name="mod.cli-util.dist" location="${mod.dist.path}/" />
 	<property name="mod.cli-util.lib" location="${mod.cli-util.dist}/cli-util.jar" />
 	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
@@ -277,6 +274,10 @@
 
 	<path id="lib.jee.classpath">
 		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+	</path>
+	
+	<path id="lib.servicemanifestbuilder.classpath">
+		<fileset dir="${ejbca.home}/lib/ext" includes="servicemanifestbuilder*.jar"/>
 	</path>
 
 	<path id="lib.servlet.classpath">
