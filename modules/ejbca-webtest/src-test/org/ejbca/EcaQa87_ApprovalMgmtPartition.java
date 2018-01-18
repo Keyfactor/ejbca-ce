@@ -15,7 +15,6 @@ package org.ejbca;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -392,13 +391,6 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         approvalDropDowns = webDriver.findElements(By.cssSelector("[id$=approvalProfile]"));
         for (WebElement approvalDropDown : approvalDropDowns) {
             assertEquals("Selected approval profile was not selected in View mode", approvalProfileName, new Select(approvalDropDown).getFirstSelectedOption().getText());
-        }
-    }
-    
-    private void selectedRolesOnly(List<WebElement> selectBox, List<String> expectedRoles) {
-        assertEquals("Unexpected number of roles selected", expectedRoles.size(), selectBox.size());
-        for (WebElement role : selectBox) {
-            assertTrue("Expected role not selected in 'Roles which may...' box: ", expectedRoles.contains(role.getText()));
         }
     }
     
