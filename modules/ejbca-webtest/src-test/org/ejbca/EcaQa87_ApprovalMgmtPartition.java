@@ -76,11 +76,11 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     public static void exit() throws AuthorizationDeniedException {
         Role role1 = roleSession.getRole(admin, null, roleName);
         if (role1 != null) {
-//            roleSession.deleteRoleIdempotent(admin, role1.getRoleId());
+            roleSession.deleteRoleIdempotent(admin, role1.getRoleId());
         }
         Role role2 = roleSession.getRole(admin, null, roleName2);
         if (role2 != null) {
-//            roleSession.deleteRoleIdempotent(admin, role2.getRoleId());
+            roleSession.deleteRoleIdempotent(admin, role2.getRoleId());
         }
         CAInfo caInfo = caSession.getCAInfo(admin, caName);
         if (caInfo != null) {
@@ -90,7 +90,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
         for (Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
             if (approvalProfile.getValue().equals(approvalProfileName)) {
-               // approvalProfileSession.removeApprovalProfile(admin, approvalProfile.getKey());
+                approvalProfileSession.removeApprovalProfile(admin, approvalProfile.getKey());
             }
         }
         webDriver.quit();
