@@ -38,9 +38,9 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 
 /**
- * 
- * Implementation of the ProfileBase class, common functionality for all approval type profiles. 
- * 
+ *
+ * Implementation of the ProfileBase class, common functionality for all approval type profiles.
+ *
  * @version $Id$
  *
  */
@@ -59,11 +59,11 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
      * The sequences of this approval profile, as mapped by their sequences
      */
     private transient Map<Integer, ApprovalStep> steps = new HashMap<>();
-    
-    
+
+
 
     public ApprovalProfileBase() {
-        //Public constructor needed deserialization 
+        //Public constructor needed deserialization
         super();
     }
 
@@ -107,7 +107,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public void setApprovalExpirationPeriod(final long expirationPeriod) {
         data.put(PROPERTY_APPROVAL_EXPIRATION_PERIOD, expirationPeriod);
     }
-    
+
     @Override
     public long getMaxExtensionTime() {
         final Object value = data.get(PROPERTY_MAX_EXTENSION_TIME);
@@ -121,7 +121,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     public void setMaxExtensionTime(final long maxExtensionTime) {
         data.put(PROPERTY_MAX_EXTENSION_TIME, maxExtensionTime);
     }
-    
+
     @Override
     public boolean getAllowSelfEdit() {
         final Object value = data.get(PROPERTY_ALLOW_SELF_EDIT);
@@ -167,7 +167,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         clone.setFirstStep(getFirstStepId());
         return clone;
     }
-    
+
     @Override
     public int compareTo(final ApprovalProfile approvalProfile) {
         if (approvalProfile == null) { return 1; }
@@ -181,7 +181,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         this.steps = null;
         data.put(STEPS_KEY, encodeSteps(stepsToBeEncoded.values()));
     }
-    
+
     @Override
     public ApprovalPartition addPartition(int stepIdentifier) {
         ApprovalPartition result = getStep(stepIdentifier).addPartition();
@@ -191,15 +191,15 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         saveTransientObjects();
         return result;
     }
-    
+
     /**
-     * Add whatever constant properties specified by the implementation.  
-     * 
+     * Add whatever constant properties specified by the implementation.
+     *
      * @param approvalPartition an approval partition
      * @return a copy of the partition with the constant values.
      */
     protected abstract ApprovalPartition addConstantProperties(ApprovalPartition approvalPartition);
-    
+
     @Override
     public boolean isNotificationEnabled(final ApprovalPartition approvalPartition) {
         return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_NOTIFICATION_EMAIL_RECIPIENT) != null;
@@ -214,7 +214,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         approvalPartition.addProperty(new DynamicUiProperty<>(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, new MultiLineString(body)));
         return approvalPartition;
     }
-    
+
     @Override
     public boolean isUserNotificationEnabled(final ApprovalPartition approvalPartition) {
         return approvalPartition!=null && approvalPartition.getProperty(ApprovalProfile.PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT) != null;
@@ -232,21 +232,21 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public final Set<String> getHiddenProperties() {
         Set<String> result = new HashSet<>(Arrays.asList(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
-                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, 
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY,
                 PROPERTY_USER_NOTIFICATION_EMAIL_SENDER,
                 PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY
                 ));
         result.addAll(Arrays.asList(getImplementationHiddenProperties()));
         return result;
     }
-    
+
     /**
      * Allows implementations to specify their own list of hidden properties
-     * 
-     * @return a list of property keys. 
+     *
+     * @return a list of property keys.
      */
     protected abstract String[] getImplementationHiddenProperties();
-    
+
     @Override
     public ApprovalPartition removeNotificationProperties(final ApprovalPartition approvalPartition) {
         approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_RECIPIENT);
@@ -255,7 +255,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         approvalPartition.removeProperty(PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY);
         return approvalPartition;
     }
-    
+
     @Override
     public ApprovalPartition removeUserNotificationProperties(final ApprovalPartition approvalPartition) {
         approvalPartition.removeProperty(PROPERTY_USER_NOTIFICATION_EMAIL_SENDER);
@@ -263,7 +263,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         approvalPartition.removeProperty(PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY);
         return approvalPartition;
     }
-    
+
     @Override
     public void addPropertyToPartition(int stepId, int partitionId, DynamicUiProperty<? extends Serializable> property) throws NoSuchApprovalStepException {
         ApprovalStep step = getSteps().get(stepId);
@@ -273,7 +273,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         step.setPropertyToPartition(partitionId, property);
         saveTransientObjects();
     }
-    
+
     @Override
     public void removePropertyFromPartition(final int stepId, final int partitionId, final String propertyName) {
         ApprovalStep step = getSteps().get(stepId);
@@ -310,7 +310,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         } else {
             getSteps().put(step.getStepIdentifier(), step);
             if (log.isDebugEnabled() && !StringUtils.isEmpty(getProfileName())) {
-                //This method may be called from the factory when creating archetypes, so don't debug log that case. 
+                //This method may be called from the factory when creating archetypes, so don't debug log that case.
                 log.debug("Added step with ID " + step.getStepIdentifier() + " to profile " + getProfileName());
             }
             //All steps must have one partition minimum. This will also add standard fields from the underlying profile implementation
@@ -320,7 +320,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         saveTransientObjects();
     }
-    
+
     @Override
     public ApprovalStep addStepFirst() {
         int identifier;
@@ -329,7 +329,11 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         } while(getSteps().containsKey(identifier));
         ApprovalStep newStep = new ApprovalStep(identifier);
         addStep(newStep);
-        //Set the order. 
+        if (getSteps().size() == 1) {
+            setFirstStep(newStep.getStepIdentifier());
+            return newStep;
+        }
+        //Set the order.
         ApprovalStep previousFirstStep = steps.get(getFirstStepId());
         setFirstStep(newStep.getStepIdentifier());
         newStep.setNextStep(previousFirstStep.getStepIdentifier());
@@ -337,7 +341,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         saveTransientObjects();
         return newStep;
     }
-    
+
     @Override
     public ApprovalStep addStepLast() {
         int identifier;
@@ -356,12 +360,12 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         saveTransientObjects();
         return newStep;
     }
-    
+
     @Override
     public void deleteStep(final int approvalStepIdentifier) {
         if(isStepSizeFixed()) {
             throw new NonModifiableApprovalProfileException("Cannot delete an approval step in a profile with fixed step size");
-        }     
+        }
         ApprovalStep stepToDelete = getStep(approvalStepIdentifier);
         ApprovalStep previousStep = getStep(stepToDelete.getPreviousStep());
         ApprovalStep nextStep = getStep(stepToDelete.getNextStep());
@@ -369,13 +373,13 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             // Handle deleting the last sequence, in which case there is no next step. In this case we can't set "first step" here,
             // but in the end of this method if there are no steps we initialize, which will recreate the first step in a default manner.
             if (nextStep != null) {
-                //This step was first, so set the next one first 
+                //This step was first, so set the next one first
                 setFirstStep(nextStep.getStepIdentifier());
             }
         }
         if(nextStep == null && previousStep != null) {
             //This was the last step, so make sure the previous step knows it's now last
-            previousStep.setNextStep(null);         
+            previousStep.setNextStep(null);
         }
         if(nextStep != null && previousStep != null) {
             previousStep.setNextStep(nextStep.getStepIdentifier());
@@ -388,17 +392,17 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         saveTransientObjects();
     }
-    
+
     @Override
     public void deletePartition(final int approvalStepIdentifier, final int partitionIdentifier) {
         if(isStepSizeFixed()) {
             throw new NonModifiableApprovalProfileException("Cannot delete an approval step in a profile with fixed step size");
-        }  
+        }
         ApprovalStep approvalStep = getStep(approvalStepIdentifier);
         approvalStep.removePartition(partitionIdentifier);
         saveTransientObjects();
     }
-    
+
 
     @Override
     public ApprovalStep getStep(Integer identifier) {
@@ -408,14 +412,14 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         return getSteps().get(identifier);
 
     }
-    
+
     private int getFirstStepId() {
         Object value = data.get(FIRST_STEP_KEY);
         if(value == null) {
         	return NO_SEQUENCES;
         }
         return (int) value;
-        
+
     }
 
     @Override
@@ -430,8 +434,8 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
 
     @Override
     protected void saveTransientObjects() {
-        //Here we return all sequences to be persisted. 
-        Map<Object, Object> transientObjects = new HashMap<>();     
+        //Here we return all sequences to be persisted.
+        Map<Object, Object> transientObjects = new HashMap<>();
         if (getSteps() != null) {
             transientObjects.put(STEPS_KEY, encodeSteps(getSteps().values()));
         }
@@ -443,7 +447,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     protected void loadTransientObjects() {
         loadStepsFromMap();
     }
-    
+
     private  List<String> encodeSteps(Collection<ApprovalStep> stepsToEncode) {
         List<String> stepsToSave =  new ArrayList<>();
         for(ApprovalStep step : stepsToEncode) {
@@ -451,7 +455,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         return stepsToSave;
     }
-    
+
     /**
      * Retrieves the transient steps object from the underlying datamap.
      */
@@ -466,7 +470,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             }
         }
     }
-    
+
     @Override
     public boolean isApprovalAuthorized(Collection<Approval> approvalsPerformed, Approval approval) throws AuthenticationFailedException {
         ApprovalStep previousStep = getFirstStep();
@@ -479,18 +483,18 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
                     previousStep = getStep(previousStep.getNextStep());
                 }
             } else {
-              //Verify that all previous steps are good 
+              //Verify that all previous steps are good
                 ApprovalPartition approvalPartition = relevantStep.getPartition(approval.getPartitionId());
                 if(approvalPartition == null) {
                     return false;
                 }
                 return canApprovePartition(approval.getAdmin(), approvalPartition);
-                
+
             }
         }
         return false;
     }
-    
+
     /**
      * @return true if the list of approvals validates the given step
      * @throws AuthenticationFailedException if the authentication token in the approval doesn't check out
@@ -500,7 +504,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         PARTITION_LOOP: for (ApprovalPartition partition : approvalStep.getPartitions().values()) {
             for (Approval approval : approvalsPerformed) {
                 if (approval.getStepId() == approvalStep.getStepIdentifier() && partition.getPartitionIdentifier() == approval.getPartitionId()) {
-                    //While we already have checked the credentials of all partitions, doing so is cheap and a good double check. 
+                    //While we already have checked the credentials of all partitions, doing so is cheap and a good double check.
                     if (canApprovePartition(approval.getAdmin(), partition)) {
                         continue PARTITION_LOOP;
                     }
@@ -509,7 +513,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
             //If we've gotten to the bottom of a partition without satisfying it's conditions, we're done
             return false;
         }
-        //If we've made it through all the partitions 
+        //If we've made it through all the partitions
         return true;
     }
 
@@ -557,12 +561,12 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
     @Override
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return Arrays.asList( PROPERTY_NOTIFICATION_EMAIL_RECIPIENT, PROPERTY_NOTIFICATION_EMAIL_SENDER,
-                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY, 
+                PROPERTY_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_NOTIFICATION_EMAIL_MESSAGE_BODY,
                 PROPERTY_USER_NOTIFICATION_EMAIL_SENDER,
                 PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_SUBJECT, PROPERTY_USER_NOTIFICATION_EMAIL_MESSAGE_BODY
                 ).contains(propertyName);
     }
-    
+
     @Override
     public void switchStepOrder(Integer firstStepIdentifier, Integer secondStepIdentifier) {
         if(firstStepIdentifier == null || secondStepIdentifier == null) {
@@ -589,10 +593,10 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         saveTransientObjects();
     }
-    
+
     @Override
     public boolean updateCAIds(final int fromId, final int toId, final String toSubjectDN) {
-        boolean changed = false;    
+        boolean changed = false;
         final Map<Integer,ApprovalStep> steps = getSteps();
         for (final ApprovalStep step : new ArrayList<>(steps.values())) {
             final Map<Integer,ApprovalPartition> partitions = step.getPartitions();
