@@ -228,10 +228,11 @@
             <h:outputText id="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}"
                 value="#{cc.attrs.raEndEntityDetails.subjectDn}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <ui:remove><!-- Hide edit capabilities until fully implemented. -->
-            <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}"
+            <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
+            		and cc.attrs.approvalRequestMode}"
                 value=" "/>
-            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}">
+            <h:panelGroup styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances 
+            		and cc.attrs.approvalRequestMode}">
                 <h3 class="h3Margin"><h:outputText value="#{msg.component_eedetails_header_subjectdn}"/></h3>
                 <ui:repeat id="subjectDistinguishedName" value="#{cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances}" var="instance">
                     <h:panelGroup styleClass="#{cc.attrs.raEndEntityDetails.evenTwice ? cc.attrs.styleEven : cc.attrs.styleOdd}">
@@ -246,7 +247,6 @@
                     </h:panelGroup>
                 </ui:repeat>
             </h:panelGroup>
-            </ui:remove>
 
             <h:outputLabel for="subjectan" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectAn}" value="#{msg.component_eedetails_header_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -266,7 +266,7 @@
                                 <f:validator validatorId="extendedRegexValidator"/>
                                 <f:attribute name="pattern" value="#{instance.regexPattern}"/>
                             </h:inputText>
-                            <h:message rendered="#{cc.attrs.editMode}" for="subjectAltNameField"/>
+                            <h:message rendered="#{cc.attrs.editMode}" for="subjectAltNameField"/> 
                         </h:panelGroup>
                     </h:panelGroup>
                 </ui:repeat>
