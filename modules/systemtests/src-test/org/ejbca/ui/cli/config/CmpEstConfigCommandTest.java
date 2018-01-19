@@ -12,13 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Test;
 
 /**
@@ -31,7 +37,7 @@ public class CmpEstConfigCommandTest {
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Test
-    public void testAliasOperations() {
+    public void testCmpAliasOperations() {
         final String aliasName = "foo";
         CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if(cmpConfiguration.aliasExists(aliasName)) {
@@ -49,29 +55,76 @@ public class CmpEstConfigCommandTest {
         assertTrue("No alias was renamed", cmpConfiguration.aliasExists(newAliasName));
         String[] removeAliasArgs = new String[] { newAliasName };
         new org.ejbca.ui.cli.config.cmp.RemoveAliasCommand().execute(removeAliasArgs);
-        assertFalse("Alias was not removed", cmpConfiguration.aliasExists(aliasName));
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        assertFalse("Alias was not removed", cmpConfiguration.aliasExists(newAliasName));
     }
 
     @Test
-    public void testEstAliasOperations() {
+    public void testEstAliasOperations() throws IOException {
         final String aliasName = "estfoo";
         EstConfiguration estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         if(estConfiguration.aliasExists(aliasName)) {
-            throw new RuntimeException("Test can't continue, EST alias already exists.");
+            throw new RuntimeException("Test can't continue, EST alias "+aliasName+" already exists.");
         }
-        final String[] addAliasArgs = new String[] { aliasName };
-        new org.ejbca.ui.cli.config.est.AddAliasCommand().execute(addAliasArgs);
-        estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        assertTrue("No alias was added", estConfiguration.aliasExists(aliasName));
         final String newAliasName = "estbar";
-        String[] renameAliasArgs = new String[] { aliasName, newAliasName };
-        new org.ejbca.ui.cli.config.est.RenameAliasCommand().execute(renameAliasArgs);
+        try {
+            final String[] addAliasArgs = new String[] { aliasName };
+            new org.ejbca.ui.cli.config.est.AddAliasCommand().execute(addAliasArgs);
+            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            assertTrue("No alias was added", estConfiguration.aliasExists(aliasName));
+
+            String[] renameAliasArgs = new String[] { aliasName, newAliasName };
+            new org.ejbca.ui.cli.config.est.RenameAliasCommand().execute(renameAliasArgs);
+            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            assertFalse("Old EST alias is still there", estConfiguration.aliasExists(aliasName));
+            assertTrue("No EST alias was renamed", estConfiguration.aliasExists(newAliasName));
+
+            String[] dumpArgs = new String[] { newAliasName };
+            CommandResult dumpResult = new org.ejbca.ui.cli.config.est.DumpAliasCommand().execute(dumpArgs);
+            // We can't get to the output of this command to verify, because it prints with LOG.info
+            assertEquals("Dump alias command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), dumpResult.getReturnCode());
+            dumpArgs = new String[] { "nonExistingEstAlias" };
+            dumpResult = new org.ejbca.ui.cli.config.est.DumpAliasCommand().execute(dumpArgs);
+            // We can't get to the output of this command to verify, because it prints with LOG.info
+            assertEquals("Dump alias command should have returned failure when alias does not exist: ", CommandResult.FUNCTIONAL_FAILURE.getReturnCode(), dumpResult.getReturnCode());
+
+            String[] updateArgs = new String[] { newAliasName, "foo", "bar" };
+            CommandResult updateResult = new org.ejbca.ui.cli.config.est.UpdateCommand().execute(updateArgs);
+            // We can't get to the output of this command to verify, because it prints with LOG.info
+            assertEquals("Update command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), updateResult.getReturnCode());
+        } finally {
+            String[] removeAliasArgs = new String[] { newAliasName };
+            CommandResult removeResult = new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
+            assertEquals("Remove command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), removeResult.getReturnCode());
+        }
         estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        assertFalse("Old EST alias is still there", estConfiguration.aliasExists(aliasName));
-        assertTrue("No EST alias was renamed", estConfiguration.aliasExists(newAliasName));
-        String[] removeAliasArgs = new String[] { newAliasName };
-        new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
-        assertFalse("EST alias was not removed", estConfiguration.aliasExists(aliasName));
+        assertFalse("EST alias was not removed: "+aliasName, estConfiguration.aliasExists(aliasName));
+        assertFalse("EST alias was not removed: "+newAliasName, estConfiguration.aliasExists(newAliasName));
+
+        // Test to upload a file to create an alias
+        File f = File.createTempFile("estconfigtest", "txt");
+        f.deleteOnExit();
+        try (FileWriter fw = new FileWriter(f);) {
+            // Create file to upload
+            fw.write(aliasName+".defaultca=Default CA");
+            fw.write(aliasName+".certprofile=DM DEMO");
+            fw.write(aliasName+".eeprofile=1245259972");
+            fw.write(aliasName+".requirecert=false");
+            fw.write(aliasName+".reqpassword=foo123");
+            fw.write(aliasName+".allowupdatewithsamekey=false");
+            fw.close();
+            final String[] uploadFileArgs = new String[] { aliasName, f.getAbsolutePath()};
+            CommandResult uploadResult = new org.ejbca.ui.cli.config.est.UploadFileCommand().execute(uploadFileArgs);
+            assertEquals("Upload command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), uploadResult.getReturnCode());
+            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+            assertTrue("No alias was added: "+aliasName, estConfiguration.aliasExists(aliasName));
+        } finally {
+            String[] removeAliasArgs = new String[] { aliasName };
+            new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
+        }
+        estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
+        assertFalse("EST alias was not removed: "+aliasName, estConfiguration.aliasExists(aliasName));
+
     }
 
 }
