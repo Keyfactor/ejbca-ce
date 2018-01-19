@@ -64,7 +64,7 @@ public class RemoveAliasCommand extends BaseCmpConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return " Removes a CMP configuration alias.";
+        return "Removes a CMP configuration alias.";
     }
 
     @Override
