@@ -707,7 +707,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     /** Gets a Collection of available certificate profile ids
-     * Use String.valueOf(caidstring) to get the int value
+     * Use Integer.valueOf(idstring) to get the int value
      * 
      * @return a Collection of String, where the string is an integer.
      */
