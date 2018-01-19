@@ -173,22 +173,7 @@
           </ul>
         </li>
       #end
-      
-        <li><div class="menuheader">PrimeKey PKI References</div>
-          <ul>
-	      	<li>
-	        	<a href="https://www.primekey.com/products/software/signserver-enterprise/" target="signserver">
-	            	SignServer
-	            </a>
-          	  </li>
-          	<li>
-            	<a href="https://www.primekey.com/" target="primekey">
-            		PrimeKey Main Site
-            	</a>
-            </li>
-          </ul>
-        </li>
-
+     
       </ul>
     </div>
  	
@@ -225,16 +210,7 @@
 	      	<a href="//www.ejbca.org/"><img src="$relativePath/images/banner_ejbca-public.png" alt="EJBCA - Open Source PKI Certificate Authority" border="0"></a>
       	</td>
       	<td style="text-align:right">
-    	  	<div class="searchcaption">
-			Search ejbca.org on Google:<br>
-			<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.org'" action="https://www.google.com/search" method="get">
-				<input name="q" type="hidden">
-				<div style="height: 18px; white-space: nowrap;">
-				<input name="query" id="searchBox" maxlength="255">
-				<input type="submit" value="Google">
-				</div>
-			</form>
-      		</div>
+    	  	
       	</td>
         <td></td>
 		</tr>

@@ -102,35 +102,11 @@
     #end
 #end
 
-#macro (minitoc $root)
-#if ($root.getChild("body").getChildren("section").size() > 0)
- #set ($sections = $root.getChild("body").getChildren("section"))
- <div id="minitoc-area">
- <ul class="minitoc">
- #foreach ( $section in $sections )
- #if ($section.getAttributeValue("name")!="")
-   <li><a href="#$escape.getText($section.getAttributeValue("name"))">$section.getAttributeValue("name")</a></li>
-   #set ($subsections = $section.getChildren("subsection"))
-   #if ($subsections.size() > 0)
-	 <ul class="minitoc">
-	 #foreach ( $subsection in $subsections )
-	   <li><a href="#$escape.getText($subsection.getAttributeValue("name"))">$subsection.getAttributeValue("name")</a></li>
-	 #end
-	 </ul>
-   #end 
- #end  
- #end
- </ul>
- </div>
-#end
-#end
-
 #macro (document)
   #header()
   <div class="main">
   <div class="content">
     <!-- <h1 class="title">$root.getChild("properties").getChild("title").getText()</h1> -->
-    #minitoc ($root)
   #set ($allSections = $root.getChild("body").getChildren("section"))
   #foreach ( $section in $allSections )
     #section ($section)
