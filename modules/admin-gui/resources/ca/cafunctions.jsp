@@ -160,7 +160,7 @@ function getPasswordAndSubmit(formname) {
   	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
 <% // Import CRLs of external CAs
-  	 List<String> extCaNameList = new ArrayList<>(extcanames.keySet());
+  	 List<String> extCaNameList = new ArrayList<String>(extcanames.keySet());
 	 if(extCaNameList.size() > 0) {
   		 %>
   	 
