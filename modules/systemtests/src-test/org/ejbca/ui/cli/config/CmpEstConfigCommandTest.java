@@ -88,10 +88,13 @@ public class CmpEstConfigCommandTest {
             // We can't get to the output of this command to verify, because it prints with LOG.info
             assertEquals("Dump alias command should have returned failure when alias does not exist: ", CommandResult.FUNCTIONAL_FAILURE.getReturnCode(), dumpResult.getReturnCode());
 
-            String[] updateArgs = new String[] { newAliasName, "foo", "bar" };
+            boolean allowSameKey = estConfiguration.getKurAllowSameKey(newAliasName);
+            String[] updateArgs = new String[] { newAliasName, "allowupdatewithsamekey", String.valueOf(!allowSameKey) };
             CommandResult updateResult = new org.ejbca.ui.cli.config.est.UpdateCommand().execute(updateArgs);
             // We can't get to the output of this command to verify, because it prints with LOG.info
+            estConfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             assertEquals("Update command didn't return successs: ", CommandResult.SUCCESS.getReturnCode(), updateResult.getReturnCode());
+            assertEquals("Update command didn't change allowupdatewithsamekey", !allowSameKey, estConfiguration.getKurAllowSameKey(newAliasName));
         } finally {
             String[] removeAliasArgs = new String[] { newAliasName };
             CommandResult removeResult = new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute(removeAliasArgs);
