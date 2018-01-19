@@ -1402,7 +1402,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             if (addExtendedRevokedExtension) { 
                 // id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
-                final ASN1ObjectIdentifier extendedRevokedOID = new ASN1ObjectIdentifier(OCSPObjectIdentifiers.id_pkix_ocsp + ".9");
+                final ASN1ObjectIdentifier extendedRevokedOID = OCSPObjectIdentifiers.id_pkix_ocsp_extended_revoke;
                 try {
                     responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
                 } catch (IOException e) {
