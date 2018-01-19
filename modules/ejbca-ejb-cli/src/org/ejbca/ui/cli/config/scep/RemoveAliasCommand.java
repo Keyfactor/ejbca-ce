@@ -64,7 +64,7 @@ public class RemoveAliasCommand extends BaseScepConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return " Removes a SCEP configuration alias.";
+        return "Removes a SCEP configuration alias.";
     }
 
     @Override

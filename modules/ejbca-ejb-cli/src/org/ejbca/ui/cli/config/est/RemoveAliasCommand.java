@@ -64,7 +64,7 @@ public class RemoveAliasCommand extends BaseEstConfigCommand {
 
     @Override
     public String getCommandDescription() {
-        return " Removes a EST configuration alias.";
+        return "Removes an EST configuration alias.";
     }
 
     @Override
