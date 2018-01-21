@@ -168,6 +168,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.internal.ArrayComparisonFailure;
@@ -213,30 +214,61 @@ public abstract class CmpTestCase extends CaTestCase {
         super.setUp();
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
-        if (this.certProfileSession.getCertificateProfile(CP_DN_OVERRIDE_NAME) == null) {
-            final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            cp.setAllowDNOverride(true);
-            try {
-                this.certProfileSession.addCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-            } catch (CertificateProfileExistsException e) {
-                log.error(e.getMessage(), e);
-                fail(e.getMessage());
-            }
+        this.cpDnOverrideId = addCertificateProfile(CP_DN_OVERRIDE_NAME);
+        this.eepDnOverrideId = addEndEntityProfile(EEP_DN_OVERRIDE_NAME, this.cpDnOverrideId);
+    } 
+    
+    /**
+     * Adds a certificate profile for end entities and sets {@link CertificateProfile#setAllowDNOverride(boolean)} to true.
+     * 
+     * @param name the name.
+     * @return the id of the newly created certificate profile.
+     */
+    protected final int addCertificateProfile(final String name) {
+        assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
+        final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        result.setAllowDNOverride(true);
+        int id = -1;
+        try {
+            this.certProfileSession.addCertificateProfile(ADMIN, name, result);
+            id = this.certProfileSession.getCertificateProfileId(name);
+            log.info("Certificate profile '" + name + "' and id " + id + " created.");
+        } catch (AuthorizationDeniedException | CertificateProfileExistsException e) {
+            log.error(e.getMessage(), e);
+            fail(e.getMessage());
         }
-        this.cpDnOverrideId = this.certProfileSession.getCertificateProfileId(CP_DN_OVERRIDE_NAME);
-        if (this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME) == null) {
-            // Create profile that is just using CP_DN_OVERRIDE_NAME
-            final EndEntityProfile eep = new EndEntityProfile(true);
-            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + this.cpDnOverrideId);
-            try {
-                this.endEntityProfileSession.addEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
-            } catch (EndEntityProfileExistsException e) {
-                log.error(e.getMessage(), e);
-                fail(e.getMessage());
-            }
-        }
-        this.eepDnOverrideId = this.endEntityProfileSession.getEndEntityProfileId(EEP_DN_OVERRIDE_NAME);
+        return id;
     }
+    
+    /**
+     * Adds a certificate profile and sets {@link CertificateProfile#setAllowDNOverride(boolean)} to true.
+     * 
+     * @param name the name of the certificate profile.
+     * @return the ID of the newly created certificate profile.
+     */
+    /**
+     * Adds an end entity profile and links it with the default certificate profile for test {@link EndEntityProfile#setDefaultCertificateProfile(int)}.
+     * 
+     * @param name the name of the end entity profile.
+     * @param certificateProfileId the default certificate profiles ID.
+     * @return the ID of the newly created end entity profile. 
+     */
+    protected final int addEndEntityProfile(final String name, final int certificateProfileId) {
+        assertTrue("End entity profile with name " + name + " already exists. Clear test data first.", this.endEntityProfileSession.getEndEntityProfile(name)  == null);
+        // Create profile that is just using CP_DN_OVERRIDE_NAME
+        final EndEntityProfile result = new EndEntityProfile(true);
+        result.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
+        int id = 0;
+        try {
+            this.endEntityProfileSession.addEndEntityProfile(ADMIN,name, result);
+            id = this.endEntityProfileSession.getEndEntityProfileId(name);
+        } catch (AuthorizationDeniedException | EndEntityProfileExistsException | EndEntityProfileNotFoundException e) {
+            log.error(e.getMessage(), e);
+            fail(e.getMessage());
+        }
+        return id;
+    }
+    
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -258,6 +290,17 @@ public abstract class CmpTestCase extends CaTestCase {
             throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
         return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+    }
+    
+    public static PKIMessage genCertReqAssertNotNull(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID)
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        final PKIMessage result = genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+        log.debug("Created CMRF with userDN: "+ userDN);
+        assertNotNull("Generating CrmfRequest failed.", result);
+        return result;
     }
 
     protected static PKIMessage genCertReq(String issuerDN, X500Name userDN, X500Name senderDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
@@ -923,19 +966,22 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     /**
-     * Normally not overrided. Could be overrided if DN in cert is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}.
+     * Normally not overridden. Could be overridden if DN in certificate is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}.
      * 
-     * @param expected
-     * @param actual
-     * @throws IOException 
-     * @throws ArrayComparisonFailure 
+     * @param userDn the users subject DN.
+     * @param certificateDn the certificates subject DN.
+     * @throws IOException any IOException.
+     * @throws ArrayComparisonFailure any ArrayComparisonFailure.
      */
-    @SuppressWarnings("static-method")
-    protected void checkDN(X500Name expected, X500Name actual) throws ArrayComparisonFailure, IOException {
-        assertArrayEquals("Was '"+actual+"' expected '"+expected+"'.", expected.getEncoded(), actual.getEncoded() );
+    protected void checkDnIncludingAttributeOrder(final X500Name userDn, final X500Name certificateDn) throws ArrayComparisonFailure, IOException {
+        assertArrayEquals("User DN '" + userDn + "' was given, but certificate DN is '" + certificateDn + "'.", userDn.getEncoded(), certificateDn.getEncoded());
     }
 
     protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
+        return checkCmpCertRepMessage(userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
+    }
+    
+    protected X509Certificate checkCmpCertRepMessage(X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
         // Parse response message
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
@@ -952,26 +998,30 @@ public abstract class CmpTestCase extends CaTestCase {
         // Verify response status
         final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
         assertNotNull(pkiStatusInfo);
-        assertEquals(ResponseStatus.SUCCESS.getValue(), pkiStatusInfo.getStatus().intValue());
-        // Verify response certificate
-        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-        assertNotNull(certifiedKeyPair);
-        final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
-        assertNotNull(certOrEncCert);
-        final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
-        assertNotNull(cmpCertificate);
-        final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
-        checkDN(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
-        assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
-        // Verify the issuer of cert
-        final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
-        final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-        assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
-        assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
-        return leafCertificate;
+        assertEquals("Expected PKI response status " + responseStatus, responseStatus, pkiStatusInfo.getStatus().intValue());
+        if (ResponseStatus.FAILURE.getValue() != responseStatus) {
+            // Verify response certificate
+            final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+            assertNotNull(certifiedKeyPair);
+            final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+            assertNotNull(certOrEncCert);
+            final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
+            assertNotNull(cmpCertificate);
+            final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+            checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
+            assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
+            // Verify the issuer of cert
+            final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
+            final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+            assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+            assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+            assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+            return leafCertificate;
+        } else {
+            return null;
+        }
     }
-    
+        
     protected X509Certificate checkKurCertRepMessage(X500Name eeDN, X509Certificate issuerCert, byte[] pkiMessageBytes, int requestId)
             throws CertificateParsingException, CertPathValidatorException {
         // Parse response message
@@ -1153,7 +1203,7 @@ public abstract class CmpTestCase extends CaTestCase {
             this.endEntityManagementSession.addUser(ADMIN, user, false);
             log.debug("created user: " + username);
         } catch (EndEntityExistsException e) {
-            log.debug("User " + username + " already exists. Setting the user status to NEW");
+            log.debug("User " + username + " could not be created because it may exist(" + e.getMessage() + "). Try to setting the user status to NEW.", e);
             this.endEntityManagementSession.changeUser(ADMIN, user, false);
             this.endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
