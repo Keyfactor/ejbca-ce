@@ -987,36 +987,40 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(pkiMessage);
         // Verify body type
         final PKIBody pkiBody = pkiMessage.getBody();
-        final int tag = pkiBody.getType();
-        assertEquals(PKIBody.TYPE_INIT_REP, tag);
+//        final int tag = pkiBody.getType();
+//        assertEquals(PKIBody.TYPE_INIT_REP, tag);
         // Verify the response
-        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-        assertNotNull(certRepMessage);
-        final CertResponse certResponse = certRepMessage.getResponse()[0];
-        assertNotNull(certResponse);
-        assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
-        // Verify response status
-        final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
-        assertNotNull(pkiStatusInfo);
-        assertEquals("Expected PKI response status " + responseStatus, responseStatus, pkiStatusInfo.getStatus().intValue());
-        if (ResponseStatus.FAILURE.getValue() != responseStatus) {
-            // Verify response certificate
-            final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-            assertNotNull(certifiedKeyPair);
-            final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
-            assertNotNull(certOrEncCert);
-            final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
-            assertNotNull(cmpCertificate);
-            final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
-            checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
-            assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
-            // Verify the issuer of cert
-            final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
-            final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-            assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-            assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
-            assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
-            return leafCertificate;
+        if (pkiBody.getContent() instanceof CertRepMessage) {
+            final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+            assertNotNull(certRepMessage);
+            final CertResponse certResponse = certRepMessage.getResponse()[0];
+            assertNotNull(certResponse);
+            assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
+            // Verify response status
+            final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
+            assertNotNull(pkiStatusInfo);
+            assertEquals("Expected PKI response status " + responseStatus, responseStatus, pkiStatusInfo.getStatus().intValue());
+            if (ResponseStatus.FAILURE.getValue() != responseStatus) {
+                // Verify response certificate
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                assertNotNull(certifiedKeyPair);
+                final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+                assertNotNull(certOrEncCert);
+                final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
+                assertNotNull(cmpCertificate);
+                final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+                checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
+                assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
+                // Verify the issuer of cert
+                final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
+                final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+                assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+                return leafCertificate;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
