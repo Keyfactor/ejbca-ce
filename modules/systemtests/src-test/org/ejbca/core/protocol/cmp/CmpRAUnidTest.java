@@ -185,7 +185,7 @@ public class CmpRAUnidTest extends CmpTestCase {
     }
 
     @Override
-    protected void checkDN(X500Name expected, X500Name actual) {
+    protected void checkDnIncludingAttributeOrder(X500Name expected, X500Name actual) {
         final ASN1ObjectIdentifier[] expectedOIDs = expected.getAttributeTypes();
         final ASN1ObjectIdentifier[] actualOIDs = actual.getAttributeTypes();
         assertEquals("Not the expected number of elements in the created certificate.", expectedOIDs.length, actualOIDs.length);
