@@ -169,7 +169,29 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         }
         this.extendedUserDataHandler = extendedUserDataHandler;         
     }
-
+    
+    /**
+     * Gets the end entity with that subject DN either 
+     * - by extracting the username by a DN component ({@link CmpConfiguration#getExtractUsernameComponent(String)}
+     * - or by matching its DN exactly.
+     * 
+     * @param dn the end entities DN (must match exactly).
+     * @return the end entity with that subject DN.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     */
+    private EndEntityInformation getEndEntityFromCertReqRequest(final String dn) throws AuthorizationDeniedException {
+        String username = getUsernameByDnComponent(dn);
+        final EndEntityInformation result;
+        if (StringUtils.isEmpty(username)) {
+            // ECA-6435 Overwrite the EE DN with the request DN fails here, independent from CertificateProile.setAllowDnOverride, 
+            // if the request DN does not contain the VCs DN component to extract, but fails anyway (see VendorAuthenticationTest.test3GPPModeWithUserFromVendorCertUIDOrRequestFullDN()).
+            result = getEndEntityByDn(dn);
+        } else {
+            result = endEntityAccessSession.findUser(admin, username);
+        }
+        return result;
+    }
+    
     @Override
 	public ResponseMessage handleMessage(final BaseCmpMessage cmpRequestMessage, final boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
@@ -190,27 +212,20 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-			        String username = getUsername(dn);
-					final EndEntityInformation endEntityInformation;
-					if (StringUtils.isEmpty(username)) {
-					    // We did not find any username by extracting "username DN component" from the request DN, see if we have a user 
-					    // registered with this DN
-					    endEntityInformation = getUserDataByDN(dn);
-					} else {
-					    endEntityInformation = endEntityAccessSession.findUser(admin, username);
-					}
-
+					
+					// We did not find any username by extracting "username DN component" from the request DN, see if we have a user 
+                    // registered with this DN
+					final EndEntityInformation endEntityInformation = getEndEntityFromCertReqRequest(dn);
 					if (endEntityInformation != null) {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("Found username: "+endEntityInformation.getUsername());
 						}
-						crmfreq.setUsername(endEntityInformation.getUsername());
-                        username = endEntityInformation.getUsername(); // we may have found if from the DN above
-						
+						final String username = endEntityInformation.getUsername();
+						crmfreq.setUsername(username);
 						final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(null, this.confAlias, admin, caSession, 
 						                endEntityAccessSession, certStoreSession, authorizationSession, endEntityProfileSession, certificateProfileSession,
 						                authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
-						ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(),  username,  authenticated);
+						final ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(crmfreq.getPKIMessage(), username,  authenticated);
 						if(authenticationModule == null) {
 						    String errmsg = messageVerifyer.getErrorMessage();
 						    LOG.info(errmsg);
@@ -630,7 +645,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 
 	}
 
-    private EndEntityInformation getUserDataByDN(String dn) throws AuthorizationDeniedException {
+    private EndEntityInformation getEndEntityByDn(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation endEntityInformation = null;
 	    if (LOG.isDebugEnabled()) {
 	        LOG.debug("looking for user with dn: "+dn);
@@ -645,7 +660,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         return endEntityInformation;
 	}
 	
-	private String getUsername(String dn) {
+	private String getUsernameByDnComponent(String dn) {
         final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
         if (LOG.isDebugEnabled()) {
             LOG.debug("extractUsernameComponent: "+usernameComp);
