@@ -406,8 +406,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             // Check if this certificate belongs to the user
             if ( (username != null) && (extraCertUsername != null) ) {
+                if (!cmpConfiguration.getRAMode(this.confAlias) && cmpConfiguration.getVendorMode(this.confAlias)) {
+                    final String postfix = cmpConfiguration.getRANameGenPostfix(this.confAlias);
+                    if (StringUtils.isNotBlank( cmpConfiguration.getRANameGenPostfix(this.confAlias))) {
+                        log.info("Attached RA name postfix '" + postfix + "' to username '" + username + "' in CMP vendor mode.");
+                        extraCertUsername += postfix;
+                    }
+                }
                 if (!StringUtils.equals(username, extraCertUsername)) {
-                    this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'";
+                    this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"' -> '" + extraCertUsername + "'.";
                     if(log.isDebugEnabled()) {
                         // Use a different debug message, as not to reveal too much information
                         log.debug(this.errorMessage + ", but to user '"+extraCertUsername+"'");
