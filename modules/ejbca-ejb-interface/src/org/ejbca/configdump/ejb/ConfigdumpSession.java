@@ -25,6 +25,6 @@ public interface ConfigdumpSession {
     
     static final String CONFIGDUMP_MODULE = "configdump-ejb";
     
-    void performExport() throws ConfigdumpException, IOException;
+    void performExport(final String location) throws ConfigdumpException, IOException;
 
 }
