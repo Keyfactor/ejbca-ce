@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.ConfigurationBase;
 
 
@@ -60,8 +62,8 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     // Default values
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
     private static final String DEFAULT_DEFAULTCA = "";
-    public static final String DEFAULT_EEPROFILE = "1";
-    private static final String DEFAULT_CERTPROFILE = "ENDUSER";
+    public static final String DEFAULT_EEPROFILE = String.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+    private static final String DEFAULT_CERTPROFILE = String.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     private static final String DEFAULT_REQCERT = "true";
     private static final String DEFAULT_REQUSERNAME = "";
     private static final String DEFAULT_REQPASSWORD = "";
@@ -124,32 +126,53 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         return keys;
     }
 
-    /** Method used by the Admin GUI. */
-    public String getDefaultCA(String alias) {
+    /**
+     * @param alias the EST alias to get value from
+     * @return CA ID in String format, String format to be backwards compatible with EJBCA 6.11 when it was stored as CA Name instead of ID
+     */
+    public String getDefaultCAID(String alias) {
         String key = alias + "." + CONFIG_DEFAULTCA;
         return getValue(key, alias);
     }
-    public void setDefaultCA(String alias, String defCA) {
+    public void setDefaultCAID(String alias, int defaultCAID) {
         String key = alias + "." + CONFIG_DEFAULTCA;
-        setValue(key, defCA, alias);
+        setValue(key, String.valueOf(defaultCAID), alias);
     }
 
-    public String getCertProfile(String alias) {
+    /**
+     * @param alias the EST alias to get value from
+     * @return Certificate Profile ID in String format, String format to be backwards compatible with EJBCA 6.11 when it was stored as CP Name instead of ID
+     */
+    public String getCertProfileID(String alias) {
         String key = alias + "." + CONFIG_CERTPROFILE;
         return getValue(key, alias);
     }
-    public void setCertProfile(String alias, String cp) {
+    /**
+     * @param alias the EST alias to edit
+     * @param cprofileID Certificate Profile ID
+     */
+    public void setCertProfileID(String alias, int cprofileID) {
         String key = alias + "." + CONFIG_CERTPROFILE;
-        setValue(key, cp, alias);
+        setValue(key, String.valueOf(cprofileID), alias);
     }
 
-    public String getEndEntityProfile(String alias) {
+    public int getEndEntityProfileID(String alias) {
         String key = alias + "." + CONFIG_EEPROFILE;
-        return getValue(key, alias);
+        try {
+            Integer id = Integer.valueOf(getValue(key, alias));
+            return id;
+        } catch (NumberFormatException e) {
+            log.error("Invalid End Entity Profile ID stored in EST alias, returning 0: "+alias, e);
+            return 0;
+        }
     }
-    public void setEndEntityProfile(String alias, String eep) {
+    /**
+     * @param alias the EST alias to edit
+     * @param eeprofileID End Entity Profile ID
+     */
+    public void setEndEntityProfileID(String alias, int eeprofileID) {
         String key = alias + "." + CONFIG_EEPROFILE;
-        setValue(key, eep, alias);
+        setValue(key, String.valueOf(eeprofileID), alias);
     }
 
     /**

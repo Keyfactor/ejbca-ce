@@ -1,4 +1,4 @@
-<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants, org.apache.commons.lang.math.NumberUtils"%>
 <%
    java.util.Map<String, Integer> canames = ejbcawebbean.getCANames();
    java.util.TreeMap<String, Integer> vendorcas = ejbcawebbean.getVendorCAOptions();
@@ -61,19 +61,27 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <select name="<%=LIST_ESTDEFAULTCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-           <%  String currentCA = estConfigClone.getDefaultCA(alias); %>
-           <option <% if(currentCA.equals("")) { %> selected <% } %>
+           <%  String currentCAID = estConfigClone.getDefaultCAID(alias); 
+          	 // If we had the old type, EJBCA 6.11 of CA, which is the name, convert it to ID
+          	 if (!NumberUtils.isNumber(currentCAID)) {
+          	     if (canames.get(currentCAID) != null) {
+          	         currentCAID = String.valueOf(canames.get(currentCAID));
+          	     }
+          	 }
+           %>
+           <option <% if(currentCAID.equals("")) { %> selected <% } %>
                  	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"ESTDEFAULTCA_DISABLED\") %>"/></option>
            <%         	  
            	for( String caname : canames.keySet() ) {
-           %>     <option <% if(currentCA.equals(caname)) { %> selected <% } %>
-                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
+           	      final Integer caid = canames.get(caname);
+           %>     <option <% if(currentCAID.equals(String.valueOf(caid))) { %> selected <% } %>
+                  value='<c:out value="<%= caid%>"/>'><c:out value="<%= caname %>"/></option> 
            <% } %>
         </select>
       </td>
     </tr>
     
-    <% String ceep = null; %>
+    <% String currentEndEntityProfileId = null; %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"ESTEEPROFILE\") %>"/>
@@ -82,8 +90,7 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_ESTEEPROFILES %>" onchange="reload()" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
-          <% String currentEndEntityProfileId = estConfigClone.getEndEntityProfile(alias); %>
-          <% ceep = currentEndEntityProfileId; %>
+          <% currentEndEntityProfileId = String.valueOf(estConfigClone.getEndEntityProfileID(alias)); %>
           <% boolean eepselected = false; %>
           <% 
           	Map<String, String> nameToIdMap = ejbcawebbean.getAuthorizedEEProfilesAndIdsNoKeyId(AccessRulesConstants.CREATE_END_ENTITY);
@@ -112,13 +119,19 @@ function checkallfields() {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_ESTCERTPROFILES %>" <% if(!authorizedToEdit) { out.write("disabled"); } %>>
-          <% String defcp = estConfigClone.getCertProfile(alias); %>
-          <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="<%= ejbcawebbean.getText(\"CMPRA_PROFILEDEFAULT\") %>"/></option>
-          <% 
-          	if(ceep != null) {
-            	for(String cp : ejbcawebbean.getCertificateProfilesNoKeyId(ceep)) {  %>
-            		<option <% if(cp.equals(defcp)){ %> selected <% } %>
-                  		value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
+          <% String defcpid = estConfigClone.getCertProfileID(alias);           
+          	 Map<String, String> certificateProfiles = ejbcawebbean.getCertificateProfilesNoKeyId(currentEndEntityProfileId);
+          	 // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
+          	 if (!NumberUtils.isNumber(defcpid)) {
+          	     if (certificateProfiles.get(defcpid) != null) {
+          	         defcpid = certificateProfiles.get(defcpid);
+          	     }
+          	 }
+           	 if(currentEndEntityProfileId != null) {
+		        for (String cpname : certificateProfiles.keySet()) { 
+		           final String cpid = certificateProfiles.get(cpname); %>
+            		<option <% if(cpid.equals(defcpid)){ %> selected <% } %>
+                  		value='<c:out value="<%= cpid%>"/>'><c:out value="<%= cpname %>"/></option>
           <% 	} 
              }%>
         </select>
