@@ -323,7 +323,7 @@ qwe.pem: revoked
 <subsection name="Enabling Nonce Extension On CAs">
 <p>
 The OCSP nonce extension can be disabled both per OCSP Keybinding, and also globally for all CAs acting as their own OCSP responders. Disabling 
-nonces globally will not affect whether OCSP keybindings use the nonse extension in their responses. 
+nonces globally will not affect whether OCSP keybindings use the nonce extension in their responses. 
 </p>
 </subsection>
 
