@@ -69,9 +69,9 @@ public class EcaQa78_SuperAdminAccess extends WebTestBase {
         
         try {
             assertEquals("Unexpected header at 'Edit Access Rules' page","Administrator Role : Super Administrator Role", webDriver.findElement(By.xpath("//h2")).getText());
-            assertEquals("", "Back to Administrator Roles", webDriver.findElement(By.xpath("//a[@href='roles.xhtml']")).getText());
-            assertEquals("", "Members", webDriver.findElement(By.xpath("//a[@href='rolemembers.xhtml?roleId=1']")).getText());
-            assertEquals("", "Advanced Mode", webDriver.findElement(By.xpath("//a[@href='accessrules.xhtml?roleId=1&advanced=true']")).getText());
+            assertEquals("Unexpected link text", "Back to Administrator Roles", webDriver.findElement(By.xpath("//a[@href='roles.xhtml']")).getText());
+            assertEquals("Unexpected link text", "Members", webDriver.findElement(By.xpath("//a[@href='rolemembers.xhtml?roleId=1']")).getText());
+            assertEquals("Unexpected link text", "Advanced Mode", webDriver.findElement(By.xpath("//a[@href='accessrules.xhtml?roleId=1&advanced=true']")).getText());
             webDriver.findElement(By.xpath("//input[@value='Save']"));
         } catch (NoSuchElementException e) {
             fail("Could not locate item on page 'Edit Access Rules': " + e.getMessage());
