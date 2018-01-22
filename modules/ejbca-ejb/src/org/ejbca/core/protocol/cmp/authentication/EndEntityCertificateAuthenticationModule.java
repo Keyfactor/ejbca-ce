@@ -414,7 +414,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     }
                 }
                 if (!StringUtils.equals(username, extraCertUsername)) {
-                    this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"' -> '" + extraCertUsername + "'.";
+                    this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'";
                     if(log.isDebugEnabled()) {
                         // Use a different debug message, as not to reveal too much information
                         log.debug(this.errorMessage + ", but to user '"+extraCertUsername+"'");
