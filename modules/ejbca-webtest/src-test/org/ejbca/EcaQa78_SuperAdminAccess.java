@@ -28,7 +28,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
+ * 
+ * This test verifies the role template and access rules of Super Administrator template. In order to run the test, a Firefox profile
+ * containing a superadmin certificate as first selection is required. The profile name can either be specified in /conf/profiles.properties
+ * or a new Firefox profile can be created with the name 'superadmin'.
+ * 
  * @version $Id$
+ * 
  */
 public class EcaQa78_SuperAdminAccess extends WebTestBase {
     
