@@ -626,4 +626,13 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         }
         return changed;
     }
+
+    @Override
+    public List<ApprovalStep> getStepList() {
+        final List<ApprovalStep> approvalSteps = new ArrayList<>();
+        for (ApprovalStep step = getFirstStep(); step != null; step = getStep(step.getNextStep())) {
+            approvalSteps.add(step);
+        }
+        return approvalSteps;
+    }
 }
