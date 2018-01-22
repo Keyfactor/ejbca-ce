@@ -300,12 +300,4 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
     public boolean isPropertyPredefined(int stepIdentifier, int partitionIdentifier, String propertyName) {
         return super.isPropertyPredefined(stepIdentifier, partitionIdentifier, propertyName) || predefinedProperties.contains(propertyName);
     }
-
-    public List<ApprovalStep> getStepList() {
-        final List<ApprovalStep> approvalSteps = new ArrayList<>();
-        for (ApprovalStep step = getFirstStep(); step != null; step = getStep(step.getNextStep())) {
-            approvalSteps.add(step);
-        }
-        return approvalSteps;
-    }
 }
