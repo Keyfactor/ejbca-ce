@@ -185,7 +185,7 @@ The only write access needed to the database is the VA Publisher configured on t
 
 <section name="Monitoring and healthcheck">
 <p>
-When OcspKeyBindings are used to respond to OCSP requests, the regular EJBA health-check will monitor that all marked as ACTIVE can be used to sign OCSP requests.
+When OcspKeyBindings are used to respond to OCSP requests, the regular EJBCA health-check will monitor that all marked as ACTIVE can be used to sign OCSP requests.
 </p>
 </section>
 
