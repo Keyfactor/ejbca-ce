@@ -419,7 +419,7 @@ function confirmrevocation(){
         <div align="center">
           <input type="button" name="<%=BUTTON_SELECTALL %>" value='<c:out value="<%= ejbcawebbean.getText(\"SELECTALL\") %>"/>'
                 onClick='checkAll("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>)'>
-          <input type="button" name="<%=BUTTON_DESELECTALL %>" value='<c:out value="<%= ejbcawebbean.getText(\"UNSELECTALL\") %>"/>'
+          <input type="button" name="<%=BUTTON_DESELECTALL %>" value='<c:out value="<%= ejbcawebbean.getText(\"DESELECTALL\") %>"/>'
                 onClick='uncheckAll("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>)'>
           <input type="button" name="<%=BUTTON_INVERTSELECTION %>" value='<c:out value="<%= ejbcawebbean.getText(\"INVERTSELECTION\") %>"/>'
                  onClick='switchAll("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>)'>
