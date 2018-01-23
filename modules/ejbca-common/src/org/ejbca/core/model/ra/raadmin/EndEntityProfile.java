@@ -742,7 +742,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final String str = getValue(DEFAULTCA,0);
     	if (str != null && !StringUtils.isEmpty(str)) {
     		ret = Integer.valueOf(str);
-    		if (ret == 1) {
+    		if (ret == CAConstants.ALLCAS) {
     		    return -1;
     		}
     	}
@@ -750,7 +750,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public void setDefaultCA(final int caId) {
-        // Might get set to 1 if the CA Id is missing, and the code tries to take the first available CA (which can be "all cas" or 1)
+        // Might get called with caId=1 (CAConstants.ALLCAS) if the CA Id is missing, and the code tries to take the first available CA (which can be "All CAs" or 1)
         setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(caId == CAConstants.ALLCAS ? -1 : caId));
     }
     
