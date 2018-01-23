@@ -41,7 +41,7 @@ public abstract class WebTestBase {
     private static WebDriverWait webDriverWait;
 
     /**
-     * Sets up firefox driver and firefox profile is certificate is required
+     * Sets up firefox driver and firefox profile if certificate is required
      * @param requireCert if certificate is required
      * @param profile browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
