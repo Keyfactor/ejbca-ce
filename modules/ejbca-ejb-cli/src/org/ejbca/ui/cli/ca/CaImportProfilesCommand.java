@@ -271,7 +271,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         }
                                         //getLogger().debug("New - AVAILCAS " + availableCAs + " DEFAULTCA "+defaultCA);
                                         eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
-                                        eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
+                                        eprofile.setDefaultCA(Integer.parseInt(defaultCA));
                                         try {
                                             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(
                                                     getAuthenticationToken(), profileid, profilename, eprofile);

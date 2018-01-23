@@ -1386,7 +1386,7 @@ public class RAInterfaceBean implements Serializable {
                 log.warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
             }
             eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
-            eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
+            eprofile.setDefaultCA(Integer.parseInt(defaultCA));
         } finally {
             try {
                 is.close();
