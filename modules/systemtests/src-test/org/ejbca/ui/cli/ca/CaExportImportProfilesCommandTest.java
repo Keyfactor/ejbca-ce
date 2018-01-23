@@ -146,7 +146,7 @@ public class CaExportImportProfilesCommandTest {
             assertEquals("There should only be one (ANYCA) available CA in the profile: " + availcas, 1, availcas.size());
             assertFalse("CA "+caid+" should not exist", availcas.contains(Integer.toString(caid)));
             assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
-            assertEquals("DefaultCA should not be our test CA", SecConst.ALLCAS, prof.getDefaultCA());
+            assertEquals("DefaultCA should not be our test CA", -1, prof.getDefaultCA()); // -1 means that the default CA is not set
         } finally {
             eeProfileSession.removeEndEntityProfile(admin, profilename);
             caSession.removeCA(admin, caid);
