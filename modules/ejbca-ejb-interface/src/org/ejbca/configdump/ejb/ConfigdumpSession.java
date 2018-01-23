@@ -14,6 +14,7 @@ package org.ejbca.configdump.ejb;
 
 import java.io.IOException;
 
+import org.ejbca.configdump.ConfigDumpSetting;
 import org.ejbca.configdump.ConfigdumpException;
 
 /**
@@ -25,6 +26,6 @@ public interface ConfigdumpSession {
     
     static final String CONFIGDUMP_MODULE = "configdump-ejb";
     
-    void performExport(final String location) throws ConfigdumpException, IOException;
+    void performExport(final ConfigDumpSetting setting) throws ConfigdumpException, IOException;
 
 }
