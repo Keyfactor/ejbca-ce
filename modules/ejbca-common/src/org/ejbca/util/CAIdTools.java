@@ -117,7 +117,7 @@ public final class CAIdTools {
         }
         
         if (endEntityProfile.getDefaultCA() == fromId) {
-            endEntityProfile.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(toId));
+            endEntityProfile.setDefaultCA(toId);
             changed = true;
         }
         
