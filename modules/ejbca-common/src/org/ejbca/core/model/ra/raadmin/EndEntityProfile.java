@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -741,12 +742,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final String str = getValue(DEFAULTCA,0);
     	if (str != null && !StringUtils.isEmpty(str)) {
     		ret = Integer.valueOf(str);
+    		if (ret == 1) {
+    		    return -1;
+    		}
     	}
         return ret;
     }
     
     public void setDefaultCA(final int caId) {
-        setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(caId));
+        // Might get set to 1 if the CA Id is missing, and the code tries to take the first available CA (which can be "all cas" or 1)
+        setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(caId == CAConstants.ALLCAS ? -1 : caId));
     }
     
     /** 
