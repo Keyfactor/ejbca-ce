@@ -98,14 +98,18 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 
 	public String list() {
 		Query query = new Query(Query.TYPE_APPROVALQUERY);
-		if(selectedStatus.equals(ALL_STATUSES)){			
+		if (selectedStatus.equals(ALL_STATUSES)){			
 			query.add(getStartDate(), new Date());			
-		}else if(selectedStatus.equals(Integer.toString(ApprovalDataVO.STATUS_EXPIRED))) {
-		    //Expired requests will be set as Waiting in the database. 
+		} else if (selectedStatus.equals(Integer.toString(ApprovalDataVO.STATUS_EXPIRED))) {
+		    //Expired requests will remain set as Waiting in the database. 
 		    query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), Query.CONNECTOR_AND);
 		    query.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date(), Query.CONNECTOR_AND);
             query.add(getStartDate(), new Date());
-		}else{	
+		} else if (selectedStatus.equals(Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL))) {
+		    query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), Query.CONNECTOR_ANDNOT);
+		    query.add(TimeMatch.MATCH_WITH_EXPIRETIME, null, new Date(), Query.CONNECTOR_AND);
+            query.add(getStartDate(), new Date());
+		} else {	
 			query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, selectedStatus, Query.CONNECTOR_AND);
 			query.add(getStartDate(), new Date());
 		}
