@@ -116,9 +116,11 @@ the OCSP signing End Entity in the newly created OcspKeyBinding and click "Issue
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
 <subsubsection name="Using VA Publisher (Enterprise feature only)">
+<note>Before renewing the OCSP signer, verify that a publisher (a Peer Publisher) is selected for the Certificate Profile used to issue the new OCPS signer certificate.</note>
 <ol>
 <li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
+<li>Go to AdminGUI of CA -> RA Functions -> Search End Entities. Enter username of user previously used to generate OCSP Certificate, Edit this End Entity and set status to New and a new enrollment code.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
