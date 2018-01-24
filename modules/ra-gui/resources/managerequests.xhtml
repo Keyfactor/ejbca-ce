@@ -89,13 +89,13 @@
                     
                     <h:panelGroup layout="block" styleClass="pure-control-group">
                         <h:outputLabel for="searchStartDate" value="#{msg.manage_requests_page_search_start_date}" styleClass="startDate"/>
-                        <h:inputText id="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10" styleClass="startDate"
+                        <h:inputText id="searchStartDate" value="#{raManageRequestsBean.customSearchStartDate}" size="10" title="YYYY-MM-dd" styleClass="jsTitleAsPlaceHolder startDate"
                                 validatorMessage="#{msg.manage_requests_page_search_invalid_start_date}">
                             <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
                         </h:inputText>
                         
                         <h:outputLabel for="searchEndDate" value="#{msg.manage_requests_page_search_end_date}" styleClass="endDate"/>
-                        <h:inputText id="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10" styleClass="endDate"
+                        <h:inputText id="searchEndDate" value="#{raManageRequestsBean.customSearchEndDate}" size="10" title="YYYY-MM-dd" styleClass="jsTitleAsPlaceHolder endDate"
                                 validatorMessage="#{msg.manage_requests_page_search_invalid_end_date}">
                             <f:validateRegex pattern="\s*([0-9]{4,4}-[0-9][0-9]-[0-9][0-9]\s*)?"/>
                         </h:inputText>
