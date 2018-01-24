@@ -237,7 +237,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     .append(PROPERTY_PORT).append(": \"").append(port).append("\"\n")
                     .append(PROPERTY_BASEDN).append(": \"").append(baseDN).append("\"\n")
                     .append(PROPERTY_LOGINDN).append(": \"").append(loginDN).append("\"\n")
-                    .append(PROPERTY_LOGINPASSWORD).append(": ").append(loginPassword.length()).append(" characters").append("\n")
+                    .append(PROPERTY_LOGINPASSWORD).append(": ").append("*").append("\n")
                     .append(PROPERTY_LOGCONNECTIONTESTS).append(": \"").append(logConnectionTests).append("\"\n")
                     .append(PROPERTY_CONNECTIONTIMEOUT).append(": \"").append(timeout).append("\"\n")
                     .append(PROPERTY_READTIMEOUT).append(": \"").append(readTimeout).append("\"\n")
