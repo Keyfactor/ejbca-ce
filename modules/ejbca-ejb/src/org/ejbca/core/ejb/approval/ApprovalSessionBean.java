@@ -425,6 +425,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 sb.append("expireDate >= ");
                 sb.append(new Date().getTime());
                 sb.append(" AND ");
+            } else if (includeExpired) {
+                sb.append("expireDate < ");
+                sb.append(new Date().getTime());
+                sb.append(" AND ");
             } else if (expiresBefore != null) {
                 // Only include expired requests
                 sb.append("expireDate < ");
@@ -456,7 +460,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         if (endDate != null) {
             sb.append(" AND requestDate < " + endDate.getTime()); 
         }
-        
         final List<ApprovalDataVO> ret = queryInternal(sb.toString(), index, numberofrows,
                 caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);

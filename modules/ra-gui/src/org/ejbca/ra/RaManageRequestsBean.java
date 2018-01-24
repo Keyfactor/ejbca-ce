@@ -180,6 +180,8 @@ public class RaManageRequestsBean implements Serializable {
                 guiInfos.add(approvalRequestGuiInfo);
             } else if (searchRequest.isSearchingHistorical() && !approvalRequestGuiInfo.isCanApprove()) {
                 guiInfos.add(approvalRequestGuiInfo);                
+            } else if (searchRequest.isSearchingExpired()) {
+                guiInfos.add(approvalRequestGuiInfo);
             }
         }
 
