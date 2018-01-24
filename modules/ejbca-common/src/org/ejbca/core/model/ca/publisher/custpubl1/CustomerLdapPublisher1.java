@@ -140,13 +140,11 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
     // Object classes
-    private static final String INETORGPERSON = "inetOrgPerson";
-    private static final String CRLDISTRIBUTIONPOINT = "cRLDistributionPoint";
-    private static final String ICAOEXTENDEDINFO = "icaoExtendedInfo";
-    private static final String TOP = "top";
-    private static final String LOGOBJECT = "logObject";   
-    private static final String[] DSC_OBJECTCLASSES = new String[] {INETORGPERSON, ICAOEXTENDEDINFO};
-    private static final String[] CRL_OBJECTCLASSES = new String[] {CRLDISTRIBUTIONPOINT, ICAOEXTENDEDINFO};
+    public static final String INETORGPERSON = "inetOrgPerson";
+    public static final String CRLDISTRIBUTIONPOINT = "cRLDistributionPoint";
+    public static final String ICAOEXTENDEDINFO = "icaoExtendedInfo";
+    public static final String TOP = "top";
+    private static final String LOGOBJECT = "logObject";
     private static final String[] LOG_OBJECTCLASSES = new String[] {TOP, LOGOBJECT};
  
     // Groups
@@ -169,6 +167,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     private static final String PROPERTY_READTIMEOUT = "readtimeout";
     private static final String PROPERTY_STORETIMEOUT = "storetimeout";
     private static final String PROPERTY_LOGCONNECTIONTESTS = "logconnectiontests";
+    private static final String PROPERTY_EXTENDEDINFOOBJECTCLASS = "extendedinfoobjectclass";
     
     // Default values
     public static final String DEFAULT_PORT = "389";
@@ -188,14 +187,19 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     private String loginDN;
     private String loginPassword;
     private boolean logConnectionTests;
-    
+    private String extendedInfoObjectClass;
     private int timeout;
+
 
     private LDAPConstraints ldapConnectionConstraints = new LDAPConstraints();
     private LDAPConstraints ldapBindConstraints = new LDAPConstraints();
     private LDAPConstraints ldapStoreConstraints = new LDAPConstraints();
     private LDAPConstraints ldapDisconnectConstraints = new LDAPConstraints();
     private LDAPSearchConstraints ldapSearchConstraints = new LDAPSearchConstraints();
+
+    //DSC and CRL object classes that may contain icaoextendedinfo or spocextendedinfo object classes
+    private String[] dscObjectClasses;
+    private String[] crlObjectClasses;
 
     /**
      * Called by CustomPublisherContainer to initialize a newly created instance
@@ -215,7 +219,10 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         this.timeout = Integer.parseInt(properties.getProperty(PROPERTY_CONNECTIONTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
         int readTimeout = Integer.parseInt(properties.getProperty(PROPERTY_READTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
         int storeTimeout = Integer.parseInt(properties.getProperty(PROPERTY_STORETIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
-        
+        this.extendedInfoObjectClass = properties.getProperty(PROPERTY_EXTENDEDINFOOBJECTCLASS, ICAOEXTENDEDINFO);
+        this.dscObjectClasses = new String[]{ INETORGPERSON, extendedInfoObjectClass};
+        this.crlObjectClasses = new String[] { CRLDISTRIBUTIONPOINT, extendedInfoObjectClass};
+
         ldapBindConstraints.setTimeLimit(timeout);
         ldapConnectionConstraints.setTimeLimit(timeout);
         ldapDisconnectConstraints.setTimeLimit(timeout);
@@ -235,6 +242,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     .append(PROPERTY_CONNECTIONTIMEOUT).append(": \"").append(timeout).append("\"\n")
                     .append(PROPERTY_READTIMEOUT).append(": \"").append(readTimeout).append("\"\n")
                     .append(PROPERTY_STORETIMEOUT).append(": \"").append(storeTimeout).append("\"\n")
+                    .append(PROPERTY_EXTENDEDINFOOBJECTCLASS).append(": \"").append(extendedInfoObjectClass).append("\"\n")
                     .toString());
         }
 
@@ -390,7 +398,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
 
         // Attributs
         final LDAPAttributeSet attributeSet = new LDAPAttributeSet();
-        attributeSet.add(new LDAPAttribute("objectclass", DSC_OBJECTCLASSES));
+        attributeSet.add(new LDAPAttribute("objectclass", dscObjectClasses));
         attributeSet.add(new LDAPAttribute("sn", CertTools.getSerialNumberAsString(incert)));
         final String checksum = CertTools.getFingerprintAsString(incert);
         if (log.isDebugEnabled()) {
@@ -446,7 +454,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
 
         // Attributes
         final LDAPAttributeSet attributeSet = new LDAPAttributeSet();
-        attributeSet.add(new LDAPAttribute("objectclass", CRL_OBJECTCLASSES));
+        attributeSet.add(new LDAPAttribute("objectclass", crlObjectClasses));
         final String checksum = CertTools.getFingerprintAsString(incrl);
         if (log.isDebugEnabled()) {
             log.debug("Adding checksum: " + checksum);
@@ -681,7 +689,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             }
             @Override
             public void failed(final LDAPException ex) throws PublisherException {
-                String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", CERTIFICATE_ATTRIBUTE, Arrays.toString(DSC_OBJECTCLASSES), newEntry.getDN(), ex.getMessage());
+                String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", CERTIFICATE_ATTRIBUTE, Arrays.toString(dscObjectClasses), newEntry.getDN(), ex.getMessage());
                 log.error(msg, ex);
                 throw new PublisherException(msg);
             }
@@ -707,7 +715,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             }
             @Override
             public void failed(final LDAPException ex) throws PublisherException {
-                String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", CRL_ATTRIBUTE, Arrays.toString(CRL_OBJECTCLASSES), newEntry.getDN(), ex.getMessage());
+                String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", CRL_ATTRIBUTE, Arrays.toString(crlObjectClasses), newEntry.getDN(), ex.getMessage());
                 log.error(msg, ex);
                 throw new PublisherException(msg);
             }

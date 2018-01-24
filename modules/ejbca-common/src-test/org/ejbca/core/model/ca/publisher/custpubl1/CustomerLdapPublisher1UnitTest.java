@@ -75,9 +75,10 @@ public class CustomerLdapPublisher1UnitTest {
             + "WFzafOFgLmswCgYDVR0UBAMCAQQwDQYJKoZIhvcNAQEFBQADgYEAPvYDZofCOopw" + "OCKVGaK1aPpHkJmu5Xi1XtRGO9DhmnSZ28hrNu1A5R8OQI43Z7xFx8YK3S56GRuY"
             + "0EGU/RgM3AWhyTAps66tdyipRavKmH6MMrN4ypW/qbhsd4o8JE9pxxn9zsQaNxYZ" + "SNbXM2/YxkdoRSjkrbb9DUdCmCR/kEA=").getBytes());
     private static final byte[] ANY_CRL_BYTES = CRL_BYTES;
-    
+
+    private static final String A_CUSTOM_EXTENDED_INFO_OBJECT_CLASS_VALUE = "aCustomExtendedInfoObjectClassValue";
     private static final Properties GOOD_PROPERTIES;
-    
+
     static {
         GOOD_PROPERTIES = new Properties();
         GOOD_PROPERTIES.setProperty("hostnames", "192.168.10.11");
@@ -87,6 +88,12 @@ public class CustomerLdapPublisher1UnitTest {
         GOOD_PROPERTIES.setProperty("loginpassword", "foo123!!");
         GOOD_PROPERTIES.setProperty("usessl", "true");
         GOOD_PROPERTIES.setProperty("logconnectiontests", "true");
+        GOOD_PROPERTIES.setProperty("extendedinfoobjectclass", A_CUSTOM_EXTENDED_INFO_OBJECT_CLASS_VALUE);
+    }
+
+    private static final Properties GOOD_PROPERTIES_OMITTED_EXTENDEDINFOOBJECTCLASS = (Properties) GOOD_PROPERTIES.clone();
+    static {
+        GOOD_PROPERTIES_OMITTED_EXTENDEDINFOOBJECTCLASS.remove("extendedinfoobjectclass");
     }
 
     @Before
@@ -547,5 +554,49 @@ public class CustomerLdapPublisher1UnitTest {
         assertEquals("two calls", 2, instance.getWriteCertEntryToLDAPParameters().size());
         assertEquals("log DN", "logTime=20130906071130.000Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(1).getNewEntry().getDN());
         
+    }
+
+    /**
+     * Helper that tests the extendedInfoObjectClass value against the properties
+     */
+    private void testExtendedInfoObjectClass(final Properties properties, final String expectedExtendedInfoObjectClassValue) throws Exception {
+        // Prepare mock instance
+        SecondMockedCustomerLdapPublisher1 instance = new SecondMockedCustomerLdapPublisher1();
+        instance.init(properties);
+        instance.setSearchOldEntityReturn(null); // No old entry
+
+        // Test with BC cert
+        final X509Certificate bcCert = CertTools.getCertfromByteArray(CERT_BYTES, X509Certificate.class);
+        instance.doStoreCertificate(bcCert, ANY_USERNAME, ANY_PASSWORD, CERT_ISSUERDN, null);
+        SecondMockedCustomerLdapPublisher1.WriteCertEntryToLDAPParameters params = instance.getWriteCertEntryToLDAPParameters();
+        LDAPEntry newEntry = params.getNewEntry();
+        LDAPAttributeSet attributeSet = newEntry.getAttributeSet();
+        assertNotNull(attributeSet.getAttribute("objectclass"));
+        final String [] expectedObjectClassesForCertificates = new String[]{CustomerLdapPublisher1.INETORGPERSON, expectedExtendedInfoObjectClassValue};
+        assertArrayEquals("Not expected object classes when storing certificates", expectedObjectClassesForCertificates, attributeSet.getAttribute("objectclass").getStringValueArray());
+
+        // Test with a CRL
+        instance.doStoreCRL(CRL_BYTES);
+        SecondMockedCustomerLdapPublisher1.WriteCrlEntryToLDAPParameters crlEntryParams = instance.getWriteCrlEntryToLDAPParameters();
+        attributeSet = crlEntryParams.getNewEntry().getAttributeSet();
+        assertNotNull(attributeSet.getAttribute("objectclass"));
+        final String [] expectedObjectClassesForCrls = new String[]{CustomerLdapPublisher1.CRLDISTRIBUTIONPOINT, expectedExtendedInfoObjectClassValue};
+        assertArrayEquals("Not expected object classes when storing CRLs", expectedObjectClassesForCrls,  attributeSet.getAttribute("objectclass").getStringValueArray());
+    }
+
+    /**
+     * Tests the extendedInfoObjectClass property
+     */
+    @Test
+    public void testExtendedInfoObjectClass() throws Exception {
+        testExtendedInfoObjectClass(GOOD_PROPERTIES, A_CUSTOM_EXTENDED_INFO_OBJECT_CLASS_VALUE);
+    }
+
+    /**
+     * Tests the default value of extendedInfoObjectClass property
+     */
+    @Test
+    public void testDefaultExtendedInfoObjectClass() throws Exception {
+        testExtendedInfoObjectClass(GOOD_PROPERTIES_OMITTED_EXTENDEDINFOOBJECTCLASS, "icaoExtendedInfo");
     }
 }
