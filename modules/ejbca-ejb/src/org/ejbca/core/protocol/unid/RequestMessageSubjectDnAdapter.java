@@ -24,7 +24,9 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -39,11 +41,13 @@ import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
  *
  */
 public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
-
+  
     private static final long serialVersionUID = -4884813822503768798L;
 
     private final ICrmfRequestMessage original;
 	private transient X500Name dn;
+
+	private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		stream.defaultWriteObject();
@@ -210,5 +214,13 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
     @Override
     public KeyPair getServerGenKeyPair() {
         return this.original.getServerGenKeyPair();
+    }
+    @Override
+    public List<Certificate> getCaPubsCerts() {
+        return this.original.getCaPubsCerts();
+    }
+    @Override
+    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
+        this.original.setCaPubsCerts(caPubsCerts);
     }
 }

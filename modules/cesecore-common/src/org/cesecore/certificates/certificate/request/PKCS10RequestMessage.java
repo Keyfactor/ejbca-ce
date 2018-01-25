@@ -19,7 +19,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -48,7 +50,7 @@ import org.cesecore.util.CertTools;
  *
  * @version $Id$
  */
-public class PKCS10RequestMessage implements RequestMessage {
+public class PKCS10RequestMessage implements RequestMessage {  
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -89,6 +91,8 @@ public class PKCS10RequestMessage implements RequestMessage {
     /** Error text */
     private String errorText = null;
 
+    private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+    
     /**
      * Constructs a new empty PKCS#10 message handler object.
      */
@@ -515,4 +519,13 @@ public class PKCS10RequestMessage implements RequestMessage {
         // NOOP
     }
 
+    @Override
+    public List<Certificate> getCaPubsCerts() {
+        return caPubsCerts;
+    }
+
+    @Override
+    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
+        this.caPubsCerts = caPubsCerts;
+    }
 }

@@ -1434,6 +1434,14 @@ public class EjbcaWebBean implements Serializable {
             return getCANames();
         }
     }
+    
+    public TreeMap<String, Integer> getCaPubsCAOptions() {
+        if (EjbcaConfiguration.getIsInProductionMode()) {
+            return getExternalCANames();
+        } else {
+            return getCANames();
+        }
+    }
 
     //**********************
     //     EST

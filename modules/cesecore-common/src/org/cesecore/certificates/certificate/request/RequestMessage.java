@@ -21,9 +21,10 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
+import java.util.List;
 
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
 
 
 /**
@@ -32,7 +33,7 @@ import org.bouncycastle.asn1.x500.X500Name;
  *
  * @version $Id$
  */
-public interface RequestMessage extends Serializable {
+public interface RequestMessage extends Serializable {    
     /**
      * Get the username used to request a certificate from EJBCA.
      *
@@ -241,5 +242,16 @@ public interface RequestMessage extends Serializable {
      * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      */
     void setResponseKeyInfo(PrivateKey key, String provider);
-    
+
+    /**
+     * Gets the list of CA certificates to be appended at the user certificates CA certificate returned in the CMP response message caPubs field.
+     * @return the list of CA certificates.
+     */
+    public List<Certificate> getCaPubsCerts();
+
+    /**
+     * Sets the list of CA certificates to be appended at the user certificates CA certificate returned in the CMP response message caPubs field.
+     * @param caPubsCerts the list of CA certificates.
+     */
+    public void setCaPubsCerts(final List<Certificate> caPubsCerts);
 }

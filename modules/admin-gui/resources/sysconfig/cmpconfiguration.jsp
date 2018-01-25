@@ -36,26 +36,27 @@
 	static final String TEXTFIELD_HMACPASSWORD						= "textfieldhmacpassword";
 	static final String TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH		= "textfieldnestedmessagetrustedcertificatespath";
 	
-	static final String BUTTON_ADD_ALIAS						= "buttonaliasadd";
-	static final String BUTTON_DELETE_ALIAS					 	= "buttondeletealias";
-	static final String BUTTON_EDIT_ALIAS					 	= "buttoneditalias";
-	static final String BUTTON_VIEW_ALIAS						= "buttonviewalias";
-	static final String BUTTON_RENAME_ALIAS					 	= "buttonaliasrename";
-	static final String BUTTON_CLONE_ALIAS						= "buttonaliasclone";
-	static final String BUTTON_SAVE							 	= "buttonsave";
-	static final String BUTTON_CANCEL							= "buttoncancel";
-	static final String BUTTON_RELOAD							= "buttonreload";
-	static final String BUTTON_ADDVENDORCA						= "buttonaddvendorca";
-	static final String BUTTON_REMOVEVENDORCA					= "buttonremovevendorca";
-	static final String BUTTON_ADD_NAMEGENPARAM_DN				= "buttonaddnamegenparamdn";
-	static final String BUTTON_REMOVE_NAMEGENPARAM_DN			= "buttonremovenamegenparamdn";
+	static final String BUTTON_ADD_ALIAS							= "buttonaliasadd";
+	static final String BUTTON_DELETE_ALIAS					 		= "buttondeletealias";
+	static final String BUTTON_EDIT_ALIAS					 		= "buttoneditalias";
+	static final String BUTTON_VIEW_ALIAS							= "buttonviewalias";
+	static final String BUTTON_RENAME_ALIAS					 		= "buttonaliasrename";
+	static final String BUTTON_CLONE_ALIAS							= "buttonaliasclone";
+	static final String BUTTON_SAVE							 		= "buttonsave";
+	static final String BUTTON_CANCEL								= "buttoncancel";
+	static final String BUTTON_RELOAD								= "buttonreload";
+	static final String BUTTON_ADDVENDORCA							= "buttonaddvendorca";
+	static final String BUTTON_ADDRESPONSECAPUBSCA					= "buttonaddresponsecapubsca";
+	static final String BUTTON_REMOVEVENDORCA						= "buttonremovevendorca";
+	static final String BUTTON_REMOVERESPONSECAPUBSCA				= "buttonremoveresponsecapubsca";
+	static final String BUTTON_ADD_NAMEGENPARAM_DN					= "buttonaddnamegenparamdn";
+	static final String BUTTON_REMOVE_NAMEGENPARAM_DN				= "buttonremovenamegenparamdn";
 	
 	static final String RADIO_CMPMODE								= "radiocmpmode";
-	static final String RADIO_NAMEGENSCHEME						= "radionnamegenscheme";
+	static final String RADIO_NAMEGENSCHEME							= "radionnamegenscheme";
 	static final String RADIO_HMACPASSWORD							= "radiohmacpassword";
-
 	
-	static final String CHECKBOX_CMP_VENDORMODE					= "checkcmpvendormode";
+	static final String CHECKBOX_CMP_VENDORMODE						= "checkcmpvendormode";
 	static final String CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE  	= "checkboxcmpuseautomatickeyupdate";
 	static final String CHECKBOX_CMP_KUR_USESAMEKEYS				= "checkboxcmpkurusesamekeys";
 	static final String CHECKBOX_CMP_ALLOWRAVERIFYPOPO				= "checkboxcmpallowraverifypopo";
@@ -64,19 +65,19 @@
 	static final String CHECKBOX_HMAC								= "checkboxhmac";
 	static final String CHECKBOX_EEC								= "checkboxeec";
 	static final String CHECKBOX_REGTOKEN							= "checkboxregtoken";
-	static final String CHECKBOX_DNPART							= "checkboxdnpart";
+	static final String CHECKBOX_DNPART								= "checkboxdnpart";
 	static final String CHECKBOX_OMITVERIFICATIONINECC				= "checkboxomitverificationsinecc";
-
 	
 	static final String LIST_CMPDEFAULTCA					   		= "listcmpdefaultca";
 	static final String LIST_CMPRACAS						   		= "listcmpracas";
 	static final String LIST_CMPRESPONSEPROTECTION		   		    = "listcmpresponseprotection";
 	static final String LIST_CMPEEPROFILES					   		= "listcmpeeprofile";
 	static final String LIST_CMPCERTPROFILES				   		= "listcmpcertprofiles";
-	static final String LIST_ECCCAS								= "listecccas";
+	static final String LIST_ECCCAS									= "listecccas";
 	static final String LIST_DNPARTS								= "listdnparts";
 	static final String LIST_EXTRACTUSERNAMECOMP					= "listextractusernamecomp";
 	static final String LIST_VENDORCA								= "listvendorca";
+	static final String LIST_RESPONSECAPUBSCA						= "listresponsecapubsca";
 	static final String LIST_NAMEGENPARAM_DN						= "listnamegenparamdn";
 		
 	static final String SELECT_ALIASES                       		= "selectaliases";
@@ -427,6 +428,21 @@
     			           					}
     			        			}
     			        	}
+    			   			
+    			        	if(request.getParameter(BUTTON_ADDRESPONSECAPUBSCA) != null) {
+				        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
+				        					value = request.getParameter(LIST_RESPONSECAPUBSCA);
+				           					String vendorcas = cmpConfigClone.getResponseCaPubsCA(alias);
+				           					if(!StringUtils.contains(vendorcas, value)) {
+				           							if(StringUtils.isEmpty(vendorcas)) {
+				           								vendorcas = value;
+				           							} else {
+				           								vendorcas += ";" + value;
+				           							}
+				           							cmpConfigClone.setResponseCaPubsCA(alias, vendorcas);
+				           					}
+				        			}
+				        	}
     			            
     			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
     			           			value = request.getParameter(LIST_VENDORCA);
@@ -444,6 +460,24 @@
     			           					}
     		           						cmpConfigClone.setVendorCA(alias, vendorcas);
     			           			}
+	    			        }
+    			        	
+    			        	if(request.getParameter(BUTTON_REMOVERESPONSECAPUBSCA) != null) {
+				           			value = request.getParameter(LIST_RESPONSECAPUBSCA);
+				           			String vendorcas = cmpConfigClone.getResponseCaPubsCA(alias);
+				           			if(StringUtils.contains(vendorcas, value)) {
+				           					String[] cas = vendorcas.split(";");
+				           					if(cas.length == 1) {
+				           							vendorcas = "";
+				           					} else {
+				           							if(StringUtils.equals(cas[0], value)) {
+	           											vendorcas = StringUtils.remove(vendorcas, value + ";");
+	           										} else {
+	           											vendorcas = StringUtils.remove(vendorcas, ";" + value);
+	           										}
+				           					}
+			           						cmpConfigClone.setResponseCaPubsCA(alias, vendorcas);
+				           			}
 	    			        }
     			            
     				        if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
