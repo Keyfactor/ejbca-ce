@@ -134,33 +134,8 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
              *    getCAInfo throws an exception (CADoesntExistsException) if the CA does not exists, that is how we check if the CA exists 
              */
             CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-            try {
-                CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
-                if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-                    if (initAuth) {
-                        log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when receiving a CSR.");
-                    }
-
-                    log.info("CA '" + caName
-                            + "' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
-                    X509ResponseMessage resp = new X509ResponseMessage();
-                    resp.setCertificate(certificate);
-                    caAdminSession.receiveResponse(getAuthenticationToken(), cainfo.getCAId(), resp, null, null);
-                    log.info("Received certificate response and activated CA " + caName);
-                } else if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
-                    if (initAuth) {
-                        log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when updating an externally imported CA.");
-                    }
-                    // CA exists and this is assumed to be an update of the imported CA certificate
-                    log.info("CA '" + caName + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
-                    caAdminSession.updateCACertificate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
-                    log.info("Updated certificate chain for imported external CA " + caName);
-                } else {
-                    log.error("CA '" + caName + "' already exists and is not waiting for certificate response from an external CA.");
-                    return CommandResult.FUNCTIONAL_FAILURE;
-                }
-                return CommandResult.SUCCESS;
-            } catch (CADoesntExistsException e) {
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+            if (cainfo == null) {
                 // CA does not exist, we can import the certificate
                 if (initAuth) {
                     String subjectdn = CertTools.getSubjectDN(certificate);
@@ -170,6 +145,30 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 caAdminSession.importCACertificate(getAuthenticationToken(), caName, EJBTools.wrapCertCollection(certs));
                 log.info("Imported CA " + caName);
                 return CommandResult.SUCCESS;
+            }
+            
+            if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                if (initAuth) {
+                    log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when receiving a CSR.");
+                }
+
+                log.info("CA '" + caName
+                        + "' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
+                X509ResponseMessage resp = new X509ResponseMessage();
+                resp.setCertificate(certificate);
+                caAdminSession.receiveResponse(getAuthenticationToken(), cainfo.getCAId(), resp, null, null);
+                log.info("Received certificate response and activated CA " + caName);
+            } else if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                if (initAuth) {
+                    log.warn("Warning: " + INIT_AUTH_KEY + " was defined but was ignored when updating an externally imported CA.");
+                }
+                // CA exists and this is assumed to be an update of the imported CA certificate
+                log.info("CA '" + caName + "' is an external CA created by CA certificate import. Trying to update the CA certificate chain.");
+                caAdminSession.updateCACertificate(getAuthenticationToken(), cainfo.getCAId(), EJBTools.wrapCertCollection(certs));
+                log.info("Updated certificate chain for imported external CA " + caName);
+            } else {
+                log.error("CA '" + caName + "' already exists and is not waiting for certificate response from an external CA.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
         } catch (CAExistsException e) {
             log.error(e.getMessage());
