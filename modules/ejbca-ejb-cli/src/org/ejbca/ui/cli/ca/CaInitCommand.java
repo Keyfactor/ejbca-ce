@@ -50,6 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -122,6 +123,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
 
     private static final String CA_NAME_KEY = "--caname";
     private static final String DN_KEY = "--dn";
+    private static final String ALT_NAME_KEY = "--subjectaltname";
     private static final String TOKEN_TYPE_KEY = "--tokenType";
     private static final String TOKEN_PASSWORD_KEY = "--tokenPass";
     private static final String KEY_SPEC_KEY = "--keyspec";
@@ -214,6 +216,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         + "Requires parameter '-externalcachain <externalCA chain PEM file' with the full certificate chain of the external CA."));
         registerParameter(new Parameter(EXTERNAL_CHAIN_KEY, "Certificate Chain File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "The certificate chain to be used if CA is to be signed by an external CA."));
+        registerParameter(new Parameter(ALT_NAME_KEY, "Subject Alternative Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "CA Subject Alternative Name"));
     }
 
     @Override
@@ -239,6 +242,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
 
         final String caname = parameters.get(CA_NAME_KEY);
         final String dn = CertTools.stringToBCDNString(StringTools.strip(parameters.get(DN_KEY)));
+        final String subjectAltName = parameters.get(ALT_NAME_KEY);
+        if (subjectAltName != null && !checkSubjectAltName(subjectAltName)) {
+            log.error("Invalid Subject Alternative Name");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
         final String catokentype = parameters.get(TOKEN_TYPE_KEY);
         String catokenpassword = StringTools.passwordDecryption(parameters.get(TOKEN_PASSWORD_KEY), "ca.tokenpassword");
         if (StringUtils.equals(catokenpassword, "prompt")) {
@@ -547,7 +555,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         extendedServiceKeySpec, keytype));
                 extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-                cainfo = createX509CaInfo(dn, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
+                cainfo = createX509CaInfo(dn, subjectAltName, caname, certificateProfileId, encodedValidity, signedByCAId, caToken, policies, extendedcaservices);
                 break;
             }
             getLogger().info("Creating CA...");
@@ -629,10 +637,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return "init";
     }
 
-    private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
+    private CAInfo createX509CaInfo(String dn, String subjectAltName, String caname, int certificateProfileId, String validityString, int signedByCAId, CAToken catokeninfo,
             List<CertificatePolicy> policies, List<ExtendedCAServiceInfo> extendedcaservices) {
         X509CAInfo cainfo = new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validityString,                                             
                 signedByCAId, new ArrayList<Certificate>(), catokeninfo);
+        cainfo.setSubjectAltName(subjectAltName);
         cainfo.setDescription(caname + "created using CLI");
         cainfo.setCertificateChain(new ArrayList<Certificate>());
         cainfo.setPolicies(policies);
@@ -648,6 +657,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
         return cainfo;
     }
 
+    private boolean checkSubjectAltName(String subjectaltname) {
+        if (subjectaltname != null && !subjectaltname.trim().equals("")) {
+            final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+            if (subtest.isIllegal() || subtest.existsOther()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     @Override
     public String getCommandDescription() {
         return "Create a CA and its first CRL. Publishes the CRL and CA certificate";
