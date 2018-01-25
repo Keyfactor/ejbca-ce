@@ -241,7 +241,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getApplicablePhases() {
         final List<SelectItem> result = new ArrayList<SelectItem>();
         for (Integer index : ((PhasedValidator) getValidator()).getApplicablePhases()) {
-            result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.indexOf(index).getLabel())));
+            result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
         }
         return result;
     }

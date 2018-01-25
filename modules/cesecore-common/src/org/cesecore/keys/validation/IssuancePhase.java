@@ -37,7 +37,7 @@ public enum IssuancePhase {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param index index
      * @param label resource key or label.
      */
@@ -73,19 +73,18 @@ public enum IssuancePhase {
         }
         return result;
     }
-    
+
     /**
      * Gets the {@link IssuancePhase} object with the given index.
      * @param index the index.
-     * @return the valildator phase.
+     * @return the validator phase.
      */
-    public static final IssuancePhase indexOf(final int index) {
-        IssuancePhase result = null;
+    public static final IssuancePhase fromIndex(final int index) {
         for (IssuancePhase phase : values()) {
             if (phase.getIndex() == index) {
-                result = phase;
+                return phase;
             }
         }
-        return result;
+        return null;
     }
 }

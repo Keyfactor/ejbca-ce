@@ -17,36 +17,42 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * This class contains a representation of mathematical conditions, i.e <, <=, >, >=.
+ * @version $Id$
+ */
 public enum KeyValidatorDateConditions {
+    /**
+     * Condition for strictly less than a given date.
+     */
+    LESS_THAN(0, "VALIDATORDATECONDITION_LESS_THAN", "<"),
+    /**
+     * Condition for less than or equal to a given date.
+     */
+    LESS_OR_EQUAL_THAN(1, "VALIDATORDATECONDITION_LESS_OR_EQUAL", "≤"),
+    /**
+     * Condition for strictly greater than a given date.
+     */
+    GREATER_THAN(2, "VALIDATORDATECONDITION_GREATER_THAN", ">"),
+    /**
+     * Condition for greater than or equal to a given date.
+     */
+    GREATER_OR_EQUAL_THAN(3, "VALIDATORDATECONDITION_GREATER_OR_EQUAL", "≥");
 
-    // @formatter:on
-    LESS_THAN(0, "VALIDATORDATECONDITION_LESS_THAN"), 
-    LESS_OR_EQUAL_THAN(1, "VALIDATORDATECONDITION_LESS_OR_EQUAL"), 
-    GREATER_THAN(2, "VALIDATORDATECONDITION_GREATER_THAN"), 
-    GREATER_OR_EQUAL_THAN(3, "VALIDATORDATECONDITION_GREATER_OR_EQUAL");
-    // @formatter:off
-
-//    /** Default date condition constant for the not before attribute. */
-//    public static final KeyValidatorDateConditions DEFAULT_NOT_BEFORE = GREATER_OR_EQUAL_THAN;
-//   
-//    /** Default date condition constant for the not after attribute. */
-//    public static final KeyValidatorDateConditions DEFAULT_NOT_AFTER = LESS_OR_EQUAL_THAN;
-   
-    /** The unique index. */
     private int index;
-
-    /** The resource key or label. */
     private String label;
+    private String expression;
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param index index
      * @param label resource key or label.
      */
-    private KeyValidatorDateConditions(final int index, final String label) {
+    private KeyValidatorDateConditions(final int index, final String label, final String expression) {
         this.index = index;
         this.label = label;
+        this.expression = expression;
     }
 
     /**
@@ -66,7 +72,19 @@ public enum KeyValidatorDateConditions {
     }
 
     /**
-     * Gets an Integer list instance containing all index.
+     * Return a key validator date condition given its index.
+     */
+    public static KeyValidatorDateConditions fromIndex(final int index) {
+        for (final KeyValidatorDateConditions condition : KeyValidatorDateConditions.values()) {
+            if (condition.getIndex() == index) {
+                return condition;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets an Integer list instance containing all indices.
      * @return
      */
     public static final List<Integer> index() {
@@ -76,9 +94,9 @@ public enum KeyValidatorDateConditions {
         }
         return result;
     }
-    
+
     /**
-     * Evaluates a date matches the given condition. 
+     * Evaluates a date matches the given condition.
      * @param value the reference value.
      * @param testValue the test value.
      * @param index the index of the condition.
@@ -99,5 +117,10 @@ public enum KeyValidatorDateConditions {
             result = !new Date(value.getTime() + 1).after(testValue);
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return expression;
     }
 }
