@@ -172,7 +172,7 @@
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-159.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-159.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-159.jar" sourcepath="C:/java/sources/bcprov-jdk15on-156-src/src.zip"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.19.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

@@ -23,7 +23,9 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -105,7 +107,8 @@ public class UnidFnrHandlerTest {
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
-
+        List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+        
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
 			nameBuilder.addRDN(CeSecoreNameStyle.SN, serialNumber);
@@ -257,6 +260,15 @@ public class UnidFnrHandlerTest {
         @Override
         public KeyPair getServerGenKeyPair() {
             return null;
+        }
+        
+        @Override
+        public List<Certificate> getCaPubsCerts() {
+            return caPubsCerts;
+        }
+        @Override
+        public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
+            this.caPubsCerts = caPubsCerts;
         }
 	}
 }
