@@ -465,6 +465,12 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void addCaCertsToResponse(List<Certificate> certificates) {
-        cacert.addAll(certificates);
+        if (CollectionUtils.isNotEmpty(certificates)) {
+            for (Certificate cert : certificates) {
+                if (this.cacert.size() > 0 && !this.cacert.contains(cert)) {
+                    this.cacert.add( cert);
+                }
+            }
+        }
     }
 }

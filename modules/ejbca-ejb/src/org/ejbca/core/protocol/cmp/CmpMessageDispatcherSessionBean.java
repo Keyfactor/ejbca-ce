@@ -232,7 +232,9 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     private void addCaPubsCertificates(final AuthenticationToken admin, final CmpConfiguration cmpConfiguration, final String cmpConfigurationAlias, final CrmfRequestMessage message) {
         if (!cmpConfiguration.getRAMode(cmpConfigurationAlias) && cmpConfiguration.getVendorMode(cmpConfigurationAlias)) {
             final String casToAdd = cmpConfiguration.getResponseCaPubsCA(cmpConfigurationAlias);
-            log.info("Add CA certificates of CAs " + casToAdd + " to the CMP response message caPubs field.");
+            if (log.isDebugEnabled()) {
+                log.debug("Add CA certificates of CAs '" + casToAdd + "' to the CMP response message caPubs field.");
+            }
             message.setCaPubsCerts(getCaCertificates(admin, casToAdd));
         }
     }
@@ -241,30 +243,30 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
         final List<Certificate> result = new ArrayList<Certificate>();
         CAInfo cainfo = null;
         Certificate cacert;
-        for(String ca : StringUtils.split(caListString, ";")) {
-            if(log.isDebugEnabled()) {
-                log.debug("Get CA by name?: " + ca);
-            }
-            try {
-                cainfo = caSession.getCAInfo(admin, ca.trim());
-                if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
-                    cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
-                    if (!result.contains(cacert)) {
-                        result.add((X509Certificate) cacert);
-                    }
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Cannot find caPubs CA: " + ca);
-                    }
-                }
-            } catch (AuthorizationDeniedException e) {
+        if (StringUtils.isNotBlank(caListString)) {
+            for(String ca : StringUtils.split(caListString, ";")) {
                 if(log.isDebugEnabled()) {
-                    log.debug(e.getMessage());
+                    log.debug("Get CA by name?: " + ca);
+                }
+                try {
+                    cainfo = caSession.getCAInfo(admin, ca.trim());
+                    if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
+                        cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
+                        if (!result.contains(cacert)) {
+                            result.add((X509Certificate) cacert);
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Cannot find caPubs CA: " + ca);
+                        }
+                    }
+                } catch (AuthorizationDeniedException e) {
+                    if(log.isDebugEnabled()) {
+                        log.debug(e.getMessage());
+                    }
                 }
             }
         }
         return result;
     }
-
-    
 }
