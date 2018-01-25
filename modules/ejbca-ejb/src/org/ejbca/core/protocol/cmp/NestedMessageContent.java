@@ -51,7 +51,7 @@ import org.ejbca.config.CmpConfiguration;
  *
  */
 public class NestedMessageContent extends BaseCmpMessage implements RequestMessage {
-
+  
     private static final long serialVersionUID = 1L;
     
     private static final Logger log = Logger.getLogger(NestedMessageContent.class);

@@ -21,7 +21,9 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -69,6 +71,8 @@ public class CVCRequestMessage implements RequestMessage {
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
 
+    private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+  
     /**
      * Constructs a new empty message handler object.
      */
@@ -327,6 +331,16 @@ public class CVCRequestMessage implements RequestMessage {
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         // NOOP
+    }
+    
+    @Override
+    public List<Certificate> getCaPubsCerts() {
+        return caPubsCerts;
+    }
+
+    @Override
+    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
+        this.caPubsCerts = caPubsCerts;
     }
 
     /** Specific to CVC request messages, EAC requests contains a sequence */

@@ -92,9 +92,9 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
-import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -213,7 +213,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             
             CertificateDataWrapper certWrapper = createCertificate(admin, endEntityInformation, ca, requestMessage, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
-            // Create the response message with all nonces and checks etc
+            // Create the response message with all nonces and checks etc            
             ret = ResponseMessageUtils.createResponseMessage(responseClass, requestMessage, cachain, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
@@ -224,6 +224,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             } else {
                 ret.setCertificate(certWrapper.getCertificate());
                 ret.setCACert(cacert);
+                // Add in case of success after CMP message -> CmpResponseMessage.
+                ret.addCaCertsToResponse(requestMessage.getCaPubsCerts());
                 ret.setBase64CertData(certWrapper.getBase64CertData());
                 ret.setCertificateData(certWrapper.getCertificateData());
             }

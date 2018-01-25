@@ -13,13 +13,19 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIHeader;
@@ -27,6 +33,9 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -69,6 +78,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     private CertificateRequestSessionLocal certificateRequestSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
 
@@ -143,13 +154,15 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias),
                         cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias),
                         cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
+                addCaPubsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, (CrmfRequestMessage) cmpMessage);
                 break;
-            case PKIBody.TYPE_KEY_UPDATE_REQ:
+            case PKIBody.TYPE_KEY_UPDATE_REQ:                    
                 // 7: Key Update request (kur, Key Update Request)
                 handler = new CrmfKeyUpdateHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession);
                 cmpMessage = new CrmfRequestMessage(pkiMessage, cmpConfiguration.getCMPDefaultCA(cmpConfigurationAlias),
                         cmpConfiguration.getAllowRAVerifyPOPO(cmpConfigurationAlias),
                         cmpConfiguration.getExtractUsernameComponent(cmpConfigurationAlias));
+                addCaPubsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, (CrmfRequestMessage) cmpMessage);
                 break;
             case PKIBody.TYPE_CONFIRM:
                 // 19: PKI confirm (pkiconf, Confirmation)
@@ -215,4 +228,43 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
             return null;
         }
     }
+    
+    private void addCaPubsCertificates(final AuthenticationToken admin, final CmpConfiguration cmpConfiguration, final String cmpConfigurationAlias, final CrmfRequestMessage message) {
+        if (!cmpConfiguration.getRAMode(cmpConfigurationAlias) && cmpConfiguration.getVendorMode(cmpConfigurationAlias)) {
+            final String casToAdd = cmpConfiguration.getResponseCaPubsCA(cmpConfigurationAlias);
+            log.info("Add CA certificates of CAs " + casToAdd + " to the CMP response message caPubs field.");
+            message.setCaPubsCerts(getCaCertificates(admin, casToAdd));
+        }
+    }
+    
+    private List<Certificate> getCaCertificates(final AuthenticationToken admin, final String caListString) {
+        final List<Certificate> result = new ArrayList<Certificate>();
+        CAInfo cainfo = null;
+        Certificate cacert;
+        for(String ca : StringUtils.split(caListString, ";")) {
+            if(log.isDebugEnabled()) {
+                log.debug("Get CA by name?: " + ca);
+            }
+            try {
+                cainfo = caSession.getCAInfo(admin, ca.trim());
+                if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
+                    cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
+                    if (!result.contains(cacert)) {
+                        result.add((X509Certificate) cacert);
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Cannot find caPubs CA: " + ca);
+                    }
+                }
+            } catch (AuthorizationDeniedException e) {
+                if(log.isDebugEnabled()) {
+                    log.debug(e.getMessage());
+                }
+            }
+        }
+        return result;
+    }
+
+    
 }

@@ -2,10 +2,9 @@
 <%
    java.util.Map<String, Integer> canames = ejbcawebbean.getCANames();
    java.util.TreeMap<String, Integer> vendorcas = ejbcawebbean.getVendorCAOptions();
+   java.util.TreeMap<String, Integer> capubscas = ejbcawebbean.getCaPubsCAOptions();
    int row = 0;
-   
    ramode = cmpConfigClone.getRAMode(alias);
-   
 %>
 
 <script type="text/javascript">
@@ -26,6 +25,9 @@ function enableFormItems() {
     document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= LIST_RESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_ADDRESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_REMOVERESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
 <% } else { %>
     // ----- RA Mode -----
     // CMP Authentication Module
@@ -533,13 +535,19 @@ function checkallfields() {
         </select>
         <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
         <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+        <br/>
+		<p class="help"><c:out value="<%= cmpConfigClone.getResponseCaPubsCA(alias) %>"/></p>
+        <select name="<%=LIST_RESPONSECAPUBSCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
+           <% 
+            for(String vca : capubscas.keySet()) {
+           %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
+           <% } %>
+        </select>
+        <input type="submit" name="<%= BUTTON_ADDRESPONSECAPUBSCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+        <input type="submit" name="<%= BUTTON_REMOVERESPONSECAPUBSCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
-    
-    
-    
-    <% } %>   
-    
+    <% } %>
     
    	<!-- -------------------------- ConfirmationMessage request ------------------------------ -->
    	<% if(!pbe) { %>

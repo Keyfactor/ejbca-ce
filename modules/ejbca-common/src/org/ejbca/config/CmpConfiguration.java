@@ -70,6 +70,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RACANAME                = "ra.caname";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_RESPONSCAPUBSCA         = "responsecapubsca";    
     public static final String CONFIG_RA_OMITVERIFICATIONSINEEC = "ra.endentitycertificate.omitverifications";
     public static final String CONFIG_RACERT_PATH             = "racertificatepath";
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
@@ -89,7 +90,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CMP_CONFIGURATION_ID = "1";
 
     // Default Values
-    public static final float LATEST_VERSION = 4f;
+    public static final float LATEST_VERSION = 5f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
@@ -99,6 +100,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
     private static final String DEFAULT_VENDOR_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
+    private static final String DEFAULT_RESPONSCAPUBS_CA = "";
     private static final String DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE = "false";
     private static final String DEFAULT_ALLOW_SERVERGENERATED_KEYS = "false";
     private static final String DEFAULT_KUR_ALLOW_SAME_KEY = "true";
@@ -160,6 +162,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_EXTRACTUSERNAMECOMPONENT, DEFAULT_EXTRACT_USERNAME_COMPONENT);
             data.put(alias + CONFIG_VENDORCERTIFICATEMODE, DEFAULT_VENDOR_MODE);
             data.put(alias + CONFIG_VENDORCA, DEFAULT_VENDOR_CA);
+            data.put(alias + CONFIG_RESPONSCAPUBSCA, DEFAULT_RESPONSCAPUBS_CA);
             data.put(alias + CONFIG_ALLOWRAVERIFYPOPO, DEFAULT_ALLOW_RA_VERIFY_POPO);
             data.put(alias + CONFIG_RA_NAMEGENERATIONSCHEME, DEFAULT_RA_USERNAME_GENERATION_SCHEME);
             data.put(alias + CONFIG_RA_NAMEGENERATIONPARAMS, DEFAULT_RA_USERNAME_GENERATION_PARAMS);
@@ -193,6 +196,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
         keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
         keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_RESPONSCAPUBSCA);
         keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONSCHEME);
         keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
@@ -369,7 +373,6 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, Boolean.toString(vendormode), alias);
     }
     
-    
     public String getVendorCA(String alias) {
         String key = alias + "." + CONFIG_VENDORCA;
         return getValue(key, alias);
@@ -377,6 +380,15 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void setVendorCA(String alias, String vendorCA) {
         String key = alias + "." + CONFIG_VENDORCA;
         setValue(key, vendorCA, alias);
+    }
+    
+    public String getResponseCaPubsCA(String alias) {
+        String key = alias + "." + CONFIG_RESPONSCAPUBSCA;
+        return getValue(key, alias);
+    }
+    public void setResponseCaPubsCA(String alias, String caString) {
+        String key = alias + "." + CONFIG_RESPONSCAPUBSCA;
+        setValue(key, caString, alias);
     }
     
     public boolean getAllowRAVerifyPOPO(String alias) {
