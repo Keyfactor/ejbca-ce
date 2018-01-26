@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -170,6 +169,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 log.error("CA '" + caName + "' already exists and is not waiting for certificate response from an external CA.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
+            return CommandResult.SUCCESS;
         } catch (CAExistsException e) {
             log.error(e.getMessage());
         } catch (IllegalCryptoTokenException e) {
