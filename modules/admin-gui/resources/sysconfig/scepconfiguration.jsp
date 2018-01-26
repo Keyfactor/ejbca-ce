@@ -90,7 +90,7 @@ org.cesecore.authorization.control.StandardRules
 			</h:column>
 		
 			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.SCEP_ACTION}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.SCEP_ACTIONS}"/></f:facet>
 				<h:commandLink action="#{scepConfigMBean.renameAlias}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
 					onclick="return getInputToField('aliases:newAlias','#{web.text.SCEP_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
 					styleClass="commandLink" title="#{web.text.SCEP_RENAME_ALIAS}">

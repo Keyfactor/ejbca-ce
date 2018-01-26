@@ -117,7 +117,7 @@ org.cesecore.keybind.InternalKeyBindingRules
  		</h:column>
 		<h:column rendered="#{!internalKeyBindingMBean.forbiddenToEdit}">
    			<f:facet name="header">
-   				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+   				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/>
    			</f:facet>
 			<h:commandButton rendered="#{guiInfo.status ne 'INTERNALKEYBINDING_STATUS_DISABLED'}" action="#{internalKeyBindingMBean.commandDisable}"
 				value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>

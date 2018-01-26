@@ -103,7 +103,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:column>
    			<f:facet name="header">
 			<h:panelGroup>
-   				<h:outputText value="#{web.text.CRYPTOTOKEN_ACTION}"/>
+   				<h:outputText value="#{web.text.CRYPTOTOKEN_ACTIONS}"/>
    				<%= ejbcawebbean.getHelpReference("/userguide.html#Activation%20and%20deactivation") %>
 			</h:panelGroup>
    			</f:facet>
