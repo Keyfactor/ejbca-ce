@@ -29,32 +29,37 @@
     <ui:composition template="/WEB-INF/include/template.xhtml">
         <ui:define name="content">
             <h:panelGroup layout="block" class="header" id="title">
-                <h1><h:outputText value="#{msg.endentity_page_title}"/></h1>
+                <h1><h:outputText value="#{msg.endentity_page_top_title}"/></h1>
             </h:panelGroup>
             <h:panelGroup layout="block" class="content-body" id="content-body">
                 <h:outputText rendered="#{empty raEndEntityBean.username}" value="#{msg.endentity_page_info_nousername}"/>
                 <h:outputText rendered="#{not empty raEndEntityBean.username and empty raEndEntityBean.endEntity}" value="#{msg.endentity_page_info_nosuchee}"/>
-                <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}" styleClass="pure-u-1">
-                    <h:form styleClass="pure-form">
-                        <h:panelGroup styleClass="pure-u-1-3">
-                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
-                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-                            <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
-                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-                            <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
-                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                <h:panelGroup rendered="#{not empty raEndEntityBean.endEntity}">
+                    <h:form id="detailsForm" styleClass="pure-form">
+                        <h:panelGroup styleClass="pure-u-1">
+                            <h:panelGroup styleClass="pure-u-1-3">
+                            	<h2><h:outputText value="#{msg.endentity_page_title}"/></h2>
+                        	</h:panelGroup>
+                    	    <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
+	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntity}" value="#{msg.endentity_page_command_edit}"
+	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+	                                rendered="#{raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}" value="#{msg.endentity_page_command_editcancel}"
+	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+	                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+	                            <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}" value="#{msg.endentity_page_command_editsave}"
+	                                styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+	                                rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
+                        	</h:panelGroup>
                         </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-2-3"></h:panelGroup>
-                        <h:outputText styleClass="pure-u-1 pre" value=" " rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.apiEditCompatible}"/>
-                        <component:eedetails
-                            raEndEntityDetails="#{raEndEntityBean.endEntity}"
-                            raEndEntityIssuedCerts="#{raEndEntityBean.issuedCerts}"
-                            editMode="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}"
-                            styleTable="ra-eeCertTableView"
-                            raEndEntityBean="#{raEndEntityBean}" />
+                        <h:panelGroup styleClass="pure-u-1">
+	                        <component:eedetails
+	                            raEndEntityDetails="#{raEndEntityBean.endEntity}"
+	                            raEndEntityIssuedCerts="#{raEndEntityBean.issuedCerts}"
+	                            editMode="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}"
+	                            styleTable="ra-eeCertTableView"
+	                            raEndEntityBean="#{raEndEntityBean}" />
+                    	</h:panelGroup>
                     </h:form>
                 </h:panelGroup>
             </h:panelGroup>
