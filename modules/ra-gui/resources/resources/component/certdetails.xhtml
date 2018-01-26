@@ -181,6 +181,7 @@
             <h:panelGroup id="revokeGroup" styleClass="#{cc.attrs.styleValue} revokeGroup">
                 <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
                     styleClass="pure-input-1-4"
+                    style="color:black"
                     rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
                 </h:selectOneMenu>
