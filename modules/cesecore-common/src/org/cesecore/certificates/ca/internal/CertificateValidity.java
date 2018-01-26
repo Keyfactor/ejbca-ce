@@ -414,7 +414,7 @@ public class CertificateValidity {
     /**
      * Parses the entity extended information start and end time format and offsets it with the reference point.
      * @param now the reference point
-     * @param timeString the value in form of 'days:minutes:hours'
+     * @param timeString the value in form of 'days:hours:minutes'
      * @return the parse value offset with now (reference point).
      */
     private static final Date parseExtendedInformationEncodedValidity(final Date now, final String timeString) {
