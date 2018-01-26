@@ -626,7 +626,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 					</h:column>
 					<h:column>
                         <f:facet name="header">
-                           <h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+                           <h:outputText value="#{web.text.ACTIONS}"/>
                         </f:facet>
                         <h:commandButton action="#{systemConfigMBean.ctLogManager.editCtLog(ctlog)}" 
                             value="#{web.text.EDIT}" 
@@ -656,7 +656,7 @@ org.cesecore.authorization.AuthorizationDeniedException
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_PUBLICKEY}"/>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_TIMEOUT}"/>
             <h:outputText value="#{web.text.LABEL}"/>
-            <h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
+            <h:outputText value="#{web.text.ACTIONS}"/>
             <h:inputText value="#{systemConfigMBean.ctLogManager.ctLogEditor.ctLogUrl}" 
                 title="#{web.text.FORMAT_URI}"
                 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" 

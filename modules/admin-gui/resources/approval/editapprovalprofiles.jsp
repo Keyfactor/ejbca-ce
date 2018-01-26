@@ -46,7 +46,7 @@
 				</f:facet>
 			</h:column>
 			<h:column headerClass="gridColumn2">
-				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTION}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 				<div class="button-group">
 					<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionView}"/>
 					<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{approvalProfilesMBean.actionEdit}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
