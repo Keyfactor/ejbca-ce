@@ -48,7 +48,7 @@
 							</f:facet>
 						</h:column>
 						<h:column headerClass="gridColumn2">
-							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORACTION}"/></f:facet>	
+							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORACTIONS}"/></f:facet>	
 							<h:commandButton value="#{web.text.VIEW}" action="#{validatorsBean.actionView}" disabled="#{!validatorsBean.authorizedToView}" />
 							<h:commandButton value="#{web.text.EDIT}" action="#{validatorsBean.actionEdit}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
 							<h:commandButton value="#{web.text.DELETE}" action="#{validatorsBean.actionDelete}" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
