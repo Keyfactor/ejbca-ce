@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -771,7 +773,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public String getUsernameDefault() {
-        return getValue(USERNAME, 0);
+        return getValueDefaultEmpty(USERNAME);
     }
     
     public boolean isUsernameRequired() {
@@ -864,6 +866,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return isRequired(CLEARTEXTPASSWORD, 0);
     }
     
+    public boolean getUseEmail() {
+        return getUse(EMAIL, 0);
+    }
+    
+    public String getEmailDomain() {
+        return getValueDefaultEmpty(EMAIL);
+    }
+    
+    public boolean getEmailDomainModifiable() {
+        return isModifyable(EMAIL, 0);
+    }
+    
+    public boolean getEmailDomainRequired() {
+        return isRequired(EMAIL, 0);
+    }
+    
     public int getAllowedRequests() {
         if (!getUse(ALLOWEDREQUESTS, 0)) {
             return -1;
@@ -873,8 +891,80 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return ((Integer) data.get(ALLOWEDREQUESTS)).intValue();
     }
     
-    public boolean getUseCustomSerialNumber() {
+    public boolean getMaxFailedLoginsUsed() {
+        return getUse(MAXFAILEDLOGINS, 0);
+    }
+    
+    public boolean getMaxFailedLoginsModifiable() {
+        return isModifyable(MAXFAILEDLOGINS, 0);
+    }
+    
+    public int getMaxFailedLogins() {
+        if (!getUse(MAXFAILEDLOGINS, 0) || data.get(MAXFAILEDLOGINS) == null) {
+            return -1;
+        }
+        return ((Integer) data.get(MAXFAILEDLOGINS)).intValue();
+    }
+    
+    public boolean getIssuanceRevocationReasonUsed() {
+        return getUse(ISSUANCEREVOCATIONREASON, 0);
+    }
+    
+    public boolean getIssuanceRevocationReasonModifiable() {
+        return isModifyable(ISSUANCEREVOCATIONREASON, 0);
+    }
+    
+    public RevocationReasons getIssuanceRevocationReason() {
+        final String value = getValue(ISSUANCEREVOCATIONREASON, 0);
+        if (value != null) {
+            return RevocationReasons.getFromDatabaseValue(Integer.parseInt(value));
+        } else {
+            return RevocationReasons.NOT_REVOKED;
+        }
+    }
+    
+    public boolean getCustomSerialNumberUsed() {
         return getUse(CERTSERIALNR, 0);
+    }
+    
+    public boolean getValidityStartTimeUsed() {
+        return getUse(STARTTIME, 0);
+    }
+    
+    public boolean getValidityStartTimeModifiable() {
+        return isModifyable(STARTTIME, 0);
+    }
+    
+    /**
+     * Optional validity start time in absolute "yyyy-MM-dd HH:mm" or relative "days:hours:minutes" format.
+     * @return Start time. Never null, but may be empty.
+     */
+    public String getValidityStartTime() {
+        return getValueDefaultEmpty(STARTTIME);
+    }
+    
+    public boolean getValidityEndTimeUsed() {
+        return getUse(ENDTIME, 0);
+    }
+    
+    public boolean getValidityEndTimeModifiable() {
+        return isModifyable(ENDTIME, 0);
+    }
+    
+    /**
+     * Optional validity end time in absolute "yyyy-MM-dd HH:mm" or relative "days:hours:minutes" format.
+     * @return End time. Never null, but may be empty.
+     */
+    public String getValidityEndTime() {
+        return getValueDefaultEmpty(ENDTIME);
+    }
+    
+    public boolean getCardNumberUsed() {
+        return getUse(CARDNUMBER, 0);
+    }
+    
+    public boolean getCardNumberRequired() {
+        return isRequired(CARDNUMBER, 0);
     }
     
     public boolean getKeyRecoverableUsed() {
@@ -1022,10 +1112,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * been uploaded null is returned
      */
     public String getPrinterSVGData(){
-    	if (data.get(PRINTINGSVGDATA) == null) {
+        final String value = (String) data.get(PRINTINGSVGDATA);
+    	if (StringUtils.isBlank(value)) {
     		return null;
     	}
-    	return new String(Base64.decode(((String) data.get(PRINTINGSVGDATA)).getBytes()));
+    	return new String(Base64.decode(value.getBytes(StandardCharsets.US_ASCII)));
     }
     
     public void setPrinterSVGData(final String sVGData){
@@ -2226,26 +2317,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return DnComponents.getDirAttrFields().toArray(new String[0]);
     }
     
-    public List<String> getNameConstraintsPermitted() {
-        List<String> ret = new ArrayList<>();
-        String value = getValue(NAMECONSTRAINTS_PERMITTED, 0);
-        if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
-        return ret;
+    public boolean getNameConstraintsPermittedUsed() {
+        return getUse(NAMECONSTRAINTS_PERMITTED, 0);
     }
     
-    public void setNameConstraintsPermitted(List<String> encodedNames) {
-        setValue(NAMECONSTRAINTS_PERMITTED, 0, StringUtils.join(encodedNames, SPLITCHAR));
+    public boolean getNameConstraintsPermittedRequired() {
+        return isRequired(NAMECONSTRAINTS_PERMITTED, 0);
     }
     
-    public List<String> getNameConstraintsExcluded() {
-        List<String> ret = new ArrayList<>();
-        String value = getValue(NAMECONSTRAINTS_EXCLUDED, 0);
-        if (value != null && !value.trim().isEmpty()) { ret.addAll(Arrays.asList(value.split(SPLITCHAR))); }
-        return ret;
+    public boolean getNameConstraintsExcludedUsed() {
+        return getUse(NAMECONSTRAINTS_EXCLUDED, 0);
     }
     
-    public void setNameConstraintsExcluded(List<String> encodedNames) {
-        setValue(NAMECONSTRAINTS_EXCLUDED, 0, StringUtils.join(encodedNames, SPLITCHAR));
+    public boolean getNameConstraintsExcludedRequired() {
+        return isRequired(NAMECONSTRAINTS_EXCLUDED, 0);
     }
     
     /**
