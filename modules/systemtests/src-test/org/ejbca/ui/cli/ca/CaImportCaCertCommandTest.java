@@ -69,6 +69,8 @@ public class CaImportCaCertCommandTest {
     private static final String[] SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "--signedby", "External", "-externalcachain", "chain.pem" };
     private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, "cert.pem" };
+    
+    private static final String[] IMPORT_INIT_AUTH_ARGS = {CA_NAME, "cert.pem", "-initauthorization", "-superadmincn", "admin"};
 
     private CaInitCommand caInitCommand;
     private CaImportCACertCommand caImportCaCertCommand;
@@ -137,7 +139,6 @@ public class CaImportCaCertCommandTest {
                 BouncyCastleProvider.PROVIDER_NAME).build(keys.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
-
     }
 
     @After
@@ -171,7 +172,6 @@ public class CaImportCaCertCommandTest {
             certfile.deleteOnExit();
 
         }
-
     }
     
     /** Test happy path for importing a binary CA certificate*/
@@ -193,7 +193,26 @@ public class CaImportCaCertCommandTest {
             certfile.deleteOnExit();
 
         }
-
     }
 
+    /** Test importing CA certificate using initauth parameter. Expected result is a newly created CA */
+    @Test
+    public void testImportCaCertPemInit() throws Exception {
+        File certfile = new File(CA_NAME + "_cert.pem");
+        try {
+            // Now we have issued a certificate, import it
+            FileOutputStream fos = new FileOutputStream(certfile);
+            fos.write(CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) cert)));
+            fos.close();
+            IMPORT_INIT_AUTH_ARGS[1] = certfile.getAbsolutePath();
+            IMPORT_INIT_AUTH_ARGS[IMPORT_INIT_AUTH_ARGS.length -1] = admin.toString();
+            assertEquals(CommandResult.SUCCESS, caImportCaCertCommand.execute(IMPORT_INIT_AUTH_ARGS));
+            CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
+            assertNotNull("CA signed by external CA does not exist.", cainfo);
+            assertEquals("importing a CA certificate using parameter --initauthorization should result in status 'active'", CAConstants.CA_ACTIVE,
+                    cainfo.getStatus());
+        } finally {
+            certfile.deleteOnExit();
+        }
+    }
 }
