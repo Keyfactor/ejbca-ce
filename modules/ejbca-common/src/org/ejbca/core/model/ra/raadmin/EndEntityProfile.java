@@ -787,14 +787,38 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public int getDefaultCertificateProfile() {
         int ret = -1;
         final String str = getValue(DEFAULTCERTPROFILE,0);
-        if (str != null && !StringUtils.isEmpty(str)) {
-            ret = Integer.valueOf(str);
+        if (StringUtils.isNotEmpty(str)) {
+            ret = Integer.parseInt(str);
         }
         return ret;
     }
     
     public void setDefaultCertificateProfile(final int certificateProfileId) {
         setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, String.valueOf(certificateProfileId));
+    }
+    
+    /**
+     * Returns the default token type, such as "User generated" or "PCKS#12"
+     * @return One of the SecConst.TOKEN_SOFT_* constants
+     */
+    public int getDefaultTokenType() {
+        int ret = SecConst.TOKEN_SOFT_BROWSERGEN;
+        final String str = getValue(EndEntityProfile.DEFKEYSTORE, 0);
+        if (StringUtils.isNotEmpty(str)) {
+            ret = Integer.parseInt(str);
+        }
+        return ret;
+    }
+    
+    public List<Integer> getAvailableTokenTypes() {
+        final List<Integer> ret = new ArrayList<>();
+        final String str = getValue(EndEntityProfile.AVAILKEYSTORE, 0);
+        if (StringUtils.isNotEmpty(str)) {
+            for (final String elem : str.split(SPLITCHAR)) {
+                ret.add(Integer.parseInt(elem));
+            }
+        }
+        return ret;
     }
     
     public String getUsernameDefault() {
