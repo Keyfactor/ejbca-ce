@@ -9,7 +9,7 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.net.InetAddress;
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -39,11 +40,11 @@ import org.cesecore.util.CeSecoreNameStyle;
 /**
  * Extension for Name Constraints.
  * <a href="https://tools.ietf.org/html/rfc5280#section-4.2.1.10">RFC 5280</a>
- * 
+ *
  * For storing Name Constraints, an internal encoded form is used. The format is "type-id:data"
  * where data is either a regular string or hex-encoded data, depending on the type.
  * Use parseNameConstraintList to convert human-readable strings into encoded strings.
- * 
+ *
  * @version $Id$
  */
 public class NameConstraint extends StandardCertificateExtension {
@@ -60,28 +61,28 @@ public class NameConstraint extends StandardCertificateExtension {
     public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         NameConstraints nc = null;
-        
+
         if (!(ca instanceof X509CA)) {
             throw new CertificateExtensionException("Can't issue non-X509 certificate with Name Constraint");
         }
-        
+
         final ExtendedInformation ei = userData.getExtendedInformation();
         if (ei != null) {
             final List<String> permittedNames = ei.getNameConstraintsPermitted();
             final List<String> excludedNames = ei.getNameConstraintsExcluded();
-            
+
             // Do not include an empty name constraints extension
             if (permittedNames != null || excludedNames != null) {
                 final GeneralSubtree[] permitted = toGeneralSubtrees(permittedNames);
                 final GeneralSubtree[] excluded = toGeneralSubtrees(excludedNames);
-                
+
                 nc = new NameConstraints(permitted, excluded);
             }
         }
-        
+
         return nc;
     }
-    
+
     /**
      * Converts a list of encoded strings of Name Constraints into ASN1 GeneralSubtree objects.
      * This is needed when creating an BouncyCastle ASN1 NameConstraint object for inclusion
@@ -91,7 +92,7 @@ public class NameConstraint extends StandardCertificateExtension {
         if (list == null) {
             return null;
         }
-        
+
         GeneralSubtree[] ret = new GeneralSubtree[list.size()];
         int i = 0;
         for (String entry : list) {
@@ -116,16 +117,24 @@ public class NameConstraint extends StandardCertificateExtension {
         }
         return ret;
     }
-    
+
     /**
      * Returns the GeneralName type code for an encoded Name Constraint.
      */
     private static int getNameConstraintType(String encoded) {
         String typeString = encoded.split(":", 2)[0];
-        if ("iPAddress".equals(typeString)) return GeneralName.iPAddress;
-        if ("dNSName".equals(typeString)) return GeneralName.dNSName;
-        if ("directoryName".equals(typeString)) return GeneralName.directoryName;
-        if ("rfc822Name".equals(typeString)) return GeneralName.rfc822Name;
+        if ("iPAddress".equals(typeString)) {
+            return GeneralName.iPAddress;
+        }
+        if ("dNSName".equals(typeString)) {
+            return GeneralName.dNSName;
+        }
+        if ("directoryName".equals(typeString)) {
+            return GeneralName.directoryName;
+        }
+        if ("rfc822Name".equals(typeString)) {
+            return GeneralName.rfc822Name;
+        }
         throw new UnsupportedOperationException("Unsupported name constraint type "+typeString);
     }
 
@@ -135,7 +144,7 @@ public class NameConstraint extends StandardCertificateExtension {
     private static Object getNameConstraintData(String encoded) {
         int type = getNameConstraintType(encoded);
         String data = encoded.split(":", 2)[1];
-        
+
         switch (type) {
         case GeneralName.dNSName:
         case GeneralName.directoryName:
@@ -151,15 +160,15 @@ public class NameConstraint extends StandardCertificateExtension {
             throw new UnsupportedOperationException("Unsupported name constraint type "+type);
         }
     }
-    
+
     /**
      * Parses a single name constraint entry in human-readable form into
      * an encoded string for database storage etc. The intention is to make it possible
      * to change the human readable form at a later point.
-     * 
+     *
      * This format is essentially a hex string representation of a RFC 5280 GeneralName,
      * but only DNS Names and IP Addresses are supported so far.
-     * 
+     *
      * @throws CertificateExtensionException if the string can not be parsed.
      */
     public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
@@ -171,7 +180,7 @@ public class NameConstraint extends StandardCertificateExtension {
                 byte[] addr = InetAddress.getByName(pieces[0]).getAddress();
                 byte[] encoded = new byte[2*addr.length]; // will hold address and netmask
                 System.arraycopy(addr, 0, encoded, 0, addr.length);
-                
+
                 // The second half in the encoded form is the netmask
                 int netmask = Integer.parseInt(pieces[1]);
                 if (netmask > 8*addr.length) {
@@ -210,7 +219,7 @@ public class NameConstraint extends StandardCertificateExtension {
             throw new CertificateExtensionException("Cannot parse name constraint entry (only DNS Name, RFC 822 Name, Directory Name, IPv4/Netmask and IPv6/Netmask are supported): "+str);
         }
     }
-    
+
     /**
      * Parses human readable name constraints, one entry per line, into a list of encoded name constraints.
      * @see parseNameConstraintEntry
@@ -228,7 +237,7 @@ public class NameConstraint extends StandardCertificateExtension {
         }
         return encodedNames;
     }
-    
+
     /**
      * Formats an encoded name constraint from parseNameConstraintEntry into human-readable form.
      */
@@ -236,10 +245,10 @@ public class NameConstraint extends StandardCertificateExtension {
         if (encoded == null) {
             return "";
         }
-        
+
         int type = getNameConstraintType(encoded);
         Object data = getNameConstraintData(encoded);
-        
+
         switch (type) {
         case GeneralName.dNSName:
         case GeneralName.directoryName:
@@ -250,10 +259,10 @@ public class NameConstraint extends StandardCertificateExtension {
             byte[] netmaskBytes = new byte[bytes.length/2];
             System.arraycopy(bytes, 0, ip, 0, ip.length);
             System.arraycopy(bytes, ip.length, netmaskBytes, 0, netmaskBytes.length);
-            
+
             int netmask = 0;
             for (int i = 0; i < 8*netmaskBytes.length; i++) {
-                final boolean one = (netmaskBytes[i/8] >> (7 - i%8) & 1) == 1; 
+                final boolean one = (netmaskBytes[i/8] >> (7 - i%8) & 1) == 1;
                 if (one && netmask == i) {
                     netmask++; // leading ones
                 } else if (one) {
@@ -261,7 +270,7 @@ public class NameConstraint extends StandardCertificateExtension {
                     throw new IllegalArgumentException("Unsupported netmask with mixed ones/zeros");
                 }
             }
-            
+
             try {
                 return InetAddress.getByAddress(ip).getHostAddress() + "/" + netmask;
             } catch (UnknownHostException e) {
@@ -270,28 +279,17 @@ public class NameConstraint extends StandardCertificateExtension {
         case GeneralName.rfc822Name:
             // Prepend @ is it's only the domain part to distinguish from DNS names
             String str = (String)data;
-            return (str.contains("@") ? str : "@"+str); 
+            return (str.contains("@") ? str : "@"+str);
         default:
             throw new UnsupportedOperationException("Unsupported name constraint type "+type);
         }
     }
-    
+
     /**
-     * Formats an encoded list of name constraints into a human-readable list, with one entry per line
+     * Formats an encoded list of name constraints into a human-readable list, with one entry per line.
+     * @return a newline-separated string of encoded name constraints
      */
-    public static String formatNameConstraintsList(List<String> encodedList) {
-        StringBuilder sb = new StringBuilder();
-        if (encodedList != null) {
-            boolean first = true;
-            for (String encodedName : encodedList) {
-                if (!first) {
-                    sb.append('\n');
-                }
-                first = false;
-                sb.append(formatNameConstraintEntry(encodedName));
-            }
-        }
-        return sb.toString();
+    public static String formatNameConstraintsList(List<String> nameConstraints) {
+        return StringUtils.join(nameConstraints.toArray(), System.lineSeparator());
     }
-    
 }
