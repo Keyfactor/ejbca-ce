@@ -2118,10 +2118,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Map<Integer, String> allEndEntityProfileIdMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
                 for (Integer endEntityProfileId : allEndEntityProfileIdMap.keySet()) {
                     EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-                    Collection<String> availCAs = endEntityProfile.getAvailableCAs();
-                    if (availCAs.contains(caidBeforeNameChange + "") && !availCAs.contains(caid + "")) {
-                        availCAs.add(caid + "");
-                        endEntityProfile.setAvailableCAsIDsAsStrings(availCAs);
+                    Collection<Integer> availCAs = endEntityProfile.getAvailableCAs();
+                    if (availCAs.contains(caidBeforeNameChange) && !availCAs.contains(caid)) {
+                        availCAs.add(caid);
+                        endEntityProfile.setAvailableCAs(availCAs);
                         endEntityProfileSession.changeEndEntityProfile(authenticationToken, allEndEntityProfileIdMap.get(endEntityProfileId),
                                 endEntityProfile);
                     }

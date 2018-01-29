@@ -106,7 +106,7 @@ public class CaExportImportProfilesCommandTest {
             profile.setValue(EndEntityProfile.DEFAULTCA, 0, Integer.toString(caid)); 
             eeProfileSession.addEndEntityProfile(admin, profilename, profile);
             EndEntityProfile prof = eeProfileSession.getEndEntityProfile(profilename);
-            Collection<String> availcas = prof.getAvailableCAs();
+            Collection<Integer> availcas = prof.getAvailableCAs();
             assertEquals("There should be two available CA in the profile: "+availcas, 2, availcas.size());
 
             // Start the tests
@@ -119,8 +119,8 @@ public class CaExportImportProfilesCommandTest {
             assertNotNull(prof);
             availcas = prof.getAvailableCAs();
             assertEquals("There should be two available CA in the profile: "+availcas, 2, availcas.size());
-            assertTrue("EE profile "+caid+" should exist", availcas.contains(Integer.toString(caid)));
-            assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
+            assertTrue("EE profile "+caid+" should exist", availcas.contains(caid));
+            assertTrue("EE profile ANYCA should exist", availcas.contains(SecConst.ALLCAS));
             assertEquals("DefaultCA should be our test CA", caid, prof.getDefaultCA());
 
             // Import profiles again, after removing the profile, should be identical
@@ -130,8 +130,8 @@ public class CaExportImportProfilesCommandTest {
             assertNotNull(prof);
             availcas = prof.getAvailableCAs();
             assertEquals("There should be two available CA in the profile: " + availcas, 2, availcas.size());
-            assertTrue("EE profile "+caid+" should exist", availcas.contains(Integer.toString(caid)));
-            assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
+            assertTrue("EE profile "+caid+" should exist", availcas.contains(caid));
+            assertTrue("EE profile ANYCA should exist", availcas.contains(SecConst.ALLCAS));
             assertEquals("DefaultCA should be our test CA", caid, prof.getDefaultCA());
 
             // Now remove the CA and import the profile again, the removed CA id should be removed from the profile
@@ -144,8 +144,8 @@ public class CaExportImportProfilesCommandTest {
             assertNotNull(prof);
             availcas = prof.getAvailableCAs();
             assertEquals("There should only be one (ANYCA) available CA in the profile: " + availcas, 1, availcas.size());
-            assertFalse("CA "+caid+" should not exist", availcas.contains(Integer.toString(caid)));
-            assertTrue("EE profile ANYCA should exist", availcas.contains(Integer.toString(SecConst.ALLCAS)));
+            assertFalse("CA "+caid+" should not exist", availcas.contains(caid));
+            assertTrue("EE profile ANYCA should exist", availcas.contains(SecConst.ALLCAS));
             assertEquals("DefaultCA should not be our test CA", -1, prof.getDefaultCA()); // -1 means that the default CA is not set
         } finally {
             eeProfileSession.removeEndEntityProfile(admin, profilename);

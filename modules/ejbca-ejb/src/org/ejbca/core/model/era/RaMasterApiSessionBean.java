@@ -1491,9 +1491,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final Set<Integer> cpIdsInAuthorizedEeps = new HashSet<>();
         for (final Integer eepId : authorizedEepIds) {
             final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(eepId);
-            for (final String availableCertificateProfileId : eep.getAvailableCertificateProfileIds()) {
-                cpIdsInAuthorizedEeps.add(Integer.parseInt(availableCertificateProfileId));
-            }
+            cpIdsInAuthorizedEeps.addAll(eep.getAvailableCertificateProfileIds());
         }
         authorizedCpIds.retainAll(cpIdsInAuthorizedEeps);
         final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();

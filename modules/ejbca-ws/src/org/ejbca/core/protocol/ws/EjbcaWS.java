@@ -2590,13 +2590,12 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 			final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
 			if (profile != null) {
-			    final Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
+			    final Collection<Integer> cas = profile.getAvailableCAs(); // list of CA ids available in profile
 			    final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
-				for (String id : cas ) {
-					Integer i = Integer.valueOf(id);
-					String name = map.get(i);
+				for (int id : cas) {
+					String name = map.get(id);
 					if (name != null) {
-						ret.put(name, i);
+						ret.put(name, id);
 					}
 				}
 			}

@@ -98,10 +98,9 @@ public final class CAIdTools {
     public static boolean updateCAIds(final EndEntityProfile endEntityProfile, final int fromId, final int toId, final String toSubjectDN) {
         boolean changed = false;
         
-        final Collection<String> original = endEntityProfile.getAvailableCAs();
+        final Collection<Integer> original = endEntityProfile.getAvailableCAs();
         final List<Integer> updated = new ArrayList<>();
-        for (String oldvalueStr : original) {
-            int oldvalue = Integer.valueOf(oldvalueStr);
+        for (int oldvalue : original) {
             int newvalue;
             if (oldvalue == fromId) {
                 newvalue = toId;
@@ -260,7 +259,7 @@ public final class CAIdTools {
     /**
      * Updates any references to a CA's CAId and Subject DN in the given role and list of role members.
      * @param role Role to modify.
-     * @param members List of the role's members. The members may be modified.
+     * @param roleMembers List of the role's members. The members may be modified.
      * @param fromId Old CA Id.
      * @param toId New CA Id.
      * @param toSubjectDN New CA Subject DN.
