@@ -183,9 +183,9 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
         for (Integer profileIds : endEntityProfileIdToNameMap.keySet()) {
             EndEntityProfile endEntityProfile = endEntityProfileSessionRemote.getEndEntityProfile(profileIds);
             int cAHitCounter = 0;
-            for (String availableCAIdAsString : endEntityProfile.getAvailableCAs()) {
-                if (availableCAIdAsString.equalsIgnoreCase(caInfoBeforeNameChange.getCAId() + "") ||
-                        availableCAIdAsString.equalsIgnoreCase(caInfoAfterNameChange.getCAId() + "")) {
+            for (int availableCAId : endEntityProfile.getAvailableCAs()) {
+                if (availableCAId == caInfoBeforeNameChange.getCAId() ||
+                        availableCAId == caInfoAfterNameChange.getCAId()) {
                     cAHitCounter++;
                 }
             }

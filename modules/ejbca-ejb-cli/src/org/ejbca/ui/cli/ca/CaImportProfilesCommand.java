@@ -189,7 +189,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         String availableCertProfiles = "";
                                         String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
                                         //getLogger().debug("Debug: Org - AVAILCERTPROFILES " + eprofile.getValue(EndEntityProfile.AVAILCERTPROFILES,0) + " DEFAULTCERTPROFILE "+defaultCertProfile);
-                                        for (String currentCertProfile : eprofile.getAvailableCertificateProfileIds()) {
+                                        for (String currentCertProfile : eprofile.getAvailableCertificateProfileIdsAsStrings()) {
                                             Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
                                             Integer replacementCertProfileId = certificateProfileIdMapping.get(currentCertProfileId);
                                             if (replacementCertProfileId != null) {

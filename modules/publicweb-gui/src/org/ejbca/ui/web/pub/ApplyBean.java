@@ -196,12 +196,11 @@ public class ApplyBean implements Serializable {
         }
 
         if (endEntityInformation != null) {
-            EndEntityProfile eprof = ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfile(endEntityInformation.getEndEntityProfileId());
-            Collection<String> c = eprof.getAvailableCertificateProfileIds();
-            if (!c.isEmpty()) {
-            	ArrayList<String> names = new ArrayList<String>();
-                for (Iterator<String> i = c.iterator(); i.hasNext(); ) {
-                	int id = Integer.valueOf(i.next());
+            final EndEntityProfile eprof = ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfile(endEntityInformation.getEndEntityProfileId());
+            final Collection<Integer> ids = eprof.getAvailableCertificateProfileIds();
+            if (!ids.isEmpty()) {
+            	final ArrayList<String> names = new ArrayList<>();
+            	for (int id : ids) {
                     String name = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(id);
                 	names.add(name);
                 }

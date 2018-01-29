@@ -1338,15 +1338,15 @@ public class EjbcaWebBean implements Serializable {
         if (endEntityProfile == null) {
             return Collections.emptyList();
         }
-        final Collection<String> certificateAuthorityIds = endEntityProfile.getAvailableCAs();
-        if (certificateAuthorityIds.contains("1")) {
+        final Collection<Integer> certificateAuthorityIds = endEntityProfile.getAvailableCAs();
+        if (certificateAuthorityIds.contains(CAConstants.ALLCAS)) {
             // End entity contains "Any CA"
             final List<String> certificateAuthorities = new ArrayList<>(getCANames().keySet());
             return addKeyIdAndSort(certificateAuthorities);
         }
         final List<String> certificateAuthorities = new ArrayList<>();
-        for (final String id : certificateAuthorityIds) {
-            final CA ca = caSession.getCANoLog(administrator, Integer.parseInt(id));
+        for (final int id : certificateAuthorityIds) {
+            final CA ca = caSession.getCANoLog(administrator, id);
             certificateAuthorities.add(ca.getName());
         }
         return addKeyIdAndSort(certificateAuthorities);
@@ -1371,10 +1371,10 @@ public class EjbcaWebBean implements Serializable {
         if (profile == null) {
             return Collections.emptyList();
         }
-        final Collection<String> certificateProfileIds = profile.getAvailableCertificateProfileIds();
+        final Collection<Integer> certificateProfileIds = profile.getAvailableCertificateProfileIds();
         final List<String> certificateProfiles = new ArrayList<>();
-        for (final String id : certificateProfileIds) {
-            final String certificateProfile = certificateProfileSession.getCertificateProfileName(Integer.parseInt(id));
+        for (final int id : certificateProfileIds) {
+            final String certificateProfile = certificateProfileSession.getCertificateProfileName(id);
             certificateProfiles.add(certificateProfile);
         }
         return addKeyIdAndSort(certificateProfiles);
@@ -1393,7 +1393,7 @@ public class EjbcaWebBean implements Serializable {
         if (profile == null) {
             return Collections.emptyList();
         }
-        final Collection<String> certificateProfileIds = profile.getAvailableCertificateProfileIds();
+        final Collection<String> certificateProfileIds = profile.getAvailableCertificateProfileIdsAsStrings();
         return certificateProfileIds;
     }
 
