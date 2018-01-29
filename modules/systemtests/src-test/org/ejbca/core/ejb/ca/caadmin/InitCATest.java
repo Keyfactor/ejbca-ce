@@ -79,7 +79,7 @@ import org.junit.Test;
 
 /**
  * Tests initialization of uninitialized CAs (e.g. imported from statedumps).
- * 
+ *
  * @version $Id$
  */
 public class InitCATest extends CaTestCase {
@@ -108,12 +108,12 @@ public class InitCATest extends CaTestCase {
     private static final String KEYBINDING_NAME = "TestChangeSubjectDN_IKB";
     private static final String ROLE_NAME = "TestChangeSubjectDN_Role";
     private static final String CMP_ALIAS = "TestChangeSubjectDN_CMP";
-    
+
     private static final String NEW_DN = "CN=RenamedTestCA";
 
     @Override
     public String getRoleName() {
-        return this.getClass().getSimpleName(); 
+        return this.getClass().getSimpleName();
     }
 
     /**
@@ -123,7 +123,7 @@ public class InitCATest extends CaTestCase {
     public void testInitializeCa() throws Exception {
         log.trace(">testInitializeCa");
         final String caName = "testInitializeCa";
-        
+
         removeOldCa(caName);
         final CAInfo x509CaInfo = createUnititializedCaInfo(caName, caName);
         caAdminSession.createCA(admin, x509CaInfo);
@@ -141,19 +141,19 @@ public class InitCATest extends CaTestCase {
         }
         log.trace("<testInitializeCa");
     }
-    
+
     /**
      * Tests creating an unitialized CA and then initializing it.
      */
     @Test
     public void testInitializeCaAndChangeSubjectDn() throws Exception {
         log.trace(">testInitializeCaAndChangeSubjectDn");
-        
+
         Integer keybindId = null;
-        
+
         // Remove old test data
         deleteTestData();
-        
+
         // Create CA
         log.debug("Creating CA");
         final CAInfo x509CaInfo = createUnititializedCaInfo(RENAME_CA, RENAME_CA);
@@ -162,25 +162,25 @@ public class InitCATest extends CaTestCase {
             final CAInfo retrievedCaInfo = caSession.getCAInfo(admin, x509CaInfo.getCAId());
             assertEquals("CA was not created unitialized", CAConstants.CA_UNINITIALIZED, retrievedCaInfo.getStatus());
             assertTrue("Unitialized CA was given certificate chain", retrievedCaInfo.getCertificateChain().isEmpty());
-            
+
             // Add some data that references the CA
             log.debug("Adding CA references");
             final int origCaId = x509CaInfo.getCAId();
             CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
             certProf.setAvailableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
             certificateProfileSession.addCertificateProfile(admin, CERT_PROFILE_NAME, certProf);
-            
+
             EndEntityProfile eeProf = new EndEntityProfile();
             eeProf.setAvailableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
             eeProf.setDefaultCA(origCaId);
             endEntityProfileSession.addEndEntityProfile(admin, ENDENTITY_PROFILE_NAME, eeProf);
-            
+
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
             userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
             userdatasource.setDescription("Used in Junit Test, Remove this one");
             userdatasource.setApplicableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
             userDataSourceSession.addUserDataSource(admin, DATASOURCE_NAME, userdatasource);
-            
+
             ServiceConfiguration sc = new ServiceConfiguration();
             Properties workerProperties = new Properties();
             workerProperties.put(BaseWorker.PROP_CAIDSTOCHECK, "1234;"+origCaId);
@@ -188,7 +188,7 @@ public class InitCATest extends CaTestCase {
             sc.setPinToNodes(new String[] {"some","hosts"});
             sc.setActive(false);
             serviceSession.addService(admin, SERVICE_NAME, sc);
-            
+
             final CAToken caToken = x509CaInfo.getCAToken();
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             final List<InternalKeyBindingTrustEntry> trustedcerts = new ArrayList<InternalKeyBindingTrustEntry>();
@@ -196,15 +196,15 @@ public class InitCATest extends CaTestCase {
             keybindId = keyBindMgmtSession.createInternalKeyBinding(admin, OcspKeyBinding.IMPLEMENTATION_ALIAS, KEYBINDING_NAME, InternalKeyBindingStatus.DISABLED, null,
                     caToken.getCryptoTokenId(), caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
                     caToken.getSignatureAlgorithm(), dataMap, trustedcerts);
-            
-            // Global configuration is not tested since we can't test that without overwriting data 
-            
+
+            // Global configuration is not tested since we can't test that without overwriting data
+
             CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             cmpConfig.addAlias(CMP_ALIAS);
             cmpConfig.setCMPDefaultCA(CMP_ALIAS, "CN="+RENAME_CA);
             cmpConfig.setRACAName(CMP_ALIAS, RENAME_CA); // this one shouldn't need to be updated, but it's tested anyway
             globalConfigurationSession.saveConfiguration(admin, cmpConfig);
-            
+
             final Role role = roleSession.persistRole(admin, new Role(null, ROLE_NAME));
             final RoleMember roleMember = roleMemberSession.persist(admin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                     origCaId, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
@@ -213,33 +213,33 @@ public class InitCATest extends CaTestCase {
             log.debug("Trying to initialize with changed Subject DN");
             retrievedCaInfo.setSubjectDN(NEW_DN);
             caAdminSession.initializeCa(admin, retrievedCaInfo);
-            
+
             final CAInfo updatedCaInfo = caSession.getCAInfo(admin, CertTools.stringToBCDNString(NEW_DN).hashCode());
             assertEquals("CA was not set to active", CAConstants.CA_ACTIVE, updatedCaInfo.getStatus());
             assertFalse("Initialized CA was not given certificate chain", updatedCaInfo.getCertificateChain().isEmpty());
-            
+
             // Check references from other tables
             final int newCaId = caSession.getCAInfo(admin, RENAME_CA).getCAId();
-            
+
             certProf = certificateProfileSession.getCertificateProfile(CERT_PROFILE_NAME);
             assertEquals("CAId was not updated in certificate profile.", newCaId, (int)certProf.getAvailableCAs().get(0));
-            
+
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
-            assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getAvailableCAs().iterator().next());
+            assertEquals("CAId was not updated in end-entity profile.", new Integer(newCaId), eeProf.getAvailableCAs().iterator().next());
             assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
-            
+
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
             assertEquals("CAId was not updated in user data source.", newCaId, (int)userdatasource.getApplicableCAs().iterator().next());
-            
+
             // Unfortunately, CA Id replacement inside services does not work on all app servers
             /*final int serviceId = serviceSession.getServiceId(SERVICE_NAME);
             sc = serviceSession.getServiceConfiguration(admin, serviceId);
             workerProperties = sc.getWorkerProperties();
             assertEquals("CAIds were not updated (or were incorrect) in service.", "1234;"+newCaId, workerProperties.getProperty(BaseWorker.PROP_CAIDSTOCHECK));*/
-            
+
             final InternalKeyBindingInfo keybind = keyBindMgmtSession.getInternalKeyBindingInfo(admin, keybindId);
             assertEquals("CAId was not updated in keybinding trusted certificate reference.", newCaId, keybind.getTrustedCertificateReferences().get(0).getCaId());
-            
+
             cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             assertEquals("CA Subject DN was not updated in CMP config", NEW_DN, cmpConfig.getCMPDefaultCA(CMP_ALIAS));
             final RoleMember roleMemberAfterInit = roleMemberSession.getRoleMember(admin, roleMember.getId());
@@ -249,10 +249,10 @@ public class InitCATest extends CaTestCase {
             deleteTestData();
         }
     }
-    
+
     private CAInfo createUnititializedCaInfo(String cryptoTokenName, String caName) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException {
         log.trace(">createUnititializedCaInfo");
-        
+
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
         int cryptoTokenId;
@@ -274,7 +274,7 @@ public class InitCATest extends CaTestCase {
         }
 
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        
+
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -288,11 +288,11 @@ public class InitCATest extends CaTestCase {
         final X509CAInfo x509CaInfo = new X509CAInfo("CN="+caName, caName, CAConstants.CA_UNINITIALIZED,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         x509CaInfo.setDescription("JUnit RSA CA");
-                
+
         log.trace("<createUnititializedCaInfo");
         return x509CaInfo;
     }
-    
+
     private void deleteTestData() throws AuthorizationDeniedException {
         log.trace(">deleteTestData");
         removeOldCa(RENAME_CA);
