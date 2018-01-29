@@ -290,6 +290,6 @@ public class NameConstraint extends StandardCertificateExtension {
      * @return a newline-separated string of encoded name constraints
      */
     public static String formatNameConstraintsList(List<String> nameConstraints) {
-        return StringUtils.join(nameConstraints.toArray(), System.lineSeparator());
+        return StringUtils.join(nameConstraints.toArray(), '\n');
     }
 }
