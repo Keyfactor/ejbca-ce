@@ -327,8 +327,8 @@ public class RequestInstance {
                 if (id > 0) {
 					if (id != certificateProfileId) {
 						// Check if it is in allowed profiles in the entity profile
-						Collection<String> c = endEntityProfile.getAvailableCertificateProfileIds();
-						if (c.contains(String.valueOf(id))) {
+						final Collection<Integer> ids = endEntityProfile.getAvailableCertificateProfileIds();
+						if (ids.contains(id)) {
 							data.setCertificateProfileId(id);
 							// This admin can be the public web user, which may not be allowed to change status,
 							// this is a bit ugly, but what can a man do...

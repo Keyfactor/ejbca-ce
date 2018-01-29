@@ -1334,7 +1334,7 @@ public class RAInterfaceBean implements Serializable {
             // Translate cert profile ids that have changed after import
             String availableCertProfiles = "";
             String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-            for (String currentCertProfile : eprofile.getAvailableCertificateProfileIds()) {
+            for (String currentCertProfile : eprofile.getAvailableCertificateProfileIdsAsStrings()) {
                 Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
 
                 if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null

@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -449,9 +450,9 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         }
         EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
         final List<SelectItem> ret = new ArrayList<>();
-        Collection<String> cpids = p.getAvailableCertificateProfileIds();
-        for(String cpid : cpids) {
-            String cpname = certProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
+        final Collection<Integer> cpids = p.getAvailableCertificateProfileIds();
+        for(final int cpid : cpids) {
+            String cpname = certProfileSession.getCertificateProfileName(cpid);
             ret.add(new SelectItem(cpname, cpname));
         }
         return ret;
@@ -467,14 +468,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
         final List<SelectItem> ret = new ArrayList<>();
         Map<Integer, String> caidname = getEjbcaWebBean().getCAIdToNameMap();
-        ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
-        Iterator<String> itr = caids.iterator();
-        while (itr.hasNext()) {
-            String caid = itr.next();
-            if (caid.equals("1")) {
+        for (int caid : p.getAvailableCAs()) {
+            if (caid == CAConstants.ALLCAS) {
                 return getAvailableCAs();
             }
-            String caname = caidname.get(Integer.parseInt(caid));
+            String caname = caidname.get(caid);
             ret.add(new SelectItem(caname, caname));
         }
         return ret;

@@ -225,7 +225,7 @@ public class InitCATest extends CaTestCase {
             assertEquals("CAId was not updated in certificate profile.", newCaId, (int)certProf.getAvailableCAs().get(0));
             
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
-            assertEquals("CAId was not updated in end-entity profile.", newCaId, Integer.parseInt(eeProf.getAvailableCAs().iterator().next()));
+            assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getAvailableCAs().iterator().next());
             assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
             
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
