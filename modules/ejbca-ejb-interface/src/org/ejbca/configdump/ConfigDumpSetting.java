@@ -35,6 +35,7 @@ public class ConfigDumpSetting implements Serializable {
     private Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
     private List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
+    private boolean ignoreErrors;
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -75,13 +76,18 @@ public class ConfigDumpSetting implements Serializable {
     public Map<ItemType, List<ConfigdumpPattern>> getExcluded() {
         return excluded;
     }
+    
+    public boolean getIgnoreErrors() {
+        return ignoreErrors;
+    }
 
     public ConfigDumpSetting(final String location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
-            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType) {
+            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors) {
         this.location = location;
         this.included = included;
         this.excluded = excluded;
         this.includedAnyType = includedAnyType;
         this.excludedAnyType = excludedAnyType;
+        this.ignoreErrors = ignoreErrors;
     }
 }
