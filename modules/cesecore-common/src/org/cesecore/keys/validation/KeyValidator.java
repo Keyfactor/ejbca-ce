@@ -17,6 +17,7 @@ import java.security.PublicKey;
 import java.util.List;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.util.ui.DynamicUiModelAware;
 
 /**
  * Base interface for key validators. All key validators must implement this interface.
@@ -24,7 +25,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
  * @version $Id$
  *
  */
-public interface KeyValidator extends Validator, ValidityAwareValidator {
+public interface KeyValidator extends Validator, ValidityAwareValidator, DynamicUiModelAware {
     
     /** List of accepted date formats for notBefore and notAfter filter. */
     static final String[] DATE_FORMAT = new String[] { "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };

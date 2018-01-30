@@ -14,20 +14,30 @@
 package org.cesecore.keys.validation;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
+import org.cesecore.util.ui.DynamicUiActionCallback;
+import org.cesecore.util.ui.DynamicUiCallbackException;
+import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiProperty;
+import org.cesecore.util.ui.PropertyValidationException;
 
 /**
  * External command certificate validator for multiple platforms.
@@ -45,9 +55,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     /** The validator type. */
     private static final String TYPE_IDENTIFIER = "EXTERNAL_CERTIFICATE_VALIDATOR";
-
-    /** View template in /ca/editExternalCommandCertificateValidator.xhtml */
-    protected static final String TEMPLATE_FILE = "editExternalCommandCertificateValidator.xhtml";
 
     /** Literal for external command storage key. */
     protected static final String EXTERNAL_COMMAND = "externalCommand";
@@ -70,6 +77,10 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     /** Holds the STDOUT and ERROUT by the test of the external command. */
     private String testStandardAndErrorOut;
 
+    static {
+        APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
+    }
+    
     /**
      * Public constructor needed for deserialization.
      */
@@ -108,8 +119,42 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     @Override
-    public String getTemplateFile() {
-        return TEMPLATE_FILE;
+    public void initDynamicUiModel() {
+        uiModel = new DynamicUiModelBase(data);
+        uiModel.add(new DynamicUiProperty<String>("settings"));
+        final DynamicUiProperty<String> cmd = new DynamicUiProperty<String>(String.class, EXTERNAL_COMMAND, getExternalCommand());
+        cmd.setRequired(true);
+        uiModel.add(cmd);
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_ERROR_CODE, isFailOnErrorCode()));
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_STANDARD_ERROR, isFailOnStandardError())); 
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut())); 
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_ERROR_OUT, isLogErrorOut()));
+        uiModel.add(new DynamicUiProperty<String>("test"));
+        final DynamicUiProperty<File> testPath = new DynamicUiProperty<File>(File.class, "testPath", null);
+        testPath.setTransientValue(true);
+        uiModel.add(testPath);
+        final DynamicUiProperty<String> testButton = new DynamicUiProperty<String>(String.class, "testCommand", "testCommand");
+        testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
+        testButton.setActionCallback(new DynamicUiActionCallback() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public void action(final Object parameter) throws DynamicUiCallbackException {
+                final List<String> out = testCommand();
+                try {
+                    final String testOut = StringUtils.join(out, System.getProperty("line.separator"));
+                    ((DynamicUiProperty<String>) uiModel.getProperty("testOut")).setValue(testOut);
+                    ((DynamicUiProperty<String>) uiModel.getProperty("testPath")).setValue(null);
+                } catch (PropertyValidationException e) {
+                    log.warn("Could not update dynamic UI property: " + e.getMessage(), e);
+                }
+                setTestCertificates(ListUtils.EMPTY_LIST);
+            }
+        });
+        uiModel.add(testButton);
+        final DynamicUiProperty<String> testOut = new DynamicUiProperty<String>(String.class, "testOut", StringUtils.EMPTY);
+        testOut.setTransientValue(true);
+        testOut.setLabelOnly(true);
+        uiModel.add(testOut);
     }
 
     @Override
@@ -186,58 +231,140 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         return ExternalCommandCertificateValidator.class;
     }
 
-    public void setExternalCommand(String command) {
-        data.put(EXTERNAL_COMMAND, command);
+    /**
+     * Sets the external script path.
+     * @param path the path.
+     */
+    public void setExternalCommand(final String path) {
+        data.put(EXTERNAL_COMMAND, path);
     }
 
+    /**
+     * Gets the external script path
+     * @return the path.
+     */
     public String getExternalCommand() {
         return (String) data.get(EXTERNAL_COMMAND);
     }
 
-    public void setLogStandardOut(boolean state) {
+    /**
+     * Denotes if the STDOUT of the external command or script has to be logged.
+     * @param state true if enabled.
+     */
+    public void setLogStandardOut(final boolean state) {
         data.put(LOG_STANDARD_OUT, Boolean.valueOf(state));
     }
 
+    /**
+     * Denotes if the STDOUT of the external command or script has to be logged.
+     * @return true if enabled.
+     */
     public boolean isLogStandardOut() {
         return ((Boolean) data.get(LOG_STANDARD_OUT)).booleanValue();
     }
 
-    public void setLogErrorOut(boolean state) {
+    /**
+     * Denotes if the ERROUT of the external command or script has to be logged.
+     * @param state true if enabled.
+     */
+    public void setLogErrorOut(final boolean state) {
         data.put(LOG_ERROR_OUT, Boolean.valueOf(state));
     }
 
+    /**
+     * Denotes if the ERROUT of the external command or script has to be logged.
+     * @return true if enabled.
+     */
     public boolean isLogErrorOut() {
         return ((Boolean) data.get(LOG_ERROR_OUT)).booleanValue();
     }
 
-    public void setFailOnErrorCode(boolean state) {
+    /**
+     * Denotes if the command or script has to be considered as failed if the exit code is larger than 0.
+     * @param state true if enabled.
+     */
+    public void setFailOnErrorCode(final boolean state) {
         data.put(FAIL_ON_ERROR_CODE, Boolean.valueOf(state));
     }
 
+    /**
+     * Denotes if the command or script has to be considered as failed if the exit code is larger than 0.
+     * @return true if enabled.
+     */
     public boolean isFailOnErrorCode() {
         return ((Boolean) data.get(FAIL_ON_ERROR_CODE)).booleanValue();
     }
 
-    public void setFailOnStandardError(boolean state) {
+    /**
+     * Denotes if the command or script has to be considered as failed if a log was written to ERROUT.
+     * @param state true if enabled.
+     */
+    public void setFailOnStandardError(final boolean state) {
         data.put(FAIL_ON_STANDARD_ERROR, Boolean.valueOf(state));
     }
 
+    /**
+     * Denotes if the command or script has to be considered as failed if a log was written to ERROUT
+     * @return true if enabled.
+     */
     public boolean isFailOnStandardError() {
         return ((Boolean) data.get(FAIL_ON_STANDARD_ERROR)).booleanValue();
     }
 
     /**
-     * Tests the external command with the uploaded test certificate (chain).
+     * Tests the external command with the uploaded test certificate.
      * @return a list with size > 0 and the exit code in field with index 0 and STDOUT and ERROR appended subsequently.
-     * @throws CertificateException if one of the certificates could not be parsed.
+     * @throws Exception any exception.
      * @throws ValidatorNotApplicableException if the validator could not be applicated (wrong CA or key type, external script path is not in white list).
      * @throws ExternalProcessException if the external script path does not exist or accessible or the script call fails otherwise.
      */
-    public List<String> testExternalCommandCertificateValidatorAction() throws CertificateEncodingException, ValidatorNotApplicableException, ExternalProcessException {
+    @SuppressWarnings("unchecked")
+    public List<String> testCommand() throws DynamicUiCallbackException {
+        log.info("Test external command certificate validator " + getProfileName());
+//        if (validator instanceof ExternalCommandCertificateValidator) {
+//            ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
+//        }
+        final DynamicUiProperty<File> property = (DynamicUiProperty<File>) uiModel.getProperties().get("testPath");
         final List<String> out = new ArrayList<String>();
-        if (CollectionUtils.isNotEmpty(getTestCertificates())) {
-            log.info("Test external command certificate validator: " + getProfileName());
-            out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
+        File file = null;
+        String message = null;
+        if (property != null && (file=property.getValue()) != null && file.exists()) {
+            if (!file.canRead()) {
+                message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilenopermission", file.getAbsolutePath());
+            }
+            if (message == null) {
+                try {
+                    setTestCertificates(CertTools.getCertsFromPEM(file.getAbsolutePath(), Certificate.class));
+                } catch(IOException e) {
+                    message = intres.getLocalizedMessage("process.certificate.filenotfound", file.getAbsolutePath());
+                    log.warn(message, e);
+                } catch(CertificateParsingException e) {
+                    message = intres.getLocalizedMessage("process.certificate.couldnotbeparsed", file.getAbsolutePath());
+                    log.warn(message, e);
+                }
+            }
+            if (message == null) { // Run command.
+                try {
+                    out.addAll(runExternalCommandInternal(getExternalCommand(), ExternalScriptsWhitelist.permitAll(), getTestCertificates()));
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tested certificate with external command STOUT/ERROUT:" + System.getProperty("line.separator") + out);
+                    }
+                } catch (CertificateEncodingException e) {
+                    message = intres.getLocalizedMessage("process.certificate.couldnotbeencoded", file.getAbsolutePath());
+                    log.info(message, e);
+                // 1. command not found, no permission or other exception; 2. not in whitelist.
+                } catch (ExternalProcessException | ValidatorNotApplicableException e) {
+                    message = e.getMessage();
+                    log.info(message, e);
+                }
+            }
+        } else {
+            message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilemissing", getExternalCommand());
+            log.info(message);
+        }
+        
+        if (StringUtils.isNotBlank(message)) {
+            throw new DynamicUiCallbackException(message);
         }
         return out;
     }
@@ -250,8 +377,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         return testCertificates;
     }
 
-    public void setTestCertificates(List<Certificate> testCertificates) {
+    /**
+     * Sets the list of test certificates uploaded by the user.
+     * @param testCertificates the list.
+     */
+    public void setTestCertificates(final List<Certificate> testCertificates) {
         this.testCertificates = testCertificates;
+        if (log.isDebugEnabled()) {
+            log.debug("Test certificates uploaded: " + testCertificates);
+        }
     }
 
     /**
@@ -277,21 +411,29 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return a string list holding exit code at index 0, and the STDOUT and ERROUT appended.
      * @throws CertificateEncodingException if the certificates could not be encoded.
      */
-    private List<String> runExternalCommandInternal(String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
+    private List<String> runExternalCommandInternal(final String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
             final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
         final String cmd = extractCommand(externalCommand);
         if (!externalScriptsWhitelist.isPermitted(cmd)) {
-             throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
+//             throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
+             throw new ValidatorNotApplicableException(intres.getLocalizedMessage("process.whitelist.error.notlisted", cmd));
         }
         // Test if specified script file exists and is executable (hits files and symbolic links, but no aliases).
         if (StringUtils.isNotBlank(cmd)) {
-            if (!(new File(cmd)).canExecute()) {
-                // EXTERNALCERTIFICATEVALIDATORTESTPATHMISSING
-                final String msg = intres.getLocalizedMessage("process.commandnotfound", cmd);
-                log.warn(msg);
-                throw new ExternalProcessException(msg);
+            final File file = new File(cmd);
+            String message;
+            if (!file.exists()) {
+                message = intres.getLocalizedMessage("process.commandnotfound", cmd);
+                log.info(message);
+                throw new ExternalProcessException(message);
+            }
+            if (!file.canExecute()) {
+                message = intres.getLocalizedMessage("process.commandnopermission", cmd);
+                log.info(message);
+                throw new ExternalProcessException(message);
             }
         }
+        // Extract arguments and run external script.
         final List<String> arguments = extractArguments(externalCommand);
         final List<String> out = new ArrayList<String>();
         try {
@@ -306,6 +448,12 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         return out;
     }
 
+    /**
+     * Extracts the script path.
+     * 
+     * @param cmd the external command.
+     * @return the script path (first token in command).
+     */
     private final String extractCommand(String cmd) {
         cmd = cmd.trim();
         final int index = cmd.indexOf(" ");
@@ -318,6 +466,12 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         return cmd;
     }
 
+    /**
+     * Extracts the arguments.
+     * 
+     * @param cmd the external command.
+     * @return the list of arguments (second token to end).
+     */
     private final List<String> extractArguments(String cmd) {
         cmd = cmd.trim();
         final List<String> arguments = new ArrayList<String>();

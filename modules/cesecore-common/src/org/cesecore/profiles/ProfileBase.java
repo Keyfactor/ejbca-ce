@@ -39,6 +39,9 @@ public abstract class ProfileBase extends UpgradeableDataHashMap implements Prof
     private transient String name = null;
     private transient Integer profileId = null;
 
+    /** List separator. */
+    protected static final String LIST_SEPARATOR = ";";
+    
     public ProfileBase() {
         //Public constructor needed deserialization 
     }

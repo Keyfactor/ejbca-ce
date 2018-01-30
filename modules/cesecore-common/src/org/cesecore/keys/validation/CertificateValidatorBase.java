@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.util.ui.DynamicUiModel;
 
 /**
  * @version $Id$
@@ -49,6 +50,9 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
         APPLICABLE_CA_TYPES = new ArrayList<Integer>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
     }
+    
+    /** Dynamic UI model extension. */
+    protected DynamicUiModel uiModel;
     
     /**
      * Public constructor needed for deserialization.
@@ -159,6 +163,11 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
         } catch (ParseException e) {
             log.debug("Could not parse Date: " + formattedDate);
         }
+    }
+    
+    @Override
+    public DynamicUiModel getDynamicUiModel() {
+        return uiModel;
     }
 
     /**

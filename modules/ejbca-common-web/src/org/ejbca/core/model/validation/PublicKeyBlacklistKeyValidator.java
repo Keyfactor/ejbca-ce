@@ -15,19 +15,25 @@ package org.ejbca.core.model.validation;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
@@ -43,19 +49,21 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
 
     private static final long serialVersionUID = 215729318959311916L;
 
-    /** List separator. */
-    private static final String LIST_SEPARATOR = ";";
-
     /** Class logger. */
     private static final Logger log = Logger.getLogger(PublicKeyBlacklistKeyValidator.class);
 
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "BLACKLIST_KEY_VALIDATOR";
 
-    /** View template in /ca/editvalidators. */
-    protected static final String TEMPLATE_FILE = "editBlacklistKeyValidator.xhtml";
-
     protected static final String KEY_ALGORITHMS = "keyAlgorithms";
+    
+    protected static final ArrayList<String> AVAILABLE_KEY_ALGORITHMS = new ArrayList<String>();
+    
+    static {
+        AVAILABLE_KEY_ALGORITHMS.add("DSA");
+        AVAILABLE_KEY_ALGORITHMS.add("RSA");
+        AVAILABLE_KEY_ALGORITHMS.add("ECDSA");
+    }
     
     /** field used for JUnit testing, avoiding lookups so we can control the cache */
     private boolean useOnlyCache = false;
@@ -80,24 +88,45 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     public void init() {
         super.init();
         if (data.get(KEY_ALGORITHMS) == null) {
-            ArrayList<String> algs = new ArrayList<String>();
-            algs.add("RSA");
-            algs.add("ECDSA");
-            setKeyAlgorithms(algs);
+            setKeyAlgorithms(AVAILABLE_KEY_ALGORITHMS);
         }
+    }
+    
+    @Override
+    public void initDynamicUiModel() {
+        uiModel = new DynamicUiModelBase(data);
+        uiModel.add(new DynamicUiProperty<String>("settings"));
+        final LinkedHashMap<String,String> labels = new LinkedHashMap<String,String>();
+        labels.put("-1", "ALL");
+        for (final String algorithm : AlgorithmTools.getAvailableKeyAlgorithms()) {
+            labels.put(algorithm, algorithm);
+        }
+        final DynamicUiProperty<String> keyAlgorithms = new DynamicUiProperty<String>(String.class, KEY_ALGORITHMS, getKeyAlgorithmsAsString(), labels.keySet());
+        keyAlgorithms.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
+        keyAlgorithms.setLabels(labels);
+        keyAlgorithms.setHasMultipleValues(true);
+        // Temp. because it is stored as String.
+        keyAlgorithms.setSaveListAsString(true);
+        keyAlgorithms.setRequired(true);
+        uiModel.add(keyAlgorithms);
     }
 
     /** Gets a list of key algorithms.
      * @return a list.
      */
+    public String getKeyAlgorithmsAsString() {
+        return (String) data.get(KEY_ALGORITHMS);
+    }
+    
+    /** Gets a list of key algorithms.
+     * @return a list.
+     */
     public List<String> getKeyAlgorithms() {
-        final String value = (String) data.get(KEY_ALGORITHMS);
-        final List<String> result = new ArrayList<String>();
-        final String[] tokens = value.trim().split(LIST_SEPARATOR);
-        for (int i = 0, j = tokens.length; i < j; i++) {
-            result.add(tokens[i]);
+        List<String> list = Arrays.asList( StringUtils.split((String) data.get(KEY_ALGORITHMS), LIST_SEPARATOR));
+        if (list == null) {
+            list = new ArrayList<String>();
         }
-        return result;
+        return list;
     }
 
     /** Sets the key algorithms, RSA, ECDSA, ....
@@ -105,20 +134,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
      * @param algorithms list of key algorithms.
      */
     public void setKeyAlgorithms(List<String> algorithms) {
-        final StringBuilder builder = new StringBuilder();
-        for (String index : algorithms) {
-            if (builder.length() == 0) {
-                builder.append(index);
-            } else {
-                builder.append(LIST_SEPARATOR).append(index);
-            }
-        }
-        data.put(KEY_ALGORITHMS, builder.toString());
-    }
-
-    @Override
-    public String getTemplateFile() {
-        return TEMPLATE_FILE;
+        data.put(KEY_ALGORITHMS, StringUtils.join(algorithms, LIST_SEPARATOR));
     }
     
     @Override
@@ -218,5 +234,4 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     protected Class<? extends Profile> getImplementationClass() {
         return PublicKeyBlacklistKeyValidator.class;
     }
-    
 }
