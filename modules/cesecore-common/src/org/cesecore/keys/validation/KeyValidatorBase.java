@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.ui.DynamicUiModel;
 
 /**
  * @version $Id$
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class KeyValidatorBase extends ValidatorBase implements KeyValidator {
 
+    /** Class logger. */
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
     
     private static final long serialVersionUID = 1L;
@@ -40,6 +42,9 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         APPLICABLE_PHASES = new ArrayList<Integer>();
         APPLICABLE_PHASES.add(IssuancePhase.DATA_VALIDATION.getIndex());
     }
+    
+    /** Dynamic UI model extension. */
+    protected DynamicUiModel uiModel;
     
     /**
      * Public constructor needed for deserialization.
@@ -67,6 +72,10 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         if (null == data.get(NOT_AFTER_CONDITION)) {
             setNotAfterCondition(KeyValidatorDateConditions.LESS_THAN.getIndex());
         }
+    }
+   
+    @Override
+    public void initDynamicUiModel() {
     }
 
     @Override
@@ -148,6 +157,10 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
         }
     }
     
+    @Override
+    public DynamicUiModel getDynamicUiModel() {
+        return uiModel;
+    }
     
     /**
      * Formats a date.

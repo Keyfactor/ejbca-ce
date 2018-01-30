@@ -14,7 +14,9 @@
 package org.cesecore.keys.validation;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An enum domain class representing all key validator base parameter options.
@@ -70,6 +72,18 @@ public enum KeyValidatorSettingsTemplate {
         final List<Integer> result = new ArrayList<Integer>();
         for (KeyValidatorSettingsTemplate option : values()) {
             result.add(option.getOption());
+        }
+        return result;
+    }
+    
+    /**
+     * Gets a String list instance containing all I18N label keys.
+     * @return
+     */
+    public static final Map<Integer,String> map() {
+        final Map<Integer,String> result = new LinkedHashMap<Integer,String>();
+        for (KeyValidatorSettingsTemplate option : values()) {
+            result.put(option.getOption(), option.getLabel());
         }
         return result;
     }

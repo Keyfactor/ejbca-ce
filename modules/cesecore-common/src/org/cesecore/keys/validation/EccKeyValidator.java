@@ -18,6 +18,7 @@ import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.math.ec.ECPoint;
@@ -25,6 +26,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.ui.DynamicUiActionCallback;
+import org.cesecore.util.ui.DynamicUiCallbackException;
+import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Default ECC key validator using the Bouncy Castle BCECPublicKey implementation 
@@ -36,7 +41,7 @@ import org.cesecore.profiles.Profile;
  * 
  * @version $Id$
  */
-public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
+public class EccKeyValidator extends KeyValidatorBase {
 
     private static final long serialVersionUID = -335429158339811928L;
 
@@ -45,14 +50,10 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "ECC_KEY_VALIDATOR";
 
-    /** View template in /ca/editkeyvalidators. */
-    protected static final String TEMPLATE_FILE = "editEccKeyValidator.xhtml";
-
     protected static final String CURVES = "ecCurves";
 
     protected static final String USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE = "useFullPublicKeyValidationRoutine";
-
-    
+        
     /**
      * Public constructor needed for deserialization.
      */
@@ -82,22 +83,62 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
     }
 
     @Override
-    public void setKeyValidatorSettingsTemplate() {
-        final int option = getSettingsTemplate();
+    @SuppressWarnings("serial")
+    public void initDynamicUiModel() {
+        uiModel = new DynamicUiModelBase(data);
+        uiModel.add(new DynamicUiProperty<String>("settings"));
+        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<Integer>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
+        settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
+        settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
+        settingsTemplate.setRequired(true);
+        settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
+            @Override
+            public void action(final Object parameter) throws DynamicUiCallbackException {
+                setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
+//                uiModel.setPsmRequiresUpdate(true);
+            }
+        });
+        uiModel.add(settingsTemplate);
+        final DynamicUiProperty<String> curves = new DynamicUiProperty<String>(String.class, CURVES, getCurvesAsString(), 
+                new ArrayList<String>(AlgorithmTools.getFlatNamedEcCurvesMap(false).keySet())) {
+                    @Override
+                    public boolean isDisabled() { return isPropertyDisabled(); }
+        };
+        curves.setLabels(AlgorithmTools.getFlatNamedEcCurvesMap(false));
+        curves.setHasMultipleValues(true);
+        curves.setRequired(true);
+        uiModel.add(curves);
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, isUseFullPublicKeyValidationRoutine()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        }); 
+    }
+    
+    /**
+     * Returns true if the dynamic property fields for this validator are supposed to be disabled.
+     * @return true if disabled.
+     */
+    private final boolean isPropertyDisabled() {
+        return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() != getSettingsTemplate();
+    }
+    
+    @Override
+    public void setKeyValidatorSettingsTemplate(final KeyValidatorSettingsTemplate template) {
+        setSettingsTemplate(template.getOption());
         if (log.isDebugEnabled()) {
             log.debug("Set configuration template for ECC key validator settings option: "
-                    + intres.getLocalizedMessage(KeyValidatorSettingsTemplate.optionOf(option).getLabel()));
+                    + intres.getLocalizedMessage(template.getLabel()));
         }
-        if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == option) {
+        if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.equals(template)) {
             // NOOP: In the validation method, the key specification is matched against the certificate profile.
-        } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == option) {
+        } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.equals(template)) {
             setCABForumBaseLineRequirements142Settings();
-        } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == option) {
+            setUseFullPublicKeyValidationRoutine(true);
+        } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.equals(template)) {
             // NOOP: In the validation method, the key specification is matched against the certificate profile.
         } else {
             // NOOP
         }
-        setUseFullPublicKeyValidationRoutine(true);
     }
 
     /**
@@ -106,21 +147,17 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
      * @param keyValidator
      */
     public void setCABForumBaseLineRequirements142Settings() {
-        // Only apply most important conditions (sequence is Root-CA, Sub-CA, User-Certificate)!
-        // But this is not required at the time, because certificate validity conditions are before 
-        // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
-        // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
-        final List<String> allowedCurves = new ArrayList<String>();
-        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-256"));
-        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-384"));
-        allowedCurves.addAll(AlgorithmTools.getEcKeySpecAliases("P-521"));
-        setCurves(allowedCurves);
+        setCurves(AlgorithmTools.getNistCurves());
         setUseFullPublicKeyValidationRoutine(true);
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getCurves() {
         return (List<String>) data.get(CURVES);
+    }
+    
+    public String getCurvesAsString() {
+        return getCurves() != null ? StringUtils.join(getCurves(), LIST_SEPARATOR) : StringUtils.EMPTY;
     }
 
     public void setCurves(List<String> values) {
@@ -142,11 +179,6 @@ public class EccKeyValidator extends KeyValidatorBase implements KeyValidator {
      */
     public void setUseFullPublicKeyValidationRoutine(boolean allowed) {
         data.put(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, Boolean.valueOf(allowed));
-    }
-
-    @Override
-    public String getTemplateFile() {
-        return TEMPLATE_FILE;
     }
 
     @Override
