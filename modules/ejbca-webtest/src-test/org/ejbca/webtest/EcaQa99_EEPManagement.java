@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,12 +32,13 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.WebTestBase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.utils.WebTestUtils;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa99_EEPManagement.java 27810 2018-01-09 13:02:04Z henriks $
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
