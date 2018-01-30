@@ -16,13 +16,15 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 
+import org.cesecore.util.ui.DynamicUiModelAware;
+
 /**
  * Base interface for DNS name validators. All DNS name validators must implement this interface.
  *
  * @version $Id$
  *
  */
-public interface DnsNameValidator extends Validator {
+public interface DnsNameValidator extends Validator, DynamicUiModelAware {
 
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension

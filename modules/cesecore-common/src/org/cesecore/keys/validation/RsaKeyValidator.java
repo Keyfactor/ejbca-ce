@@ -19,7 +19,9 @@ import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -29,6 +31,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.ui.DynamicUiActionCallback;
+import org.cesecore.util.ui.DynamicUiCallbackException;
+import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
  * Default RSA key validator. 
@@ -39,7 +45,7 @@ import org.cesecore.profiles.Profile;
  * 
  * @version $Id$
  */
-public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
+public class RsaKeyValidator extends KeyValidatorBase {
 
     private static final long serialVersionUID = -335429118359811926L;
 
@@ -69,9 +75,6 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
 
     /** The key validator type. */
     private static final String TYPE_IDENTIFIER = "RSA_KEY_VALIDATOR";
-
-    /** View template in /ca/editkeyvalidators. */
-    protected static final String TEMPLATE_FILE = "editRsaKeyValidator.xhtml";
 
     protected static final String BIT_LENGTHS = "bitLengths";
 
@@ -226,19 +229,90 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
             setPublicKeyModulusDontAllowRocaWeakKeys(false);
         }
     }
+    
+    @Override
+    @SuppressWarnings("serial")
+    public void initDynamicUiModel() {
+        uiModel = new DynamicUiModelBase(data);
+        uiModel.add(new DynamicUiProperty<String>("settings"));
+        final DynamicUiProperty<Integer> settingsTemplate = new DynamicUiProperty<Integer>(Integer.class, SETTINGS_TEMPLATE, getSettingsTemplate(), KeyValidatorSettingsTemplate.types());
+        settingsTemplate.setRenderingHint(DynamicUiProperty.RENDER_SELECT_ONE);
+        settingsTemplate.setLabels(KeyValidatorSettingsTemplate.map());
+        settingsTemplate.setRequired(true);
+        settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
+            @Override
+            public void action(final Object parameter) throws DynamicUiCallbackException {
+                setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
+//                uiModel.setPsmRequiresUpdate(true);
+            }
+        });
+        uiModel.add(settingsTemplate);
+        final DynamicUiProperty<String> bitLengths = new DynamicUiProperty<String>(String.class, BIT_LENGTHS, getBitLengthsAsString(), (ArrayList<String>) getAvailableBitLengths(0)) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        };
+        bitLengths.setHasMultipleValues(true);
+        bitLengths.setLabels(getAvailableBitLengthsAsMap(0));
+        bitLengths.setRequired(true);
+        uiModel.add(bitLengths);
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD, isPublicKeyExponentOnlyAllowOdd()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        }); 
+        uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_EXPONENT_MIN, getPublicKeyExponentMin()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_EXPONENT_MAX, getPublicKeyExponentMax()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_ONLY_ALLOW_ODD, isPublicKeyModulusOnlyAllowOdd()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        }); 
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_POWER_OF_PRIME, isPublicKeyModulusDontAllowPowerOfPrime()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, isPublicKeyModulusDontAllowRocaWeakKeys()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        }); 
+        uiModel.add(new DynamicUiProperty<Integer>(Integer.class, PUBLIC_KEY_MODULUS_MIN_FACTOR, getPublicKeyModulusMinFactor()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_MODULUS_MIN, getPublicKeyModulusMin()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_MODULUS_MAX, getPublicKeyModulusMax()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+    }
+
+    /**
+     * Returns true if the dynamic property fields for this validator are supposed to be disabled.
+     * @return true if disabled.
+     */
+    private final boolean isPropertyDisabled() {
+        return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() != getSettingsTemplate();
+    }
 
     @Override
-    public void setKeyValidatorSettingsTemplate() {
-        final int option = getSettingsTemplate();
+    public void setKeyValidatorSettingsTemplate(final KeyValidatorSettingsTemplate template) {
+        setSettingsTemplate(template.getOption());
         if (log.isDebugEnabled()) {
-            log.debug("Set configuration template for RSA key validator settings option: "
-                    + intres.getLocalizedMessage(KeyValidatorSettingsTemplate.optionOf(option).getLabel()));
+            log.debug("Set configuration template for RSA key validator settings option: " + template.getOption() + ", "
+                    + intres.getLocalizedMessage(template.getLabel()));
         }
-        if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() == option) {
+        if (KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.equals(template)) {
             // NOOP
-        } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == option) {
+        } else if (KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.equals(template)) {
             setCABForumBaseLineRequirements142Settings();
-        } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.getOption() == option) {
+        } else if (KeyValidatorSettingsTemplate.USE_CERTIFICATE_PROFILE_SETTINGS.equals(template)) {
             // NOOP: In the validation method, the key specification is matched against the certificate profile.
             setCertProfileSettings();
         } else {
@@ -300,6 +374,10 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     @SuppressWarnings("unchecked")
     public List<String> getBitLengths() {
         return (List<String>) data.get(BIT_LENGTHS);
+    }
+    
+    public String getBitLengthsAsString() {
+        return getBitLengths() != null ? StringUtils.join(getBitLengths(), LIST_SEPARATOR) : StringUtils.EMPTY;
     }
 
     public void setBitLengths(List<String> values) {
@@ -533,11 +611,6 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
     }
       
     @Override
-    public String getTemplateFile() {
-        return TEMPLATE_FILE;
-    }
-
-    @Override
     public void upgrade() {
         super.upgrade();
         if (log.isTraceEnabled()) {
@@ -676,6 +749,20 @@ public class RsaKeyValidator extends KeyValidatorBase implements KeyValidator {
         for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
             if (length >= minLength) {
                 result.add(Integer.toString(length));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Gets the available bit lengths to choose as map ( key = value).
+     * @return the map of available bit lengths.
+     */
+    public static Map<String,String> getAvailableBitLengthsAsMap(final int minLength) {
+        final Map<String,String> result = new LinkedHashMap<String,String>();
+        for (int length : CertificateProfile.DEFAULTBITLENGTHS) {
+            if (length >= minLength) {
+                result.put(Integer.toString(length), Integer.toString(length));
             }
         }
         return result;

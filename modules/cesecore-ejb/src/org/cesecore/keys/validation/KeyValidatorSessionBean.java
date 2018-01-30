@@ -378,6 +378,22 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return result;
     }
 
+//    @Override
+//    public Map<String, Integer> getKeyValidatorNameToIdMap() {
+//        final LinkedHashMap<String, Integer> result = new LinkedHashMap<>();
+//        List<ProfileData> profiles = profileSession.findAllProfiles(Validator.TYPE_NAME);
+//        Collections.sort(profiles, new Comparator<ProfileData>() {
+//            @Override
+//            public int compare(ProfileData o1, ProfileData o2) {
+//                return o1.getProfileName().compareToIgnoreCase(o2.getProfileName());
+//            }
+//        });
+//        for (ProfileData data : profiles) {
+//            result.put(data.getProfileName(), data.getId());
+//        }
+//        return result;
+//    }
+
     @Override
     public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
             final RequestMessage requestMessage) throws ValidationException {
@@ -687,7 +703,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             if (data != null) {
                 result = (Validator) data.getProfile();
                 if (log.isDebugEnabled()) {
-                    log.debug("Load validator: " + result.getClass().getName());
+//                    log.debug("Load validator: " + result.getClass().getName());
                     log.debug("Load validator: " + result.getDataMap());
                 }
                 final int digest = data.getProtectString(0).hashCode();

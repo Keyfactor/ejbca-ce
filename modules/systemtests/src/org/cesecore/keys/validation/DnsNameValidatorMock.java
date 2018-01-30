@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.ui.DynamicUiModel;
 
 /**
  * @version $Id$
@@ -46,6 +47,16 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     public DnsNameValidatorMock(String name, String... domainNames) {
         super(name);
         setDomainNames(new HashSet<>(Arrays.asList(domainNames)));
+    }
+
+    @Override
+    public void initDynamicUiModel() {
+        // NOOP
+    }
+
+    @Override
+    public DynamicUiModel getDynamicUiModel() {
+        return null;
     }
 
     @Override
@@ -80,11 +91,6 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
 
     @Override
     public String getIssuer() {
-        return null;
-    }
-
-    @Override
-    public String getTemplateFile() {
         return null;
     }
 

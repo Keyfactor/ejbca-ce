@@ -49,6 +49,7 @@
     // Defaults in the edit and initialize pages
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catoken = cainfo.getCAToken();
+    keyValidatorMap = ejbcawebbean.getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap(cainfo.getCAType());
     if (signatureAlgorithmParam == null || signatureAlgorithmParam.isEmpty()) {
         signatureAlgorithmParam = catoken.getSignatureAlgorithm();
     }

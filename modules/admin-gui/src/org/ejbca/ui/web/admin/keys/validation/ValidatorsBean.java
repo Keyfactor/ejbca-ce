@@ -55,23 +55,28 @@ public class ValidatorsBean extends BaseManagedBean {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(ValidatorsBean.class);
 
-    /** Selected key validator id. */
-    private Integer selectedKeyValidatorId = null;
+    /** Selected validator id. */
+    private Integer validatorId = null;
     
-    /** Selected key validator name. */
-    private String keyValidatorName = StringUtils.EMPTY;
+    /** Selected validator name. */
+    private String validatorName = StringUtils.EMPTY;
 
-    /** Current key validator id.*/
-    private int currentValidatorId = -1;
+    /** New validator name for add, rename and clone action. */
+    private String newValidatorName = StringUtils.EMPTY;
 
+    /** Indicates a rename action in progress to render its view. */
     private boolean renameInProgress = false;
+    
+    /** Indicates a delete action in progress to render its view. */
     private boolean deleteInProgress = false;
+    
+    /** Indicates a clone action in progress to render its view. */
     private boolean addFromTemplateInProgress = false;
 
     /** View only flag for view action. */
     private boolean viewOnly = true;
 
-    /** Backing object for key validator list. */
+    /** Validators list to render. */
     private ListDataModel<ValidatorItem> validatorItems = null;
 
     @EJB
@@ -82,50 +87,67 @@ public class ValidatorsBean extends BaseManagedBean {
 
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
-
+    
     /**
-     * Gets the selected key validator id.
-     * @return the id.
+     * Gets the selected validator ID.
+     * @return the ID.
      */
-    public Integer getSelectedKeyValidatorId() {
-        return selectedKeyValidatorId;
+    public Integer getValidatorId() {
+        return validatorId;
     }
 
     /**
-     * Sets the selected key validator id.
-     * @param id the id
+     * Sets the selected validator ID.
+     * @param id the ID.
      */
-    public void setSelectedKeyValidatorId(final Integer id) {
-        selectedKeyValidatorId = id;
+    public void setValidatorId(final Integer id) {
+        validatorId = id;
     }
 
     /**
-     * Gets the selected key validator name.
-     * @return the name
+     * Gets the validator name.
+     * @return the name.
      */
-    public String getSelectedKeyValidatorName() {
-        final Integer id = getSelectedKeyValidatorId();
-        if (id != null) {
-            return keyValidatorSession.getKeyValidatorName(id.intValue());
+    public String getValidatorName() {
+        return validatorName;
+    }
+
+    /**
+     * Sets the validator name.
+     * @param name the name.
+     */
+    public void setValidatorName(String name) {
+        name = name.trim();
+        if (StringTools.checkFieldForLegalChars(name)) {
+            addErrorMessage("ONLYCHARACTERS");
+        } else {
+            this.validatorName = name;
         }
-        return null;
+    }
+
+    /**
+     * Gets the new validator name.
+     * @return the name.
+     */
+    public String getNewValidatorName() {
+        return newValidatorName;
+    }
+
+    /**
+     * Sets the new validator name.
+     * @param name the name.
+     */
+    public void setNewValidatorName(final String name) {
+        newValidatorName = name;
     }
 
     /**
      * Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
      * @return
      */
-    public String getResetKeyValidatorsTrigger() {
+    public String getResetValidatorsTrigger() {
         validatorItems = null;
         return StringUtils.EMPTY;
-    }
-    
-    public int getCurrentValidatorId() {
-        return currentValidatorId;
-    }
-
-    public void setCurrentValidatorId(int currentValidatorId) {
-        this.currentValidatorId = currentValidatorId;
     }
     
     /**
@@ -190,9 +212,7 @@ public class ValidatorsBean extends BaseManagedBean {
                 }
             });
             validatorItems = new ListDataModel<ValidatorItem>(items);
-
         }
-
         return validatorItems;
     }
 
@@ -242,9 +262,11 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Add action. Adds a new key validator.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionAdd() {
-        final String name = getKeyValidatorName();
+    public void actionAdd() throws AuthorizationDeniedException, KeyValidatorExistsException {
+        final String name = getValidatorName();
         if (StringUtils.isNotBlank(name)) {
             try {
                 keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
@@ -263,7 +285,8 @@ public class ValidatorsBean extends BaseManagedBean {
      */
     private void selectCurrentRowData() {
         final ValidatorItem item = getAvailableValidators().getRowData();
-        setSelectedKeyValidatorId(item.getId());
+        setValidatorId(item.getId());
+        setValidatorName(item.getName());
     }
 
     /**
@@ -292,13 +315,16 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * AddFromTemplate confirm action.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws KeyValidatorDoesntExistsException if the validator does not exist.
+     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionAddFromTemplateConfirm() {
-        final String name = getKeyValidatorName();
+    public void actionAddFromTemplateConfirm() throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+        final String name = getNewValidatorName();
         if (name.length() > 0) {
             try {
-                keyValidatorSession.cloneKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
-                setKeyValidatorName(StringUtils.EMPTY);
+                keyValidatorSession.cloneKeyValidator(getAdmin(), getValidatorId(), name);
+                setValidatorName(StringUtils.EMPTY);
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
             } catch (KeyValidatorExistsException e) {
@@ -328,10 +354,12 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Delete confirm action.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws CouldNotRemoveKeyValidatorException if the validator could not be removed.
      */
     public void actionDeleteConfirm() {
         try {
-            keyValidatorSession.removeKeyValidator(getAdmin(), getSelectedKeyValidatorId());
+            keyValidatorSession.removeKeyValidator(getAdmin(), getValidatorId());
             keyValidatorSession.flushKeyValidatorCache();
         } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage("Not authorized to remove key validator.");
@@ -359,13 +387,16 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Rename confirm action.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws KeyValidatorDoesntExistsException if the validator does not exist.
+     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionRenameConfirm() {
-        final String name = getKeyValidatorName();
+    public void actionRenameConfirm() throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+        final String name = getNewValidatorName();
         if (name.length() > 0) {
             try {
-                keyValidatorSession.renameKeyValidator(getAdmin(), getSelectedKeyValidatorId(), name);
-                setKeyValidatorName(StringUtils.EMPTY);
+                keyValidatorSession.renameKeyValidator(getAdmin(), getValidatorId(), name);
+                setValidatorName(StringUtils.EMPTY);
             } catch (KeyValidatorDoesntExistsException e) {
                 addErrorMessage("VALIDATORDOESNOTEXIST", name);
             } catch (KeyValidatorExistsException e) {
@@ -385,29 +416,8 @@ public class ValidatorsBean extends BaseManagedBean {
         deleteInProgress = false;
         renameInProgress = false;
         validatorItems = null;
-        selectedKeyValidatorId = null;
-        keyValidatorName = null;
-    }
-
-    /**
-     * Gets the selected key validator name.
-     * @return the name.
-     */
-    public String getKeyValidatorName() {
-        return keyValidatorName;
-    }
-
-    /**
-     * Sets the selected key validator name.
-     * @param name the name
-     */
-    public void setKeyValidatorName(String name) {
-        name = name.trim();
-        if (StringTools.checkFieldForLegalChars(name)) {
-            addErrorMessage("ONLYCHARACTERS");
-        } else {
-            this.keyValidatorName = name;
-        }
+        validatorId = null;
+        validatorName = null;
     }
 
     public void validateExternalCommand(final FacesContext facesContext, final UIComponent uiComponent, Object object) {

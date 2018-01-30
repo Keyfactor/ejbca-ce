@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
@@ -182,6 +183,40 @@ public abstract class AlgorithmTools {
             processCurveName(hasToBeKnownByDefaultProvider, processedCurveNames, ecNamedCurve);
         }
         return processedCurveNames;
+    }
+    
+    /**
+     * Get unique available named elliptic curves and their aliases.
+     *  
+     * @param hasToBeKnownByDefaultProvider if the curve name needs to be known by the default provider (e.g. so Sun PKCS#11 can use it)
+     * @return a Map with elliptic curve names as key and the list of alias separated by '/' as the value.
+     */
+    public static TreeMap<String,String> getFlatNamedEcCurvesMap(final boolean hasToBeKnownByDefaultProvider) {
+        final TreeMap<String,String> result = new TreeMap<String,String>();
+        final Map<String, List<String>> map = getNamedEcCurvesMap(hasToBeKnownByDefaultProvider);
+        final String[] keys = map.keySet().toArray(new String[map.size()]);
+        Arrays.sort(keys);
+        for (final String name : keys) {
+            result.put(name, StringTools.getAsStringWithSeparator(" / ", map.get(name)));
+        }
+        return result;
+    }
+    
+    /**
+     * Gets a list of allowed curves (see {@link http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf}.
+     * 
+     * @return the list of allowed curves.
+     */
+    public static List<String> getNistCurves() {
+        // Only apply most important conditions (sequence is Root-CA, Sub-CA, User-Certificate)!
+        // But this is not required at the time, because certificate validity conditions are before 
+        // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
+        // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
+        final List<String> list = new ArrayList<String>();
+        list.addAll(AlgorithmTools.getEcKeySpecAliases("P-256"));
+        list.addAll(AlgorithmTools.getEcKeySpecAliases("P-384"));
+        list.addAll(AlgorithmTools.getEcKeySpecAliases("P-521"));
+        return list;
     }
 
     private static void processCurveName(final boolean hasToBeKnownByDefaultProvider, final Map<String, List<String>> processedCurveNames,

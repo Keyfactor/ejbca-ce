@@ -41,9 +41,6 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     /** Class logger. */
     private static final Logger log = Logger.getLogger(ValidatorBase.class);
 
-    /** List separator. */
-    private static final String LIST_SEPARATOR = ";";
-
     protected static final InternalResources intres = InternalResources.getInstance();
 
     /** List of applicable issuance phases (see {@link IssuancePhase}). */ 
@@ -51,7 +48,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     
     /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
     protected static List<Integer> APPLICABLE_CA_TYPES;
-    
+        
     public static final float LATEST_VERSION = 7F;
 
     public static final String TYPE = "type";
@@ -96,7 +93,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         super(name);
         init();
     }
-
+   
     @Override
     public List<Integer> getApplicableCaTypes() {
         return APPLICABLE_CA_TYPES;
@@ -155,7 +152,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     }
     
     @Override
-    public void setKeyValidatorSettingsTemplate() {
+    public void setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate template) {
     }
 
     @Override
@@ -234,9 +231,6 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     public int getNotApplicableAction() {
         return ((Integer) data.get(NOT_APPLICABLE_ACTION)).intValue();
     }
-
-    @Override
-    public abstract String getTemplateFile();
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     @Override

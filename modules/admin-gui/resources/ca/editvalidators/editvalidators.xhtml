@@ -23,7 +23,7 @@
      *                                                                       *
      *************************************************************************/
      
-     version: $Id: editkeyvalidators.xhtml 25334 2017-02-24 16:22:09Z anjakobs $
+     version: $Id: editvalidators.xhtml 25334 2017-02-24 16:22:09Z anjakobs $
      -->
     </ui:remove>
     <f:view>
@@ -35,16 +35,16 @@
             </h1>
             
             <!--div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div-->
-        		<h:form id="editkeyvalidators" >
+        		<h:form id="editvalidators" >
 					<h:panelGroup rendered="#{!validatorsBean.operationInProgress}">
 					<h3><h:outputText value="#{web.text.LISTOFVALIDATORS}"/></h3>
-					<h:outputText value="#{validatorsBean.resetKeyValidatorsTrigger}"/>
-					<h:dataTable value="#{validatorsBean.availableValidators}" var="keyValidator" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+					<h:outputText value="#{validatorsBean.resetValidatorsTrigger}"/>
+					<h:dataTable value="#{validatorsBean.availableValidators}" var="validatoritem" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 						<h:column headerClass="gridColumn1">
-							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{keyValidator.id}"/></f:facet>
-							<h:outputText value="#{keyValidator.name}"/>
+							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{validatoritem.id}"/></f:facet>
+							<h:outputText value="#{validatoritem.name}"/>
 							<f:facet name="footer">
-					  			<h:inputText value="#{validatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
+					  			<h:inputText value="#{validatorsBean.newValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
 							</f:facet>
 						</h:column>
 						<h:column headerClass="gridColumn2">
@@ -60,14 +60,13 @@
 						</h:column>
 					</h:dataTable>
 				</h:panelGroup>
-
 				<h:panelGroup rendered="#{validatorsBean.addFromTemplateInProgress}">
 					<h3><h:outputText value="#{web.text.CLONEVALIDATOR_TITLE}"/></h3>
 					<h:panelGrid columns="2">
-						<h:outputLabel for="addFromTemplateKeyValidatorOld" value="#{web.text.CLONEVALIDATOR_FROMTEMPLATE}"/>
-						<h:outputText id="addFromTemplateKeyValidatorOld" value="#{validatorsBean.selectedKeyValidatorName}"/>
-						<h:outputLabel for="addFromTemplateKeyValidatorNew" value="#{web.text.CLONEVALIDATOR_NEWNAME}"/>
-		  				<h:inputText id="addFromTemplateKeyValidatorNew" value="#{validatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+						<h:outputLabel for="addFromTemplateValidatorOld" value="#{web.text.CLONEVALIDATOR_FROMTEMPLATE}"/>
+						<h:outputText id="addFromTemplateValidatorOld" value="#{validatorsBean.validatorName}"/>
+						<h:outputLabel for="addFromTemplateValidatorNew" value="#{web.text.CLONEVALIDATOR_NEWNAME}"/>
+		  				<h:inputText id="addFromTemplateValidatorNew" value="#{validatorsBean.newValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
 		  				<h:panelGroup/>
 						<h:panelGroup>
 							<h:commandButton value="#{web.text.CLONE_CONFIRM}" action="#{validatorsBean.actionAddFromTemplateConfirm}"/>
@@ -75,14 +74,13 @@
 						</h:panelGroup>
 					</h:panelGrid>
 				</h:panelGroup>
-
 				<h:panelGroup rendered="#{validatorsBean.renameInProgress}">
 					<h3><h:outputText value="#{web.text.RENAMEVALIDATOR_TITLE}"/></h3>
 					<h:panelGrid columns="2">
-						<h:outputLabel for="renameKeyValidatorOld" value="#{web.text.RENAME_CURRENTNAME}"/>
-						<h:outputText id="renameKeyValidatorOld" value="#{validatorsBean.selectedKeyValidatorName}"/>
-						<h:outputLabel for="renameKeyValidatorNew" value="#{web.text.RENAME_NEWNAME}"/>
-		  				<h:inputText id="renameKeyValidatorNew" value="#{validatorsBean.keyValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
+						<h:outputLabel for="renameValidatorOld" value="#{web.text.RENAME_CURRENTNAME}"/>
+						<h:outputText id="renameValidatorOld" value="#{validatorsBean.validatorName}"/>
+						<h:outputLabel for="renameValidatorNew" value="#{web.text.RENAME_NEWNAME}"/>
+		  				<h:inputText id="renameValidatorNew" value="#{validatorsBean.newValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
 		  				<h:panelGroup/>
 						<h:panelGroup>
 							<h:commandButton value="#{web.text.RENAME_CONFIRM}" action="#{validatorsBean.actionRenameConfirm}"/>
@@ -93,8 +91,8 @@
 				<h:panelGroup rendered="#{validatorsBean.deleteInProgress}">
 					<h3><h:outputText value="#{web.text.DELETEVALIDATOR_TITLE}"/></h3>
 					<h:panelGrid columns="2">
-						<h:outputLabel for="deleteKeyValidatorName" value="#{web.text.VALIDATORNAME}:"/>
-						<h:outputText id="deleteKeyValidatorName" value="#{validatorsBean.selectedKeyValidatorName}"/>
+						<h:outputLabel for="deleteValidatorName" value="#{web.text.VALIDATORNAME}:"/>
+						<h:outputText id="deleteValidatorName" value="#{validatorsBean.validatorName}"/>
 		  				<h:panelGroup/>
 						<h:panelGroup>
 							<h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{validatorsBean.actionDeleteConfirm}"/>
