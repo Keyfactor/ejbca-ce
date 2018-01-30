@@ -1012,19 +1012,13 @@ public class RAInterfaceBean implements Serializable {
         final Collection<Integer> authorizedCas = sortedMap.values();
         // 2. Retrieve the list of CA's available to the end entity profile
         final EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(endentityprofileid);
-        final String[] availableCAs = endentityprofile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-        final List<Integer> casDefineInEndEntityProfile = new ArrayList<>();
-        for (String profileId : availableCAs) {
-            casDefineInEndEntityProfile.add(Integer.valueOf(profileId));
-        }
+        final List<Integer> casDefineInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
         boolean allCasDefineInEndEntityProfile = false;
         if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
             allCasDefineInEndEntityProfile = true;
         }
         // 3. Next retrieve all certificate profiles defined in the end entity profile
-        final String[] availableCertificateProfiles = endentityprofile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-        for (String certificateProfileIdString : availableCertificateProfiles) {
-            final Integer certificateProfileId = Integer.valueOf(certificateProfileIdString);
+        for (final Integer certificateProfileId : endentityprofile.getAvailableCertificateProfileIds()) {
             final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId.intValue());
             // 4. Retrieve all CAs defined in the current certificate profile
             final Collection<Integer> casDefinedInCertificateProfile;

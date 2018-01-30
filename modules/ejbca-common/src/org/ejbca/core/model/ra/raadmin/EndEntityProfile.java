@@ -379,7 +379,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /**
      * Function that adds a field to the profile.
      *
-     * @param paramter is the field and one of the field constants.
+     * @param parameter is the field and one of the field constants.
      */
     public void addField(final int parameter){
     	addField(parameter, getParameter(parameter));
@@ -555,7 +555,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setValidation(final int parameter, final int number, final Map<String,Serializable> validation){
         Integer paramNum = Integer.valueOf(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter);
         if (validation != null) {
-            data.put(paramNum, new LinkedHashMap<String,Serializable>(validation));
+            data.put(paramNum, new LinkedHashMap<>(validation));
         } else {
             data.remove(paramNum);
         }
@@ -579,6 +579,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return getValueDefaultEmpty(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
+    /**
+     * Semi-internal method to get a default value, or list of allowed values.
+     * 
+     * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
+     * For example <code>getAvailableCertificateProfileIds()</code> instead of calling <code>getValue(AVAILCERTPROFILES,0)</code>
+     */
     public String getValue(final String parameter, final int number) {
     	return getValue(getParameterNumber(parameter), number);
     }
@@ -587,6 +593,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
+    /**
+     * Semi-internal method to get the "use" (enabled or disabled) state of a parameter.
+     * 
+     * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
+     * For example <code>getCustomSerialNumberUsed()</code> instead of calling <code>getUse(CERTSERIALNR, 0)</code>
+     */
     public boolean getUse(final String parameter, final int number){
     	return getUse(getParameterNumber(parameter), number);
     }
@@ -595,6 +607,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter));
     }
 
+    /**
+     * Semi-internal method to get the "is required" state of a parameter.
+     * 
+     * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
+     * For example <code>getEmailDomainRequired()</code> instead of calling <code>isRequired(EMAIL, 0)</code>
+     */
     public boolean isRequired(final String parameter, final int number) {
     	return isRequired(getParameterNumber(parameter), number);
     }
@@ -603,6 +621,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
+    /**
+     * Semi-internal method to get the "is modifiable" state of a parameter.
+     * 
+     * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
+     * For example <code>getEmailDomainModifiable()</code> instead of calling <code>isModifyable(EMAIL, 0)</code>
+     */
     public boolean isModifyable(final String parameter, final int number) {
     	return isModifyable(getParameterNumber(parameter), number);
     }
@@ -629,6 +653,20 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     @SuppressWarnings("unchecked")
     public int getSubjectDirAttrFieldOrderLength(){
         return ((ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER)).size();
+    }
+    
+    /**
+     * Returns the number of Subject DN, SAN or Subject Directory Attributes fields in this profile.
+     * @param dnType DNFieldExtractor.TYPE_*
+     * @return Number of fields for the given field type
+     */
+    public int getFieldOrderLengthForDnType(final int dnType) {
+        switch (dnType) {
+            case DNFieldExtractor.TYPE_SUBJECTDN: return getSubjectDNFieldOrderLength();
+            case DNFieldExtractor.TYPE_SUBJECTALTNAME: return getSubjectAltNameFieldOrderLength();
+            case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return getSubjectDirAttrFieldOrderLength();
+            default: throw new IllegalArgumentException("Invalid DN type");
+        }
     }
 
     /** returns two int : the first is the DN field which is a constant in DN field extractor,
@@ -663,6 +701,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
     	return returnval;
+    }
+    
+    /**
+     * Returns the Subject DN, SAN or Subject Directory Attributes field of the given index in the profile.
+     * @param dnType DNFieldExtractor.TYPE_*
+     * @param index Zero based index of field, up to and including getFieldOrderLengthForDnType(dnType)-1.
+     * @return Number of fields for the given field type
+     */
+    public int[] getFieldsInOrderForDnType(final int dnType, final int index) {
+        switch (dnType) {
+            case DNFieldExtractor.TYPE_SUBJECTDN: return getSubjectDNFieldsInOrder(index);
+            case DNFieldExtractor.TYPE_SUBJECTALTNAME: return getSubjectAltNameFieldsInOrder(index);
+            case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return getSubjectDirAttrFieldsInOrder(index);
+            default: throw new IllegalArgumentException("Invalid DN type");
+        }
     }
 
     /** Gets a Collection of available CA Ids (as Integers). 
@@ -822,7 +875,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public String getUsernameDefault() {
-        return getValueDefaultEmpty(USERNAME);
+        return getValue(USERNAME, 0);
     }
     
     public boolean isUsernameRequired() {
@@ -842,10 +895,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public boolean useAutoGeneratedPasswd() {
-    	return !this.getUse(PASSWORD, 0);
+    	return !getUse(PASSWORD, 0);
     }
     
-    private String getAutoGeneratedPasswdType() {
+    public String getAutoGeneratedPasswdType() {
     	String type = getValue(AUTOGENPASSWORDTYPE, 0);
     	if (type == null || "".equals(type)) {
     		type = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
@@ -879,7 +932,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     
     /** @return strength in bits = log2(possible chars) * number of chars rounded down */
     private int getPasswordStrength(int numerOfDifferentChars, int passwordLength) {
-    	return (int) (Math.floor(Math.log((double)numerOfDifferentChars)/Math.log(2)) * (double)passwordLength);
+    	return (int) (Math.floor(Math.log(numerOfDifferentChars)/Math.log(2)) * passwordLength);
     }
 
     /** @return the minimum strength that a password is allowed to have in bits */
@@ -908,7 +961,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public boolean isClearTextPasswordDefault() {
-        return getValueDefaultFalse(CLEARTEXTPASSWORD);
+        return TRUE.equals(getValue(CLEARTEXTPASSWORD, 0));
     }
     
     public boolean isClearTextPasswordRequired() {
@@ -920,7 +973,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public String getEmailDomain() {
-        return getValueDefaultEmpty(EMAIL);
+        return getValue(EMAIL, 0);
     }
     
     public boolean getEmailDomainModifiable() {
@@ -989,7 +1042,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return Start time. Never null, but may be empty.
      */
     public String getValidityStartTime() {
-        return getValueDefaultEmpty(STARTTIME);
+        return getValue(STARTTIME, 0);
     }
     
     public boolean getValidityEndTimeUsed() {
@@ -1005,7 +1058,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @return End time. Never null, but may be empty.
      */
     public String getValidityEndTime() {
-        return getValueDefaultEmpty(ENDTIME);
+        return getValue(ENDTIME, 0);
     }
     
     public boolean getCardNumberUsed() {
@@ -1021,7 +1074,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public boolean getKeyRecoverableDefault() {
-        return getValueDefaultFalse(KEYRECOVERABLE);
+        return TRUE.equals(getValue(KEYRECOVERABLE, 0));
     }
     
     public boolean getKeyRecoverableRequired() {
@@ -1033,7 +1086,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public boolean getSendNotificationDefault() {
-        return getValueDefaultFalse(SENDNOTIFICATION);
+        return TRUE.equals(getValue(SENDNOTIFICATION, 0));
     }
     
     public boolean getSendNotificationRequired() {
@@ -1172,7 +1225,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(PRINTINGSVGDATA, new String(Base64.encode(sVGData.getBytes())));
     }
     
-    /** @return the boolean value or false if null */
+    /** @return the boolean value or false if null. Note: Some keys need translating to integer first (e.g. those with use/value/required flags) */
     private boolean getValueDefaultFalse(final Object key) {
     	if (data.get(key) == null) {
     		return false;
@@ -1180,7 +1233,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return ((Boolean) data.get(key)).booleanValue();
     }
 
-    /** @return the boolean value or false if null */
+    /** @return the boolean value or false if null. Note: Some keys need translating to integer first (e.g. those with use/value/required flags) */
     private String getValueDefaultEmpty(final Object key) {
     	if (data.get(key) == null) {
     		return "";
@@ -1222,11 +1275,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		}
     	} else {
         	// Checks related to the use of normal hashed passwords
-    		if (!isModifyable(PASSWORD,0)) {
+    		if (!isPasswordModifiable()) {
     			if (!password.equals(getValue(PASSWORD,0))) {
     				throw new EndEntityProfileValidationException("Password didn't match requirement of it's profile.");
     			}
-    		} else if (isRequired(PASSWORD,0)) {
+    		} else if (isPasswordRequired()) {
     			if (password == null || password.trim().equals("")) {
     				throw new EndEntityProfileValidationException("Password cannot be empty or null.");
     			}
@@ -1669,12 +1722,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 				throw new EndEntityProfileValidationException("Autogenerated password must have password==null");
 			}
 		} else {           		            
-			if (!isModifyable(EndEntityProfile.PASSWORD,0)) {
+			if (!isPasswordModifiable()) {
 				if(!password.equals(getValue(EndEntityProfile.PASSWORD,0))) {		   
 					fulfillsprofile = false;
 				}
 			} else {
-				if (isRequired(EndEntityProfile.PASSWORD,0)) {
+				if (isPasswordRequired()) {
 					if((!clearpwd && password == null) || (password != null && password.trim().equals(""))) {			
 						fulfillsprofile = false;
 					}
@@ -2232,7 +2285,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /**
      * Method calculating the number of required fields of on kind that is configured for this profile.
-     * @param field, one of the field constants
+     * @param field one of the field constants
      * @return The number of required fields of that kind.
      */
     private int getNumberOfRequiredFields(final String field) {
