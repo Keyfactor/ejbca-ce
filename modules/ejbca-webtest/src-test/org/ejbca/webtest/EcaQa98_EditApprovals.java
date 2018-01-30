@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -32,6 +32,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -52,7 +53,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 
 /**
- * @version $Id$
+ * @version $Id: EcaQa98_EditApprovals.java 28035 2018-01-19 17:36:40Z bastianf $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
