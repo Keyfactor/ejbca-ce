@@ -2563,13 +2563,8 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 		    final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
 			if (profile != null) {
-			    final String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
-				if (value != null) {
-				    final String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);
-					for (String id : availablecertprofilesId) {
-						int i = Integer.parseInt(id);
-						ret.put(certificateProfileSession.getCertificateProfileName(i), i);
-					}
+				for (int id : profile.getAvailableCertificateProfileIds()) {
+					ret.put(certificateProfileSession.getCertificateProfileName(id), id);
 				}
 			}
         } catch (RuntimeException e) {	// EJBException, ...

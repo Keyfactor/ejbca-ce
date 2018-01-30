@@ -50,7 +50,7 @@ public class EndEntityInformationFiller {
 
     	
     	if (StringUtils.isEmpty(userData.getUsername())) {
-        	userData.setUsername(profile.getValue(EndEntityProfile.USERNAME, 0));
+        	userData.setUsername(profile.getUsernameDefault());
         }
     	if (userData.getSendNotification()==false) {
     		if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0))) {
