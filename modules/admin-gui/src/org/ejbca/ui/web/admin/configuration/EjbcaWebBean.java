@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -1436,12 +1437,33 @@ public class EjbcaWebBean implements Serializable {
     }
     
     public TreeMap<String, Integer> getCaPubsCAOptions() {
-        if (EjbcaConfiguration.getIsInProductionMode()) {
-            return getExternalCANames();
-        } else {
-            return getCANames();
-        }
+    	return getCANames();
     }
+    
+    /**
+     * Gets the list of CA names by the list of CA IDs.
+     * @param idString the semicolon separated list of CA IDs.
+     * @return the list of CA names as semicolon separated String.
+     * @throws NumberFormatException if a CA ID could not be parsed.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     */
+    public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
+        final TreeMap<String, Integer> availableCas = getCaPubsCAOptions();
+        final List<String> result = new ArrayList<String>();
+        if (StringUtils.isNotBlank(idString)) {
+            for (String id : idString.split(";")) {
+                if (availableCas.containsValue(Integer.valueOf(id))) {
+                    for (Entry<String,Integer> entry : availableCas.entrySet()) {
+                        if (entry.getValue() != null && entry.getValue().equals( Integer.valueOf(id))) {
+                            result.add(entry.getKey());
+                        }
+                    }
+                }
+            }
+        }
+        return StringUtils.join(result, ";");
+    }
+    
 
     //**********************
     //     EST
