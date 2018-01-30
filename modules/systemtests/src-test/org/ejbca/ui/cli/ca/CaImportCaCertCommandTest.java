@@ -199,11 +199,11 @@ public class CaImportCaCertCommandTest {
     @Test
     public void testImportCaCertPemInit() throws Exception {
         File certfile = new File(CA_NAME + "_cert.pem");
+        FileOutputStream fos = null;
         try {
             // Now we have issued a certificate, import it
-            FileOutputStream fos = new FileOutputStream(certfile);
+            fos = new FileOutputStream(certfile);
             fos.write(CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) cert)));
-            fos.close();
             IMPORT_INIT_AUTH_ARGS[1] = certfile.getAbsolutePath();
             IMPORT_INIT_AUTH_ARGS[IMPORT_INIT_AUTH_ARGS.length -1] = admin.toString();
             assertEquals(CommandResult.SUCCESS, caImportCaCertCommand.execute(IMPORT_INIT_AUTH_ARGS));
@@ -212,6 +212,7 @@ public class CaImportCaCertCommandTest {
             assertEquals("importing a CA certificate using parameter --initauthorization should result in status 'active'", CAConstants.CA_ACTIVE,
                     cainfo.getStatus());
         } finally {
+            fos.close();
             certfile.deleteOnExit();
         }
     }
