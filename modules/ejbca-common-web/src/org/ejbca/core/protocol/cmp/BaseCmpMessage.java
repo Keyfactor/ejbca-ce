@@ -51,7 +51,7 @@ public abstract class BaseCmpMessage implements Serializable {
 	private String pbeKeyId = null;
 	private String pbeKey = null;
 
-	private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+	private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
 
 	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
 	protected String getBase64FromAsn1OctetString(final ASN1OctetString asn1OctetString) {
@@ -153,18 +153,20 @@ public abstract class BaseCmpMessage implements Serializable {
 	}
 
 	/**
-     * Gets the list of CA certificates to be appended at the user certificates CA certificate returned in the CMP response message caPubs field.
+     * Gets the list of additional CA certificates
+     * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
      * @return the list of CA certificates.
      */
-	public List<Certificate> getCaPubsCerts() {
-        return caPubsCerts;
+	public List<Certificate> getAdditionalCaCertificates() {
+        return additionalCaCertificates;
     }
 	
 	/**
-     * Sets the list of CA certificates to be appended at the user certificates CA certificate returned in the CMP response message caPubs field.
-     * @param caPubsCerts the list of CA certificates.
+     * Sets the list of additional CA certificates
+     * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
+     * @param certificates the list of CA certificates.
      */
-    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
-        this.caPubsCerts = caPubsCerts;
+    public void setAdditionalCaCertificates(final List<Certificate> certificates) {
+        this.additionalCaCertificates = certificates;
     }
 }

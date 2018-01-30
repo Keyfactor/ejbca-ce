@@ -274,7 +274,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     }
     
     @Override
-    public void addCaCertsToResponse(final List<Certificate> certificates) {
+    public void addAdditionalCaCertificates(final List<Certificate> certificates) {
         // NOOP. Only for CMP.
     }
 }

@@ -25,9 +25,9 @@ function enableFormItems() {
     document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
-    document.cmpconfiguration.<%= LIST_RESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
-    document.cmpconfiguration.<%= BUTTON_ADDRESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
-    document.cmpconfiguration.<%= BUTTON_REMOVERESPONSECAPUBSCA %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= LIST_RESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_ADDRESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
+    document.cmpconfiguration.<%= BUTTON_REMOVERESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
 <% } else { %>
     // ----- RA Mode -----
     // CMP Authentication Module
@@ -144,36 +144,7 @@ function checkallfields() {
       </td>
     </tr> 
 
-
-    <!-- ---------------------- Response Protection ----------------------------- -->
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Message") %>
-        </h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION_HELP\") %>"/></p>
-      </td>
-      <td width="50%"> 
-        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-          <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
-          <% if(currentProtection.equals("pbe"))	pbe = true; %>
-          <% for(String p : cmpConfigClone.getCmpResponseProtectionList(ramode)) { %>   
-          <option <% if(p.equals(currentProtection)){ %> selected <% } %> value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
-          <% } %>
-        </select>
-        <% if(ramode) { %>
-       	<noscript>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-		</noscript>
-		<% } %>
-      </td>
-    </tr>
-    
-
-
-
-    <!-- ---------------------- CMP Authentication Modules ----------------------------- -->    
+    <!-- ---------------------- + CMP Authentication Modules ----------------------------- -->    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE\") %>"/>
@@ -270,7 +241,17 @@ function checkallfields() {
 
     
 	<% if(ramode) { %>
-	<!-- ---------------------- RA MODE Specifics ----------------------------- -->
+	<!-- ---------------------- + RA Mode Specifics ----------------------------- -->
+  	<tr id="Row<%=row++%2%>" class="section"> 
+      <td width="40%" valign="top" align="left"> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPRAMODE\") %>" /></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;   
+      </td> 
+    </tr>
+	    
+	<!-- ---------------------- ++ Allow Verify POPO ----------------------------- -->
 	<tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top">
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWVERIFYPOPO\") %>"/></h3>
@@ -486,106 +467,168 @@ function checkallfields() {
         </select>
       </td>
     </tr>
-    
-    
-    
-    
+
   	<% } else { %>
-	<!-- ---------------------- CLIENT MODE Specifics ----------------------------- -->
-	<tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT\") %>"/></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP\") %>"/></p>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP1\") %>"/></p> 
+  		
+  		<!-- ---------------------- + Client Mode Specifics ----------------------------- -->
+   		<tr id="Row<%=row++%2%>" class="section"> 
+	      <td width="40%" valign="top" align="left"> 
+	        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPCLIENTMODE\") %>" /></strong>
+	      </td>
+	      <td width="50%"> 
+	        &nbsp;   
+	      </td> 
+	    </tr>
+	    
+		<!-- ---------------------- ++ Authentication Module ----------------------------- -->
+		<tr  id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT\") %>"/></h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP\") %>"/></p>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP1\") %>"/></p> 
+	      </td>
+	      <td width="50%"> 
+	      	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	          <% String currentDnPart = cmpConfigClone.getExtractUsernameComponent(alias); %>
+	          <option  value='<c:out value="DN"/>'  <% if (currentDnPart != null && currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
+	          <% 
+	             for(String dnpart : dnfields) {%>
+	           	 <option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
+	           	 	<c:out value="<%= dnpart %>"/> 
+	           	 </option>
+	          <% } %>
+	        </select>
+	      </td>
+	    </tr> 
+	    
+	    <!-- ---------------------- ++ Use Vendor Certificate Mode ----------------------------- -->
+	    <tr id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT\") %>"/>
+	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        </h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
+			<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
+	      </td>
+	      <td width="50%"> 
+	        <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
+				<% if(cmpConfigClone.getVendorMode(alias)) out.write(" CHECKED "); %>
+				id="<%=CHECKBOX_CMP_VENDORMODE%>" onchange="enableFormItems()" onclick="enableFormItems()" />
+			<label for="<%=CHECKBOX_CMP_VENDORMODE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+	      </td>
+	    </tr>
+	    
+	    <!-- ---------------------- ++ Vendor CA Certificates ----------------------------- -->
+	    <tr id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_VENDORCAS\") %>"/>
+	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        </h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_VENDORCAS_HELP\") %>"/></p>
+	      </td>
+	      <td width="50%"> 
+	        <p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
+	        <select name="<%=LIST_VENDORCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
+	           <% for(String vca : vendorcas.keySet()) { %>
+	           		<option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
+	           <% } %>
+	        </select>
+	        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	      </td>
+	    </tr>
+    <% } %>
+    
+    <!-- ---------------------- + Response Configurations ----------------------------- -->
+   	<tr id="Row<%=row++%2%>" class="section"> 
+      <td width="40%" valign="top" align="left"> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECONFIGURATION\") %>" /></strong>
       </td>
       <td width="50%"> 
-      	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-          <% String currentDnPart = cmpConfigClone.getExtractUsernameComponent(alias); %>
-          <option  value='<c:out value="DN"/>'  <% if (currentDnPart != null && currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
-          <% 
-             for(String dnpart : dnfields) {%>
-           	 <option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
-           	 	<c:out value="<%= dnpart %>"/> 
-           	 </option>
+        &nbsp;   
+      </td> 
+    </tr>
+
+    <!-- ---------------------- ++ Response Protection ----------------------------- -->
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Message") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+          <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
+          <% if(currentProtection.equals("pbe"))	pbe = true; %>
+          <% for(String p : cmpConfigClone.getCmpResponseProtectionList(ramode)) { %>   
+          <option <% if(p.equals(currentProtection)){ %> selected <% } %> value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
           <% } %>
         </select>
+        <% if(ramode) { %>
+       	<noscript>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+		</noscript>
+		<% } %>
       </td>
-    </tr> 
-
-    <tr  id="Row<%=row++%2%>"> 
+    </tr>
+    
+	<!-- ---------------------- ++ Additional CA certificates for the CMP response 'caPubs' field ----------------------------- -->
+	<tr id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE\") %>"/>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS\") %>"/>
         <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
         </h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
-		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>
-			<% if(cmpConfigClone.getVendorMode(alias)) out.write(" CHECKED "); %>
-			id="<%=CHECKBOX_CMP_VENDORMODE%>" onchange="enableFormItems()" onclick="enableFormItems()" />
-		<label for="<%=CHECKBOX_CMP_VENDORMODE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-		<br/>
-		<p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
-        <select name="<%=LIST_VENDORCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
-           <% 
-            for(String vca : vendorcas.keySet()) {
-           %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
-           <% } %>
-        </select>
-        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-        <br/>
-		<p class="help"><c:out value="<%= cmpConfigClone.getResponseCaPubsCA(alias) %>"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getCaNamesString(cmpConfigClone.getResponseCaPubsCA(alias)) %>"/></p>
         <select name="<%=LIST_RESPONSECAPUBSCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
-           <% 
-            for(String vca : capubscas.keySet()) {
-           %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
+           <% for(String vca : capubscas.keySet()) { %>
+           		<option value='<c:out value="<%= Integer.toString(capubscas.get(vca)) %>"/>'><c:out value="<%= vca %>"/></option> 
            <% } %>
         </select>
         <input type="submit" name="<%= BUTTON_ADDRESPONSECAPUBSCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
         <input type="submit" name="<%= BUTTON_REMOVERESPONSECAPUBSCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
-    <% } %>
     
-   	<!-- -------------------------- ConfirmationMessage request ------------------------------ -->
+   	<!-- -------------------------- + ConfirmationMessage request ------------------------------ -->
    	<% if(!pbe) { %>
-   	<tr  id="Row<%=row++%2%>" class="section"> 
-      <td width="40%" valign="top" align="left"> 
-        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPCONFIRMATIONMESSAGE\") %>" /></strong>
-      </td>
-      <td width="50%"> 
-        &nbsp;   
-      </td> 
-    </tr>
-    
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_HELP\") %>" /></p>
-      </td>
-      <td width="50%"> 
-        <select name="<%=LIST_CMPDEFAULTCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
-           <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
-           <option <% if(currentCA.equals("")) { %> selected <% } %>
-                 	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_DISABLED\") %>"/></option>
-           <%         	  
-           	for( String caname : canames.keySet() ) {
-           		  String cadn = cabean.getCASubjectDNNoAuth(caname);
-           %>     <option <% if(currentCA.equals(cadn)) { %> selected <% } %>
-                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
-           <% } %>
-        </select>
-      </td>
-    </tr>
+	   	<tr id="Row<%=row++%2%>" class="section"> 
+	      <td width="40%" valign="top" align="left"> 
+	        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPCONFIRMATIONMESSAGE\") %>" /></strong>
+	      </td>
+	      <td width="50%"> 
+	        &nbsp;   
+	      </td> 
+	    </tr>
+	    
+	    <!-- -------------------------- ++ Use Confirmation Request Default CA ------------------------------ -->
+	    <tr id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA\") %>" /></h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_HELP\") %>" /></p>
+	      </td>
+	      <td width="50%"> 
+	        <select name="<%=LIST_CMPDEFAULTCA%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	           <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
+	           <option <% if(currentCA.equals("")) { %> selected <% } %>
+	                 	value='<c:out value=""/>'><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_DISABLED\") %>"/></option>
+	           <%         	  
+	           	for( String caname : canames.keySet() ) {
+	           		  String cadn = cabean.getCASubjectDNNoAuth(caname);
+	           %>     <option <% if(currentCA.equals(cadn)) { %> selected <% } %>
+	                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
+	           <% } %>
+	        </select>
+	      </td>
+	    </tr>
     <% } %>
     
-    
-    
-    
-	<!-- -------------------------- KUR request ------------------------------ -->
-	<tr  id="Row<%=row++%2%>" class="section"> 
+	<!-- -------------------------- + KUR request ------------------------------ -->
+	<tr id="Row<%=row++%2%>" class="section"> 
       <td width="40%" valign="top" align="left"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"CMPKEYUPDATEREQUEST\") %>" /></strong>
       </td>
