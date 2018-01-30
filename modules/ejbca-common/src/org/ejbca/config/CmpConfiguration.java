@@ -386,6 +386,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         String key = alias + "." + CONFIG_RESPONSCAPUBSCA;
         return getValue(key, alias);
     }
+    
     public void setResponseCaPubsCA(String alias, String caString) {
         String key = alias + "." + CONFIG_RESPONSCAPUBSCA;
         setValue(key, caString, alias);

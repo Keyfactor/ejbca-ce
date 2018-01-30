@@ -107,7 +107,7 @@ public class UnidFnrHandlerTest {
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
-        List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+        List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
         
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
@@ -263,12 +263,12 @@ public class UnidFnrHandlerTest {
         }
         
         @Override
-        public List<Certificate> getCaPubsCerts() {
-            return caPubsCerts;
+        public List<Certificate> getAdditionalCaCertificates() {
+            return additionalCaCertificates;
         }
         @Override
-        public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
-            this.caPubsCerts = caPubsCerts;
+        public void setAdditionalCaCertificates(final List<Certificate> certificates) {
+            this.additionalCaCertificates = certificates;
         }
 	}
 }

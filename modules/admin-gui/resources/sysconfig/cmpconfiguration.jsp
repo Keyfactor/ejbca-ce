@@ -414,71 +414,56 @@
     			            
     			   			// ------------------- BUTTONS -------------------------
     			            
-    			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
-    			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
-    			        					value = request.getParameter(LIST_VENDORCA);
-    			           					String vendorcas = cmpConfigClone.getVendorCA(alias);
-    			           					if(!StringUtils.contains(vendorcas, value)) {
-    			           							if(StringUtils.isEmpty(vendorcas)) {
-    			           								vendorcas = value;
-    			           							} else {
-    			           								vendorcas += ";" + value;
-    			           							}
-    			           							cmpConfigClone.setVendorCA(alias, vendorcas);
-    			           					}
-    			        			}
-    			        	}
-    			   			
-    			        	if(request.getParameter(BUTTON_ADDRESPONSECAPUBSCA) != null) {
-				        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
+    			   			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
+    			   				
+		    			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
+				        					value = request.getParameter(LIST_VENDORCA);
+				           					final String cas = cmpConfigClone.getVendorCA(alias);
+				           					List<String> list = new ArrayList<String>();
+				           					if (StringUtils.isNotBlank(cas)) {
+					           					list = new ArrayList<String>((List<String>) Arrays.asList( cas.split(";")));
+				           					}
+				           					if (!list.contains(value)) {
+				           						list.add(value);
+				           					}
+				           					cmpConfigClone.setVendorCA(alias, StringUtils.join(list, ";"));
+		    			        	}
+		    			   			
+		    			        	if(request.getParameter(BUTTON_ADDRESPONSECAPUBSCA) != null) {
 				        					value = request.getParameter(LIST_RESPONSECAPUBSCA);
-				           					String vendorcas = cmpConfigClone.getResponseCaPubsCA(alias);
-				           					if(!StringUtils.contains(vendorcas, value)) {
-				           							if(StringUtils.isEmpty(vendorcas)) {
-				           								vendorcas = value;
-				           							} else {
-				           								vendorcas += ";" + value;
-				           							}
-				           							cmpConfigClone.setResponseCaPubsCA(alias, vendorcas);
+				        					final String cas = cmpConfigClone.getResponseCaPubsCA(alias);
+				           					List<String> list = new ArrayList<String>();
+				           					if (StringUtils.isNotBlank(cas)) {
+					           					list = (List<String>) new ArrayList<String>(Arrays.asList( cas.split(";")));
 				           					}
-				        			}
-				        	}
-    			            
-    			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
-    			           			value = request.getParameter(LIST_VENDORCA);
-    			           			String vendorcas = cmpConfigClone.getVendorCA(alias);
-    			           			if(StringUtils.contains(vendorcas, value)) {
-    			           					String[] cas = vendorcas.split(";");
-    			           					if(cas.length == 1) {
-    			           							vendorcas = "";
-    			           					} else {
-    			           							if(StringUtils.equals(cas[0], value)) {
-	           											vendorcas = StringUtils.remove(vendorcas, value + ";");
-	           										} else {
-	           											vendorcas = StringUtils.remove(vendorcas, ";" + value);
-	           										}
-    			           					}
-    		           						cmpConfigClone.setVendorCA(alias, vendorcas);
-    			           			}
-	    			        }
-    			        	
-    			        	if(request.getParameter(BUTTON_REMOVERESPONSECAPUBSCA) != null) {
-				           			value = request.getParameter(LIST_RESPONSECAPUBSCA);
-				           			String vendorcas = cmpConfigClone.getResponseCaPubsCA(alias);
-				           			if(StringUtils.contains(vendorcas, value)) {
-				           					String[] cas = vendorcas.split(";");
-				           					if(cas.length == 1) {
-				           							vendorcas = "";
-				           					} else {
-				           							if(StringUtils.equals(cas[0], value)) {
-	           											vendorcas = StringUtils.remove(vendorcas, value + ";");
-	           										} else {
-	           											vendorcas = StringUtils.remove(vendorcas, ";" + value);
-	           										}
+				           					if (!list.contains(value)) {
+				           						list.add(value);
 				           					}
-			           						cmpConfigClone.setResponseCaPubsCA(alias, vendorcas);
-				           			}
-	    			        }
+				           					cmpConfigClone.setResponseCaPubsCA(alias, StringUtils.join(list, ";"));
+						        	}
+		    			            
+		    			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
+			    			        		value = request.getParameter(LIST_VENDORCA);
+			    			        		final String cas = cmpConfigClone.getVendorCA(alias);
+						           			if (StringUtils.isNotBlank(cas)) {
+						           					final List<String> list = new ArrayList<String>((List<String>) Arrays.asList( cas.split(";")));
+						           					if (list.remove(value)) {
+						           							cmpConfigClone.setVendorCA(alias, StringUtils.join(list, ";"));
+						           					}
+						           			}
+			    			        }
+		    			        	
+		    			        	if(request.getParameter(BUTTON_REMOVERESPONSECAPUBSCA) != null) {
+						           			value = request.getParameter(LIST_RESPONSECAPUBSCA);
+						           			final String cas = cmpConfigClone.getResponseCaPubsCA(alias);
+						           			if (StringUtils.isNotBlank(cas)) {
+						           					final List<String> list = new ArrayList<String>((List<String>) Arrays.asList( cas.split(";")));
+						           					if (list.remove(value)) {
+						           							cmpConfigClone.setResponseCaPubsCA(alias, StringUtils.join(list, ";"));
+						           					}
+						           			}
+			    			        }
+    			   			}
     			            
     				        if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
     				           		if(request.getParameter(RADIO_NAMEGENSCHEME).equals(UsernameGeneratorParams.DN)) {

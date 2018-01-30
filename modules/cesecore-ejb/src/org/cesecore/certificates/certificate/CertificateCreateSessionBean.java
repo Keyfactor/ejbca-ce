@@ -225,7 +225,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 ret.setCertificate(certWrapper.getCertificate());
                 ret.setCACert(cacert);
                 // Add in case of success after CMP message -> CmpResponseMessage.
-                ret.addCaCertsToResponse(requestMessage.getCaPubsCerts());
+                ret.addAdditionalCaCertificates(requestMessage.getAdditionalCaCertificates());
                 ret.setBase64CertData(certWrapper.getBase64CertData());
                 ret.setCertificateData(certWrapper.getCertificateData());
             }

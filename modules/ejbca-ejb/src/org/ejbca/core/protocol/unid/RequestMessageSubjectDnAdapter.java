@@ -24,7 +24,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -46,8 +45,6 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 
     private final ICrmfRequestMessage original;
 	private transient X500Name dn;
-
-	private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		stream.defaultWriteObject();
@@ -174,7 +171,6 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
         this.original.setResponseKeyInfo(key, provider);
     }
 
-
 	@Override
 	public int getPbeIterationCount() {
 		return this.original.getPbeIterationCount();
@@ -216,11 +212,11 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
         return this.original.getServerGenKeyPair();
     }
     @Override
-    public List<Certificate> getCaPubsCerts() {
-        return this.original.getCaPubsCerts();
+    public List<Certificate> getAdditionalCaCertificates() {
+        return this.original.getAdditionalCaCertificates();
     }
     @Override
-    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
-        this.original.setCaPubsCerts(caPubsCerts);
+    public void setAdditionalCaCertificates(final List<Certificate> certificates) {
+        this.original.setAdditionalCaCertificates(certificates);
     }
 }

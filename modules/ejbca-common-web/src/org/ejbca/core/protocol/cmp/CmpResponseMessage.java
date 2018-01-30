@@ -304,7 +304,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                             final CertResponse certResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
                             final CertResponse[] certResponses = { certResponse };
                             
-                            // Add the user certificates signing CA certificate (at index 0) and the others by the CMP configuration to the CMP response caPubs field.
+                            // Add the user certificates signing CA certificate (at index 0) and the others by the CMP configuration to the CMP 
+                            // response 'caPubs' field (added previously to the response with CertificateResponseMessage.addAdditionalCaCertificates().
                             final List<CMPCertificate> caPubs = new ArrayList<CMPCertificate>();
                             for (Certificate certificate : this.cacert) {
                                 try (ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(certificate.getEncoded()));) {
@@ -464,7 +465,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void addCaCertsToResponse(List<Certificate> certificates) {
+    public void addAdditionalCaCertificates(List<Certificate> certificates) {
         if (CollectionUtils.isNotEmpty(certificates)) {
             for (Certificate cert : certificates) {
                 if (this.cacert.size() > 0 && !this.cacert.contains(cert)) {

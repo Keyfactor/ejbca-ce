@@ -85,7 +85,7 @@ public class SimpleRequestMessage implements RequestMessage {
     private Date validityNotBefore = null;
     private Date validityNotAfter = null;
 
-    private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+    private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
 
     /**
      * Constructs a new Simple message handler object.
@@ -292,12 +292,12 @@ public class SimpleRequestMessage implements RequestMessage {
     }
 
     @Override
-    public List<Certificate> getCaPubsCerts() {
-        return caPubsCerts;
+    public List<Certificate> getAdditionalCaCertificates() {
+        return additionalCaCertificates;
     }
 
     @Override
-    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
-        this.caPubsCerts = caPubsCerts;
+    public void setAdditionalCaCertificates(final List<Certificate> certificates) {
+        this.additionalCaCertificates = certificates;
     }
 } // SimpleRequestMessage

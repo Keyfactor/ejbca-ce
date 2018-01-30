@@ -71,7 +71,7 @@ public class CVCRequestMessage implements RequestMessage {
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
 
-    private List<Certificate> caPubsCerts = new ArrayList<Certificate>();
+    private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
   
     /**
      * Constructs a new empty message handler object.
@@ -334,13 +334,13 @@ public class CVCRequestMessage implements RequestMessage {
     }
     
     @Override
-    public List<Certificate> getCaPubsCerts() {
-        return caPubsCerts;
+    public List<Certificate> getAdditionalCaCertificates() {
+        return additionalCaCertificates;
     }
 
     @Override
-    public void setCaPubsCerts(final List<Certificate> caPubsCerts) {
-        this.caPubsCerts = caPubsCerts;
+    public void setAdditionalCaCertificates(final List<Certificate> certificates) {
+        this.additionalCaCertificates = certificates;
     }
 
     /** Specific to CVC request messages, EAC requests contains a sequence */
