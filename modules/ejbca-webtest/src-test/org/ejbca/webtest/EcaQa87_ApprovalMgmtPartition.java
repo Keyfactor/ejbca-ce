@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
 import static org.junit.Assert.*;
 
@@ -29,6 +29,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,7 +45,7 @@ import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa87_ApprovalMgmtPartition.java 28015 2018-01-18 13:42:25Z henriks $
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

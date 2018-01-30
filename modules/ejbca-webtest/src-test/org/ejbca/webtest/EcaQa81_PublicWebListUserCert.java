@@ -11,8 +11,9 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
+import org.ejbca.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa81_PublicWebListUserCert.java 27792 2018-01-09 09:55:47Z henriks $
  *
  */
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {

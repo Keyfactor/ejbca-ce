@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -20,6 +20,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,7 +41,7 @@ import java.util.Map.Entry;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa153_ApprovalRoleSettings.java 27984 2018-01-16 15:41:33Z henriks $
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

@@ -11,8 +11,9 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
+import org.ejbca.WebTestBase;
 import org.ejbca.utils.WebTestUtils;
 import org.junit.*;
 import org.openqa.selenium.By;
@@ -26,7 +27,7 @@ import java.util.List;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa64_PublicWebMenuItems.java 27912 2018-01-11 14:01:22Z henriks $
  *
  */
 public class EcaQa64_PublicWebMenuItems extends WebTestBase {

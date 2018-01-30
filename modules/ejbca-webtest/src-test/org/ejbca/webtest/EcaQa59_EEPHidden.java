@@ -11,13 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.webtest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.WebTestBase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -42,7 +43,7 @@ import static org.junit.Assert.*;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa59_EEPHidden.java 27792 2018-01-09 09:55:47Z henriks $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa59_EEPHidden extends WebTestBase {
