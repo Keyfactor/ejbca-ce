@@ -511,7 +511,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             }
             if (possibleValues != null && !possibleValues.contains(object)) {
                 throw new IllegalArgumentException(object + " (class=" + object.getClass().getSimpleName()+ ") is not in the list of approved objects (class="
-                        + possibleValues.getClass().getSimpleName() + "<" + possibleValues.getClass().getTypeName() + ">): " + possibleValues);
+                        + possibleValues.getClass().getSimpleName() + "<" + possibleValues.getClass().getSimpleName() + ">): " + possibleValues);
             }
             this.values = new ArrayList<T>(1);
             this.values.add(object);
@@ -547,7 +547,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                         values.add(object);
                     } else {
                         throw new IllegalArgumentException(object + " (class=" + object.getClass().getSimpleName()+ ") is not in the list of approved objects (class="
-                                + possibleValues.getClass().getSimpleName() + "<" + possibleValues.getClass().getTypeName() + ">): " + possibleValues);
+                                        + possibleValues.getClass().getSimpleName() + "<" + possibleValues.getClass().getSimpleName() + ">): "
+                                        + possibleValues);
                     }
                 }
                 this.values = values;
@@ -836,7 +837,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.Boolean.
      */
     public boolean isBooleanType() {
-        return Boolean.class.getName().equals(getType().getTypeName());
+        return Boolean.class.getName().equals(getType().getName());
     }
 
     /**
@@ -844,7 +845,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.Integer.
      */
     public boolean isIntegerType() {
-        return Integer.class.getName().equals(getType().getTypeName());
+        return Integer.class.getName().equals(getType().getName());
     }
 
     /**
@@ -852,7 +853,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.BigInteger.
      */
     public boolean isBigIntegerType() {
-        return BigInteger.class.getName().equals(getType().getTypeName());
+        return BigInteger.class.getName().equals(getType().getName());
     }
 
     /**
@@ -860,7 +861,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.Long.
      */
     public boolean isLongType() {
-        return Long.class.getName().equals(getType().getTypeName());
+        return Long.class.getName().equals(getType().getName());
     }
 
     /**
@@ -868,7 +869,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.Float.
      */
     public boolean isFloatType() {
-        return Float.class.getName().equals(getType().getTypeName());
+        return Float.class.getName().equals(getType().getName());
     }
 
     /**
@@ -876,7 +877,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.lang.String.
      */
     public boolean isStringType() {
-        return String.class.getName().equals(getType().getTypeName());
+        return String.class.getName().equals(getType().getName());
     }
 
     /**
@@ -884,7 +885,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.util.HashMap.
      */
     public boolean isMapType() {
-        return TreeMap.class.getName().equals(getType().getTypeName());
+        return TreeMap.class.getName().equals(getType().getName());
     }
 
     /**
@@ -892,7 +893,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * @return true if the property type is java.io.File.
      */
     public boolean isFileType() {
-        return File.class.getName().equals(getType().getTypeName());
+        return File.class.getName().equals(getType().getName());
     }
 
     /**
