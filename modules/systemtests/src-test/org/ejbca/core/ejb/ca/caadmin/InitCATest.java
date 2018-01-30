@@ -73,7 +73,7 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
-import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.junit.Test;
 
@@ -167,31 +167,31 @@ public class InitCATest extends CaTestCase {
             log.debug("Adding CA references");
             final int origCaId = x509CaInfo.getCAId();
             CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-            certProf.setAvailableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
+            certProf.setAvailableCAs(new ArrayList<>(Collections.singletonList(origCaId)));
             certificateProfileSession.addCertificateProfile(admin, CERT_PROFILE_NAME, certProf);
 
             EndEntityProfile eeProf = new EndEntityProfile();
-            eeProf.setAvailableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
+            eeProf.setAvailableCAs(new ArrayList<>(Collections.singletonList(origCaId)));
             eeProf.setDefaultCA(origCaId);
             endEntityProfileSession.addEndEntityProfile(admin, ENDENTITY_PROFILE_NAME, eeProf);
 
             CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
             userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
             userdatasource.setDescription("Used in Junit Test, Remove this one");
-            userdatasource.setApplicableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
+            userdatasource.setApplicableCAs(new ArrayList<>(Collections.singletonList(origCaId)));
             userDataSourceSession.addUserDataSource(admin, DATASOURCE_NAME, userdatasource);
 
             ServiceConfiguration sc = new ServiceConfiguration();
             Properties workerProperties = new Properties();
-            workerProperties.put(BaseWorker.PROP_CAIDSTOCHECK, "1234;"+origCaId);
+            workerProperties.put(IWorker.PROP_CAIDSTOCHECK, "1234;"+origCaId);
             sc.setWorkerProperties(workerProperties);
             sc.setPinToNodes(new String[] {"some","hosts"});
             sc.setActive(false);
             serviceSession.addService(admin, SERVICE_NAME, sc);
 
             final CAToken caToken = x509CaInfo.getCAToken();
-            final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
-            final List<InternalKeyBindingTrustEntry> trustedcerts = new ArrayList<InternalKeyBindingTrustEntry>();
+            final Map<String, Serializable> dataMap = new LinkedHashMap<>();
+            final List<InternalKeyBindingTrustEntry> trustedcerts = new ArrayList<>();
             trustedcerts.add(new InternalKeyBindingTrustEntry(origCaId, BigInteger.valueOf(12345678)));
             keybindId = keyBindMgmtSession.createInternalKeyBinding(admin, OcspKeyBinding.IMPLEMENTATION_ALIAS, KEYBINDING_NAME, InternalKeyBindingStatus.DISABLED, null,
                     caToken.getCryptoTokenId(), caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
@@ -225,7 +225,7 @@ public class InitCATest extends CaTestCase {
             assertEquals("CAId was not updated in certificate profile.", newCaId, (int)certProf.getAvailableCAs().get(0));
 
             eeProf = endEntityProfileSession.getEndEntityProfile(ENDENTITY_PROFILE_NAME);
-            assertEquals("CAId was not updated in end-entity profile.", new Integer(newCaId), eeProf.getAvailableCAs().iterator().next());
+            assertEquals("CAId was not updated in end-entity profile.", new Integer(newCaId), eeProf.getAvailableCAs().get(0));
             assertEquals("CAId was not updated in end-entity profile.", newCaId, eeProf.getDefaultCA());
 
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
