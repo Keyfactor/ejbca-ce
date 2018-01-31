@@ -775,6 +775,10 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.hasMultipleValues = hasMultipleValues;
     }
 
+    public boolean isMultiValued() {
+        return possibleValues != null;
+    }
+
     /** Returns the current value, like getValue, but has a workaround for JSF bug with ui:repeat and rendered. See ECA-5342 */
     @SuppressWarnings("unchecked")
     public T getJsfBooleanValue() {
