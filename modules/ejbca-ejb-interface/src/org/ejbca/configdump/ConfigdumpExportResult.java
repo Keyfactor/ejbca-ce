@@ -10,23 +10,31 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.configdump.ejb;
+package org.ejbca.configdump;
 
-import java.io.IOException;
-
-import org.ejbca.configdump.ConfigDumpSetting;
-import org.ejbca.configdump.ConfigdumpException;
-import org.ejbca.configdump.ConfigdumpExportResult;
+import java.io.Serializable;
+import java.util.List;
 
 /**
- * Configdump is an internal PrimeKey tool.
- * 
+ * Holds information about the status of a Configdump export operation.
  * @version $Id$
  */
-public interface ConfigdumpSession {
+public final class ConfigdumpExportResult implements Serializable {
     
-    static final String CONFIGDUMP_MODULE = "configdump-ejb";
+    private static final long serialVersionUID = 1L;
     
-    ConfigdumpExportResult performExport(final ConfigDumpSetting setting) throws ConfigdumpException, IOException;
-
+    private final List<String> reportedErrors;
+    
+    public ConfigdumpExportResult(final List<String> reportedErrors) {
+        this.reportedErrors = reportedErrors;
+    }
+    
+    public List<String> getReportedErrors() {
+        return reportedErrors;
+    }
+    
+    public boolean isSuccessful() {
+        return !reportedErrors.isEmpty();
+    }
+    
 }
