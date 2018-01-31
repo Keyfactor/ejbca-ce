@@ -25,26 +25,26 @@
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%=globalconfiguration.getAdminWebPath()%>ejbcajslib.js"></script>
   <style type="text/css">
-  	input[type='checkbox'].checkBoxOverlay {
-  		-moz-user-focus: ignore;
-  	}
-  	input[type='submit'].checkBoxOverlay {
-  		vertical-align: text-bottom;
-  		${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 1; left: -20px;'}
-  		${web.legacyInternetExplorer ? 'color: #000;' : 'color: transparent; background-color: transparent; border: 0px;'}
-  		width: 20px;
-  		height: 20px;
-  		font-size: 8px;
-  		padding: 0px;
-  		margin: 0px;
-  		
-  	}
-  	label.checkBoxOverlay {
-  		${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 0; left: -20px;'}
-  	}
-  	label.subItem {
-  		padding-left: 10px;
-  	}
+    input[type='checkbox'].checkBoxOverlay {
+        -moz-user-focus: ignore;
+    }
+    input[type='submit'].checkBoxOverlay {
+        vertical-align: text-bottom;
+        ${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 1; left: -20px;'}
+        ${web.legacyInternetExplorer ? 'color: #000;' : 'color: transparent; background-color: transparent; border: 0px;'}
+        width: 20px;
+        height: 20px;
+        font-size: 8px;
+        padding: 0px;
+        margin: 0px;
+        
+    }
+    label.checkBoxOverlay {
+        ${web.legacyInternetExplorer ? '' : 'position:relative; z-index: 0; left: -20px;'}
+    }
+    label.subItem {
+        padding-left: 10px;
+    }
   </style>
 </head>
 <f:view>
@@ -53,63 +53,63 @@
 
 <div class="main-wrapper">
 <div class="container">
-	<div class="message">
-		<h:messages layout="table" errorClass="alert" infoClass="infoMessage"/>
-	</div>
+    <div class="message">
+        <h:messages layout="table" errorClass="alert" infoClass="infoMessage"/>
+    </div>
 
-	<div align="center">
-	  <h2>
-	  	<h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-	  	<h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{approvalProfilesMBean.viewOnly}"/>
-	  </h2>
-	  <h3><h:outputText value="#{web.text.APPROVALPROFILE}: #{approvalProfileMBean.selectedApprovalProfileName}"/></h3>
-	</div>
-	
-	<h:form id="approvalProfilesForm" >
-		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1-Approval-profile,editColumn2-Approval-profile">	
-			
-			<h:panelGroup>
-				&nbsp;
-			</h:panelGroup>
-			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.adminWebPath}/approval/editapprovalprofiles.jsf">
-				<h:outputText value="#{web.text.BACKTOAPPROVALPROFILES}"/>
-			</h:outputLink>
-			
-			<h:outputLabel for="approvalProfileId" value="#{web.text.APPROVALPROFILEID}"/>
-			<h:outputText id="approvalProfileId" value="#{approvalProfileMBean.selectedApprovalProfileId}"/>
-			<h:panelGroup>
-			<h:outputLabel for="approvalProfileType" value="#{web.text.APPROVALPROFILETYPE}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Approval%20Profiles") %>
-			</h:panelGroup>
-			<h:panelGroup id="approvalProfileType">
-				<h:selectOneMenu id="selectOneMenuApprovalType" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"
-						onchange="document.getElementById('approvalProfilesForm:selectProfileType').click();" disabled="#{approvalProfilesMBean.viewOnly}">
-					<f:selectItems value="#{approvalProfileMBean.approvalProfileTypesAvailable}"/>
-				</h:selectOneMenu>
-				<h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{web.text.APPROVALPROFILETYPE_UPDATE}"
+    <div align="center">
+      <h2>
+        <h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+        <h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{approvalProfilesMBean.viewOnly}"/>
+      </h2>
+      <h3><h:outputText value="#{web.text.APPROVALPROFILE}: #{approvalProfileMBean.selectedApprovalProfileName}"/></h3>
+    </div>
+    
+    <h:form id="approvalProfilesForm" >
+        <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1-Approval-profile,editColumn2-Approval-profile">    
+            
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            <h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.adminWebPath}/approval/editapprovalprofiles.jsf">
+                <h:outputText value="#{web.text.BACKTOAPPROVALPROFILES}"/>
+            </h:outputLink>
+            
+            <h:outputLabel for="approvalProfileId" value="#{web.text.APPROVALPROFILEID}"/>
+            <h:outputText id="approvalProfileId" value="#{approvalProfileMBean.selectedApprovalProfileId}"/>
+            <h:panelGroup>
+            <h:outputLabel for="approvalProfileType" value="#{web.text.APPROVALPROFILETYPE}"/>
+            <%= ejbcawebbean.getHelpReference("/adminguide.html#Approval%20Profiles") %>
+            </h:panelGroup>
+            <h:panelGroup id="approvalProfileType">
+                <h:selectOneMenu id="selectOneMenuApprovalType" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"
+                        onchange="document.getElementById('approvalProfilesForm:selectProfileType').click();" disabled="#{approvalProfilesMBean.viewOnly}">
+                    <f:selectItems value="#{approvalProfileMBean.approvalProfileTypesAvailable}"/>
+                </h:selectOneMenu>
+                <h:commandButton id="selectProfileType" action="#{approvalProfileMBean.selectUpdate}" value="#{web.text.APPROVALPROFILETYPE_UPDATE}"
                     rendered="#{!approvalProfilesMBean.viewOnly}"/>
-				<script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
-			</h:panelGroup>	
-		
-			<h:outputLabel for="reqExpPeriod" value="#{web.text.REQUEST_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
-			<h:panelGroup>
-				<h:inputText id="reqExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.requestExpirationPeriod}" />
-				<br/>
-				<h:panelGroup styleClass="help">
-					<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
-				</h:panelGroup>
-			</h:panelGroup>
-			
-			<h:outputLabel for="approvalExpPeriod" value="#{web.text.APPROVAL_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
-			<h:panelGroup>
-				<h:inputText id="approvalExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.approvalExpirationPeriod}" />
-				<br/>
-				<h:panelGroup styleClass="help">
-					<h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
-				</h:panelGroup>
-			</h:panelGroup>
-			
-			<h:outputLabel for="maxExtensionTime" value="#{web.text.MAX_EXTENSION_TIME} #{web.text.FORMAT_TIME_YMDHMIN}"/>
+                <script>document.getElementById('approvalProfilesForm:selectProfileType').style.display = 'none';</script>
+            </h:panelGroup> 
+        
+            <h:outputLabel for="reqExpPeriod" value="#{web.text.REQUEST_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
+            <h:panelGroup>
+                <h:inputText id="reqExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.requestExpirationPeriod}" />
+                <br/>
+                <h:panelGroup styleClass="help">
+                    <h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            
+            <h:outputLabel for="approvalExpPeriod" value="#{web.text.APPROVAL_EXPIRATION_PERIOD} #{web.text.FORMAT_TIME_YMDHMIN}"/>
+            <h:panelGroup>
+                <h:inputText id="approvalExpPeriod" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.approvalExpirationPeriod}" />
+                <br/>
+                <h:panelGroup styleClass="help">
+                    <h:outputText value="#{web.text.YEAR365DAYS}, #{web.text.MO30DAYS}"/>
+                </h:panelGroup>
+            </h:panelGroup>
+            
+            <h:outputLabel for="maxExtensionTime" value="#{web.text.MAX_EXTENSION_TIME} #{web.text.FORMAT_TIME_YMDHMIN}"/>
             <h:panelGroup>
                 <h:inputText id="maxExtensionTime" disabled="#{approvalProfilesMBean.viewOnly}" value="#{approvalProfileMBean.maxExtensionTime}" />
                 <br/>
@@ -120,126 +120,127 @@
             
             <h:outputLabel for="selfApproveEdit" value ="#{web.text.SELF_APPROVE_EDIT}"/>
             <h:panelGroup>
-            	<h:selectBooleanCheckbox id="selfApproveEdit" value="#{approvalProfileMBean.allowSelfEdit}"/>
-            	<br/>
+                <h:selectBooleanCheckbox id="selfApproveEdit" value="#{approvalProfileMBean.allowSelfEdit}"/>
+                <br/>
                 <h:panelGroup styleClass="help">
                     <h:outputText value="#{web.text.SELF_APPROVE_EDIT_HELP}"/>
                 </h:panelGroup>
             </h:panelGroup>
             
-				
-		</h:panelGrid>
-		
-		<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_STEPS}"/>	</h3>
-		<%--Retrieve GUI layout from the currently chosen approval profile archetype --%>
-		<h:dataTable styleClass="superTable" value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-			footerClass="tableFooter">
-			<h:column>			
-				<h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >						
-					<h:column>
-						<f:facet name="header">
-							<h:panelGrid columns="2" width="100%" columnClasses=",column-align-right" 
-								rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}">
-								<h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" />
-								<h:panelGroup>
-									<h:commandButton styleClass="reorderButton" value="▲" 
-										rendered="#{step.previousStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepUp}"/>
-									<h:commandButton styleClass="reorderButton" value="▼"
-										rendered="#{step.nextStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepDown}"/>
-								</h:panelGroup>
-							</h:panelGrid>
-														
-						</f:facet>	
-						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
-							columnClasses="editColumn1-Approval-steps,editColumn2-Approval-steps" style="width: 100%" footerClass="tableFooter" 
-							rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">							
-							<h:column footerClass="tableFooter-approval-step">
-								<f:facet name="header">
-									<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}" 
-										rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
-								</f:facet>
-								<h:outputText value="#{partition.propertyNameLocalized}:"/>
+                
+        </h:panelGrid>
+        
+        <h3><h:outputText value="#{web.text.APPROVAL_PROFILE_STEPS}"/>  </h3>
+        <%--Retrieve GUI layout from the currently chosen approval profile archetype --%>
+        <h:dataTable styleClass="superTable" value="#{approvalProfileMBean.steps}" var="step" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+            footerClass="tableFooter">
+            <h:column>          
+                <h:dataTable value="#{step.partitionGuiObjects}" var="partition" style="width: 100%" headerClass="listHeader" footerClass="tableFooter" columnClasses="editColumn1,editColumn2" >                       
+                    <h:column>
+                        <f:facet name="header">
+                            <h:panelGrid columns="2" width="100%" columnClasses=",column-align-right" 
+                                rendered="#{approvalProfileMBean.steps.getRowCount() > 1 || !approvalProfileMBean.stepSizeFixed}">
+                                <h:outputText value="#{web.text.APPROVAL_PROFILE_STEP}: #{step.stepNumber}" />
+                                <h:panelGroup>
+                                    <h:commandButton styleClass="reorderButton" value="▲" 
+                                        rendered="#{step.previousStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepUp}"/>
+                                    <h:commandButton styleClass="reorderButton" value="▼"
+                                        rendered="#{step.nextStep != null and !approvalProfilesMBean.viewOnly}" action="#{approvalProfileMBean.moveStepDown}"/>
+                                </h:panelGroup>
+                            </h:panelGrid>
+                                                        
+                        </f:facet>  
+                        <h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader"
+                            columnClasses="editColumn1-Approval-steps,editColumn2-Approval-steps" style="width: 100%" footerClass="tableFooter" 
+                            rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">                            
+                            <h:column footerClass="tableFooter-approval-step">
+                                <f:facet name="header">
+                                    <h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION}" 
+                                        rendered="#{!approvalProfileMBean.stepSizeFixed}"/>
+                                </f:facet>
+                                <h:outputText value="#{partition.propertyNameLocalized}:"/>
 
-								<f:facet name="footer">
-									<h:panelGrid columns="1" rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
-										<h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
-											<f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
-										</h:selectOneMenu>	
-										<h:outputLabel value="#{web.text.LABEL}:"/>
-										<h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
-										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>	
-									</h:panelGrid>											
-								</f:facet>	
-								
-							</h:column>
-							<h:column>
-																							
-					   			<h:panelGroup rendered="#{!property.multiValued}">
-						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
-						   				value="#{property.value}" style="width: 100%" >
-						   				<f:converter converterId="stringConverter"/>
-						   				<f:validator validatorId="#{property.validatorType}"/>
-						   			</h:inputText>
+                                <f:facet name="footer">
+                                    <h:panelGrid columns="1" rendered="#{!approvalProfileMBean.arePartitionsFixed() && !approvalProfilesMBean.viewOnly}">
+                                        <h:selectOneMenu id="selectAction" value="#{approvalProfileMBean.fieldToAdd[partition.partitionId]}">
+                                            <f:selectItems value="#{approvalProfileMBean.fieldsAvailable}"/>
+                                        </h:selectOneMenu>  
+                                        <h:outputLabel value="#{web.text.LABEL}:"/>
+                                        <h:inputText value="#{approvalProfileMBean.fieldLabel[partition.partitionId]}"/>
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD}" action="#{approvalProfileMBean.addField(partition.partitionId)}"/>  
+                                    </h:panelGrid>                                          
+                                </f:facet>  
+                                
+                            </h:column>
+                            <h:column>
+                                                                                            
+                                <h:panelGroup rendered="#{!property.hasMultipleValues}">
+                                    <h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
+                                        value="#{property.value}" style="width: 100%" >
+                                        <f:converter converterId="stringConverter"/>
+                                        <f:validator validatorId="#{property.validatorType}"/>
+                                    </h:inputText>
                                     <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
                                         value="#{property.value.value}" style="width: 100%" >
                                         <f:converter converterId="stringConverter"/>
                                         <f:validator validatorId="#{property.validatorType}"/>
                                     </h:inputTextarea>
-						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" size="6">
-					                   <f:converter converterId="javax.faces.Long"/>
-					                   <f:validator validatorId="#{property.validatorType}"/>
-						   			</h:inputText>
-						   			<h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" size="6" >
-					                   <f:converter converterId="javax.faces.Integer"/>
-					                   <f:validator validatorId="#{property.validatorType}" />
-						   			</h:inputText>
-					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
-					   			</h:panelGroup>
-								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
-									rendered="#{property.multiValued 
-												&& !property.multiValued 
-												&& property.type.simpleName != 'RadioButton'}" 
-									value="#{property.encodedValue}">
-									<f:selectItems value="#{partition.propertyPossibleValues}"/>
-								</h:selectOneMenu>
-								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 
-									rendered="#{property.multiValued 
-												&& property.multiValued 
-												&& property.type.simpleName != 'RadioButton'}" 
-									value="#{property.encodedValues}">
-									<f:selectItems value="#{partition.propertyPossibleValues}"/>
-								</h:selectManyListbox>	
-								<h:panelGroup rendered="#{property.type.simpleName eq 'RadioButton' 
-												&& property.multiValued}" >
-									<h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_NO_VALUES}" 
-										rendered="#{empty partition.propertyPossibleValues}"/>
-									<h:dataTable value="#{partition.propertyPossibleValues}" var="radioButton" 
-										columnClasses="column-checkbox1, column-checkbox2" style="width: 100%;">
-										<h:column>
-											<!-- Selecting default values hasn't been implemented, so radio buttons are rendered disabled -->
-											<input type="radio" name="<h:outputText value='#{property.name}'/>" disabled /> 	
-											<h:outputText value="#{radioButton.value}" converter="radioButtonLabelConverter"/>									
-										</h:column>
-										<h:column>										
-											<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
-														action="#{approvalProfileMBean.removeRowFromRadioButton(partition.partitionId, radioButton.value)}"/>									
-										</h:column>								
-									</h:dataTable>	
-									<h:panelGroup style="padding: 5px 10px;">
-										<h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_LABEL}: "/>
-										<h:inputText binding="#{radioButtonLabel}"  disabled="#{approvalProfilesMBean.viewOnly}" />
-										<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
-											action="#{approvalProfileMBean.addRowToRadioButton(partition.partitionId, radioButtonLabel.value)}"/>	
-									</h:panelGroup>								
-								</h:panelGroup>
-							</h:column>
-							<h:column>
-								<f:facet name="header">
-    								<h:panelGroup layout="block" styleClass="button-group" style="text-align: right;">
-    									<h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
-    										disabled="#{step.numberOfPartitions == 1}"
-    				    					rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
-                                            action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>	 
+                                    <h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" size="6">
+                                       <f:converter converterId="javax.faces.Long"/>
+                                       <f:validator validatorId="#{property.validatorType}"/>
+                                    </h:inputText>
+                                    <h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" size="6" >
+                                       <f:converter converterId="javax.faces.Integer"/>
+                                       <f:validator validatorId="#{property.validatorType}" />
+                                    </h:inputText>
+                                    <h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+                                </h:panelGroup>
+                                <h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
+                                    rendered="#{property.hasMultipleValues 
+                                                && !property.hasMultipleValues 
+                                                && property.type.simpleName != 'RadioButton'}" 
+                                    value="#{property.encodedValue}">
+                                    <f:selectItems value="#{partition.propertyPossibleValues}"/>
+                                </h:selectOneMenu>
+                                <h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 
+                                    rendered="#{property.hasMultipleValues 
+                                                && property.hasMultipleValues 
+                                                && property.type.simpleName != 'RadioButton'}" 
+                                    value="#{property.encodedValues}">
+                                    <f:selectItems value="#{partition.propertyPossibleValues}"/>
+                                </h:selectManyListbox>  
+                                <h:panelGroup rendered="#{property.type.simpleName eq 'RadioButton' 
+                                                && property.hasMultipleValues 
+                                                && !property.hasMultipleValues}" >
+                                    <h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_NO_VALUES}" 
+                                        rendered="#{empty partition.propertyPossibleValues}"/>
+                                    <h:dataTable value="#{partition.propertyPossibleValues}" var="radioButton" 
+                                        columnClasses="column-checkbox1, column-checkbox2" style="width: 100%;">
+                                        <h:column>
+                                            <!-- Selecting default values hasn't been implemented, so radio buttons are rendered disabled -->
+                                            <input type="radio" name="<h:outputText value='#{property.name}'/>" disabled />     
+                                            <h:outputText value="#{radioButton.value}" converter="radioButtonLabelConverter"/>                                  
+                                        </h:column>
+                                        <h:column>                                      
+                                            <h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
+                                                        action="#{approvalProfileMBean.removeRowFromRadioButton(partition.partitionId, radioButton.value)}"/>                                   
+                                        </h:column>                             
+                                    </h:dataTable>  
+                                    <h:panelGroup style="padding: 5px 10px;">
+                                        <h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_LABEL}: "/>
+                                        <h:inputText binding="#{radioButtonLabel}"  disabled="#{approvalProfilesMBean.viewOnly}" />
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_ADD_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
+                                            action="#{approvalProfileMBean.addRowToRadioButton(partition.partitionId, radioButtonLabel.value)}"/>   
+                                    </h:panelGroup>                             
+                                </h:panelGroup>
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" styleClass="button-group" style="text-align: right;">
+                                        <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_PARTITION}"
+                                            disabled="#{step.numberOfPartitions == 1}"
+                                            rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"
+                                            action="#{approvalProfileMBean.deletePartition(partition.partitionId)}"/>    
                                         <h:commandButton value="#{web.text.APPROVAL_PROFILE_PARTITION_NOTIFICATION_ADD}"
                                             rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.isNotificationEnabled(partition.partitionId)}"
                                             action="#{approvalProfileMBean.addNotification(partition.partitionId)}"/>  
@@ -253,46 +254,46 @@
                                             rendered="#{!approvalProfilesMBean.viewOnly && approvalProfileMBean.isUserNotificationEnabled(partition.partitionId)}"
                                             action="#{approvalProfileMBean.removeUserNotification(partition.partitionId)}"/>
                                     </h:panelGroup>
-				    			</f:facet>			
-				    			<h:panelGroup layout="block" style="text-align: right;">	
-									<h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE}" action="#{approvalProfileMBean.removeField(partition.partitionId, partition.propertyName)}"
-										rendered="#{!approvalProfileMBean.isPropertyPredefined(partition.partitionId, partition.propertyName)}" disabled="#{approvalProfilesMBean.viewOnly}"/>
-								</h:panelGroup>
-							</h:column>
-						</h:dataTable>	
-						   				    
-					</h:column>	
-				</h:dataTable>
-				
-				<f:facet name="footer">
-					<h:outputText value="#{web.text.APPROVAL_PROFILE_EXECUTION_HELP}" rendered="#{!approvalProfileMBean.stepSizeFixed}" />
-				</f:facet>
-				<h:panelGroup layout="block">
-					<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_PARTITION}" action="#{approvalProfileMBean.addPartition}"
+                                </f:facet>          
+                                <h:panelGroup layout="block" style="text-align: right;">    
+                                    <h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE}" action="#{approvalProfileMBean.removeField(partition.partitionId, partition.propertyName)}"
+                                        rendered="#{!approvalProfileMBean.isPropertyPredefined(partition.partitionId, partition.propertyName)}" disabled="#{approvalProfilesMBean.viewOnly}"/>
+                                </h:panelGroup>
+                            </h:column>
+                        </h:dataTable>  
+                                            
+                    </h:column> 
+                </h:dataTable>
+                
+                <f:facet name="footer">
+                    <h:outputText value="#{web.text.APPROVAL_PROFILE_EXECUTION_HELP}" rendered="#{!approvalProfileMBean.stepSizeFixed}" />
+                </f:facet>
+                <h:panelGroup layout="block">
+                    <h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_PARTITION}" action="#{approvalProfileMBean.addPartition}"
                         rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
-				    <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_STEP}" action="#{approvalProfileMBean.deleteStep}"
-				    	rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}" disabled="#{approvalProfileMBean.approvalProfile.numberOfSteps eq 1}"/>
-				</h:panelGroup>	
-			</h:column>	
-		</h:dataTable>
-		<h:panelGroup layout="block" style="text-align: right;">
-			<h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
-				rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
-		</h:panelGroup>
-		<h:panelGrid columns="2" styleClass="no-border" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-	
-			<%-- Buttons --%>
-			<h:panelGroup>
-				&nbsp;
-			</h:panelGroup>
-			<h:panelGroup styleClass="no-border">
-				<h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-				<h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-				<h:commandButton value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
-			</h:panelGroup>
-	
-		</h:panelGrid>
-	</h:form>
+                    <h:commandButton value="#{web.text.APPROVAL_PROFILE_DELETE_STEP}" action="#{approvalProfileMBean.deleteStep}"
+                        rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}" disabled="#{approvalProfileMBean.approvalProfile.numberOfSteps eq 1}"/>
+                </h:panelGroup> 
+            </h:column> 
+        </h:dataTable>
+        <h:panelGroup layout="block" style="text-align: right;">
+            <h:commandButton value="#{web.text.APPROVAL_PROFILE_ADD_STEP}" action="#{approvalProfileMBean.addStep}"
+                rendered="#{!approvalProfilesMBean.viewOnly && !approvalProfileMBean.stepSizeFixed}"/>
+        </h:panelGroup>
+        <h:panelGrid columns="2" styleClass="no-border" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+    
+            <%-- Buttons --%>
+            <h:panelGroup>
+                &nbsp;
+            </h:panelGroup>
+            <h:panelGroup styleClass="no-border">
+                <h:commandButton value="#{web.text.SAVE}" action="#{approvalProfileMBean.save}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+                <h:commandButton value="#{web.text.CANCEL}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+                <h:commandButton value="#{web.text.BACK}" action="#{approvalProfileMBean.cancel}" immediate="true" rendered="#{approvalProfilesMBean.viewOnly}"/>
+            </h:panelGroup>
+    
+        </h:panelGrid>
+    </h:form>
 </div> <!-- container -->
 
 <%
