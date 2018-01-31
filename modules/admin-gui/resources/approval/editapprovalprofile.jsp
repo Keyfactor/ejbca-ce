@@ -174,7 +174,7 @@
 							</h:column>
 							<h:column>
 																							
-					   			<h:panelGroup rendered="#{!property.hasMultipleValues}">
+					   			<h:panelGroup rendered="#{!property.multiValued}">
 						   			<h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
 						   				value="#{property.value}" style="width: 100%" >
 						   				<f:converter converterId="stringConverter"/>
@@ -196,22 +196,21 @@
 					   				<h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					   			</h:panelGroup>
 								<h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
-									rendered="#{property.hasMultipleValues 
-												&& !property.hasMultipleValues 
+									rendered="#{property.multiValued 
+												&& !property.multiValued 
 												&& property.type.simpleName != 'RadioButton'}" 
 									value="#{property.encodedValue}">
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
 								</h:selectOneMenu>
 								<h:selectManyListbox disabled="#{approvalProfilesMBean.viewOnly}" 
-									rendered="#{property.hasMultipleValues 
-												&& property.hasMultipleValues 
+									rendered="#{property.multiValued 
+												&& property.multiValued 
 												&& property.type.simpleName != 'RadioButton'}" 
 									value="#{property.encodedValues}">
 									<f:selectItems value="#{partition.propertyPossibleValues}"/>
 								</h:selectManyListbox>	
 								<h:panelGroup rendered="#{property.type.simpleName eq 'RadioButton' 
-												&& property.hasMultipleValues 
-												&& !property.hasMultipleValues}" >
+												&& property.multiValued}" >
 									<h:outputText value="#{web.text.APPROVAL_PROFILE_FIELD_RADIO_NO_VALUES}" 
 										rendered="#{empty partition.propertyPossibleValues}"/>
 									<h:dataTable value="#{partition.propertyPossibleValues}" var="radioButton" 
