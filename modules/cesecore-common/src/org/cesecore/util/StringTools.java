@@ -119,7 +119,7 @@ public final class StringTools {
     // Characters that are not allowed in strings that may be used in db queries, assuming single quote is escaped
     private static final CharSet stripSqlCharsSingleQuoteEscaped = new CharSet(new char[]{ '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' });
     // Characters that are not allowed in filenames
-    private static final CharSet stripFilenameChars = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', ';', '|', '\"', '<', '>' });
+    private static final CharSet stripFilenameChars = new CharSet(new char[]{ '\0', '\n', '\r', '/', '\\', '?', '%', '$', '*', ':', ';', '|', '\"', '\'', '`', '<', '>' });
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
@@ -172,7 +172,37 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripFilename(final String str) {
-        return strip(str, stripFilenameChars);
+        // The strip() method does not work here, because it replaces forbidden characters with /
+        // Also, there's no need to unescape anything here.
+        return stripWithEscapesDisallowed(str, stripFilenameChars);
+    }
+    
+    /**
+     * Strips characters that are not allowed in filenames, and replaces spaces with underscores
+     * @param str the string whose contents will be stripped.
+     * @return the stripped version of the input string.
+     */
+    public static String stripFilenameReplaceSpaces(final String str) {
+        return stripFilename(str.replace(' ', '_'));
+    }
+    
+    /**
+     * Removes all characters in stripThis from the given string
+     * @param str original string, to be stripped.
+     * @param stripThis set of characters that should be stripped.
+     * @return the stripped string
+     */
+    private static String stripWithEscapesDisallowed(final String str, final CharSet stripThis) {
+        if (str == null) {
+            return null;
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            if (!stripThis.contains(str.charAt(i))) {
+                sb.append(str.charAt(i));
+            }
+        }
+        return sb.toString();
     }
 
     /**
