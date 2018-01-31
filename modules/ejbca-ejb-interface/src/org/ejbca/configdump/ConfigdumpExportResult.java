@@ -34,7 +34,7 @@ public final class ConfigdumpExportResult implements Serializable {
     }
     
     public boolean isSuccessful() {
-        return !reportedErrors.isEmpty();
+        return reportedErrors.isEmpty();
     }
     
 }
