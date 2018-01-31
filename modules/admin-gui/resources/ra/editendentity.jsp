@@ -973,7 +973,7 @@ function checkUseInBatch(){
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
                  fillCAField();'>
 
-  <h2><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
+  <h2><%= ejbcawebbean.getText("EDIT_ENDENTITY_HEADING") %></h2>
 
  <%if(nouserparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
@@ -1530,7 +1530,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %>
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> : 1234567890ABCDEF)
+				<p class="help">(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> : 1234567890ABCDEF)</p>
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_HEXA") %>" class="hexa"

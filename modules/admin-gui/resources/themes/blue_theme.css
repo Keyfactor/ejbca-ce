@@ -593,13 +593,6 @@ table h3 {
 	background-color: transparent
 }
 
-table.bold-headings tbody tr:first-child {
-	font-family: "Open Sans", "Source Sans Pro", -apple-system,
-		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica,
-		Geneva, sans-serif;
-	font-weight: 700
-}
-
 .numberCell {
 	display: block;
 	text-align: right
