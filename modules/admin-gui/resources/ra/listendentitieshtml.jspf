@@ -12,7 +12,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_user','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -21,7 +21,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'edit_user','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -30,7 +30,7 @@ function viewhistory(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_history','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_history','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -39,7 +39,7 @@ function viewcert(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_cert','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -48,7 +48,7 @@ function viewtoken(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_token','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_token','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -242,95 +242,90 @@ function confirmrevocation(){
   <table class="results" width="100%" border="0" cellspacing="1" cellpadding="0">
   <thead>
   <tr> 
-    <td width="5%"><c:out value="<%= ejbcawebbean.getText(\"SELECT\") %>"/>
-     </td>
-    <td width="11%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_USERNAME_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
+    <th width="5%" class="selection"><c:out value="<%= ejbcawebbean.getText(\"SELECT\") %>"/>
+     </th>
+    <th width="15%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+                          <input type="submit" name="<%=SORTBY_USERNAME_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>  
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>
+                          <input type="submit" name="<%=SORTBY_USERNAME_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="10%"><% if(sortby.equals(SORTBY_CA_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_CA_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
+    </th>
+    <th width="15%"><% if(sortby.equals(SORTBY_CA_ACC)){ %>
+                          <input type="submit" name="<%=SORTBY_CA_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_CA_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>  
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
+                          <input type="submit" name="<%=SORTBY_CA_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="19%">
+    </th>
+    <th width="20%">
                    <% if(sortby.equals(SORTBY_COMMONNAME_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_COMMONNAME_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_COMMONNAME_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
+                          <input type="submit" name="<%=SORTBY_COMMONNAME_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="17%">
+    </th>
+    <th width="10%">
                    <% if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
                    <% }else{
                          if(sortby.equals(SORTBY_ORGANIZATIONALUNIT_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATIONALUNIT_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="18%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_ORGANIZATION_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/> 
+    </th>
+    <th width="15%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/> 
                    <% }else{ 
                          if(sortby.equals(SORTBY_ORGANIZATION_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
+                          <input type="submit" name="<%=SORTBY_ORGANIZATION_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="12%"><% if(sortby.equals(SORTBY_STATUS_ACC)){ %>
-                          <input type="submit" name="<%=SORTBY_STATUS_DEC %>" value="&#9660;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
+    </th>
+    <th width="10%"><% if(sortby.equals(SORTBY_STATUS_ACC)){ %>
+                          <input type="submit" name="<%=SORTBY_STATUS_DEC %>" value="&#9660;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_STATUS_DEC)){ %>
-                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9650;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>  
+                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9650;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>  
                    <%    }else{ %> 
-                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9644;" class="sortButton"><c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
+                          <input type="submit" name="<%=SORTBY_STATUS_ACC %>" value="&#9644;" class="sortButton"> <c:out value="<%= ejbcawebbean.getText(\"STATUS\") %>"/>
                    <%    }
                        } %>
-    </td>
-    <td width="8%"> &nbsp;
-    </td>
+    </th>
+    <th width="10%"><c:out value="<%= ejbcawebbean.getText(\"ACTIONS\") %>"/>
+    </th>
   </tr>
   </thead>
   <tbody>
   <% if(blank){ %>
   <tr id="Row0"> 
     <td width="5%">&nbsp;</td>
-    <td width="11%">&nbsp;</td>
+    <td width="15%">&nbsp;</td>
+    <td width="15%">&nbsp;</td>
+    <td width="20%">&nbsp;</td>
     <td width="10%">&nbsp;</td>
-    <td width="19%">&nbsp;</td>
-    <td width="17%">&nbsp;</td>
-    <td width="18%">&nbsp;</td>
-    <td width="12%">&nbsp;</td>
-    <td width="8%">&nbsp;</td>
+    <td width="15%">&nbsp;</td>
+    <td width="10%">&nbsp;</td>
+    <td width="10%">&nbsp;</td>
   </tr> 
   <% }else{
        if(users == null || users.length == 0){     %>
   <tr id="Row0"> 
-    <td width="26%" colspan="3"><br/><c:out value="<%= ejbcawebbean.getText(\"NOENDENTITIESFOUND\") %>"/></td>
-    <td width="19%">&nbsp;</td>
-    <td width="17%">&nbsp;</td>
-    <td width="18%">&nbsp;</td>
-    <td width="12%">&nbsp;</td>
-    <td width="8%">&nbsp;</td>
+    <td width="100%" colspan="8"><br/><c:out value="<%= ejbcawebbean.getText(\"NOENDENTITIESFOUND\") %>"/></td>
   </tr>
   <% } else{
          for(int i=0; i < users.length; i++){%>
@@ -340,14 +335,14 @@ function confirmrevocation(){
           <input type="checkbox" name="<%= CHECKBOX_SELECT_USER + i %>" value='<%= CHECKBOX_VALUE %>'>
         </div>
       </td>
-    <td width="11%"><c:out value="<%= users[i].getUsername() %>"/>
+    <td width="15%"><c:out value="<%= users[i].getUsername() %>"/>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<c:out value="<%= java.net.URLEncoder.encode(users[i].getUsername(),\"UTF-8\") %>"/>' >
     </td>
-    <td width="10%"><c:out value="<%= users[i].getCAName() %>"/></td>      
-    <td width="19%"><c:out value="<%= users[i].getCommonName() %>"/></td>
-    <td width="17%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %>"/></td>
-    <td width="18%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %>"/></td>
-    <td width="12%"><%  switch(users[i].getStatus()){
+    <td width="15%"><c:out value="<%= users[i].getCAName() %>"/></td>      
+    <td width="20%"><c:out value="<%= users[i].getCommonName() %>"/></td>
+    <td width="10%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %>"/></td>
+    <td width="15%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %>"/></td>
+    <td width="10%"><%  switch(users[i].getStatus()){
                           case EndEntityConstants.STATUS_NEW : %>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>" />
                             <%break;
@@ -373,30 +368,37 @@ function confirmrevocation(){
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSKEYRECOVERY\") %>" />
                             <%break;
                         }%></td>
-      <td width="8%">
-
-        <A  style="cursor:pointer;" onclick='viewuser(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWENDENTITY\") %>"/></u> </A> 
-       <% if ((rabean.authorizedToEditUser(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
-               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITENDENTITY)){ %>
-        <A  style="cursor:pointer;" onclick='edituser(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"EDITENDENTITY\") %>"/></u> </A>
-        <% }
-           if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)){ %>
-        <A  style="cursor:pointer;" onclick='viewcert(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWCERTIFICATES\") %>"/></u> </A>
-        <% }
-           if (globalconfiguration.getIssueHardwareTokens() &&
-              (rabean.authorizedToViewHardToken(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
-               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)){ %>
-        <A  style="cursor:pointer;" onclick='viewtoken(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHARDTOKENS\") %>"/></u> </A>
-        <% }
-           if ((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
-               && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)){ %>
-         <a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.jsf?username=<%= users[i].getUsername() %>'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHISTORY\") %>"/></u> </a>
-        <% } %>
+      <td width="10%">
+		<table class="actions" width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td style='white-space: nowrap;'><c:out value='<%= ejbcawebbean.getText("ENDENTITY_ABBR") %>' /></td>
+				<td style='white-space: nowrap;'><div class="button-group">
+					<button type='button' onclick='viewuser(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_ENDENTITY_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW") %>' /></button>
+				<% if ((rabean.authorizedToEditUser(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
+					&& ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITENDENTITY)){ %>
+					<button type='button' onclick='edituser(<%= i %>)' title='<%= ejbcawebbean.getText("EDIT_ENDENTITY_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("EDIT") %>' /></button>
+				<% } %>
+				<% if ((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
+					&& ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)){ %>
+					<a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.jsf?username=<%= users[i].getUsername() %>'
+						title='<%= ejbcawebbean.getText("VIEW_HISTORY_TITLE") %>'><c:out value='<%= ejbcawebbean.getText("HISTORY") %>' /></a>
+				<% } %>
+					</div></td>
+			</tr>
+			<tr>
+				<td style='white-space: nowrap;'><c:out value='<%= ejbcawebbean.getText("CERTIFICATES") %>' /></td>
+				<td style='white-space: nowrap;'><div class="button-group">
+				<% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)){ %>
+					<button type='button' onclick='viewcert(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_CERTIFICATES_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW") %>' /></button>
+				<% } %>
+				<% if (globalconfiguration.getIssueHardwareTokens()
+					&& (rabean.authorizedToViewHardToken(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations())
+					&& ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)){ %>
+					<button type='button' onclick='viewtoken(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_HARDTOKENS_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("HARDTOKENS_ABBR") %>' /></button>
+				<% } %>
+					</div></td>
+			</tr>
+		</table>
       </td>
   </tr>
  <%      }
@@ -410,12 +412,12 @@ function confirmrevocation(){
 
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
-      <td width="14%">
+      <td width="15%">
         <% if(rabean.previousButton(record)){ %>
           <input type="submit" name="<%=BUTTON_PREVIOUS %>" value='<c:out value="<%= ejbcawebbean.getText(\"PREVIOUS\") %>"/>'>
         <% } %>
       </td>
-      <td width="76%"> 
+      <td width="70%"> 
         <div align="center">
           <input type="button" name="<%=BUTTON_SELECTALL %>" value='<c:out value="<%= ejbcawebbean.getText(\"SELECTALL\") %>"/>'
                 onClick='checkAll("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>)'>
@@ -425,7 +427,7 @@ function confirmrevocation(){
                  onClick='switchAll("document.form.<%= CHECKBOX_SELECT_USER %>", <%= numcheckboxes %>)'>
         </div>
       </td>
-      <td width="10%"> 
+      <td width="15%"> 
         <div align="right">
         <% if(rabean.nextButton(record,size)){ %>
           <input type="submit" name="<%=BUTTON_NEXT %>" value='<c:out value="<%= ejbcawebbean.getText(\"NEXT\") %>"/>'>
