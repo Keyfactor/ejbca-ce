@@ -2006,7 +2006,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_user','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_user','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -2015,7 +2015,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'edit_user','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=750,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -2027,46 +2027,44 @@ function edituser(row){
   <% if(addedusers == null || addedusers.length == 0){     %>
   <!-- nothing to do -->
   <% } else{ %>
-  <div class="message"><c:out value="<%= ejbcawebbean.getText(\"PREVIOUSLYADDEDENDENTITIES\") %>"/></div>
-  <p>
+  <div class="message"><strong><c:out value="<%= ejbcawebbean.getText(\"PREVIOUSLYADDEDENDENTITIES\") %>"/></strong></div>
+  <div>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
-  </p>
-  <table class="bold-headings" width="100%" border="0" cellspacing="1" cellpadding="0">
+  </div>
+  <table class="results" width="100%" border="0" cellspacing="1" cellpadding="0">
+  <thead>
   <tr> 
-    <td width="10%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
-    </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
-    </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
-    </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>                 
-    </td>
-    <td width="30%"> &nbsp;
-    </td>
+    <th width="20%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/></th>
+    <th width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/></th>
+    <th width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/></th>
+    <th width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/></th>
+    <th width="20%"><c:out value="<%= ejbcawebbean.getText(\"ACTIONS\") %>"/></th>
   </tr>
+  </thead>
+  
+  <tbody>
     <%   for(int i=0; i < addedusers.length; i++){
             if(addedusers[i] != null){ 
       %>
      
   <tr id="Row<%= i%2 %>"> 
 
-    <td width="15%"><c:out value="<%= addedusers[i].getUsername() %>"/>
+    <td width="20%"><c:out value="<%= addedusers[i].getUsername() %>"/>
        <input type="hidden" name='<%= HIDDEN_USERNAME + i %>' value='<c:out value="<%=java.net.URLEncoder.encode(addedusers[i].getUsername(),\"UTF-8\")%>"/>'>
     </td>
     <td width="20%"><c:out value="<%= addedusers[i].getSubjectDNField(DNFieldExtractor.CN,0)  %>"/></td>
     <td width="20%"><c:out value="<%= addedusers[i].getSubjectDNField(DNFieldExtractor.OU,0) %>"/></td>
     <td width="20%"><c:out value="<%= addedusers[i].getSubjectDNField(DNFieldExtractor.O,0) %>"/></td>
-    <td width="25%">
-        <a onclick='viewuser(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWENDENTITY\") %>"/></u></a>
-        &nbsp;
-        <a onclick='edituser(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"EDITENDENTITY\") %>"/></u></a>
-    </td>
+    <td width="20%" style='white-space: nowrap;'><div class="button-group">
+		<button type='button' onclick='viewuser(<%= i %>)' title='<%= ejbcawebbean.getText("VIEW_ENDENTITY_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW") %>' /></button>
+		<button type='button' onclick='edituser(<%= i %>)' title='<%= ejbcawebbean.getText("EDIT_ENDENTITY_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("EDIT") %>' /></button>
+    </div></td>
+
   </tr>
  <%        }
          }
  %>
+  </tbody>
   </table>
  <%    }
      }%>

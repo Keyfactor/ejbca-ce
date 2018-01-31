@@ -326,7 +326,11 @@ function confirmrepublish(){
 
 <body class="popup" id="viewcertificate">
 
-  <h2><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
+  <% if (cacerts) { %>
+  <h2><%= ejbcawebbean.getText("VIEW_CACERTIFICATE_HEADING") %></h2>
+  <% } else { %>
+  <h2><%= ejbcawebbean.getText("VIEW_CERTIFICATES_HEADING") %></h2>
+  <% } %>
 
   <%if(noparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></div> 

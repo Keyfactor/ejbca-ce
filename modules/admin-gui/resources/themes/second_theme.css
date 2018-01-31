@@ -350,7 +350,7 @@ input.selectButton.enabled:hover {
 	color: HighlightText;
 }
 div.message {
-	margin-top: .5em;
+	margin-top: 1.0em;
 	text-align: center;
 }
 .hexa {
@@ -705,9 +705,23 @@ table.search tr td select.time {
 }
 table.results {
 	min-width: 1100px;
+	margin-top: .5em;
 }
-table.results thead tr td {
+table.results > thead > tr > th,
+table.results > thead > tr > td {
+	padding: .45em .35em;
+	background-color: #DDE;
+	background-image: -webkit-linear-gradient(top, #EEF, #CCD);		/* Chrome 10+, Safari 5.1+ */
+	background-image: -moz-linear-gradient(top, #EEF, #CCD);		/* Firefox 3.6+ */
+	background-image: -ms-linear-gradient(top, #EEF, #CCD);			/* IE/Edge 10+ */
+	background-image: -o-linear-gradient(top, #EEF, #CCD);			/* Opera 11.10+ */
+	background-image: linear-gradient(top, #EEF, #CCD);				/* W3C CSS 3 */
+	text-align: left;
 	white-space: nowrap;
+}
+table.results thead tr th.selection,
+table.results thead tr td.selection {
+	text-align: center;
 }
 table.results tbody tr:hover,
 table.results tbody tr:focus,
@@ -715,10 +729,24 @@ table.results tbody tr:active {
 	background-color: #FFB !important;
 }
 table.results tbody tr td {
+	padding: 0 .35em;
 	vertical-align: middle;
 }
-table.results tbody tr td a {
+table.results > tbody > tr > td:last-child {		/* Only for the last child of "results", and not for "actions" */
+	padding: 0;
+}
+table.results tbody tr td a {		/* For the link "History" */
 	white-space: nowrap;
+}
+table.results table.actions tbody tr td {
+	padding-top: .2em;
+	padding-bottom: .2em;
+	white-space: nowrap;
+}
+table.results table.actions tbody tr:hover,
+table.results table.actions tbody tr:focus,
+table.results table.actions tbody tr:active {
+	background-color: #BFB !important;
 }
 
 .section-label {

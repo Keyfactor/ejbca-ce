@@ -54,7 +54,7 @@
 
 <body class="popup" id="viewendentity">
 
-  <h2><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
+  <h2><%= ejbcawebbean.getText("VIEW_ENDENTITY_HEADING") %></h2>
 
   <%if(viewendentityhelper.nouserparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
