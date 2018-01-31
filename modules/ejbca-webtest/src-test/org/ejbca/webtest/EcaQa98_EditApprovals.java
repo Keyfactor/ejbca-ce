@@ -54,6 +54,19 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * @version $Id: EcaQa98_EditApprovals.java 28035 2018-01-19 17:36:40Z bastianf $
+ * 
+ * This tests uses 3 different administrators. In order to run it, Firefox profiles with certificates and corresponding names for: 
+ * 
+ * profile.firefox.superadmin
+ * profile.firefox.raadmin
+ * profile.firefox.raadmin
+ * 
+ * ...defined in profiles.properties is required. Additionally 2 roles (with the same name as the Firefox profiles superadmin, raadmin and raadminalt)
+ * is required, with corresponding members (e.g. certificate serial number used in the profiles).
+ * 
+ * Certificate for 'profile.firefox.superadmin' should be member of the SuperAdministrator role or any other role with root access.
+ * Access rule setup for the raadmin and raadminalt is NOT required (it will be setup by the test).
+ * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
@@ -148,7 +161,6 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         selectApprovalProfile.selectByVisibleText(approvalProfileName);
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreate']")).click();
         
-        //TODO Give RAAdmin1 and RAAdmin2 access to TestCA and CA Approve (if needed)
         Role raAdmin1 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
         Role raAdmin2 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
         raAdmin1.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
