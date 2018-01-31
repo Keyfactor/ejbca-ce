@@ -266,7 +266,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @throws KeyValidatorExistsException if the validator already exists.
      */
     public void actionAdd() throws AuthorizationDeniedException, KeyValidatorExistsException {
-        final String name = getValidatorName();
+        final String name = getNewValidatorName();
         if (StringUtils.isNotBlank(name)) {
             try {
                 keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
