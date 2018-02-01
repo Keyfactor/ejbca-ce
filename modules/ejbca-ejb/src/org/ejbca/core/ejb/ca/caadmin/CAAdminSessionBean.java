@@ -26,6 +26,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -3050,6 +3051,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     if ((i + 1) < certs.length) {
                         Certificate cacert = (Certificate) certs[i + 1];
                         cafp = CertTools.getFingerprintAsString(cacert);
+                    } else {
+                        // We don't have a chain provided, try to find the CA certificate, assuming that we do not have this certificate in the database
+                        List<Certificate> cacerts = certificateStoreSession.findCertificatesBySubject(CertTools.getIssuerDN(cert));
+                        if (cacerts != null && cacerts.size() > 0) {
+                            for (Certificate cacert : cacerts) {
+                                try {
+                                    cert.verify(cacert.getPublicKey());
+                                    // If we can verify, it was the correct CA cert
+                                    cafp = CertTools.getFingerprintAsString(cacert); 
+                                    break;
+                                } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException
+                                        | SignatureException e) {
+                                    log.debug("CA cert could not verify the certificate to import: "+CertTools.getSubjectDN(cacert));
+                                }
+                            }
+                        }
                     }
                 }
             } else if (isSelfSigned) {
