@@ -13,21 +13,21 @@
 
 package org.ejbca;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.StringUtils;
+import org.ejbca.utils.ConfigurationConstants;
+import org.ejbca.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.ejbca.utils.ConfigurationConstants;
-import org.ejbca.utils.ConfigurationHolder;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case
  * @version $Id$
- *
  */
 public abstract class WebTestBase {
 
@@ -99,7 +99,18 @@ public abstract class WebTestBase {
     public String getProfileName(String constantKey) {
         return config.getProperty(constantKey);
     }
-    
+
+    /**
+     * <p>Get the namespace in which the administrative roles for clicktests reside, or null if no
+     * namespace has been specified by the user.
+     * <p>The namespace setting is fetched from the <code>ejbca.properties</code> configuration file.
+     * @return the role namespace or null if no particular namespace has been configured by the user
+     */
+    public String getNamespace() {
+        final String namespace = config.getProperty(ConfigurationConstants.EJBCA_NAMESPACE);
+        return StringUtils.isBlank(namespace) ? null : namespace;
+    }
+
     public String getPublicWebUrl() {
         return "http://" + ejbcaDomain + ":" + ejbcaPort + "/ejbca/";
     }
@@ -111,11 +122,11 @@ public abstract class WebTestBase {
     public String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
     }
-    
+
     public static WebDriver getWebDriver() {
         return webDriver;
     }
-    
+
     public static WebDriverWait getWebDriverWait() {
         return webDriverWait;
     }
