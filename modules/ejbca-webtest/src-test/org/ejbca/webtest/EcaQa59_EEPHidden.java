@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 
 /**
  * 
- * @version $Id: EcaQa59_EEPHidden.java 27792 2018-01-09 09:55:47Z henriks $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa59_EEPHidden extends WebTestBase {

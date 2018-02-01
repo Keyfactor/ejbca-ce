@@ -34,7 +34,7 @@ import org.openqa.selenium.support.ui.Select;
  * containing a superadmin certificate as first selection is required. The profile name can either be specified in /conf/profiles.properties
  * or a new Firefox profile can be created with the name 'superadmin'.
  * 
- * @version $Id: EcaQa78_SuperAdminAccess.java 28066 2018-01-22 16:30:07Z henriks $
+ * @version $Id$
  * 
  */
 public class EcaQa78_SuperAdminAccess extends WebTestBase {

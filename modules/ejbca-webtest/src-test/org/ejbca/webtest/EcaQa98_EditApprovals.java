@@ -57,7 +57,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  * profile.firefox.superadmin
  * profile.firefox.raadmin
- * profile.firefox.raadmin
+ * profile.firefox.raadminalt
  *
  * ...defined in profiles.properties is required. Additionally 2 roles (with the same name as the Firefox profiles superadmin, raadmin and raadminalt)
  * is required, with corresponding members (e.g. certificate serial number used in the profiles).
