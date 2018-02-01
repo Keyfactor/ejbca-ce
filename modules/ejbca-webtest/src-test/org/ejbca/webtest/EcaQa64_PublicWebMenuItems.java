@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * 
- * @version $Id: EcaQa64_PublicWebMenuItems.java 27912 2018-01-11 14:01:22Z henriks $
+ * @version $Id$
  *
  */
 public class EcaQa64_PublicWebMenuItems extends WebTestBase {
