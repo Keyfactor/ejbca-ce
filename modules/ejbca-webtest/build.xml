@@ -16,6 +16,7 @@
 	<property name="lib.webtest" value="${this.dir}/../../lib/ext/webtest"/>
 	
 	<path id="compile.classpath">
+		<path refid="lib.commons-lang.classpath"/>
 		<fileset dir="${lib.webtest}" includes="**/*.jar"/>
 	</path>
 	

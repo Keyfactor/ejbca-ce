@@ -160,8 +160,8 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         selectApprovalProfile.selectByVisibleText(approvalProfileName);
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreate']")).click();
 
-        Role raAdmin1 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
-        Role raAdmin2 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
+        Role raAdmin1 = roleSession.getRole(admin, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
+        Role raAdmin2 = roleSession.getRole(admin, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
         raAdmin1.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
         raAdmin2.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
         raAdmin1.getAccessRules().put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);

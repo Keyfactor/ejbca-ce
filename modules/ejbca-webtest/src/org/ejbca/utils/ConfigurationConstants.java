@@ -21,7 +21,7 @@ package org.ejbca.utils;
 public final class ConfigurationConstants {
 
     private ConfigurationConstants() {};
-    
+
     // Browser Profile Constants
     public static final String PROFILE_FIREFOX_DEFAULT      = "profile.firefox.default";
     public static final String PROFILE_FIREFOX_AUDIOR       = "profile.firefox.auditor";
@@ -31,13 +31,14 @@ public final class ConfigurationConstants {
     public static final String PROFILE_FIREFOX_RAADMINALT   = "profile.firefox.raadminalt";
     public static final String PROFILE_FIREFOX_SUPERADMIN   = "profile.firefox.superadmin";
     public static final String PROFILE_FIREFOX_SUPERVISOR   = "profile.firefox.supervisor";
-    
+
     // Application Server Constants
     public static final String APPSERVER_DOMAIN     = "appserver.domainname";
     public static final String APPSERVER_PORT       = "appserver.port";
     public static final String APPSERVER_PORT_SSL   = "appserver.secureport";
-    
+
     // EJBCA Specific Constants
     public static final String EJBCA_CANAME     = "ejbca.ca.name";
     public static final String EJBCA_CADN       = "ejbca.ca.dn";
+    public static final String EJBCA_NAMESPACE  = "ejbca.namespace";
 }
