@@ -41,7 +41,7 @@ import java.util.Map.Entry;
 
 /**
  * 
- * @version $Id: EcaQa153_ApprovalRoleSettings.java 27984 2018-01-16 15:41:33Z henriks $
+ * @version $Id$
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

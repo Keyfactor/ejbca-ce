@@ -45,7 +45,7 @@ import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * @version $Id: EcaQa87_ApprovalMgmtPartition.java 28015 2018-01-18 13:42:25Z henriks $
+ * @version $Id$
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

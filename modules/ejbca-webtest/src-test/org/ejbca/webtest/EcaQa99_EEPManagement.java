@@ -38,7 +38,7 @@ import org.ejbca.utils.WebTestUtils;
 
 /**
  * 
- * @version $Id: EcaQa99_EEPManagement.java 27810 2018-01-09 13:02:04Z henriks $
+ * @version $Id$
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
