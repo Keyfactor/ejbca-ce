@@ -2708,6 +2708,7 @@ This is a plugin-upgrade from 3.1/3.1.1.
 Simply keep ejbca.properties from the earlier release, and 'ant deploy' this
 new one.
 
+Note that to fix ECA-126, a new version of lib/bcmail-jdk14.jar and
 lib/bcprov-jdk14.jar are used. Since they are binary files they are not
 included in the patch from version 3.1 to 3.1.2. You can use the patch and
 manually replace the jar-files.
