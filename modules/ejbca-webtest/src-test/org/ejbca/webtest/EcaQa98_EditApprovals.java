@@ -65,7 +65,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * Certificate for 'profile.firefox.superadmin' should be member of the SuperAdministrator role or any other role with root access.
  * Access rule setup for the raadmin and raadminalt is NOT required (it will be setup by the test).
  *
- * @version $Id: EcaQa98_EditApprovals.java 28035 2018-01-19 17:36:40Z bastianf $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
