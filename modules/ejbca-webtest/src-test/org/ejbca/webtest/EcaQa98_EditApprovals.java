@@ -53,44 +53,43 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 
 /**
- * @version $Id: EcaQa98_EditApprovals.java 28035 2018-01-19 17:36:40Z bastianf $
- * 
- * This tests uses 3 different administrators. In order to run it, Firefox profiles with certificates and corresponding names for: 
- * 
+ * This tests uses 3 different administrators. In order to run it, Firefox profiles with certificates and corresponding names for:
+ *
  * profile.firefox.superadmin
  * profile.firefox.raadmin
  * profile.firefox.raadmin
- * 
+ *
  * ...defined in profiles.properties is required. Additionally 2 roles (with the same name as the Firefox profiles superadmin, raadmin and raadminalt)
  * is required, with corresponding members (e.g. certificate serial number used in the profiles).
- * 
+ *
  * Certificate for 'profile.firefox.superadmin' should be member of the SuperAdministrator role or any other role with root access.
  * Access rule setup for the raadmin and raadminalt is NOT required (it will be setup by the test).
- * 
+ *
+ * @version $Id: EcaQa98_EditApprovals.java 28035 2018-01-19 17:36:40Z bastianf $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
-    
+
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-    
+
     private static WebDriver webDriverSuperAdmin;
     private static WebDriverWait webDriverSuperAdminWait;
     private static WebDriver webDriverAdmin1;
     private static WebDriverWait webDriverAdmin1Wait;
     private static WebDriver webDriverAdmin2;
     private static WebDriverWait webDriverAdmin2Wait;
-    
+
     private static final String approvalProfileName = "ECAQA98AP";
     private static final String caName = "ECAQA98TestCA";
     private static final String eeName = "EcaQa98EE" + new Random().nextInt();
-    
+
     private static int requestId = -1;
-    
+
     private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private static ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    
+
     @BeforeClass
     public static void init() {
         setUp(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
@@ -121,11 +120,11 @@ public class EcaQa98_EditApprovals extends WebTestBase {
     }
 
 
-    
+
     @Test
     public void testA_setupPrerequisites() throws AuthorizationDeniedException, RoleExistsException {
         // Create Approval Profile
-        
+
         webDriverSuperAdmin.get(getAdminWebUrl());
         WebElement approvalProfilesLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.jsf')]"));
         approvalProfilesLink.click();
@@ -134,11 +133,11 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         inputName.sendKeys(approvalProfileName);
         WebElement addProfile = webDriverSuperAdmin.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@value='Add']]"));
         addProfile.sendKeys(Keys.RETURN);
-        
+
         WebElement addedItemRow = webDriverSuperAdmin.findElement(By.xpath("//tbody/tr/td[contains(text(), 'ECAQA98AP')]"));
         WebElement addedItemEditButton = addedItemRow.findElement(By.xpath("../td[@class='gridColumn2']/div/input[@value='Edit']"));
         addedItemEditButton.sendKeys(Keys.RETURN);
-        
+
         Select dropDownProfileType =  new Select(webDriverSuperAdmin.findElement(By.id("approvalProfilesForm:selectOneMenuApprovalType")));
         dropDownProfileType.selectByValue("PARTITIONED_APPROVAL");
         List<WebElement> stepAdmins = webDriverSuperAdmin.findElements(By.xpath("//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
@@ -150,7 +149,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         }
         WebElement saveButton =  webDriverSuperAdmin.findElement(By.xpath("//td[@class='editColumn2']/span/input[contains(@name,'approvalProfilesForm:j_id') and //input[@value='Save']]"));
         saveButton.sendKeys(Keys.RETURN);
-        
+
         //Create CA
         WebElement caLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/editcas.jsp')]"));
         caLink.click();
@@ -160,7 +159,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         Select selectApprovalProfile = new Select(webDriverSuperAdmin.findElement(By.xpath("//select[@name='approvalprofile_1']")));
         selectApprovalProfile.selectByVisibleText(approvalProfileName);
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreate']")).click();
-        
+
         Role raAdmin1 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
         Role raAdmin2 = roleSession.getRole(admin, null, getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
         raAdmin1.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
@@ -170,7 +169,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         roleSession.persistRole(admin, raAdmin1);
         roleSession.persistRole(admin, raAdmin2);
     }
-    
+
     @Test
     public void testB_enrollEndEntity() {
         webDriverSuperAdmin.get(getAdminWebUrl());
@@ -189,7 +188,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         WebElement messageInfo = webDriverSuperAdmin.findElement(By.xpath("//div[@class='message alert']"));
         assertEquals("Unexpected status text after adding end entity", "Request has been sent for approval.", messageInfo.getText());
     }
-    
+
     @Test
     public void testC_findPending() {
         webDriverSuperAdmin.get(getRaWebUrl());
@@ -197,7 +196,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         webDriverSuperAdminWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='pure-menu-link requests-menu-link']")));
         webDriverSuperAdmin.findElement(By.xpath("//a[@class='pure-menu-link requests-menu-link']")).click();
         webDriverSuperAdmin.findElement(By.xpath("//a[@href='managerequests.xhtml?tab=pending']")).click();
-        
+
         WebElement requestsTable = webDriverSuperAdmin.findElement(By.id("manageRequestsForm:manageRequestTable"));
         try {
             requestId = Integer.parseInt(requestsTable.findElement(By.xpath(".//tbody/tr/td/span")).getText());
@@ -212,14 +211,14 @@ public class EcaQa98_EditApprovals extends WebTestBase {
             fail("Request Id was not found or not numeric");
         }
     }
-    
+
     @Test
     public void testD_editRequest() {
         webDriverAdmin1.get(getRaWebUrl());
         // Page is refreshed, wait for it...
         webDriverAdmin1Wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='pure-menu-link requests-menu-link']")));
         webDriverAdmin1.findElement(By.xpath("//a[@class='pure-menu-link requests-menu-link']")).click();
-        
+
         try {
             //TODO Verify date and regex of Id
             webDriverAdmin1.findElement(By.xpath("//td[contains(text(),'ECAQA98TestCA')]"));
@@ -229,21 +228,21 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         } catch (NoSuchElementException e) {
             fail("Failed to locate correct approval request: " + e.getMessage());
         }
-        
+
         webDriverAdmin1.findElement(By.id("manageRequestsForm:manageRequestTable:0:viewMoreButton")).click();
-        
+
         try {
             webDriverAdmin1.findElement(By.id("manageRequestForm:commandApprove"));
             webDriverAdmin1.findElement(By.id("manageRequestForm:commandReject"));
         } catch (NoSuchElementException e) {
             fail(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN) + ": Approve and Reject button not found while reviewing request: " + e.getMessage());
         }
-        
+
         webDriverAdmin1.findElement(By.id("manageRequestForm:commandEditData")).click();
         WebElement cnLabel = webDriverAdmin1.findElement(By.xpath("//label[contains(text(), 'CN, Common Name')]"));
         cnLabel.findElement(By.xpath("../span/input")).sendKeys("_Modified");
         webDriverAdmin1.findElement(By.id("manageRequestForm:commandSaveData")).click();
-        
+
         try {
             webDriverAdmin1.findElement(By.xpath("//span[contains(text(), 'CN=" + eeName + "_Modified')]"));
         } catch (NoSuchElementException e) {
@@ -257,13 +256,13 @@ public class EcaQa98_EditApprovals extends WebTestBase {
             fail("Administrator was able to take action on request after editing it.");
         } catch (NoSuchElementException e) {} //Expected since buttons shouldn't be rendered after editing request
     }
-    
+
     @Test
     public void testE_approvePostEdit() {
         webDriverAdmin2.get(getRaWebUrl());
         webDriverAdmin2Wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='pure-menu-link requests-menu-link']")));
         webDriverAdmin2.findElement(By.xpath("//a[@class='pure-menu-link requests-menu-link']")).click();
-        
+
         try {
             //TODO Verify date and regex of Id
             webDriverAdmin2.findElement(By.xpath("//td[contains(text(),'ECAQA98TestCA')]"));
@@ -273,16 +272,16 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         } catch (NoSuchElementException e) {
             fail("Failed to locate correct approval request: " + e.getMessage());
         }
-        
+
         webDriverAdmin2.findElement(By.id("manageRequestsForm:manageRequestTable:0:viewMoreButton")).click();
-        
+
         try {
             webDriverAdmin2.findElement(By.id("manageRequestForm:commandApprove"));
             webDriverAdmin2.findElement(By.id("manageRequestForm:commandReject"));
         } catch (NoSuchElementException e) {
             fail(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT) + ": Approve and Reject button not found while reviewing request: " + e.getMessage());
         }
-        
+
         webDriverAdmin2.findElement(By.id("manageRequestForm:commandApprove")).click();
         WebElement approvalMessage = webDriverAdmin2.findElement(By.id("manageRequestForm:requestApproveMessage"));
         assertEquals("Unexpected message after approving the edited request", "This request has been approved and executed already", approvalMessage.getText());
