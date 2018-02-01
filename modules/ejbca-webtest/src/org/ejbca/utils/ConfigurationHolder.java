@@ -19,35 +19,41 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * 
+ * This class holds the user configuration for the EJBCA Webtest module.
+ * The configuration is loaded from property files located in modules/ejbca-webtest/conf.
  * @version $Id$
- *
  */
 public class ConfigurationHolder {
 
     private Properties properties;
     private ClassLoader configCl = ConfigurationHolder.class.getClassLoader();
-    
+
     public ConfigurationHolder() {
         this.properties = new Properties();
     }
 
     public void loadAllProperties() {
         try {
-            properties.load(new FileInputStream(configCl.getResource("appserver.properties").getFile()));
-            properties.load(new FileInputStream(configCl.getResource("ejbca.properties").getFile()));
-            properties.load(new FileInputStream(configCl.getResource("profiles.properties").getFile()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            loadProperty("appserver");
+            loadProperty("ejbca");
+            loadProperty("profiles");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadProperty(final String property) throws IOException {
+        try {
+            properties.load(new FileInputStream(configCl.getResource(property + ".properties").getFile()));
+        } catch (FileNotFoundException e) {
+            properties.load(new FileInputStream(configCl.getResource(property + ".properties.sample").getFile()));
         }
     }
 
     public void setGeckoDriver() {
         System.setProperty("webdriver.gecko.driver", configCl.getResource("geckodriver").getFile());
     }
-    
+
     public String getProperty(String property) {
         return properties.getProperty(property);
     }
