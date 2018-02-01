@@ -16,6 +16,7 @@ package org.ejbca.utils;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -24,9 +25,8 @@ import java.util.Properties;
  * @version $Id$
  */
 public class ConfigurationHolder {
-
-    private Properties properties;
     private ClassLoader configCl = ConfigurationHolder.class.getClassLoader();
+    private Properties properties;
 
     public ConfigurationHolder() {
         this.properties = new Properties();
@@ -43,11 +43,17 @@ public class ConfigurationHolder {
     }
 
     private void loadProperty(final String property) throws IOException {
-        try {
-            properties.load(new FileInputStream(configCl.getResource(property + ".properties").getFile()));
-        } catch (FileNotFoundException e) {
-            properties.load(new FileInputStream(configCl.getResource(property + ".properties.sample").getFile()));
+        final URL userProperty = configCl.getResource(property + ".properties");
+        if (userProperty != null) {
+            properties.load(new FileInputStream(userProperty.getFile()));
+            return;
         }
+        final URL defaultProperty = configCl.getResource(property + ".properties.sample");
+        if (defaultProperty != null) {
+            properties.load(new FileInputStream(defaultProperty.getFile()));
+            return;
+        }
+        throw new FileNotFoundException("Property file for " + property + " could not be found.");
     }
 
     public void setGeckoDriver() {
