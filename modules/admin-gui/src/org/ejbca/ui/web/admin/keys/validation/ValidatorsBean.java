@@ -197,7 +197,7 @@ public class ValidatorsBean extends BaseManagedBean {
             	final Validator validator = keyValidatorSession.getValidator(id);
                 final String accessRule = StandardRules.VALIDATORACCESS.resource() + validator.getProfileId();
                 if (isAuthorizedTo(accessRule)) {
-                    items.add(new ValidatorItem(id, validator.getProfileName() + " (" + validator.getLabel() + ")", validator.getLabel()));
+                    items.add(new ValidatorItem(id, validator.getProfileName(), validator.getLabel()));
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("User with token " + getAdmin().getUniqueId() + " is not authorized to access rule "
