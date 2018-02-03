@@ -25,9 +25,8 @@ function enableFormItems() {
     document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
     document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = (!use_vendormode || !authorizedToEdit);
-    document.cmpconfiguration.<%= LIST_RESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
-    document.cmpconfiguration.<%= BUTTON_ADDRESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
-    document.cmpconfiguration.<%= BUTTON_REMOVERESPONSECAPUBSCA %>.disabled = (!authorizedToEdit);
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPREFIX %>.disabled = (!use_vendormode || !authorizedToEdit);
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPOSTFIX %>.disabled = (!use_vendormode || !authorizedToEdit);
 <% } else { %>
     // ----- RA Mode -----
     // CMP Authentication Module
@@ -113,11 +112,6 @@ function checkallfields() {
         <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"CMPBACKTOALIASES\") %>" /></a>
       </td>
     </tr>
-
-
-
-
-        
 
     
     <!-- ---------------------- CMP Operational mode ----------------------------- -->
@@ -537,6 +531,32 @@ function checkallfields() {
 	        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
 	      </td>
 	    </tr>
+	    
+	    <!-- ---------------------- ++ Vendor mode RA name generation prefix ---------------------------- -->
+	    <tr id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top">
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPREFIX\") %>"/>
+	        </h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPREFIX_HELP\") %>"/></p>
+	      </td>
+	      <td width="50%"> 
+	        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPREFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPrefix(alias) %>"/>' 
+	        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	      </td>
+	    </tr>
+	
+		<!-- ---------------------- ++ Vendor mode RA name generation postfix ---------------------------- -->
+	    <tr id="Row<%=row++%2%>">
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPOSTFIX\") %>"/>
+	        </h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPOSTFIX_HELP\") %>"/></p>
+		  </td>
+	      <td width="50%">        
+	        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPOSTFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPostfix(alias) %>"/>' 
+	        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	      </td>
+	    </tr>    
     <% } %>
     
     <!-- ---------------------- + Response Configurations ----------------------------- -->

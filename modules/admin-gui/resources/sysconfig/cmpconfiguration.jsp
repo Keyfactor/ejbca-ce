@@ -314,9 +314,6 @@
     			            		}
     			            }
 	    			        cmpConfigClone.setAuthenticationProperties(alias, authmodule, authparam);
-    		
-    			            			
-	    			        
 	    			        
     			            if(!ramode) { // client mode
     			            		// extract username component
@@ -332,6 +329,15 @@
     			            				vendormode = true;
     			            		}
     			            		cmpConfigClone.setVendorMode(alias, vendormode);
+    			            		
+    			            		// ra name generation prefix
+    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPREFIX);
+    			            		cmpConfigClone.setRANameGenPrefix(alias, value == null ? "" : value);
+    			            		
+    			            		// ra name generation postfix
+    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPOSTFIX);
+    			            		cmpConfigClone.setRANameGenPostfix(alias, value==null ? "" : value);
+    			            		
     			            } else { // ra mode
     			            		// allow verify popo
     			            		value = request.getParameter(CHECKBOX_CMP_ALLOWRAVERIFYPOPO);
