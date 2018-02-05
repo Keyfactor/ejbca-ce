@@ -1480,7 +1480,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] estDispatch(final String operation, final String alias, final X509Certificate cert, final String username, final String password,
             final byte[] requestBody) throws NoSuchAliasException,
             CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException  {
-        NoSuchAliasException caughtException = null;
+        NoSuchAliasException caughtNoAliasException = null;
+        AuthenticationFailedException caughtAuthFailedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 2) { // EST in version 2 and later
                 try {
@@ -1489,8 +1490,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     } catch (NoSuchAliasException e) {
                         //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
                         //later though.
-                        caughtException = e;
-                    }                    
+                        caughtNoAliasException = e;
+                    } catch (AuthenticationFailedException e) {
+                        // This will occur when WWW_AUTHENTICATE header (authentication method) is sent back to client. We don't want to
+                        // interrupt this 'negotiation' unless all implementations fail (i.e. due to invalid authentication details).
+                        caughtAuthFailedException = e;
+                    }                   
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -1498,14 +1503,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
 
         // either throw an exception or return null
-        if (caughtException != null) {
-            throw caughtException;
+        if (caughtNoAliasException != null) {
+            throw caughtNoAliasException;
+        } else if(caughtAuthFailedException != null){
+            throw caughtAuthFailedException;
         } else {
         	// No suitable RaMasterAPIs were found?
-        	log.info("No suitable RA Master APIs were found among the ones we have: "+raMasterApis.length);
+        	log.info("No suitable RA Master APIs were found among the ones we have: " + raMasterApis.length);
         	if (log.isDebugEnabled()) {
         	    for (final RaMasterApi raMasterApi : raMasterApis) {
-        	        log.info("isBackendAvailable: "+raMasterApi.isBackendAvailable()+", apiVersion="+raMasterApi.getApiVersion()+", class: "+raMasterApi.getClass().getName());
+        	        log.info("isBackendAvailable: "+raMasterApi.isBackendAvailable() + ", apiVersion="+raMasterApi.getApiVersion()+", class: "+raMasterApi.getClass().getName());
         	    }
         	}
             return null;
