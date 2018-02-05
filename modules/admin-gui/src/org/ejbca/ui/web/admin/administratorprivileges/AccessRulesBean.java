@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -298,7 +299,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     private List<SelectItem> availableResourcesOther = null;
 
     private List<AccessRuleItem> authorizedAccessRuleItems = null;
-    private final List<SelectItem> availableAccessRuleStates = new ArrayList<SelectItem>();
+    private final List<SelectItem> availableAccessRuleStates = new ArrayList<>();
 
     @PostConstruct
     private void postConstruct() {
@@ -377,7 +378,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Find RA resources allowed by this role
         setResourcesEeSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesEe()));
         // Find EEP resources allowed by this role
-        setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet()));
+        setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet(), getAvailableResourcesEe()));
         // Find KV resources allowed by this role
         setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.VALIDATORACCESS.resource(), keyValidatorsIdToNameMap.keySet()));
         // Find IKB resources allowed by this role
@@ -397,6 +398,38 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                 if (AccessRulesHelper.hasAccessToResource(accessRules, resource)) {
                     ret.add(resource);
                 }
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     * Like {@link #getSelectedRulesFromIdentifiers}, but also includes rules that have all enabled sub-rules present.
+     * (example: if "Create End Entity" and "Edit End Entity" are selected, then it will also include all profiles that have those items allowed)
+     */
+    private List<String> getSelectedRulesFromIdentifiers(final LinkedHashMap<String, Boolean> accessRules, final String baseResource, final Set<Integer> ids,
+            final List<SelectItem> selectedSubRules) {
+        // Get all items that are allowed recursively
+        final List<String> ret = getSelectedRulesFromIdentifiers(accessRules, baseResource, ids);
+        // Also add items where all allowed sub-rules are explicitly allowed for the item
+        for (final int id : ids) {
+            final String resource = AccessRulesHelper.normalizeResource(baseResource + id);
+            if (ret.contains(resource)) {
+                continue; // Don't add twice
+            }
+            boolean allSubRulesAllowed = true;
+            for (final SelectItem selectedSubRule : selectedSubRules) {
+                final String subRule = String.valueOf(selectedSubRule.getValue()).replace(AccessRulesConstants.REGULAR_RAFUNCTIONALITY + "/", "");
+                if (!accessRules.containsKey(resource + subRule)) {
+                    allSubRulesAllowed = false;
+                    break;
+                }
+            }
+            if (allSubRulesAllowed) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Item " + resource + " is considered to be allowed, since all allowed sub-rules are also allowed for this item");
+                }
+                ret.add(resource);
             }
         }
         return ret;
@@ -778,10 +811,15 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     /** Remove the resources of the SelectItem values from the access rule map if present */
     private void filterOutSelectItems(final HashMap<String, Boolean> newAccessRules, final List<SelectItem> selectItems) {
         for (final SelectItem selectItem : selectItems) {
-            final String resource = String.valueOf(selectItem.getValue());
-            if (newAccessRules.get(resource)!=null && newAccessRules.get(resource).booleanValue()) {
-                // Only remove allow rules
-                newAccessRules.remove(resource);
+            final String selectedResource = String.valueOf(selectItem.getValue());
+            final Iterator<Map.Entry<String, Boolean>> iter = newAccessRules.entrySet().iterator();
+            while (iter.hasNext()) {
+                final Map.Entry<String, Boolean> accessRuleEntry = iter.next();
+                final boolean allowed = accessRuleEntry.getValue();
+                final String rule = accessRuleEntry.getKey();
+                if (allowed && (rule.equals(selectedResource) || rule.startsWith(selectedResource))) {
+                    iter.remove();
+                }
             }
         }
     }
@@ -862,7 +900,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
 
     /** @return a viewable list of the possible values for a access rule */
     public List<SelectItem> getAvailableAccessRuleStatesRoot() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         result.add(new SelectItem(AccessRuleState.ALLOW.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.ALLOW.name())));
         result.add(new SelectItem(AccessRuleState.DENY.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.DENY.name()), null, true));
         result.add(new SelectItem(AccessRuleState.UNDEFINED.name(), getEjbcaWebBean().getText("ACCESSRULES_STATE_"+AccessRuleState.UNDEFINED.name() + "_ROOT")));

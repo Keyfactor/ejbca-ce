@@ -32,7 +32,6 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -44,16 +43,12 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 public abstract class BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -8019234011853194880L;
-    protected static final Logger log = Logger.getLogger(BaseManagedBean.class);
+    private static final Logger log = Logger.getLogger(BaseManagedBean.class);
 
     private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<>();
 
 	protected EjbcaWebBean getEjbcaWebBean(){
 		return EjbcaJSFHelper.getBean().getEjbcaWebBean();
-	}
-
-	protected void isAuthorizedNoLog(String resource) throws AuthorizationDeniedException{
-		getEjbcaWebBean().isAuthorizedNoLog(resource);
 	}
 
 	/** @return true if the current admin is authorized to the resources or false otherwise */
