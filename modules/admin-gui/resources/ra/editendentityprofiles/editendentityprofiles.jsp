@@ -408,21 +408,37 @@
              profiledata.setReverseFieldChecks(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REVERSEFIELDCHECKS)));
              
              numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
-
-             for(int i=0; i < numberofsubjectdnfields; i ++){
+             for (int i=0; i < numberofsubjectdnfields; i ++) {
                 fielddata = profiledata.getSubjectDNFieldsInOrder(i);
-                profiledata.setRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
-                                        ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDN + i)));
-                if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS) ) {
-                    profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
-                                         request.getParameter(TEXTFIELD_SUBJECTDN + i));                
-                	profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
-                	                          ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTDN + i)));
+                final String subjectDnTextfield = request.getParameter(TEXTFIELD_SUBJECTDN + i);
+                final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
+                final String fieldName = DnComponents.dnIdToProfileName(dnId);
+                if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS) ) {
+                    if ((subjectDnTextfield == null) || (subjectDnTextfield.trim().equals("")) && 
+                            ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTDN + i)) == false && 
+                            ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDN + i)) == true) {
+                        editerrors.put(TEXTFIELD_SUBJECTDIRATTR + i, ejbcawebbean.getText("SUBJECTDNFIELDEMPTY", true) 
+                                + ejbcawebbean.getText("DN_PKIX_".concat(fieldName), true));
+                    } else {
+                        profiledata.setRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
+                                ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDN + i)));
+                        profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , subjectDnTextfield);                
+                        profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
+                                ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTDN + i)));    
+                    }
                 } else {
-                    profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
-                                         request.getParameter(TEXTFIELD_EMAIL));                
-                    profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
-                                              ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL)));
+                    if ((request.getParameter(TEXTFIELD_EMAIL) == null) || (request.getParameter(TEXTFIELD_EMAIL) == "")  && 
+                        ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL)) == false && 
+                        ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDN + i)) == true) {
+                        editerrors.put(TEXTFIELD_EMAIL, ejbcawebbean.getText("SUBJECTDNEMAILEMPTY", true));
+                    } else {
+                        profiledata.setRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
+                                ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDN + i)));
+                        profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
+                                request.getParameter(TEXTFIELD_EMAIL));                
+                        profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] ,
+                                ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL)));
+                    } 
                 }
                 
                 final boolean useValidation = ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_VALIDATION_SUBJECTDN + i));
@@ -430,8 +446,6 @@
                     String validationRegex = request.getParameter(TEXTFIELD_VALIDATION_SUBJECTDN + i);
                     final LinkedHashMap<String,Serializable> validation = ejbcarabean.getValidationFromRegexp(validationRegex);
                     try {
-                        final int dnId = DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]);
-                        final String fieldName = DnComponents.dnIdToProfileName(dnId);
                         EndEntityValidationHelper.checkValidator(fieldName, RegexFieldValidator.class.getName(), validationRegex);
                     } catch (EndEntityFieldValidatorException e) {
                         editerrors.put(TEXTFIELD_VALIDATION_SUBJECTDN + i, e.getMessage());
