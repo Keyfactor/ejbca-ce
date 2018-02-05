@@ -186,7 +186,7 @@ public class EjbcaWebBean implements Serializable {
             // Wildfly 9 stores the TLS sessions as a raw byte array. Convert it to a hex String.
             sslSessionIdServletsStandard = new String(Hex.encode((byte[]) sslSessionIdServletsStandardObject), StandardCharsets.UTF_8);
         } else {
-            sslSessionIdServletsStandard = (String) sslSessionIdServletsStandardObject; 
+            sslSessionIdServletsStandard = (String) sslSessionIdServletsStandardObject;
         }
         final String sslSessionIdJBoss7 = (String)httpServletRequest.getAttribute("javax.servlet.request.ssl_session");
         return sslSessionIdJBoss7==null ? sslSessionIdServletsStandard : sslSessionIdJBoss7;
@@ -198,7 +198,7 @@ public class EjbcaWebBean implements Serializable {
         final X509Certificate certificate = getClientX509Certificate(request);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final String currentTlsSessionId = getTlsSessionId(request);
-        // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate). 
+        // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificatefingerprint)) {
             if (log.isDebugEnabled() && initialized) {
@@ -221,7 +221,7 @@ public class EjbcaWebBean implements Serializable {
                 }
             }
             commonInit();
-            // Set the current TLS session 
+            // Set the current TLS session
             authenticationTokenTlsSessionId = currentTlsSessionId;
             adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
@@ -720,20 +720,20 @@ public class EjbcaWebBean implements Serializable {
         adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
                 currentadminpreference.getSecondaryLanguage());
     }
-    
+
     public TreeMap<String,Integer> getHardTokenProfiles() {
-        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();                 
-        for (Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){               
+        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();
+        for (Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
             final String name = hardTokenSession.getHardTokenProfileName(id.intValue());
             hardtokenprofiles.put(name, id);
         }
-        return hardtokenprofiles;  
+        return hardtokenprofiles;
     }
-    
+
     public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
         return hardTokenSession.getHardTokenIssuers(administrator);
     }
-    
+
     public Map<Integer,String> getCAIdToNameMap() {
         return caSession.getCAIdToNameMap();
     }
@@ -741,11 +741,11 @@ public class EjbcaWebBean implements Serializable {
     public List<Integer> getAuthorizedCAIds() {
         return caSession.getAuthorizedCaIds(administrator);
     }
-    
+
     public TreeMap<String,Integer> getCANames() {
         return caSession.getAuthorizedCaNamesToIds(administrator);
     }
-    
+
     public TreeMap<String,Integer> getExternalCANames() {
         TreeMap<String,Integer> ret = new TreeMap<>();
         for (CAInfo caInfo : caSession.getAuthorizedCaInfos(administrator)) {
@@ -755,7 +755,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return ret;
     }
-    
+
     public TreeMap<String,Integer> getActiveCANames() {
         TreeMap<String, Integer> ret = new TreeMap<>();
         Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(administrator);
@@ -773,18 +773,18 @@ public class EjbcaWebBean implements Serializable {
     public boolean isAuthorizedToAllCAs() {
         return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
     }
-    
+
     public String getCertificateProfileName(final int profileId) {
         return certificateProfileSession.getCertificateProfileName(profileId);
     }
-    
+
     /**
      * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
      */
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
-        final TreeMap<String,Integer> ret = new TreeMap<>();  
+        final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds;
-        if (globalconfiguration.getIssueHardwareTokens()) {         
+        if (globalconfiguration.getIssueHardwareTokens()) {
             authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_HARDTOKEN);
         } else {
             authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ENDENTITY);
@@ -795,13 +795,13 @@ public class EjbcaWebBean implements Serializable {
         }
         return ret;
     }
-    
+
     /**
      * Returns authorized sub CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
     public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames() {
-        final TreeMap<String,Integer> ret = new TreeMap<>();  
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SUBCA);      
+        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SUBCA);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
@@ -814,14 +814,14 @@ public class EjbcaWebBean implements Serializable {
      */
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
-        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);      
+        final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);
         final Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         for (final int id : authorizedIds) {
             ret.put(idtonamemap.get(id),id);
         }
         return ret;
     }
-    
+
     /**
      * Method returning the all available approval profiles id to name.
      *
@@ -832,7 +832,7 @@ public class EjbcaWebBean implements Serializable {
         approvalProfileMap.put(-1, getText("NONE"));
         return approvalProfileMap;
     }
-    
+
     public List<Integer> getSortedApprovalProfileIds() {
         List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
         Collections.sort(sortedProfiles);
@@ -843,7 +843,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return result;
     }
-    
+
     /**
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
@@ -855,7 +855,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return ret;
     }
-    
+
     /**
      * Method returning the all available publishers id to name.
      *
@@ -878,7 +878,7 @@ public class EjbcaWebBean implements Serializable {
         }
         return sortedMap;
     }
-    
+
     /**
      * Returns authorized end entity profile names as a treemap of name (String) -> id (String)
      */
@@ -1435,11 +1435,11 @@ public class EjbcaWebBean implements Serializable {
             return getCANames();
         }
     }
-    
+
     public TreeMap<String, Integer> getCaPubsCAOptions() {
     	return getCANames();
     }
-    
+
     /**
      * Gets the list of CA names by the list of CA IDs.
      * @param idString the semicolon separated list of CA IDs.
@@ -1463,25 +1463,15 @@ public class EjbcaWebBean implements Serializable {
         }
         return StringUtils.join(result, ";");
     }
-    
+
 
     //**********************
     //     EST
     //**********************
 
-    private Boolean estConfigurationPresent = null;
-
     /** @return true if the EST implementation is present. */
     public boolean isEstConfigurationPresent() {
-        if (estConfigurationPresent == null) {
-            try {
-                Class.forName("org.ejbca.core.protocol.est.EstOperationsSession");
-                estConfigurationPresent = Boolean.TRUE;
-            } catch (ClassNotFoundException e) {
-                estConfigurationPresent = Boolean.FALSE;
-            }
-        }
-        return estConfigurationPresent.booleanValue();
+        return enterpriseEjbLocalHelper.isRunningEnterprise();
     }
 
     public EstConfiguration getEstConfiguration() {
