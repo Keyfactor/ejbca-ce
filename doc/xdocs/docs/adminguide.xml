@@ -1866,7 +1866,11 @@ The messages listed here are those returned by the proxy independently of the CA
 					</tr>
 					<tr>
 						<td>End Entity Profile</td>
-						<td>The End Entity Profile that enrolling end entities will have applied to them.</td>
+						<td>The End Entity Profile that enrolling end entities will have applied to them. This defines required DN and altName naming fields.</td>
+					</tr>
+					<tr>
+						<td>Certificate Profile</td>
+						<td>The Certificate Profile that enrolling end entities will have applied to them. This controls the certificate type, i.e. key usage and other extensions.</td>
 					</tr>
 					<tr>
 						<td>Require Client Certificate</td>
