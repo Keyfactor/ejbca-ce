@@ -229,6 +229,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 ret.setBase64CertData(certWrapper.getBase64CertData());
                 ret.setCertificateData(certWrapper.getCertificateData());
             }
+            // Add in all cases -> PKI message.
+            ret.addAdditionalResponseExtraCertsCertificates(requestMessage.getAdditionalExtraCertsCertificates());
             ret.setStatus(status);
             if (failInfo != null) {
                 ret.setFailInfo(failInfo);

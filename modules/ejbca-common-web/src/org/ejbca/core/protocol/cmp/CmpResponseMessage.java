@@ -126,6 +126,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient List<Certificate> cacert = new ArrayList<Certificate>();
     /** Certificate for the signer of the response message (CA) */
     private transient Collection<Certificate> signCertChain = null;
+    /** Additions CA certificate for the outer PKI response message extraCerts field. */
+    private transient Collection<Certificate> extraCerts = new ArrayList<Certificate>();
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The request message this response is for */
@@ -369,14 +371,21 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
+                // ECA-6601 Insert here! new PKIMessage(header, myPKIBody, null, extraCerts);
                 myPKIMessage = new PKIMessage(header, myPKIBody);
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
             } else {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
                 PKIHeader header = myPKIHeader.build();
-                myPKIMessage = new PKIMessage(header, myPKIBody);                        
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digest, provider);
+                final Collection<Certificate> extraCertsList = new ArrayList<Certificate>(signCertChain);
+                for (Certificate extraCert : extraCerts) {
+                    if (!extraCertsList.contains(extraCert)) {
+                        extraCertsList.add(extraCert);
+                    }
+                }
+                myPKIMessage = new PKIMessage(header, myPKIBody);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, digest, provider);
             }
             
             ret = true;
@@ -465,11 +474,22 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void addAdditionalCaCertificates(List<Certificate> certificates) {
+    public void addAdditionalCaCertificates(final List<Certificate> certificates) {
         if (CollectionUtils.isNotEmpty(certificates)) {
-            for (Certificate cert : certificates) {
-                if (this.cacert.size() > 0 && !this.cacert.contains(cert)) {
-                    this.cacert.add( cert);
+            for (Certificate certificate : certificates) {
+                if (!this.cacert.contains(certificate)) {
+                    this.cacert.add( certificate);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void addAdditionalResponseExtraCertsCertificates(final List<Certificate> certificates) {
+        if (CollectionUtils.isNotEmpty(certificates)) {
+            for (Certificate certificate : certificates) {
+                if (!this.extraCerts.contains(certificate)) {
+                    this.extraCerts.add(certificate);
                 }
             }
         }

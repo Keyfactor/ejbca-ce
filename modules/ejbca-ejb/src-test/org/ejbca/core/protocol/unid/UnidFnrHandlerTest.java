@@ -108,6 +108,7 @@ public class UnidFnrHandlerTest {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
         List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
+        List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
         
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
@@ -269,6 +270,14 @@ public class UnidFnrHandlerTest {
         @Override
         public void setAdditionalCaCertificates(final List<Certificate> certificates) {
             this.additionalCaCertificates = certificates;
+        }
+        @Override
+        public List<Certificate> getAdditionalExtraCertsCertificates() {
+            return this.additionalExtraCertsCertificates;
+        }
+        @Override
+        public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
+            this.additionalExtraCertsCertificates = certificates;
         }
 	}
 }

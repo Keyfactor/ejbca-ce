@@ -256,4 +256,16 @@ public interface RequestMessage extends Serializable {
      * @param certificates the list of CA certificates.
      */
     public void setAdditionalCaCertificates(final List<Certificate> certificates);
+    
+    /**
+     * Gets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
+     * @return the list of CA certificates.
+     */
+    public List<Certificate> getAdditionalExtraCertsCertificates();
+    
+    /**
+     * Sets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
+     * @param certificates the list of CA certificates.
+     */
+    public void setAdditionalExtraCertsCertificates(final List<Certificate> certificates);
 }
