@@ -802,10 +802,18 @@ div.status h4 a:active {
 	color: #000 !important;
 	text-decoration: underline;
 }
+div.status table {
+	width: 100%;
+}
 div.status h4,
 div.status table th,
 div.status table td {
 	white-space: nowrap;
+}
+div.status table td.ca-status,
+div.status table td.crl-status,
+div.status table td.publisher-queue {
+	text-align: center;
 }
 div.status table td img {
 	width: 16px;
