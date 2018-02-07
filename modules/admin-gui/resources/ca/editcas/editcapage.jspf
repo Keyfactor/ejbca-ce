@@ -1170,6 +1170,13 @@ function toggleCANameChange(){
 
     <% } // if (!isexternal) %>
 
+    <% if (editca && !waitingresponse && !isUninitialized) { %>
+    <tr id="Row<%=row++%2%>">
+        <td width="50%" align="right"><strong><c:out value='<%= ejbcawebbean.getText("CACERTIFICATE") %>' /></strong></td>
+        <td width="50%"><button type='button' onclick='viewcacert()' title='<%= ejbcawebbean.getText("VIEW_CACERTIFICATE_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW_CERTIFICATE") %>' /></button></td>
+    </tr>
+    <% } %>
+
     <%-- ---------- CRL Specific Data -------------------- --%>
 
     <tr  id="Row<%=row++%2%>" class="section"> 
@@ -1586,20 +1593,31 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getText("CMSSERVICE") %>
       </td>
       <td width="50%">
-        <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
-            <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
-                 <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
-         <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" 
-         	<%= (hasEditRights ? "" : "disabled") %>>
-         <%   if(cmscert != null){ %> &nbsp;&nbsp;         
-         <br />
-         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-         <a style="cursor:pointer;" onClick="viewcmscert()"><u><%= ejbcawebbean.getText("VIEWCMSCERTIFICATE")%></u></a>
-         <%   } %>
-         <% } %>
+		<table border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td style='padding-right: 1.5em !important;'><input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>"
+					<% if(waitingresponse || (editca && !isUninitialized && cmscainfo == null)) out.write(" disabled ");%>
+					<% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
+						out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>" <%= (hasEditRights ? "" : "disabled") %>>
+					<label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value='<%= ejbcawebbean.getText("ACTIVATE") %>' /></label></td>
+				<td style='padding-bottom: .5em !important;'>
+					<% if(editca && !isUninitialized){ %>
+					<input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%>
+						value='<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>'
+						<%= (hasEditRights ? "" : "disabled") %>>
+					<% } %>
+					&nbsp;
+					</td>
+			</tr>
+		<% if(editca && !isUninitialized){ %>
+			<% if(cmscert != null){ %>
+			<tr>
+				<td>&nbsp;</td>
+				<td><button type='button' onclick='viewcmscert()' title='<%= ejbcawebbean.getText("VIEW_CMSCERTIFICATE_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW_CMSCERTIFICATE") %>' /></button></td>
+			</tr>
+			<% } %>
+		<% } %>
+		</table>
       </td>
     </tr>    
     <% } %>
@@ -1648,12 +1666,6 @@ function toggleCANameChange(){
     <%-- ---------- Form buttons -------------------- --%>
 
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
-    <% if (editca && !waitingresponse && !isUninitialized) { %>
-    <tr id="Row<%=row++%2%>">
-        <td width="50%" align="right">&nbsp;</td>
-        <td width="50%"><a style="cursor:pointer;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a></td>
-    </tr>
-    <% } %>
     <tr id="Row<%=row++%2%>"> 
         <td width="49%" valign="top" align="right"></td>
         <td width="51%" valign="top">

@@ -218,10 +218,13 @@ function getPasswordAndSubmit(formname) {
        String subjectdn = cainfo.getSubjectDN();
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;
- %>
-       <H5><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : "%> <c:out value="<%= caname %>" /> &nbsp; <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEW_CERTIFICATE_TITLE")%></a>&nbsp;&nbsp;
-                                                                            <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>); return false;"><%= ejbcawebbean.getText("VIEWINFO")%></a></H5>    
- 
+     %>
+
+		<h5><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : "%> <c:out value="<%= caname %>" /> &nbsp;
+			<button type='button' onclick='viewcacert(<%=caid%>)' title='<%= ejbcawebbean.getText("VIEW_CACERTIFICATE_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW_CERTIFICATE") %>' /></button>
+			<button type='button' onclick='viewcainfo(<%=caid%>)' title='<%= ejbcawebbean.getText("VIEW_CAINFORMATION_TITLE") %> <%= ejbcawebbean.getText("POPUP_WINDOW") %>'><c:out value='<%= ejbcawebbean.getText("VIEW_INFORMATION") %>' /></button>
+			</h5>
+
         <table class="outline-buttons-table"> 
           <% int row = 0;
              for(int j = chainsize-1; j >= 0; j--){
