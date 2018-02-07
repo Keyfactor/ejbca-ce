@@ -598,7 +598,7 @@ function checkallfields() {
 	<tr id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Additional%20CA%20Certificates") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS_HELP\") %>"/></p>
       </td>
@@ -619,7 +619,7 @@ function checkallfields() {
 		<tr id="Row<%=row++%2%>"> 
 	      <td width="50%" align="top"> 
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS\") %>"/>
-	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        <%= ejbcawebbean.getHelpReference("/adminguide.html#PKI%20Message%20Response%20Additional%20CA%20Certificates") %>
 	        </h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS_HELP\") %>"/></p>
 	      </td>
