@@ -18,8 +18,8 @@
 			</tr></thead><tbody>
 		<%  if(!iter.hasNext()) { %>
 				<tr>
-					<td><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
-					<td></td>
+					<td class="publisher-name"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+					<td class="publisher-queue">&nbsp;</td>
 				</tr>
 			<% } else {
 				while(iter.hasNext()) {
@@ -27,8 +27,8 @@
 					int queueLength = publisherhelper.getPublisherQueueLength(name);
 			%>
 				<tr>	
-					<td><c:out value="<%=name %>"/></td>
-					<td><%=queueLength %></td>
+					<td class="publisher-name"><c:out value="<%=name %>"/></td>
+					<td class="publisher-queue"><%=queueLength %></td>
 				</tr>
 			<% }
 			} 

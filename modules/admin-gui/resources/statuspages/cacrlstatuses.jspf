@@ -22,8 +22,8 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 			</tr></thead><tbody>
 				<%	for (CaCrlStatusInfo caCrlStatusInfo : cabean.getAuthorizedInternalCaCrlStatusInfos()) {	%>
 					<tr>	
-						<td><c:out value="<%=caCrlStatusInfo.getCaName() %>"/></td>
-						<td>
+						<td class="ca-name"><c:out value="<%=caCrlStatusInfo.getCaName() %>"/></td>
+						<td class="ca-status">
 							<% if (caCrlStatusInfo.isCaService()) { %>
 								<img src="<%=ejbcawebbean.getImagefileInfix("status-ca-active.png")%>"
 									alt="<%=ejbcawebbean.getText("CASERVICE_ON")%>"
@@ -34,7 +34,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 									title="<%=ejbcawebbean.getText("CASERVICE_OFF_TITLE")%>" />
 							<% } %>
 						</td>
-						<td>
+						<td class="crl-status">
 							<% if (caCrlStatusInfo.isCrlStatus()) { %>
 								<img src="<%=ejbcawebbean.getImagefileInfix("status-crl-uptodate.png")%>"
 									alt="<%=ejbcawebbean.getText("CRLSTATUS_ON")%>"
