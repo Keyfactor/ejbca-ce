@@ -906,7 +906,17 @@ signed using RSA with SHA1.
 <p>
 The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
 </p>
-<p>CMP messages are signed using the CAs signature key. Verification of the signed CMP messages hence typically assumes that overly strict enforcement of Key Usage in CA certificate is not in place (similar to allow signing of OCSP responses under the CRLSign Key Usage).</p>
+<p>
+CMP messages are signed using the CAs signature key. Verification of the signed CMP messages hence typically assumes that overly strict enforcement of Key Usage in CA certificate is not in place (similar to allow signing of OCSP responses under the CRLSign Key Usage).
+</p>
+</subsubsection>
+<p>The CA certificates returned with the CMP response message can be configured in the CMP configuration.
+Below is a exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
+<subsubsection name="CMP Response Additional CA Certificates">
+<p>Additional CA certificates available in EJBCA can be added to the CMP response message (CertRepMessage.caPubs). Independent from the additional CA certificates configured, the signing CA certificate is returned at index 0 every time.</p>
+</subsubsection>
+<subsubsection name="PKI Message Response Additional CA Certificates">
+<p>Additional CA certificates available in EJBCA can be added to the CMP response wrapping PKI message (PKIMessage.extraCerts). Independent from the additional CA certificates configured, the response message signing CA certificate chain is included from index 0 every time.</p>
 </subsubsection>
 </subsection>
 
@@ -1512,6 +1522,7 @@ bin/ejbca.sh config cmp updatealias --alias cmpalias --key uniddatasource --valu
 </source>
 <p>You also have to create the Unid mapping database, see the separate unid document referenced above.</p>
 </subsection>
+
 <subsection name="CMP Error Messages">
 <p>When an error occurs during CMP processing some different CMP error messages, or HTTP error codes can occur. Depending on at which stage the error is encountered and its type, different error messages are returned.
 Below is a exhaustive list of CMP error codes (don't use as definite guide, do you own testing).</p>
