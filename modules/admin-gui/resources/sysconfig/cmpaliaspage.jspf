@@ -594,7 +594,7 @@ function checkallfields() {
       </td>
     </tr>
     
-	<!-- ---------------------- ++ Additional CA certificates for the CMP response 'caPubs' field ----------------------------- -->
+	<!-- ---------------------- ++ Additional CA certificates for the CMP response 'CertRepMessage.caPubs' field ----------------------------- -->
 	<tr id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS\") %>"/>
@@ -613,6 +613,28 @@ function checkallfields() {
         <input type="submit" name="<%= BUTTON_REMOVERESPONSECAPUBSCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
       </td>
     </tr>
+    
+    <!-- ---------------------- ++ Additional CA certificates for the PKI response message 'PKIMessage.extraCerts' field ----------------------------- -->
+    <% if(!pbe) { %>
+		<tr id="Row<%=row++%2%>"> 
+	      <td width="50%" align="top"> 
+	        <h3><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS\") %>"/>
+	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        </h3>
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS_HELP\") %>"/></p>
+	      </td>
+	      <td width="50%"> 
+	        <p class="help"><c:out value="<%= ejbcawebbean.getCaNamesString(cmpConfigClone.getResponseExtraCertsCA(alias)) %>"/></p>
+	        <select name="<%=LIST_RESPONSE_EXTRACERTS%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %> >
+	           <% for(String vca : capubscas.keySet()) { %>
+	           		<option value='<c:out value="<%= Integer.toString(capubscas.get(vca)) %>"/>'><c:out value="<%= vca %>"/></option> 
+	           <% } %>
+	        </select>
+	        <input type="submit" name="<%= BUTTON_ADDRESPONSEEXTRACERTS %>" value="<%= ejbcawebbean.getText("ADD") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	        <input type="submit" name="<%= BUTTON_REMOVERESPONSEEXTRACERTS %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
+	      </td>
+	    </tr>
+    <% } %>
     
    	<!-- -------------------------- + ConfirmationMessage request ------------------------------ -->
    	<% if(!pbe) { %>

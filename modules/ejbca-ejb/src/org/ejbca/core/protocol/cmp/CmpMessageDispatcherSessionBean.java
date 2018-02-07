@@ -212,7 +212,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 break;
             }
             
-            addAdditionalCaPubsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, cmpMessage);
+            addAdditionalResponseCaPubsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, cmpMessage);
+            addAdditionalResponseExtraCertsCertificates(authenticationToken, cmpConfiguration, cmpConfigurationAlias, cmpMessage);
             
             if (handler == null || cmpMessage == null) {
                 if (unknownMessageType > -1) {
@@ -246,7 +247,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
      * @param alias the CMP configuration alias.
      * @param message the request message.
      */
-    private void addAdditionalCaPubsCertificates(final AuthenticationToken admin, final CmpConfiguration cmpConfiguration, final String alias, 
+    private void addAdditionalResponseCaPubsCertificates(final AuthenticationToken admin, final CmpConfiguration cmpConfiguration, final String alias, 
             final BaseCmpMessage message) {
         if (message != null) {
             final String casToAdd = cmpConfiguration.getResponseCaPubsCA(alias);
@@ -254,6 +255,26 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 log.debug("Add CA certificates of CAs '" + casToAdd + "' to the CMP response message caPubs field.");
             }
             message.setAdditionalCaCertificates(getCaCertificates(admin, casToAdd));
+        }
+    }
+    
+    /**
+     * Adds the list of additional CA certificates to the message signing CA certificate returned
+     * with the outer PKI response message 'PKIMessage.extraCerts' field.
+     * 
+     * @param admin the authentication token.
+     * @param cmpConfiguration the CMP configuration list.
+     * @param alias the CMP configuration alias.
+     * @param message the request message.
+     */
+    private void addAdditionalResponseExtraCertsCertificates(final AuthenticationToken admin, final CmpConfiguration cmpConfiguration, final String alias, 
+            final BaseCmpMessage message) {
+        if (message != null) {
+            final String casToAdd = cmpConfiguration.getResponseExtraCertsCA(alias);
+            if (log.isDebugEnabled()) {
+                log.debug("Add CA certificates of CAs '" + casToAdd + "' to the PKI response message extraCerts field.");
+            }
+            message.setAdditionalExtraCertsCertificates(getCaCertificates(admin, casToAdd));
         }
     }
     

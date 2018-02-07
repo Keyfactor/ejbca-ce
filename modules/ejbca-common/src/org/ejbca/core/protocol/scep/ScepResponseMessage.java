@@ -449,4 +449,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     public void addAdditionalCaCertificates(final List<Certificate> certificates) {
         // NOOP. Only for CMP.
     }
+
+    @Override
+    public void addAdditionalResponseExtraCertsCertificates(List<Certificate> certificates) {
+        // NOOP. Only for CMP.
+    }
 }

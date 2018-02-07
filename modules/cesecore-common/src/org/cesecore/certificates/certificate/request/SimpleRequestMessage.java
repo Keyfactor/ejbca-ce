@@ -87,6 +87,8 @@ public class SimpleRequestMessage implements RequestMessage {
 
     private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
 
+    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+    
     /**
      * Constructs a new Simple message handler object.
      * @param pubkey the public key to be certified
@@ -299,5 +301,15 @@ public class SimpleRequestMessage implements RequestMessage {
     @Override
     public void setAdditionalCaCertificates(final List<Certificate> certificates) {
         this.additionalCaCertificates = certificates;
+    }
+    
+    @Override
+    public List<Certificate> getAdditionalExtraCertsCertificates() {
+        return additionalExtraCertsCertificates;
+    }
+
+    @Override
+    public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
+        this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
     }
 } // SimpleRequestMessage
