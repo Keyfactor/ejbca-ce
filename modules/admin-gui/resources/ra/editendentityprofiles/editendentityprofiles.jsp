@@ -11,13 +11,11 @@
                 java.io.IOException, java.io.BufferedReader, java.io.Serializable, java.util.Map.Entry,
                 org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, 
                 org.apache.commons.lang.ArrayUtils, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.authorization.control.StandardRules"%>
-
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="ejbcarabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
-
 <%! // Declarations 
   static final String ACTION                        = "action";
   static final String ACTION_EDIT_PROFILES          = "editprofiles";
@@ -181,11 +179,11 @@
   static final String FILE_IMPORTFILE                        = "fileimportfile";
   
   public static final String FILE_TEMPLATE             = "filetemplate";
+
+  // End of static variables
+%><%
   String profile = null;
   // Declare Language file.
-
-%>
-<% 
 
   // Initialize environment
   String includefile = "endentityprofilespage.jspf";
@@ -222,7 +220,6 @@
   final boolean accessToAllCAs = ejbcawebbean.isAuthorizedToAllCAs();
 
 %>
- 
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
@@ -230,14 +227,12 @@
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-
 <body>
 <jsp:include page="../../adminmenu.jsp" />
-
 <div class="main-wrapper">
 <div class="container">
-
-<%  // Determine action 
+<%
+  // Determine action 
   RequestHelper.setDefaultCharacterEncoding(request);
   Map<String, String> requestMap = new HashMap<String, String>();
   byte[] filebuffer = ejbcarabean.getfileBuffer(request, requestMap);
@@ -503,27 +498,18 @@
              profiledata.setModifyable(EndEntityProfile.EMAIL, 0,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_EMAIL))); 
              profiledata.setUse(EndEntityProfile.EMAIL, 0,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_EMAIL))); 
  
-             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_KEYRECOVERABLE)))
-               profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0 ,EndEntityProfile.TRUE);
-             else
-               profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0 ,EndEntityProfile.FALSE);
+             profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_KEYRECOVERABLE)) ? EndEntityProfile.TRUE : EndEntityProfile.FALSE);
              profiledata.setRequired(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_KEYRECOVERABLE)));
              profiledata.setUse(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_KEYRECOVERABLE)));
              
              profiledata.setReUseKeyRecoveredCertificate(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REUSECERTIFICATE)));
              
-             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_CARDNUMBER)))
-                 profiledata.setValue(EndEntityProfile.CARDNUMBER, 0 ,EndEntityProfile.TRUE);
-               else
-                 profiledata.setValue(EndEntityProfile.CARDNUMBER, 0 ,EndEntityProfile.FALSE);
+               profiledata.setValue(EndEntityProfile.CARDNUMBER, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_CARDNUMBER)) ? EndEntityProfile.TRUE : EndEntityProfile.FALSE);
                profiledata.setRequired(EndEntityProfile.CARDNUMBER, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_CARDNUMBER)));
                profiledata.setUse(EndEntityProfile.CARDNUMBER, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CARDNUMBER))); 
 
              
-             if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SENDNOTIFICATION)))
-               profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.TRUE);
-             else
-               profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0 ,EndEntityProfile.FALSE);
+             profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0, ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SENDNOTIFICATION)) ? EndEntityProfile.TRUE : EndEntityProfile.FALSE);
              profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SENDNOTIFICATION)));
              profiledata.setUse(EndEntityProfile.SENDNOTIFICATION, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))); 
 
@@ -607,17 +593,9 @@
             	 profiledata.setUsePrinting(true);
             	 
                  value = request.getParameter(CHECKBOX_PRINTING);
-                 if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
-                    profiledata.setPrintingDefault(true);
-                 }else{
-                     profiledata.setPrintingDefault(false);                	 
-                 }
+                 profiledata.setPrintingDefault(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE));
                  value = request.getParameter(CHECKBOX_REQUIRED_PRINTING);
-                 if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
-                	 profiledata.setPrintingRequired(true);
-                 }else{
-                	 profiledata.setPrintingRequired(false);                	 
-                 }            	 
+            	 profiledata.setPrintingRequired(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE));
             	 
                  value = request.getParameter(SELECT_PRINTINGCOPIES);
                  if(value != null){
@@ -641,19 +619,11 @@
 				value = request.getParameter(CHECKBOX_USE_STARTTIME);
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_STARTTIME);
-					if ((value != null) && (value.length() > 0)) {
-						profiledata.setValue(EndEntityProfile.STARTTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
-					} else {
-						profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
-					}
+					profiledata.setValue(EndEntityProfile.STARTTIME, 0, (value != null && value.length() > 0) ? ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value) : "");
 					profiledata.setUse(EndEntityProfile.STARTTIME, 0, true);
 					//profiledata.setRequired(EndEntityProfile.STARTTIME, 0, true);
 					value = request.getParameter(CHECKBOX_MODIFYABLE_STARTTIME);
-					if ( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
-						profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, true);
-					} else {
-						profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, false);
-					}
+					profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, (value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)));
 				} else {
 					profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
 					profiledata.setUse(EndEntityProfile.STARTTIME, 0, false);
@@ -661,19 +631,11 @@
 				value = request.getParameter(CHECKBOX_USE_ENDTIME);
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_ENDTIME);
-					if ((value != null) && (value.length() > 0)) {
-						profiledata.setValue(EndEntityProfile.ENDTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
-					} else {
-						profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
-					}
+					profiledata.setValue(EndEntityProfile.ENDTIME, 0, (value != null && value.length() > 0) ? ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value) : "");
 					profiledata.setUse(EndEntityProfile.ENDTIME, 0, true);
 					//profiledata.setRequired(EndEntityProfile.ENDTIME, 0, true);
 					value = request.getParameter(CHECKBOX_MODIFYABLE_ENDTIME);
-					if ( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
-						profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, true);
-					} else {
-						profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, false);
-					}
+					profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, (value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)));
 				} else {
 					profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
 					profiledata.setUse(EndEntityProfile.ENDTIME, 0, false);
@@ -895,24 +857,22 @@
   }
   
  // Include page
-  if( includefile.equals("endentityprofilepage.jspf")){ %>
-   <%@ include file="endentityprofilepage.jspf" %>
-<%}
-  if( includefile.equals("endentityprofilespage.jspf")){ %>
-   <%@ include file="endentityprofilespage.jspf" %> 
-<%}  
+  if( includefile.equals("endentityprofilepage.jspf")){
+   %><%@ include file="endentityprofilepage.jspf" %><%
+  }
+  if( includefile.equals("endentityprofilespage.jspf")){
+   %><%@ include file="endentityprofilespage.jspf" %><% 
+  }
   if( includefile.equals("uploadtemplate.jspf")){ %>
-   <%@ include file="uploadtemplate.jspf" %> 
-<%} %>
+   %><%@ include file="uploadtemplate.jspf" %><% 
+  }
 
-</div> <!-- container -->
+%></div> <!-- container --><%
 
-<%  
    // Include Footer 
-   String footurl =   globalconfiguration.getFootBanner(); %>
-   
-  <jsp:include page="<%= footurl %>" />
-
+   String footurl =   globalconfiguration.getFootBanner();
+%>
+<jsp:include page="<%= footurl %>" />
 </div> <!-- main-wrapper -->
 </body>
 </html>
