@@ -371,7 +371,6 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
                 PKIHeader header = myPKIHeader.build();
-                // ECA-6601 Insert here! new PKIMessage(header, myPKIBody, null, extraCerts);
                 myPKIMessage = new PKIMessage(header, myPKIBody);
                 responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
                         pbeIterationCount);
