@@ -47,8 +47,10 @@
 	static final String BUTTON_RELOAD								= "buttonreload";
 	static final String BUTTON_ADDVENDORCA							= "buttonaddvendorca";
 	static final String BUTTON_ADDRESPONSECAPUBSCA					= "buttonaddresponsecapubsca";
+	static final String BUTTON_ADDRESPONSEEXTRACERTS			    = "buttonaddresponseextracerts";
 	static final String BUTTON_REMOVEVENDORCA						= "buttonremovevendorca";
 	static final String BUTTON_REMOVERESPONSECAPUBSCA				= "buttonremoveresponsecapubsca";
+	static final String BUTTON_REMOVERESPONSEEXTRACERTS				= "buttonremoveresponseextracerts";
 	static final String BUTTON_ADD_NAMEGENPARAM_DN					= "buttonaddnamegenparamdn";
 	static final String BUTTON_REMOVE_NAMEGENPARAM_DN				= "buttonremovenamegenparamdn";
 	
@@ -78,6 +80,7 @@
 	static final String LIST_EXTRACTUSERNAMECOMP					= "listextractusernamecomp";
 	static final String LIST_VENDORCA								= "listvendorca";
 	static final String LIST_RESPONSECAPUBSCA						= "listresponsecapubsca";
+	static final String LIST_RESPONSE_EXTRACERTS 				    = "listresponseextracerts";
 	static final String LIST_NAMEGENPARAM_DN						= "listnamegenparamdn";
 		
 	static final String SELECT_ALIASES                       		= "selectaliases";
@@ -440,6 +443,30 @@
 				           							cmpConfigClone.setResponseCaPubsCA(alias, StringUtils.join(list, ";"));
 				           					}
 				           			}
+	    			        }
+    			   			
+    			   			if(request.getParameter(BUTTON_ADDRESPONSEEXTRACERTS) != null) {
+	        					value = request.getParameter(LIST_RESPONSE_EXTRACERTS);
+	        					final String cas = cmpConfigClone.getResponseExtraCertsCA(alias);
+	           					List<String> list = new ArrayList<String>();
+	           					if (StringUtils.isNotBlank(cas)) {
+		           					list = (List<String>) new ArrayList<String>(Arrays.asList( cas.split(";")));
+	           					}
+	           					if (!list.contains(value)) {
+	           						list.add(value);
+	           					}
+	           					cmpConfigClone.setResponseExtraCertsCA(alias, StringUtils.join(list, ";"));
+				        	}
+				   			
+				   			if(request.getParameter(BUTTON_REMOVERESPONSEEXTRACERTS) != null) {
+			           			value = request.getParameter(LIST_RESPONSE_EXTRACERTS);
+			           			final String cas = cmpConfigClone.getResponseExtraCertsCA(alias);
+			           			if (StringUtils.isNotBlank(cas)) {
+			           					final List<String> list = new ArrayList<String>((List<String>) Arrays.asList( cas.split(";")));
+			           					if (list.remove(value)) {
+			           							cmpConfigClone.setResponseExtraCertsCA(alias, StringUtils.join(list, ";"));
+			           					}
+			           			}
 	    			        }
     			   			
     			   			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {

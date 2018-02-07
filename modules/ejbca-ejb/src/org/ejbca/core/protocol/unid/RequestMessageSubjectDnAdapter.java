@@ -219,4 +219,12 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
     public void setAdditionalCaCertificates(final List<Certificate> certificates) {
         this.original.setAdditionalCaCertificates(certificates);
     }
+    @Override
+    public List<Certificate> getAdditionalExtraCertsCertificates() {
+        return original.getAdditionalExtraCertsCertificates();
+    }
+    @Override
+    public void setAdditionalExtraCertsCertificates(List<Certificate> certificates) {
+        this.original.setAdditionalExtraCertsCertificates(certificates);
+    }
 }

@@ -73,6 +73,8 @@ public class CVCRequestMessage implements RequestMessage {
 
     private List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
   
+    private List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+    
     /**
      * Constructs a new empty message handler object.
      */
@@ -341,6 +343,16 @@ public class CVCRequestMessage implements RequestMessage {
     @Override
     public void setAdditionalCaCertificates(final List<Certificate> certificates) {
         this.additionalCaCertificates = certificates;
+    }
+    
+    @Override
+    public List<Certificate> getAdditionalExtraCertsCertificates() {
+        return additionalExtraCertsCertificates;
+    }
+
+    @Override
+    public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
+        this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
     }
 
     /** Specific to CVC request messages, EAC requests contains a sequence */
