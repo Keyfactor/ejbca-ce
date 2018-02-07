@@ -43,7 +43,7 @@ java.security.cert.X509Certificate
 </head>
 
 <body class="popup" id="viewcainfo">
-    <h2><%= ejbcawebbean.getText("CAINFORMATION") %></h2>
+    <h2><%= ejbcawebbean.getText("VIEW_CAINFORMATION_HEADING") %></h2>
 
     <% if (viewcainfohelper.generalerrormessage != null) { %>
     <div class="message alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></div> 
