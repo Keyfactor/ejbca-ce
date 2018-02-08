@@ -80,9 +80,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Title of ra admin web interface.
     private static final  String   DEFAULTEJBCATITLE             = InternalConfiguration.getAppNameCapital() + " Administration";
 
-    // The base of help links
-    public static final String HELPBASEURI = WebConfiguration.getDocBaseUri();
-
     // Default values for AutoEnroll
     private static final  String  AUTOENROLL_DEFAULT_ADSERVER = "dc1.company.local";
     private static final  int  AUTOENROLL_DEFAULT_ADPORT = 0;
