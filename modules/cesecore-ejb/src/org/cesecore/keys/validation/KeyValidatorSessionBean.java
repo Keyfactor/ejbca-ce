@@ -329,7 +329,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 continue;
             }
             //Cast is safe since we know we retrieved the correct implementation
-            result.put(data.getId(), (Validator) data.getProfile());
+            try {
+                result.put(data.getId(), (Validator) data.getProfile());
+            } catch (IllegalStateException e) {
+                // NOPMD: Implementation not available in this version if EJBCA
+            }
         }
         if (log.isDebugEnabled()) {
             for (Integer id : result.keySet()) {
