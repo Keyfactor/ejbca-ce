@@ -525,7 +525,7 @@ function checkallfields() {
 	    <tr id="Row<%=row++%2%>"> 
 	      <td width="50%" align="top"> 
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT\") %>"/>
-	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        <%= ejbcawebbean.getHelpReference("/adminguide.html#Vendor%20CA%20authentication%20(EJBCA%20Enterprise%20only)") %>
 	        </h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
 			<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
