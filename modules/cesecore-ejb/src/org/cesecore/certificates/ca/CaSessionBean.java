@@ -514,7 +514,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         for (int caId : getAllCaIds()) {
             if (authorizedToCANoLogging(authenticationToken, caId)) {
                 CAInfo caInfo = getCAInfoInternal(caId);
-                if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+                if (caInfo != null && (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_UNINITIALIZED)) {
                     returnval.put(caInfo.getCAId(), caInfo.getName());
                 }
             }
