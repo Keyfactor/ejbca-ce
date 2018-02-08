@@ -1436,16 +1436,8 @@ public class EjbcaWebBean implements Serializable {
         return entries;
     }
 
-    public TreeMap<String, Integer> getVendorCAOptions() {
-        if (EjbcaConfiguration.getIsInProductionMode()) {
-            return getExternalCANames();
-        } else {
-            return getCANames();
-        }
-    }
-
-    public TreeMap<String, Integer> getCaPubsCAOptions() {
-    	return getCANames();
+    public TreeMap<String, Integer> getCAOptions() {
+        return getCANames();
     }
 
     /**
@@ -1456,7 +1448,7 @@ public class EjbcaWebBean implements Serializable {
      * @throws AuthorizationDeniedException if authorization was denied.
      */
     public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
-        final TreeMap<String, Integer> availableCas = getCaPubsCAOptions();
+        final TreeMap<String, Integer> availableCas = getCAOptions();
         final List<String> result = new ArrayList<String>();
         if (StringUtils.isNotBlank(idString)) {
             for (String id : idString.split(";")) {

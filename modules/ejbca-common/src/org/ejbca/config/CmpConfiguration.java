@@ -386,24 +386,52 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, vendorCA, alias);
     }
     
+    /**
+     * Gets the semicolon separated list of CA IDs, to add the CA certificates to CMP response 'caPubs' field. 
+     * 
+     * @param alias the CMP configuration alias.
+     * @return the semicolon separated list of CA IDs.
+     */
     public String getResponseCaPubsCA(String alias) {
         String key = alias + "." + CONFIG_RESPONSE_CAPUBS_CA;
         return getValue(key, alias);
     }
     
-    public void setResponseCaPubsCA(String alias, String caString) {
+    /**
+     * Sets the semicolon separated list of CA IDs, to add the CA certificates to CMP response 'caPubs' field. 
+     * 
+     * There are no checks performed, if the CAs for that IDs exist.
+     * 
+     * @param alias the CMP configuration alias.
+     * @param caIdString the semicolon separated list of CA IDs.
+     */
+    public void setResponseCaPubsCA(String alias, String caIdString) {
         String key = alias + "." + CONFIG_RESPONSE_CAPUBS_CA;
-        setValue(key, caString, alias);
+        setValue(key, caIdString, alias);
     }
     
+    /**
+     * Sets the semicolon separated list of CA IDs, to add the CA certificates to CMP PKI message response 'extraCerts' field. 
+     * 
+     * @param alias the CMP configuration alias.
+     * @return the semicolon separated list of CA IDs.
+     */
     public String getResponseExtraCertsCA(String alias) {
         String key = alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA;
         return getValue(key, alias);
     }
     
-    public void setResponseExtraCertsCA(String alias, String caString) {
+    /**
+     * Sets the semicolon separated list of CA IDs, to add the CA certificates to CMP PKI message response 'extraCerts' field. 
+     * 
+     * There are no checks performed, if the CAs for that IDs exist.
+     * 
+     * @param alias the CMP configuration alias.
+     * @param caIdString the semicolon separated list of CA IDs.
+     */
+    public void setResponseExtraCertsCA(String alias, String caIdString) {
         String key = alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA;
-        setValue(key, caString, alias);
+        setValue(key, caIdString, alias);
     }
     
     public boolean getAllowRAVerifyPOPO(String alias) {
