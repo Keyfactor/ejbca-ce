@@ -318,6 +318,14 @@
     			            }
 	    			        cmpConfigClone.setAuthenticationProperties(alias, authmodule, authparam);
 	    			        
+	    			     	// ra name generation prefix
+		            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPREFIX);
+		            		cmpConfigClone.setRANameGenPrefix(alias, value == null ? "" : value);
+		            		
+		            		// ra name generation postfix
+		            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPOSTFIX);
+		            		cmpConfigClone.setRANameGenPostfix(alias, value==null ? "" : value);
+		            		
     			            if(!ramode) { // client mode
     			            		// extract username component
     			            		value = request.getParameter(LIST_EXTRACTUSERNAMECOMP);
@@ -332,14 +340,6 @@
     			            				vendormode = true;
     			            		}
     			            		cmpConfigClone.setVendorMode(alias, vendormode);
-    			            		
-    			            		// ra name generation prefix
-    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPREFIX);
-    			            		cmpConfigClone.setRANameGenPrefix(alias, value == null ? "" : value);
-    			            		
-    			            		// ra name generation postfix
-    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPOSTFIX);
-    			            		cmpConfigClone.setRANameGenPostfix(alias, value==null ? "" : value);
     			            		
     			            } else { // ra mode
     			            		// allow verify popo
@@ -362,14 +362,6 @@
 											}
     			           			}
     			           			
-    			           			// ra name generation prefix
-    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPREFIX);
-    			            		cmpConfigClone.setRANameGenPrefix(alias, value == null ? "" : value);
-    			            		
-    			            		// ra name generation postfix
-    			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPOSTFIX);
-    			            		cmpConfigClone.setRANameGenPostfix(alias, value==null ? "" : value);
-    			            		
     			            		// ra password generation parameters
     			            		value = request.getParameter(TEXTFIELD_CMP_RAPASSWORDGENPARAM);
     			            		cmpConfigClone.setRAPwdGenParams(alias, value==null ? "random" : value);
