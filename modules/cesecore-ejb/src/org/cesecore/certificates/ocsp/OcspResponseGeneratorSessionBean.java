@@ -281,7 +281,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
 
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
-                    if (caInfo.getCAType() == CAInfo.CATYPE_CVC) {
+                    if (caInfo == null || caInfo.getCAType() == CAInfo.CATYPE_CVC) {
                         // Bravely ignore OCSP for CVC CAs
                         continue;
                     }

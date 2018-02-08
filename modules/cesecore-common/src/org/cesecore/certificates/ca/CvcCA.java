@@ -60,13 +60,17 @@ public abstract class CvcCA extends CA implements Serializable {
 	public static CvcCA getInstance(CVCCAInfo cainfo) {
 	    // For future: Type here should be extracted from cainfo to select between different implementations 
 	    CvcCA ret = (CvcCA)createCAImpl("EAC");
-	    ret.init(cainfo);
+	    if (ret != null) {
+	        ret.init(cainfo);	        
+	    }
 	    return ret;
 	}
 	public static CvcCA getInstance(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
         // For future: Type here should be extracted from data to select between different implementations 
         CvcCA ret = (CvcCA)createCAImpl("EAC");
-        ret.init(data, caId, subjectDN, name, status, updateTime);
+        if (ret != null) {
+            ret.init(data, caId, subjectDN, name, status, updateTime);
+        }
         return ret;
 	}
 
@@ -86,9 +90,9 @@ public abstract class CvcCA extends CA implements Serializable {
                 return cvcPlugin;
             }            
         }
-        // No implementation found
-        log.info("CVC CA is not available in the version of EJBCA.");
-        throw new RuntimeException("CVC CA is not available in the version of EJBCA.");            
+        // No implementation found, it is probably an Enterprise only feature
+        log.info("CVC CA is not available in this version of EJBCA.");
+        return null;
     }
 
 	/** Constructor used when retrieving existing CVCCA from database. */

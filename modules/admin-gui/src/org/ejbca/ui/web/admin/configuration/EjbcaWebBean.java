@@ -1245,7 +1245,9 @@ public class EjbcaWebBean implements Serializable {
         Map<String, String> subjectDnToCaNameMap = new HashMap<>();
         for (int caId : caSession.getAllCaIds()) {
             CAInfo caInfo = caSession.getCAInfoInternal(caId);
-            subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+            if (caInfo != null) {
+                subjectDnToCaNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
+            }
         }
         Set<Integer> authorizedProfileIds = new HashSet<>(endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator, ""));
         //Exclude all aliases which refer to CAs that current admin doesn't have access to
