@@ -377,6 +377,13 @@
 			replacement-context-root="/ejbca/doc"
 		/>
 		<war-replacement-in-module
+			replacement-tag="!--@doc_legacy.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${doc.war.enabled}"
+			replacement-web-uri="doc_legacy.war"
+			replacement-context-root="/ejbca/doc_legacy"
+		/>
+		<war-replacement-in-module
 			replacement-tag="!--@renew.war@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${web.renewalenabled}"
@@ -507,7 +514,7 @@
                 <include name="guava-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
-            <fileset dir="${dist.dir}" includes="doc.war"/>
+            <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
                 <include name="ejbca-ejb.jar" />
@@ -845,8 +852,7 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<exclude name="modules/configdump/**" />
-		    	<!-- Exclude ACME until 6.12 -->
+		    	<!-- Exclude ACME until finished. -->
 		    	<exclude name="modules/acme/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
