@@ -99,8 +99,11 @@
 	<condition property="update.from.confluence" value="true" else="false">
 		<and>
 			<isset property="doc.update"/>
-			<http url="http://${confluence.url}:8090"/>
 		</and>		
+    </condition>
+    
+    <condition property="connected.to.confluence" value="true" else="false">
+    	<http url="http://${confluence.url}:8090"/>	
     </condition>
 
 	<target name="doc-confluence" description="Retrieved the EJBCA documentation from PrimeKey's Confluence and deploys locally. Set -Ddoc.update= to update documentation.">
@@ -109,7 +112,13 @@
 		<antcall target="doc-confluence-copy-local"/>
 	</target>
 	
-	<target name="doc-confluence-from-server" if="${update.from.confluence}">		
+	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
+		<fail message="Could not contact Confluence Server.">
+			<condition>
+	       		<isfalse value="${connected.to.confluence}"/>
+	       	</condition>
+		</fail>
+		
 		<!-- Perform a REST call to Confluence - only runs if -Ddoc.update is set and Confluence can be contacted -->
 		<get src="http://${confluence.url}:8090/rest/scroll-html/1.0/sync-export?exportSchemeId=EJBCADS-7F00010101612D34D72893723AD26687&amp;rootPageId=11569681&amp;versionId=7F000101015F111C970D77C615C82B72" 
 			dest="${docs.dest}/export.zip" 
