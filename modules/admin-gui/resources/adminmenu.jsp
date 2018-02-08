@@ -430,6 +430,9 @@ if(configheaderprinted){
 		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
+		<li id="cat10"><a href="<%= ejbcawebbean.getLegacyHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"
+			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%="Old Documentation" %></a>
+		</li>
 <% } %>
 
 		<li id="cat11"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>

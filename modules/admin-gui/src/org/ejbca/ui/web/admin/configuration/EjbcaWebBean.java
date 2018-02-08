@@ -983,18 +983,26 @@ public class EjbcaWebBean implements Serializable {
         }
         return returnValue;
     }
+    
+    
+
 
     public boolean isHelpEnabled() {
-        return !"disabled".equalsIgnoreCase(GlobalConfiguration.HELPBASEURI);
+        return !"disabled".equalsIgnoreCase(WebConfiguration.getDocBaseUri());
     }
 
     public String getHelpBaseURI() {
-        String helpBaseURI = GlobalConfiguration.HELPBASEURI;
+        String helpBaseURI = WebConfiguration.getDocBaseUri();
         if ("internal".equalsIgnoreCase(helpBaseURI)) {
             return getBaseUrl() + "doc";
         } else {
             return helpBaseURI;
         }
+    }
+    
+    @Deprecated //Remove before release of 6.12
+    public String getLegacyHelpBaseURI() {
+            return getBaseUrl() + "doc_legacy";
     }
 
     public String getHelpReference(String lastPart) {
