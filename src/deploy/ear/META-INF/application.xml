@@ -81,6 +81,7 @@
        <!--@ejbca-systemtest-ejb.jar@-->
        <!--@ejbca-ws-ejb.jar@-->
        <!--@doc.war@-->
+       <!--@doc_legacy.war@-->
        <!--@renew.war@-->
        <!--@ejbca-cmp-tcp.war@-->
        <!--@statedump-ejb.jar@-->
