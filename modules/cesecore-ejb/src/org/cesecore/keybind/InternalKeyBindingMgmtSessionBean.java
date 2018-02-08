@@ -192,6 +192,19 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public Map<Integer, String> getAllInternalKeyBindingIdNameMap(String internalKeyBindingType) {
+        final Map<Integer, String> idNameMap = new HashMap<>();
+        final List<Integer> ids = internalKeyBindingDataSession.getIds(internalKeyBindingType);
+        for (final Integer id : ids) {
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(id.intValue());
+            idNameMap.put(id, internalKeyBindingInstance.getName());
+        }
+        return idNameMap;
+    }
+
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),

@@ -15,6 +15,7 @@ package org.cesecore.keybind;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Local;
 
@@ -71,4 +72,12 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @throws CADoesntExistsException
      */
     List< Collection<X509Certificate> > getListOfTrustedCertificates(InternalKeyBinding internalKeyBinding) throws CADoesntExistsException;
+
+    /**
+     * Returns a id-to-name map of all internal key bindings of the given type 
+     * 
+     * @param internalKeyBindingType null for all types
+     * @return id-name map of internal key bindings
+     */
+    Map<Integer, String> getAllInternalKeyBindingIdNameMap(String internalKeyBindingType);
 }
