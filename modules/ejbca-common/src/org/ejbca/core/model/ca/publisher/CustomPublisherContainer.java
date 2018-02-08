@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -38,6 +39,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  */
 public class CustomPublisherContainer extends BasePublisher {
 	private static final long serialVersionUID = -7060678968358301488L;
+
+    private static final Logger log = Logger.getLogger(CustomPublisherContainer.class);
 
     private ICustomPublisher custompublisher = null; 
 	
@@ -203,7 +206,10 @@ public class CustomPublisherContainer extends BasePublisher {
 				this.custompublisher =  implClass.newInstance();
 				this.custompublisher.init(getProperties());				
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                // Probably means that we have not built in our custom publisher here in EJBCA, or it's an Enterprise only 
+                // publisher configured (Peer publisher for example)
+                log.info("Publisher class "+classPath+" is not available in this version/build of EJBCA.");
+                return null;
             } catch (IllegalAccessException iae) {
                 throw new RuntimeException(iae);
             } catch (IOException ioe) {

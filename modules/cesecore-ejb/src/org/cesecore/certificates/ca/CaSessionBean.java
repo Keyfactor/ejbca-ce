@@ -557,7 +557,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
                 final CAInfo caInfo = getCAInfoInternal(caid);
-                names.put(caInfo.getName(), caInfo.getCAId());
+                if (caInfo != null) {
+                    names.put(caInfo.getName(), caInfo.getCAId());
+                }
             }
         }
         return names;
@@ -570,7 +572,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         List<CAInfo> result = new ArrayList<CAInfo>();
         for (int caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
-            if ( caInfo.getStatus() != CAConstants.CA_EXTERNAL
+            if ( caInfo != null && caInfo.getStatus() != CAConstants.CA_EXTERNAL
                     && caInfo.getStatus() != CAConstants.CA_UNINITIALIZED
                     && caInfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE ) {
                 result.add(caInfo);
@@ -585,7 +587,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         List<CAInfo> result = new ArrayList<CAInfo>();
         for (Integer caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
-            if ( caInfo.getStatus() != CAConstants.CA_EXTERNAL ) {
+            if ( caInfo != null && caInfo.getStatus() != CAConstants.CA_EXTERNAL ) {
                 result.add(caInfo);
             }
         }
@@ -598,7 +600,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         List<CAInfo> result = new ArrayList<CAInfo>();
         for (Integer caId : getAuthorizedCaIds(authenticationToken)) {
             CAInfo caInfo = getCAInfoInternal(caId);
-            result.add(caInfo);
+            if (caInfo != null) {
+                result.add(caInfo);
+            }
         }
         return result;
     }
@@ -798,8 +802,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Special for splitting out the CAToken and committing it..
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 CA ca = caData.getCA();
-                // Note that we store using the "real" CAId in the cache.
-                CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
+                if (ca != null) {
+                    // Note that we store using the "real" CAId in the cache.
+                    CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
+                }
                 // Since caching might be disabled, we return the value returned from the database here
                 return ca;
             } else {
@@ -851,22 +857,24 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         // Fetching the CA object will trigger UpgradableHashMap upgrades
         CA ca = cadata.getCA();
-        final boolean expired = hasCAExpiredNow(ca);
-        if (expired) {
-            ca.setStatus(CAConstants.CA_EXPIRED);
-        }
-        final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-        // Compare old version with current version and save the data if there has been a change
-        final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-        if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
-            if (log.isDebugEnabled()) {
-                log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
-                        ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
-                        ", upgradeCA: " + upgradeCA + ", expired: " + expired);
+        if (ca != null) {
+            final boolean expired = hasCAExpiredNow(ca);
+            if (expired) {
+                ca.setStatus(CAConstants.CA_EXPIRED);
             }
-            ca.getCAToken();
-            final int caId = caSession.mergeCa(ca);
-            caDataReturn = entityManager.find(CAData.class, caId);
+            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+            // Compare old version with current version and save the data if there has been a change
+            final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+            if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
+                            ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
+                            ", upgradeCA: " + upgradeCA + ", expired: " + expired);
+                }
+                ca.getCAToken();
+                final int caId = caSession.mergeCa(ca);
+                caDataReturn = entityManager.find(CAData.class, caId);
+            }            
         }
         return caDataReturn;
     }
