@@ -466,7 +466,7 @@ function confirmrevocation(){
       <td  valign="top">
       <%
          if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_DELETEENDENTITY)){ %>
-        <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"DELETESELECTED\") %>"/>'
+        <input type="submit" name="<%=BUTTON_DELETE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"DELETE_SELECTED\") %>"/>'
                onClick='return confirmdelete()'>
        <% }  %>
         &nbsp;&nbsp;&nbsp;

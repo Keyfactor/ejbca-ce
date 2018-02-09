@@ -83,8 +83,8 @@
       <td width="100%">     	
         <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>"> 
         <input type="submit" name="<%= BUTTON_ADD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= BUTTON_RENAME_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAME") %>">&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= BUTTON_CLONE_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
+        <input type="submit" name="<%= BUTTON_RENAME_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAME_SELECTED") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_CLONE_ALIAS%>" onClick='return checkfieldforlegalchars("document.editcertificateprofiles.<%=TEXTFIELD_ALIAS%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("CLONE_SELECTED") %>">
       </td>
     </tr>
   </table>

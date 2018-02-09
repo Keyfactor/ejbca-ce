@@ -46,16 +46,16 @@
 				</f:facet>
 			</h:column>
 			<h:column headerClass="gridColumn2">
-				<f:facet name="header"><h:outputText value="#{web.text.CERTIFICATEPROFILEACTIONS}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 				<h:panelGroup styleClass="button-group">
-				<h:commandButton value="#{web.text.VIEWCERTIFICATEPROFILE}" action="#{certProfilesBean.actionView}"/>
-				<h:commandButton value="#{web.text.EDITCERTIFICATEPROFILE}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
+				<h:commandButton value="#{web.text.VIEW}" action="#{certProfilesBean.actionView}"/>
+				<h:commandButton value="#{web.text.EDIT}" action="#{certProfilesBean.actionEdit}" disabled="#{certificateProfile.fixed}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
+				<h:commandButton value="#{web.text.DELETE}" action="#{certProfilesBean.actionDelete}" disabled="#{certificateProfile.fixed}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				<h:commandButton value="#{web.text.RENAME}" action="#{certProfilesBean.actionRename}" disabled="#{certificateProfile.fixed}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
-				<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE}" action="#{certProfilesBean.actionAddFromTemplate}" 
+				<h:commandButton value="#{web.text.CLONE}" action="#{certProfilesBean.actionAddFromTemplate}" 
 					rendered="#{certProfilesBean.authorizedToEdit}"/>
 				</h:panelGroup>
 				<f:facet name="footer" >
@@ -66,15 +66,15 @@
 		</h:panelGroup>
 
 		<h:panelGroup rendered="#{certProfilesBean.addFromTemplateInProgress}">
-			<h3><h:outputText value="#{web.text.USECERTPROFILEASTEMPLATE}"/></h3>
+			<h3><h:outputText value="#{web.text.CLONE}"/></h3>
 			<h:panelGrid columns="2">
-				<h:outputLabel for="addFromTemplateProfileOld" value="#{web.text.USECERTPROFILEASTEMPLATE_FROM}:"/>
+				<h:outputLabel for="addFromTemplateProfileOld" value="#{web.text.CERTPROFILE_FROMTEMPLATE}"/>
 				<h:outputText id="addFromTemplateProfileOld" value="#{certProfilesBean.selectedCertProfileName}"/>
-				<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.USECERTPROFILEASTEMPLATE_NEWNAME}:"/>
+				<h:outputLabel for="addFromTemplateProfileNew" value="#{web.text.CERTPROFILE_NEWNAME}"/>
   				<h:inputText id="addFromTemplateProfileNew" value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
   				<h:panelGroup/>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.USECERTPROFILEASTEMPLATE_CONFIRM}" action="#{certProfilesBean.actionAddFromTemplateConfirm}"/>
+					<h:commandButton value="#{web.text.CLONE_CONFIRM}" action="#{certProfilesBean.actionAddFromTemplateConfirm}"/>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
@@ -83,9 +83,9 @@
 		<h:panelGroup rendered="#{certProfilesBean.renameInProgress}">
 			<h3><h:outputText value="#{web.text.RENAME}"/></h3>
 			<h:panelGrid columns="2">
-				<h:outputLabel for="renameProfileOld" value="#{web.text.RENAME_CURRENTNAME}:"/>
+				<h:outputLabel for="renameProfileOld" value="#{web.text.RENAME_CURRENTNAME}"/>
 				<h:outputText id="renameProfileOld" value="#{certProfilesBean.selectedCertProfileName}"/>
-				<h:outputLabel for="renameProfileNew" value="#{web.text.RENAME_NEWNAME}:"/>
+				<h:outputLabel for="renameProfileNew" value="#{web.text.RENAME_NEWNAME}"/>
   				<h:inputText id="renameProfileNew" value="#{certProfilesBean.certProfileName}" title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255"/>
   				<h:panelGroup/>
 				<h:panelGroup>
@@ -96,13 +96,13 @@
 		</h:panelGroup>
 
 		<h:panelGroup rendered="#{certProfilesBean.deleteInProgress}">
-			<h3><h:outputText value="#{web.text.DELETECERTIFICATEPROFILE}"/></h3>
+			<h3><h:outputText value="#{web.text.DELETE}"/></h3>
 			<h:panelGrid columns="2">
-				<h:outputLabel for="deleteProfileName" value="#{web.text.CERTIFICATEPROFILENAME}:"/>
+				<h:outputLabel for="deleteProfileName" value="#{web.text.CERTIFICATEPROFILENAME}"/>
 				<h:outputText id="deleteProfileName" value="#{certProfilesBean.selectedCertProfileName}"/>
   				<h:panelGroup/>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.DELETECERTIFICATEPROFILE_CONFIRM}" action="#{certProfilesBean.actionDeleteConfirm}"/>
+					<h:commandButton value="#{web.text.DELETE_CONFIRM}" action="#{certProfilesBean.actionDeleteConfirm}"/>
 					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfilesBean.actionCancel}"/>
 				</h:panelGroup>
 			</h:panelGrid>
@@ -112,7 +112,7 @@
 	<h3><h:outputText value="#{web.text.IMPORT}/" rendered="#{certProfilesBean.authorizedToEdit}"/><h:outputText value="#{web.text.EXPORT}"/></h3>
 	<h:form id="uploadCertificate" enctype="multipart/form-data">
 		<h:panelGrid columns="3" >
-			<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}:" rendered="#{certProfilesBean.authorizedToEdit}"/>
+			<h:outputLabel for="certificateUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 			<t:inputFileUpload id="certificateUploadInput" value="#{certProfilesBean.uploadFile}" size="20" rendered="#{certProfilesBean.authorizedToEdit}"/>
 			<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 		</h:panelGrid>

@@ -116,8 +116,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_DEACTIVATE}" action="#{cryptoTokenMBean.deactivateCryptoToken}" rendered="#{!cryptoTokenGuiInfo.autoActivation}"/>
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_REACTIVATE}" action="#{cryptoTokenMBean.deactivateCryptoToken}" rendered="#{cryptoTokenGuiInfo.autoActivation}"/>
 			</h:panelGroup>
-			<h:commandButton value="#{web.text.CRYPTOTOKEN_DELETE}" action="#{cryptoTokenMBean.deleteCryptoToken}"
-				rendered="#{cryptoTokenMBean.allowedToDelete}" onclick="return confirm('#{web.text.CRYPTOTOKEN_CONF_DELETE}')"/>
+			<h:commandButton value="#{web.text.DELETE}" action="#{cryptoTokenMBean.deleteCryptoToken}"
+				rendered="#{cryptoTokenMBean.allowedToDelete}" onclick="return confirm('#{web.text.CRYPTOTOKEN_DELETE_CONFIRM}')"/>
 		</h:panelGroup> <!-- button-group -->
 		</h:column>
 	</h:dataTable>
