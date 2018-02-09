@@ -526,7 +526,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 			<h:column>
    				<f:facet name="header">
-   					<h:outputText value="#{web.text.PC_TABLE_ACTION_TITLE}"/>
+   					<h:outputText value="#{web.text.ACTIONS}"/>
    				</f:facet>
 				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
 					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
@@ -564,7 +564,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 			<h:column>
    				<f:facet name="header">
-   					<h:outputText value="#{web.text.ACTION}"/>
+   					<h:outputText value="#{web.text.ACTIONS}"/>
    				</f:facet>
 				<h:commandButton action="#{systemConfigMBean.removeEKU}" value="#{web.text.REMOVE}" title="#{web.text.REMOVE}" rendered="#{systemConfigMBean.allowedToEditExtendedKeyUsages}"/>
 				<f:facet name="footer">
@@ -754,7 +754,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
 			
 			<h:column>
-				<f:facet name="header"><h:outputText value="#{web.text.ACTION}"/></f:facet>
+				<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 				<h:panelGroup>
 					<h:commandButton value="#{web.text.VIEW}" action="#{systemConfigMBean.actionView}"  />
 					<h:commandButton value="#{web.text.EDIT}" action="#{systemConfigMBean.actionEdit}"  
@@ -793,7 +793,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 					<h:outputText value="#{raStyleInfo.logoName}"/>
 				</h:column>
 				<h:column headerClass="gridColumn1">
-					<f:facet name="header"><h:outputText value="#{web.text.CSS_ACTION}"/></f:facet>
+					<f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
 					<h:commandButton value="#{web.text.REMOVE}" action="#{systemConfigMBean.removeRaStyleInfo}" onclick="return confirm('#{web.text.CSS_CONFIRM_DELETE}')"/>
 				</h:column>
 			</h:dataTable>
