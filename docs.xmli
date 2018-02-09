@@ -97,16 +97,14 @@
     </target>
 
 	<condition property="update.from.confluence" value="true" else="false">
-		<and>
-			<isset property="doc.update"/>
-		</and>		
+		<istrue value="${doc.update}"/>
     </condition>
     
     <condition property="connected.to.confluence" value="true" else="false">
     	<http url="http://${confluence.url}:8090"/>	
     </condition>
 
-	<target name="doc-confluence" description="Retrieved the EJBCA documentation from PrimeKey's Confluence and deploys locally. Set -Ddoc.update= to update documentation.">
+	<target name="doc-confluence">
 		<mkdir dir="${docs.dest}"/>
 		<antcall target="doc-confluence-from-server"/>
 		<antcall target="doc-confluence-copy-local"/>
@@ -118,7 +116,7 @@
 	       		<isfalse value="${connected.to.confluence}"/>
 	       	</condition>
 		</fail>
-		
+		<echo message="Pulling documentation from Confluence Server"/>
 		<!-- Perform a REST call to Confluence - only runs if -Ddoc.update is set and Confluence can be contacted -->
 		<get src="http://${confluence.url}:8090/rest/scroll-html/1.0/sync-export?exportSchemeId=EJBCADS-7F00010101612D34D72893723AD26687&amp;rootPageId=11569681&amp;versionId=7F000101015F111C970D77C615C82B72" 
 			dest="${docs.dest}/export.zip" 
@@ -130,7 +128,8 @@
 	</target>
 	
 	<target name="doc-confluence-copy-local" unless="${update.from.confluence}">
-		<!-- Do not update from Confluence, instead copy in a placeholder file. -->
+		<!-- Do not update from Confluence, instead copy in a placeholder file (if no Documentation currently exists). -->
+		<echo message="Using local documentation, if any. Set -Ddoc.update=true if you wish to update documentation from Confluence."/>	
 	</target>
 
 	<target name="doc-external-deps" unless="external-deps-satfisfied">
@@ -180,7 +179,7 @@
         <echo message="Legacy documentation is now available in file://${docs.legacy.dest}/index.html"/> 
     </target>
     
-    <target name="doc" depends="doc-build-tool, doc-external-deps, site, doc-confluence, doc-legacy" description="Build EJBCA inline ear file docs. Set -Ddoc.update= to update documentation from PrimeKey's Confluence.">
+    <target name="doc" depends="doc-build-tool, doc-external-deps, site, doc-confluence, doc-legacy" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>
