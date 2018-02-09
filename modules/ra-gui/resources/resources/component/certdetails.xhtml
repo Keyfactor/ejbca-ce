@@ -231,8 +231,14 @@
 
             <h:outputLabel for="username" value="#{msg.component_certdetails_field_username}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="username" value="#{cc.attrs.raCertificateDetails.username}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:panelGroup id="username"
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText value="#{cc.attrs.raCertificateDetails.username} " />
+                <h:outputLink value="endentity.xhtml" styleClass="fineprint">
+                    <f:param name="ee" value="#{cc.attrs.raCertificateDetails.username}" />
+                    <h:outputText value="#{msg.component_certdetails_link_perm}" />
+                </h:outputLink>
+            </h:panelGroup>
             <h:outputLabel for="eep" value="#{msg.component_certdetails_field_eep}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="eep" value="#{cc.attrs.raCertificateDetails.eepName}"
