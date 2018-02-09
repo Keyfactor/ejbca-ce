@@ -80,7 +80,6 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUseDefaultCRLDistributionPoint());
         assertEquals(false, prof.getCRLDistributionPointCritical());
         assertEquals("", prof.getCRLDistributionPointURI());
-        assertEquals(false, prof.getUseCRLDistributionPointOnCRL());
         assertEquals(false, prof.getUseFreshestCRL());
         assertEquals(false, prof.getUseCADefinedFreshestCRL());
         assertEquals("", prof.getFreshestCRLURI());
