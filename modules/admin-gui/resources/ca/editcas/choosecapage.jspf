@@ -189,7 +189,7 @@ function confirmcadeletion() {
         <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>...">&nbsp;&nbsp;&nbsp;
         <% } %>
        	<% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CAEDIT.resource())) {  %>
-        <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAME") %>"><br />
+        <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAME_SELECTED") %>">
       	<% } %>
       </td>
     </tr>

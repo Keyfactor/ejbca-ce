@@ -58,8 +58,8 @@
 
 <div align="center">
   <h2>
-    <h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{!certProfilesBean.viewOnly}"/>
-    <h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{certProfilesBean.viewOnly}"/>
+    <h:outputText value="#{web.text.EDIT}" rendered="#{!certProfilesBean.viewOnly}"/>
+    <h:outputText value="#{web.text.VIEW}" rendered="#{certProfilesBean.viewOnly}"/>
   </h2>
   <h3><h:outputText value="#{web.text.CERTIFICATEPROFILE}: #{certProfileBean.selectedCertProfileName}"/></h3>
 </div>

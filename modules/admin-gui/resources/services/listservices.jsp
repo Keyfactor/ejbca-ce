@@ -79,8 +79,8 @@
 		<h:panelGroup>
 			<h:inputText id="newServiceName" value="#{listServicesManagedBean.newServiceName}" size="40" title="#{web.text.FORMAT_ID_STR}"/><h:outputText value=" "/>
 			<h:commandButton id="addButton" action="#{listServicesManagedBean.addService}" value="#{web.text.ADD}"/>&nbsp;&nbsp;
-			<h:commandButton id="renameButton" action="#{listServicesManagedBean.renameService}" value="#{web.text.RENAME}"/>&nbsp;&nbsp;&nbsp;
-			<h:commandButton id="cloneButton" action="#{listServicesManagedBean.cloneService}" value="#{web.text.USESELECTEDASTEMPLATE}"/>
+			<h:commandButton id="renameButton" action="#{listServicesManagedBean.renameService}" value="#{web.text.RENAME_SELECTED}"/>&nbsp;&nbsp;&nbsp;
+			<h:commandButton id="cloneButton" action="#{listServicesManagedBean.cloneService}" value="#{web.text.CLONE_SELECTED}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>

@@ -59,8 +59,8 @@
 
     <div align="center">
       <h2>
-        <h:outputText value="#{web.text.EDITCERTIFICATEPROFILE}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
-        <h:outputText value="#{web.text.VIEWCERTIFICATEPROFILE}" rendered="#{approvalProfilesMBean.viewOnly}"/>
+        <h:outputText value="#{web.text.EDIT}" rendered="#{!approvalProfilesMBean.viewOnly}"/>
+        <h:outputText value="#{web.text.VIEW}" rendered="#{approvalProfilesMBean.viewOnly}"/>
       </h2>
       <h3><h:outputText value="#{web.text.APPROVALPROFILE}: #{approvalProfileMBean.selectedApprovalProfileName}"/></h3>
     </div>
