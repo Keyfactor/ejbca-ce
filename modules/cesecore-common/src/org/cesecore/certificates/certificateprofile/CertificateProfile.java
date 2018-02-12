@@ -2193,6 +2193,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setCVCTerminalType(int termtype) {
         data.put(CVCTERMINALTYPE, Integer.valueOf(termtype));
     }
+    
+    public boolean isCvcTerminalTypeIs() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_IS; }
+    public boolean isCvcTerminalTypeAt() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_AT; }
+    public boolean isCvcTerminalTypeSt() { return getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_ST; }
 
     public int getCVCAccessRights() {
         if (data.get(CVCACCESSRIGHTS) == null) {
