@@ -77,6 +77,13 @@ public final class CertificateProfileConstants {
      * @see org.ejbca.ui.web.pub.ApplyBean
      */
     public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
+    
+    /** QC ETSI Type OID: Electronic Signature */
+    public static final String QC_ETSI_TYPE_ESIGN = "0.4.0.1862.1.6.1";
+    /** QC ETSI Type OID: Electronic Seal */
+    public static final String QC_ETSI_TYPE_ESEAL = "0.4.0.1862.1.6.2";
+    /** QC ETSI Type OID: Website Authentication */
+    public static final String QC_ETSI_TYPE_WEBAUTH = "0.4.0.1862.1.6.3";
 
     /**
      * Prevents creation of new class

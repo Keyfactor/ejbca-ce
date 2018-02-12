@@ -75,7 +75,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 //@javax.faces.bean.ManagedBean(name="certProfileBean")
 public class CertProfileBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    @SuppressWarnings("hiding")
     private static final Logger log = Logger.getLogger(CertProfileBean.class);
 
     // Declarations in faces-config.xml
@@ -1012,9 +1011,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return CvcCA.getImplementationClasses().iterator().hasNext();
     }
 
-    public boolean isCvcTerminalTypeIs() { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_IS; }
-    public boolean isCvcTerminalTypeAt() { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_AT; }
-    public boolean isCvcTerminalTypeSt() { return getCertificateProfile().getCVCTerminalType() == CertificateProfile.CVC_TERMTYPE_ST; }
+    public boolean isCvcTerminalTypeIs() { return getCertificateProfile().isCvcTerminalTypeIs(); }
+    public boolean isCvcTerminalTypeAt() { return getCertificateProfile().isCvcTerminalTypeAt(); }
+    public boolean isCvcTerminalTypeSt() { return getCertificateProfile().isCvcTerminalTypeSt(); }
 
     public void setCvcTerminalTypeIs() throws IOException {
         getCertificateProfile().setCVCTerminalType(CertificateProfile.CVC_TERMTYPE_IS);
