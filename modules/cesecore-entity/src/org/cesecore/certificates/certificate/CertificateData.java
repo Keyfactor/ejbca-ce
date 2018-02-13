@@ -809,7 +809,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 return false;
             }
         } else {
-            if (notBefore.equals(certificateData.notBefore)) {
+            if (!notBefore.equals(certificateData.notBefore)) {
                 return false;
             }
         }
@@ -842,7 +842,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 return false;
             }
         } else {
-            if (endEntityProfileId.equals(certificateData.endEntityProfileId)) {
+            if (!endEntityProfileId.equals(certificateData.endEntityProfileId)) {
                 return false;
             }
         }
