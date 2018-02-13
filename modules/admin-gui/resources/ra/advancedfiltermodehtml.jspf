@@ -100,8 +100,11 @@ function changematchfields(row){
   matchwithvalue = matchwith[index].value;  
   var i;
 
+  textmatchvalue.size = 25;
+
  // if dn field remove equals and a textfield
   if(matchwithvalue >=  100){
+     matchtype.style.display = "inline-block";
      var numoftypes = matchtype.length;
      for( i=numoftypes-1; i >= 0; i-- ){
        matchtype.options[i]=null;
@@ -114,7 +117,8 @@ function changematchfields(row){
      }     
      menumatchvalue.disabled = true;
      textmatchvalue.disabled = false;
-     textmatchvalue.size=20;
+     menumatchvalue.style.display = "none";
+     textmatchvalue.style.display = "inline";
   }
    // if profile remove beginswith and menu
   else{
@@ -123,8 +127,10 @@ function changematchfields(row){
       menumatchvalue.disabled = false;
       textmatchvalue.disabled = true;
       textmatchvalue.value= "";
-      textmatchvalue.size=1;
+      menumatchvalue.style.display = "inline-block";
+      textmatchvalue.style.display = "none";
 
+      matchtype.style.display = "inline-block";
       var numoftypes = matchtype.length;
       for( i=numoftypes-1; i >= 0; i-- ){
         matchtype.options[i]=null;
@@ -145,8 +151,10 @@ function changematchfields(row){
         menumatchvalue.disabled = false;
         textmatchvalue.disabled = true;
         textmatchvalue.value= "";
-        textmatchvalue.size=1;
+        menumatchvalue.style.display = "inline-block";
+        textmatchvalue.style.display = "none";
 
+        matchtype.style.display = "inline-block";
         var numoftypes = matchtype.length;
         for( i=numoftypes-1; i >= 0; i-- ){
           matchtype.options[i]=null;
@@ -168,8 +176,10 @@ function changematchfields(row){
           menumatchvalue.disabled = false;
           textmatchvalue.disabled = true;
           textmatchvalue.value= "";
-          textmatchvalue.size=1;
+          menumatchvalue.style.display = "inline-block";
+          textmatchvalue.style.display = "none";
 
+          matchtype.style.display = "inline-block";
           var numoftypes = matchtype.length;
           for( i=numoftypes-1; i >= 0; i-- ){
             matchtype.options[i]=null;
@@ -191,8 +201,10 @@ function changematchfields(row){
            menumatchvalue.disabled = false;
            textmatchvalue.disabled = true;
            textmatchvalue.value= "";
-           textmatchvalue.size=1;
+           menumatchvalue.style.display = "inline-block";
+           textmatchvalue.style.display = "none";
 
+           matchtype.style.display = "inline-block";
            numoftypes = matchtype.length;
            for( i=numoftypes-1; i >= 0; i-- ){
              matchtype.options[i]=null;
@@ -207,23 +219,35 @@ function changematchfields(row){
              menumatchvalue.options[i]= new Option(statusfields[NAME][i],statusfields[ID][i]);       
            }
          }
-   // else equals and beginswith and textfield.
          else{
-           var numoftypes = matchtype.length;
-           for(i=numoftypes-1; i >= 0; i-- ){
-             matchtype.options[i]=null;
+          // if none remove all  (i.e. match types and fields)
+           if(matchwithvalue == <%= UserMatch.MATCH_NONE %> ){
+             matchtype.style.display = "none";
+             menumatchvalue.disabled = true;
+             textmatchvalue.disabled = true;
+             menumatchvalue.style.display = "none";
+             textmatchvalue.style.display = "none";
            }
-           matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
-           matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
+           // else equals and beginswith and textfield  (e.g. e-mail address)
+           else{
+             matchtype.style.display = "inline-block";
+             var numoftypes = matchtype.length;
+             for(i=numoftypes-1; i >= 0; i-- ){
+               matchtype.options[i]=null;
+             }
+             matchtype.options[0]= new Option(matchtypefields[NAME][0],matchtypefields[ID][0]);
+             matchtype.options[1]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
 
-           numofvalues = menumatchvalue.length;
-           for(i=numofvalues-1; i >= 0; i--){
-             menumatchvalue.options[i]=null;
-           }     
-           menumatchvalue.disabled = true;
-           textmatchvalue.disabled = false;
-           textmatchvalue.size=20;
-         } 
+             numofvalues = menumatchvalue.length;
+             for(i=numofvalues-1; i >= 0; i--){
+               menumatchvalue.options[i]=null;
+             }
+             menumatchvalue.disabled = true;
+             textmatchvalue.disabled = false;
+             menumatchvalue.style.display = "none";
+             textmatchvalue.style.display = "inline";
+            }
+          }
         }
       }
     }
@@ -246,7 +270,7 @@ function changematchfields(row){
            if(oldmatchwithrow1!= null)
              tempval= Integer.parseInt(oldmatchwithrow1); %>
         <select name="<%=SELECT_MATCHWITH_ROW1 %>" onchange='changematchfields(1)' >
-           <option  value='<c:out value="<%= VALUE_NONE %>"/>'><c:out value="<%= ejbcawebbean.getText(\"NONE\") %>"/>
+           <option  value='<c:out value="<%= VALUE_NONE %>"/>'><c:out value="<%= ejbcawebbean.getText(\"SELECT_CRITERIA\") %>"/>
            </option>
            <% for(int i =0; i < matchwithfields.length;i++){ %>
                <% if (matchwithfields[i]==UserMatch.MATCH_NONE) { %>
@@ -265,7 +289,7 @@ function changematchfields(row){
            if(oldmatchtyperow1!= null)
              tempval= Integer.parseInt(oldmatchtyperow1);
           %>
-        <select name="<%=SELECT_MATCHTYPE_ROW1 %>">
+        <select name="<%=SELECT_MATCHTYPE_ROW1 %>" <% if( (oldmatchwithrow1 == null) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_NONE)) ) out.write(" style='display: none;' "); %> >
           <% if(oldmatchwithrow1 != null){
                if(Integer.parseInt(oldmatchwithrow1) < 100){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
@@ -353,22 +377,23 @@ function changematchfields(row){
               value='<c:out value="<%= availablestatuses[k] %>"/>'><c:out value="<%= ejbcawebbean.getText(availablestatustexts[k]) %>"/></option>
              <% } %>    
        <% } else{ %>
-          disabled >
+          style="display: none;" disabled >
        <%  }
          }}}
         }else{ %>
-          disabled > 
+          style="display: none;" disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow1!= null){
-           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
-               || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
-       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
+           if( oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_NONE))
+               || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
+               || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CA)) ){ %>
+       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="25" maxlength="255" value='' style="display: none;" disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="25" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="25" maxlength="255" value='' style="display: none;" >
         <% } %>
     </td>
   </tr>
@@ -416,7 +441,7 @@ function changematchfields(row){
            if(oldmatchtyperow2!= null)
              tempval= Integer.parseInt(oldmatchtyperow2);
           %>
-        <select name="<%=SELECT_MATCHTYPE_ROW2 %>">
+        <select name="<%=SELECT_MATCHTYPE_ROW2 %>" <% if( (oldmatchwithrow2 == null) || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_NONE)) ) out.write(" style='display: none;' "); %> >
           <% if(oldmatchwithrow2 != null){
                if(Integer.parseInt(oldmatchwithrow2) < 100){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
@@ -504,22 +529,23 @@ function changematchfields(row){
               value='<c:out value="<%= availablestatuses[k] %>"/>'><c:out value="<%= ejbcawebbean.getText(availablestatustexts[k]) %>"/></option>
              <% } %>    
        <% } else{ %>
-          disabled >
+          style="display: none;" disabled >
        <%  }
          }}}
         }else{ %>
-          disabled > 
+          style="display: none;" disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow2!= null){
-           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
-               || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
-       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
+           if( oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_NONE))
+               || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE))
+               || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CA)) ){ %>
+       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="25" maxlength="255" value='' style="display: none;" disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="25" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="25" maxlength="255" value='' style="display: none;" >
         <% } %>
     </td>
   </tr>
@@ -567,7 +593,7 @@ function changematchfields(row){
            if(oldmatchtyperow3!= null)
              tempval= Integer.parseInt(oldmatchtyperow3);
           %>
-        <select name="<%=SELECT_MATCHTYPE_ROW3 %>">
+        <select name="<%=SELECT_MATCHTYPE_ROW3 %>" <% if( (oldmatchwithrow3 == null) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_NONE)) ) out.write(" style='display: none;' "); %> >
           <% if(oldmatchwithrow3 != null){
                if(Integer.parseInt(oldmatchwithrow3) < 100){ %>
           <option <%  if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
@@ -656,22 +682,23 @@ function changematchfields(row){
               value='<c:out value="<%= availablestatuses[k] %>"/>'><c:out value="<%= ejbcawebbean.getText(availablestatustexts[k]) %>"/></option>
              <% } %>    
        <% } else{ %>
-          disabled >
+          style="display: none;" disabled >
        <%  }
          }}}
         }else{ %>
-          disabled > 
+          style="display: none;" disabled > 
      <% } %>
        </select>
        <% if( oldmatchwithrow3!= null){
-           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) 
-               || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
-       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
+           if( oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_NONE))
+               || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_STATUS))  || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_ENDENTITYPROFILE)) 
+               || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CA)) ){ %>
+       <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="25" maxlength="255" value='' style="display: none;" disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="25" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="25" maxlength="255" value='' style="display: none;" >
         <% } %>
     </td>
   </tr>
@@ -757,7 +784,6 @@ function changematchfields(row){
 
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
       <!-- ----- Row 4 : Search before ----- -->
 
