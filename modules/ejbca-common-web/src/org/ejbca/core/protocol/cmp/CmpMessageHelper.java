@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,13 +38,11 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -556,7 +553,7 @@ public class CmpMessageHelper {
 
         // Reconstructing the regToken
         ASN1Sequence o6 = (ASN1Sequence) ((ASN1Sequence) o2.toASN1Primitive()).getObjectAt(2);
-        final AttributeTypeAndValue av = AttributeTypeAndValue.getInstance(((ASN1Sequence) o6).getObjectAt(0));
+        final AttributeTypeAndValue av = AttributeTypeAndValue.getInstance(o6.getObjectAt(0));
         final AttributeTypeAndValue[] avs = { av };
 
         // finally, recreating the CertReqMsg object
