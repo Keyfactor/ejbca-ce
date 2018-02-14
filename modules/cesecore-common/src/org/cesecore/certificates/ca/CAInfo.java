@@ -160,6 +160,16 @@ public abstract class CAInfo implements Serializable {
         this.catype = catype;
     }
 
+    public String getCaTypeAsString() {
+        if (catype == CAInfo.CATYPE_CVC) {
+            return "CVC";
+        }
+        if (catype == CAInfo.CATYPE_X509) {
+            return "X.509";
+        }
+        return String.valueOf(catype);
+    }
+
     /**
      * @return A CAId or CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA etc
      */
