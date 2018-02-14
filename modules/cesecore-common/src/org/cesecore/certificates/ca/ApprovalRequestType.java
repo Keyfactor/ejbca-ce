@@ -17,31 +17,33 @@ import java.util.Map;
 
 /**
  * Represents a type of approval request.
- * 
+ *
  * @version $Id$
  *
  */
 public enum ApprovalRequestType {
-    ADDEDITENDENTITY(1, "APPROVEADDEDITENDENTITY"),
-    KEYRECOVER(2, "APPROVEKEYRECOVER"),
-    REVOCATION(3, "APPROVEREVOCATION"),
-    ACTIVATECA(4, "APPROVEACTIVATECA");
+    ADDEDITENDENTITY(1, "APPROVEADDEDITENDENTITY", "Add or Edit End Entity"), 
+    KEYRECOVER(2, "APPROVEKEYRECOVER", "Key Recovery"), 
+    REVOCATION(3, "APPROVEREVOCATION", "Revocation"), 
+    ACTIVATECA(4, "APPROVEACTIVATECA", "CA Activation");
 
     private final  int integerValue;
     private final String languageString;
+    private final String readableString;
     private static final Map<Integer, ApprovalRequestType> reverseLookupMap = new HashMap<>();
-    
+
     static {
         for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
             reverseLookupMap.put(approvalRequestType.getIntegerValue(), approvalRequestType);
         }
-    }  
-    
-    private ApprovalRequestType(int integerValue, String languageString) {
+    }
+
+    private ApprovalRequestType(int integerValue, String languageString, String readableString) {
         this.integerValue = integerValue;
         this.languageString = languageString;
+        this.readableString = readableString;
     }
-    
+
     public int getIntegerValue() {
         return integerValue;
     }
@@ -49,8 +51,13 @@ public enum ApprovalRequestType {
     public String getLanguageString() {
         return languageString;
     }
-    
+
     public static ApprovalRequestType getFromIntegerValue(int integerValue) {
         return reverseLookupMap.get(integerValue);
+    }
+
+    @Override
+    public String toString() {
+        return readableString;
     }
 }

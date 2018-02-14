@@ -36,7 +36,7 @@ import org.cesecore.util.StringTools;
  *
  * @version $Id$
  */
-public class X509CAInfo extends CAInfo{
+public class X509CAInfo extends CAInfo {
 
 	private static final long serialVersionUID = 2L;
 	private List<CertificatePolicy> policies;
@@ -123,10 +123,61 @@ public class X509CAInfo extends CAInfo{
     /**
      * Constructor that should be used when creating CA and retrieving CA info.
      * Please use the shorter form if you do not need to set all of the values.
+     * @param subjectdn the Subject DN of the CA as found in the certificate
+     * @param name the name of the CA shown in EJBCA, can be changed by the user
+     * @param status the operational status of the CA, one of the constants in {@link #CAConstants}
+     * @param updateTime the last time this CA was updated, normally the current date and time
+     * @param subjectaltname the Subject Alternative Name (SAN) of the CA, as found in the certificate
+     * @param certificateprofileid the ID of the certificate profile for this CA
+     * @param encodedValidity the validity of this CA as a human-readable string, e.g. 25y
+     * @param expiretime the date when this CA expires
+     * @param catype the type of CA, in this case CAInfo.CATYPE_X509
+     * @param signedby the id of the CA which signed this CA
+     * @param certificatechain the certificate chain containing the CA certificate of this CA
+     * @param catoken the CA token for this CA, containing e.g. a reference to the crypto token
+     * @param description a text describing this CA
+     * @param revocationReason the reason why this CA was revoked, or -1 if not revoked
+     * @param revocationDate the date of revocation, or null if not revoked
+     * @param policies a policy OID
+     * @param crlperiod the CRL validity period in ms
+     * @param crlIssueInterval how often in ms the CRLs should be distributed, e.g. 3600000 will generate a new CRL every hour
+     * @param crlOverlapTime the validity overlap in ms for a subsequent CRL, e.g. 5000 will generate a CRL 5m before the previous CRL expires
+     * @param deltacrlperiod how often Delta CRLs should be distributed
+     * @param crlpublishers a collection of publisher IDs for this CA
+     * @param keyValidators a collection of key validator IDs for this CA
+     * @param useauthoritykeyidentifier
+     * @param authoritykeyidentifiercritical
+     * @param usecrlnumber
+     * @param crlnumbercritical
+     * @param defaultcrldistpoint the URI of the default CRL distribution point
+     * @param defaultcrlissuer
+     * @param defaultocspservicelocator
+     * @param authorityInformationAccess
+     * @param certificateAiaDefaultCaIssuerUri
+     * @param nameConstraintsPermitted a list of name constraints which should be permitted
+     * @param nameConstraintsExcluded a list of name constraints which should be excluded
+     * @param cadefinedfreshestcrl
+     * @param finishuser
+     * @param extendedcaserviceinfos
+     * @param useUTF8PolicyText
+     * @param approvals a map of approval profiles which should be used for different operations
+     * @param usePrintableStringSubjectDN
+     * @param useLdapDnOrder
+     * @param useCrlDistributionPointOnCrl
+     * @param crlDistributionPointOnCrlCritical
+     * @param includeInHealthCheck enable healthcheck for this CA
+     * @param _doEnforceUniquePublicKeys
+     * @param _doEnforceUniqueDistinguishedName
+     * @param _doEnforceUniqueSubjectDNSerialnumber
+     * @param _useCertReqHistory
+     * @param _useUserStorage
+     * @param _useCertificateStorage
+     * @param _cmpRaAuthSecret
+     * @param keepExpiredCertsOnCRL
      */
-    public X509CAInfo(final String subjectdn,final  String name, final int status, final Date updateTime,
-    		final String subjectaltname, final int certificateprofileid, final String encodedValidity, final Date expiretime,
-    		final int catype, final int signedby, final Collection<Certificate> certificatechain, final CAToken catoken,
+    public X509CAInfo(final String subjectdn, final String name, final int status, final Date updateTime, final String subjectaltname,
+            final int certificateprofileid, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
+            final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
     		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
@@ -210,18 +261,19 @@ public class X509CAInfo extends CAInfo{
     }
 
     /** Constructor that should be used when updating CA data. */
-    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description,
-    		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
-    		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
-    		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
-    		final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
-    		final List<String> certificateAiaDefaultCaIssuerUri,
-    		final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl,
-    		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos,
-    		final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN,
-    		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
-    		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory,
-    		final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
+    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description, final long crlperiod,
+            final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, final Collection<Integer> crlpublishers,
+            final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
+            final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
+            final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
+            final List<String> certificateAiaDefaultCaIssuerUri, final List<String> nameConstraintsPermitted,
+            final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, final boolean finishuser,
+            final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, final boolean useUTF8PolicyText,
+            final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN, final boolean useLdapDnOrder,
+            final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
+            final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
+            final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
+            final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -241,7 +293,7 @@ public class X509CAInfo extends CAInfo{
         this.defaultocsplocator = defaultocspservicelocator;
         this.cadefinedfreshestcrl = cadefinedfreshestcrl;
         this.finishuser = finishuser;
-		this.extendedcaserviceinfos = extendedcaserviceinfos;
+        this.extendedcaserviceinfos = extendedcaserviceinfos;
         this.useUTF8PolicyText = useUTF8PolicyText;
         setApprovals(approvals);
         this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
