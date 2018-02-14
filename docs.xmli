@@ -17,6 +17,7 @@
     <property name="docs.src"     location="doc/xdocs/docs"/>
     <property name="docs.legacy.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.dest"    location="tmp/docs"/>
+    <property name="docs.dist"    location="doc/dist"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
     <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
@@ -61,7 +62,6 @@
     </target>
 	
 	 <target name="doc.war" if="doc.war.enabled" depends="doc.legacy.war">
-    	<delete dir="${docs.dest}" />
     	<antcall target="doc" />  	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
@@ -105,12 +105,13 @@
     </condition>
 
 	<target name="doc-confluence">
-		<mkdir dir="${docs.dest}"/>
 		<antcall target="doc-confluence-from-server"/>
 		<antcall target="doc-confluence-copy-local"/>
 	</target>
 	
 	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
+	    <delete dir="${docs.dest}" />
+	    <mkdir dir="${docs.dest}"/>
 		<fail message="Could not contact Confluence Server.">
 			<condition>
 	       		<isfalse value="${connected.to.confluence}"/>
@@ -128,8 +129,12 @@
 	</target>
 	
 	<target name="doc-confluence-copy-local" unless="${update.from.confluence}">
-		<!-- Do not update from Confluence, instead copy in a placeholder file (if no Documentation currently exists). -->
-		<echo message="Using local documentation, if any. Set -Ddoc.update=true if you wish to update documentation from Confluence."/>	
+		<!-- Do not update from Confluence, instead copy in a placeholder file (if no documentation currently exists). -->
+		<echo message="Using local documentation, if any. Set -Ddoc.update=true if you wish to update documentation from Confluence."/>		
+		<mkdir dir="${docs.dest}"/>
+		<copy todir="${docs.dest}">
+        	<fileset dir="${docs.dist}" includes="**/*"/>
+        </copy>
 	</target>
 
 	<target name="doc-external-deps" unless="external-deps-satfisfied">
