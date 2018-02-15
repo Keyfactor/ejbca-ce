@@ -2526,6 +2526,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseCertificateTransparencyInPublishers(boolean use) {
         data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
     }
+    
+    public boolean isCtEnabled() {
+        return isUseCertificateTransparencyInCerts() ||
+            isUseCertificateTransparencyInOCSP() ||
+            isUseCertificateTransparencyInPublishers();
+    }
 
     public boolean isNumberOfSctByValidity() {
         if (data.get(CT_NUMBER_OF_SCTS_BY_VALIDITY) == null) {
