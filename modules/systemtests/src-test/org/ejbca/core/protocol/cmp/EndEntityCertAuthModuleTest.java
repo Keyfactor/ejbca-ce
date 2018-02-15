@@ -361,6 +361,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         CmpConfiguration cmpconf = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         cmpconf.removeAlias(RA1_ALIAS);
         cmpconf.removeAlias(RA2_ALIAS);
+        cmpconf.removeAlias(RA3_ALIAS);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpconf);
         for (final String roleName : Arrays.asList(RA1_ADMIN_ROLE, RA2_ADMIN_ROLE)) {
             try {
