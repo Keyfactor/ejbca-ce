@@ -929,10 +929,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     private boolean isExtraCertActive(final CertificateInfo certinfo) {
-        if (certinfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
+        // CERT_NOTIFIEDABOUTEXPIRATION is also active...
+        if (certinfo.getStatus() != CertificateConstants.CERT_ACTIVE && certinfo.getStatus() != CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION) {
             this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not active.";
             if (log.isDebugEnabled()) {
-                log.debug(this.errorMessage + " Username=" + certinfo.getUsername());
+                log.debug(this.errorMessage + " Username=" + certinfo.getUsername()+", fingerprint="+certinfo.getFingerprint());
             }
             return false;
         }
