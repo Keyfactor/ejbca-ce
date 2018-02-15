@@ -480,6 +480,7 @@ function checkallfields() {
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT\") %>"/></h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP\") %>"/></p>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP1\") %>"/></p> 
+	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP2\") %>"/></p> 
 	      </td>
 	      <td width="50%"> 
 	      	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" <% if(!authorizedToEdit) { out.write(" disabled "); } %>>
