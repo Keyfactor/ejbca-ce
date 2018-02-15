@@ -262,16 +262,17 @@ public class RequestMessageTest {
     @Test
     public void testOpenSSLChallengepassword() {
         PKCS10RequestMessage msg1 = new PKCS10RequestMessage(p10utf8StringPwd);
-        assertEquals("p10test", msg1.getUsername());
-        assertEquals("fSREp8pnxtx3CuV", msg1.getPassword());
+        assertEquals("Username from P10 message is not what we expect", "p10test", msg1.getUsername());
+        assertEquals("Challenge password (UTF8 encoded) from P10 message is not what we expect", "fSREp8pnxtx3CuV", msg1.getPassword());
 
         PKCS10RequestMessage msg2 = new PKCS10RequestMessage(p10printableStringPwd);
-        assertEquals("QOLBMWU30O1", msg2.getUsername());
-        assertEquals("fSREp8pnxtx3CuVLBjyfuXJAbImBuP", msg2.getPassword());
+        assertEquals("Username from P10 message is not what we expect", "QOLBMWU30O1", msg2.getUsername());
+        assertEquals("Challenge password (PrintableString encoded) from P10 message is not what we expect", "fSREp8pnxtx3CuVLBjyfuXJAbImBuP", msg2.getPassword());
 
         PKCS10RequestMessage msg3 = new PKCS10RequestMessage(p10ia5StringPwd);
-        assertEquals("QOLBMWU30O3", msg3.getUsername());
-        assertEquals("Wgi_L-O,gTkfFgE.uKB9T?XIZ9tW7E", msg3.getPassword());
+        assertEquals("Username from P10 message is not what we expect", "QOLBMWU30O3", msg3.getUsername());
+        assertEquals("Challenge password (IA5String encoded which is invalid according to the standard but we handle it anyway) from P10 message is not what we expect", 
+                "Wgi_L-O,gTkfFgE.uKB9T?XIZ9tW7E", msg3.getPassword());
 
     }
     private PKCS10CertificationRequest createP10(final String subjectDN) throws IOException, OperatorCreationException {
