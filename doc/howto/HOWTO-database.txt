@@ -151,10 +151,9 @@ PostgreSQL specifics
 EJBCA have been tested with PostgreSQL 8.x and 9.x.
 
 JDBC driver: 
-For v8.x the 8.4 driver works fine.
-For v9.x the 9.1-9.4 driver works fine.
+For v8.x and later the 42.2.1 driver works fine (tested feb 2018).
 
-Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
+Download JDBC driver for PostgreSQL from https://jdbc.postgresql.org/.
 
 Sample setup:
  admin@host:~$ sudo su postgres
@@ -179,7 +178,21 @@ Usage example, log in and list tables:
 
 Check columns of a specific table:
  \d RoleData
- 
+
+Drop and re-create database
+>sudo su postgres
+>psql
+#\l - list all databases
+#exit
+>dropdb ejbca
+>createdb -E UTF8 ejbca
+
+Dump and restore
+>pg_dump ejbca > ejbca.sql
+>dropdb ejbca
+>createdb -E UTF8 ejbca
+>psql ejbca < ejbca.sql
+
 Oracle specifics
 ----------------
 JDBC driver for Java 6: ojdbc6.zip
