@@ -10,6 +10,7 @@
 <%@page import="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" %>
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <%@page import="org.cesecore.authorization.control.StandardRules" %>
+<%@page import="org.cesecore.certificates.certificateprofile.CertificateProfileConstants" %>
 <%@page import="org.cesecore.util.SimpleTime" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
@@ -892,9 +893,9 @@
 			<h:selectOneMenu id="qcetsitype" value="#{certProfileBean.certificateProfile.QCEtsiType}"
 				disabled="#{certProfilesBean.viewOnly}">
 				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_unused}" itemValue="#{null}"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_esign}" itemValue="0.4.0.1862.1.6.1"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_eseal}" itemValue="0.4.0.1862.1.6.2"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_web}" itemValue="0.4.0.1862.1.6.3"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_esign}" itemValue="#{CertificateProfileConstants.QC_ETSI_TYPE_ESIGN}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_eseal}" itemValue="#{CertificateProfileConstants.QC_ETSI_TYPE_ESEAL}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_web}" itemValue="#{CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH}"/>
 			</h:selectOneMenu>
 		</h:panelGroup>
 			
