@@ -176,18 +176,19 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
      * - or by matching its DN exactly.
      * 
      * @param dn the end entities DN (must match exactly).
-     * @return the end entity with that subject DN.
+     * @return the end entity that either has a matching username extracted from the DN, or a subjectDN that matches the dn exactly, or null if no user found.
      * @throws AuthorizationDeniedException if authorization was denied.
      */
     private EndEntityInformation getEndEntityFromCertReqRequest(final String dn) throws AuthorizationDeniedException {
         String username = getUsernameByDnComponent(dn);
-        final EndEntityInformation result;
-        if (StringUtils.isEmpty(username)) {
+        EndEntityInformation result = null;
+        if (StringUtils.isNotEmpty(username)) {
+            result = endEntityAccessSession.findUser(admin, username);            
+        }
+        if (result == null) {
             // ECA-6435 Overwrite the EE DN with the request DN fails here, independent from CertificateProile.setAllowDnOverride, 
             // if the request DN does not contain the VCs DN component to extract, but fails anyway (see VendorAuthenticationTest.test3GPPModeWithUserFromVendorCertUIDOrRequestFullDN()).
             result = getEndEntityByDn(dn);
-        } else {
-            result = endEntityAccessSession.findUser(admin, username);
         }
         return result;
     }
