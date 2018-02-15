@@ -885,15 +885,19 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 } else {
                     rootcert = (X509Certificate)crt;
                     if (log.isDebugEnabled()) {
-                        log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor");
+                        log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor, removing from certlist if it is there");
                     }
+                    // Don't have the trust anchor in the cert path, remove doesn't do anything if rootcert doesn't exist in certlist 
+                    certlist.remove(rootcert);
                 }
-            }            
+            }
             CertPath cp = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertPath(certlist);
             // The end entity cert is the first one in the CertPath according to javadoc
             // - "By convention, X.509 CertPaths (consisting of X509Certificates), are ordered starting with the target 
             //    certificate and ending with a certificate issued by the trust anchor. 
             //    That is, the issuer of one certificate is the subject of the following one."
+            // Note: CertPath above will most likely not sort the path, at least if there is a root cert in certlist
+            // the cp will fail verification if it was not in the right order in certlist to start with
             endentitycert = cp.getCertificates().get(0);
             TrustAnchor anchor = new TrustAnchor(rootcert, null);
             PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
