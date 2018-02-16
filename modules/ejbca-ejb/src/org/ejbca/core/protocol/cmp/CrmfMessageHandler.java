@@ -203,9 +203,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			CrmfRequestMessage crmfreq = null;
 			if (cmpRequestMessage instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) cmpRequestMessage;
-				
-				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
-				// If we are not in RA mode, usernameGeneratorParams will be null
+
+                // If we have usernameGeneratorParams we want to generate usernames automagically for requests
+                // If we are not in RA mode, usernameGeneratorParams will be null
 				if (usernameGenParams != null) {
 					resp = handleRaMessage(crmfreq, authenticated);
 				} else {
@@ -213,10 +213,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-					
-					// We did not find any username by extracting "username DN component" from the request DN, see if we have a user 
-                    // registered with this DN
-					final EndEntityInformation endEntityInformation = getEndEntityFromCertReqRequest(dn);
+					final EndEntityInformation endEntityInformation = getEndEntityFromCertReqRequest(crmfreq.getSubjectDN());
 					if (endEntityInformation != null) {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("Found username: "+endEntityInformation.getUsername());
@@ -645,7 +642,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	    }
 
 	}
-
+    
+    /**
+     * Gets the end entity by the its subject DN.
+     * @param dn the subject DN.
+     * @return the end entity with this DN.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     */
     private EndEntityInformation getEndEntityByDn(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation endEntityInformation = null;
 	    if (LOG.isDebugEnabled()) {
@@ -660,15 +663,33 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	    }
         return endEntityInformation;
 	}
-	
-	private String getUsernameByDnComponent(String dn) {
+
+    /**
+     * Gets the username by the DN component specified in the CMP configuration 'extract username component' 
+     * and adds the RA name generation prefix and postfix.
+     * 
+     * @param dn the DN.
+     * @return the username with RA name generation prefix and postfix.
+     */
+    private String getUsernameByDnComponent(String dn) {
         final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
         if (LOG.isDebugEnabled()) {
             LOG.debug("extractUsernameComponent: "+usernameComp);
         }
         if(StringUtils.isNotEmpty(usernameComp)) {
-            return CertTools.getPartFromDN(dn,usernameComp);
-        }
+            String username = CertTools.getPartFromDN(dn,usernameComp);
+            String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
+            if (StringUtils.isNotBlank(fix)) {
+                LOG.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                username = fix + username;
+            }
+            fix = cmpConfiguration.getRANameGenPostfix(this.confAlias);
+            if (StringUtils.isNotBlank( cmpConfiguration.getRANameGenPostfix(this.confAlias))) {
+                LOG.info("Attached RA name postfix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                username += fix;
+            }
+            return username;
+        }    
         return null;
-	}
+    }
 }
