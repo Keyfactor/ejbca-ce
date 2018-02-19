@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -184,33 +185,40 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                         }
                         endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, username);
                     } else {
-                        // No username given, so we try to find from subject/issuerDN from the certificate request
+                        // No username given, so we try to find from to extract the username by the DN component specified, 
+                        // if not found, it must be found by subject/issuerDN from the certificate request.
                         final CertTemplate certTemplate = getCertTemplate(pkiMessage);
                         subjectDN = certTemplate.getSubject().toString();
                         if (subjectDN != null) {
                             final List<EndEntityInformation> endEntityInformations;
-                            final X500Name issuer = certTemplate.getIssuer();
-                            if (issuer == null) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "'.");
+                            final String extractedUsername = getUsernameByDnComponent(subjectDN);
+                            if (StringUtils.isNotBlank(extractedUsername)) {
+                                endEntityInformation = this.endEntityAccessSession.findUser(authenticationToken, username);
+                            }
+                            if (endEntityInformation == null) {
+                                final X500Name issuer = certTemplate.getIssuer();
+                                if (issuer == null) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "'.");
+                                    }
+                                    endEntityInformations = this.endEntityAccessSession.findUserBySubjectDN(authenticationToken, subjectDN);
+                                    if (endEntityInformations.size() > 1) {
+                                        LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
+                                    }
+                                } else {
+                                    final String issuerDN = issuer.toString();
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "' and isserDN='" + issuerDN + "'");
+                                    }
+                                    endEntityInformations = endEntityAccessSession.findUserBySubjectAndIssuerDN(this.authenticationToken, subjectDN, issuerDN);
+                                    if (endEntityInformations.size() > 1) {
+                                        LOG.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
+                                                + " were found. This may lead to unexpected behavior.");
+                                    }
+                                }                    
+                                if (!endEntityInformations.isEmpty()) {
+                                    endEntityInformation = endEntityInformations.get(0);
                                 }
-                                endEntityInformations = this.endEntityAccessSession.findUserBySubjectDN(authenticationToken, subjectDN);
-                                if (endEntityInformations.size() > 1) {
-                                    LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
-                                }
-                            } else {
-                                final String issuerDN = issuer.toString();
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "' and isserDN='" + issuerDN + "'");
-                                }
-                                endEntityInformations = endEntityAccessSession.findUserBySubjectAndIssuerDN(this.authenticationToken, subjectDN, issuerDN);
-                                if (endEntityInformations.size() > 1) {
-                                    LOG.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
-                                            + " were found. This may lead to unexpected behavior.");
-                                }
-                            }                    
-                            if (!endEntityInformations.isEmpty()) {
-                                endEntityInformation = endEntityInformations.get(0);
                             }
                         }
                     }
@@ -287,6 +295,35 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             RevReqContent rev  =(RevReqContent) msg.getBody().getContent();
             return rev.toRevDetailsArray()[0].getCertDetails();
         }
+        return null;
+    }
+    
+    /**
+     * Gets the username by the DN component specified in the CMP configuration 'extract username component' 
+     * and adds the RA name generation prefix and postfix.
+     * 
+     * @param dn the DN.
+     * @return the username with RA name generation prefix and postfix.
+     */
+    private String getUsernameByDnComponent(String dn) {
+        final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("extractUsernameComponent: "+usernameComp);
+        }
+        if(StringUtils.isNotEmpty(usernameComp)) {
+            String username = CertTools.getPartFromDN(dn,usernameComp);
+            String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
+            if (StringUtils.isNotBlank(fix)) {
+                LOG.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                username = fix + username;
+            }
+            fix = cmpConfiguration.getRANameGenPostfix(this.confAlias);
+            if (StringUtils.isNotBlank( cmpConfiguration.getRANameGenPostfix(this.confAlias))) {
+                LOG.info("Attached RA name postfix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                username += fix;
+            }
+            return username;
+        }    
         return null;
     }
 }
