@@ -863,8 +863,14 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             for (String alias : aliases) {
                 data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);                
             }
-            data.put(VERSION,  Float.valueOf(LATEST_VERSION));          
-        }
+            if (data.get(CONFIG_RESPONSE_CAPUBS_CA) == null) {
+                data.put(CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
+            }
+            if (data.get(CONFIG_RESPONSE_EXTRACERTS_CA) == null) {
+                data.put(CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
+            }
+            data.put(VERSION,  Float.valueOf(LATEST_VERSION));
+         }
     }
 
     @Override
