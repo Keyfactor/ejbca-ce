@@ -406,17 +406,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             // Check if this certificate belongs to the user
             if ( (username != null) && (extraCertUsername != null) ) {
-                if (!cmpConfiguration.getRAMode(this.confAlias) && cmpConfiguration.getVendorMode(this.confAlias)) {
-                    String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
-                    if (StringUtils.isNotBlank(fix)) {
-                        log.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
-                        extraCertUsername = fix + extraCertUsername;
-                    }
-                    fix = cmpConfiguration.getRANameGenPostfix(this.confAlias);
-                    if (StringUtils.isNotBlank( cmpConfiguration.getRANameGenPostfix(this.confAlias))) {
-                        log.info("Attached RA name postfix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
-                        extraCertUsername += fix;
-                    }
+                String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
+                if (StringUtils.isNotBlank(fix)) {
+                    log.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                    extraCertUsername = fix + extraCertUsername;
+                }
+                fix = cmpConfiguration.getRANameGenPostfix(this.confAlias);
+                if (StringUtils.isNotBlank( cmpConfiguration.getRANameGenPostfix(this.confAlias))) {
+                    log.info("Attached RA name postfix '" + fix + "' to username '" + username + "' in CMP vendor mode.");
+                    extraCertUsername += fix;
                 }
                 if (!StringUtils.equals(username, extraCertUsername)) {
                     this.errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'";
