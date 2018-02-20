@@ -15,6 +15,7 @@ package org.cesecore.util;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Utility functions to work with maps.
@@ -106,6 +107,35 @@ public final class MapTools {
      */
     public static <K,V> Map<K,V> unmodifiableMap(final K key1, final V value1, final K key2, final V value2, final K key3, final V value3) {
         return Collections.unmodifiableMap(addToMap(new LinkedHashMap<K,V>(), key1, value1, key2, value2, key3, value3));
+    }
+
+    /**
+     * Returns a human readable string representation for a map, based on toString() from the keys and values. 
+     * @param map Map of any type. May contain keys and values that are null.
+     * @return The string, for example <code>{'key 1': 'value 1', 'key 2': null}</code>
+     */
+    public static String toString(final Map<?, ?> map) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        sb.append('{');
+        for (final Entry<?,?> entry : map.entrySet()) {
+            if (!first) sb.append(", ");
+            appendToStringOrNull(sb, entry.getKey());
+            sb.append(": ");
+            appendToStringOrNull(sb, entry.getValue());
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+
+    private static void appendToStringOrNull(final StringBuilder sb, final Object obj) {
+        if (obj == null) {
+            sb.append("null");
+        } else {
+            sb.append('\'');
+            sb.append(obj);
+            sb.append('\'');
+        }
     }
     
 }
