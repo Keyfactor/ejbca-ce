@@ -147,6 +147,10 @@ public enum AuthenticationTokenCache implements CommonCache<AuthenticationTokenC
         }
         authenticationTokenToKeyMap.put(new AuthenticationTokenCacheKey(authenticationToken), identifiers);
     }
-    
+
+    @Override
+    public boolean willUpdate(int id, int digest) {
+        return cache.willUpdate(id, digest);
+    }
     
 }
