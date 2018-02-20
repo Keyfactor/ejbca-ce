@@ -87,4 +87,10 @@ public enum CaCache implements CommonCache<CA> {
     public void replaceCacheWith(List<Integer> keys) {
         caCache.replaceCacheWith(keys);
     }
+    
+    @Override
+    public boolean willUpdate(int id, int digest) {
+        return caCache.willUpdate(id, digest);
+    }
+
 }

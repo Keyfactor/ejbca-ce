@@ -113,6 +113,21 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     }
 
     @Override
+    public boolean willUpdate(int id, int digest) {
+        // Same version in cache as provided Object?
+        final Integer key = Integer.valueOf(id);
+        final CacheEntry cacheEntry = getCacheEntry(key);
+        if (cacheEntry == null || cacheEntry.digest != digest) {
+            return true;
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Update not needed " + cacheEntry.object.getClass().getSimpleName() + " in cache. Digest was " + digest + ", cacheEntry digest was " + (cacheEntry == null ? "null" : cacheEntry.digest));
+            }
+            return false;
+        }
+    }
+    
+    @Override
     public void updateWith(int id, int digest, String name, T object) {
         final Integer key = Integer.valueOf(id);
         if (name==null || object == null || getCacheTime()<0) {
@@ -120,23 +135,18 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             setCacheEntry(key, null);
         } else {
             // Same version in cache as provided Object?
-            final CacheEntry cacheEntry = getCacheEntry(key);
-            if (cacheEntry == null || cacheEntry.digest != digest) {
+            if (willUpdate(id, digest)) {
+                final CacheEntry cacheEntry = getCacheEntry(key);
                 // Create new object and store it in the cache.
                 final CacheEntry newCacheEntry = new CacheEntry(System.currentTimeMillis(), digest, name, object);
                 setCacheEntry(key, newCacheEntry);
                 if (log.isDebugEnabled()) {
                     log.debug("Updated " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + (cacheEntry == null ? "null" : cacheEntry.digest));
                 }
-            } else {
-                // Cached object is fine. No action needed.
-                if (log.isDebugEnabled()) {
-                    log.debug("Did not update " + object.getClass().getSimpleName() + " cache. Digest was " + digest + ", cacheEntry digest was " + (cacheEntry == null ? "null" : cacheEntry.digest));
-                }
             }
         }
     }
-
+    
     @Override
     public String getName(int id) {
         final CacheEntry entry = getCacheEntry(id);

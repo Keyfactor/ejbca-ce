@@ -40,6 +40,15 @@ public interface CommonCache<T> {
      */
     void updateWith(int id, int digest, String name, T object);
 
+    /** this method exposes the loginc inside updateWith that determines if an object is the same as the cached object.
+     * If the objects are the same, updateWith will not update the object as an optimization. This method can be used to skip expensive object creation
+     * if the objects are anyway the same and updateWith will not end up doing anything
+     * @param id id of the object, typically database id
+     * @param digest, typically getProtectString(0).hashCode() of the object;
+     * @return true if a call to updateWith will perform an actual cache update
+     */
+    boolean willUpdate(int id, int digest);
+
     /** Remove the specified entry from the cache and mapping if it exists. */
     void removeEntry(int id);
 

@@ -92,4 +92,9 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     public Set<InternalKeyBinding> getAllValues() {
        return internalKeyBindingCache.getAllEntries();
     }
+    @Override
+    public boolean willUpdate(int id, int digest) {
+        return internalKeyBindingCache.willUpdate(id, digest);
+    }
+
 }

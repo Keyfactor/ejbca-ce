@@ -89,24 +89,26 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                 CryptoTokenCache.INSTANCE.removeEntry(cryptoTokenId);
             } else {
                 final int digest = cryptoTokenData.getProtectString(0).hashCode();
-                final String tokenType = cryptoTokenData.getTokenType();
-                final Properties properties = cryptoTokenData.getTokenProperties();
-                final byte[] data = cryptoTokenData.getTokenDataAsBytes();
-                final String tokenName = cryptoTokenData.getTokenName();
-                // Create new token and store it in the cache.
-                String inClassname = getClassNameForType(tokenType);
-                CryptoToken cryptoToken;
-                try {
-                    cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
-                } catch (NoSuchSlotException e) {
-                    // This should never happen now, since the specify allowNonExistingSlot in the createCryptoToken call
-                    throw new IllegalStateException("Attempted to find a slot for a PKCS#11 crypto token, but it did not exists. Perhaps the token was removed?");
+                // 3. The cache compares the database data with what is in the cache
+                if (CryptoTokenCache.INSTANCE.willUpdate(cryptoTokenId, digest)) {
+                    final String tokenType = cryptoTokenData.getTokenType();
+                    final Properties properties = cryptoTokenData.getTokenProperties();
+                    final byte[] data = cryptoTokenData.getTokenDataAsBytes();
+                    final String tokenName = cryptoTokenData.getTokenName();
+                    // Create new token and store it in the cache.
+                    String inClassname = getClassNameForType(tokenType);
+                    CryptoToken cryptoToken;
+                    // 4. If database is different from cache, create the crypto token and replace it in the cache (while trying to keep activation)
+                    //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
+                    try {
+                        cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName, true);
+                    } catch (NoSuchSlotException e) {
+                        // This should never happen now, since the specify allowNonExistingSlot in the createCryptoToken call
+                        throw new IllegalStateException("Attempted to find a slot for a PKCS#11 crypto token, but it did not exists. Perhaps the token was removed?");
+                    }
+                    CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, digest, tokenName, cryptoToken);                    
                 }
-                CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, digest, tokenName, cryptoToken);
             }
-            // 3. The cache compares the database data with what is in the cache
-            // 4. If database is different from cache, replace it in the cache (while trying to keep activation)
-            //    (Invokes org.cesecore.keys.token.CryptoTokenFactory.createCryptoToken)
         }
         // 5. Get CryptoToken from cache (or null) and be merry
         return CryptoTokenCache.INSTANCE.getEntry(cryptoTokenId);

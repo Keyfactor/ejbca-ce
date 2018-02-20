@@ -89,4 +89,9 @@ public enum ValidatorCache implements CommonCache<Validator> {
     public void replaceCacheWith(List<Integer> keys) {
         cache.replaceCacheWith(keys);
     }
+    @Override
+    public boolean willUpdate(int id, int digest) {
+        return cache.willUpdate(id, digest);
+    }
+
 }
