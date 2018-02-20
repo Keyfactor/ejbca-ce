@@ -79,6 +79,11 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     // Public Methods
     public int getPublisherId() { return id; }
     public String getName() { return name; }
+
+    // Used by configdump tool ECA-6466
+    public int getType() {
+        return (Integer) data.get(TYPE);
+    }
     
     /** Sets the id. Used internally by PublisherSessionBean */ 
     public void setPublisherId(int id) { this.id = id; }
