@@ -94,4 +94,9 @@ public enum RoleCache implements CommonCache<Role> {
     public Set<Role> getAllValues() {
        return cache.getAllEntries();
     }
+    @Override
+    public boolean willUpdate(int id, int digest) {
+        return cache.willUpdate(id, digest);
+    }
+
 }
