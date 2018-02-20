@@ -1220,16 +1220,12 @@
 	</h:panelGrid>
 
 
-	<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="99.5%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-
+	<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<%-- Approvals --%>
-
 		<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}" style="font-weight: bold;"/>
 		<h:panelGroup id="approvals"/>		
-
 	</h:panelGrid>
-
-	<h:dataTable styleClass="edit" value="#{certProfileBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
+	<h:dataTable value="#{certProfileBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
 		border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" style="padding-right: 4px;">
 		<h:column>	
 			<h:outputText value="#{requestItem.getDisplayText()}"/>
