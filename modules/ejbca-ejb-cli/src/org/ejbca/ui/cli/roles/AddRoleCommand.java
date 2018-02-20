@@ -35,10 +35,15 @@ public class AddRoleCommand extends BaseRolesCommand {
     private static final Logger log = Logger.getLogger(AddRoleCommand.class);
 
     private static final String NAME_KEY = "--role";
-
+    
+    private static final String NAMESPACE_KEY = "--namespace";
+    
     {
         registerParameter(new Parameter(NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Name of the new role."));
+
+        registerParameter(new Parameter(NAMESPACE_KEY, "Namespace", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Namespace of the new role."));
     }
 
     @Override
@@ -49,8 +54,11 @@ public class AddRoleCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         String roleName = parameters.get(NAME_KEY);
+        String roleNamespace = parameters.get(NAMESPACE_KEY);
+        
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), new Role(null, roleName));
+            Role role = new Role(roleNamespace, roleName);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).persistRole(getAuthenticationToken(), role);
             return CommandResult.SUCCESS;
         } catch (RoleExistsException e) {
             log.error("ERROR: Role of name " + roleName + " already exists.");
