@@ -1,3 +1,53 @@
+EJBCA 6.11.1, 2018-02-21
+---
+
+Bug
+    [ECA-6431] - End Entity Profile field validation should not allow empty fields
+    [ECA-6439] - GeneralPurposeCustomPublisher test command shows error message with empty path
+    [ECA-6443] - clientToolBox OCSP GET does not work with TLS connections
+    [ECA-6461] - Regression: Cannot enroll in Public Web
+    [ECA-6463] - Fix CrmfRequestTest.test12ServerGeneratedKeys
+    [ECA-6467] - Null pointer exception when enroling with EC in RA web
+    [ECA-6471] - Regression: It's only possible to add partitions to the first approval step
+    [ECA-6481] - Base64 decoding fails with BC v1.59
+    [ECA-6509] - XStream 1.4 lib requires JDK8
+    [ECA-6535] - EST not working on local CA when a peer connection to a VA is present
+    [ECA-6537] - EST: in EST profile Certificate Profile field not updated automatically when End Entity profile field is changed
+    [ECA-6542] - EST Aliases fail to add values for future keys
+    [ECA-6547] - Regression: Approval requests cannot be edited
+    [ECA-6556] - EST certificate profile and default CA is stored with name instead of ID
+    [ECA-6587] - No End Entity Profiles selected when viewing Role in Basic Mode after upgrading
+    [ECA-6603] - EST - Enroll with username/password not working through external RA
+    [ECA-6622] - CAA Issuance fails for domains where both issue and issuewild records exist in a certain order
+    [ECA-6624] - PeerConnectionTest.publishCertificate fails with database protection enabled
+    [ECA-6625] - Regression: Statedump and Database CLI doesn't work on with JDK8
+    [ECA-6633] - CMP: check if extraCert is active does not consider if it is notified about expiration
+    [ECA-6638] - Crypto Tokens are re-created and activated every time cache is reloaded
+
+Epic
+    [ECA-6468] -  CMP changes to return caPub certificates and lessen DN checks on VC certificate
+    
+New Feature
+    [ECA-6212] - Add support for SHA3 signature algorithms
+    [ECA-6512] - CMP Vendor mode: ability to issue multiple certificates authenticated by the same Vendor certificate
+    [ECA-6577] - CMP ability to select CA certificates to add to caPubs in CMP responses (multiple order defined)
+    [ECA-6601] - CMP ability to select CA certificates to add to extraCerts in CMP responses (multiple order defined)
+
+Improvement
+    [ECA-6434] - CMP Vendor mode: Ability to have different requestDN from VendorCert DN where request DN lacks extract username component
+    [ECA-6435] - CMP Vendor mode: Ability to have different requestDN from VendorCert DN
+    [ECA-6440] - ExternalCommandCertifciateValidator to call external scripts only
+    [ECA-6460] - Upgrade EJBCA to BC 1.59
+    [ECA-6536] - Info-loggning for incoming  and outgoing EST requests
+    [ECA-6540] - EST: improve help messages in EST alias
+    [ECA-6541] - EST/CMP/SCEP configuration should use password field
+    [ECA-6558] - Make EST be displayed in a nice way Enterprise vs Community
+    [ECA-6569] - Documentation: clarify steps to renew OCSP certificates
+    [ECA-6573] - Update CustomerLdapPublisher1
+    [ECA-6574] - Add documentation links to CMP and EST aliases pages
+    [ECA-6631] - CMP: find registered end entity by DN if username (extracted from DN) is not found
+    [ECA-6632] - CMP: don't include trust anchor in extraCert certificate list to verify
+
 EJBCA 6.11.0.1, 2018-01-11
 ---
 

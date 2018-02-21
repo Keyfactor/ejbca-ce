@@ -1,3 +1,19 @@
+EJBCA 6.11.1
+-----------
+
+Now is the winter of our new content, made glorious summer by our developers' hard work. EJBCA 6.11.1 is a brand new minor release containing some 
+cool new features. We've upgraded the underlying BouncyCastle library version 1.59, which adds support for SHA3 signature algorithms. 
+
+The main feature of this release is a modification of how vendor certificates are handled in CMP. Previously we restricted CMP clients to enroll to
+the same subject DN and issuer as specified in the vendor certificate, while we now allow enrolling to a number of different certificates based on 
+the same vendor certificate. The purpose of this change is to be able to use the same vendor certificate to enroll a device with several keys with 
+different purposes. 
+
+We've fixed a few neat bugs, amongst which being a performance sink in the display of crypto tokens in the CA GUI, some minor issues related to EST
+and a case where a CA might incorrectly fail a CAA issuance check for some corner cases. 
+
+Being a minor release, this release involves no upgrade steps or notable database changes. 
+
 EJBCA 6.11.0.1
 -----------
 Patch release with some last minute fixes before the release of Appliance 2.7.2. Found issues include:
