@@ -69,6 +69,7 @@ import org.ejbca.cvc.AccessRights;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRole;
 import org.ejbca.cvc.CAReferenceField;
+import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
@@ -494,9 +495,19 @@ public class HSMKeyTool extends ClientToolBox {
                 final AuthorizationRole authRole = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
                 final AccessRights rights = newCertCVC.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
                 final Date validFrom = new Date(new Date().getTime() - 60L*15L*1000L); // back date by 15 minutes to allow for clock skew
-                final Date validTo = oldCertCVC.getCertificateBody().getValidTo();
+                // End date is the same as the new CVCA certificate
+                final Date validTo = newCertCVC.getCertificateBody().getValidTo();
 
-                final CVCertificate linkCert = CertificateGenerator.createCertificate(newPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
+                // In link certificates we can change algorithm and keys. The algorithm in CVC is encoded into the public key though, so if we
+                // don't take special precaution here CertificateGenerator.createCertificate will sign with linkSigAlg but put the algorithm OID
+                // from cvcNewPubKey, which will not be the algorithm used to sign the cert with, if the algorithm has changed (say from SHA256WithECDSA to SHA512withECDSA).
+                // Therefore we "hack" the new key here to set the same oid as in the old public key, which is the one used for signing (well the private key, 
+                // but with the algorithm as encoded in the public key)
+                CVCPublicKey cvcOldPubKey = oldCertCVC.getCertificateBody().getPublicKey();
+                CVCPublicKey cvcNewPubKey = newCertCVC.getCertificateBody().getPublicKey();
+                cvcNewPubKey.setObjectIdentifier(cvcOldPubKey.getObjectIdentifier());
+                
+                final CVCertificate linkCert = CertificateGenerator.createCertificate(cvcNewPubKey, oldPrivKey, linkSigAlg, caRef, certHolder, authRole, rights, validFrom, validTo, signProviderName);
                 try ( final DataOutputStream dos = new DataOutputStream(baos) ) {
                     linkCert.encode(dos);
                 }
@@ -577,10 +588,10 @@ public class HSMKeyTool extends ClientToolBox {
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
                 baos.write(certHolder.getEncoded());
                 
-                // Save to output file
-                try( final FileOutputStream fos = new FileOutputStream(outputPath) ) {
-                    baos.writeTo(fos);
-                }
+            }
+            // Save to output file
+            try( final FileOutputStream fos = new FileOutputStream(outputPath) ) {
+                baos.writeTo(fos);
             }
             return true;
         }
