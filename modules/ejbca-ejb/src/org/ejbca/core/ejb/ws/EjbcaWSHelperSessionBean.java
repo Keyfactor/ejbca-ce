@@ -85,6 +85,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
@@ -138,7 +139,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
-    
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+
     
     private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED,UserDataVOWS.TOKEN_TYPE_P12,
                                               UserDataVOWS.TOKEN_TYPE_JKS,UserDataVOWS.TOKEN_TYPE_PEM };
@@ -154,7 +157,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         final AuthenticationToken admin = authenticationSession.authenticate(subject);
         if ((admin != null) && (!allowNonAdmins)) {
-            if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
                 throw new AuthorizationDeniedException(msg);
             }
