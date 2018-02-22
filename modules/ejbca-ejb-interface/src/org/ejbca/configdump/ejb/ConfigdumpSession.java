@@ -14,6 +14,7 @@ package org.ejbca.configdump.ejb;
 
 import java.io.IOException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.configdump.ConfigDumpSetting;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
@@ -27,6 +28,6 @@ public interface ConfigdumpSession {
     
     static final String CONFIGDUMP_MODULE = "configdump-ejb";
     
-    ConfigdumpExportResult performExport(final ConfigDumpSetting setting) throws ConfigdumpException, IOException;
+    ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException;
 
 }
