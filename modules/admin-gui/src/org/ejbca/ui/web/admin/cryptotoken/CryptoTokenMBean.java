@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -278,7 +279,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final List<Integer> ret = new ArrayList<Integer>();
         // Add all CryptoToken ids referenced by CAs
         for (int caId : caSession.getAllCaIds()) {
-            ret.add(Integer.valueOf(caSession.getCAInfoInternal(caId).getCAToken().getCryptoTokenId()));
+            final CAInfo cainfo = caSession.getCAInfoInternal(caId);
+            // We may have CAIds that can not be resolved to a real CA, for example CVC CAs on Community
+            if (cainfo != null) {
+                ret.add(Integer.valueOf(cainfo.getCAToken().getCryptoTokenId()));
+            }
         }
         // Add all CryptoToken ids referenced by InternalKeyBindings
         for (final String internalKeyBindingType : internalKeyBindingMgmtSession.getAvailableTypesAndProperties().keySet()) {
