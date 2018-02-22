@@ -1200,6 +1200,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         AuthorizationDeniedException authorizationDeniedException = null;
         EjbcaException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+        	if (log.isDebugEnabled()) {
+        	    log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+        	}
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     return raMasterApi.createCertificateWS(authenticationToken, userdata, requestData, requestType, hardTokenSN, responseType);

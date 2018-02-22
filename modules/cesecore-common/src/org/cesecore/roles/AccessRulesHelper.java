@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 /**
  * Helper methods for interactions with maps of access rules and resources.
  *
@@ -27,7 +29,7 @@ import java.util.Map.Entry;
  */
 public abstract class AccessRulesHelper {
 
-    //private static final Logger log = Logger.getLogger(AccessRulesHelper.class);
+    private static final Logger log = Logger.getLogger(AccessRulesHelper.class);
 
     /** @return true if the provided map of access rules allows access to all the given resources */
     public static boolean hasAccessToResources(final HashMap<String, Boolean> accessRules, final String...resources) {
@@ -57,8 +59,14 @@ public abstract class AccessRulesHelper {
                 state = accessRules.get(subString + "/");
             }
             if (state!=null) {
+            	if (log.isTraceEnabled()) {
+            	    log.trace("hasAccessToResource: "+resource+", "+state.booleanValue());
+            	}
                 return state.booleanValue();
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("hasAccessToResource: "+resource+", "+false);
         }
         return false;
     }
