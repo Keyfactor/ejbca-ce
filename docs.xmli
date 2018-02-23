@@ -101,7 +101,7 @@
     </condition>
     
     <condition property="connected.to.confluence" value="true" else="false">
-    	<http url="http://${confluence.url}:8090"/>	
+    	<isreachable url="http://${confluence.url}" timeout="2"/>	
     </condition>
 
 	<target name="doc-confluence">
