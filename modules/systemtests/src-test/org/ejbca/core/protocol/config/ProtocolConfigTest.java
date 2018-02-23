@@ -35,7 +35,7 @@ public class ProtocolConfigTest {
 
     private static final Logger log = Logger.getLogger(ProtocolConfigTest.class);
     private static final String EXPECTED_403_REASON = "Forbidden";
-    private static final String EXPECTED_WS_MESSAGE = "Not authorized to Web Services";
+    private static final String EXPECTED_WS_MESSAGE = "Web Services not enabled";
     
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
