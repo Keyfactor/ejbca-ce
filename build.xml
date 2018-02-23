@@ -863,6 +863,8 @@
 		    	<exclude name="modules/acme/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
+		    	<!-- Exclude internal Confluence information -->
+		    	<exclude name="src/doc.properties" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
