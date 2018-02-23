@@ -37,8 +37,7 @@
     <property name="docs.velocity.props"   location="${docs.src}/velocity.properties" />
     <property name="site.velocity.props"   location="${site.src}/velocity.properties" />
     <property name="include.xml"  value="**/*.xml" />
-    <property name="confluence.url" value="192.168.3.98"/>
-
+	<property file="src/doc.properties"/>
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-common.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
@@ -112,6 +111,7 @@
 	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
 	    <delete dir="${docs.dest}" />
 	    <mkdir dir="${docs.dest}"/>
+	    
 		<fail message="Could not contact Confluence Server.">
 			<condition>
 	       		<isfalse value="${connected.to.confluence}"/>
@@ -119,10 +119,11 @@
 		</fail>
 		<echo message="Pulling documentation from Confluence Server"/>
 		<!-- Perform a REST call to Confluence - only runs if -Ddoc.update is set and Confluence can be contacted -->
-		<get src="http://${confluence.url}:8090/rest/scroll-html/1.0/sync-export?exportSchemeId=EJBCADS-7F00010101612D34D72893723AD26687&amp;rootPageId=11569681&amp;versionId=7F000101015F111C970D77C615C82B72" 
+		<!-- The values here are described in doc.properties -->
+		<get src="http://${confluence.url}:${confluence.port}/rest/scroll-html/1.0/sync-export?exportSchemeId=${confluence.export.schemed.id}&amp;rootPageId=${confluence.root.page.id}&amp;versionId=${confluence.version}" 
 			dest="${docs.dest}/export.zip" 
-			username="ejbca"
-			password="ejbca"
+			username="${confluence.username}"
+			password="${confluence.password}"
 			/>
 		<unzip src="${docs.dest}/export.zip" dest="${docs.dest}"/>
 		<delete file="${docs.dest}/export.zip"/>		
