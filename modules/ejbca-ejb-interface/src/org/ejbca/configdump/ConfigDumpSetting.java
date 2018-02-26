@@ -30,7 +30,9 @@ public class ConfigDumpSetting implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum ItemType {
-        CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE, CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, ENDENTITY, SYSCONFIG, ADMINPREFS, CMPCONFIG, OCSPCONFIG, PEERCONNECTOR, PEERCONFIG
+        CA, CRYPTOTOKEN, PUBLISHER, APPROVALPROFILE, CERTPROFILE, EEPROFILE, SERVICE, ROLE, KEYBINDING, 
+        ENDENTITY, SYSCONFIG, ADMINPREFS, CMPCONFIG, OCSPCONFIG, PEERCONNECTOR, PEERCONFIG, SCEPCONFIG, ESTCONFIG,
+        VALIDATOR, CTLOG, EXTENDEDKEYUSAGE, CERTEXTENSION
     };
 
     private String location;
@@ -93,4 +95,47 @@ public class ConfigDumpSetting implements Serializable {
         this.excludedAnyType = excludedAnyType;
         this.ignoreErrors = ignoreErrors;
     }
+
+    public boolean isIncluded(final ItemType type, final String nameStr) {
+        
+        final List<ConfigdumpPattern> includeList = included.get(type);
+        final List<ConfigdumpPattern> excludeList = excluded.get(type);
+        final String name = (nameStr != null ? nameStr.toLowerCase() : "");
+
+        if (includeList != null) {
+            for (ConfigdumpPattern p : includeList) {
+                if (p.matches(name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (!includedAnyType.isEmpty()) {
+            for (ConfigdumpPattern p : includedAnyType) {
+                if (p.matches(name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (excludeList != null) {
+            for (ConfigdumpPattern p : excludeList) {
+                if (p.matches(name)) {
+                    return false;
+                }
+            }
+        }
+
+        for (ConfigdumpPattern p : excludedAnyType) {
+            if (p.matches(name)) {
+                return false;
+            }
+        }
+
+        // Didn't match anything. Default is to include.
+        return true;
+    }
+    
 }
