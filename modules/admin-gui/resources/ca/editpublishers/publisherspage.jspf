@@ -4,7 +4,7 @@
 %>
 
 
-<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/adminguide.html#LDAP%20and%20Publishers") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/LDAP_and_Publishers.html") %></h1>
 
 <form name="editpublishers" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
