@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.util.keystore;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -36,8 +38,14 @@ public class PasswordCallBackHandler implements CallbackHandler {
 				PasswordCallback pc = (PasswordCallback)callbacks[i];
 				System.err.print(pc.getPrompt());
 				System.err.flush();
-				pc.setPassword(System.console().readPassword());
-
+				if (System.console() != null) {
+				    pc.setPassword(System.console().readPassword());
+				} else if (System.in != null) {
+				    // System.console was not available, we may be trying to pipe input here
+				    // cmd.sh < pwd.txt
+		            char[] passwd =  new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+		            pc.setPassword(passwd);
+				}
 			} else {
 				throw new UnsupportedCallbackException
 				(callbacks[i], "Unrecognized Callback");
