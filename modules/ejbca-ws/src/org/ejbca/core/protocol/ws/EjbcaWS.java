@@ -1381,12 +1381,11 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 			final AuthenticationToken admin = getAdmin();
 			logAdminName(admin,logger);
-			final int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
-			caSession.verifyExistenceOfCA(caid);
 			final BigInteger serno = new BigInteger(certificateSN, 16);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
-			endEntityManagementSession.revokeCert(admin, serno, date, issuerDN, reason, true);
+			// The method over RA Master API will also check if the CA (issuer DN) is something we handle and throw a CADoesntExistsException if not
+			raMasterApiProxyBean.revokeCert(admin, serno, date, issuerDN, reason, true);
 		} catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -1645,16 +1644,9 @@ public class EjbcaWS implements IEjbcaWS {
 		try{
 		  AuthenticationToken admin = getAdmin();
           logAdminName(admin,logger);
-
-		  // check that admin is autorized to CA
-		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
-		  caSession.verifyExistenceOfCA(caid);
-		  if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
-			  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
-			  throw new AuthorizationDeniedException(msg);
-		  }
-
-		  CertificateStatus certinfo = certificateStoreSession.getStatus(issuerDN, new BigInteger(certificateSN,16));
+          // The method over RA Master API will also check if the CA (issuer DN) is something we handle and throw a CADoesntExistsException if not
+		  // It also checks if we are authorized to the CA, and throws AuthorizationDeniedException if not
+          CertificateStatus certinfo = raMasterApiProxyBean.getCertificateStatus(admin, issuerDN, new BigInteger(certificateSN,16));
 		  // If certificate is not available, pass this and return null
 		  if(certinfo != null && !certinfo.equals(CertificateStatus.NOT_AVAILABLE)){
 		    return new RevokeStatus(certinfo, issuerDN, certificateSN);
