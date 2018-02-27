@@ -86,6 +86,7 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -166,6 +167,7 @@ import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -1995,6 +1997,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return false;
     }
 
+    @Override
+    public void revokeCert(AuthenticationToken authenticationToken, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
+        // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
+        final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
+        caSession.verifyExistenceOfCA(caid);
+        endEntityManagementSessionLocal.revokeCert(authenticationToken, certserno, revocationdate, issuerdn, reason, checkDate);
+    }
+
+    @Override
+    public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerdn, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException {
+        // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
+        final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
+        caSession.verifyExistenceOfCA(caid);
+        // Check if we are authorized to this CA
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        
+        return certificateStoreSession.getStatus(issuerdn, serno);
+    }
+    
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
         return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
