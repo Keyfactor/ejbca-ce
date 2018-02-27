@@ -109,7 +109,7 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	@Override
 	protected void usage() {
 		getPrintStream().println("Command used to revoke or unrevoke a certificate.");
-		getPrintStream().println("Unrevocation is done using the reason REMOVEFROMCRL, and can only be done if the certificate is revoked with reason CERTIFICATEHOLD.");
+		getPrintStream().println("Unrevocation is done using the reason REV_REMOVEFROMCRL, and can only be done if the certificate is revoked with reason REV_CERTIFICATEHOLD.");
 		getPrintStream().println("Usage : revokecert <issuerdn> <certificatesn (HEX)> <reason> [<revocation date>]");
 		getPrintStream().println();
 		getPrintStream().println();
