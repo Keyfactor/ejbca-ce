@@ -598,7 +598,7 @@
 
         <h:panelGroup>
     		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
-    		<%= ejbcawebbean.getHelpReference("/CA_fields.html#NameConstraints") %>
+    		<%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
 		</h:panelGroup>
 		<h:panelGroup id="checknameconstraintsgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"
