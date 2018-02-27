@@ -1640,7 +1640,7 @@ function checkUseInBatch(){
         <tr id="Row<%=(row)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED\") %>"/>
-                <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+                <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP1\") %>"/><br />
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_PERMITTED_HELP2\") %>"/></p>
             </td>
@@ -1658,7 +1658,7 @@ function checkUseInBatch(){
         <tr id="Row<%=(row++)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED\") %>"/>
-                <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+                <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NC_EXCLUDED_HELP\") %>"/></p>
             </td>
             <td>
@@ -1685,7 +1685,7 @@ function checkUseInBatch(){
         <tr id="Row<%=(row++)%2%>">
             <td align="right">
                 <c:out value="<%= ejbcawebbean.getText(\"RAWSUBJECTDN\") %>"/>
-                <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
+                <%= ejbcawebbean.getHelpReference("Certificate_Profile_Fields.html") %>
                 <p class="help"><c:out value="<%= ejbcawebbean.getText(\"RAWSUBJECTDN_HELP\") %>"/></p>
             </td>
 			<td style="text-align: left"><c:out value="<%= userdata.getExtendedInformation().getRawSubjectDn() %>"/></td>
@@ -1743,7 +1743,7 @@ function checkUseInBatch(){
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
+        <%= ejbcawebbean.getHelpReference("Key_Recovery.html") %>
       </td>
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 

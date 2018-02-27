@@ -3,7 +3,7 @@
   
 %>
 
-<h1><%= ejbcawebbean.getText("MANAGEUSERDATASOURCES") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Framework%20for%20External%20User%20Data%20Sources") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEUSERDATASOURCES") %> <%= ejbcawebbean.getHelpReference("/Framework_for_External_User_Data_Sources.html") %></h1>
 
 <form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
