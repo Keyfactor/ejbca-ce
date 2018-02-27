@@ -123,7 +123,7 @@
 		<tr id="Row<%=row++%2%>"> 
 			<td width="30%" valign="top" align="right">
 				<%= ejbcawebbean.getText("IMPORTPROFILESFROM") %>&nbsp;
-				<%= ejbcawebbean.getHelpReference("/userguide.html#Import/Export%20End%20Entity%20Profiles") %>
+				<%= ejbcawebbean.getHelpReference("/Import_Export_End_Entity_Profiles.html") %>
 			</td>
 			<td width="55%">
 				<input TYPE="FILE" NAME="<%= FILE_IMPORTFILE %>">
