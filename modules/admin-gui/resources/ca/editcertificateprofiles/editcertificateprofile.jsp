@@ -94,7 +94,7 @@
 
 		<h:panelGroup>
 		<h:outputLabel for="selectavailablekeyalgorithms" value="#{web.text.AVAILABLEKEYALGORITHMS}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20key%20algorithms") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#availableKeyAlgorithms") %>
 		</h:panelGroup>
 		<h:selectManyListbox styleClass="select-list" id="selectavailablekeyalgorithms" value="#{certProfileBean.certificateProfile.availableKeyAlgorithms}" size="5" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableKeyAlgorithmsAvailable}"/>
@@ -102,7 +102,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="selectavailableeccurves" value="#{web.text.AVAILABLEECDSACURVES}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20ECDSA%20curves") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#availableEcdsaCurves") %>
 		</h:panelGroup>
 		<h:selectManyListbox styleClass="select-list" id="selectavailableeccurves" value="#{certProfileBean.certificateProfile.availableEcCurves}" size="5" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableEcCurvesAvailable}"/>
@@ -110,7 +110,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="selectavailablebitlengths" value="#{web.text.AVAILABLEBITLENGTHS}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Available%20bit%20lengths") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#availableBitLengths") %>
 		</h:panelGroup>
 		<h:selectManyListbox id="selectavailablebitlengths" value="#{certProfileBean.certificateProfile.availableBitLengths}" size="5" styleClass="number select-list" disabled="#{certProfilesBean.viewOnly}">
 			<f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}"/>
@@ -125,7 +125,7 @@
 		
 		<h:panelGroup>
 			<h:outputLabel for="textfieldvalidity" value="#{web.text.CERT_VALIDITY} #{web.text.ORENDDATE}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#validity") %>
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:inputText id="textfieldvalidity" value="#{certProfileBean.validity}" 
@@ -147,7 +147,7 @@
 		
 		<h:panelGroup>
 			<h:outputLabel for="checkusecertificatevalidityoffsetgroup" value="#{web.text.CERT_VALIDITY_OFFSET}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity%20offset") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Validity_Offset") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkusecertificatevalidityoffsetgroup">
@@ -174,7 +174,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkuseexpirationtrestrictionforweekdaysgroup" value="#{web.text.CERT_EXPIRATION_RESTRICTIONS}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Expiration%20restrictions") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Expiration_Restrictions") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkuseexpirationtrestrictionforweekdaysgroup">
@@ -221,7 +221,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowvalidityoverridegroup" value="#{web.text.ALLOWVALIDITYOVERRIDE}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Validity") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowvalidityoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowvalidityoverride" value="#{certProfileBean.certificateProfile.allowValidityOverride}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -230,7 +230,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowextensionoverridegroup" value="#{web.text.ALLOWEXTENSIONOVERRIDE}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20extension%20override") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#AllowExtensionOverride") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkallowextensionoverridegroup">
@@ -256,7 +256,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="allowcertserialnumberoverridegroup" value="#{web.text.ALLOWCERTSERIALNUMBEROVERRIDE}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#AllowCertificateSerialNumberOverride") %>
 		</h:panelGroup>
 		<h:panelGroup id="allowcertserialnumberoverridegroup">
 			<h:selectBooleanCheckbox rendered="#{!certProfileBean.uniqueCertificateSerialNumberIndex}" id="allowcertserialnumberoverridefalse"
@@ -271,7 +271,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowdnoverridegroup" value="#{web.text.ALLOWDNOVERRIDECSR}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CertificateProfileFields") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowdnoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowdnoverride" value="#{certProfileBean.certificateProfile.allowDNOverride}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -280,7 +280,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowdnoverrideeeigroup" value="#{web.text.ALLOWDNOVERRIDEEEI}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Profile%20Fields") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CertificateProfileFields") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowdnoverrideeeigroup">
 			<h:selectBooleanCheckbox id="checkallowdnoverrideeei" value="#{certProfileBean.certificateProfile.allowDNOverrideByEndEntityInformation}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -289,7 +289,7 @@
 
 		<h:panelGroup>
 		    <h:outputLabel for="checkallowkeyusageoverridegroup" value="#{web.text.ALLOWKEYUSAGEOVERRIDE}"/>
-	        <%=ejbcawebbean.getHelpReference("/userguide.html#Allow%20Key%20Usage%20Override")%>
+	        <%=ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#AllowKeyUsageOverride")%>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowkeyusageoverridegroup">
 			<h:selectBooleanCheckbox id="checkallowkeyusageoverride" value="#{certProfileBean.certificateProfile.allowKeyUsageOverride}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -298,7 +298,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkallowbackdatedrevokationgroup" value="#{web.text.ALLOWBACKDATEDREVOCATION}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20back%20dated%20revocation") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#AllowBackatedRevocation") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkallowbackdatedrevokationgroup">
 			<h:selectBooleanCheckbox id="checkallowbackdatedrevokation" value="#{certProfileBean.certificateProfile.allowBackdatedRevocation}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -306,7 +306,7 @@
 		</h:panelGroup>
 		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
 			<h:outputLabel for="checkUseCertificateStorageGroup" value="#{web.text.USECERTIFICATESTORAGE}" />
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Storage%20(Certificate%20Profiles)") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#UseCertificateStorage") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkUseCertificateStorageGroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkUseCertificateStorage" value="#{certProfileBean.certificateProfile.useCertificateStorage}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -317,7 +317,7 @@
 		</h:panelGroup>
 		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
 			<h:outputLabel for="checkStoreCertificateDataGroup" value="#{web.text.STORECERTIFICATEDATA}" />
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Store%20Certificate%20Data") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#StoreCertificateData") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkStoreCertificateDataGroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkStoreCertificateData" value="#{certProfileBean.certificateProfile.storeCertificateData}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -353,7 +353,7 @@
 
 		<h:panelGroup rendered="#{certProfileBean.typeCA}">
 			<h:outputLabel for="checkusepathlengthconstraintgroup" value="#{web.text.EXT_PKIX_BC_PATHLENGTH}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#PathLengthConstraints") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkusepathlengthconstraintgroup" rendered="#{certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.usePathLengthConstraint}" rendered="#{!web.legacyInternetExplorer}"
@@ -399,7 +399,7 @@
 		<%-- PKIX Key Usage (KU) extension --%>
 		<h:panelGroup>
 		    <h:outputLabel for="cbkeyusagegroup" value="#{web.text.EXT_PKIX_KEYUSAGE}" style="font-weight: bold;"/>
-	        <%=ejbcawebbean.getHelpReference("/userguide.html#Key%20Usage")%>
+	        <%=ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#KeyUsage")%>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="cbkeyusagegroup">
@@ -441,7 +441,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkuseextendedkeyusagegroup" value="#{web.text.EXT_PKIX_EXTENDEDKEYUSAGE}" style="font-weight: bold;"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#ExtendedKeyUsage") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkuseextendedkeyusagegroup">
@@ -464,7 +464,7 @@
 
 		<h:panelGroup>
 		    <h:outputLabel for="certificatePolicies" value="#{web.text.EXT_PKIX_CERTIFICATEPOLICIES}" style="font-weight: bold;"/>
-	        <%=ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Policies")%>
+	        <%=ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CertificatePolicies")%>
 	    </h:panelGroup>
 	    
 		<h:panelGrid id="certificatePolicies" columns="1">
@@ -571,7 +571,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="cbissueralternativenamegroup" value="#{web.text.EXT_PKIX_ISSUERALTNAME}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Issuer%20Alternative%20Name") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#IssuerAlternativeName") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbissueralternativenamegroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useIssuerAlternativeName}" rendered="#{!web.legacyInternetExplorer}"
@@ -598,7 +598,7 @@
 
         <h:panelGroup>
     		<h:outputLabel for="checknameconstraintsgroup" value="#{web.text.EXT_PKIX_NAMECONSTRAINTS}"/>
-    		<%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+    		<%= ejbcawebbean.getHelpReference("/CA_fields.html#NameConstraints") %>
 		</h:panelGroup>
 		<h:panelGroup id="checknameconstraintsgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useNameConstraints}" rendered="#{!web.legacyInternetExplorer}"
@@ -625,7 +625,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="cbcrldistributionpointgroup" value="#{web.text.EXT_PKIX_CRLDISTRIBPOINTS}" style="font-weight: bold;"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CRL_Distribution_Points") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbcrldistributionpointgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCRLDistributionPoint}" rendered="#{!web.legacyInternetExplorer}"
@@ -655,7 +655,7 @@
 			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfilesBean.viewOnly}" title="#{web.text.FORMAT_URI}"/>
 		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}">
 			<h:outputLabel for="textfieldcrlissuer" value="#{web.text.EXT_PKIX_CDP_CRLISSUER}" styleClass="subItem"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CRL_Issuer") %>
 		</h:panelGroup>
 		<h:inputText id="textfieldcrlissuer" value="#{certProfileBean.certificateProfile.CRLIssuer}" size="45" maxlength="255" rendered="#{certProfileBean.certificateProfile.useCRLDistributionPoint}"
 			disabled="#{certProfileBean.certificateProfile.useDefaultCRLDistributionPoint or certProfilesBean.viewOnly}" title="#{web.text.FORMAT_DN}"/>
@@ -664,7 +664,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="cbusefreshestcrlgroup" value="#{web.text.EXT_PKIX_FRESHESTCRL}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Freshest_CRL") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbusefreshestcrlgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useFreshestCRL}" rendered="#{!web.legacyInternetExplorer}"
@@ -716,7 +716,7 @@
 
 		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:outputLabel for="textfieldocspservicelocatoruri" value="#{web.text.EXT_PKIX_AIA_OCSP_URI}" styleClass="subItem"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#OCSP_Service_Locator") %>
 		</h:panelGroup>
 		<h:inputText id="textfieldocspservicelocatoruri" value="#{certProfileBean.certificateProfile.OCSPServiceLocatorURI}" size="45" maxlength="255" title="#{web.text.FORMAT_URI}"
 			 rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}" 
@@ -737,7 +737,7 @@
 		
 		<h:panelGroup rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:outputLabel for="caIssuers" value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}" styleClass="subItem"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Issuer%20URI") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CA_Issuer_URI") %>
 		</h:panelGroup>
 		<h:dataTable id="caIssuers" value="#{certProfileBean.caIssuers}" var="caIssuer" rendered="#{certProfileBean.certificateProfile.useAuthorityInformationAccess}">
 			<h:column>
@@ -761,7 +761,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="privateKeyUsagePeriodGroup" value="#{web.text.EXT_PKIX_PRIVKEYUSAGEPERIOD}"/>
-			<%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%>
+			<%=ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Private_Key_Usage_Period")%>
 		</h:panelGroup>
 		<h:panelGrid columns="3" id="privateKeyUsagePeriodGroup">
 			<h:panelGroup>
@@ -809,7 +809,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkuseqcstatementgroup" value="#{web.text.EXT_PKIX_QCSTATEMENTS}"/>
-	    	<%=ejbcawebbean.getHelpReference("/userguide.html#Qualified%20Certificate%20Statement")%>
+	    	<%=ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Qualified_Certificate_Statement")%>
 		</h:panelGroup>	    
 		<h:panelGroup id="checkuseqcstatementgroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCStatement}" rendered="#{!web.legacyInternetExplorer}"
@@ -978,7 +978,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="cbusecertificatetransparencyingroup" value="#{web.text.EXT_CERTIFICATE_TRANSPARENCY}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Certificate_Transparency") %>
 		</h:panelGroup>
 		<h:panelGroup id="cbusecertificatetransparencyingroup">
 			<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useCertificateTransparencyInCerts}" rendered="#{!web.legacyInternetExplorer}"
@@ -1114,7 +1114,7 @@
 		<%-- SEIS Card Number extension --%>
 		<h:panelGroup rendered="#{!certProfileBean.typeCA}">
 			<h:outputLabel for="checkusecardnumbergroup" value="#{web.text.EXT_SEIS_CARDNUMBER}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Card_Number") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkusecardnumbergroup" rendered="#{!certProfileBean.typeCA}">
 			<h:selectBooleanCheckbox id="checkusecardnumber" value="#{certProfileBean.certificateProfile.useCardNumber}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -1142,7 +1142,7 @@
 		<%-- ICAO Document Type List (DTL) extension --%>
 		<h:panelGroup>
 			<h:outputLabel for="cbdocumenttypegroup" value="#{web.text.EXT_ICAO_DOCUMENTTYPELIST}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Document%20Type%20List") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Document_Type_List") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="cbdocumenttypegroup">
@@ -1248,7 +1248,7 @@
 		
 		<h:panelGroup>
 			<h:outputLabel for="checkuseldapdnordergroup" value="#{web.text.CERT_SUBJECTDN_LDAPORDER}" style="font-weight: bold;"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Use_LDAP_DN_Order") %>
 		</h:panelGroup>
 		<h:panelGroup id="checkuseldapdnordergroup">
 			<h:selectBooleanCheckbox id="checkuseldapdnorder" value="#{certProfileBean.certificateProfile.useLdapDnOrder}" disabled="#{certProfilesBean.viewOnly}"/>
@@ -1288,7 +1288,7 @@
 
 		<h:panelGroup>
 			<h:outputLabel for="checkusesubjectdnsubsetgroup" value="#{web.text.CERT_SUBJECTDN_SUBSET}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Subset%20of%20Subject%20DN") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Subset_of_Subject_DN") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1">
 			<h:panelGroup id="checkusesubjectdnsubsetgroup">
@@ -1335,7 +1335,7 @@
 		
 		<h:panelGroup rendered="#{certProfileBean.typeEndEntity}">
 			<h:outputLabel for="singleActiveCertificateConstraintSettings" value="#{web.text.SINGLECERTCONSTRAINT}"/>
-			<%= ejbcawebbean.getHelpReference("/userguide.html#Single%20Active%20Certificate%20Constraint") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Single_Active_Certificate_Constraint") %>
 		</h:panelGroup>
 		<h:panelGrid columns="1" id="singleActiveCertificateConstraintSettings" rendered="#{certProfileBean.typeEndEntity}">
 			<h:panelGrid columns="4">
