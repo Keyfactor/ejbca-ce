@@ -56,7 +56,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	<h:outputText value="" rendered="#{cryptoTokenMBean.pageLoadResetTrigger}"/>
 	<h1>
 		<h:outputText value="#{web.text.MANAGECRYPTOTOKENS}"/>
-		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %>
+		<%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="cryptotokens">
@@ -104,7 +104,7 @@ org.cesecore.authorization.control.CryptoTokenRules
    			<f:facet name="header">
 			<h:panelGroup>
    				<h:outputText value="#{web.text.CRYPTOTOKEN_ACTIONS}"/>
-   				<%= ejbcawebbean.getHelpReference("/userguide.html#Activation%20and%20deactivation") %>
+   				<%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html#Activation_and_Deactivation") %>
 			</h:panelGroup>
    			</f:facet>
    			<h:panelGroup styleClass="button-group">
