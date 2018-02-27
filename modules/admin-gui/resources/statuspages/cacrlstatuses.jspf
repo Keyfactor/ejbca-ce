@@ -12,7 +12,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 	cabean.initialize(ejbcawebbean);
 %>
 <div class="status" id="crlstatus" >
-        <h4><%=ejbcawebbean.getText("CAHEALTH")%> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Status") %></h4>
+        <h4><%=ejbcawebbean.getText("CAHEALTH")%> <%= ejbcawebbean.getHelpReference("/Admin_GUI_Overview_Page.html#CA%20Status") %></h4>
 		<table class="grid"><thead>
 			<%	if(ejbcawebbean.getAdminPreference().getFrontpageCaStatus()) { %>
 			<tr>
