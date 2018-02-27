@@ -328,13 +328,13 @@ public class EjbcaWS implements IEjbcaWS {
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         final boolean isServiceEnabled = ((AvailableProtocolsConfiguration)globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID)).getProtocolStatus(AvailableProtocols.WS.getName());
-        final boolean isServiceAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raWsAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_WS);
-        if (!isServiceAuthorized) {
-            throw new UnsupportedOperationException("Not authorized to Web Services");
-        } else if (!isServiceEnabled) {
+        // Start with checking if it's enabled, preventing any call back to a CA for example (if using an external RA), if WS is not enabled
+        if (!isServiceEnabled) {
             throw new UnsupportedOperationException("Web Services not enabled");
         } else if ((certificates == null) || (certificates[0] == null)) {
             throw new AuthorizationDeniedException("Error no client certificate received used for authentication.");
+        } else if (!raMasterApiProxyBean.isAuthorizedNoLogging(raWsAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_WS)) {
+            throw new UnsupportedOperationException("Not authorized to Web Services");
         }
         return ejbcaWSHelperSession.getAdmin(allowNonAdmins, certificates[0]);
 
