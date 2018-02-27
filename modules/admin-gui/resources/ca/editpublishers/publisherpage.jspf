@@ -209,7 +209,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="45%"  align="right">         
          <strong><%= ejbcawebbean.getText("PUBLISHERQUEUE") %></strong>
-         <%= ejbcawebbean.getHelpReference("/adminguide.html#Publisher%20Queue%20and%20failures") %>
+         <%= ejbcawebbean.getHelpReference("/LDAP_and_Publishers.html#Publisher_Queue_and_Failures") %>
       </td>
       <td width="55%">
          &nbsp;  
