@@ -15,6 +15,7 @@ package org.ejbca.configdump.ejb;
 import java.io.IOException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.configdump.ConfigDumpSetting;
 import org.ejbca.configdump.ConfigdumpException;
 import org.ejbca.configdump.ConfigdumpExportResult;
@@ -36,7 +37,8 @@ public interface ConfigdumpSession {
      * @return Result object. In case errors are set to be ignored, then this contains a list of errors.
      * @throws ConfigdumpException If an error occurs, which was not ignored.
      * @throws IOException On failure to create the YAML files etc.
+     * @throws AuthorizationDeniedException 
      */
-    ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException;
+    ConfigdumpExportResult performExport(final AuthenticationToken admin, final ConfigDumpSetting setting) throws ConfigdumpException, IOException, AuthorizationDeniedException;
 
 }
