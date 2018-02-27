@@ -397,7 +397,7 @@ function toggleCANameChange(){
       <% } %>
 
         <tr id="Row<%=row++%2%>"> 
-            <td width="50%"  align="right"><%= ejbcawebbean.getText("CATYPE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Type%20of%20CA") %></td>
+            <td width="50%"  align="right"><%= ejbcawebbean.getText("CATYPE") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CA_Types") %></td>
             <td width="50%" valign="top">
             <% if (!editca) { %> 
             <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
@@ -439,7 +439,7 @@ function toggleCANameChange(){
         </tr>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">
-            <strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
+            <strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html") %></td>
             <td>
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
             <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=" + catoken.getCryptoTokenId() %>">
@@ -521,7 +521,7 @@ function toggleCANameChange(){
         	<%	if (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0 || Integer.parseInt(cryptoTokenIdParam)==0) {
         			row++;		/* For cosmetic. */
         		} %>
-            <td width="50%"  align="right"><strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
+            <td width="50%"  align="right"><strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html") %></td>
 	        <td>
 	        <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
                 <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
@@ -730,7 +730,7 @@ function toggleCANameChange(){
         </tr>
         <tr id="Row<%=row++%2%>"> 
             <td width="50%"  align="right">
-                <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Services%20Key%20Specification") %>
+                <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Extended_Services_Key_Specification") %>
             </td>
             <td width="50%"> 
                 <select name="<%= SELECT_KEYSIZE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
@@ -751,7 +751,7 @@ function toggleCANameChange(){
     <% if (!editca || cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
       <tr id="Row<%=row%2%>"> 
         <td width="50%"  align="right">
-          <%= ejbcawebbean.getText("KEYSEQUENCEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence%20format") %>
+          <%= ejbcawebbean.getText("KEYSEQUENCEFORMAT") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Key_Sequence_Format") %>
         </td>
         <td width="50%" valign="top">
             <select name="<%=SELECT_KEY_SEQUENCE_FORMAT %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>                
@@ -765,7 +765,7 @@ function toggleCANameChange(){
 
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence") %>
+        <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Key_Sequence") %>
       </td>
       <td width="50%"> 
         <% String sequence = CAToken.DEFAULT_KEYSEQUENCE;
@@ -805,7 +805,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DOENFORCEUNIQUEPUBLICKEYS") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20public%20keys") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Enforce_unique_public_keys") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS %>" value="<%=CHECKBOX_VALUE %>" 
@@ -818,7 +818,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DOENFORCEUNIQUEDN") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20DN") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Enforce_unique_DN") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEDN %>" value="<%=CHECKBOX_VALUE %>" 
@@ -831,7 +831,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DOENFORCEUNIQUESUBJECTDNSERIALNUMBER") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Enforce%20unique%20Subject%20DN%20serialNumber") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Enforce_Unique_Subject_DN_SerialNumber") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER %>" value="<%=CHECKBOX_VALUE %>" 
@@ -844,7 +844,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USECERTREQHISTORY") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Request%20History") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Request_History") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USECERTREQHISTORY %>" value="<%=CHECKBOX_VALUE %>" 
@@ -857,7 +857,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEUSERSTORAGE") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20User%20Storage") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_User_Storage") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USEUSERSTORAGE %>" value="<%=CHECKBOX_VALUE %>" 
@@ -873,7 +873,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USECERTIFICATESTORAGE") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20Certificate%20Storage") %> <br />
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Storage") %> <br />
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1013,7 +1013,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
+        <%= ejbcawebbean.getHelpReference("Certificate_Profile_Fields.html#validity") %> <br />
       </td>
       <td width="50%"> 
         <% if(isexternal || (editca && !isUninitialized && signbyexternal)){
@@ -1130,7 +1130,7 @@ function toggleCANameChange(){
 
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN_LDAPORDER") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
+        <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN_LDAPORDER") %></strong> <%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Use_LDAP_DN_Order") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1147,7 +1147,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row%2%>">
       <td width="50%"  align="right">
         <%= ejbcawebbean.getText("EXT_PKIX_NC_PERMITTED") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
       </td>
       <td width="50%">
         <%-- Do not put the c:out on a separate line, because that will add extra whitespace in the textarea --%>
@@ -1159,7 +1159,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
       <td width="50%"  align="right">
         <%= ejbcawebbean.getText("EXT_PKIX_NC_EXCLUDED") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Name_Constraints") %>
       </td>
       <td width="50%">
         <%-- Do not put the c:out on a separate line, because that will add extra whitespace in the textarea --%>
@@ -1257,7 +1257,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
          <%= ejbcawebbean.getText("CRL_EXT_ISSUINGDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Issuing%20Distribution%20Point%20on%20CRLs") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Issuing_Distribution_Point_on_CRLs") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>" onClick="checkusefield('<%=CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL %>', '<%=CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
@@ -1284,7 +1284,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRL_EXT_CAISSUERS_URI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20CA%20Issuer%20URI") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CRL_CA_Issuer_URI") %>
       </td>
       <td width="50%">
       	<% String authorityInformationAccess = "";
@@ -1306,7 +1306,7 @@ function toggleCANameChange(){
 
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("KEEPEXPIREDONCRL") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Keep%20expired%20certificates%20on%20CRL") %>
+         <%= ejbcawebbean.getText("KEEPEXPIREDONCRL") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Keep_Expired_Certificates_on_CRL") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_KEEPEXPIREDONCRL %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1321,7 +1321,7 @@ function toggleCANameChange(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <strong><%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <strong><%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CRL_Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1337,7 +1337,7 @@ function toggleCANameChange(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CRL_Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1353,7 +1353,7 @@ function toggleCANameChange(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CRL_Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1369,7 +1369,7 @@ function toggleCANameChange(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") %> <%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CRL_Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1423,7 +1423,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("EXT_PKIX_CDP_DEFAULTURI") %></strong>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
+        <%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CRL_Distribution_Points") %>
       </td>
       <td width="50%">
            <% if(isexternal){%>
@@ -1441,7 +1441,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EXT_PKIX_CDP_DEFAULTCRLISSUER") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
+        <%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#CRL_Issuer") %>
       </td>
       <td width="50%">
            <% if(isexternal){%>
@@ -1459,7 +1459,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EXT_PKIX_FCRL_DEFAULTURI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
+        <%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#Freshest_CRL") %>
       </td>
       <td width="50%">
            <% if(isexternal){%>
@@ -1478,7 +1478,7 @@ function toggleCANameChange(){
      <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_DEFAULTURI") %></strong>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20CA%20defined%20validation%20data") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_CA_Defined_Validation_Data") %>
       </td>
       <td width="50%">
            <% if(isexternal){%>
@@ -1494,7 +1494,7 @@ function toggleCANameChange(){
     <tr  id="Row<%=row++%2%>">
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_DEFAULTURI") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Default%20CA%20defined%20validation%20data") %>
+        <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_CA_Defined_Validation_Data") %>
       </td>
         <% String certificateAiaDefaultCaIssuerUri = "";
        	   if(x509cainfo != null) {
@@ -1565,7 +1565,7 @@ function toggleCANameChange(){
 
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Validators") %>
+       <%= ejbcawebbean.getText("VALIDATORS") %> <%= ejbcawebbean.getHelpReference("/Validators.html") %>
      </td>
      <td width="50%"> 
        <select class="select-list" name="<%= SELECT_AVAILABLEVALIDATORS %>" size="5" multiple <%= (hasEditRights ? "" : "disabled") %> style="min-width: 10em" >
@@ -1625,7 +1625,7 @@ function toggleCANameChange(){
 
     <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
-            <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Finish%20User") %>
+            <%= ejbcawebbean.getText("FINISHUSER") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Finish_User") %>
         </td>
         <td width="50%"> 
             <input type="checkbox" name="<%=CHECKBOX_FINISHUSER %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1638,7 +1638,7 @@ function toggleCANameChange(){
     <% if (catype == CAInfo.CATYPE_X509) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SHAREDCMPRASECRET") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CMP%20RA%20Authentication%20Secret") %>
+        <%= ejbcawebbean.getText("SHAREDCMPRASECRET") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CMP_RA_Authentication_Secret") %>
       </td>
       <td width="50%">
         <% String cmpRaAuthSecretValue = (editca?((X509CAInfo)cainfo).getCmpRaAuthSecret():""); %>
@@ -1650,7 +1650,7 @@ function toggleCANameChange(){
 
     <tr id="Row<%=row++%2%>"> 
         <td width="50%"  align="right"> 
-            <%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Monitoring%20and%20healthcheck") %>
+            <%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %> <%= ejbcawebbean.getHelpReference("/Monitoring_and_Healthcheck.html") %>
         </td>
         <td width="50%">
             <input type="checkbox" name="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>" value="<%=CHECKBOX_VALUE%>" id="<%=CHECKBOX_INCLUDEINHEALTHCHECK%>"
@@ -1734,7 +1734,7 @@ function toggleCANameChange(){
         if (editca && !isexternal && !waitingresponse && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA && !isRevoked) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
-        <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Renewing%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
+        <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/Renewing_a_SubCA_Signed_by_an_External_CA.html.html") %></td>
         <td width="51%" valign="top">
             <table>
                 <tbody>
@@ -1756,7 +1756,7 @@ function toggleCANameChange(){
                         		String newCAName = cainfo.getSubjectDN();%>
                         <tr id="Row<%=row%2%>"> 
 					        <td width="50%" align="left"> 
-					            <%= ejbcawebbean.getText("RENEWCA_USECANAMECHANGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Name%20Change") %>
+					            <%= ejbcawebbean.getText("RENEWCA_USECANAMECHANGE") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CA_Name_Change") %>
 					        </td>
 					        <td width="50%"> 
 					            <input id="<%=ID_CHECKBOX_CANAMECHANGE%>" type="checkbox" name="<%=CHECKBOX_CANAMECHANGE %>" value="<%=CHECKBOX_VALUE %>" onchange="toggleCANameChange()" <%= (hasEditRights ? "" : "disabled") %> />

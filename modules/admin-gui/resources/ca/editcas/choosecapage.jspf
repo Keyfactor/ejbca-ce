@@ -172,7 +172,7 @@ function confirmcadeletion() {
   <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CARENEW.resource())) {  %>
     <tr> 
       <td width="100%"> 
-        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("CREATEAUTHCSR") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20a%20roll-over%20certificate%20(NewWithOld)") %>
+        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("CREATEAUTHCSR") %>"> <%= ejbcawebbean.getHelpReference("/Signing_a_Rollover_Certificate.html") %>
       </td>
     </tr>
     <% } %>
