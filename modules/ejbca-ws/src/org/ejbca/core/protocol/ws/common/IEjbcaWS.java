@@ -660,6 +660,34 @@ public interface IEjbcaWS {
             NotFoundException, EjbcaException, ApprovalException,
             WaitingForApprovalException;
 	
+    /**
+     * Key recovers specified certificate and generates a new keystore in one
+     * atomic operation.
+     * 
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+     * - /ca/&lt;ca of users certificate&gt;
+     * - /ca_functionality/view_certificate
+     * - /ca_functionality/create_certificate
+     * - /ra_functionality/view_end_entity
+     * - /ra_functionality/keyrecovery
+     * </pre>
+     * @param username
+     * @param certSNinHex
+     * @param issuerDN
+     * @param password
+     * @param hardTokenSN
+     * @return the generated keystore
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException
+     * @throws CADoesntExistsException
+     * @throws WaitingForApprovalException
+     */
+    KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException;
+    
 	/**
 	 * Revokes all certificates mapped to a hardtoken.
 	 *

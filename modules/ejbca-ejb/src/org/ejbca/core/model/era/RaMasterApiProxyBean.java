@@ -1293,6 +1293,35 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
     
+    // TODO
+    @Override
+    public byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+            throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    byte[] ret = raMasterApi.keyRecoverEnrollWS(authenticationToken, username, certSNinHex, issuerDN, password, hardTokenSN);
+                    if (ret != null) {
+                        return ret;
+                    }
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        // Throw if all implementations fail
+                        authorizationDeniedException = e;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return null;
+    }
+    
     @Override
     public List<CertificateWrapper> getLastCertChain(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;

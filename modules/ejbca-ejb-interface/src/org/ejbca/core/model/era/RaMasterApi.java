@@ -524,6 +524,26 @@ public interface RaMasterApi {
                         WaitingForApprovalException, ApprovalException, CADoesntExistsException;
     
     /**
+     * TODO More docs
+     * @param authenticationToken
+     * @param username
+     * @param certSNinHex
+     * @param issuerDN
+     * @param password
+     * @param hardTokenSN
+     * @param keyspec
+     * @param keyalg
+     * @return 
+     * @throws AuthorizationDeniedException 
+     * @throws WaitingForApprovalException 
+     * @throws EjbcaException 
+     * @throws CADoesntExistsException 
+     * @throws ApprovalException 
+     */
+    byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password,
+            String hardTokenSN) throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException;
+    
+    /**
      * Checks if key recovery is possible for the given parameters. Requesting administrator has be authorized to perform key recovery
      * and authorized to perform key recovery on the End Entity Profile which the End Entity belongs to.
      * KeyRecoverData has to be present in the database for the given certificate, 
@@ -599,4 +619,5 @@ public interface RaMasterApi {
      */
     byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
+
 }
