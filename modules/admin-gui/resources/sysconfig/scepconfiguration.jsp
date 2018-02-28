@@ -58,7 +58,7 @@ org.cesecore.authorization.control.StandardRules
 	<h1>
 		<h:outputText value="#{web.text.SCEP_MANAGEALIASES}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 		<h:outputText value="#{web.text.SCEP_VIEW_ALIASES}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>		
-		<%= ejbcawebbean.getHelpReference("/adminguide.html#SCEP") %>
+		<%= ejbcawebbean.getHelpReference("/SCEP.html") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h3><h:outputText value="#{web.text.SCEP_LISTOFALIASES}" /></h3>

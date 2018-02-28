@@ -94,7 +94,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 	<p>
 		<h:panelGroup rendered="#{systemConfigMBean.selectedTab eq 'CTLogs'}">
 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_HELP}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
+			<%= ejbcawebbean.getHelpReference("Certificate_Transparency.html") %>
 		</h:panelGroup>
 	</p>
 
@@ -133,7 +133,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			
 			<h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/userguide.html#Enable%20End%20Entity%20Profile%20Limitations") %>
+				<%= ejbcawebbean.getHelpReference("/End_Entity_Profiles.html#End_Entity_Profile_Limitations") %>
 				<br/>
 				<h:outputText value="#{web.text.ENABLEENDENTITYPROFILELIM_HELP}" styleClass="help"/>
 			</h:panelGroup>
@@ -145,7 +145,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 		
 			<h:panelGroup>
 				<h:outputLabel for="toggleEnableKeyRecovery" value="#{web.text.ENABLEKEYRECOVERY}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Recovery") %>
+				<%= ejbcawebbean.getHelpReference("/Key_Recovery.html") %>
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:panelGroup layout="block" styleClass="">
@@ -222,7 +222,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			
 			<h:panelGroup>
 				<h:outputLabel for="enableicaocanamechange" value="#{web.text.ENABLEICAOCANAMECHANGE}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Enable%20CA%20Name%20Change") %>
+				<%= ejbcawebbean.getHelpReference("/ePassport_PKI.html#Enable_CA_Name_Change") %>
 			</h:panelGroup>
 			<h:panelGroup>
 				<h:selectBooleanCheckbox id="enableicaocanamechange" value="#{systemConfigMBean.currentConfig.enableIcaoCANameChange}"
@@ -237,7 +237,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
 				<h:outputLabel for="header_autoenrollment" value="#{web.text.AUTOENROLLMENT_SCRIPT}" style="font-weight: bold; font-size:1.2em;"/>
-				<%= ejbcawebbean.getExternalHelpReference("doc/adminguide.html#MS%20Autoenrollment%20(Enterprise%20Edition%20only)") %>
+				<%= ejbcawebbean.getExternalHelpReference("Microsoft_Auto-enrollment_Support.html") %>
 			</h:panelGroup>
 			<h:panelGroup id="header_autoenrollment"/>
 			
@@ -354,7 +354,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
 			<h:panelGroup>
 				<h:outputLabel for="clearAllCaches" value="#{web.text.CLEARALLCACHES}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Clearing%20System%20Caches") %>
+				<%= ejbcawebbean.getHelpReference("/Clearing_System_Caches.html") %>
 				<br/>
 				<h:outputText value="#{web.text.CLEARALLCACHES_HELP1}" styleClass="help"/>			
 				<br/>
@@ -377,7 +377,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			
 			<h:panelGroup>
 				<h:outputLabel for="maximumQueryCount" value="#{web.text.MAXIMUM_QUERY_COUNT}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Limiting%20Database%20Query%20Size") %>
+				<%= ejbcawebbean.getHelpReference("/Maximizing_Performance.html#Limiting_Database_Query_Size") %>
 				<br/>
 				<h:outputText value="#{web.text.MAXIMUM_QUERY_COUNT_HELP}" styleClass="help"/>
 			</h:panelGroup>
@@ -385,7 +385,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 				 size="20" title="#{web.text.FORMAT_INTEGER}"/>
             <h:panelGroup>
                 <h:outputLabel for="maximumQueryTimeout" value="#{web.text.MAXIMUM_QUERY_TIMEOUT}" styleClass="titles"/>
-                <%= ejbcawebbean.getHelpReference("/adminguide.html#Limiting%20Database%20Query%20Timeout") %>
+                <%= ejbcawebbean.getHelpReference("/Maximizing_Performance.html#Limiting_Database_Query_Timeout") %>
                 <br/>
                 <h:outputText value="#{web.text.MAXIMUM_QUERY_TIMEOUT_HELP}" styleClass="help"/>
             </h:panelGroup>
@@ -402,7 +402,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
     		<h:panelGroup>
 				<h:outputLabel for="enableCommandLine" value="#{web.text.ENABLECLIACCESS}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Disabling%20the%20Command%20Line%20Interface") %>
+				<%= ejbcawebbean.getHelpReference("/Command_Line_Interfaces.html#Disabling_the_Command_Line_Interface") %>
 				<br/>
 				<h:outputText value="#{web.text.ENABLECLIACCESS_HELP}" styleClass="help"/>
 			</h:panelGroup>
@@ -413,7 +413,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 		
 			<h:panelGroup>
 				<h:outputLabel for="enableCommandLineDefUser" value="#{web.text.ENABLECLIDEFAULTUSER}" styleClass="titles"/>
-				<%= ejbcawebbean.getHelpReference("/adminguide.html#Local%20CLI%20Authentication") %>
+				<%= ejbcawebbean.getHelpReference("/Command_Line_Interfaces.html#Local_CLI_Authentication") %>
 				<br/>
 				<h:outputText value="#{web.text.ENABLECLIDEFAULTUSER_HELP}" styleClass="help"/>
 			</h:panelGroup>
@@ -506,7 +506,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h4>
 			<h:outputText value="#{web.text.PC_EDIT_PC_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
 			<h:outputText value="#{web.text.PC_VIEW_PC_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Modular%20Protocol%20Configuration") %></h4> <!-- TODO link to actual documentation when available -->
+			<%= ejbcawebbean.getHelpReference("/Modular_Protocol_Configuration.html") %></h4>
 			</br>
 		</h:panelGroup>
 	
@@ -541,7 +541,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h4>
 			<h:outputText value="#{web.text.EKU_EDIT_EKU_TITLE}" rendered="#{systemConfigMBean.allowedToEditExtendedKeyUsages}"/>
 			<h:outputText value="#{web.text.EKU_VIEW_EKU_TITLE}" rendered="#{!systemConfigMBean.allowedToEditExtendedKeyUsages}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Extended%20Key%20Usages") %></h4>
+			<%= ejbcawebbean.getHelpReference("/Extended_Key_Usages.html") %></h4>
 			</br>
 		</h:panelGroup>
 	
@@ -581,7 +581,7 @@ org.cesecore.authorization.AuthorizationDeniedException
             <h4>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_VIEW_CTLOG_TITLE}" rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %></h4>
+            <%= ejbcawebbean.getHelpReference("/Certificate_Transparency.html") %></h4>
         </div>
 		
 		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
@@ -713,7 +713,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h4>
 			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_EDIT_CCE_TITLE}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
 			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_VIEW_CCE_TITLE}" rendered="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-			<%= ejbcawebbean.getHelpReference("/adminguide.html#Custom%20Certificate%20Extensions") %></h4>
+			<%= ejbcawebbean.getHelpReference("Custom_Certificate_Extensions.html") %></h4>
 			</br>
 		</h:panelGroup>
 		
@@ -799,7 +799,8 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:dataTable>
 		</h:panelGroup>
 		<br/>
-		<h3><h:outputText value="#{web.text.IMPORT}"/></h3>
+		<h3><h:outputText value="#{web.text.IMPORT}"/><%= ejbcawebbean.getHelpReference("/Custom_RA_Stylesheets.html") %></h3>
+		
 		
 		<h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
 			<h:outputLabel for="raCssFile" value="#{web.text.CSSIMPORTFROM}"/>
@@ -876,7 +877,7 @@ org.cesecore.authorization.AuthorizationDeniedException
             
             <h:panelGroup>
                 <h:outputLabel for="enableExternalScripts" value="#{web.text.ENABLEEXTERNALSCRIPTS}" styleClass="titles"/>
-                <%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20External%20Script%20Access") %>
+                <%= ejbcawebbean.getHelpReference("/External_Scripts.html") %>
                 <br/>
                 <h:outputText value="#{web.text.ENABLEEXTERNALSCRIPTS_HELP}" styleClass="help"/>
             </h:panelGroup>
@@ -889,7 +890,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
             <h:panelGroup>
                 <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST}" styleClass="titles"/>
-                <%= ejbcawebbean.getHelpReference("/adminguide.html%23Post%20Processing%20Validators%20(Pre-Certificate%20or%20Certificate%20Validation)") %>
+                <%= ejbcawebbean.getHelpReference("Post_Processing_Validators.html") %>
                 <br/>
                 <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
             </h:panelGroup>

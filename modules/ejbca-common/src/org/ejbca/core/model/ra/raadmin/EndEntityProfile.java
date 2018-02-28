@@ -1632,7 +1632,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         			// Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
         			if ( DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnid))) {
         				if (!StringUtils.startsWith(fieldValue, "#30")) {
-            				throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnid) + " ("+fieldValue+") does not seem to be in #der_encoding_in_hex format. See \"http://ejbca.org/userguide.html#End Entity Profile fields\" for more information about the postalAddress (2.5.4.16) field.");        					
+            				throw new EndEntityProfileValidationException(DnComponents.dnIdToProfileName(dnid) + " ("+fieldValue+") does not seem to be in #der_encoding_in_hex format. See \"End_Entity_Profiles.html\" for more information about the postalAddress (2.5.4.16) field.");        					
         				}
         			}    				
     			}
