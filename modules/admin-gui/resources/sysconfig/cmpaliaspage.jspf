@@ -118,7 +118,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPOPERATIONALMODE\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Client%20mode%20for%20CMP") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#Client_mode_for_CMP") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOPERATIONALMODE_HELP\") %>"/></p>
       </td>
@@ -142,7 +142,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Message%20Authentication") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#CMP_Message_Authentication") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
       </td>
@@ -526,7 +526,7 @@ function checkallfields() {
 	    <tr id="Row<%=row++%2%>"> 
 	      <td width="50%" align="top"> 
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT\") %>"/>
-	        <%= ejbcawebbean.getHelpReference("/adminguide.html#Vendor%20CA%20authentication%20(EJBCA%20Enterprise%20only)") %>
+	        <%= ejbcawebbean.getHelpReference("/CMP.html#Vendor_CA_Authentication") %>
 	        </h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
 			<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
@@ -543,7 +543,7 @@ function checkallfields() {
 	    <tr id="Row<%=row++%2%>"> 
 	      <td width="50%" align="top"> 
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_VENDORCAS\") %>"/>
-	        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+	        <%= ejbcawebbean.getHelpReference("/CMP.html#CMP_and_3GPP_4G_LTE_configuration_guide") %>
 	        </h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_VENDORCAS_HELP\") %>"/></p>
 	      </td>
@@ -574,7 +574,7 @@ function checkallfields() {
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Message") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#CMP_Response_Message") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION_HELP\") %>"/></p>
       </td>
@@ -599,7 +599,7 @@ function checkallfields() {
 	<tr id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Additional%20CA%20Certificates") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#CMP_Response_Additional_CA_Certificates") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSECAPUBS_HELP\") %>"/></p>
       </td>
@@ -620,7 +620,7 @@ function checkallfields() {
 		<tr id="Row<%=row++%2%>"> 
 	      <td width="50%" align="top"> 
 	        <h3><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS\") %>"/>
-	        <%= ejbcawebbean.getHelpReference("/adminguide.html#PKI%20Message%20Response%20Additional%20CA%20Certificates") %>
+	        <%= ejbcawebbean.getHelpReference("/CMP.html#PKI_Message_Response_Additional_CA_Certificates") %>
 	        </h3>
 	        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PKIRESPONSEMESSAGE_EXTRACERTS_HELP\") %>"/></p>
 	      </td>
@@ -683,7 +683,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Update%20Request%20(kur)") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#Key_Update_Request") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE_HELP\") %>"/></p>
       </td>
@@ -699,7 +699,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWKURWITHSAMEKEY\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20Update%20Request%20(kur)") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#Key_Update_Request") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWKURWITHSAMEKEY_HELP\") %>"/></p>
       </td>
@@ -723,7 +723,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWSERVERGENERATEDKEYS\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Server%20Generated%20Keys") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#Server_Generated_Keys") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWSERVERGENERATEDKEYS_HELP\") %>"/></p>
       </td>
@@ -749,7 +749,7 @@ function checkallfields() {
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPTRUSTEDCERTPATH\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Multiprotection%20support") %>
+        <%= ejbcawebbean.getHelpReference("/CMP.html#Multiprotection_Support") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPTRUSTEDCERTPATH_HELP\") %>"/></p>
 	  </td>

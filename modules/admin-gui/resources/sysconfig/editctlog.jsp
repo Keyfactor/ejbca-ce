@@ -47,7 +47,7 @@ org.cesecore.authorization.control.StandardRules
 <div class="container">
     <h1>
         <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDITLOG}: #{systemConfigMBean.ctLogManager.ctLogEditor.ctLogBeingEdited.url}"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
+        <%= ejbcawebbean.getHelpReference("/Certificate_Transparency.html") %>
     </h1>
     <div class="message">
         <h:messages layout="table" errorClass="alert" infoClass="info"/>

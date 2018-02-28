@@ -40,7 +40,7 @@ function check() {
             <tr id="Row<%=row++%2%>"> 
                 <td width="49%" valign="top" align="right">
                     <%= ejbcawebbean.getText("PROCESSREQUEST_FILEPATH") %>
-                    <%= ejbcawebbean.getHelpReference("/userguide.html#Creating%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
+                    <%= ejbcawebbean.getHelpReference("/Creating_a_SubCA_Signed_by_an_External_CA.html") %></td>
                 <td width="51%" valign="top">     
                     <input type="file" name="<%= FILE_RECIEVEFILE %>">
                     <input type="hidden" name="nofile" value="false">

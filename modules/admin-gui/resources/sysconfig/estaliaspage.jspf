@@ -33,7 +33,7 @@ function checkallfields() {
 <div align="center"> 
   <h2>
   	<c:out value="<%= ejbcawebbean.getText((authorizedToEdit ? \"ESTEDITALIAS\": \"EST_VIEW_ALIAS\")) %>" />
-  	<%= ejbcawebbean.getHelpReference("/adminguide.html#EST%20(Enterprise%20Only)") %>
+  	<%= ejbcawebbean.getHelpReference("/EST.html") %>
   </h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"ESTALIAS\")+ \" : \" + alias %>" /></h3>
 </div>

@@ -46,7 +46,7 @@ org.cesecore.authorization.control.StandardRules
 <div class="container">
 	<h1>
 		<h:outputText value="#{web.text.CUSTOMCERTEXTENSION}: #{customCertExtensionMBean.currentExtensionGUIInfo.displayName}"/>
-		<%= ejbcawebbean.getHelpReference("/adminguide.html#Custom%20Certificate%20Extensions") %>
+		<%= ejbcawebbean.getHelpReference("/Custom_Certificate_Extensions.html") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCustomCertExtensionForm">

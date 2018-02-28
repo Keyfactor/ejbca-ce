@@ -45,7 +45,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h:outputText value="" rendered="#{internalKeyBindingMBean.pageLoadResetTrigger}"/>
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
-		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Internal%20Key%20Bindings") %>
+		<%= ejbcawebbean.getHelpReference("/Managing_Internal_Key_Bindings.html") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<div class="tabLinks">
@@ -167,7 +167,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
-			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Setting%20the%20Default%20Responder") %>
+			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_Responder.html#Default_Responder") %>
 		</h3>
 		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
@@ -180,7 +180,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>	
-			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Enabling%20Nonce%20Extension%20On%20CAs") %>		
+			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_Responder.html#Enabling_Nonce_Extension_On_CAs") %>		
 			</h3>
 		<h:panelGrid columns="2">
 			<h:panelGroup>
@@ -195,7 +195,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
-			<%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Responder%20ID%20Type%20for%20CAs") %>
+			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_Responder.html#Responder_ID_Type_for_CAs") %>
 		</h3>
 		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderId" value="#{internalKeyBindingMBean.responderIdType}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
