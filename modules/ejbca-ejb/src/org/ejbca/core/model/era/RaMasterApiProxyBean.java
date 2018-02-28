@@ -1349,6 +1349,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     raMasterApi.revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate);
+                    // if it completed successfully, break
+                    break;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
