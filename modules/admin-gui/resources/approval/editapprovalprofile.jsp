@@ -79,7 +79,7 @@
             <h:outputText id="approvalProfileId" value="#{approvalProfileMBean.selectedApprovalProfileId}"/>
             <h:panelGroup>
             <h:outputLabel for="approvalProfileType" value="#{web.text.APPROVALPROFILETYPE}"/>
-            <%= ejbcawebbean.getHelpReference("/adminguide.html#Approval%20Profiles") %>
+            <%= ejbcawebbean.getHelpReference("/Approval_Profiles.html") %>
             </h:panelGroup>
             <h:panelGroup id="approvalProfileType">
                 <h:selectOneMenu id="selectOneMenuApprovalType" value="#{approvalProfileMBean.currentApprovalProfileTypeName}"

@@ -55,7 +55,7 @@
 	</h:panelGroup>
 
 	<h:panelGroup>
-		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/adminguide.html#Services") %>
+		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/Services.html") %>
 	</h:panelGroup>
 	<h:panelGroup style="white-space: nowrap;">
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}"
@@ -138,7 +138,7 @@
 		</h:selectManyListbox>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:outputText value="#{web.text.RUNONALLNODES}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/adminguide.html#Run%20on%20all%20Nodes") %>
+		<h:outputText value="#{web.text.RUNONALLNODES}"/><f:verbatim> </f:verbatim><%= ejbcawebbean.getHelpReference("/Services.html#Run_on_all_Nodes") %>
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:selectBooleanCheckbox id="runOnAllNodesCheckbox" value="#{editService.serviceConfigurationView.runOnAllNodes}" disabled="#{not editService.hasEditRights}"/>

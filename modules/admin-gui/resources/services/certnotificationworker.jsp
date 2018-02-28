@@ -37,7 +37,7 @@ function checkUseEndUserNotification(){
 
 -->
 </script></f:verbatim>
-		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Services") %></h:outputText>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/Services.html#Currently_Available_Services") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup>
 		<f:verbatim>&nbsp;</f:verbatim>

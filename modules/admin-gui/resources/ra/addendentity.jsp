@@ -1709,7 +1709,7 @@ function checkallfields(){
     <%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profile_Fields.html#Certificate_Validity") %>
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profiles.html#Certificate_Validity") %>
 				<p class="help">(<%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample()
 				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)</p>
@@ -1740,7 +1740,7 @@ function checkallfields(){
     <%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profile_Fields.html#Certificate_Validity") %>
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/End_Entity_Profiles.html#Certificate_Validity") %>
 				<p class="help">(<%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() 
 				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)</p>
@@ -1866,7 +1866,7 @@ function checkallfields(){
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
+        <%= ejbcawebbean.getHelpReference("/Key_Recovery.html") %>
       </td>
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"<% if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE))
