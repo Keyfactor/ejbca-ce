@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,6 +57,7 @@ import javax.persistence.QueryTimeoutException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -1957,6 +1960,49 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
 
+    @Override
+    public byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+            throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException {
+        keyRecoverWS(authenticationToken, username, certSNinHex, issuerDN);
+        EndEntityInformation userData = endEntityAccessSession.findUser(authenticationToken, username);
+        userData.setPassword(password);
+        byte[] keyStoreBytes = generateKeyStore(authenticationToken, userData);
+        
+        // Lots of checks. Can't know what WS client sends in. I.e. clientToolBox sends null as String "null"
+        if (!StringUtils.isEmpty(hardTokenSN) && !hardTokenSN.equals("NONE") && !hardTokenSN.equals("null")) {
+            final KeyStore keyStore;
+            try {
+                if (userData.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12) {
+                    keyStore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
+                } else {
+                    keyStore = KeyStore.getInstance("JKS");
+                }
+                keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
+                final Enumeration<String> en = keyStore.aliases();
+                final String alias = en.nextElement();
+                final X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+                if (cert != null) {
+                    hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,cert);
+                }
+                
+            // TODO Throw proper exception & verify above works
+            } catch (CertificateParsingException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            } catch (NoSuchProviderException e) {
+                e.printStackTrace();
+            } 
+        }
+        return keyStoreBytes; 
+    }
+    
     /** Help function used to check end entity profile authorization. */
     private boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
         boolean returnval = false;

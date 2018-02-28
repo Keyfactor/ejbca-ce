@@ -1559,6 +1559,41 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
     @Override
+    public KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException {
+        final AuthenticationToken admin = getAdmin();
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        logAdminName(admin,logger);
+        
+        byte[] pkcs12 = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
+        
+        final java.security.KeyStore pkcs12KeyStore;
+        final KeyStore keyStore;
+        try {
+            // TODO Find a way to detect PKCS12 or JKS without an extra network trip
+            pkcs12KeyStore = java.security.KeyStore.getInstance("PKCS12", "BC");
+            pkcs12KeyStore.load(new ByteArrayInputStream(pkcs12), password.toCharArray());
+            keyStore = new KeyStore(pkcs12KeyStore, password);
+            return keyStore;
+            
+            // TODO Proper error handling
+        } catch (KeyStoreException | NoSuchProviderException e) {
+            throw getInternalException(e, logger);
+        } catch (NoSuchAlgorithmException e) {
+            throw getInternalException(e, logger);
+        } catch (CertificateException e) {
+            throw getInternalException(e, logger);
+        } catch (IOException e) {
+            throw getInternalException(e, logger);
+        } catch(Exception e) {
+            throw getInternalException(e, logger);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    }
+    
+    @Override
 	public void revokeToken(String hardTokenSN, int reason)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
