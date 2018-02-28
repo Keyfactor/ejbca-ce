@@ -766,6 +766,37 @@ public interface EjbcaWS {
 
     /**
      * 
+     * @param arg0
+     * @param arg1
+     * @param arg2
+     * @param arg3
+     * @param arg4
+     * @return
+     * @throws AuthorizationDeniedException_Exception
+     * @throws EjbcaException_Exception
+     * @throws CADoesntExistsException_Exception
+     * @throws WaitingForApprovalException_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "keyRecoverEnroll", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecoverEnroll")
+    @ResponseWrapper(localName = "keyRecoverEnrollResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.KeyRecoverEnrollResponse")
+    public KeyStore keyRecoverEnroll(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1,
+        @WebParam(name = "arg2", targetNamespace = "")
+        String arg2,
+        @WebParam(name = "arg3", targetNamespace = "")
+        String arg3,
+        @WebParam(name = "arg4", targetNamespace = "")
+        String arg4)
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, CADoesntExistsException_Exception, WaitingForApprovalException_Exception
+    ;
+    
+    /**
+     * 
      * @param arg1
      * @param arg0
      * @throws WaitingForApprovalException_Exception
