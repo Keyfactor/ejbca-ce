@@ -271,7 +271,8 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 
 
 	protected void usage() {
-		getPrintStream().println("Command used to add or edit userdata and to generate the user in one step.");
+		getPrintStream().println("Command used to add or edit userdata and to generate the certificate for the user. This command performs these two steps in a single command, but uses two WS calls to do it, editUser and pkcs10Request.");
+        getPrintStream().println("You can perform the same in a single WS call with the 'certreq' command.");
 		getPrintStream().println("Usage : generatenewuser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (or NONE)> <pkcs10path> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println(
