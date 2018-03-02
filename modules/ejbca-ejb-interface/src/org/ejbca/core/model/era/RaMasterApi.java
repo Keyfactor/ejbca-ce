@@ -524,21 +524,19 @@ public interface RaMasterApi {
                         WaitingForApprovalException, ApprovalException, CADoesntExistsException;
     
     /**
-     * TODO More docs
-     * @param authenticationToken
-     * @param username
-     * @param certSNinHex
-     * @param issuerDN
-     * @param password
-     * @param hardTokenSN
-     * @param keyspec
-     * @param keyalg
-     * @return 
-     * @throws AuthorizationDeniedException 
-     * @throws WaitingForApprovalException 
-     * @throws EjbcaException 
-     * @throws CADoesntExistsException 
-     * @throws ApprovalException 
+     * Atomic Key recovery and PKCS12 / JKS enrollment method to be called from web services. 
+     * @param authenticationToken of the requesting administrator
+     * @param username of end entity holding the certificate to recover
+     * @param certSNinHex of the certificate to recover
+     * @param issuerDN issuer of the certificate
+     * @param password new
+     * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
+     * @return KeyStore generated, post recovery
+     * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery and enrollment
+     * @throws WaitingForApprovalException if operation requires approval (expected to be thrown with approvals enabled)
+     * @throws EjbcaException exception with errorCode if check fails
+     * @throws CADoesntExistsException if CA which issued the certificate no longer exists
+     * @throws ApprovalException if an approval is already pending to recover this certificate
      */
     byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password,
             String hardTokenSN) throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException;

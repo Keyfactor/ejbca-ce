@@ -1561,32 +1561,38 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
     public KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException {
+        if (log.isTraceEnabled()) {
+            log.trace(">keyRecoverEnroll");
+        }
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         
-        byte[] pkcs12 = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
-        
-        final java.security.KeyStore pkcs12KeyStore;
-        final KeyStore keyStore;
         try {
-            // TODO Find a way to detect PKCS12 or JKS without an extra network trip
+            byte[] pkcs12 = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
+            final java.security.KeyStore pkcs12KeyStore;
+            final KeyStore keyStore;
+                // TODO Find a way to detect PKCS12 or JKS without an extra network trip
             pkcs12KeyStore = java.security.KeyStore.getInstance("PKCS12", "BC");
             pkcs12KeyStore.load(new ByteArrayInputStream(pkcs12), password.toCharArray());
             keyStore = new KeyStore(pkcs12KeyStore, password);
             return keyStore;
-            
-            // TODO Proper error handling
-        } catch (KeyStoreException | NoSuchProviderException e) {
-            throw getInternalException(e, logger);
-        } catch (NoSuchAlgorithmException e) {
-            throw getInternalException(e, logger);
-        } catch (CertificateException e) {
-            throw getInternalException(e, logger);
-        } catch (IOException e) {
-            throw getInternalException(e, logger);
-        } catch(Exception e) {
-            throw getInternalException(e, logger);
+
+        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
+        } catch (AuthorizationDeniedException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        } catch (CADoesntExistsException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        } catch (WaitingForApprovalException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        } catch(EjbcaException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
         } finally {
             logger.writeln();
             logger.flush();

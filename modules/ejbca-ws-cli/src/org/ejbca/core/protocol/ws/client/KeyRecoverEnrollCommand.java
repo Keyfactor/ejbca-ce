@@ -16,9 +16,11 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
@@ -95,6 +97,8 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                 getPrintStream().println(e.getMessage());
             } catch (NotFoundException_Exception e) {
                 getPrintStream().println(e.getMessage());
+            } catch (EjbcaException_Exception e) {
+                getPrintStream().println(e.getMessage());
             }
             
         } catch (Exception e) {
@@ -124,6 +128,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     @Override
     protected void usage() {
         getPrintStream().println("Command used for key recovery and enroll");
-        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokenSn>"); 
+        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokensn (or NONE)> <outputpath (optional)> \\n\\n\""); 
     }
 }

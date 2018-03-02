@@ -1293,7 +1293,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
     }
     
-    // TODO
     @Override
     public byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
             throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException {
