@@ -1968,7 +1968,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         userData.setPassword(password);
         byte[] keyStoreBytes = generateKeyStore(authenticationToken, userData);
         
-        // Lots of checks. Can't know what WS client sends in. I.e. clientToolBox sends null as String "null"
+        // Lots of checks. Can't know what WS client sends in.
         if (!StringUtils.isEmpty(hardTokenSN) && !hardTokenSN.equals("NONE") && !hardTokenSN.equals("null")) {
             final KeyStore keyStore;
             try {
@@ -1985,19 +1985,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,cert);
                 }
                 
-            // TODO Throw proper exception & verify above works
             } catch (CertificateParsingException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e.getMessage());
             } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
             } catch (CertificateException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.CERT_COULD_NOT_BE_PARSED, e.getMessage());
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
             } catch (KeyStoreException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
             } catch (NoSuchProviderException e) {
-                e.printStackTrace();
+                throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
             } 
         }
         return keyStoreBytes; 
