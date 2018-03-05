@@ -288,6 +288,7 @@
     	</copy>
         <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
         <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
+        <copy file="${resources.dir}/run.bat" tofile="${mod.ejbca-db-cli.dist}/run.bat" failonerror="true"/>
     </target>
 
 	<target name="runone" depends="compile-test">
