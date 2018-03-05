@@ -610,9 +610,18 @@ function toggleCANameChange(){
 
     
     if (!editca || isUninitialized) {
+    	final Map<String, String> aliasUsedMap = new HashMap<String, String>(); 
+    	
         /* If there is no available CryptoToken, there is little point in continuing here. */
         if (cryptoTokenIdParam != null && cryptoTokenIdParam.length()>0 && Integer.parseInt(cryptoTokenIdParam)!=0) {
             currentCryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
+            
+            // Create already in use key map
+            for (final String alias : cabean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+                final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : StringUtils.EMPTY;
+                aliasUsedMap.put(alias, alreadyInUse);
+            }
+            
     %>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">defaultKey</td>
@@ -626,11 +635,9 @@ function toggleCANameChange(){
                             isDefault = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT));
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
-
-                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                         
                         %>
-                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + aliasUsedMap.get(alias) %>"/></option>
                         <%
                     } %>
 	            </select>
@@ -650,11 +657,9 @@ function toggleCANameChange(){
                             isDefault = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
-
-                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                         
                         %>
-                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + aliasUsedMap.get(alias) %>"/></option>
                         <% 
                     } %>
 	            </select>
@@ -681,11 +686,10 @@ function toggleCANameChange(){
                     <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { 
 
-                    final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                 %>
                 
                         <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)) ? "selected=\"selected\" " : "" %>
-                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
+                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + aliasUsedMap.get(alias) %>"/></option>
                 <%  } %>
 	            </select>
             </td>	
@@ -697,10 +701,9 @@ function toggleCANameChange(){
                     <option value=""><%= ejbcawebbean.getText("CRYPTOTOKEN_DEFAULTKEY") %></option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { 
                 
-                    final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
                 %>
                     <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT)) ? "selected=\"selected\" " : "" %>
-                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
+                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + aliasUsedMap.get(alias) %>"/></option>
                 <%  } %>
 	            </select>
             </td>
@@ -719,10 +722,8 @@ function toggleCANameChange(){
                         }
                         String selected = isDefault ? "selected=\"selected\" " : "";
                         
-                        final String alreadyInUse = cabean.isKeyInUse(cabean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)" : "";
-                        
                         %>
-                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + alreadyInUse %>"/></option>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias + aliasUsedMap.get(alias) %>"/></option>
                         <% 
                     } %>
 	            </select>
