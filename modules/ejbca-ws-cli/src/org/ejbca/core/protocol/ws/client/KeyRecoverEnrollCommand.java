@@ -15,7 +15,9 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
+import org.cesecore.util.Base64;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -43,6 +45,8 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     private static final int ARG_HARDTOKENSN              = 5;
     private static final int ARG_OUTPUTPATH               = 6;
     
+    private static final byte PKCS12_MAGIC = (byte)48;
+    private static final byte JKS_MAGIC = (byte)(0xfe);
     
     KeyRecoverEnrollCommand(String[] args) {
         super(args);
@@ -57,6 +61,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                 usage();
                 System.exit(-1); // NOPMD, it's not a JEE app
             }
+
             
             String username = args[ARG_USERNAME];
             String certSn = args[ARG_CERTSNINHEX];
@@ -70,7 +75,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                 if(result==null) {
                     getPrintStream().println("No keystore could be generated for user, check server logs for error.");
                 } else {
-                    String filepath = username + ".p12";
+                    String filepath = username;
                     String outputPath = null;
                     
                     if (args.length == 7) {
@@ -80,9 +85,21 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                     if (outputPath != null) {
                         filepath = outputPath + "/" + filepath;
                     }
-                                        
+                    final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
+                    getPrintStream().println(keyStoreBytes[0]+ " " + keyStoreBytes[1] + " " + keyStoreBytes[2]);
+                    String keyStoreType;
+                    if (keyStoreBytes[0] == PKCS12_MAGIC) {
+                        keyStoreType = "PKCS12";
+                        filepath = filepath + ".p12";
+                    } else if (keyStoreBytes[0] == JKS_MAGIC) {
+                        keyStoreType = "JKS";
+                        filepath = filepath + ".jks";
+                    } else {
+                        throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+                    }
+                    
                     FileOutputStream fos = new FileOutputStream(filepath);
-                    java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), "PKCS12", password);
+                    java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
                     ks.store(fos, password.toCharArray());
                     fos.close();                    
                     getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
@@ -128,6 +145,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     @Override
     protected void usage() {
         getPrintStream().println("Command used for key recovery and enroll");
-        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokensn (or NONE)> <outputpath (optional)> \\n\\n\""); 
+        getPrintStream().println("Usage : keyrecover <username> <certSerialNr> <issuerDN> <password> <hardtokensn (or NONE)> <outputpath (optional)>"); 
     }
 }
