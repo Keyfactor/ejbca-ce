@@ -72,6 +72,7 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
@@ -530,11 +531,27 @@ public class X509CATest {
 		assertEquals(CAConstants.CA_OFFLINE, ca.getCAInfo().getStatus());
 	}
 
+    /**
+     * Swaps two GeneralName items in a GeneralNames object.
+     * @param gns The GeneralNames object. Will not be modified.
+     * @param index1 Index of one item to swap.
+     * @param index2 Index of the other item to swap.
+     * @return New GeneralName object, with items swapped.
+     */
+    private GeneralNames swapGeneralNames(final GeneralNames gns, final int index1, final int index2) {
+        final GeneralName[] arr = gns.getNames();
+        final GeneralName tmp = arr[index1];
+        arr[index1] = arr[index2];
+        arr[index2] = tmp;
+        return new GeneralNames(arr);
+    }
+
 	@Test
 	public void testCTRedactedLabels() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
-	    GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
+        GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE,iPAddress=192.0.2.123");
+        gns = swapGeneralNames(gns, 0, 5); // Swap iPAddress and rfc822Name to test that the order is preserved
 	    Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
 	    ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCert(ext, false);
 	    Extensions exts = gen.generate();
@@ -543,7 +560,7 @@ public class X509CATest {
 	    assertNotNull("A subjectAltName extension should be present", genext);
 	    assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", altName);
+        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
 	    // Test with CT publishing
 	    gen = ca.getSubjectAltNameExtensionForCert(ext, true);
 	    exts = gen.generate();
@@ -560,8 +577,25 @@ public class X509CATest {
         derInt = ASN1Integer.getInstance(seq.getObjectAt(2));
         assertEquals("third dnsName should have 2 redacted labels", 2, derInt.getValue().intValue());
         altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "rfc822name=foo@bar.com, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE", altName);
+        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
 	}
+
+    @Test
+    public void testCTRedactedLabelsInPreCert() throws Exception {
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA ca = createTestCA(cryptoToken, CADN);
+        GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,iPAddress=192.0.2.123,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
+        gns = swapGeneralNames(gns, 0, 5); // Swap iPAddress and rfc822Name to test that the order is preserved
+        Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
+        ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCTCert(ext);
+        Extensions exts = gen.generate();
+        Extension genext = exts.getExtension(Extension.subjectAlternativeName);
+        Extension ctext = exts.getExtension(new ASN1ObjectIdentifier(CertTools.id_ct_redacted_domains));
+        assertNotNull("A subjectAltName extension should be present", genext);
+        assertNull("No CT redated extension should be present", ctext);
+        String altName = CertTools.getAltNameStringFromExtension(genext);
+        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
+    }
 
 	@Test
 	public void testInvalidSignatureAlg() throws Exception {
