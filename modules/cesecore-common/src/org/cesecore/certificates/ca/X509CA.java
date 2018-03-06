@@ -43,6 +43,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SimpleTimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -148,8 +150,8 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.keys.validation.IssuancePhase;
+import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -1440,19 +1442,35 @@ public class X509CA extends CA implements Serializable {
      * @returnAn extension generator containing the SubjectAlternativeName extension
      * @throws IOException
      */
-    private ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
-        String subAltName = CertTools.getAltNameStringFromExtension(subAltNameExt);
-        
-        List<String> dnsValues = CertTools.getPartsFromDN(subAltName, CertTools.DNS);
-        for(String dns : dnsValues) {
-            if(StringUtils.contains(dns, "(") && StringUtils.contains(dns, ")") ) { // if it contains parts that should be redacted
-                String redactedLable = StringUtils.substring(dns, StringUtils.indexOf(dns, "("), StringUtils.lastIndexOf(dns, ")")+1); // tex. (top.secret).domain.se => redactedLable = (top.secret) aka. including the parentheses 
-                subAltName = StringUtils.replace(subAltName, redactedLable, "(PRIVATE)");
+    protected ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
+        Pattern parenthesesRegex = Pattern.compile("\\(.*\\)"); // greedy match, so against "(a).(b).example.com" it will match "(a).(b)", like the old code did
+        GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
+        GeneralName[] gns = names.getNames();
+        for (int j = 0; j<gns.length; j++) {
+            GeneralName generalName = gns[j];
+            // Look for DNS name
+            if (generalName.getTagNo() == 2) {
+                final String value = DERIA5String.getInstance(generalName.getName()).getString();
+                final Matcher matcher = parenthesesRegex.matcher(value);
+                if (matcher.find()) {
+                    final String newValue = matcher.replaceAll("(PRIVATE)");
+                    gns[j] = new GeneralName(2, new DERIA5String(newValue));
+                }
+            }
+            if(generalName.getTagNo() == 1) {
+                final String str = CertTools.getGeneralNameString(1, generalName.getName());                
+                if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
+                    // Remove '\' from the email that will end up on the certificate
+                    String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
+                    certBuilderEmailValue = StringUtils.remove(certBuilderEmailValue, '\\');
+                    // Replace the old value with the new
+                    gns[j] = new GeneralName(1, new DERIA5String(certBuilderEmailValue));
+                }
             }
         }
         
         ExtensionsGenerator gen = new ExtensionsGenerator();
-        gen.addExtension(Extension.subjectAlternativeName, subAltNameExt.isCritical(), CertTools.getGeneralNamesFromAltName(subAltName).getEncoded());
+        gen.addExtension(Extension.subjectAlternativeName, subAltNameExt.isCritical(), new GeneralNames(gns));
         return gen;
     }
     
