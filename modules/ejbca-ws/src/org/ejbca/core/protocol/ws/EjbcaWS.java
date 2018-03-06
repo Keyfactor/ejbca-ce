@@ -1560,25 +1560,36 @@ public class EjbcaWS implements IEjbcaWS {
 
     @Override
     public KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
-            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException {
+            throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException, NotFoundException {
         if (log.isTraceEnabled()) {
             log.trace(">keyRecoverEnroll");
         }
+        
+        // Keystore type is available in UserData but we do it this way to avoid another network round trip, looking it up.
+        final byte PKCS12_MAGIC = (byte)48;
+        final byte JKS_MAGIC = (byte)(0xfe);
+        
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         
         try {
-            byte[] pkcs12 = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
-            final java.security.KeyStore pkcs12KeyStore;
+            byte[] keyStoreBytes = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
+            final java.security.KeyStore ks;
             final KeyStore keyStore;
-                // TODO Find a way to detect PKCS12 or JKS without an extra network trip
-            pkcs12KeyStore = java.security.KeyStore.getInstance("PKCS12", "BC");
-            pkcs12KeyStore.load(new ByteArrayInputStream(pkcs12), password.toCharArray());
-            keyStore = new KeyStore(pkcs12KeyStore, password);
+            if (keyStoreBytes[0] == PKCS12_MAGIC) {
+                ks = java.security.KeyStore.getInstance("PKCS12", "BC");
+            } else if (keyStoreBytes[0] == JKS_MAGIC) {
+                ks = java.security.KeyStore.getInstance("JKS");
+            } else {
+                throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+            }
+            
+            ks.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
+            keyStore = new KeyStore(ks, password);
             return keyStore;
 
-        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
+        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) { //IOException = Wrong PKCS12 / JKS TODO Remove this comment
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
         } catch (AuthorizationDeniedException e) {
@@ -1588,6 +1599,9 @@ public class EjbcaWS implements IEjbcaWS {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
         } catch (WaitingForApprovalException e) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
+            throw e;
+        } catch (NotFoundException e) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;
         } catch(EjbcaException e) {
