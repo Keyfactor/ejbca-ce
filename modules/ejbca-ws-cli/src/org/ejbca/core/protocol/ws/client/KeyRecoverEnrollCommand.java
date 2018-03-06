@@ -18,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.cesecore.util.Base64;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
@@ -61,7 +60,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                 usage();
                 System.exit(-1); // NOPMD, it's not a JEE app
             }
-
             
             String username = args[ARG_USERNAME];
             String certSn = args[ARG_CERTSNINHEX];
@@ -86,7 +84,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                         filepath = outputPath + "/" + filepath;
                     }
                     final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
-                    getPrintStream().println(keyStoreBytes[0]+ " " + keyStoreBytes[1] + " " + keyStoreBytes[2]);
                     String keyStoreType;
                     if (keyStoreBytes[0] == PKCS12_MAGIC) {
                         keyStoreType = "PKCS12";
@@ -121,7 +118,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
-        
     }
 
     private String getOutputPath(String outputpath) {

@@ -1588,8 +1588,7 @@ public class EjbcaWS implements IEjbcaWS {
             ks.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
             keyStore = new KeyStore(ks, password);
             return keyStore;
-
-        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) { //IOException = Wrong PKCS12 / JKS TODO Remove this comment
+        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw new EjbcaException(ErrorCode.NOT_SUPPORTED_KEY_STORE, e.getMessage());
         } catch (AuthorizationDeniedException e) {
