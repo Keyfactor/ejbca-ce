@@ -18,11 +18,21 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import org.cesecore.util.CertTools;
+
 /**
- * Implements a cryptographically secure password generator. Runs as a
+ * <p>Various tools aimed for Professional Services at PrimeKey.
+ *
+ * <p><b>CaId Module Module</b>
+ * <p>Generates CA IDs which can be used with Statedump.
+ *
+ * <p><b>PasswordGenerator Module</b>
+ * <p>Implements a cryptographically secure password generator. Runs as a
  * command line client which may ask for the following parameters (if specified)
  *
  *      Flag    Description                              Default
@@ -33,12 +43,45 @@ import java.util.regex.Pattern;
  *
  * @version $Id$
  */
-public class PasswordGenerator extends ClientToolBox {
+public class ProfessionalServices extends ClientToolBox {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     @Override
     protected void execute(final String[] args) {
-        if (Arrays.asList(args).contains("help")) {
+        final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        argsList.remove(getName());
+        if (argsList.isEmpty() || argsList.get(0).equals("help")) {
+            System.out.println("Available modules");
+            System.out.println("PasswordGenerator - Generate cryptographically strong passwords");
+            System.out.println("CaIdGenerator     - Generate CA IDs for Statedump");
+            return;
+        }
+        if (argsList.contains("PasswordGenerator")) {
+            argsList.remove("PasswordGenerator");
+            executePasswordModule(argsList);
+        } else if (argsList.contains("CaIdGenerator")) {
+            argsList.remove("CaIdGenerator");
+            executeCaIdModule(argsList);
+        } else {
+            System.out.println(String.format("Unknown module %s. Type 'help' to list all available modules.", argsList.get(0)));
+        }
+    }
+
+    private void executeCaIdModule(final List<String> args) {
+        if (args.contains("help") || args.isEmpty()) {
+            System.out.println("Usage: CaIdGenerator <SubjectDN>");
+            return;
+        }
+        if (args.size() > 1) {
+            System.out.println("Too many arguments. Type 'help' for more information.");
+            return;
+        }
+        final int id = CertTools.stringToBCDNString(args.get(0)).hashCode();
+        System.out.println(id);
+    }
+
+    private void executePasswordModule(final List<String> args) {
+        if (args.contains("help")) {
             System.out.println("Flag    Description                              Default");
             System.out.println("-h      Hash function used for mixing            SHA-256");
             System.out.println("-c      Charset used for the generated password  [a-zA-Z0-9]");
@@ -81,8 +124,8 @@ public class PasswordGenerator extends ClientToolBox {
         }
     }
 
-    private String readInput(final String[] args, final String title, final String flag, final String defaultValue) throws IllegalStateException {
-        if (Arrays.asList(args).contains(flag)) {
+    private String readInput(final List<String> args, final String title, final String flag, final String defaultValue) throws IllegalStateException {
+        if (args.contains(flag)) {
             System.out.print(title + ": ");
             System.out.flush();
             final String input = System.console().readLine();
@@ -120,6 +163,6 @@ public class PasswordGenerator extends ClientToolBox {
 
     @Override
     protected String getName() {
-        return "PasswordGenerator";
+        return "ProfessionalServices";
     }
 }
