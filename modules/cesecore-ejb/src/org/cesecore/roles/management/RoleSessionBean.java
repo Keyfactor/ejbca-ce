@@ -460,7 +460,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         for (final int current : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
             namespaces.add(roleDataSession.getRole(current).getNameSpace());
         }
-        if (namespaces.contains("")) {
+        if (namespaces.contains("") || authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
             // Add all namespaces from authorized roles
             for (final Role role : getAuthorizedRoles(authenticationToken)) {
                 namespaces.add(role.getNameSpace());
