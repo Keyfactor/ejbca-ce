@@ -26,6 +26,10 @@
 	<classpathentry kind="src" path="modules/cmpclient/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src-test"/>
+	<classpathentry kind="src" path="modules/configdump/src-cli"/>
+	<classpathentry kind="src" path="modules/configdump/src-common"/>
+	<classpathentry kind="src" path="modules/configdump/src-ejb"/>
+	<classpathentry kind="src" path="modules/configdump/src-test"/>
 	<classpathentry kind="src" path="modules/crlstore/src"/>
 	<classpathentry kind="src" path="modules/ct/src"/>
 	<classpathentry kind="src" path="modules/ct/src-test"/>
@@ -83,16 +87,14 @@
 	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
 	<classpathentry kind="src" path="modules/systemtests/resources"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
+	<classpathentry kind="src" path="modules/unidfnr/src"/>
+	<classpathentry kind="src" path="modules/unidfnr/src-test"/>
 	<classpathentry kind="src" path="modules/va/publisher/src"/>
 	<classpathentry kind="src" path="modules/va/publisher/src-test"/>
 	<classpathentry kind="src" path="modules/va/src-war"/>
 	<classpathentry kind="src" path="modules/validationtool/src"/>
 	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="modules/configdump/src-cli"/>
-	<classpathentry kind="src" path="modules/configdump/src-common"/>
-	<classpathentry kind="src" path="modules/configdump/src-ejb"/>
-	<classpathentry kind="src" path="modules/configdump/src-test"/>
 	<classpathentry kind="lib" path="lib/xstream/xmlpull-1.1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
