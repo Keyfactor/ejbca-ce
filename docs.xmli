@@ -37,6 +37,7 @@
     <property name="docs.velocity.props"   location="${docs.src}/velocity.properties" />
     <property name="site.velocity.props"   location="${site.src}/velocity.properties" />
     <property name="include.xml"  value="**/*.xml" />
+    <property name="confluence.url"  value="localhost" />
 	<property file="src/doc.properties"/>
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-common.jar" />
