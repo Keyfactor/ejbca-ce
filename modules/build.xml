@@ -88,6 +88,7 @@
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<antcall target="configdumpclean"/>
+		<antcall target="unidfnrclean"/>
 		<antcall target="cmpclientclean"/>
 		<antcall target="ctclean"/>
 		<antcall target="certsafeclean"/>
@@ -131,7 +132,12 @@
 			<echo message="Cleaning configdump"/>
 			<ant antfile="${mod.configdump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		</target>
-			
+
+	<target name="unidfnrclean" if="${mod.unidfnr.exists}">
+			<echo message="Cleaning unidfnr"/>
+			<ant antfile="${mod.unidfnr.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		</target>
+		
 	<condition property="cmpclient.exists">
 		<available file="${mod.cmpclient.path}/build.xml" />
 	</condition>
@@ -480,7 +486,7 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb, configdump-ejb" description="Build EJBCA EJB module">
+	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb, configdump-ejb, unidfnr-ejb" description="Build EJBCA EJB module">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -557,6 +563,16 @@
         <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 
+	<target name="unidfnr" depends="ejbca-ejb-cli, va-publisher, peerconnector, caa">
+		<echo  message="${mod.unidfnr.path}/build.xml" />
+		<fail message="Unidfnr tool is not distributed with this version of EJBCA" unless="${mod.unidfnr.exists}"/>
+		<ant antfile="${mod.unidfnr.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+    <target name="unidfnr-ejb" depends="ejbca-ejb-cli, va-publisher, peerconnector, caa" if="${mod.unidfnr.exists}">
+        <ant antfile="${mod.unidfnr.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    </target>
+    
 	<target name="cmpclient" depends="ejbca-ejb-cli">
 		<echo  message="${mod.cmpclient.path}/build.xml" />
 		<fail message="CMP client is not distributed with this version of EJBCA">
