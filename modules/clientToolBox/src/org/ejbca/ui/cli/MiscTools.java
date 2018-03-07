@@ -26,10 +26,10 @@ import java.util.regex.Pattern;
 import org.cesecore.util.CertTools;
 
 /**
- * <p>Various tools aimed for Professional Services at PrimeKey.
+ * <p>Various tools aimed for field work.
  *
  * <p><b>CaId Module Module</b>
- * <p>Generates CA IDs which can be used with Statedump.
+ * <p>Generates CA IDs which can be used with EJBCA.
  *
  * <p><b>PasswordGenerator Module</b>
  * <p>Implements a cryptographically secure password generator. Runs as a
@@ -43,7 +43,7 @@ import org.cesecore.util.CertTools;
  *
  * @version $Id$
  */
-public class ProfessionalServices extends ClientToolBox {
+public class MiscTools extends ClientToolBox {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     @Override
@@ -53,7 +53,7 @@ public class ProfessionalServices extends ClientToolBox {
         if (argsList.isEmpty() || argsList.get(0).equals("help")) {
             System.out.println("Available modules");
             System.out.println("PasswordGenerator - Generate cryptographically strong passwords");
-            System.out.println("CaIdGenerator     - Generate CA IDs for Statedump");
+            System.out.println("CaIdGenerator     - Generate CA IDs for EJBCA.");
             return;
         }
         if (argsList.contains("PasswordGenerator")) {
@@ -163,6 +163,6 @@ public class ProfessionalServices extends ClientToolBox {
 
     @Override
     protected String getName() {
-        return "ProfessionalServices";
+        return "MiscTools";
     }
 }
