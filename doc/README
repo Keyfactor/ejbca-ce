@@ -1,52 +1,19 @@
-This software is OSI Certified Open Source Software.
-OSI Certified is a certification mark of the Open Source
-Initiative.
+This software is OSI Certified Open Source Software. OSI Certified is a certification mark of the Open Source Initiative.
 EJBCA is licensed under the LGPL license, please see licenses/LICENSE.
  
 Documentation
 -------------
-The main documentation for EJBCA is contained in XML format in the xdocs subdirectory.
-You can build nice looking html pages from this by running 
-  ant doc
-from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on https://www.ejbca.org/ 
-(or an earlier or later version).
-The docs will be located in EJBCA_HOME/tmp/htdocs.
-The User's Guide is in the file xdocs/manual.xml.
+The main documentation for EJBCA is hosted on PrimeKey's internal Confluence server, from which it is exported and distributed in the docs/dist 
+directory in official releases. You can access it either from the link in the UI (deployed on the application server) or directly using 
+docs/dist/index.html
 
-In the subdirectories there hides some other docs:
-- xdocs contains the main xml documentation distributed with ejbca, build into html as noted above.
+In addition, the docs directory contains additional material: 
 - howto contains howtos for various things, such as databases, application servers, smart card login etc.
 - ldapschema contains an addition to the standard ldap schema in order to support devices with certificates.
 - licenses contains the license for EJBCA and depending projects.
-- samples contains some sample code that does not fit on the source tree
-- developer contains architecture documents and information for developers.
 
-Installation
-------------
-Follow the installation instructions in the User's Guide, either built above, or from https://www.ejbca.org/.
 
-PDF
----
-A good set of commands to generate a nice PDF version of the Admin and User Guide is:
- apt-get install htmldoc
- ant doc
- cd tmp/htdocs/docs
- htmldoc --no-links --footer "  /"  --toclevels 4 -t pdf14 adminguide.html -f adminguide.pdf
- htmldoc --no-links --footer "  /"  --toclevels 4 -t pdf14 userguide.html -f userguide.pdf
-
-You can make a nice, deliverable, document by:
-- replace all <h3> with <h2> and </h3> with </h2>
-- Edit <pre> formatted text commands for line breaks by adding "\" and a space as first char on the next line.
-  These commands work very good to copy-paste into a Linux shell.
-  You have to go through the documents manually to fix these, it should take ~1h for both. 
-- The Title is too long and should be named something like this instead "EJBCA Enterprise v6.3.0 - User Guide".
-
-Open question:
-- Is it possible to add our logo somewhere?
-
-TODO: also look at http://weasyprint.org/.
-
-Release notes and upgrade
+Release Notes and Upgrade Instructions
 -------------------------
-In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
-UPGRADE with information about upgrading from an earlier version of EJBCA.
+In this directory you previously found release notes and upgrade instructions. These have since EJBCA 6.12 been shifted over to our main 
+documentation.
