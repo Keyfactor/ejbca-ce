@@ -422,6 +422,12 @@
             replacement-ejb="configdump-ejb.jar"
         />
 		<jar-replacement-in-module
+            replacement-tag="!--@unidfnr-ejb.jar@-->"
+            replacement-file="${eardd.src}/META-INF/application.xml"
+            replacement-enabled="${mod.unidfnr.exists}"
+            replacement-ejb="unidfnr-ejb.jar"
+        />
+		<jar-replacement-in-module
 			replacement-tag="!--@peerconnector-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.peerconnector.exists}"
@@ -536,7 +542,8 @@
 				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
             	<include name="statedump-ejb.jar" />
             	<include name="configdump-ejb.jar" />
-                <include name="peerconnector.rar" />
+               	<include name="unidfnr-ejb.jar" />
+            	<include name="peerconnector.rar" />
                 <include name="peerconnector.war" />
                 <include name="peerconnector-ejb.jar" />
                 <include name="ra-gui.war" />
@@ -564,7 +571,8 @@
         		<include name="edition-specific-ejb.jar" />
         		<include name="statedump-common.jar" />
         		<include name="configdump-common.jar" />
-                <include name="peerconnector-ra.jar" />
+        		<include name="unidfnr-common.jar" />
+        		<include name="peerconnector-ra.jar" />
                 <include name="peerconnector-publ.jar" />
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />
@@ -871,6 +879,7 @@
 		    	<exclude name="bin/backup/**" />
 		    	<exclude name="modules/statedump/**" />
 		    	<exclude name="modules/configdump/**" />
+		    	<exclude name="modules/unidfnr/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
@@ -1027,6 +1036,54 @@ After building, you will need to re-deploy EJBCA.
         </echo>
     </target>
 
+    <!-- ======================================================================= -->
+    <!-- Make a ZIP source release for Unidfnr, if available.                    -->
+    <!-- Creates a fat source zip containing all Unidfnr source files and        -->
+    <!-- can be included in your IDE to be able to browse the source.            -->
+	<!-- 																		 -->
+	<!-- Note that this zip is not standalone but needs to be unzipped inside an -->
+	<!-- existing EJBCA installation and built there.							 -->
+    <!-- ======================================================================= -->
+    <target name="ziprelease-unidfnr-src" if="${mod.unidfnr.exists}" description="Make a source zip for the Unidfnr modules">
+        <property name="unidfnr.src.basezipfile" value="unidfnr-${app.version.number}-src"/>
+        <delete file="../${unidfnr.src.basezipfile}.zip"/>
+
+        <property name="unidfnr.src.release.dir" location="${tmp}/unidfnr-release-src"/>
+        <delete dir="${unidfnr.src.release.dir}"/>
+        <mkdir dir="${unidfnr.src.release.dir}"/>
+        <copy todir="${unidfnr.src.release.dir}">
+            <fileset dir="${basedir}/modules/">
+                <include name="unidfnr/src-*/**/*.java" />
+                <include name="unidfnr/*.txt" />
+                <include name="unidfnr/*.xml" />
+                <include name="unidfnr/resources/**" />
+            </fileset>
+        </copy>
+
+        <zip destfile="../${unidfnr.src.basezipfile}.zip">
+            <zipfileset dir="${unidfnr.src.release.dir}" filemode="600" dirmode="700">
+            </zipfileset>
+        </zip>
+
+        <antcall target="signjar">
+            <param name="signjar.file" value="../${unidfnr.src.basezipfile}.zip"/>
+        </antcall>
+        <checksum file="../${unidfnr.src.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${unidfnr.src.basezipfile}.zip" algorithm="SHA1" property="unidfnrsrcSHA1"/>
+        <checksum file="../${unidfnr.src.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
+        <checksum file="../${unidfnr.src.basezipfile}.zip" algorithm="SHA-256" property="unidfnrsrcSHA256"/>
+        <echo>
+File:             ../${unidfnr.src.basezipfile}.zip
+SHA1 checksum:    ${unidfnrsrcSHA1}
+SHA-256 checksum: ${unidfnrsrcSHA256}
+        	
+Note that this zip is not standalone but needs to be unzipped inside an existing EJBCA installation and built there.
+After building, you will need to re-deploy EJBCA.
+        </echo>
+    </target>	
+	
+	
+	
     <!-- ======================================================================= -->
     <!-- Make a ZIP source release for CmpClient, if available.                  -->
     <!-- Creates a fat source zip containing all CmpClient source files and can  -->
@@ -1309,6 +1366,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="configdump" />
     </target>
 
+	<target name="unidfnr" depends="deprecated:check" description="Build EJBCA Unidfnr tool">
+		<ant dir="modules" target="unidfnr" />
+    </target>
+	
 	<target name="cmpclient" depends="deprecated:check" description="Build EJBCA CMP Client">
 		<ant dir="modules" target="cmpclient" />
     </target>

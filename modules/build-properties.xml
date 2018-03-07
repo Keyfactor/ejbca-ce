@@ -137,6 +137,11 @@
 	<property name="mod.configdump.path" location="${mod.path}/configdump" />
 	<property name="mod.configdump-common.lib" location="${mod.dist.path}/configdump-common.jar" />
 	<property name="mod.configdump-ejb.lib" location="${mod.dist.path}/configdump-ejb.jar" />
+	<property name="mod.unidfnr.dist" location="${ejbca.dist.path}/unidfnr" />
+	<property name="mod.unidfnr.lib" location="${mod.unidfnr.dist}/unidfnr.jar" />
+	<property name="mod.unidfnr.path" location="${mod.path}/unidfnr" />
+	<property name="mod.unidfnr-common.lib" location="${mod.dist.path}/unidfnr-common.jar" />
+	<property name="mod.unidfnr-ejb.lib" location="${mod.dist.path}/unidfnr-ejb.jar" />
 	<property name="mod.cmpclient.dist" location="${ejbca.dist.path}/cmpclient" />
 	<property name="mod.cmpclient.lib" location="${mod.cmpclient.dist}/cmpclient.jar" />
 	<property name="mod.cmpclient.path" location="${mod.path}/cmpclient" />
@@ -398,10 +403,14 @@
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
 	
-	<condition property="mod.configdump.exists">
+    <condition property="mod.configdump.exists">
         <available file="${mod.configdump.path}/build.xml" />
     </condition>
 	
+    <condition property="mod.unidfnr.exists">
+        <available file="${mod.unidfnr.path}/build.xml" />
+    </condition>
+
     <condition property="mod.est.exists">
         <available file="${mod.est-war.path}/build.xml" />
     </condition>
