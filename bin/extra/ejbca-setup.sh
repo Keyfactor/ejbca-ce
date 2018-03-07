@@ -258,6 +258,31 @@ ejbca_installer() {
 
   create_config_files
 
+#  if [ ! -f Download/ejbca_ce_${EJBCA_VERSION}.zip ]; then
+#    cd Download
+#    echo "Downloading EJBCA ${EJBCA_VERSION}"
+#    curl -o ejbca_ce_${EJBCA_VERSION}.zip -L "${EJBCA_DOWNLOAD_URL}"
+#    curl -o ejbca_ce_${EJBCA_VERSION}.zip.sha256 -L "${EJBCA_DOWNLOAD_SHA256_URL}"
+#    sha256sum --check ejbca_ce_6_5.0.5.zip.sha256
+#    echo ${EJBCA_DOWNLOAD_SHA256} ejbca_ce_${EJBCA_VERSION}.zip > ejbca_ce_${EJBCA_VERSION}.zip.sha256
+#    sha256sum --check ejbca_ce_${EJBCA_VERSION}.zip.sha256
+#    if [ $? -ne 0 ]; then
+#       echo "SHA256 for EJBCA does not match"
+#       exit 1
+#    fi
+#    rm ejbca_ce_${EJBCA_VERSION}.zip
+#    cd ..
+#  fi
+
+#  unzip Download/ejbca_ce_${EJBCA_VERSION}.zip || exit 1
+  if [ -h ejbca ]; then
+    rm -f ejbca
+  fi
+  if [ ! -d ejbca ]; then
+#    ln -s ejbca_ce_${EJBCA_VERSION} ejbca
+    ln -s ${EJBCA_DIRECTORY} ejbca
+  fi
+
   echo
   echo "Init database"
   init_mysql
@@ -297,22 +322,6 @@ ejbca_installer() {
     fi
     cd ..
   fi
-  
-#  if [ ! -f Download/ejbca_ce_${EJBCA_VERSION}.zip ]; then
-#    cd Download
-#    echo "Downloading EJBCA ${EJBCA_VERSION}"
-#    curl -o ejbca_ce_${EJBCA_VERSION}.zip -L "${EJBCA_DOWNLOAD_URL}"
-#    curl -o ejbca_ce_${EJBCA_VERSION}.zip.sha256 -L "${EJBCA_DOWNLOAD_SHA256_URL}"
-#    sha256sum --check ejbca_ce_6_5.0.5.zip.sha256
-#    echo ${EJBCA_DOWNLOAD_SHA256} ejbca_ce_${EJBCA_VERSION}.zip > ejbca_ce_${EJBCA_VERSION}.zip.sha256
-#    sha256sum --check ejbca_ce_${EJBCA_VERSION}.zip.sha256
-#    if [ $? -ne 0 ]; then
-#       echo "SHA256 for EJBCA does not match"
-#       exit 1
-#    fi
-#    rm ejbca_ce_${EJBCA_VERSION}.zip
-#    cd ..
-#  fi
   
   rm -rf "${WILDFLY_DIR}" > /dev/null 2> /dev/null
 #  rm -rf "ejbca_ce_${EJBCA_VERSION}" > /dev/null 2> /dev/null
@@ -368,16 +377,6 @@ ejbca_installer() {
   echo
   echo "Deploying EJBCA"
 
-#  unzip Download/ejbca_ce_${EJBCA_VERSION}.zip || exit 1
-  if [ -h ejbca ]; then
-    rm -f ejbca
-  fi
-  if [ ! -d ejbca ]; then
-#    ln -s ejbca_ce_${EJBCA_VERSION} ejbca
-    ln -s ${EJBCA_DIRECTORY} ejbca
-  fi
-
-  echo "deploying EJBCA"
   cd ejbca || exit 1
   ant clean deployear
   
