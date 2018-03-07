@@ -259,7 +259,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    private static final int RA_MASTER_API_VERSION = 2;
+    private static final int RA_MASTER_API_VERSION = 3;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
