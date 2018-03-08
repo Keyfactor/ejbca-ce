@@ -13,6 +13,7 @@
 package org.cesecore.util.ui;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -59,14 +60,6 @@ public interface DynamicUiModel {
      */
     void setProperty(final String name, Serializable value);
     
-//    /**
-//     * Updates the value for a dynamic UI property and marks the UI model as updated.
-//     * 
-//     * @param name the name of the dynamic UI property.
-//     * @param value the value.
-//     */
-//    void updateProperty(final String name, Serializable value);
-//    
     /**
      * Gets the raw data map for the dynamic properties.
      * @return the raw data map.
@@ -79,15 +72,39 @@ public interface DynamicUiModel {
      */
     void writeProperties(Map<Object,Object> data);
     
-//    /**
-//     * Denotes weather the PSM needs to be updated (i.e. reinitializes the UI components after enabling or disabling).
-//     * @return true if the PSM needs to be recreated.
-//     */
-//    boolean isPsmRequiresUpdate();
-//    
-//    /**
-//     * Denotes weather the PSM needs to be updated (i.e. reinitializes the UI components after enabling or disabling).
-//     * @param state true if the PSM needs to be recreated.
-//     */
-//    void setPsmRequiresUpdate(boolean state);
+    /**
+     * Adds a dynamic UI component for the property with the given name.
+     * @param name the properties name.
+     * @param component the dynamic UI component.
+     */
+    void addDynamicUiComponent(final String name, final DynamicUiComponent component);
+    
+    /**
+     * Removes a dynamic UI component for the property with the given name.
+     * @param name the properties name.
+     * @param component the dynamic UI component.
+     */
+    void removeDynamicUiComponent(final String name, final DynamicUiComponent component);
+    
+    /**
+     * Gets a list of dynamic UI components for the property with the given name.
+     * @param name the properties name.
+     * @return the list of dynamic UI components for this property.
+     */
+    List<DynamicUiComponent> getViewComponents(final String name);
+    
+    /**
+     * Fires a property change event for the property with the given name.
+     * @param name the properties name.
+     * @param oldValue the old value.
+     * @param newValue the new value.
+     */
+    void firePropertyChange(final String name, final Object oldValue, final Object newValue);
+    
+    /**
+     * Fire a property change event for the properties.
+     * @param oldValues the map of old values.
+     * @param newValues the map of new values.
+     */
+    void firePropertyChange(final Map<Object, Object> oldValues, final Map<Object, Object> newValues);
 }

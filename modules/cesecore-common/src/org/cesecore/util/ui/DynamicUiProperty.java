@@ -48,6 +48,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     /** Literal for no rendering. */
     public static final String RENDER_NONE = "none";
 
+    /** Literal for rendering hint for labels. */
+    public static final String RENDER_LABEL = "label";
+
     /** Literal for rendering hint for text fields. */
     public static final String RENDER_TEXTFIELD = "textfield";
 
@@ -102,17 +105,11 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     /** List of I18N keys / labels if available. */
     private Map<?,String> labels = new LinkedHashMap<Object,String>();
 
-    /** Flag to indicate that the property is displayed only (there will be o validation if available, etc.).*/
+    /** Flag to indicate that the property is displayed as label in the label column only (there will be no validation if available, etc.).*/
     private boolean labelOnly = false;
 
-//    /** Method name for listener methods. */
-//    private String actionEvent;
-//
     /** Action callback. */
     private DynamicUiActionCallback actionCallback;
-
-    /** Rendering callback. */
-    private DynamicUiRenderingCallback renderingCallback;
 
     /** Property callback (default: NONE). */
     private DynamicUiPropertyCallback propertyCallback = DynamicUiPropertyCallback.NONE;
@@ -123,14 +120,14 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     /** Field validator (will be applied if not null). */
     private DynamicUiPropertyValidator<T> validator = null;
 
-    /** Reference to the holder object (implements coupling to data fields). */
-    private DynamicUiModel dynamicUiProperties;
+    /** Reference to the holder object (implements coupling to components). */
+    private DynamicUiModel dynamicUiModel;
 
     /** Denotes whether this property can have multiple values. */
     private boolean hasMultipleValues = false;
 
     /**
-     * Constructor required by Serializable.
+     * Constructor required by java.lang.Serializable.
      */
     public DynamicUiProperty() {
     }
@@ -145,7 +142,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public DynamicUiProperty(final String name) {
         this.name = name;
         this.type = String.class;
-        this.defaultValue = (T) StringUtils.EMPTY;
+        this.defaultValue = (T) name;
         this.values.add((T) name);
         this.possibleValues = null;
         setLabelOnly(true);
@@ -232,7 +229,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.required = original.isRequired();
         this.renderingHint = original.getRenderingHint();
         this.labelOnly = original.isLabelOnly();
-        this.labeled = original.isLabeled();
+        this.labeled = original.isI18NLabeled();
         this.defaultValue = original.getDefaultValue();
         this.setHasMultipleValues(original.getHasMultipleValues());
         try {
@@ -251,17 +248,28 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         this.possibleValues = original.getPossibleValues();
         this.propertyCallback = original.getPropertyCallback();
         this.actionCallback = original.getActionCallback();
-        this.renderingCallback = original.getRenderingCallback();
         this.validator = original.validator;
+        this.disabled = original.isDisabled();
+        this.dynamicUiModel = original.getDynamicUiModel();
+        this.transientValue = original.isTransientValue();
     }
 
     /**
-     * Sets the dynamic UI properties composition instance.
+     * Sets the dynamic UI model reference.
      *
-     * @param dynamicUiProperties the dynamic UI properties instance.
+     * @param dynamicUiModel the dynamic UI model reference.
      */
-    public void setDynamicUiProperties(final DynamicUiModel dynamicUiProperties) {
-        this.dynamicUiProperties = dynamicUiProperties;
+    public void setDynamicUiModel(final DynamicUiModel dynamicUiModel) {
+        this.dynamicUiModel = dynamicUiModel;
+    }
+
+    /**
+     * Gets the dynamic UI model reference.
+     *
+     * @return the dynamic UI model reference.
+     */
+    public DynamicUiModel getDynamicUiModel() {
+        return dynamicUiModel;
     }
 
     /**
@@ -328,7 +336,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         return result;
     }
-
+    
     /**
      * Gets the name (or key) of the property.
      * @return the name.
@@ -389,7 +397,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Is set to true if I18N labels has to be rendered (mainly used in facelets).
      * @return true if I18N labels has to be rendered.
      */
-    public boolean isLabeled() {
+    public boolean isI18NLabeled() {
         return labeled;
     }
 
@@ -516,11 +524,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             this.values = new ArrayList<T>(1);
             this.values.add(object);
         }
-        if (dynamicUiProperties != null) {
-            dynamicUiProperties.setProperty(name, this.values.get(0));
-        }
-        if (renderingCallback != null) {
-            renderingCallback.setValue(object);
+        if (dynamicUiModel != null) {
+            dynamicUiModel.setProperty(name, this.values.get(0));
         }
     }
 
@@ -556,8 +561,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                 this.values = objects;
             }
         }
-        if (dynamicUiProperties != null) {
-            dynamicUiProperties.setProperty(name, StringUtils.join(this.values, LIST_SEPARATOR));
+        if (dynamicUiModel != null) {
+            dynamicUiModel.setProperty(name, StringUtils.join(this.values, LIST_SEPARATOR));
         }
     }
 
@@ -635,6 +640,28 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (object == null) {
             this.values = new ArrayList<T>(1);
             this.values.add(defaultValue);
+        } else {
+            if(validator != null) {
+                try {
+                    validator.validate((T) object);
+                } catch (PropertyValidationException e) {
+                    throw new IllegalStateException("Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
+                }
+            }
+            this.values = new ArrayList<T>(1);
+            this.values.add((T) object);
+        }
+    }
+    
+    /**
+     * Sets the current value of type <T>.
+     * @param object the value.
+     */
+    @SuppressWarnings("unchecked")
+    public void setValueGenericIncludeNull(final Serializable object) {
+        if (object == null) {
+            this.values = new ArrayList<T>(1);
+            this.values.add((T)object);
         } else {
             if(validator != null) {
                 try {
@@ -725,22 +752,6 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      */
     public void setActionCallback(final DynamicUiActionCallback actionCallback) {
         this.actionCallback = actionCallback;
-    }
-
-    /**
-     * Gets the rendering callback.
-     * @return the callback.
-     */
-    public DynamicUiRenderingCallback getRenderingCallback() {
-        return renderingCallback;
-    }
-
-    /**
-     * Sets the rendering callback.
-     * @param renderingCallback the callback.
-     */
-    public void setRenderingCallback(final DynamicUiRenderingCallback renderingCallback) {
-        this.renderingCallback = renderingCallback;
     }
 
     /**
@@ -925,7 +936,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * Sets the rendering hint ((see {@link #RENDER_NONE}, {@link #RENDER_CHECKBOX}, {@link #RENDER_TEXTFIELD},
+     * Sets the rendering hint ((see {@link #RENDER_NONE}, {@link #RENDER_LABEL}, {@link #RENDER_CHECKBOX}, {@link #RENDER_TEXTFIELD},
      * {@link #RENDER_SELECT_ONE} or {@link #RENDER_SELECT_MANY})).
      * @param renderingHint the rendering hint.
      */
@@ -934,7 +945,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * Gets the rendering hint ((see {@link #RENDER_NONE}, {@link #RENDER_CHECKBOX}, {@link #RENDER_TEXTFIELD},
+     * Gets the rendering hint ((see {@link #RENDER_NONE}, {@link #RENDER_LABEL}, {@link #RENDER_CHECKBOX}, {@link #RENDER_TEXTFIELD},
      * {@link #RENDER_SELECT_ONE} or {@link #RENDER_SELECT_MANY})).
      * @return the rendering hint.
      */
@@ -965,5 +976,19 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         return "DynamicUiProperty [name=" + name + ", required=" + required + ", defaultValue=" + defaultValue + ", values=" + values
                 + ", possibleValues=" + possibleValues + ", renderingHint=" + renderingHint + ", labeled=" + labeled + ", labels=" + labels
                 + ", labelOnly=" + labelOnly + ", type=" + type + ", hasMultipleValues=" + hasMultipleValues + "]";
+    }
+    
+    /** Delegation method for {@link DynamicUIModel#addDynamicUiComponent}. */
+    public void addDynamicUiComponent(final DynamicUiComponent component) {
+        getDynamicUiModel().addDynamicUiComponent(name, component);
+    }
+    
+    /** 
+     * Update the view components attributes here! 
+     */
+    public void updateViewComponents() {
+        for (DynamicUiComponent component : getDynamicUiModel().getViewComponents(name)) {
+            component.setDisabled(isDisabled());
+        }
     }
 }

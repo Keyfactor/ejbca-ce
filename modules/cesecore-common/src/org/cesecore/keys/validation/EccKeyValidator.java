@@ -17,6 +17,7 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -83,7 +84,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     }
 
     @Override
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "unchecked"})
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModelBase(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
@@ -94,15 +95,16 @@ public class EccKeyValidator extends KeyValidatorBase {
         settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException {
+                final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
                 setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
-//                uiModel.setPsmRequiresUpdate(true);
+                uiModel.firePropertyChange(oldValues, data);
             }
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> curves = new DynamicUiProperty<String>(String.class, CURVES, getCurvesAsString(), 
                 new ArrayList<String>(AlgorithmTools.getFlatNamedEcCurvesMap(false).keySet())) {
                     @Override
-                    public boolean isDisabled() { return isPropertyDisabled(); }
+                    public boolean isDisabled() { return isCurvesDisabled(); }
         };
         curves.setLabels(AlgorithmTools.getFlatNamedEcCurvesMap(false));
         curves.setHasMultipleValues(true);
@@ -111,7 +113,7 @@ public class EccKeyValidator extends KeyValidatorBase {
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, isUseFullPublicKeyValidationRoutine()) {
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
-        }); 
+        });
     }
     
     /**
@@ -119,9 +121,17 @@ public class EccKeyValidator extends KeyValidatorBase {
      * @return true if disabled.
      */
     private final boolean isPropertyDisabled() {
-        return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() != getSettingsTemplate();
+        return KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == getSettingsTemplate();
     }
     
+    /**
+     * Returns true if the dynamic property fields for this validator are supposed to be disabled.
+     * @return true if disabled.
+     */
+    private final boolean isCurvesDisabled() {
+        return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() != getSettingsTemplate();
+    }
+        
     @Override
     public void setKeyValidatorSettingsTemplate(final KeyValidatorSettingsTemplate template) {
         setSettingsTemplate(template.getOption());

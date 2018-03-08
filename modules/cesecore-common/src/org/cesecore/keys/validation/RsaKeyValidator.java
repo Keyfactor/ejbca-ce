@@ -231,7 +231,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
     }
     
     @Override
-    @SuppressWarnings("serial")
+    @SuppressWarnings({ "serial", "unchecked" })
     public void initDynamicUiModel() {
         uiModel = new DynamicUiModelBase(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
@@ -242,14 +242,15 @@ public class RsaKeyValidator extends KeyValidatorBase {
         settingsTemplate.setActionCallback(new DynamicUiActionCallback() {
             @Override
             public void action(final Object parameter) throws DynamicUiCallbackException {
+                final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
                 setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
-//                uiModel.setPsmRequiresUpdate(true);
+                uiModel.firePropertyChange(oldValues, data);
             }
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> bitLengths = new DynamicUiProperty<String>(String.class, BIT_LENGTHS, getBitLengthsAsString(), (ArrayList<String>) getAvailableBitLengths(0)) {
             @Override
-            public boolean isDisabled() { return isPropertyDisabled(); }
+            public boolean isDisabled() { return isBitLengthsDisabled(); }
         };
         bitLengths.setHasMultipleValues(true);
         bitLengths.setLabels(getAvailableBitLengthsAsMap(0));
@@ -258,7 +259,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_EXPONENT_ONLY_ALLOW_ODD, isPublicKeyExponentOnlyAllowOdd()) {
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
-        }); 
+        });
         uiModel.add(new DynamicUiProperty<BigInteger>(BigInteger.class, PUBLIC_KEY_EXPONENT_MIN, getPublicKeyExponentMin()) {
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
@@ -298,6 +299,14 @@ public class RsaKeyValidator extends KeyValidatorBase {
      * @return true if disabled.
      */
     private final boolean isPropertyDisabled() {
+        return KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption() == getSettingsTemplate();
+    }
+    
+    /**
+     * Returns true if the dynamic property fields for this validator are supposed to be disabled.
+     * @return true if disabled.
+     */
+    private final boolean isBitLengthsDisabled() {
         return KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption() != getSettingsTemplate();
     }
 
@@ -357,10 +366,10 @@ public class RsaKeyValidator extends KeyValidatorBase {
         } else {
             // NOOP
         }
-        // Reset to null before setting new values
+        // Reset to null before setting new values.
         setPublicKeyExponentMin(null);
         setPublicKeyExponentMax(null);
-        
+                
         setPublicKeyExponentOnlyAllowOdd(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_ONLY_ALLOW_ODD);
         setPublicKeyExponentMin(new BigInteger(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_MIN));
         setPublicKeyExponentMax(new BigInteger(CAB_FORUM_BLR_142_PUBLIC_EXPONENT_MAX));
@@ -368,7 +377,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         setPublicKeyModulusDontAllowPowerOfPrime(CAB_FORUM_BLR_142_PUBLIC_MODULUS_DONT_ALLOW_POWER_OF_PRIME);
         setPublicKeyModulusMinFactor(CAB_FORUM_BLR_142_PUBLIC_MODULUS_SMALLEST_FACTOR);
         setPublicKeyModulusMin(null);
-        setPublicKeyModulusMax(null);
+        setPublicKeyModulusMax(null);        
     }
 
     @SuppressWarnings("unchecked")

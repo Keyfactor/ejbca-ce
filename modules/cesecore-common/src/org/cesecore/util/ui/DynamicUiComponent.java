@@ -3,7 +3,7 @@
  *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
+ *  modify it under the terms of the GNU Lesser General                  *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
@@ -13,15 +13,16 @@
 package org.cesecore.util.ui;
 
 /**
- * Rendering callback from PIM to PSM (may be JSF 2 (JsfDynamicUiPsmFactory).
+ * Interface type for PSM components like check boxes, text fields, etc. for dynamic UI model.
  * 
- * @version $Id: DynamicUiRenderingCallback.java 25500 2018-01-07 09:28:24Z anjakobs $
+ * @version $Id: DynamicUiComponent.java 26390 2017-11-04 15:20:58Z anjakobs $
+ *
  */
-public interface DynamicUiRenderingCallback {
+public interface DynamicUiComponent {
 
-    /**
-     * The rendering callback method sets the components value to be rendered on UI.
-     * @param value the given value (in case of UIOutput components).
-     */
-    void setValue(Object value);
+	/**
+	 * Enables or disables the component.
+	 * @param disabled
+	 */
+    void setDisabled(final boolean disabled);
 }
