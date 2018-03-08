@@ -59,8 +59,8 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
-import org.ejbca.core.protocol.cmp.NoSuchAliasException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 

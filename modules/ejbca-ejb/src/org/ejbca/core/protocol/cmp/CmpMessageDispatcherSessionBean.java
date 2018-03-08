@@ -45,6 +45,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.protocol.NoSuchAliasException;
 
 /**
  * Class that receives a CMP message and passes it on to the correct message handler.
