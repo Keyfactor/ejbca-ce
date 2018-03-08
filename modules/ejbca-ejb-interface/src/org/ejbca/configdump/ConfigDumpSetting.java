@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.configdump;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class ConfigDumpSetting implements Serializable {
         VALIDATOR, CTLOG, EXTENDEDKEYUSAGE, CERTEXTENSION
     };
 
-    private String location;
+    private File location;
     private Map<ItemType, List<ConfigdumpPattern>> included = new HashMap<>();
     private Map<ItemType, List<ConfigdumpPattern>> excluded = new HashMap<>();
     private List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
@@ -58,11 +59,11 @@ public class ConfigDumpSetting implements Serializable {
         this.excludedAnyType = excludedAnyType;
     }
 
-    public String getLocation() {
+    public File getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(File location) {
         this.location = location;
     }
 
@@ -86,7 +87,7 @@ public class ConfigDumpSetting implements Serializable {
         return ignoreErrors;
     }
 
-    public ConfigDumpSetting(final String location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
+    public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
             final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors) {
         this.location = location;
         this.included = included;
