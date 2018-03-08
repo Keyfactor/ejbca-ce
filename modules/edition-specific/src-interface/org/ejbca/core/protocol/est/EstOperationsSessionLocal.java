@@ -19,7 +19,7 @@ import javax.ejb.Local;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.ejbca.core.protocol.cmp.NoSuchAliasException;
+import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
