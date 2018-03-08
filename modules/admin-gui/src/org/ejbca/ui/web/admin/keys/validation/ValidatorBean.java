@@ -92,7 +92,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     /** Selected key validator. */
     private Validator validator = null;
 
-    /** Dynamic UI properties PSM component. */
+    /** Dynamic UI PIM component. */
+    private DynamicUiModel uiModel;
+
+    /** Dynamic UI PSM component. */
     private HtmlPanelGrid dataGrid;
 
     /**
@@ -100,9 +103,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     private void reset() {
         setValidatorId(-1);
-        if (validator instanceof ExternalCommandCertificateValidator) {
-            ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
-        }
         validator = null;
     }
     
@@ -139,7 +139,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void validatorTypeChanged(final AjaxBehaviorEvent e) throws DynamicUiModelException {
         setValidatorType((String) ((HtmlSelectOneMenu) e.getComponent()).getValue());
-        FacesContext.getCurrentInstance().renderResponse();
+//        FacesContext.getCurrentInstance().renderResponse();
     }
     
     public String getValidatorType() {
@@ -231,7 +231,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         if (dataGrid == null) {
             dataGrid = new HtmlPanelGrid();
             dataGrid.setId(getClass().getSimpleName()+"-dataGrid");
-            initGrid(((DynamicUiModelAware) getValidator()).getDynamicUiModel(), getValidator().getClass().getSimpleName());
+            uiModel = ((DynamicUiModelAware) getValidator()).getDynamicUiModel();
+            initGrid(uiModel, getValidator().getClass().getSimpleName());
         }
         return dataGrid;
     }
@@ -252,7 +253,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     private void initGrid(final DynamicUiModel pim, final String prefix) throws DynamicUiModelException {
         JsfDynamicUiPsmFactory.initGridInstance(dataGrid, pim, prefix);
-//        pim.setPsmRequiresUpdate(false);
     }
 
     /**
@@ -463,7 +463,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             log.debug("Try to save validator: " + validator);
         }
         try {
-            if (getValidator() instanceof DynamicUiModelAware) {
+            if (validator instanceof DynamicUiModelAware) {
                 ((DynamicUiModelAware) validator).getDynamicUiModel().writeProperties(((ValidatorBase) validator).getRawData());
             }
             keyValidatorSession.changeKeyValidator(getAdmin(), validator);

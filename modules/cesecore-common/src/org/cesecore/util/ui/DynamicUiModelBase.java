@@ -12,9 +12,14 @@
  *************************************************************************/
 package org.cesecore.util.ui;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -38,10 +43,11 @@ public class DynamicUiModelBase implements DynamicUiModel {
     /** List of dynamic UI properties. */
     private final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> properties = new LinkedHashMap<>();
     
-    private boolean updated = false;
-
-//    private boolean psmRequiresUpdate = true;
+    /** Property change support for dynamic UI components (MUST have same content as java.util.Map 'viewComponents'. */
+    protected PropertyChangeSupport propertyChangeSupport;
     
+    protected Map<String,List<DynamicUiComponent>> viewComponents;
+  
     /**
      * Default constructor, required for serialization.
      */
@@ -55,6 +61,8 @@ public class DynamicUiModelBase implements DynamicUiModel {
      */
     public DynamicUiModelBase(final LinkedHashMap<Object, Object> data) {
         super();
+        propertyChangeSupport = new PropertyChangeSupport(this);
+        viewComponents = new HashMap<String,List<DynamicUiComponent>>();
         this.data = data;
         if (log.isDebugEnabled()) {
             log.debug("Create dynmic UI model with data: " + data);
@@ -63,7 +71,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
 
     @Override
     public void add(DynamicUiProperty<? extends Serializable> property) {
-        property.setDynamicUiProperties(this);
+        property.setDynamicUiModel(this);
         properties.put(property.getName(), property);
     }
 
@@ -75,7 +83,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
     @Override
     public DynamicUiProperty<? extends Serializable> getProperty(String name) {
         final DynamicUiProperty<? extends Serializable> property = properties.get(name);
-        property.setValueGeneric(getData(name, property.getDefaultValue()));
+//        property.setValueGeneric(getData(name, property.getDefaultValue()));
         return property;
     }
 
@@ -87,41 +95,6 @@ public class DynamicUiModelBase implements DynamicUiModel {
         putData(name, value);
     }
     
-//    @Override
-//    public void updateProperty(String name, Serializable value) {
-//        if (log.isDebugEnabled()) {
-//            log.debug("Update domain object attribute by dynamic property " + name + " with value " + value);
-//        }
-//        putData(name, value);
-//        setUpdated(true);
-//    }
-    
-    /**
-     * Return true if the dynamic UI model was updated and the PSM needs to be re-built.
-     * @return if the PSM needs to be re-built.
-     */
-    public boolean isUpdated() {
-        return updated;
-    }
-
-    /**
-     * Mark the dynamic UI model as updated.
-     * @param updated true if the PSM has to be re-built.
-     */
-    public void setUpdated(final boolean updated) {
-        this.updated = updated;
-    }
-    
-//    @Override
-//    public boolean isPsmRequiresUpdate() {
-//        return psmRequiresUpdate;
-//    }
-//
-//    @Override
-//    public void setPsmRequiresUpdate(final boolean psmRequiresUpdate) {
-//        this.psmRequiresUpdate = psmRequiresUpdate;
-//    }
-
     @Override
     public Map<String,Object> getRawData() {
         final LinkedHashMap<String,Object> result = new LinkedHashMap<String,Object>();
@@ -159,15 +132,70 @@ public class DynamicUiModelBase implements DynamicUiModel {
         }
     }
 
-    /** @return data from the underlying map. Encourages use of string valued keys. */
-    @SuppressWarnings("unchecked")
-    private <T> T getData(final String key, final T defaultValue) {
-        final T result = (T) data.get(key);
-        return result == null ? defaultValue : result;
-    }
-
     /** Store data in the underlying map. Encourages use of String valued keys. */
     private void putData(final String key, final Object value) {
         data.put(key, value);
+    }
+    
+    @Override
+    public void addDynamicUiComponent(final String name, final DynamicUiComponent component) {
+        propertyChangeSupport.addPropertyChangeListener(name, (PropertyChangeListener) component);
+        if (viewComponents.get(name) == null) {
+            viewComponents.put(name, new ArrayList<DynamicUiComponent>());
+        }
+        viewComponents.get(name).add(component);
+    }
+    
+    @Override
+    public void removeDynamicUiComponent(final String name, final DynamicUiComponent component) {
+        propertyChangeSupport.removePropertyChangeListener(name, (PropertyChangeListener) component);
+        if (viewComponents.get(name) != null) {
+            viewComponents.get(name).remove(component);
+        }
+    }
+    
+    @Override
+    public List<DynamicUiComponent> getViewComponents(String name) {
+        final List<DynamicUiComponent> result = new ArrayList<DynamicUiComponent>();
+        if (viewComponents.get(name) != null) {
+            result.addAll(viewComponents.get(name));
+        }
+        return result;
+    }
+
+    @Override
+    public void firePropertyChange(final String name, final Object oldValue, final Object newValue) {
+        if (log.isTraceEnabled()) {
+            log.trace("Fire dynamic UI model property change event for " + name + " with old value " + oldValue + ", new value " + newValue);
+        }
+        propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
+        final DynamicUiProperty<?> property = getProperty(name);
+        if (property != null) {
+            property.updateViewComponents();
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void firePropertyChange(final Map<Object, Object> oldValues, final Map<Object, Object> newValues) {
+        if (log.isTraceEnabled()) {
+            log.trace("Fire dynamic UI model property change event with old values " + oldValues + ", new values " + newValues);
+        }
+        if (propertyChangeSupport != null) {
+            DynamicUiProperty<?> property;
+            for (Object key : newValues.keySet()) {
+                property = getProperty((String) key);
+                if (property != null) {
+                    // Update dynamic UI model (if not done already).
+                    if (property.getHasMultipleValues()) {
+                        property.setValuesGeneric((List<Serializable>) newValues.get(key));
+                    } else {
+                        property.setValueGeneric((Serializable) newValues.get(key));
+                    }
+                    // Update UIs.
+                    firePropertyChange((String) key, oldValues.get(key), newValues.get(key));
+                }
+            }
+        }
     }
 }

@@ -22,6 +22,7 @@ import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
@@ -37,7 +38,6 @@ import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModelBase;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.cesecore.util.ui.PropertyValidationException;
 
 /**
  * External command certificate validator for multiple platforms.
@@ -73,9 +73,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     /** Holds the test certificates uploaded by the user. */
     private List<Certificate> testCertificates;
-
-    /** Holds the STDOUT and ERROUT by the test of the external command. */
-    private String testStandardAndErrorOut;
 
     static {
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
@@ -133,6 +130,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final DynamicUiProperty<File> testPath = new DynamicUiProperty<File>(File.class, "testPath", null);
         testPath.setTransientValue(true);
         uiModel.add(testPath);
+        // ECA-6320 Bug. MyFaces HtmlOutputText and HtmlOutputLabel throw NPE in JSF life cycle -> use disabled text field.
+//        final DynamicUiProperty<String> testOut = new DynamicUiProperty<String>("testOut");
+//        testOut.setLabelOnly(false);
+//        testOut.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
+//        uiModel.add(testOut);
+        final DynamicUiProperty<String> testOut = new DynamicUiProperty<String>("testOut");
+        testOut.setLabelOnly(false);
+        testOut.setRenderingHint(DynamicUiProperty.RENDER_TEXTFIELD);
+        testOut.setDisabled(true);
         final DynamicUiProperty<String> testButton = new DynamicUiProperty<String>(String.class, "testCommand", "testCommand");
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setActionCallback(new DynamicUiActionCallback() {
@@ -140,20 +146,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             @SuppressWarnings("unchecked")
             public void action(final Object parameter) throws DynamicUiCallbackException {
                 final List<String> out = testCommand();
-                try {
-                    final String testOut = StringUtils.join(out, System.getProperty("line.separator"));
-                    ((DynamicUiProperty<String>) uiModel.getProperty("testOut")).setValue(testOut);
-                    ((DynamicUiProperty<String>) uiModel.getProperty("testPath")).setValue(null);
-                } catch (PropertyValidationException e) {
-                    log.warn("Could not update dynamic UI property: " + e.getMessage(), e);
-                }
+                final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
+                final Map<Object, Object> newValues = (Map<Object, Object>) data.clone();
+                newValues.put("testOut", StringUtils.join(out, System.getProperty("line.separator")));
+                newValues.put("testPath", "");
+                uiModel.firePropertyChange(oldValues, newValues);
                 setTestCertificates(ListUtils.EMPTY_LIST);
             }
         });
         uiModel.add(testButton);
-        final DynamicUiProperty<String> testOut = new DynamicUiProperty<String>(String.class, "testOut", StringUtils.EMPTY);
-        testOut.setTransientValue(true);
-        testOut.setLabelOnly(true);
         uiModel.add(testOut);
     }
 
@@ -321,9 +322,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     @SuppressWarnings("unchecked")
     public List<String> testCommand() throws DynamicUiCallbackException {
         log.info("Test external command certificate validator " + getProfileName());
-//        if (validator instanceof ExternalCommandCertificateValidator) {
-//            ((ExternalCommandCertificateValidator) validator).setTestStandardAndErrorOut(StringUtils.EMPTY);
-//        }
         final DynamicUiProperty<File> property = (DynamicUiProperty<File>) uiModel.getProperties().get("testPath");
         final List<String> out = new ArrayList<String>();
         File file = null;
@@ -386,18 +384,6 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         if (log.isDebugEnabled()) {
             log.debug("Test certificates uploaded: " + testCertificates);
         }
-    }
-
-    /**
-     * Gets the result of the test of the external command which is displayed to the user.
-     * @return the list of lines.
-     */
-    public String getTestStandardAndErrorOut() {
-        return testStandardAndErrorOut;
-    }
-
-    public void setTestStandardAndErrorOut(String testStandardAndErrorOut) {
-        this.testStandardAndErrorOut = testStandardAndErrorOut;
     }
 
     public String getPlatform() {
