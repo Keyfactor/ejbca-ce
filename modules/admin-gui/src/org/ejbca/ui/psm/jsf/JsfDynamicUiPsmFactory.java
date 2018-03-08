@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.psm.jsf;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UICommand;
-import javax.faces.component.UIComponent;
 import javax.faces.component.UIComponentBase;
 import javax.faces.component.UIInput;
 import javax.faces.component.UIOutput;
@@ -32,6 +28,7 @@ import javax.faces.component.html.HtmlCommandButton;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.component.html.HtmlInputTextarea;
 import javax.faces.component.html.HtmlOutputLabel;
+import javax.faces.component.html.HtmlOutputText;
 import javax.faces.component.html.HtmlPanelGrid;
 import javax.faces.component.html.HtmlPanelGroup;
 import javax.faces.component.html.HtmlSelectBooleanCheckbox;
@@ -41,23 +38,14 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.BigIntegerConverter;
 import javax.faces.convert.FloatConverter;
 import javax.faces.convert.IntegerConverter;
-import javax.faces.event.AbortProcessingException;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ActionListener;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.AjaxBehaviorListener;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.event.ValueChangeListener;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiModelException;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.cesecore.util.ui.DynamicUiRenderingCallback;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
@@ -66,11 +54,12 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id: DynamicUiPropertyPsmFactory.java 20757 2017-12-24 10:18:14Z anjakobs $
  */
 public class JsfDynamicUiPsmFactory {
-
     
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiPsmFactory.class);
 
+    private static final String STYLE_CLASS_SUB_ITEM = "subItem";
+    
     /**
      * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right.
      * @param panelGrid the panel grid instance to (re-)build.
@@ -94,21 +83,23 @@ public class JsfDynamicUiPsmFactory {
         for (DynamicUiProperty<? extends Serializable> property : properties.values()) {
             label = new HtmlOutputLabel();
             label.setValue(getText(i18nPrefix, property.getName()));
-            component = createComponentInstance(i18nPrefix, property);
-            // Re-factor: Set header bold.
-            if (index == 0 && label instanceof HtmlOutputLabel) {
+            label.setStyleClass(STYLE_CLASS_SUB_ITEM);
+            if (index == 0 && label instanceof HtmlOutputLabel) { // Re-factor: Set header bold.
                 ((HtmlOutputLabel) label).setStyle("font-weight: bold;");
             }
             panelGrid.getChildren().add(label);
-            if (component instanceof HtmlOutputLabel) {
-                panelGrid.getChildren().add(new HtmlPanelGroup());
-            } else {
+            if (!property.isLabelOnly()) {
+                component = createComponentInstance(i18nPrefix, property);
                 panelGrid.getChildren().add(component);
+                if (log.isDebugEnabled()) {
+                    log.debug("Registered UIComponent " + component + " for dynamic UI property " + property.getName());
+                }
+            } else {
+                label.setStyle("font-weight: bold;");
+                label.setStyleClass(StringUtils.EMPTY);
+                panelGrid.getChildren().add(new HtmlPanelGroup());
             }
             index++;
-            if (log.isDebugEnabled()) {
-                log.debug("Registered UIComponent " + component + " for dynamic UI property " + property.getName());
-            }
         }
     }
 
@@ -124,14 +115,15 @@ public class JsfDynamicUiPsmFactory {
             throws DynamicUiModelException {
         final String hint = property.getRenderingHint();
         UIComponentBase component = null;
-        if (property.isBooleanType()) {
+        if (DynamicUiProperty.RENDER_NONE.equals(hint)) { // Insert dummy component.
+            component = new HtmlPanelGroup();
+        }
+        else if (property.isBooleanType()) {
             if (DynamicUiProperty.RENDER_CHECKBOX.equals(hint)) {
                 component = createCheckBoxInstance(property);
             }
         } else if (property.isStringType()) {
-            if (property.isLabelOnly()) {
-                component = createLabelInstance(property);
-            } else if (DynamicUiProperty.RENDER_TEXTFIELD.equals(hint)) {
+            if (DynamicUiProperty.RENDER_TEXTFIELD.equals(hint)) {
                 component = createTextFieldInstance(property);
             } else if (DynamicUiProperty.RENDER_TEXTAREA.equals(hint)) {
                 component = createTextAreaInstance(property);
@@ -141,6 +133,8 @@ public class JsfDynamicUiPsmFactory {
                 component = createListBoxInstance(property);
             } else if (DynamicUiProperty.RENDER_BUTTON.equals(hint)) {
                 component = createButtonInstance(i18nPrefix, property);
+            } else if (DynamicUiProperty.RENDER_LABEL.equals(hint)) {
+                component = createLabelInstance(property);
             }
         } else if (property.isIntegerType()) {
             if (DynamicUiProperty.RENDER_TEXTFIELD.equals(hint)) {
@@ -174,19 +168,10 @@ public class JsfDynamicUiPsmFactory {
      * @param property the dynamic UI property.
      * @return the label instance.
      */
-    public static final HtmlOutputLabel createLabelInstance(final DynamicUiProperty<?> property) {
-        final HtmlOutputLabel result = new HtmlOutputLabel();
-        setBaseProperties(result, property);
-        property.setRenderingCallback(new DynamicUiRenderingCallback() {
-            @Override
-            public void setValue(final Object value) {
-                result.setValue(value);
-//                FacesContext.getCurrentInstance().update(result.getClientId());
-                if (log.isDebugEnabled()) {
-                    log.debug("Dynamic UI rendering callback for property " + property.getName() + " - " + value);
-                }
-            }
-        });
+    public static final HtmlOutputText createLabelInstance(final DynamicUiProperty<?> property) {
+        final JsfDynamicUiHtmlOutputLabel result = new JsfDynamicUiHtmlOutputLabel();
+        result.setDynamicUiProperty(property);
+        setUIOutputAttributes(result, property);
         return result;
     }
 
@@ -196,9 +181,11 @@ public class JsfDynamicUiPsmFactory {
      * @return the check box instance.
      */
     public static final HtmlSelectBooleanCheckbox createCheckBoxInstance(final DynamicUiProperty<?> property) {
-        final HtmlSelectBooleanCheckbox result = new HtmlSelectBooleanCheckbox();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlSelectBooleanCheckbox result = new JsfDynamicUiHtmlSelectBooleanCheckbox();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
+        addAjaxListener(property, result);
         return result;
     }
 
@@ -208,9 +195,12 @@ public class JsfDynamicUiPsmFactory {
      * @return the text area instance.
      */
     public static final HtmlInputTextarea createTextAreaInstance(final DynamicUiProperty<?> property) {
-        final HtmlInputTextarea result = new HtmlInputTextarea();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlInputTextarea result = new JsfDynamicUiHtmlInputTextarea();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
+        result.setCols(45);
+        result.setRows(3);
         return result;
     }
 
@@ -220,9 +210,11 @@ public class JsfDynamicUiPsmFactory {
      * @return the text field instance.
      */
     public static final HtmlInputText createTextFieldInstance(final DynamicUiProperty<?> property) {
-        final HtmlInputText result = new HtmlInputText();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
+        result.setSize(44);
         return result;
     }
 
@@ -232,10 +224,12 @@ public class JsfDynamicUiPsmFactory {
      * @return the text field instance.
      */
     public static final HtmlInputText createIntegerTextFieldInstance(final DynamicUiProperty<?> property) {
-        final HtmlInputText result = new HtmlInputText();
-        setBaseProperties(result, property);
-        result.setConverter(new IntegerConverter());
+        final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
+        result.setConverter(new IntegerConverter());
+        result.setSize(12);
         return result;
     }
 
@@ -245,10 +239,12 @@ public class JsfDynamicUiPsmFactory {
      * @return the text field instance.
      */
     public static final HtmlInputText createBigIntegerTextFieldInstance(final DynamicUiProperty<?> property) {
-        final HtmlInputText result = new HtmlInputText();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
         result.setConverter(new BigIntegerConverter());
+        result.setSize(44);
         return result;
     }
 
@@ -258,10 +254,12 @@ public class JsfDynamicUiPsmFactory {
      * @return the text field instance.
      */
     public static final HtmlInputText createFloatTextFieldInstance(final DynamicUiProperty<?> property) {
-        final HtmlInputText result = new HtmlInputText();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
         result.setConverter(new FloatConverter());
+        result.setSize(12);
         return result;
     }
 
@@ -271,14 +269,15 @@ public class JsfDynamicUiPsmFactory {
      * @return the drop down box instance.
      */
     public static final HtmlSelectOneMenu createDropDownBoxInstance(final DynamicUiProperty<?> property) {
-        final HtmlSelectOneMenu result = new HtmlSelectOneMenu();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlSelectOneMenu result = new JsfDynamicUiHtmlSelectOneMenu();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
-                    property.isLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
+                    property.isI18NLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
@@ -293,20 +292,21 @@ public class JsfDynamicUiPsmFactory {
      * @return the drop down box instance.
      */
     public static final HtmlSelectOneMenu createIntegerDropDownBoxInstance(final DynamicUiProperty<?> property) {
-        final HtmlSelectOneMenu result = new HtmlSelectOneMenu();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlSelectOneMenu result = new JsfDynamicUiHtmlSelectOneMenu();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
         result.setConverter(new IntegerConverter());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
-                    property.isLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
+                    property.isI18NLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
-        result.getChildren().add(selectItems);
         addAjaxListener(property, result);
+        result.getChildren().add(selectItems);
         return result;
     }
 
@@ -316,14 +316,15 @@ public class JsfDynamicUiPsmFactory {
      * @return the list box instance.
      */
     public static final HtmlSelectManyListbox createListBoxInstance(final DynamicUiProperty<?> property) {
-        final HtmlSelectManyListbox result = new HtmlSelectManyListbox();
-        setBaseProperties(result, property);
+        final JsfDynamicUiHtmlSelectManyListbox result = new JsfDynamicUiHtmlSelectManyListbox();
+        result.setDynamicUiProperty(property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
-                    property.isLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
+                    property.isI18NLabeled() ? EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(entry.getValue()) : entry.getValue()));
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
@@ -343,31 +344,7 @@ public class JsfDynamicUiPsmFactory {
         result.setRendered(true);
         result.setDisabled(property.isDisabled());
         result.setValue(getText(i18nPrefix, (String) property.getValue()));
-        result.addActionListener(new ActionAdapter() {
-            private static final long serialVersionUID = -1L;
-
-            @Override
-            public void processAction(final ActionEvent actionEvent) throws AbortProcessingException {
-                final HtmlCommandButton button = (HtmlCommandButton) actionEvent.getSource();
-                if (log.isDebugEnabled()) {
-                    log.debug("Dynamic UI model action called: " + actionEvent + " by component " + button);
-                }
-                if (property.getActionCallback() != null) {
-                    try {
-                        property.getActionCallback().action(button.getValue());
-                        FacesContext.getCurrentInstance().renderResponse();
-                    } catch (DynamicUiCallbackException e) {
-                        log.info("Could not process dynamic UI model action callback: " + e.getMessage());
-                        FacesContext.getCurrentInstance().addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,e.getMessage(),e.getMessage()));
-                        // throw new AbortProcessingException(e);
-                        // -> Renders the message (no stack trace) on UI.
-                    }
-                } else {
-                    throw new AbortProcessingException(new DynamicUiModelException(
-                            "Registered dynamic UI model action " + property.getName() + " does not have an action callback."));
-                }
-            }
-        });
+        result.addActionListener(new JsfDynamicUiActionListener(property));
         return result;
     }
 
@@ -378,8 +355,9 @@ public class JsfDynamicUiPsmFactory {
      */
     public static final HtmlInputFileUpload createFileChooserInstance(final DynamicUiProperty<?> property) {
         final HtmlInputFileUpload result = new HtmlInputFileUpload();
-        setBaseProperties(result, property);
+        setUIInputAttributes(result, property);
         result.setDisabled(property.isDisabled());
+        result.setSize(44);
         return result;
     }
 
@@ -392,35 +370,31 @@ public class JsfDynamicUiPsmFactory {
         final String name = property.getName();
         component.setId(name);
         component.setRendered(true);
-        if (component instanceof UIOutput) {
-            if (!property.getHasMultipleValues()) {
-                ((UIOutput) component).setValue(property.getValue());
-            } else {
-                ((UIOutput) component).setValue(property.getValues());
-            }
+    }    
+    
+    /**
+     * Sets the common properties for a component.
+     * @param component the component.
+     * @param property the dynamic property.
+     */
+    private static final void setUIOutputAttributes(final UIOutput component, final DynamicUiProperty<? extends Serializable> property) {
+        setBaseProperties(component, property);
+        if (!property.getHasMultipleValues()) {
+            component.setValue(property.getValue());
+        } else {
+            component.setValue(property.getValues());
         }
-        if (component instanceof UIInput) {
-            ((UIInput) component).setRequired(property.isRequired());
-            ((UIInput) component).addValueChangeListener(new ValueChangeAdapter() {
-                
-                private static final long serialVersionUID = -1L;
-                
-                @Override
-                public void processValueChange(final ValueChangeEvent event) throws AbortProcessingException {
-                    final UIComponent eventSource = event.getComponent();
-                    if (eventSource.isRendered() && eventSource instanceof UIInput) {
-                        if (property.getHasMultipleValues()) {
-                            multipleValueChanged(eventSource, property);
-                        } else {
-                            singleValueChanged(eventSource, property);
-                        }
-                    }
-                }
-            });
-        }
-        if (component instanceof UICommand) {
-            ((UICommand) component).setValue(property.getValue());
-        }
+    }
+    
+    /**
+     * Sets the common properties for a component.
+     * @param component the component.
+     * @param property the dynamic property.
+     */
+    private static final void setUIInputAttributes(final UIInput component, final DynamicUiProperty<? extends Serializable> property) {
+        setUIOutputAttributes(component, property);
+        component.setRequired(property.isRequired());
+        component.addValueChangeListener(new JsfDynamicUiValueChangeListener(property));
     }
 
     /**
@@ -434,61 +408,17 @@ public class JsfDynamicUiPsmFactory {
     }
 
     /**
-     * Implements the value changed event for single value properties.
-     * @param eventSource the event source.
-     * @param property the dynamic UI property.
-     */
-    private static final void singleValueChanged(final UIComponent eventSource, final DynamicUiProperty<? extends Serializable> property) {
-        final Object value = ((UIInput) eventSource).getValue();
-        if (log.isDebugEnabled()) {
-            log.debug("Registered UIComponent " + eventSource + " for dynamic UI property " + property.getName() + " single value changed from " + property.getValue() + " to " + value + ".");
-        }
-        if (!property.isFileType()) {
-            property.setValueGeneric((Serializable) value);
-        } else {
-            if (value instanceof UploadedFile) {
-                property.setValueGeneric((Serializable) new File(((UploadedFile) value).getName()));
-            }
-        }
-    }
-
-    /**
-     * Implements the value changed event for multiple value properties (used for string list boxes only).
-     * @param eventSource the event source.
-     * @param property the dynamic UI property.
-     */
-    private static final void multipleValueChanged(final UIComponent eventSource, final DynamicUiProperty<? extends Serializable> property) {
-        final String[] values = (String[]) ((UIInput) eventSource).getValue();
-        if (log.isDebugEnabled()) {
-            log.debug("Registered UIComponent " + eventSource + " for dynamic UI property " + property.getName() + " single value changed from " + property.getValues() + " to " + values + ".");
-        }
-        property.setValuesGeneric((List<String>) Arrays.asList(values));
-    }
-
-    /**
      * Adds an ajax behavior listener to the component if the dynamic UI properties action callback is not null.
      * @param property the dynamic UI property.
      * @param component the JSF UIInput component.
      */
-    private static final void addAjaxListener(final DynamicUiProperty<? extends Serializable> property, final HtmlSelectOneMenu component) {
+    private static final void addAjaxListener(final DynamicUiProperty<? extends Serializable> property, final UIInput component) {
         if (property.getActionCallback() != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Registered dynamic UI model action callback for component " + property.getName() + ".");
             }
             final AjaxBehavior behavior = (AjaxBehavior) FacesContext.getCurrentInstance().getApplication().createBehavior(AjaxBehavior.BEHAVIOR_ID);
-            behavior.addAjaxBehaviorListener(new AjaxBehaviorListener() {
-                @Override
-                public void processAjaxBehavior(final AjaxBehaviorEvent event) throws AbortProcessingException {
-                    try {
-                        property.getActionCallback().action(((HtmlSelectOneMenu) event.getSource()).getSubmittedValue());
-                        FacesContext.getCurrentInstance().renderResponse();
-                    } catch (Exception e) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Could not perform dynamic UI property action callback: " + component.getSubmittedValue(), e);
-                        }
-                    }
-                }
-            });
+            behavior.addAjaxBehaviorListener(new JsfDynamicUiAjaxBehaviorListener(property, component));
             behavior.setRender(Arrays.asList(new String[] {"@all"}));
             behavior.setTransient(false);
             behavior.setImmediate(true);
@@ -500,31 +430,5 @@ public class JsfDynamicUiPsmFactory {
      * Avoid instantiation.
      */
     private JsfDynamicUiPsmFactory() {
-    }
-    
-    /** Faces context restore view requires a serializable action listener class. */
-    public static abstract class ActionAdapter implements Serializable, ActionListener {
-        
-        private static final long serialVersionUID = -1L;
-        
-        /** Required by Serializable */
-        public ActionAdapter() {    
-        }
-        
-        @Override
-        public abstract void processAction(ActionEvent actionEvent) throws AbortProcessingException;
-    }
-    
-    /** Faces context restore view requires a serializable value change listener class. */
-    public static abstract class ValueChangeAdapter implements Serializable, ValueChangeListener {
-
-        private static final long serialVersionUID = -1L;
-        
-        /** Required by Serializable */
-        public ValueChangeAdapter() {
-        }
-
-        @Override
-        public abstract void processValueChange(ValueChangeEvent event) throws AbortProcessingException;
     }
 }
