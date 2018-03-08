@@ -10,12 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.cmp;
+package org.ejbca.core.protocol;
 
 import org.ejbca.core.EjbcaException;
 
 /**
- * Error due to wrong CMP alias
+ * Error due to wrong CMP / EST / SCEP alias
  *
  * @version $Id$
  */
