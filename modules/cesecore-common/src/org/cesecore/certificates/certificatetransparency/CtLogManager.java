@@ -129,14 +129,13 @@ public class CtLogManager {
     }
 
     /**
-     * Add a new CT log to this CT log manager. This method does not allow duplicates within the
-     * same CT log group.
+     * Add a new CT log to this CT log manager. This method will prevent duplicate logs from being added.
      * @param ctLog the CT log to add
-     * @throws DuplicateCtLogException if the CT log already exists with the given label
+     * @throws DuplicateCtLogException if another CT log with the same URL already exists
      */
     public void addCtLog(final CTLogInfo ctLog) {
         if (!canAdd(ctLog)) {
-            throw new DuplicateCtLogException("The CT log " + ctLog.toString() + " already exists in '" + ctLog.getLabel() + "'.");
+            throw new DuplicateCtLogException("The CT log " + ctLog.toString() + " already exists in the log group '" + ctLog.getLabel() + "'.");
         }
         ctLogs.add(ctLog);
     }
