@@ -176,6 +176,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
+import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
@@ -245,6 +246,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private KeyStoreCreateSessionLocal keyStoreCreateSessionLocal;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
+    @EJB
+    private ScepMessageDispatcherSessionLocal scepMessageDispatcherSession;
     @EJB
     private SignSessionLocal signSessionLocal;
     @EJB
@@ -2083,6 +2086,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
 
+    @Override
+    public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) 
+            throws CertificateEncodingException, InvalidKeyException, NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+            CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
+            SignatureException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
+        return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
+    }
+    
     @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
         return cmpMessageDispatcherSession.dispatchRequest(authenticationToken, pkiMessageBytes, cmpConfigurationAlias);
