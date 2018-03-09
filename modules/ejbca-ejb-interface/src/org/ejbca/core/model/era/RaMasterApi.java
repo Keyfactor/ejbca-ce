@@ -13,8 +13,14 @@
 package org.ejbca.core.model.era;
 
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -28,16 +34,26 @@ import org.cesecore.authorization.access.AccessSet;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateWrapper;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.RaStyleInfo;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -578,6 +594,47 @@ public interface RaMasterApi {
      */
     void checkUserStatus(AuthenticationToken authenticationToken, String username, String password) throws NoSuchEndEntityException, AuthStatusException, AuthLoginException;
 
+    
+    /**
+     * TODO Docs
+     * @param authenticationToken
+     * @param operation
+     * @param message
+     * @param scepConfigurationAlias
+     * @return
+     * @throws CertificateEncodingException
+     * @throws InvalidKeyException
+     * @throws NoSuchAliasException
+     * @throws CADoesntExistsException
+     * @throws NoSuchEndEntityException
+     * @throws CustomCertificateSerialNumberException
+     * @throws CryptoTokenOfflineException
+     * @throws IllegalKeyException
+     * @throws SignRequestException
+     * @throws SignRequestSignatureException
+     * @throws AuthStatusException
+     * @throws AuthLoginException
+     * @throws IllegalNameException
+     * @throws CertificateCreateException
+     * @throws CertificateRevokeException
+     * @throws CertificateSerialNumberException
+     * @throws IllegalValidityException
+     * @throws CAOfflineException
+     * @throws InvalidAlgorithmException
+     * @throws SignatureException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws AuthorizationDeniedException
+     * @throws CertificateExtensionException
+     * @throws CertificateRenewalException
+     */
+    byte[] scepDispatch(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException, InvalidKeyException, 
+    NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException, 
+    SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, 
+    IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, AuthorizationDeniedException, 
+    CertificateExtensionException, CertificateRenewalException;
+    
     /**
      * Dispatch CMP request over RaMasterApi.
      * 
