@@ -92,6 +92,7 @@
        <!--@ra-gui.war@-->
        <!--@acme.war@-->
        <!--@est.war@-->
+       <!--@unidfnr-ejb.jar@-->
        
 </application>
 
