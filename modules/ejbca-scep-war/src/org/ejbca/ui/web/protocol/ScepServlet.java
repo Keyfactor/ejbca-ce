@@ -15,18 +15,10 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -43,40 +35,17 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.ScepConfiguration;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.protocol.scep.ScepRequestMessage;
-import org.ejbca.core.protocol.scep.ScepResponseMessage;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
@@ -108,66 +77,12 @@ public class ScepServlet extends HttpServlet {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final String SCEP_RA_MODE_EXTENSION_CLASSNAME = "org.ejbca.ui.web.protocol.ScepRaModeExtension";
-    public static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME = "org.ejbca.ui.web.protocol.ClientCertificateRenewalExtension";   
     
     @EJB
-    private CaSessionLocal casession;
-    @EJB
-    private CertificateProfileSessionLocal certProfileSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSession;
-    @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;   
-    @EJB
-    private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigSession;
-    @EJB
-    private SignSessionLocal signsession;
-
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
     private static final String DEFAULT_SCEP_ALIAS = "scep";
 
-    private transient ScepOperationPlugin scepRaModeExtension = null;
-    private transient ScepResponsePlugin scepClientCertificateRenewal = null;
-
-    @PostConstruct
-    public void postConstruct() {
-        try {
-            @SuppressWarnings("unchecked")
-            Class<? extends ScepOperationPlugin> extensionClass = (Class<? extends ScepOperationPlugin>) Class.forName(SCEP_RA_MODE_EXTENSION_CLASSNAME);
-            scepRaModeExtension = extensionClass.newInstance();
-        } catch (ClassNotFoundException e) {
-            scepRaModeExtension = null;
-        } catch (InstantiationException e) {
-            scepRaModeExtension = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            scepRaModeExtension = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        }
-        
-        try {
-            @SuppressWarnings("unchecked")
-            Class<ScepResponsePlugin> extensionClass = (Class<ScepResponsePlugin>) Class.forName(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME);
-            scepClientCertificateRenewal = extensionClass.newInstance();
-        } catch (ClassNotFoundException e) {
-            scepClientCertificateRenewal = null;
-        } catch (InstantiationException e) {
-            scepClientCertificateRenewal = null;
-            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            scepClientCertificateRenewal = null;
-            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
-        }
-    }
-    
-    
     /**
      * Inits the SCEP servlet
      *
@@ -221,7 +136,7 @@ public class ScepServlet extends HttpServlet {
         String message = new String(Base64.encode(output.toByteArray()));
         service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
         log.trace("<SCEP doPost()");
-    } //doPost
+    }
 
     /**
      * Handles HTTP get
@@ -254,10 +169,11 @@ public class ScepServlet extends HttpServlet {
         service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
 
         log.trace("<SCEP doGet()");
-    } // doGet
+    }
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
         String alias = getAlias(pathInfo);
+        String caname = getCAName(message);
         if(alias == null) {
             log.info("Wrong URL format. The SCEP URL should look like: " +
             		"'http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe' " +
@@ -270,13 +186,6 @@ public class ScepServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
             return;
         }
-        ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-        if(!scepConfig.aliasExists(alias)) {
-            String msg = "SCEP alias '" + alias + "' does not exist";
-            log.info(msg);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
-            return;
-        }
         
         try {
             if (operation == null) {
@@ -285,57 +194,39 @@ public class ScepServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
                 return;
             }
-            
-            final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("ScepServlet", remoteAddr));
-            if (log.isDebugEnabled()) {
-                log.debug("Got request '" + operation + "'");
-                log.debug("Message: " + message);
-            }
-    		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
-			log.info(iMsg);
-            if (operation.equals("PKIOperation")) {
+            if (operation.equals("PKIOperation") && message == null) {
                 if (message == null) {
                     String errMsg = intres.getLocalizedMessage("scep.errormissingparam", remoteAddr);
                     log.error(errMsg);
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
                     return;
                 }
-                
-                byte[] scepmsg = Base64.decode(message.getBytes());
-                                
-                // Read the message end get the cert, this also checks authorization
-                byte[] reply = scepCertRequest(administrator, scepmsg, alias, scepConfig);
-                if (reply == null) {
-                    // This is probably a getCert message?
+            }
+            final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("ScepServlet", remoteAddr));
+            if (log.isDebugEnabled()) {
+                log.debug("Got request '" + operation + "'");
+                log.debug("Message: " + message);
+            }
+    		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
+			log.info(iMsg);	
+			byte[] dispatchResponse = raMasterApiProxyBean.scepDispatch(administrator, operation, message, alias);
+			
+            if (operation.equals("PKIOperation")) {
+                if (dispatchResponse == null) {
                     response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Can not handle request");
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
-                RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message", null);
+                RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-pki-message", null);
         		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "PKIOperation", remoteAddr);
     			log.info(iMsg);
             } else if (operation.equals("GetCACert")) {
                 // The response has the content type tagged as application/x-x509-ca-cert. 
                 // The body of the response is a DER encoded binary X.509 certificate. 
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
-                
-                // CA_IDENT is the message for this request to indicate which CA we are talking about
-                final String caname = getCAName(message);
-                if (log.isDebugEnabled()) {
-                    log.debug("Got SCEP cert request for CA '" + caname + "'");
-                }
-                Collection<Certificate> certs = null;
-                CAInfo cainfo = casession.getCAInfoInternal(-1, caname, true);
-                if (cainfo != null) {
-                    certs = cainfo.getCertificateChain();
-                }
-                if ((certs != null) && (certs.size() > 0)) {
-                    // CAs certificate is in the first position in the Collection
-                    X509Certificate cert = (X509Certificate) certs.iterator().next();
-                    if (log.isDebugEnabled()) {
-                        log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
-                    }
-                    RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
+                if (dispatchResponse != null) {
+                    log.debug("Sent CA certificate to SCEP client.");
+                    RequestHelper.sendNewX509CaCert(dispatchResponse, response);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
         			log.info(iMsg);
                 } else {
@@ -348,20 +239,11 @@ public class ScepServlet extends HttpServlet {
                 // This dissapeared on SCEP draft 19 however, so we should not expect any clients to use this method.
                 
                 // The response for GetCACertChain is a certificates-only PKCS#7 
-                // SignedDatato carry the certificates to the end entity, with a 
+                // SignedData to carry the certificates to the end entity, with a 
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
-                
-                // CA_IDENT is the message for this request to indicate which CA we are talking about
-                final String caname = getCAName(message);
-                log.debug("Got SCEP pkcs7 request for CA '" + caname + "'. Old client using SCEP draft 18?");
-  
-                CAInfo cainfo = casession.getCAInfo(administrator, caname);
-                byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
-                if ((pkcs7 != null) && (pkcs7.length > 0)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Sent PKCS7 for CA '" + caname + "' to SCEP client.");
-                    }
-                    RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain", null);
+                if (dispatchResponse != null) {
+                    log.debug("Sent PKCS7 for CA to SCEP client.");
+                    RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-ca-ra-cert-chain", null);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
         			log.info(iMsg);
                 } else {
@@ -371,23 +253,8 @@ public class ScepServlet extends HttpServlet {
                 }
             } else if (operation.equals("GetNextCACert")) {
                 // Like GetCACert, but returns the next certificate during certificate rollover
-                final String caname = getCAName(message);
-                if (log.isDebugEnabled()) {
-                    log.debug("Got SCEP next cert request for CA '" + caname + "'");
-                }
-                final CAInfo cainfo = casession.getCAInfoInternal(-1, caname, true);
-                if (cainfo == null) {
-                    String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-                    log.error(errMsg);
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "No such CA.");
-                } else {
-                    if (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
-                        // Send full certificate chain of next CA, in SCEP-PKCS7 format 
-                        if (log.isDebugEnabled()) {
-                            log.debug("Sending next certificate chain for CA '" + caname + "' to SCEP client.");
-                        }
-                        final byte[] bytes = signsession.createPKCS7Rollover(administrator, cainfo.getCAId());
-                        RequestHelper.sendBinaryBytes(bytes, response, "application/x-x509-next-ca-cert", null);
+                    if (dispatchResponse != null) {
+                        RequestHelper.sendBinaryBytes(dispatchResponse, response, "application/x-x509-next-ca-cert", null);
                         iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetNextCACert", remoteAddr);
                         log.info(iMsg);
                     } else {
@@ -395,7 +262,6 @@ public class ScepServlet extends HttpServlet {
                         log.info(errMsg);
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "No rollover certificate found for this CA.");
                     }
-                }
             } else if (operation.equals("GetCACaps")) {
                 // The response for GetCACaps is a <lf> separated list of capabilities
 
@@ -412,23 +278,7 @@ public class ScepServlet extends HttpServlet {
                  */
                 log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
-                
-                final String caname = getCAName(message);
-                boolean hasRolloverCert;
-                try {
-                    final CAInfo cainfo = casession.getCAInfoInternal(-1, caname, true);
-                    hasRolloverCert = (casession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
-                } catch (CADoesntExistsException e) {
-                    hasRolloverCert = false;
-                    if (log.isDebugEnabled()) {
-                        log.debug("CA was not found: "+caname);
-                    }
-                }
-                // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
-                // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.
-                response.getOutputStream().print(hasRolloverCert ?
-                        "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1" :
-                        "POSTPKIOperation\nRenewal\nSHA-1");
+                response.getOutputStream().print(new String(dispatchResponse));
             } else {
                 log.error("Invalid parameter '" + operation);
                 // Send back proper Failure Response
@@ -487,6 +337,10 @@ public class ScepServlet extends HttpServlet {
             String errMsg = intres.getLocalizedMessage("scep.errorclientcertificaterenewal");
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        } catch (NoSuchAliasException e) {
+            String msg = intres.getLocalizedMessage("protocol.nosuchalias", "SCEP", alias);     // TODO apply this general protocol message for CMP and EST as well
+            log.info(msg);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {             
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             log.info(errMsg, e);
@@ -530,111 +384,5 @@ public class ScepServlet extends HttpServlet {
         }
         return alias;
     }
-    
-    /**
-     * Handles SCEP certificate request
-     *
-     * @param msg buffer holding the SCEP-request (DER encoded).
-     * @param alias the alias of the SCEP configuration
-     * @param scepConfig The SCEP configuration
-     *
-     * @return byte[] containing response to be sent to client.
-     * @throws AuthorizationDeniedException 
-     * @throws CertificateExtensionException if msg specified invalid extensions
-     * @throws InvalidAlgorithmException 
-     * @throws CAOfflineException 
-     * @throws IllegalValidityException 
-     * @throws CertificateSerialNumberException 
-     * @throws CertificateRevokeException 
-     * @throws CertificateCreateException 
-     * @throws IllegalNameException 
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
-     * @throws SignRequestSignatureException 
-     * @throws SignRequestException 
-     * @throws CADoesntExistsException 
-     * @throws IllegalKeyException 
-     * @throws CryptoTokenOfflineException 
-     * @throws CustomCertificateSerialNumberException 
-     * @throws CertificateRenewalException if an error occurs during Client Certificate Renewal
-     * @throws SignatureException if a Client Certificate Renewal request was badly signed. 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
-     * @throws CertificateException 
-     * @throws InvalidKeyException 
-     * @throws {@link NoSuchEndEntityException} if end entity wasn't found, and RA mode isn't available. 
-     */
-    private byte[] scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias, final ScepConfiguration scepConfig)
-            throws AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException, CustomCertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
-            AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
-            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CertificateRenewalException, SignatureException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
-            NoSuchProviderException {
-      byte[] ret = null;
-        if (log.isTraceEnabled()) {
-            log.trace(">getRequestMessage(" + msg.length + " bytes)");
-        }
-        
-        try {
-            boolean includeCACert = scepConfig.getIncludeCA(alias);
-            final ScepRequestMessage reqmsg = new ScepRequestMessage(msg, includeCACert);        
-            boolean isRAModeOK = scepConfig.getRAMode(alias);
 
-            if (reqmsg.getErrorNo() != 0) {
-                log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
-                return null;
-            }
-            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-                if (isRAModeOK && scepRaModeExtension == null) {
-                    //Fail nicely
-                    log.warn("SCEP RA mode is enabled, but not included in the community version of EJBCA. Unable to continue.");
-                    return null;
-                } else if (isRAModeOK) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP is operating in RA mode: " + isRAModeOK);
-                    }
-                    if (!scepRaModeExtension.performOperation(administrator, reqmsg, scepConfig, alias)) {
-                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
-                        log.error(errmsg);
-                        return null;
-                    }
-                }
-                if (scepClientCertificateRenewal != null && scepConfig.getClientCertificateRenewal(alias)) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP client certificate renewal/enrollment with alias '"+alias+"'");
-                    }
-                    ResponseMessage resp = scepClientCertificateRenewal.performOperation(administrator, reqmsg, scepConfig, alias);
-                    if (resp != null) {
-                        ret = resp.getResponseMessage();
-                    }
-                } else {                
-                    // Get the certificate 
-                    if (log.isDebugEnabled()) {
-                        log.debug("SCEP certificate enrollment with alias '"+alias+"'");
-                    }
-                    ResponseMessage resp = signsession.createCertificate(administrator, reqmsg, ScepResponseMessage.class, null);
-                    if (resp != null) {
-                        ret = resp.getResponseMessage();
-                    }
-                }
-            }
-            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
-                // create the stupid encrypted CRL message, the below can actually only be made 
-                // at the CA, since CAs private key is needed to decrypt
-                ResponseMessage resp = signsession.getCRL(administrator, reqmsg, ScepResponseMessage.class);
-                if (resp != null) {
-                    ret = resp.getResponseMessage();
-                }
-            }
-        } catch (IOException e) {
-            log.error("Error receiving ScepMessage: ", e);
-        } 
-        if (log.isTraceEnabled()) {
-            log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));
-        }
-        return ret;
-    }
-    
-    
-} // ScepServlet
+}
