@@ -596,12 +596,13 @@ public interface RaMasterApi {
 
     
     /**
-     * TODO Docs
-     * @param authenticationToken
-     * @param operation
-     * @param message
-     * @param scepConfigurationAlias
-     * @return
+     * Dispatch SCEP message over RaMasterpi.
+     * 
+     * @param authenticationToken the origin of the request
+     * @param operation desired SCEP operation to perform
+     * @param message to dispatch
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @return byte array containing dispatch response from CA. Content depends on operation
      * @throws CertificateEncodingException
      * @throws InvalidKeyException
      * @throws NoSuchAliasException

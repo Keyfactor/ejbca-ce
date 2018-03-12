@@ -98,7 +98,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
         try {
             final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
             if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
-                final String msg = intres.getLocalizedMessage("cmp.nosuchalias", cmpConfigurationAlias);
+                final String msg = intres.getLocalizedMessage("protocol.nosuchalias", "CMP", cmpConfigurationAlias);
                 log.info(msg);
                 throw new NoSuchAliasException(msg);
             }
