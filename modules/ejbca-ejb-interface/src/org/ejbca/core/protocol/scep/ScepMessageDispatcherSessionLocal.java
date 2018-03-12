@@ -48,11 +48,13 @@ import org.ejbca.ui.web.protocol.CertificateRenewalException;
 public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcherSession {
 
     /**
-     * TODO Docs
-     * @param authenticationToken
-     * @param pkiMessageBytes
-     * @param cmpConfigurationAlias
-     * @return
+     * Handles received SCEP message. 
+     * 
+     * @param authenticationToken the origin of the request
+     * @param operation desired SCEP operation to perform
+     * @param message to dispatch
+     * @param scepConfigurationAlias name of alias containing SCEP configuration
+     * @return byte array containing dispatch response. Content depends on operation
      * @throws NoSuchAliasException 
      * @throws CertificateEncodingException 
      * @throws AuthorizationDeniedException 
