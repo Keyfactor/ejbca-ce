@@ -1538,6 +1538,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
 
+    @Override
     public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws CertificateEncodingException,
             InvalidKeyException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, 
             SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, 

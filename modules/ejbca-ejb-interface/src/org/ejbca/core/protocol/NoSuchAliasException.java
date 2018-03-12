@@ -31,4 +31,6 @@ public class NoSuchAliasException extends EjbcaException {
     public NoSuchAliasException(String message) {
         super(message);
     }
+    public NoSuchAliasException() {
+    }
 }
