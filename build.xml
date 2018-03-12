@@ -426,7 +426,16 @@
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.peerconnector.exists}"
 			replacement-ejb="peerconnector-ejb.jar"
+			/>
+
+
+		<jar-replacement-in-module
+			replacement-tag="!--@unidfnr-ejb.jar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${mod.unidfnr.exists}"
+			replacement-ejb="unidfnr-ejb.jar"
 		/>
+
 		<connector-replacement-in-module
 			replacement-tag="!--@peerconnector.rar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -539,6 +548,7 @@
             	<include name="peerconnector.rar" />
                 <include name="peerconnector.war" />
                 <include name="peerconnector-ejb.jar" />
+                <include name="unidfnr-ejb.jar" />
                 <include name="ra-gui.war" />
                 <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
 				<include name="${in-test-mode-include}acme.war" />
@@ -564,14 +574,15 @@
         		<include name="edition-specific-ejb.jar" />
         		<include name="statedump-common.jar" />
         		<include name="configdump-common.jar" />
-        		<include name="unidfnr.jar" />
         		<include name="peerconnector-ra.jar" />
                 <include name="peerconnector-publ.jar" />
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
         		<include name="va-publisher.jar" />
-        	    <include name="caa.jar" />
+        		<include name="caa.jar" />
+	       		<include name="unidfnr.jar" />
+
                 <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
 				<include name="${in-test-mode-include}acme-common.jar" />
         	</zipfileset>
