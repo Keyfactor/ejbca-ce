@@ -26,6 +26,8 @@ import java.util.Collection;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -122,6 +124,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     }
     
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) 
             throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, InvalidKeyException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
             CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
@@ -130,9 +133,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         
         ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if(!scepConfig.aliasExists(scepConfigurationAlias)) {
-            String msg = "SCEP alias '" + scepConfigurationAlias + "' does not exist";
-            log.info(msg);
-            throw new NoSuchAliasException(msg);
+            throw new NoSuchAliasException();
         }
         
         if (operation.equals("PKIOperation")) {
@@ -213,8 +214,6 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } else {
             log.error("Invalid parameter '" + operation);
         }
-        
-        
         return null;
     }
     
