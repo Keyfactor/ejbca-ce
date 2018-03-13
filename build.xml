@@ -432,7 +432,7 @@
 		<jar-replacement-in-module
 			replacement-tag="!--@unidfnr-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${mod.unidfnr.exists}"
+			replacement-enabled="${mod.unidfnr.enabled}"
 			replacement-ejb="unidfnr-ejb.jar"
 		/>
 
