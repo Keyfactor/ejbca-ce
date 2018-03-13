@@ -264,8 +264,8 @@ public class RaRoleBean implements Serializable {
         // so cloning through serialization is OK (and does not require a copy constructor that needs to be maintained).
         final Role roleWithChanges = (Role) SerializationUtils.clone(role);
         // Check and set namespace
-        final String namespaceToUse;
         if (!isLimitedToOneNamespace()) {
+            final String namespaceToUse;
             if (NEW_NAMESPACE_ITEM.equals(namespace)) {
                 if (StringUtils.isBlank(newNamespace)) {
                     log.debug("Empty namespace entered when 'New namespace' was selected, cannot save role");
@@ -277,6 +277,9 @@ public class RaRoleBean implements Serializable {
                 namespaceToUse = namespace;
             }
             roleWithChanges.setNameSpace(namespaceToUse);
+        } else if (role.getRoleId() == Role.ROLE_ID_UNASSIGNED) {
+            // New role, and the admin is only allowed to use one namespace. Set the namespace to the only allowed one
+            roleWithChanges.setNameSpace(namespaces.get(0));
         }
         roleWithChanges.setRoleName(name);
 
