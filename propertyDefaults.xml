@@ -236,6 +236,8 @@ cmp.tcp.enabled                 = ${cmp.tcp.enabled}
 cmp.tcp.portno                  = ${cmp.tcp.portno}
 cmp.tcp.logdir                  = ${cmp.tcp.logdir}
 cmp.tcp.conffile                = ${cmp.tcp.conffile}
+unidfnr.enabled                 = ${unidfnr.enabled}
+
       </echo>
     </target>
 

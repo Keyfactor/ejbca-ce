@@ -203,6 +203,12 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
+
+# Setting this to true will enable unidfnr extension in ejbca.
+# Defalult is false since it is not normally used by many customers.
+# Prior to setting this to true the appropriate data source must be set in JBoss.
+#unidfnr.enabled=false
+
 # Specifies if the OCSP-responder should require signed requests or not.
 # If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
 #

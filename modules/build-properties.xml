@@ -411,6 +411,14 @@
         <available file="${mod.unidfnr.path}/build.xml" />
     </condition>
 
+    <condition property="mod.unidfnr.enabled">
+      <and>
+	<available file="${mod.unidfnr.path}/build.xml"/>
+	<istrue value="${unidfnr.enabled}"/>
+      </and>
+    </condition>
+
+    
     <condition property="mod.est.exists">
         <available file="${mod.est-war.path}/build.xml" />
     </condition>

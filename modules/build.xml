@@ -515,10 +515,10 @@
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-	<target name="unidfnr" depends="ejbca-ejb-interface" if="mod.unidfnr.exists">
-		<ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="unidfnr" depends="ejbca-ejb-interface" if="mod.unidfnr.enabled">
+	  <ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
-	
+
 	<target name="certsafe" depends="ejbca-ejb-interface" if="mod.certsafe.exists">
 		<ant antfile="${mod.certsafe.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
