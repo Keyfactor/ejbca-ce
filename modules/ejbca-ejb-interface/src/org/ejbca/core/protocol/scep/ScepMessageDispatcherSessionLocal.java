@@ -13,9 +13,6 @@
 
 package org.ejbca.core.protocol.scep;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -61,8 +58,6 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CADoesntExistsException 
      * @throws CertificateRenewalException 
      * @throws CertificateExtensionException 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
      * @throws CertificateException 
      * @throws SignatureException 
      * @throws InvalidAlgorithmException 
@@ -80,11 +75,10 @@ public interface ScepMessageDispatcherSessionLocal extends ScepMessageDispatcher
      * @throws CryptoTokenOfflineException 
      * @throws CustomCertificateSerialNumberException 
      * @throws NoSuchEndEntityException 
-     * @throws InvalidKeyException 
      */
     byte[] dispatchRequest(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws NoSuchAliasException, 
-        CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, InvalidKeyException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+        CertificateEncodingException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
         CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
         CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
-        SignatureException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, CertificateExtensionException, CertificateRenewalException;
+        SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException;
 }

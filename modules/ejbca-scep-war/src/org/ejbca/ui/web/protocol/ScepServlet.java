@@ -338,7 +338,7 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (NoSuchAliasException e) {
-            String msg = intres.getLocalizedMessage("protocol.nosuchalias", "SCEP", alias);     // TODO apply this general protocol message for CMP and EST as well
+            String msg = intres.getLocalizedMessage("protocol.nosuchalias", "SCEP", alias);
             log.info(msg);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
         } catch (Exception e) {             
