@@ -14,9 +14,6 @@
 package org.ejbca.core.protocol.scep;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -126,10 +123,10 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) 
-            throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, InvalidKeyException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
+            throws NoSuchAliasException, CADoesntExistsException, AuthorizationDeniedException, NoSuchEndEntityException, CustomCertificateSerialNumberException, 
             CryptoTokenOfflineException, IllegalKeyException, SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, 
             CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, 
-            SignatureException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, CertificateExtensionException, CertificateRenewalException {
+            SignatureException, CertificateException, CertificateExtensionException, CertificateRenewalException {
         
         ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         if(!scepConfig.aliasExists(scepConfigurationAlias)) {
@@ -257,10 +254,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      * @throws CustomCertificateSerialNumberException 
      * @throws CertificateRenewalException if an error occurs during Client Certificate Renewal
      * @throws SignatureException if a Client Certificate Renewal request was badly signed. 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
      * @throws CertificateException 
-     * @throws InvalidKeyException 
      * @throws {@link NoSuchEndEntityException} if end entity wasn't found, and RA mode isn't available. 
      */
     private byte[] scepCertRequest(AuthenticationToken administrator, byte[] msg, final String alias, final ScepConfiguration scepConfig)
@@ -268,8 +262,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             CryptoTokenOfflineException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
             AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CertificateRenewalException, SignatureException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
-            NoSuchProviderException {
+            CertificateRenewalException, SignatureException, CertificateException {
       byte[] ret = null;
         if (log.isTraceEnabled()) {
             log.trace(">getRequestMessage(" + msg.length + " bytes)");

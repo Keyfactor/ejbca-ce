@@ -604,7 +604,6 @@ public interface RaMasterApi {
      * @param scepConfigurationAlias name of alias containing SCEP configuration
      * @return byte array containing dispatch response from CA. Content depends on operation
      * @throws CertificateEncodingException
-     * @throws InvalidKeyException
      * @throws NoSuchAliasException
      * @throws CADoesntExistsException
      * @throws NoSuchEndEntityException
@@ -624,16 +623,14 @@ public interface RaMasterApi {
      * @throws InvalidAlgorithmException
      * @throws SignatureException
      * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
      * @throws AuthorizationDeniedException
      * @throws CertificateExtensionException
      * @throws CertificateRenewalException
      */
-    byte[] scepDispatch(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException, InvalidKeyException, 
+    byte[] scepDispatch(AuthenticationToken authenticationToken, String operation, String message, String scepConfigurationAlias) throws CertificateEncodingException, 
     NoSuchAliasException, CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, SignRequestException, 
     SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, 
-    IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, AuthorizationDeniedException, 
+    IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, AuthorizationDeniedException, 
     CertificateExtensionException, CertificateRenewalException;
     
     /**
