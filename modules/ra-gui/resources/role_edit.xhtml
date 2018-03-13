@@ -54,13 +54,13 @@
                     <h:panelGroup id="parentNamespace" layout="block" styleClass="pure-u-1" rendered="#{not raRoleBean.limitedToOneNamespace}">
                         <h:outputLabel for="namespace" value="#{msg.role_page_namespace_label}" styleClass="pure-u-lg-1-5"/>
                         <h:selectOneMenu id="namespace" value="#{raRoleBean.namespace}" styleClass=" pure-input pure-u-lg-3-5 jsAutoFocusFirst jsDelayKeyUp"
-                            onchange="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);"
-                            onkeyup="ejbca.ra.toggleElements(this.selectedIndex==1, ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);" disabled="#{not raRoleBean.canEdit}">
+                            onchange="ejbca.ra.toggleElements(this.selectedIndex==1 &amp;&amp; this[this.selectedIndex].value=='#NEW#', ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);"
+                            onkeyup="ejbca.ra.toggleElements(this.selectedIndex==1 &amp;&amp; this[this.selectedIndex].value=='#NEW#', ['roleForm:newNamespaceLabel', 'roleForm:newNamespace']);" disabled="#{not raRoleBean.canEdit}">
                             <f:selectItems value="#{raRoleBean.namespaceOptions}"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
                     
-                    <h:panelGroup id="parentNewNamespace" layout="block" styleClass="pure-u-1">
+                    <h:panelGroup id="parentNewNamespace" layout="block" styleClass="pure-u-1" rendered="#{not raRoleBean.limitedToOneNamespace}">
                         <h:outputText id="newNamespaceLabel" value="" styleClass="pure-u-lg-1-5 bottomMargin jsHide"/>
                         <h:inputText id="newNamespace" value="#{raRoleBean.newNamespace}" styleClass="pure-input pure-u-lg-3-5 bottomMargin jsHide jsTitleAsPlaceHolder" title="#{msg.role_page_new_namespace_title}" size="20" disabled="#{not raRoleBean.canEdit}"/>
                     </h:panelGroup>
