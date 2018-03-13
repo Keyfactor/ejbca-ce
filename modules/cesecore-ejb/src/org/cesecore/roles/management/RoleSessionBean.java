@@ -33,6 +33,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
@@ -181,7 +182,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         boolean ret = roleDataSession.deleteRoleNoAuthorizationCheck(role.getRoleId());
         RoleCache.INSTANCE.updateWith(role.getRoleId(), 0, null, null);
         final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleremoved", role.getRoleNameFull());
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", msg);
         details.put("roleId", role.getRoleId());
         details.put("roleName", role.getRoleName());
@@ -260,7 +261,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
             // Persist new role
             role.setRoleId(roleDataSession.persistRole(role).getRoleId());
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.roleadded", role.getRoleName());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("roleId", role.getRoleId());
             details.put("roleName", role.getRoleName());
@@ -273,7 +274,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 // Audit log that the role will be renamed when persisted
                 final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.rolerenamed", roleById.getRoleNameFull(),
                         role.getRoleNameFull());
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 details.put("roleId", role.getRoleId());
                 details.put("roleNameOld", roleById.getRoleName());
@@ -308,7 +309,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 rulesMsg.append("[" + entry.getKey().toString() + ":"+entry.getValue().toString()+"]");
             }
             final String msg = InternalResources.getInstance().getLocalizedMessage("authorization.accessruleschanged", role.getRoleNameFull(), rulesMsg.toString());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("roleId", role.getRoleId());
             details.put("roleName", role.getRoleName());
@@ -417,15 +418,26 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
                 // As long as the admin does not lower its own privileges we are ok with
                 HashMap<String, Boolean> accessRulesBefore = new HashMap<>();
                 HashMap<String, Boolean> accessRulesAfter = new HashMap<>();
+                final Set<String> accessToNamespacesBefore = new HashSet<>();
+                final Set<String> accessToNamespacesAfter = new HashSet<>();
                 for (final int roleId : roleIdsCallerBelongsTo) {
-                    final HashMap<String, Boolean> accessRulesFromRole = roleDataSession.getRole(roleId).getAccessRules();
+                    final Role existingRole = roleDataSession.getRole(roleId);
+                    final HashMap<String, Boolean> accessRulesFromRole = existingRole.getAccessRules();
                     accessRulesBefore = AccessRulesHelper.getAccessRulesUnion(accessRulesBefore, accessRulesFromRole);
+                    accessToNamespacesBefore.add(existingRole.getNameSpace());
                     if (roleId!=role.getRoleId()) {
                         accessRulesAfter = AccessRulesHelper.getAccessRulesUnion(accessRulesAfter, accessRulesFromRole);
+                        accessToNamespacesAfter.add(existingRole.getNameSpace());
+                    } else {
+                        accessToNamespacesAfter.add(role.getNameSpace());
                     }
                 }
                 if (!accessRulesBefore.equals(accessRulesAfter)) {
                     throw new AuthorizationDeniedException("Granted access of the current administrator might be affected by this change.");
+                }
+                if (!accessToNamespacesBefore.equals(accessToNamespacesAfter) &&
+                        !(accessToNamespacesBefore.contains("") && accessToNamespacesAfter.contains(""))) {
+                    throw new AuthorizationDeniedException("Granted namespace access of the current administrator would be affected by this change.");
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Access granted to '"+authenticationToken+"' would not be affected by not being a member of Role with id " + role.getRoleId() + ".");
@@ -440,17 +452,15 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
     
     /** @throws AuthorizationDeniedException if the nameSpace is not "owned" by the caller. */
     private boolean isAuthorizedToNameSpace(final AuthenticationToken authenticationToken, final Role role, final Set<Integer> roleIdsCallerBelongsTo) {
-        // Assert that AuthenticationToken is allowed to mess with the role's nameSpace
-        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-            final Set<String> ownedNameSpaces = new HashSet<>();
-            for (final int current : roleIdsCallerBelongsTo) {
-                ownedNameSpaces.add(roleDataSession.getRole(current).getNameSpace());
-            }
-            if (!ownedNameSpaces.contains("") && !ownedNameSpaces.contains(role.getNameSpace())) {
-                return false;
-            }
+        if (authenticationToken instanceof AlwaysAllowLocalAuthenticationToken) {
+            return true; // AlwaysAllowLocalAuthenticationToken cannot belong to any roles, so the code below will not work
         }
-        return true;
+        // Assert that AuthenticationToken is allowed to mess with the role's nameSpace
+        final Set<String> ownedNameSpaces = new HashSet<>();
+        for (final int current : roleIdsCallerBelongsTo) {
+            ownedNameSpaces.add(roleDataSession.getRole(current).getNameSpace());
+        }
+        return ownedNameSpaces.contains("") || ownedNameSpaces.contains(role.getNameSpace());
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -460,7 +470,7 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         for (final int current : roleMemberDataSession.getRoleIdsMatchingAuthenticationToken(authenticationToken)) {
             namespaces.add(roleDataSession.getRole(current).getNameSpace());
         }
-        if (namespaces.contains("") || authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+        if (namespaces.contains("") || authenticationToken instanceof AlwaysAllowLocalAuthenticationToken) {
             // Add all namespaces from authorized roles
             for (final Role role : getAuthorizedRoles(authenticationToken)) {
                 namespaces.add(role.getNameSpace());
