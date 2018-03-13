@@ -268,12 +268,17 @@ public class RaRoleBean implements Serializable {
             final String namespaceToUse;
             if (NEW_NAMESPACE_ITEM.equals(namespace)) {
                 if (StringUtils.isBlank(newNamespace)) {
-                    log.debug("Empty namespace entered when 'New namespace' was selected, cannot save role");
+                    log.debug("Empty namespace entered when 'New namespace' was selected. Cannot save role");
                     raLocaleBean.addMessageError("role_page_error_empty_namespace");
                     return "";
                 }
                 namespaceToUse = newNamespace;
             } else {
+                if (!StringUtils.isBlank(newNamespace)) {
+                    log.debug("New namespace name entered when an existing namespace was selected. Cannot save role");
+                    raLocaleBean.addMessageError("role_page_error_new_and_existing_namespace");
+                    return "";
+                }
                 namespaceToUse = namespace;
             }
             roleWithChanges.setNameSpace(namespaceToUse);
