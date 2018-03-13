@@ -263,6 +263,23 @@ public class RoleSessionBeanTest {
         }
     }
     
+    /** Verify that an administrator cannot reduce it's own namespace access */
+    public void testIsNotAuthorizedToChangeNamespaceOfOwnRole() throws RoleExistsException, AuthorizationDeniedException {
+        final String TESTNAME = "testIsNotAuthorizedToChangeNamespaceOfOwnRole";
+        final TestX509CertificateAuthenticationToken authenticationToken = roleInitializationSession.createAuthenticationTokenAndAssignToNewRole("CN="+TESTNAME, null, TESTNAME,
+                Arrays.asList(StandardRules.ROLE_ROOT.resource()), null);
+        Role role = roleSession.getRole(alwaysAllowAuthenticationToken, null, TESTNAME);
+        try {
+            role.setNameSpace("PrimeKey"); // limit to 'PrimeKey'
+            try {
+                roleSession.persistRole(authenticationToken, role);
+            } catch (AuthorizationDeniedException e) { } // NOPMD expected
+            fail("Was able to lower own access.");
+        } finally {
+            roleInitializationSession.removeAllAuthenticationTokensRoles(authenticationToken);
+        }
+    }
+    
     /** Verify that an administrator cannot remove the Role that is providing all its access */
     @Test(expected = AuthorizationDeniedException.class)
     public void testIsAuthorizedToNotDeleteOwnRole() throws RoleExistsException, AuthorizationDeniedException {
