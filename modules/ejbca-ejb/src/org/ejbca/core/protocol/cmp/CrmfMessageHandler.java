@@ -77,11 +77,14 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
+//import org.ejbca.unidfnr.ejb.UnidfnrSession.HandlerException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
+import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -118,6 +121,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
     private final AuthorizationSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private final EndEntityManagementSession endEntityManagementSession;
+    private final UnidfnrSessionLocal unidfnrSession;
 
     /** Construct the message handler. */
     public CrmfMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, final String configAlias, final EjbBridgeSessionLocal ejbBridgeSession,
@@ -131,6 +135,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         this.authorizationSession = ejbBridgeSession.getAuthorizationSession();
         this.authenticationProviderSession = ejbBridgeSession.getWebAuthenticationProviderSession();
         this.endEntityManagementSession = ejbBridgeSession.getEndEntityManagementSession();
+        this.unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
         
         if (this.cmpConfiguration.getRAMode(this.confAlias)) {
             // create UsernameGeneratorParams
@@ -365,6 +370,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
 			final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
+			//final RequestMessage req =  this.unidfnrSession != null ? this.unidfnrSession.processUnidfnrRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
+
 			final X500Name dnname = req.getRequestX500Name();
 			if (dnname == null) {
 			    final String nullMsg = "Request DN Name can not be null";
@@ -479,7 +486,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		} catch (HandlerException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-		}
+		} 
 		return resp;
 	}
 	
