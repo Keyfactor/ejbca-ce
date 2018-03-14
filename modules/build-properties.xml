@@ -138,7 +138,6 @@
 	<property name="mod.configdump-common.lib" location="${mod.dist.path}/configdump-common.jar" />
 	<property name="mod.configdump-ejb.lib" location="${mod.dist.path}/configdump-ejb.jar" />
 	<property name="mod.unidfnr.dist" location="${ejbca.dist.path}/unidfnr" />
-	<property name="mod.unidfnr.lib" location="${mod.dist.path}/unidfnr.jar" />
 	<property name="mod.unidfnr.path" location="${mod.path}/unidfnr" />
 	<property name="mod.unidfnr-ejb.lib" location="${mod.dist.path}/unidfnr-ejb.jar" />
 	<property name="mod.unidfnr-interface.lib" location="${mod.dist.path}/unidfnr-interface.jar" />
