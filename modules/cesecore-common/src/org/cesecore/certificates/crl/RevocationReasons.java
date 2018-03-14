@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * An enum for revocation reasons, with a numerical database value and a String value for CLI applications.
  * 
- * Based on RFC 5280 Section 4.2.1.13
+ * Based on RFC 5280 Section 5.3.1
  * 
  * @version $Id$
  */
