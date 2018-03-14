@@ -55,7 +55,7 @@ public class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		final byte b[] = (byte[])stream.readObject();
 		this.dn = X500Name.getInstance(b);
 	}
-	RequestMessageSubjectDnAdapter(RequestMessage req, X500Name _dn) {
+	public RequestMessageSubjectDnAdapter(RequestMessage req, X500Name _dn) {
 		this.original = (ICrmfRequestMessage)req;
 		this.dn = _dn;
 	}
