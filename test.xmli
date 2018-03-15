@@ -48,6 +48,7 @@
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
+    	<antcall target="optionaltestunidfnr" inheritrefs="true"/>
     	<antcall target="createreport"/>
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
@@ -68,7 +69,8 @@
     <target name="optionaltestcmpproxy" if="${cmpproxy.exists}"><ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" /></target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
     <target name="optionaltestcaa" if="${caa.exists}"><ant antfile="build.xml" dir="modules/caa" target="test" /></target>
-
+    <condition property="unidfnr.exists"><available file="modules/unidfnr/build.xml" /></condition>
+    <target name="optionaltestunidfnr" if="${unidfnr.exists}"><ant antfile="build.xml" dir="modules/unidfnr" target="test" /></target>
 
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
@@ -99,6 +101,7 @@
 					<include name="modules/va/publisher/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+					<include name="modules/unidfnr/src-test/**/${test.runone}.java" />
                     <include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
@@ -164,6 +167,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/unidfnr">
+            <matches string="${test-fullname}" pattern="^modules/unidfnr/.*$"/>
         </condition>
         <condition property="module" value="modules/ejbca-webtest">
             <matches string="${test-fullname}" pattern="^modules/ejbca-webtest/.*$"/>
@@ -250,6 +256,11 @@
     <target name="test:vapub" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/va" target="test" />
     	<antcall target="createreport"/>
+    </target>
+    
+    <target name="test:unidfnr" description="run UNID-FNR test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/unidfnr" target="test" />
+        <antcall target="createreport"/>
     </target>
     
     <target name="test:webtest" description="run all JUnit web tests." depends="deleteDirectories">
