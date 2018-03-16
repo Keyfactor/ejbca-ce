@@ -64,6 +64,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
+import org.ejbca.unidfnr.ejb.UnidfnrSessionBean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -136,7 +137,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setRACAName(configAlias, this.testx509ca.getName());
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
-        this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
+        this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidfnrSessionBean.class.getName());
         this.cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
         this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
         

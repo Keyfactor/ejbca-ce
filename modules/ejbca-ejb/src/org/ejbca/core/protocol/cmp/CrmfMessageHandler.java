@@ -79,8 +79,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
-import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
-//import org.ejbca.unidfnr.ejb.UnidfnrSession.HandlerException;
+//import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
+import org.ejbca.unidfnr.ejb.UnidfnrSession.HandlerException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -369,8 +369,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
-			final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
-			//final RequestMessage req =  this.unidfnrSession != null ? this.unidfnrSession.processUnidfnrRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
+			//final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
+			final RequestMessage req =  this.unidfnrSession != null ? this.unidfnrSession.processUnidfnrRequestMessage(crmfreq, certProfileName, cmpConfiguration.getUnidDataSource(this.confAlias)) : crmfreq;
 
 			final X500Name dnname = req.getRequestX500Name();
 			if (dnname == null) {
