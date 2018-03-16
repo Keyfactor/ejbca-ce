@@ -19,20 +19,16 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.WebTestBase;
+import org.ejbca.WebTestHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
-
-import static org.junit.Assert.*;
 
 /**
  * Automated web test for ECAQA-138, which has the purpose of verifying that
@@ -50,7 +46,6 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 
     // Strings for test
-    private static final String saveSuccessfulMessage = "End Entity Profile saved.";
     private static final String alertMessage = "An empty attribute cannot be non-modifiable.";
     private static final String subjectDnBase = "subjectdn";
     private static final String subjectDnAttribute = "O, Organization";
@@ -76,14 +71,7 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
 
     @Test
     public void testA_addEEP() {
-        // Open Manage End Entity Profiles page
-        webDriver.get(getAdminWebUrl());
-        webDriver.findElement(By.xpath("//a[contains(@href,'editendentityprofiles.jsp')]")).click();
-
-        // Add EEP
-        WebElement nameInput = webDriver.findElement(By.xpath("//input[@name='textfieldprofilename']"));
-        nameInput.sendKeys(eepName);
-        webDriver.findElement(By.xpath("//input[@name='buttonaddprofile']")).click();
+        WebTestHelper.addEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
     }
 
     @Test
@@ -102,92 +90,24 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
     }
 
     private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
-        // Edit EEP
-        editEEP();
+        // Add the attribute, save it with Modifiable checked (should succeed)
+        WebTestHelper.editEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
+        WebTestHelper.addAttributeEndEntityProfile(webDriver, attributeType, attributeName);
+        WebTestHelper.saveEndEntityProfile(webDriver, true);
 
-        // Add the Subject DN attribute
-        addAttribute(attributeType, attributeName);
-
-        // Save EEP
-        saveEEP();
-
-        // Check save successful
-        saveSuccessful();
-
-        // Edit EEP
-        editEEP();
-
-        // Uncheck Modifiable check-box
+        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
+        WebTestHelper.editEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
         triggerModifiable(attributeType, attributeIndex);
+        WebTestHelper.saveEndEntityProfile(webDriver, false);
+        WebTestHelper.assertAlert(webDriver, alertMessage, true);
 
-        // Save EEP
-        saveEEP();
-
-        // Assert that there was an alert with the correct message
-        assertAlert();
-
-        // Fill in the test string in the attribute field
+        // Add the test string to the attribute and save (should succeed)
         inputTestString(attributeType, attributeIndex, testString);
-
-        // Save EEP
-        saveEEP();
-
-        // Check save successful
-        saveSuccessful();
-    }
-
-    private void editEEP() {
-        // Select EEP
-        WebElement listTable = webDriver.findElement(By.xpath("//select[@name='selectprofile']"));
-        WebElement listItem = listTable.findElement(By.xpath("//option[@value='" + eepName + "']"));
-        assertEquals(eepName + " was not found in the list of End Entity Profiles", eepName, listItem.getText());
-        listItem.click();
-
-        // Click edit button
-        webDriver.findElement(By.xpath("//input[@name='buttoneditprofile']")).click();
-
-        // Assert correct EEP being edited
-        WebElement currentProfile = webDriver.findElement(By.xpath("//input[@name='hiddenprofilename']"));
-        assertEquals("The profile being edited was not " + eepName, eepName, currentProfile.getAttribute("value"));
-    }
-
-    private void saveEEP() {
-        webDriver.findElement(By.xpath("//input[@name='buttonsave']")).click();
-    }
-
-    private void saveSuccessful() {
-        Boolean saveSuccessful = webDriver.findElements(By.xpath("//td[contains(text(), '" + saveSuccessfulMessage + "')]")).size() == 1;
-        assertTrue("The EEP was not saved successfully", saveSuccessful);
-    }
-
-    private void addAttribute(String attributeType, String attributeName) {
-        // Select attribute in list
-        Select attributeSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectadd" + attributeType + "']")));
-        attributeSelect.selectByVisibleText(attributeName);
-        WebElement attributeItem = attributeSelect.getFirstSelectedOption();
-        assertEquals("The attribute " + attributeName + " was not found", attributeName, attributeItem.getText());
-        attributeItem.click();
-
-        // Add attribute
-        webDriver.findElement(By.xpath("//input[@name='buttonadd" + attributeType + "']")).click();
-        Boolean attributeAdded = webDriver.findElements(By.xpath("//td[contains(text(), '" + attributeName + "')]")).size() == 1;
-        assertTrue("The attribute " + attributeName + " was not added", attributeAdded);
+        WebTestHelper.saveEndEntityProfile(webDriver, true);
     }
 
     private void triggerModifiable(String attributeType, int attributeIndex) {
         webDriver.findElement(By.id("checkboxmodifyable" + attributeType + attributeIndex)).click();
-    }
-
-    private void assertAlert() {
-        Boolean alertPresent = true;
-        try {
-            Alert alert = webDriver.switchTo().alert();
-            assertEquals("Unexpected alert message: " + alert.getText(), alertMessage, alert.getText());
-            alert.accept();
-        } catch (NoAlertPresentException e) {
-            alertPresent = false;
-        }
-        assertTrue("Expected an alert but there was none", alertPresent);
     }
 
     private void inputTestString(String attributeType, int attributeIndex, String testString) {
