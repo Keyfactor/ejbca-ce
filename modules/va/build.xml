@@ -88,9 +88,11 @@
 	</target>
 	
 	<target name="extensions-build">
+		<buildservicemanifest interface="org.cesecore.certificates.ocsp.extension.OCSPExtension" file="${build-status.dir}/WEB-INF/classes" classpath="compile-ejbca.classpath"/>
 		<jar basedir="${build-status.dir}/WEB-INF/classes" jarfile="${mod.ejbca-extensions.lib}">
 			<include name="org/ejbca/core/protocol/ocsp/*.class"/>
 			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.class"/>
+			<include name="META-INF/**/*"/>
 		</jar>
 	</target>
 		
