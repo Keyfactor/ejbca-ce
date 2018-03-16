@@ -171,6 +171,9 @@ import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
+import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
+import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 
 /**
  * This SSB generates OCSP responses. 
@@ -215,6 +218,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
+    private UnidfnrSessionLocal unidfnrSession = null;
 
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
@@ -225,6 +230,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
         timerService = sessionContext.getTimerService();
+        unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
     }
     
     @Override
@@ -1385,8 +1391,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 // From EJBCA 6.2.10 and 6.3.2 the extension must perform the reverse DNS lookup by itself if needed.
                                 final String remoteHost = remoteAddress;
                                 // Call the OCSP extension
-                                Map<ASN1ObjectIdentifier, Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert,
-                                        certStatus);
+                                Map<ASN1ObjectIdentifier, Extension> retext = null;
+                                if (extObj instanceof OCSPUnidExtension) {
+                                    if (unidfnrSession != null) {
+                                        retext = unidfnrSession.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
+                                    }
+                                } else {
+                                    retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
+                                }
                                 if (retext != null) {
                                     // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                     responseExtensions.putAll(retext);
