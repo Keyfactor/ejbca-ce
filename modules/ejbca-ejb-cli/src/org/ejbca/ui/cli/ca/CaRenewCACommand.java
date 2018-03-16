@@ -19,7 +19,9 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -32,7 +34,14 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.keys.token.BaseCryptoToken;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ValidityDate;
@@ -61,15 +70,19 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     private static final String REGENERATE_KEYS_KEY = "-R";
     private static final String AUTHORIZATION_CODE_KEY = "--auth";
     private static final String CUSTOM_NOT_BEFORE_KEY = "--notbefore";
+    private static final String EXPLICIT_ECC_KEY = "-explicitecc";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Name of the CA"));
         registerParameter(Parameter.createFlag(REGENERATE_KEYS_KEY, "Set this switch if the CA's keys are to be regenerated."));
         registerParameter(new Parameter(AUTHORIZATION_CODE_KEY, "Authorization Code", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Authorization code is only used when generating new keys. If key regeneration is chosen and this parameter is not set then user will be prompted."));
+                ParameterMode.ARGUMENT, "Authorization code is only used when changing -expliciecc property on a Crypto Token. If setting 'explicitecc' on a Crypto Token and this parameter is not set then user will be prompted."));
         registerParameter(new Parameter(CUSTOM_NOT_BEFORE_KEY, "Date", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Set this value of a value other than current time should be used. Must be in ISO 8601 format, for example '2010-09-08 07:06:05+02:00"));
+        registerParameter(Parameter.createFlag(EXPLICIT_ECC_KEY, "Adding the switch '" + EXPLICIT_ECC_KEY
+                + "' when using ECC keys makes the internal Crypto Token use explicit curve parameters instead of named curves. "
+                + "Should only be used when renewing a CSCA for ePassports, and it will persist in the Crypto Token for future renewals."));
     }
 
     private SimpleDateFormat simpleDateFormat = null;
@@ -137,9 +150,26 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                 getLogger().error("Error: Certificate not found");
             }
 
-            if (authCode == null && regenerateKeys) {
-                getLogger().info("Enter authorization code to continue: ");
-                authCode = String.valueOf(System.console().readPassword());
+            final String explicitEcc = (parameters.get(EXPLICIT_ECC_KEY) != null ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+            if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
+                // Set if we should use explicit ECC parameters of not. On Java 6 this renders the created CA certificate not serializable
+                getLogger().info("Explicit ECC public key parameters: " + explicitEcc);
+                final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+                final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+                final CryptoTokenInfo tokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
+                Properties cryptoTokenProperties = tokenInfo.getCryptoTokenProperties();
+                if (cryptoTokenProperties.get(BaseCryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS) == null) {
+                    getLogger().info("Explicit ECC public key parameters is not enabled for Crypto Token with ID: " + cryptoTokenId+", changing Crypto Token to enable it.");
+                    getLogger().info("Password: '"+authCode+"'");
+                    if (authCode == null) {
+                        getLogger().info("Enter Crypto Token authentication code to continue: ");
+                        authCode = String.valueOf(System.console().readPassword());
+                    }
+                    cryptoTokenProperties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, explicitEcc);
+                    cryptoTokenManagementSession.saveCryptoToken(getAuthenticationToken(), cryptoTokenId, tokenInfo.getName(), cryptoTokenProperties, authCode.toCharArray());
+                } else {
+                    getLogger().info("Explicit ECC public key parameters already enabled for Crypto Token with ID: " + cryptoTokenId+", leaving Crypto Token untouched.");                    
+                }
             }
 
             try {
@@ -168,6 +198,20 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CADoesntExistsException e) {
             log.error("ERROR: No CA of name " + caname + " exists.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CryptoTokenOfflineException e) {
+            log.error("ERROR: Crypto Token is off-line for CA: " + caname);
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CryptoTokenAuthenticationFailedException e) {
+            log.error("ERROR: Invalid Crypto Token authentication code for CA: " + caname);
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (CryptoTokenNameInUseException e) {
+            log.error("ERROR: Crypto Token name collision for CA: " + caname+". This should not be possible to happen.");
+            log.error("Exception: ", e);
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (NoSuchSlotException e) {
+            log.error("ERROR: Existing Crypto Token claims the slot is not available. Check the Crypto Token for CA: " + caname);
+            log.error("Error message: "+e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
 
