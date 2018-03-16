@@ -91,7 +91,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CMP_CONFIGURATION_ID = "1";
 
     // Default Values
-    public static final float LATEST_VERSION = 7f;
+    public static final float LATEST_VERSION = 8f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
@@ -862,12 +862,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             Set<String> aliases = getAliasList();
             for (String alias : aliases) {
                 data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);                
-            }
-            if (data.get(CONFIG_RESPONSE_CAPUBS_CA) == null) {
-                data.put(CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
-            }
-            if (data.get(CONFIG_RESPONSE_EXTRACERTS_CA) == null) {
-                data.put(CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
+            
+                if (data.get(alias + "." + CONFIG_RESPONSE_CAPUBS_CA) == null) {
+                    data.put(alias + "." + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
+                }
+                if (data.get(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA) == null) {
+                    data.put(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
+                }
             }
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
          }
