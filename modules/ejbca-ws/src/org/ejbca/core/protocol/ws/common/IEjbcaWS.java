@@ -136,7 +136,7 @@ public interface IEjbcaWS {
 			boolean onlyValid) throws AuthorizationDeniedException, EjbcaException;
 
 	/**
-     * Retrieves the most current certificate chain for a CA.
+     * Retrieves the current certificate chain for a CA.
      *
      * <pre>
      * <b>Authorization requirements:</b>
