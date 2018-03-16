@@ -119,4 +119,9 @@ public interface InternalKeyBinding extends Serializable {
 
     /** Set the currently used signature algorithm (it is up to the caller to ensure that this is compatible with the current keyspec). */
     void setSignatureAlgorithm(String signatureAlgorithm);
+
+    List<String> getOcspExtensions();
+    
+    void setOcspExtensions(List<String> ocspExtensions);
+
 }
