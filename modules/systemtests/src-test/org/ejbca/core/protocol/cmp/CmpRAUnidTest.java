@@ -63,7 +63,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.protocol.unid.UnidFnrHandler;
 import org.ejbca.unidfnr.ejb.UnidfnrSessionBean;
 import org.junit.After;
 import org.junit.Before;
@@ -286,7 +285,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             }
         }
         {
-            final PreparedStatement ps = dbConn.prepareStatement("select fnr from UnidFnrMapping where unid=?");
+            final PreparedStatement ps = dbConn.prepareStatement("select fnr from UnidFnrData where unid=?");
             ps.setString(1, unid);
             final ResultSet result = ps.executeQuery();
             assertTrue("Unid '" + unid + "' not found in DB.", result.next());
