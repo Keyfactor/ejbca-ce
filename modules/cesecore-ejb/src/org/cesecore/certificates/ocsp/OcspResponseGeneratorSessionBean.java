@@ -1394,7 +1394,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 Map<ASN1ObjectIdentifier, Extension> retext = null;
                                 if (extObj instanceof OCSPUnidExtension) {
                                     if (unidfnrSession != null) {
-                                        retext = unidfnrSession.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
+                                        retext = unidfnrSession.processOCSPUnidfnrExtension(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
                                     }
                                 } else {
                                     retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
