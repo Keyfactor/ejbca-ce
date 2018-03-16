@@ -125,7 +125,7 @@ public class CrlCreateSessionTest {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        CaTestUtils.removeCA(authenticationToken, className, className);
+        CaTestUtils.removeCa(authenticationToken, className, className);
     }
 
     @Test
