@@ -40,6 +40,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     private static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
     private static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
+    private static final String PROP_OCSP_EXTENSION = "ocspExtensions";
     private static final String BASECLASS_PREFIX = "BASECLASS_";
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";
     
@@ -51,6 +52,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private int cryptoTokenId;
     private String keyPairAlias;
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
+    private List<String> ocspExtensions;
     private String signatureAlgorithm;
     
     private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
@@ -220,6 +222,24 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         putDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, arrayList);
     }
 
+    @Override
+    public List<String> getOcspExtensions() {
+        if (ocspExtensions == null) {
+            ocspExtensions = getDataInternal(PROP_OCSP_EXTENSION, new ArrayList<String>());
+        }
+        final ArrayList<String> ocspExensions = new ArrayList<>();
+        ocspExensions.addAll(this.ocspExtensions);
+        return ocspExtensions;
+    }
+    
+    @Override
+    public void setOcspExtensions(List<String> ocspExtensions) {
+        this.ocspExtensions = ocspExtensions;
+        final ArrayList<String> arrayList = new ArrayList<>();
+        arrayList.addAll(ocspExtensions);
+        putDataInternal(PROP_OCSP_EXTENSION, arrayList);
+    }
+    
     @Override
     public String getSignatureAlgorithm() {
         if (signatureAlgorithm == null) {

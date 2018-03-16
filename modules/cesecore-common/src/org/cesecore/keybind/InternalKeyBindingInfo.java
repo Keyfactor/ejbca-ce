@@ -43,6 +43,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final private String nextKeyPairAlias;
     final private Map<String, DynamicUiProperty<? extends Serializable>> properties;
     final private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
+    final private List<String> ocspExtensions;
     final private String signatureAlgorithm;
     
     public InternalKeyBindingInfo(InternalKeyBinding internalKeyBinding) {
@@ -57,6 +58,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         this.properties = internalKeyBinding.getCopyOfProperties();
         this.trustedCertificateReferences = internalKeyBinding.getTrustedCertificateReferences();
+        this.ocspExtensions = internalKeyBinding.getOcspExtensions();
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
     }
     
@@ -198,6 +200,16 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setSignatureAlgorithm(String signatureAlgorithm) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    @Override
+    public List<String> getOcspExtensions() {
+        return ocspExtensions;
+    }
+
+    @Override
+    public void setOcspExtensions(List<String> ocspExtensions) {
         throw new RuntimeException(new OperationNotSupportedException());
     }
 }

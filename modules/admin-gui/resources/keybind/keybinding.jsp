@@ -188,6 +188,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			</f:facet>
 		</h:column>
 	</h:dataTable>
+	
 	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
 	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
 		<h:column>
@@ -209,6 +210,29 @@ org.cesecore.keybind.InternalKeyBindingRules
 	<h:panelGroup rendered="#{internalKeyBindingMBean.internalKeyBindingPropertyList.rowCount == 0}">
 	    <div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
     </h:panelGroup>
+    
+   	<h3><h:outputText value="OCSP Extensions" rendered="#{internalKeyBindingMBean.ocspKeyBinding}"/></h3>
+	<h:dataTable id="ocspExtensions" value="#{internalKeyBindingMBean.ocspExtensions}" rendered="#{internalKeyBindingMBean.ocspKeyBinding}" var="extensionEntry">
+		<h:column>
+   			<f:facet name="header"><h:outputText value="Extension"/></f:facet>
+			<h:outputText value="#{internalKeyBindingMBean.ocspExtensionName}"/>
+			<f:facet name="footer">
+				<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode}"
+					value="#{internalKeyBindingMBean.currentOcspExtension}">
+					<f:selectItems value="#{internalKeyBindingMBean.availableOcspExtensions}"/>
+				</h:selectOneMenu>
+			</f:facet>
+		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
+			<h:commandButton value="#{web.text.REMOVE}" action="#{internalKeyBindingMBean.removeOcspExtension}" rendered="#{internalKeyBindingMBean.inEditMode}"/>
+			<f:facet name="footer">
+				<h:commandButton  rendered="#{internalKeyBindingMBean.inEditMode}" action="#{internalKeyBindingMBean.addOcspExtension}"
+					value="#{web.text.ADD}"/>
+			</f:facet>
+		</h:column>
+	</h:dataTable>
+    
 	<h:commandButton value="#{web.text.CREATE}" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
 	<h:commandButton value="#{web.text.SAVE}" action="#{internalKeyBindingMBean.saveCurrent}" rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.creatingNew}"/>
 	</h:form>

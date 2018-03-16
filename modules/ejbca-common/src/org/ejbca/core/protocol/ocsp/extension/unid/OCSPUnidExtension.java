@@ -52,6 +52,8 @@ import org.ejbca.util.JDBCUtil;
  */
 public class OCSPUnidExtension implements OCSPExtension {
 
+    public static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
+    
 	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
