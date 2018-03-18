@@ -18,7 +18,6 @@ import java.util.Map;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
-import org.cesecore.certificates.certificate.request.RequestMessage;
 
 
 /**
@@ -30,14 +29,12 @@ public interface UnidfnrSession {
     
     static final String UNIDFNR_MODULE = "unidfnr-ejb";
     
+
     /**
-     * Called when the data handling should be done.
-     * @param req Request to be modified.
-     * @param otherData some other data
-     * @return the modified request
-     * @throws HandlerException The handle may throw this exception if some error occurs. Throwing it prevents the certificate creation.
+     * @param unid unique id to store in unid fnr database
+     * @param fnr actual fnr to store in the database
      */
-    RequestMessage processUnidfnrRequestMessage(final RequestMessage req, final String otherData, final String unidDataSource) throws HandlerException;
+    void stroreUnidFnrData(final String unid, final String fnr);
     
     /**
      * Called by OCSP responder when the configured extension is found in the request.

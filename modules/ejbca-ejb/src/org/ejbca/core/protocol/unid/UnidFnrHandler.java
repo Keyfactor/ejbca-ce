@@ -23,7 +23,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CeSecoreNameStyle;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
+import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
@@ -37,6 +39,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
 	private Storage storage;
+	private UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
 
 	/**
 	 * Used by EJBCA
@@ -122,6 +125,11 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	 * @throws HandlerException if unid-fnr can't be stored in DB. This will prevent any certificate to be created.
 	 */
 	private String storeUnidFrnAndGetNewSerialNr(String inputSerialNr, String unidPrefix) throws HandlerException {
+	    
+        if (this.unidfnrSession == null) {
+            throw new HandlerException("Unidfnr session bean is null!");
+        }	    
+	    
 		if ( inputSerialNr.length()!=17 ) {
 			return null;
 		}
@@ -138,8 +146,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		}
 		final String random = new LettersAndDigitsPasswordGenerator().getNewPassword(6, 6);
 		final String unid = unidPrefix + lra + random;
-		this.storage.storeIt(unid, fnr);
+		unidfnrSession.stroreUnidFnrData(unid, fnr);
 		return unid;
+
 	}
 	/**
 	 * To be implemented by unit test.
