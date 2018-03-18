@@ -114,7 +114,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
             this.url = ctLog.getUrl();
             this.ctLogBeingEdited = ctLog;
             this.isAcceptingByExpirationYear = ctLog.getExpirationYearRequired() != null;
-            this.expirationYearRequired = ctLog.getExpirationYearRequired() == null ? 
+            this.expirationYearRequired = ctLog.getExpirationYearRequired() == null ?
                     String.valueOf(Calendar.getInstance().get(Calendar.YEAR)) : String.valueOf(ctLog.getExpirationYearRequired());
         }
 
@@ -261,7 +261,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
 
     /**
      * Prepares for a CT log to be edited. This method will load the specified CT log into
-     * the correct CT log editor and set the editor in edit mode.
+     * the CT log editor and set the editor in edit mode.
      * @param ctLog the CT log to be edited
      * @return the constant string EDIT_CT_LOG
      */
@@ -313,8 +313,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         final CTLogInfo ctLogToUpdate = ctLogEditor.getCtLogBeingEdited();
         for (final CTLogInfo existing : super.getAllCtLogs()) {
             final boolean isSameLog = existing.getLogId() == ctLogToUpdate.getLogId();
-            final boolean hasSameUrl = StringUtils.equals(existing.getUrl(), ctLogEditor.getCtLogUrl());
-            if (!isSameLog && hasSameUrl) {
+            final boolean urlExistsInCtLogGroup = StringUtils.equals(existing.getUrl(), ctLogEditor.getCtLogUrl())
+                    && StringUtils.equals(existing.getLabel(), ctLogEditor.getCtLogLabel());
+            if (!isSameLog && urlExistsInCtLogGroup) {
                 systemConfigurationHelper.addErrorMessage("CTLOGTAB_ALREADYEXISTS", existing.getUrl());
                 return StringUtils.EMPTY;
             }
@@ -330,7 +331,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         ctLogToUpdate.setTimeout(timeout);
         ctLogToUpdate.setUrl(url);
         ctLogToUpdate.setLabel(label);
-        ctLogToUpdate.setExpirationYearRequired(ctLogEditor.getIsAcceptingByExpirationYear() ? 
+        ctLogToUpdate.setExpirationYearRequired(ctLogEditor.getIsAcceptingByExpirationYear() ?
                 Integer.valueOf(ctLogEditor.getExpirationYearRequired()) : null);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
         ctLogEditor.stopEditing();
@@ -341,5 +342,31 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
     public void renameLabel(final String oldLabel, final String newLabel) {
         super.renameLabel(oldLabel, newLabel);
         systemConfigurationHelper.saveCtLogs(super.getAllCtLogs());
+    }
+
+    public List<String> getAvailableLabels(CTLogInfo ctLog) {
+        final List<String> labels = super.getLabels();
+        // Remove labels already containing a CT log with the same URL
+        for (int i = labels.size() - 1; i >= 0; i--) {
+            final String label = labels.get(i);
+            if (StringUtils.equals(label, ctLog.getLabel())) {
+                // Always add the CT log label of the log itself
+                continue;
+            }
+            final List<CTLogInfo> logGroupMembers = super.getCtLogsByLabel(label);
+            if (logGroupHasAnotherCtLogWithSameUrl(logGroupMembers, ctLog)) {
+                labels.remove(i);
+            }
+        }
+        return labels;
+    }
+
+    private boolean logGroupHasAnotherCtLogWithSameUrl(final List<CTLogInfo> logGroupMembers, final CTLogInfo ctLog) {
+        for (final CTLogInfo logGroupMember : logGroupMembers) {
+            if (logGroupMember.getLogId() != ctLog.getLogId() && StringUtils.equals(logGroupMember.getUrl(), ctLog.getUrl())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
