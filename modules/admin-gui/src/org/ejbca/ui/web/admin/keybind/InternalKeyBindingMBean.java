@@ -64,7 +64,6 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;

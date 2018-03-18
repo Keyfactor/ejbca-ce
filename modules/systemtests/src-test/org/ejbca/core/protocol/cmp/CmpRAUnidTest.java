@@ -64,7 +64,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.unid.UnidFnrHandler;
-import org.ejbca.unidfnr.ejb.UnidfnrSessionBean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

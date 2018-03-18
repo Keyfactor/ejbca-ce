@@ -13,10 +13,7 @@
 package org.ejbca.core.model.era;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
