@@ -131,7 +131,7 @@ public class CtLogManager {
     /**
      * Add a new CT log to this CT log manager. This method will prevent duplicate logs from being added.
      * @param ctLog the CT log to add
-     * @throws DuplicateCtLogException if another CT log with the same URL already exists
+     * @throws DuplicateCtLogException if the CT log to add is a duplicate according to {@link #canAdd(CTLogInfo)}
      */
     public void addCtLog(final CTLogInfo ctLog) {
         if (!canAdd(ctLog)) {
@@ -157,14 +157,17 @@ public class CtLogManager {
      * if any of the following conditions hold for another CT log:
      * <ul>
      *   <li>The other log has an ID identical to the new CT log</li>
-     *   <li>The other log is has an identical URL as the new CT log</li>
+     *   <li>The other log is has an identical URL and label as the new CT log</li>
      * </ul>
      * @param the new CT log to check
      * @return true if the CT log given as input can be added, false otherwise
      */
     public boolean canAdd(final CTLogInfo ctLog) {
         for (CTLogInfo existing : ctLogs) {
-            if (existing.getLogId() == ctLog.getLogId() || StringUtils.equals(existing.getUrl(), ctLog.getUrl())) {
+            final boolean hasSameId = existing.getLogId() == ctLog.getLogId();
+            final boolean urlExistsInCtLogGroup = StringUtils.equals(existing.getUrl(), ctLog.getUrl())
+                    && StringUtils.equals(existing.getLabel(), ctLog.getLabel());
+            if (hasSameId || urlExistsInCtLogGroup) {
                 return false;
             }
         }
