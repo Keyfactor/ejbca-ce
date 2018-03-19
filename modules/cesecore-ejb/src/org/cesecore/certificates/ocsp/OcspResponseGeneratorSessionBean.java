@@ -1403,9 +1403,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                     responseExtensions.putAll(retext);
                                 } else {
-                                    String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
-                                            Integer.valueOf(extObj.getLastErrorCode()));
-                                    log.error(errMsg);
+                                    if (extObj instanceof OCSPUnidExtension && unidfnrSession != null) {
+                                        log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
+                                                Integer.valueOf(unidfnrSession.getLastErrorCode())));
+                                    } else {
+                                        log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
+                                                Integer.valueOf(extObj.getLastErrorCode())));
+                                    }
                                 }
                             }
                         }
