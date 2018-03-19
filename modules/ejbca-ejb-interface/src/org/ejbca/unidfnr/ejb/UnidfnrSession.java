@@ -62,5 +62,11 @@ public interface UnidfnrSession {
             super(message);
         }
     }
+    
+    /** Returns the last error that occurred during process(), when process returns null
+     * 
+     * @return error code as defined by implementing class
+     */
+    int getLastErrorCode();
 
 }
