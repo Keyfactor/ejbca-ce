@@ -276,7 +276,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public boolean isOcspKeyBinding() {
         return getSelectedInternalKeyBindingType().equals("OcspKeyBinding");
     }
-    
+
     public String getBackLinkTranslatedText() {
         String pattern = super.getEjbcaWebBean().getText("INTERNALKEYBINDING_BACKTOOVERVIEW");
         String type = super.getEjbcaWebBean().getText(getSelectedInternalKeyBindingType());
@@ -740,7 +740,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
     private ListDataModel<String> ocspExtensions = null;
-    
+
     public Integer getCurrentCertificateAuthority() {
         return currentCertificateAuthority;
     }
@@ -752,11 +752,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public String getCurrentOcspExtension() {
         return currentOcspExtension;
     }
-    
+
     public void setCurrentOcspExtension(String currentOcspExtension) {
         this.currentOcspExtension = currentOcspExtension;
     }
-    
+
     private void flushSingleViewCache() {
         currentInternalKeyBindingId = null;
         currentName = null;
@@ -1176,7 +1176,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
         return ocspExtensionItems;
     }
-    
+
     public ListDataModel<String> getOcspExtensions() {
         if (ocspExtensions == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
@@ -1194,21 +1194,21 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
         return ocspExtensions;
     }
-    
+
     @SuppressWarnings("unchecked")
     public void addOcspExtension() {
         final List<String> ocspExtensionsCurrent = (List<String>) getOcspExtensions().getWrappedData();
         ocspExtensionsCurrent.add(getCurrentOcspExtension());
         ocspExtensions.setWrappedData(ocspExtensionsCurrent);
     }
-    
+
     @SuppressWarnings("unchecked")
     public void removeOcspExtension() {
         final List<String> ocspExtensionsCurrent = (List<String>) getOcspExtensions().getWrappedData();
         ocspExtensionsCurrent.remove(ocspExtensions.getRowData());
         ocspExtensions.setWrappedData(ocspExtensionsCurrent);
     }
-    
+
     public String getOcspExtensionName() {
         final String fullName = ocspExtensions.getRowData();
         return fullName.substring(fullName.lastIndexOf(".")+1, fullName.length());
@@ -1221,7 +1221,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public void setCurrentCertificateSerialNumber(String currentCertificateSerialNumber) {
         this.currentCertificateSerialNumber = currentCertificateSerialNumber;
     }
-    
+
     public String getTrustedCertificatesCaName() {
         return caSession.getCAIdToNameMap().get(trustedCertificates.getRowData().getCaId());
     }
@@ -1384,12 +1384,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      * @param cryptoTokenInfo
      * @return path to corresponding icons based on the followings:
      *
-     * Online if Keybinding is enabled, crypto token is active and keybinding exists in the cache
-     * Pending if Keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
-     * Offline if keybindig is disabled or crypto token is offline.
-     *
+     * Online if keybinding is enabled, crypto token is active and keybinding exists in the cache
+     * Pending if keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
+     * Offline if keybinding is disabled, unknown or offline
      */
     private String updateOperationalStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+        if (cryptoTokenInfo == null) {
+            return getEjbcaWebBean().getImagefileInfix("status-ca-offline.png");
+        }
         switch (currentKeyBindingInfo.getStatus()) {
         case ACTIVE:
             if (currentKeyBindingInfo.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
