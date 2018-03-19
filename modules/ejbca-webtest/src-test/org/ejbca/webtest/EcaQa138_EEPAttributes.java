@@ -71,7 +71,8 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
 
     @Test
     public void testA_addEEP() {
-        WebTestHelper.addEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
+        WebTestHelper.goToEndEntityProfiles(webDriver, getAdminWebUrl());
+        WebTestHelper.addEndEntityProfile(webDriver, eepName, true);
     }
 
     @Test
@@ -91,12 +92,12 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
 
     private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
         // Add the attribute, save it with Modifiable checked (should succeed)
-        WebTestHelper.editEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
+        WebTestHelper.editEndEntityProfile(webDriver, eepName);
         WebTestHelper.addAttributeEndEntityProfile(webDriver, attributeType, attributeName);
         WebTestHelper.saveEndEntityProfile(webDriver, true);
 
         // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
-        WebTestHelper.editEndEntityProfile(webDriver, getAdminWebUrl(), eepName);
+        WebTestHelper.editEndEntityProfile(webDriver, eepName);
         triggerModifiable(attributeType, attributeIndex);
         WebTestHelper.saveEndEntityProfile(webDriver, false);
         WebTestHelper.assertAlert(webDriver, alertMessage, true);
