@@ -57,7 +57,8 @@ public abstract class ClientToolBox {
         		new SCEPTest(),
                 new OCSPActivate(),
                 new DBManager(),
-                new MiscTools(),
+                new PasswordGenerator(),
+                new CaIdGenerator(),
         };
         for ( int i=0; args.length>0 && i<toolBox.length; i++) {
             if ( toolBox[i].executeIfSelected(args) ) {
