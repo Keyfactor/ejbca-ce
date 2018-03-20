@@ -525,9 +525,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // NOOP here. Validators and setters do the real work.
     }
 
+    private boolean renderCsrDetailedInfo = false;
+    
+    public boolean isRenderCsrDetailedInfo() {
+        return renderCsrDetailedInfo;
+    }
+
+    public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
+        this.renderCsrDetailedInfo = renderCsrDetailedInfo;
+    }
+
+    public void renderCsrDetailedInfoToggle() {
+        renderCsrDetailedInfo = !renderCsrDetailedInfo;
+    }
+    
     public void renderNonModifiableTemplatesToggle() {
         renderNonModifiableTemplates = !renderNonModifiableTemplates;
     }
+    
     public void renderNonModifiableFieldsToggle() {
         renderNonModifiableFields = !renderNonModifiableFields;
     }
