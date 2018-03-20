@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -51,6 +52,7 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -160,7 +162,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
+    private UploadedFile uploadFile;
     private String certificateRequest;
+    private String publicKeyModulus;
+    private String publicKeyExponent;
+    private String sha256Fingerprint;
+    private String signature;
+    private String csrFileName;
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
@@ -357,9 +365,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum());
     }
 
+    boolean uploadCsrDoneRendered = false;
+    
     /** @return true if the the CSR has been uploaded */
     public boolean isUploadCsrDoneRendered() {
-        return algorithmFromCsr!=null;
+        return this.uploadCsrDoneRendered;
     }
 
     /** @return the provideRequestInfoRendered */
@@ -549,6 +559,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getSubjectAlternativeName().update();
             }
             // Don't make the effort to populate Subject Directory Attribute fields. Too little real world use for that.
+            
+            uploadCsrDoneRendered = true;
         }
     }
 
@@ -981,17 +993,32 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
     }
-
-    /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
-    public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        algorithmFromCsr = null;
-        final String valueStr = value.toString();
-        if (valueStr != null && valueStr.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
-            log.info("CSR uploaded was too large: "+valueStr.length());
+    
+    public void actionUpdateCsrInfoFields() {
+        String fileName = uploadFile.getName();
+        
+        csrFileName = fileName;
+        
+        String fileContents;
+        try {
+            fileContents = new String(uploadFile.getBytes());
+        } catch (IOException e) {
             raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(valueStr);
+        
+        validateCsr(fileContents);
+    }
+    
+    /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
+    public final void validateCsr(String csrValue) throws ValidatorException {
+        algorithmFromCsr = null;
+        if (csrValue != null && csrValue.length() > EnrollMakeNewRequestBean.MAX_CSR_LENGTH) {
+            log.info("CSR uploaded was too large: "+csrValue.length());
+            raLocaleBean.addMessageError("enroll_invalid_certificate_request");
+            throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
+        }
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csrValue);
         if (pkcs10CertificateRequest == null) {
             raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
@@ -1002,19 +1029,28 @@ public class EnrollMakeNewRequestBean implements Serializable {
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
+            
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
-            // For yet unknown reasons, the setter is never when invoked during AJAX request
-            certificateRequest = value.toString();
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            
+            certificateRequest = csrValue;
+            
+            PublicKey publicKey = jcaPKCS10CertificationRequest.getPublicKey();
+            publicKeyModulus = AlgorithmTools.getKeyModulus(publicKey);
+            publicKeyExponent = AlgorithmTools.getKeyPublicExponent(publicKey);
+            sha256Fingerprint = AlgorithmTools.getSha256Fingerprint(certificateRequest);
+            signature = AlgorithmTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
+            
+        } catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
             raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
     }
+
 
     //-----------------------------------------------------------------------------------------------
     // Getters and setters
@@ -1571,6 +1607,54 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
         return false;
+    }
+    
+    public UploadedFile getUploadFile() {
+        return uploadFile;
+    }
+
+    public void setUploadFile(UploadedFile uploadFile) {
+        this.uploadFile = uploadFile;
+    }
+    
+    public String getPublicKeyModulus() {
+        return publicKeyModulus;
+    }
+
+    public void setPublicKeyModulus(String publicKeyModulus) {
+        this.publicKeyModulus = publicKeyModulus;
+    }
+
+    public String getPublicKeyExponent() {
+        return publicKeyExponent;
+    }
+
+    public void setPublicKeyExponent(String publicKeyExponent) {
+        this.publicKeyExponent = publicKeyExponent;
+    }
+
+    public String getSha256Fingerprint() {
+        return sha256Fingerprint;
+    }
+
+    public void setSha256Fingerprint(String sha256Fingerprint) {
+        this.sha256Fingerprint = sha256Fingerprint;
+    }
+    
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public String getCsrFileName() {
+        return csrFileName;
+    }
+
+    public void setCsrFileName(String csrFileName) {
+        this.csrFileName = csrFileName;
     }
 
     /** @return the current certificateRequest if available */

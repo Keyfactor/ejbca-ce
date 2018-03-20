@@ -122,7 +122,7 @@
 				</h:panelGroup>
 
 			</h:form>
-			<h:form id="keyPairForm" styleClass="pure-form pure-form-aligned">
+			<h:form id="keyPairForm" styleClass="pure-form pure-form-aligned" enctype="multipart/form-data">
 
 				<h:panelGroup layout="block"
 					rendered="#{enrollMakeNewRequestBean.uploadCsrRendered}" id="uploadCsrOuterPanel">
@@ -130,21 +130,44 @@
 						<h:outputText value="#{msg.enroll_upload_csr}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollMakeNewRequestBean.uploadCsrDoneRendered}">
-						<h:panelGroup layout="block">
-                            <p id="newFileInputContainer" style="display: inline-block;"></p>
-                            <ui:remove>
-                                <!-- Pure JavaScript file upload, since non-JS fallback of pasting upload exists -->
-                            </ui:remove>
-                            <script>
-                                ejbca.ra.createFileUploadInput("newFileInput", "newFileInputContainer", function(uploadedText) {
-                                    document.getElementById("keyPairForm:certificateRequest").value = uploadedText;
-                                    document.getElementById("keyPairForm:uploadCsrButton").click();
-                                });
-                            </script>
-						</h:panelGroup>
-						<h:inputTextarea id="certificateRequest" styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
-							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"
-                            validator="#{enrollMakeNewRequestBean.validateCsr}"/>
+						<t:inputFileUpload id="certificateUploadInput" 
+							value="#{enrollMakeNewRequestBean.uploadFile}" size="20" 
+							onchange="document.getElementById('keyPairForm:updateCsrInfoFields').click();"/>
+						
+						<h:commandButton id="updateCsrInfoFields" action="#{enrollMakeNewRequestBean.actionUpdateCsrInfoFields}" value="invisible import button"/>
+						
+						<br/>
+						
+						<h:outputLabel for="fileName" value="File name:"/>
+						<h:outputText id="fileName" value="#{enrollMakeNewRequestBean.csrFileName}"/>
+						
+						<br/>
+						
+						<h:outputLabel for="publicKeyModulus" value="modulus (todo tõlkefaili):"/>
+						<h:outputText id="publicKeyModulus" value="#{enrollMakeNewRequestBean.publicKeyModulus}"/>
+						
+						<br/>
+						
+						<h:outputLabel for="publicKeyExponent" value="exponent (todo tõlkefaili):"/>
+						<h:outputText id="publicKeyExponent" value="#{enrollMakeNewRequestBean.publicKeyExponent}"/>
+						
+						<br/>
+						
+						<h:outputLabel for="sha256Fingerprint" value="SHA256 fingerprint (todo tõlkefaili):"/>
+						<h:outputText id="sha256Fingerprint" value="#{enrollMakeNewRequestBean.sha256Fingerprint}"/>
+			
+						<br/>
+									
+						<h:outputLabel for="signature" value="signature (todo tõlkefaili):"/>
+						<h:outputText id="signature" value="#{enrollMakeNewRequestBean.signature}"/>			
+						
+						<br/>
+						
+						
+						<h:inputTextarea id="certificateRequest" 
+							styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
+							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"/>
+						
 						<h:message for="certificateRequest" id="certificateRequestMessage" styleClass="errorMessage"/>
                         <br/>
                         <h:commandButton id="uploadCsrButton" value="#{msg.enroll_upload_csr}" styleClass="pure-button ra-button"
