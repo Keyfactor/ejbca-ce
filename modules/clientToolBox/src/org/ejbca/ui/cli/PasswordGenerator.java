@@ -23,14 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.cesecore.util.CertTools;
-
 /**
- * <p>Various tools aimed for field work.
- *
- * <p><b>CaId Module Module</b>
- * <p>Generates CA IDs which can be used with EJBCA.
- *
  * <p><b>PasswordGenerator Module</b>
  * <p>Implements a cryptographically secure password generator. Runs as a
  * command line client which may ask for the following parameters (if specified)
@@ -43,45 +36,14 @@ import org.cesecore.util.CertTools;
  *
  * @version $Id$
  */
-public class MiscTools extends ClientToolBox {
+public class PasswordGenerator extends ClientToolBox {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     @Override
     protected void execute(final String[] args) {
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
         argsList.remove(getName());
-        if (argsList.isEmpty() || argsList.get(0).equals("help")) {
-            System.out.println("Available modules");
-            System.out.println("PasswordGenerator - Generate cryptographically strong passwords");
-            System.out.println("CaIdGenerator     - Generate CA IDs for EJBCA.");
-            return;
-        }
-        if (argsList.contains("PasswordGenerator")) {
-            argsList.remove("PasswordGenerator");
-            executePasswordModule(argsList);
-        } else if (argsList.contains("CaIdGenerator")) {
-            argsList.remove("CaIdGenerator");
-            executeCaIdModule(argsList);
-        } else {
-            System.out.println(String.format("Unknown module %s. Type 'help' to list all available modules.", argsList.get(0)));
-        }
-    }
-
-    private void executeCaIdModule(final List<String> args) {
-        if (args.contains("help") || args.isEmpty()) {
-            System.out.println("Usage: CaIdGenerator <SubjectDN>");
-            return;
-        }
-        if (args.size() > 1) {
-            System.out.println("Too many arguments. Type 'help' for more information.");
-            return;
-        }
-        final int id = CertTools.stringToBCDNString(args.get(0)).hashCode();
-        System.out.println(id);
-    }
-
-    private void executePasswordModule(final List<String> args) {
-        if (args.contains("help")) {
+        if (argsList.contains("help")) {
             System.out.println("Flag    Description                              Default");
             System.out.println("-h      Hash function used for mixing            SHA-256");
             System.out.println("-c      Charset used for the generated password  [a-zA-Z0-9]");
@@ -91,10 +53,10 @@ public class MiscTools extends ClientToolBox {
         }
 
         try {
-            final String algorithm = readInput(args, "Algorithm [SHA-256]", "-h", "SHA-256");
-            final String charset = expandRegex(readInput(args, "Charset [a-zA-Z0-9]", "-c", "[a-zA-Z0-9]"));
-            final int passwordBits = Integer.valueOf(readInput(args, "Bit strength [128]", "-b", "128"));
-            final String seed = readInput(args, "Seed [null]", "-s", "");
+            final String algorithm = readInput(argsList, "Algorithm [SHA-256]", "-h", "SHA-256");
+            final String charset = expandRegex(readInput(argsList, "Charset [a-zA-Z0-9]", "-c", "[a-zA-Z0-9]"));
+            final int passwordBits = Integer.valueOf(readInput(argsList, "Bit strength [128]", "-b", "128"));
+            final String seed = readInput(argsList, "Seed [null]", "-s", "");
 
             if (charset.length() < 2) {
                 System.err.println("Charset must consist of at least 2 characters.");
@@ -122,6 +84,7 @@ public class MiscTools extends ClientToolBox {
             System.err.println("Bye!");
             return;
         }
+
     }
 
     private String readInput(final List<String> args, final String title, final String flag, final String defaultValue) throws IllegalStateException {
@@ -163,6 +126,6 @@ public class MiscTools extends ClientToolBox {
 
     @Override
     protected String getName() {
-        return "MiscTools";
+        return "PasswordGenerator";
     }
 }
