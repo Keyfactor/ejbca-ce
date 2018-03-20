@@ -60,10 +60,10 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	@Override
 	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName, String unidDataSource) throws HandlerException {
 	    
-	    if(this.storage == null) {
+/*	    if(this.storage == null) {
 	        this.storage = new MyStorage(unidDataSource);
 	    }
-	    
+*/	    
 		final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
