@@ -134,39 +134,90 @@
 							value="#{enrollMakeNewRequestBean.uploadFile}" size="20" 
 							onchange="document.getElementById('keyPairForm:updateCsrInfoFields').click();"/>
 						
-						<h:commandButton id="updateCsrInfoFields" action="#{enrollMakeNewRequestBean.actionUpdateCsrInfoFields}" value="invisible import button"/>
-						
 						<br/>
 						
-						<h:outputLabel for="fileName" value="File name:"/>
-						<h:outputText id="fileName" value="#{enrollMakeNewRequestBean.csrFileName}"/>
+						<h:commandButton id="updateCsrInfoFields" value="invisible import button" style="display:none"
+							action="#{enrollMakeNewRequestBean.actionUpdateCsrInfoFields}"/>
 						
 						<br/>
-						
-						<h:outputLabel for="publicKeyModulus" value="modulus (todo tõlkefaili):"/>
-						<h:outputText id="publicKeyModulus" value="#{enrollMakeNewRequestBean.publicKeyModulus}"/>
-						
-						<br/>
-						
-						<h:outputLabel for="publicKeyExponent" value="exponent (todo tõlkefaili):"/>
-						<h:outputText id="publicKeyExponent" value="#{enrollMakeNewRequestBean.publicKeyExponent}"/>
-						
-						<br/>
-						
-						<h:outputLabel for="sha256Fingerprint" value="SHA256 fingerprint (todo tõlkefaili):"/>
-						<h:outputText id="sha256Fingerprint" value="#{enrollMakeNewRequestBean.sha256Fingerprint}"/>
-			
-						<br/>
-									
-						<h:outputLabel for="signature" value="signature (todo tõlkefaili):"/>
-						<h:outputText id="signature" value="#{enrollMakeNewRequestBean.signature}"/>			
-						
-						<br/>
-						
 						
 						<h:inputTextarea id="certificateRequest" 
 							styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
 							value="#{enrollMakeNewRequestBean.certificateRequest}" cols="80" rows="20"/>
+						
+						<br/>
+						
+						<h:panelGroup layout="block"
+							rendered="#{enrollMakeNewRequestBean.renderCsrDetailedInfo}"
+							id="csrDetailedInfoPanel">
+						
+							<table cellspacing="3" cellpadding="3" border="0" width="100%">
+								<tbody>
+									<tr>
+										<td>
+											<h:outputLabel value="#{msg.enroll_filename}" />
+										</td>
+										<td>
+											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+												<h:outputText id="fileName" value="#{enrollMakeNewRequestBean.csrFileName}"/>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<h:outputLabel value="#{msg.enroll_modulus}"/>
+										</td>
+										<td>
+											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+												<h:outputText id="publicKeyModulus" value="#{enrollMakeNewRequestBean.publicKeyModulus}"/>
+											</div>
+										</td>
+									</tr>
+								
+									<tr>
+										<td>
+											<h:outputLabel value="#{msg.enroll_exponent}"/>
+										</td>
+										<td>
+											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+												<h:outputText id="publicKeyExponent" value="#{enrollMakeNewRequestBean.publicKeyExponent}"/>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<h:outputLabel value="#{msg.enroll_sha256_fingerprint}"/>
+										</td>
+										<td>
+											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+												<h:outputText id="sha256Fingerprint" value="#{enrollMakeNewRequestBean.sha256Fingerprint}"/>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<h:outputLabel value="#{msg.enroll_signature}"/>
+										</td>
+										<td>
+											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+												<h:outputText id="signature" value="#{enrollMakeNewRequestBean.signature}"/>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						
+						</h:panelGroup>
+						
+						<br/>
+						
+						<h:commandButton id="renderCsrDetailedInfoToggle" action="#{enrollMakeNewRequestBean.renderCsrDetailedInfoToggle}"
+							value="#{enrollMakeNewRequestBean.renderCsrDetailedInfo ? msg.enroll_render_non_modifiable_button_hide : msg.enroll_render_non_modifiable_button_show}"
+							styleClass="toggleMoreButton" immediate="true">
+							<f:ajax execute="@this" render=":keyPairForm" />
+						</h:commandButton>
+						
+						<br/>
 						
 						<h:message for="certificateRequest" id="certificateRequestMessage" styleClass="errorMessage"/>
                         <br/>
