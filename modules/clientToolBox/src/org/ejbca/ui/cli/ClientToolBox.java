@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.cli;
 
 import org.ejbca.ui.cli.dbmanager.DBManager;
