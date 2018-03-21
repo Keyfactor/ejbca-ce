@@ -16,7 +16,7 @@ package org.cesecore.util.ui;
  * Any exception in dynamic UI property context which transports a user message. 
  * There is no inner exception, only the message MUST BE used.
  * 
- * @version $Id: DynamicUiCallbackException.java 27100 2018-01-03 10:15:35Z anjakobs $
+ * @version $Id$
  *
  */
 public final class DynamicUiCallbackException extends Exception {

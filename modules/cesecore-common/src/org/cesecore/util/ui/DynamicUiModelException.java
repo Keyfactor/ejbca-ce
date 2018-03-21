@@ -15,7 +15,7 @@ package org.cesecore.util.ui;
 /**
  * Any exception in dynamic UI property context.
  * 
- * @version $Id: DynamicUiPropertyException.java 24964 2017-12-23 08:15:35Z anjakobs $
+ * @version $Id$
  *
  */
 public class DynamicUiModelException extends Exception {

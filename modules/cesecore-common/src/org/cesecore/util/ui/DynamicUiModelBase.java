@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 /**
  * Base implementation for domain objects (or other objects) with dynamic UI properties.
  * 
- * @version $Id: DynamicUiModelBase.java 26390 2017-11-04 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public class DynamicUiModelBase implements DynamicUiModel {
