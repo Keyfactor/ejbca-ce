@@ -73,6 +73,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -372,11 +373,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return this.uploadCsrDoneRendered;
     }
 
-    /** @return the provideRequestInfoRendered */
-    public boolean isProvideRequestInfoRendered() {
-        return isKeyAlgorithmAvailable();
-    }
-
     /**
      * @return True if the option "Validity override" is enabled in the active certificate profile
      */
@@ -557,10 +553,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public void uploadCsrChange() {
         algorithmFromCsr = null;
+        uploadCsrDoneRendered = false;
     }
 
     /** Populate the state of modifiable fields with the CSR that was saved during file upload validation */
     public void uploadCsr() {
+        validateCsr(certificateRequest);
         //If PROVIDED BY USER key generation is selected, try fill Subject DN fields from CSR (Overwrite the fields set by previous CSR upload if any)
         if (getSelectedKeyPairGenerationEnum() != null && KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum()) && algorithmFromCsr!=null) {
             final PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(getCertificateRequest());
@@ -1055,10 +1053,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             certificateRequest = csrValue;
             
             PublicKey publicKey = jcaPKCS10CertificationRequest.getPublicKey();
-            publicKeyModulus = AlgorithmTools.getKeyModulus(publicKey);
-            publicKeyExponent = AlgorithmTools.getKeyPublicExponent(publicKey);
-            sha256Fingerprint = AlgorithmTools.getSha256Fingerprint(certificateRequest);
-            signature = AlgorithmTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
+            publicKeyModulus = KeyTools.getKeyModulus(publicKey);
+            
+            publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
+            sha256Fingerprint = KeyTools.getSha256Fingerprint(certificateRequest);
+            signature = KeyTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
             
         } catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
             raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
