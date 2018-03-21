@@ -29,7 +29,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * the {@link DynamicUiActionCallback} associated with the dynamic UI property and renders the 
  * outcome on the view.
  * 
- * @version $Id: JsfDynamicUiAjaxBehaviorListener.java 28450 2018-06-03 12:40:30Z andresjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiAjaxBehaviorListener implements Serializable, AjaxBehaviorListener {
 

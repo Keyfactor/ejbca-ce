@@ -25,7 +25,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * MyFaces HTML UI text area component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
  * 
- * @version $Id: JsfDynamicUiHtmlInputTextarea.java 28450 2018-06-03 12:40:30Z andresjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiHtmlInputTextarea extends HtmlInputTextarea implements DynamicUiComponent, PropertyChangeListener {
 

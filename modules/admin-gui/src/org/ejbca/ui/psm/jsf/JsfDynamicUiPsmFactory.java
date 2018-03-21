@@ -51,7 +51,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * Factory for PSM JSF 2 HTML components.
  *
- * @version $Id: DynamicUiPropertyPsmFactory.java 20757 2017-12-24 10:18:14Z anjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiPsmFactory {
     

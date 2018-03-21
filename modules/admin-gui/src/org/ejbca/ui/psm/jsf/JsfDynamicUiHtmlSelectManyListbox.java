@@ -25,7 +25,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * MyFaces HTML UI list box for component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
  * 
- * @version $Id: JsfDynamicUiHtmlSelectManyListbox.java 28450 2018-06-03 12:40:30Z andresjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiHtmlSelectManyListbox extends HtmlSelectManyListbox implements DynamicUiComponent, PropertyChangeListener {
 
