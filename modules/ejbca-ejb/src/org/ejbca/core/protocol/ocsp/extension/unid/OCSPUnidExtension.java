@@ -19,12 +19,10 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,9 +39,9 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.util.JDBCUtil;
+import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
@@ -57,22 +55,13 @@ public class OCSPUnidExtension implements OCSPExtension {
 	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
-	/** Constants capturing the possible error returned by the Unid-Fnr OCSP Extension 
-	 * 
-	 */
-	public static final int ERROR_NO_ERROR = 0;
-	public static final int ERROR_UNKNOWN = 1;
-	public static final int ERROR_UNAUTHORIZED = 2;
-	public static final int ERROR_NO_FNR_MAPPING = 3;
-	public static final int ERROR_NO_SERIAL_IN_DN = 4;
-	public static final int ERROR_SERVICE_UNAVAILABLE = 5;
-    public static final int ERROR_CERT_REVOKED = 6;
+    
+    private final UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
     
     private String dataSourceJndi;
     private Set<BigInteger> trustedCerts = new HashSet<BigInteger>();
     private Certificate cacert = null;
-    private int errCode = OCSPUnidExtension.ERROR_NO_ERROR;
+    private int errCode = UnidFnrOCSPExtensionCode.ERROR_NO_ERROR.getValue();
     
 	@Override
 	public void init() {
@@ -97,13 +86,13 @@ public class OCSPUnidExtension implements OCSPExtension {
                 m_log.error(dir.getCanonicalPath()+ " is not a directory.");
                 throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
             }
-            File files[] = dir.listFiles();
-            if (files == null || files.length == 0) {
+            List<File> files = Arrays.asList(dir.listFiles());
+            if (files == null || files.isEmpty()) {
         		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
                 m_log.error(errMsg);                
             }
-            for ( int i=0; i<files.length; i++ ) {
-                final String fileName = files[i].getCanonicalPath();
+            for (final File file : files) {
+                final String fileName = file.getCanonicalPath();
                 // Read the file, don't stop completely if one file has errors in it
                 try {
                     final byte bFromFile[] = FileTools.readFiletoBuffer(fileName);
@@ -155,64 +144,48 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         // Check authorization first
         if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost)) {
-        	errCode = OCSPUnidExtension.ERROR_UNAUTHORIZED;
+        	errCode = UnidFnrOCSPExtensionCode.ERROR_UNAUTHORIZED.getValue();
         	return null;
         }
         // If the certificate is revoked, we must not return an FNR
         if (status != null) {
-            errCode = OCSPUnidExtension.ERROR_CERT_REVOKED;
+            errCode = UnidFnrOCSPExtensionCode.ERROR_CERT_REVOKED.getValue();
             return null;
         }
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet result = null;
-    	String fnr = null;
-        String sn = null;
+
+        String serialNumber = null;
+        String fnr = null;
         try {
         	// The Unis is in the DN component serialNumber
-        	sn = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
-        	if (sn != null) {
+        	serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
+        	if (serialNumber != null) {
                 if (m_log.isDebugEnabled()) {
-                    m_log.debug("Found serialNumber: "+sn);                    
+                    m_log.debug("Found serialNumber: "+serialNumber);                    
                 }
-				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, sn);
+				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, serialNumber);
                 m_log.info(iMsg);
-        		try {
-        			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
-        		} catch (SQLException e) {
-    				String errMsg = intres.getLocalizedMessage("ocsp.errordatabaseunid");
-        			m_log.error(errMsg, e);
-        			errCode = OCSPUnidExtension.ERROR_SERVICE_UNAVAILABLE;
-        			return null;
-        		}
-                ps = con.prepareStatement("select fnr from UnidFnrMapping where unid=?");
-                ps.setString(1, sn);
-                result = ps.executeQuery();
-                if (result.next()) {
-                    fnr = result.getString(1);
-                }
+        		fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
+
         	} else {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
         		m_log.error(errMsg);
-        		errCode = OCSPUnidExtension.ERROR_NO_SERIAL_IN_DN;
+        		errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
         		return null;
         	}
             m_log.trace("<process()");
         } catch (Exception e) {
             throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
+        } 
         
-        // Construct the response extentsion if we found a mapping
+        // Construct the response extension if we found a mapping
         if (fnr == null) {
-			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", sn);
+			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", serialNumber);
             m_log.error(errMsg);
-        	errCode = OCSPUnidExtension.ERROR_NO_FNR_MAPPING;
+        	errCode = UnidFnrOCSPExtensionCode.ERROR_NO_FNR_MAPPING.getValue();
         	return null;
         	
         }
-		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, sn);
+		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         HashMap<ASN1ObjectIdentifier, Extension> ret = new HashMap<ASN1ObjectIdentifier, Extension>();
