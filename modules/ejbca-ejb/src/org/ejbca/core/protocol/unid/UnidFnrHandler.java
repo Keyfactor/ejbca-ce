@@ -14,6 +14,8 @@
 package org.ejbca.core.protocol.unid;
 
 import java.sql.PreparedStatement;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -60,11 +62,11 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	@Override
 	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName, String unidDataSource) throws HandlerException {
 	    
-/*	    if(this.storage == null) {
+	    if(this.storage == null) {
 	        this.storage = new MyStorage(unidDataSource);
 	    }
-*/	    
-		final X500Name dn = req.getRequestX500Name();
+
+	    final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
 		}
@@ -72,20 +74,20 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		if ( unidPrefix==null ) {
 			return req;
 		}
-        final ASN1ObjectIdentifier[] oids = dn.getAttributeTypes();
+        final List<ASN1ObjectIdentifier> asn1ObjectIdentifiers = Arrays.asList(dn.getAttributeTypes());
 		X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
 		boolean changed = false;
-		for ( int i=0; i<oids.length; i++ ) {
-			if ( oids[i].equals(CeSecoreNameStyle.SERIALNUMBER) ) {
-			    RDN[] rdns = dn.getRDNs(oids[i]);
+		for (final ASN1ObjectIdentifier asn1ObjectIdentifier : asn1ObjectIdentifiers) {
+			if (asn1ObjectIdentifier.equals(CeSecoreNameStyle.SERIALNUMBER) ) {
+			    RDN[] rdns = dn.getRDNs(asn1ObjectIdentifier);
 			    String value = rdns[0].getFirst().getValue().toString();
 				final String newSerial = storeUnidFrnAndGetNewSerialNr(value, unidPrefix);
 				if ( newSerial!=null ) {
-					nameBuilder.addRDN(oids[i], newSerial);
+					nameBuilder.addRDN(asn1ObjectIdentifier, newSerial);
 					changed = true;
 				}
 			} else {
-			    nameBuilder.addRDN(dn.getRDNs(oids[i])[0].getFirst());
+			    nameBuilder.addRDN(dn.getRDNs(asn1ObjectIdentifier)[0].getFirst());
 			}
 		}
 		if(changed) {
