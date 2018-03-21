@@ -15,7 +15,7 @@ package org.cesecore.util.ui;
 /**
  * Interface type for domain objects (or other objects) with dynamic UI model.
  * 
- * @version $Id: DynamicUiModelAware.java 26390 2017-11-04 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public interface DynamicUiModelAware {

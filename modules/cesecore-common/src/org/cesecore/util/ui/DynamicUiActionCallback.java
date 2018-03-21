@@ -15,7 +15,7 @@ package org.cesecore.util.ui;
 /**
  * Action callback from the PSM (may be JSF 2 (JsfDynamicUiPsmFactory) back to the PIM {@link DynamicUiModel}.
  * 
- * @version $Id: DynamicUiActionCallback.java 25000 2017-12-25 12:28:24Z anjakobs $
+ * @version $Id$
  */
 public interface DynamicUiActionCallback {
 
