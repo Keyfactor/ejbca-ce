@@ -23,6 +23,7 @@
 		<path refid="lib.ldap.classpath"/>
 		<path location="${mod.unidfnr-ejb.lib}"/>
 		<path location="${mod.ejbca-common.lib}" />
+		<path location="${mod.ejbca-ejb.lib}"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
@@ -40,7 +41,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
-	<target name="jar" depends = "cesecore-common, cesecore-ejb-interface, ejbca-common, ejbca-ejb-interface">
+	<target name="jar" depends = "cesecore-common, cesecore-ejb-interface, ejbca-common, ejbca-ejb-interface, ejbca-ejb">
 		<mkdir dir="${build.dir}/classes"/>
 		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="test.classpath"/>
