@@ -86,6 +86,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * 
  * Tests http pages of ocsp lookup server. This test requires a lot of setup. - The lookup service must be active - There must be a database for the
  * unid-fnr mapping with the mapping 123456789, 654321 - You must have a CA that has issued certificates with serialNumber in the DN matching the unid
  * 123456789 - You also need a keystore issued by the CA for TLS communication, the keystore cert must be configured in the lookup extension as
@@ -98,7 +99,9 @@ import org.junit.Test;
  * The database table for the UnidFnrMapping should look like (MySQL): CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr
  * varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) );
  * 
- **/
+ * @version $Id$
+ *
+ */
 public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpTest.class);
 
