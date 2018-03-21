@@ -15,7 +15,7 @@ package org.cesecore.util.ui;
 /**
  * Interface type for PSM components like check boxes, text fields, etc. for dynamic UI model.
  * 
- * @version $Id: DynamicUiComponent.java 26390 2017-11-04 15:20:58Z anjakobs $
+ * @version $Id$
  *
  */
 public interface DynamicUiComponent {
