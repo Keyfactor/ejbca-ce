@@ -262,10 +262,8 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Add action. Adds a new key validator.
-     * @throws AuthorizationDeniedException if authorization was denied.
-     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionAdd() throws AuthorizationDeniedException, KeyValidatorExistsException {
+    public void actionAdd() {
         final String name = getNewValidatorName();
         if (StringUtils.isNotBlank(name)) {
             try {
@@ -315,11 +313,8 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * AddFromTemplate confirm action.
-     * @throws AuthorizationDeniedException if authorization was denied.
-     * @throws KeyValidatorDoesntExistsException if the validator does not exist.
-     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionAddFromTemplateConfirm() throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+    public void actionAddFromTemplateConfirm() {
         final String name = getNewValidatorName();
         if (name.length() > 0) {
             try {
@@ -387,11 +382,8 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Rename confirm action.
-     * @throws AuthorizationDeniedException if authorization was denied.
-     * @throws KeyValidatorDoesntExistsException if the validator does not exist.
-     * @throws KeyValidatorExistsException if the validator already exists.
      */
-    public void actionRenameConfirm() throws AuthorizationDeniedException, KeyValidatorDoesntExistsException, KeyValidatorExistsException {
+    public void actionRenameConfirm() {
         final String name = getNewValidatorName();
         if (name.length() > 0) {
             try {
