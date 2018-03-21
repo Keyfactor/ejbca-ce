@@ -32,7 +32,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * This MyFaces ValueChangeListener implementation for {@link DynamicUiModel} sets the dynamic UI property 
  * values associated with the dynamic UI model.
  * 
- * @version $Id: JsfDynamicUiValueChangeListener.java 28450 2018-06-03 12:40:30Z andresjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiValueChangeListener implements Serializable, ValueChangeListener {
 

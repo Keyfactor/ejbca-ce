@@ -25,7 +25,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
  * MyFaces HTML UI drop-down box for component implementing the {@link PropertyChangeListener} interface 
  * to get noticed for dynamic UI property changes.
  * 
- * @version $Id: JsfDynamicUiHtmlSelectOneMenu.java 28450 2018-06-03 12:40:30Z andresjakobs $
+ * @version $Id$
  */
 public class JsfDynamicUiHtmlSelectOneMenu extends HtmlSelectOneMenu implements DynamicUiComponent, PropertyChangeListener {
 
