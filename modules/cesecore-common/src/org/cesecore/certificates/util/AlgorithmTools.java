@@ -328,33 +328,6 @@ public abstract class AlgorithmTools {
         }
         return ret;
     }
-
-    
-    public static String getKeyModulus(final PublicKey publicKey) {
-        String modulus = null;
-        if ( publicKey instanceof RSAPublicKey ) {
-            byte[] modulusBytes = ((RSAPublicKey) publicKey).getModulus().toByteArray();
-            modulus = new String(Hex.encode(modulusBytes));
-        }
-        return modulus;
-    }
-    
-    public static String getKeyPublicExponent(final PublicKey publicKey) {
-        String exponent = null;
-        if ( publicKey instanceof RSAPublicKey ) {
-            exponent = ((RSAPublicKey) publicKey).getPublicExponent().toString();
-        }
-        return exponent;
-    }
-    
-    public static String getSha256Fingerprint(String text) throws IOException {
-        byte[] sha256Fingerprint = CertTools.generateSHA256Fingerprint(text.getBytes());
-        return new String(Hex.encode(sha256Fingerprint));
-    }
-    
-    public static String getCertificateRequestSignature(JcaPKCS10CertificationRequest certificationRequest) {
-        return new String(Hex.encode(certificationRequest.getSignature()));
-    }
     
     /**
      * Gets the key specification from a public key. Example: "2048" for a RSA

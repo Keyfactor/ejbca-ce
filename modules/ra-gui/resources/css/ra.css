@@ -306,3 +306,22 @@ img.menu_logo {
 .ra-endEntityEditSaveCancel {
     height: 40px !important;
 }
+
+
+.ra-csrDetailsTable {
+	border-color:gray;	
+}
+
+.ra-csrDetailsTable td {
+	border-color:gray;
+	padding:5px;
+}
+
+.ra-csrDetailsTableCell {
+	word-wrap:break-word; 
+	table-layout: fixed; 
+	display:table;
+	width:100%;"
+	font-family: monospace;
+	color: #fff;
+}
