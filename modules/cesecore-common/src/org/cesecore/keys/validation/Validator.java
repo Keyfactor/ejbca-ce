@@ -86,12 +86,6 @@ public interface Validator extends PhasedValidator, CertificateProfileAwareValid
      */
     void setSettingsTemplate(Integer option);
     
-//    /**
-//     * Gets the XHTML template file in /WEB-INF/ca/editkeyvalidators.
-//     * @return the file path.
-//     */
-//    String getTemplateFile();
-//    
      /**
       * 
       * @return a display friendly string of this validator
