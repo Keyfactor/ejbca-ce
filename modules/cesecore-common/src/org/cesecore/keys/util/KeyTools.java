@@ -98,6 +98,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -1326,5 +1327,38 @@ public final class KeyTools {
         } catch (IOException e) {
             throw new CertificateParsingException(e);
         }
+    }
+    
+    public static String getKeyModulus(final PublicKey publicKey) {
+        String modulus = null;
+        if ( publicKey instanceof RSAPublicKey ) {
+            byte[] modulusBytes = ((RSAPublicKey) publicKey).getModulus().toByteArray();
+            modulus = new String(Hex.encode(modulusBytes));
+        } else if(publicKey instanceof DSAPublicKey) {
+            byte[] modulusBytes = ((DSAPublicKey)publicKey).getY().toByteArray();
+            modulus = new String(Hex.encode(modulusBytes));
+        } else if(publicKey instanceof ECPublicKey) {
+            byte[] modulusBytesX = ((ECPublicKey)publicKey).getW().getAffineX().toByteArray();
+            byte[] modulusBytesY = ((ECPublicKey)publicKey).getW().getAffineY().toByteArray();
+            modulus = new String(Hex.encode(modulusBytesX)).concat(new String(Hex.encode(modulusBytesY)));
+        }
+        return modulus;
+    }
+    
+    public static String getKeyPublicExponent(final PublicKey publicKey) {
+        String exponent = null;
+        if ( publicKey instanceof RSAPublicKey ) {
+            exponent = ((RSAPublicKey) publicKey).getPublicExponent().toString();
+        }
+        return exponent;
+    }
+    
+    public static String getSha256Fingerprint(String text) throws IOException {
+        byte[] sha256Fingerprint = CertTools.generateSHA256Fingerprint(text.getBytes());
+        return new String(Hex.encode(sha256Fingerprint));
+    }
+    
+    public static String getCertificateRequestSignature(JcaPKCS10CertificationRequest certificationRequest) {
+        return new String(Hex.encode(certificationRequest.getSignature()));
     }
 }

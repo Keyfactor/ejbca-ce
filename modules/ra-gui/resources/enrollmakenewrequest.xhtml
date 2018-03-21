@@ -151,24 +151,26 @@
 							rendered="#{enrollMakeNewRequestBean.renderCsrDetailedInfo}"
 							id="csrDetailedInfoPanel">
 						
-							<table cellspacing="3" cellpadding="3" border="0" width="100%">
+							<table class="ra-csrDetailsTable" cellspacing="3" cellpadding="3" border="3" width="100%">
 								<tbody>
 									<tr>
 										<td>
 											<h:outputLabel value="#{msg.enroll_filename}" />
 										</td>
 										<td>
-											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+											<div class="ra-csrDetailsTableCell">
 												<h:outputText id="fileName" value="#{enrollMakeNewRequestBean.csrFileName}"/>
 											</div>
 										</td>
 									</tr>
 									<tr>
 										<td>
+											<div style="min-width:100px;">
 											<h:outputLabel value="#{msg.enroll_modulus}"/>
+											</div>
 										</td>
 										<td>
-											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+											<div class="ra-csrDetailsTableCell">
 												<h:outputText id="publicKeyModulus" value="#{enrollMakeNewRequestBean.publicKeyModulus}"/>
 											</div>
 										</td>
@@ -179,7 +181,7 @@
 											<h:outputLabel value="#{msg.enroll_exponent}"/>
 										</td>
 										<td>
-											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+											<div class="ra-csrDetailsTableCell">
 												<h:outputText id="publicKeyExponent" value="#{enrollMakeNewRequestBean.publicKeyExponent}"/>
 											</div>
 										</td>
@@ -189,7 +191,7 @@
 											<h:outputLabel value="#{msg.enroll_sha256_fingerprint}"/>
 										</td>
 										<td>
-											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+											<div class="ra-csrDetailsTableCell">
 												<h:outputText id="sha256Fingerprint" value="#{enrollMakeNewRequestBean.sha256Fingerprint}"/>
 											</div>
 										</td>
@@ -199,7 +201,7 @@
 											<h:outputLabel value="#{msg.enroll_signature}"/>
 										</td>
 										<td>
-											<div style="word-wrap:break-word; table-layout: fixed; display:table;width:100%;">
+											<div class="ra-csrDetailsTableCell">
 												<h:outputText id="signature" value="#{enrollMakeNewRequestBean.signature}"/>
 											</div>
 										</td>
@@ -267,7 +269,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup layout="block"
-					rendered="#{enrollMakeNewRequestBean.provideRequestInfoRendered}"
+					rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}"
 					id="requestInfoRendered">
                     <h2>
                         <h:outputText value="#{msg.enroll_provide_request_info}" />
