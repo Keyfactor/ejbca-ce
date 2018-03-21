@@ -315,9 +315,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     /**
      * Tests the external command with the uploaded test certificate.
      * @return a list with size > 0 and the exit code in field with index 0 and STDOUT and ERROR appended subsequently.
-     * @throws Exception any exception.
-     * @throws ValidatorNotApplicableException if the validator could not be applicated (wrong CA or key type, external script path is not in white list).
-     * @throws ExternalProcessException if the external script path does not exist or accessible or the script call fails otherwise.
+     * @throws DynamicUiCallbackException if the external script path does not exist or accessible or the script call fails otherwise.
      */
     @SuppressWarnings("unchecked")
     public List<String> testCommand() throws DynamicUiCallbackException {
@@ -396,12 +394,13 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @param certificates the list of certificates.
      * @return a string list holding exit code at index 0, and the STDOUT and ERROUT appended.
      * @throws CertificateEncodingException if the certificates could not be encoded.
+     * @throws ExternalProcessException if the command wasn't found
+     * @throws ValidatorNotApplicableException if external scripts whitelist wasn't permitted 
      */
     private List<String> runExternalCommandInternal(final String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
             final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
         final String cmd = extractCommand(externalCommand);
         if (!externalScriptsWhitelist.isPermitted(cmd)) {
-//             throw new ValidatorNotApplicableException("A whitelist has been enabled, but the command " + cmd + " is not on the whitelist.");
              throw new ValidatorNotApplicableException(intres.getLocalizedMessage("process.whitelist.error.notlisted", cmd));
         }
         // Test if specified script file exists and is executable (hits files and symbolic links, but no aliases).
