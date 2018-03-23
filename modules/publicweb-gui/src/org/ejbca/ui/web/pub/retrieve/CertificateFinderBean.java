@@ -241,6 +241,17 @@ public class CertificateFinderBean {
         return subjectDN;
     }
 
+	/**
+	 * @return the Subject DN string of the current certificate in unescaped RDN format
+	 */
+	public final String getSubjectDnUnescapedRdnValue() {
+		if (StringUtils.isNotEmpty(subjectDN)) {
+			return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDN);
+		} else {
+			return subjectDN;
+		}
+	}
+
     /**
      * @return the Subject DN string of the current certificate URL-encoded using the current configured character set
      * @see lookupCertificateInfo(String, String)

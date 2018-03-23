@@ -15,6 +15,7 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 
@@ -109,6 +110,14 @@ public class RaRequestPreview {
         return subjectDn;
     }
 
+    /** @return the Subject DN string of the current certificate in unescaped RDN format */
+    public final String getSubjectDnUnescapedValue() {
+        if (StringUtils.isNotEmpty(subjectDn)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+        } else {
+            return subjectDn;
+        }
+    }
     public void setSubjectDn(String subjectDn) {
         this.subjectDn = subjectDn;
     }

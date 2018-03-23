@@ -61,7 +61,7 @@
             </h:panelGroup>
             <h:outputLabel for="subjectdn" value="#{msg.component_certdetails_field_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="subjectdn" value="#{cc.attrs.raCertificateDetails.subjectDn}"
+            <h:outputText id="subjectdn" value="#{cc.attrs.raCertificateDetails.subjectDnUnescapedValue}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
             <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
