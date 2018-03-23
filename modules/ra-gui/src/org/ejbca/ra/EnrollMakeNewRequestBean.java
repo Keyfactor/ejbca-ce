@@ -475,6 +475,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return isKeyAlgorithmAvailable();
     }
 
+    /** @return the provideRequestInfoRendered */
+    public boolean isProvideRequestInfoRendered() {
+        return isKeyAlgorithmAvailable();
+    }
+    
     private boolean isKeyAlgorithmAvailable() {
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && StringUtils.isNotEmpty(getSelectedAlgorithm())) {
             return true;
