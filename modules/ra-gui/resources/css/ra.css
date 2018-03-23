@@ -309,11 +309,14 @@ img.menu_logo {
 
 
 .ra-csrDetailsTable {
-	border-color:gray;	
+	cellspacing:3;
+	cellpadding:3;
+	border: 2px solid gray;
+	width:100%;	
 }
 
 .ra-csrDetailsTable td {
-	border-color:gray;
+	border: 1px solid gray;
 	padding:5px;
 }
 
