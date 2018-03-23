@@ -314,7 +314,10 @@
 	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
 	                                </h:commandButton>
 	                            </f:facet>
-	                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.username}"/>
+								<h:outputLink value="endentity.xhtml" styleClass="fineprint">
+									<f:param name="ee" value="#{raSearchCertificate.username}" />
+									<h:outputText value="#{raSearchCertificate.username}" />
+								</h:outputLink>
 	                        </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
