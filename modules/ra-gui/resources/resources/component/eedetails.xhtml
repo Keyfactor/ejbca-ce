@@ -226,7 +226,7 @@
             <h:outputLabel for="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}" value="#{msg.component_eedetails_header_subjectdn}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="subjectdn" rendered="#{not empty cc.attrs.raEndEntityDetails.subjectDn}"
-                value="#{cc.attrs.raEndEntityDetails.subjectDn}"
+                value="#{cc.attrs.raEndEntityDetails.subjectDnUnescapedValue}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" rendered="#{cc.attrs.editMode and not empty cc.attrs.raEndEntityDetails.subjectDistinguishedName.fieldInstances
             		and cc.attrs.approvalRequestMode}"

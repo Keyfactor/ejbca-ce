@@ -55,7 +55,7 @@
 					value="#{msg.component_certdetails_field_subjectdn}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
 				<h:outputText id="subjectDn"
-					value="#{cc.attrs.raRequestPreview.subjectDn}"
+					value="#{cc.attrs.raRequestPreview.subjectDnUnescapedValue}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 
 				<h:outputLabel for="subjectAlternativeName" rendered="#{cc.attrs.raRequestPreview.subjectAlternativeNameUsed}"

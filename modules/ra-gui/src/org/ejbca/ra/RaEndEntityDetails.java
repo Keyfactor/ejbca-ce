@@ -26,6 +26,7 @@ import java.util.TimeZone;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -123,6 +124,18 @@ public class RaEndEntityDetails {
     public EndEntityInformation getEndEntityInformation() { return endEntityInformation; }
     public String getUsername() { return username; }
     public String getSubjectDn() { return subjectDn; }
+
+    /**
+     *
+     * @return the Subject DN string of the current certificate in unescaped RDN format
+     */
+    public final String getSubjectDnUnescapedValue() {
+        if (StringUtils.isNotEmpty(subjectDn)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+        } else {
+            return subjectDn;
+        }
+    }
     public String getSubjectAn() { return subjectAn; }
     public String getSubjectDa() { return subjectDa; }
     public String getCaName() { return caName; }
@@ -185,7 +198,7 @@ public class RaEndEntityDetails {
                 PKCS10CertificationRequest pkcs10CertificationRequest = new PKCS10CertificationRequest(endEntityInformation.getExtendedInformation().getCertificateRequest());
                 // Convert to "correct" display format
                 X500Name subjectDn = CertTools.stringToBcX500Name(pkcs10CertificationRequest.getSubject().toString());
-                return subjectDn.toString();
+                return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn.toString());
             } catch (IOException e) {
                 log.info("Failed to retrieve CSR attached to end entity " + username + ". Incorrect or corrupted structure", e);
                 return null;

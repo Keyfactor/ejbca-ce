@@ -36,7 +36,7 @@ finder.lookupCertificateInfo(request.getParameter("issuer"), request.getParamete
 <h1 class="title">Certificate Created</h1>
 
 <table>
-<tr><td>Subject DN: </td><td><strong><c:out value="${finder.subjectDN}" /></strong><br /></td></tr>
+<tr><td>Subject DN: </td><td><strong><c:out value="${finder.subjectDnUnescapedRdnValue}" /></strong><br /></td></tr>
 <tr><td>Issuer DN: </td><td><strong><c:out value="${finder.issuerDN}" /></strong><br /></td></tr>
 <tr><td>Serial Number: </td><td><strong><c:out value="${finder.serialNumber}" /></strong><br /></td></tr>
 </table>
