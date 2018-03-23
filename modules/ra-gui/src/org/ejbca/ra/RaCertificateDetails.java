@@ -34,6 +34,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
@@ -289,6 +290,15 @@ public class RaCertificateDetails {
     public String getSerialnumberRaw() { return serialnumberRaw; }
     public String getIssuerDn() { return issuerDn; }
     public String getSubjectDn() { return subjectDn; }
+
+    /** @return the Subject DN string of the current certificate in unescaped RDN format */
+    public final String getSubjectDnUnescapedValue() {
+        if (StringUtils.isNotEmpty(subjectDn)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+        } else {
+            return subjectDn;
+        }
+    }
     public String getSubjectAn() { return subjectAn; }
     public String getSubjectDa() { return subjectDa; }
     public String getCaName() { return caName; }
