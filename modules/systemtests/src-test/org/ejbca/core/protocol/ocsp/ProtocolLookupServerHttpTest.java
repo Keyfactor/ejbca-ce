@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +32,6 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -108,6 +106,12 @@ import org.junit.Test;
 public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpTest.class);
 
+    // Set the proper trust/notrust keystore parameters here
+    private static final String LOOKUP_KSTRUST_PATH = "";
+    private static final String LOOKUP_KSNOTRUST_PATH = "";
+    private static final String KEYSTORE_PASS_PHRASE = "foo123";
+    private static final String TRUSTSTORE_PASS_PHRASE = "foo123";
+    
     private String httpReqPath;
     private String resourceOcsp;
 
@@ -191,10 +195,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Send the request and receive a BasicResponse
         BasicOCSPResp basicOCSPResp = sendOCSPPost(ocspReq.getEncoded(), true);
         
-        System.out.println("OCSP request extension oids  " + ocspReq.getExtensionOIDs());
-        
-        System.out.println("Basic ocsp response produced at " + basicOCSPResp.getProducedAt());
-        
+        System.out.println("Basic OCSP request extension oids  " + basicOCSPResp.getExtensionOIDs());
         
         assertEquals(getFnr(basicOCSPResp), "654321");
         SingleResp[] singleResps = basicOCSPResp.getResponses();
@@ -444,6 +445,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         byte[] respBytes = baos.toByteArray();
         OCSPResp response = new OCSPResp(respBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
+        
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509CertificateHolder[] chain = brep.getCerts();
         boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(chain[0]));
@@ -452,6 +454,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     }
 
     private String getFnr(BasicOCSPResp basicOCSPResp) throws IOException {
+
         byte[] fnrrep = basicOCSPResp.getExtension(FnrFromUnidExtension.FnrFromUnidOid).getExtnValue().getEncoded();
         if (fnrrep == null) {
             return null;
@@ -467,68 +470,31 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private SSLSocketFactory getSSLFactory(boolean trust) throws GeneralSecurityException, IOException {
         log.trace(">getSSLFactory()");
 
-        String trustp12 = "/home/amin/Downloads/trusted/lookup-kstrust.p12";
-        if (!trust) {
-            trustp12 = "/home/amin/Downloads/trusted/lookup-kstrust.p12";
+        final File trustp12 = trust ? new File(LOOKUP_KSTRUST_PATH) : new File(LOOKUP_KSNOTRUST_PATH);
+
+        try (final FileInputStream fileInputStream = new FileInputStream(trustp12)) {
+            
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+
+            keystore.load(fileInputStream, KEYSTORE_PASS_PHRASE.toCharArray());
+            keyManagerFactory.init(keystore, KEYSTORE_PASS_PHRASE.toCharArray());
+
+            // Now make a truststore to verify the server
+            KeyStore trustks = KeyStore.getInstance("jks");
+            trustks.load(null, TRUSTSTORE_PASS_PHRASE.toCharArray());
+
+            // add trusted CA cert
+            Certificate[] certs = KeyTools.getCertChain(keystore, keystore.aliases().nextElement());
+            trustks.setCertificateEntry("trusted", certs[certs.length - 1]);
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            trustManagerFactory.init(trustks);
+
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+            log.trace("<getSSLFactory()");
+            return ctx.getSocketFactory();
         }
-        char[] passphrase = "lookup".toCharArray();
-
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-
-        // Put the key and certs in the user keystore
-        KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-        
-        
-        keyManagerFactory.init(keyStore, passphrase);
-
-        
-        for (final String alias : Collections.list(keyStore.aliases())) {
-            System.out.println("We have found an alias in the first round which is " + alias);
-        }
-        
-        try (InputStream inputStream = new FileInputStream(trustp12)) {
-            keyStore.load(inputStream, passphrase);
-        }
-
-        keyManagerFactory.init(keyStore, passphrase);
-
-        // Now make a truststore to verify the server
-        KeyStore trustks = KeyStore.getInstance(KeyStore.getDefaultType());
-        
-        System.out.println("The trustks is " + trustks.toString());
-        
-        trustks.load(null, "foo123".toCharArray());
-        // add trusted CA cert
-        List<String> aliases = Collections.list(keyStore.aliases());
-
-        List<Certificate> certs = null;
-        
-        
-        for (final String alias : aliases) {
-            System.out.println("We have found an alias which is " + alias);
-            certs = Arrays.asList(KeyTools.getCertChain(keyStore, alias));
-        }
-        
-        
-        for (final Certificate certificate : certs) {
-            System.out.println("The Certificate is"  + certificate.toString());
-        }
-        
-        
-        if (certs == null) {
-            System.out.println("Hello Amin the trustks is null!!!!");
-        }
-        
-        
-        trustks.setCertificateEntry("trusted", certs.get(certs.size() - 1));
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-        trustManagerFactory.init(trustks);
-
-        ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-
-        log.trace("<getSSLFactory()");
-        return ctx.getSocketFactory();
     }
 
     /**
