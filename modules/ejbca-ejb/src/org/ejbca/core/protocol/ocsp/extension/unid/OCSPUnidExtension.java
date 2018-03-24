@@ -52,10 +52,9 @@ public class OCSPUnidExtension implements OCSPExtension {
 
     public static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
     
-	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
+	private static final Logger log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    
     private final UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
     
     private String dataSourceJndi;
@@ -69,13 +68,13 @@ public class OCSPUnidExtension implements OCSPExtension {
 		dataSourceJndi = OcspConfiguration.getUnidDataSource();
         if (StringUtils.isEmpty(dataSourceJndi)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidDataSource");
-            m_log.error(errMsg);
+            log.error(errMsg);
             throw new IllegalArgumentException(errMsg);
         }
         String trustDir = OcspConfiguration.getUnidTrustDir();
         if (StringUtils.isEmpty(trustDir)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidTrustDir");
-            m_log.error(errMsg);
+            log.error(errMsg);
             throw new IllegalArgumentException(errMsg);
         }
         // read all files from trustDir, expect that they are PEM formatted certificates
@@ -83,13 +82,13 @@ public class OCSPUnidExtension implements OCSPExtension {
         File dir = new File(trustDir);
         try {
             if (dir == null || dir.isDirectory() == false) {
-                m_log.error(dir.getCanonicalPath()+ " is not a directory.");
+                log.error(dir.getCanonicalPath()+ " is not a directory.");
                 throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
             }
             List<File> files = Arrays.asList(dir.listFiles());
             if (files == null || files.isEmpty()) {
         		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
-                m_log.error(errMsg);                
+                log.error(errMsg);                
             }
             for (final File file : files) {
                 final String fileName = file.getCanonicalPath();
@@ -106,21 +105,22 @@ public class OCSPUnidExtension implements OCSPExtension {
                     this.trustedCerts.add(cert.getSerialNumber());
                 } catch (CertificateException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-                    m_log.error(errMsg, e);
+                    log.error(errMsg, e);
                 } catch (IOException e) {
             		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-                    m_log.error(errMsg, e);
+                    log.error(errMsg, e);
                 }
             }
         } catch (IOException e) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingtrustfiles", e.getMessage());
-            m_log.error(errMsg, e);
+            log.error(errMsg, e);
             throw new IllegalArgumentException(errMsg);
         }
         String cacertfile = OcspConfiguration.getUnidCaCert();
+        
         if (StringUtils.isEmpty(cacertfile)) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidCACert");
-            m_log.error(errMsg);
+            log.error(errMsg);
             throw new IllegalArgumentException(errMsg);
         }
         try {
@@ -130,18 +130,18 @@ public class OCSPUnidExtension implements OCSPExtension {
             cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", "file", "cacertfile", e.getMessage());
-            m_log.error(errMsg, e);
+            log.error(errMsg, e);
             throw new IllegalArgumentException(errMsg);
         }
-
 	}
 	
 	@Override
 	public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status) {
-        if (m_log.isTraceEnabled()) {
-            m_log.trace(">process()");            
+        if (log.isTraceEnabled()) {
+            log.trace(">process()");            
         }
+        
         // Check authorization first
         if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost)) {
         	errCode = UnidFnrOCSPExtensionCode.ERROR_UNAUTHORIZED.getValue();
@@ -159,20 +159,20 @@ public class OCSPUnidExtension implements OCSPExtension {
         	// The Unis is in the DN component serialNumber
         	serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
         	if (serialNumber != null) {
-                if (m_log.isDebugEnabled()) {
-                    m_log.debug("Found serialNumber: "+serialNumber);                    
+                if (log.isDebugEnabled()) {
+                    log.debug("Found serialNumber: " + serialNumber);                    
                 }
 				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, serialNumber);
-                m_log.info(iMsg);
+                log.info(iMsg);
         		fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
 
         	} else {
 				String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
-        		m_log.error(errMsg);
+        		log.error(errMsg);
         		errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
         		return null;
         	}
-            m_log.trace("<process()");
+            log.trace("<process()");
         } catch (Exception e) {
             throw new EJBException(e);
         } 
@@ -180,13 +180,12 @@ public class OCSPUnidExtension implements OCSPExtension {
         // Construct the response extension if we found a mapping
         if (fnr == null) {
 			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", serialNumber);
-            m_log.error(errMsg);
+            log.error(errMsg);
         	errCode = UnidFnrOCSPExtensionCode.ERROR_NO_FNR_MAPPING.getValue();
         	return null;
-        	
         }
 		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
-        m_log.info(errMsg);
+        log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         HashMap<ASN1ObjectIdentifier, Extension> ret = new HashMap<ASN1ObjectIdentifier, Extension>();
         try {
@@ -209,32 +208,34 @@ public class OCSPUnidExtension implements OCSPExtension {
         
         if (certificates == null) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
-            m_log.error(errMsg);
+            log.error(errMsg);
             return false;
         }
         // The certificate of the entity is nr 0
         X509Certificate cert = certificates[0];
         if (cert == null) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
-            m_log.error(errMsg);
+            log.error(errMsg);
             return false;
         }
-        // Check if the certificate is authorised to access the Fnr
-        if ( this.trustedCerts.contains(cert.getSerialNumber()) ) {
+        
+        // Check if the certificate is authorized to access the Fnr
+        if (this.trustedCerts.contains(cert.getSerialNumber())) {
             // If we found in the hashmap the same key with issuer and serialnumber, we know we got it. 
             // Just verify it as well to be damn sure
             try {
                 cert.verify(this.cacert.getPublicKey());
             } catch (Exception e) {
         		String errMsg = intres.getLocalizedMessage("ocsp.errorverifycert");
-                m_log.error(errMsg, e);
+                log.error(errMsg, e);
                 return false;
             }
             // If verify was successful we know if was good!
             return true;
         }
+        
 		String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", remoteAddress, remoteHost);
-        m_log.error(errMsg);
+        log.error(errMsg);
 		return false;
 	}
 }
