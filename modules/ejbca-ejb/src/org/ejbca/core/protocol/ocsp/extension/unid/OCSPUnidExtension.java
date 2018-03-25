@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.EJBException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -138,65 +136,52 @@ public class OCSPUnidExtension implements OCSPExtension {
 	@Override
 	public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status) {
-        if (log.isTraceEnabled()) {
-            log.trace(">process()");            
-        }
+
+	    String serialNumber = null;
+        String fnr = null;
         
         // Check authorization first
         if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost)) {
         	errCode = UnidFnrOCSPExtensionCode.ERROR_UNAUTHORIZED.getValue();
-        	return null;
+        	return generateUnidFnrOCSPResponce(fnr);
         }
         // If the certificate is revoked, we must not return an FNR
         if (status != null) {
             errCode = UnidFnrOCSPExtensionCode.ERROR_CERT_REVOKED.getValue();
-            return null;
+            return generateUnidFnrOCSPResponce(fnr);
         }
-
-        String serialNumber = null;
-        String fnr = null;
-        try {
-        	// The Unis is in the DN component serialNumber
-        	serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
-        	if (serialNumber != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Found serialNumber: " + serialNumber);                    
-                }
-				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, serialNumber);
-                log.info(iMsg);
-        		fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
-
-        	} else {
-				String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
-        		log.error(errMsg);
-        		errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
-        		return null;
-        	}
-            log.trace("<process()");
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } 
         
-        // Construct the response extension if we found a mapping
+        // The Unis is in the DN component serialNumber
+        serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
+        if (serialNumber != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Found serialNumber: " + serialNumber);
+            }
+            String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, serialNumber);
+            log.info(iMsg);
+            fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
+        } else {
+            String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
+            log.error(errMsg);
+            errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
+            return generateUnidFnrOCSPResponce(fnr);
+        }
+        
         if (fnr == null) {
 			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", serialNumber);
             log.error(errMsg);
         	errCode = UnidFnrOCSPExtensionCode.ERROR_NO_FNR_MAPPING.getValue();
-        	return null;
+        	return generateUnidFnrOCSPResponce(fnr);
         }
-		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
+
+        // TODO: Should we include fnr in the log here?!
+        String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
         log.info(errMsg);
-        FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
-        HashMap<ASN1ObjectIdentifier, Extension> ret = new HashMap<ASN1ObjectIdentifier, Extension>();
-        try {
-            ret.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected IOException caught.", e);
-        }
-		return ret;
+        
+        return generateUnidFnrOCSPResponce(fnr);
 	}
 	
-	/** Returns the last error that occured during process(), when process returns null
+	/** Returns the last error that occurred during process(), when process returns null
 	 * 
 	 * @return error code as defined by implementing class
 	 */
@@ -238,4 +223,16 @@ public class OCSPUnidExtension implements OCSPExtension {
         log.error(errMsg);
 		return false;
 	}
+	
+    private Map<ASN1ObjectIdentifier, Extension> generateUnidFnrOCSPResponce(final String fnr) {
+        FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
+        HashMap<ASN1ObjectIdentifier, Extension> unidOCSPResponse = new HashMap<ASN1ObjectIdentifier, Extension>();
+        try {
+            unidOCSPResponse.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException caught.", e);
+        }
+        return unidOCSPResponse;
+    }
+
 }

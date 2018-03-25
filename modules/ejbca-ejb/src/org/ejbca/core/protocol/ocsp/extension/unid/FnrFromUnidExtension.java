@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.ocsp.extension.unid;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERIA5String;
@@ -48,11 +49,11 @@ public class FnrFromUnidExtension extends ASN1Object {
         throw new IllegalArgumentException("Invalid FnrFromUnidExtension: " + obj.getClass().getName());
     }
 
-    public FnrFromUnidExtension(String nr) {
-        this.fnr = nr;
+    public FnrFromUnidExtension(final String nr) {
+        this.fnr = nr == null ? StringUtils.EMPTY : nr;
     }
 
-    public FnrFromUnidExtension(DERIA5String nr) {
+    public FnrFromUnidExtension(final DERIA5String nr) {
         this.fnr = nr.getString();
 
     }
