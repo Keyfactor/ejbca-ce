@@ -212,6 +212,18 @@ public class DnFieldExtractorTest {
         boolean other = extractor.existsOther();
         assertFalse(other);
     }
+    
+    @Test
+    public void test02CheckComplexDnFieldWithCommas() throws Exception {
+        // special characters like < can cause problems
+        final String testDirNameValue = "serialNumber=12345678\\,description=This is a> test/\\,name=abc123\\,2.5.4.65=Test1234";
+        final String dn = "directoryName=" + testDirNameValue;
+        DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+        String value = extractor.getField(DNFieldExtractor.DIRECTORYNAME, 0);
+        assertEquals(testDirNameValue, value);
+        assertFalse(extractor.isIllegal());
+        assertFalse(extractor.existsOther());
+    }
 
 }
 
