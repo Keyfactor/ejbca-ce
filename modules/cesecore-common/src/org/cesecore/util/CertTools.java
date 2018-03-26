@@ -2510,7 +2510,13 @@ public abstract class CertTools {
      * @return Escaped string
      */
     protected static String escapeFieldValue(final String value) {
-        return value != null ? value.replaceAll("([,\\\\+\"])", "\\\\$1") : null;
+        if (value == null) {
+            return null;
+        } else if (value.indexOf('=') == value.length()-1) {
+            return value;
+        } else {
+            return LDAPDN.escapeRDN(value);
+        }
     }
 
     
