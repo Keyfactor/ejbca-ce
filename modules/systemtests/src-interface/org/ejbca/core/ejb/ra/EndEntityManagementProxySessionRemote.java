@@ -12,17 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import java.util.Collection;
-
 import javax.ejb.Remote;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
 
 /**
  * Remote interface to allow access to local methods from system tests
@@ -45,26 +39,4 @@ public interface EndEntityManagementProxySessionRemote {
      */
     public int decRequestCounter(String username) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
     
-    /**
-     * Method to execute a customized query on the ra user data. The parameter
-     * query should be a legal Query object.
-     * 
-     * @param query a number of statements compiled by query class to a SQL
-     *            'WHERE'-clause statement.
-     * @param caauthorizationstring is a string placed in the where clause of
-     *            SQL query indication which CA:s the administrator is
-     *            authorized to view.
-     * @param endentityprofilestring is a string placed in the where clause of
-     *            SQL query indication which endentityprofiles the
-     *            administrator is authorized to view.
-     * @param numberofrows the number of rows to fetch, use 0 for value from the global configuration. 
-     * @param endentityAccessRule The end entity access rule that is necessary 
-     *            to execute the query
-     * @return a collection of EndEntityInformation.
-     * @throws IllegalQueryException when query parameters internal rules isn't
-     *            fulfilled.
-     * @see org.ejbca.util.query.Query
-     */
-    Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
-            String endentityprofilestring, int numberofrows, final String endentityAccessRule) throws IllegalQueryException;
 }

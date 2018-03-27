@@ -14,20 +14,27 @@ package org.ejbca.core.ejb.ra;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.RemoveException;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -36,11 +43,19 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
+import org.ejbca.util.query.UserMatch;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * @version $Id$
@@ -48,11 +63,27 @@ import org.junit.Test;
  */
 public class EndEntityAccessSessionTest extends CaTestCase {
     
+    private static final Logger log = Logger.getLogger(EndEntityAccessSessionTest.class);
+
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(getRoleName());
+    
+    @Rule
+    public final TestWatcher traceLogMethodsRule = new TestWatcher() {
+        @Override
+        protected void starting(final Description description) {
+            log.trace(">" + description.getMethodName());
+            super.starting(description);
+        };
+        @Override
+        protected void finished(final Description description) {
+            log.trace("<" + description.getMethodName());
+            super.finished(description);
+        }
+    };
     
     @Before
     public void setup() throws Exception {
@@ -109,6 +140,72 @@ public class EndEntityAccessSessionTest extends CaTestCase {
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
+    }
+    
+    /**
+     * Tests the query function
+     * 
+     */
+    @Test
+    public void testQueryUser() throws CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException,
+            ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, RemoveException {
+        String username = "testQueryUser";
+        String password = "foo123";
+        int caid = getTestCAId();
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, username, password, "C=SE, O=AnaTom, CN=" + username, null, null, true,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+        try {
+            Query query = new Query(Query.TYPE_USERQUERY);
+            query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
+            String caauthstring = null;
+            String eeprofilestr = null;
+            Collection<EndEntityInformation> col = endEntityAccessSession.query(alwaysAllowToken, query, caauthstring, eeprofilestr, 0,
+                    AccessRulesConstants.VIEW_END_ENTITY);
+            assertEquals("The number of results were other than 1.", 1, col.size());
+        } finally {
+            endEntityManagementSessionRemote.deleteUser(alwaysAllowToken, username);
+        }
+    }
+    
+    /**
+     * Tests the query function with restrictions set on CAs and EEP
+     * 
+     */
+    @Test
+    public void testQueryUserWithCAandEEPRestrictions() throws CADoesntExistsException, EndEntityExistsException, CustomFieldException,
+            IllegalNameException, ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException,
+            EndEntityProfileValidationException, WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, RemoveException,
+            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        String firstUser = "foo";
+        String secondUser = "bar";
+        String caName = "testQueryUserWithCAandEEPRestrictions";
+        String password = "foo123";
+        int otherCaId = getTestCAId();
+        createTestCA(caName);
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, firstUser, password, "C=SE, CN=" + firstUser, null, null, true,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, getTestCAId(caName));
+        //Create a second user from a different CA just to verify
+        endEntityManagementSessionRemote.addUser(alwaysAllowToken, secondUser, password, "C=SE, CN=" + secondUser, null, null, true,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, otherCaId);
+        try {
+            Query query = new Query(Query.TYPE_USERQUERY);
+            query.add(UserMatch.MATCH_WITH_COMMONNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, firstUser);
+            query.add(UserMatch.MATCH_WITH_COMMONNAME, BasicMatch.MATCH_TYPE_BEGINSWITH, secondUser, Query.CONNECTOR_OR);
+            String caauthstring = "caId = " + String.valueOf(getTestCAId());
+            String eeprofilestr = "endEntityProfileId = " + String.valueOf(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            List<EndEntityInformation> result = new ArrayList<>( endEntityAccessSession.query(alwaysAllowToken, query, caauthstring, eeprofilestr, 0,
+                    AccessRulesConstants.VIEW_END_ENTITY));
+            assertEquals("The number of results were other than 1.", 1,result.size());
+            assertEquals("The wrong end entity was returned.", secondUser, result.get(0).getUsername());
+        } finally {
+            endEntityManagementSessionRemote.deleteUser(alwaysAllowToken, firstUser);
+            endEntityManagementSessionRemote.deleteUser(alwaysAllowToken, secondUser);
+            removeTestCA(caName);
+        }
     }
 
 }

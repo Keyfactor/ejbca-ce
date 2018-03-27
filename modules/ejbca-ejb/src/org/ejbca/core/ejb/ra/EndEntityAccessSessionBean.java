@@ -25,6 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -445,22 +446,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return returnval;
     }
 
-    /**
-     * 
-     * Help function used to retrieve user information. A query parameter of null indicates all users. If caauthorizationstring or
-     * endentityprofilestring are null then the method will retrieve the information itself.
-     * 
-     * 
-     * @param admin
-     * @param query
-     * @param withlimit
-     * @param caauthorizationstr
-     * @param endentityprofilestr
-     * @param numberofrows the number of rows to fetch, use 0 for the value defined in GlobalConfiguration 
-     * @param endentityAccessRule
-     * @return
-     * @throws IllegalQueryException
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final String caauthorizationstr,
@@ -482,7 +467,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
         String sqlquery = "";
         if (query != null) {
-            sqlquery = sqlquery + query.getQueryString();
+            sqlquery += query.getQueryString();
         }
 
         final GlobalConfiguration globalconfiguration = getGlobalConfiguration();
@@ -498,21 +483,21 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 endentityauth = "";
             }
         }
-
-        if (!caauthstring.trim().equals("") && query != null) {
-            sqlquery = sqlquery + " AND " + caauthstring;
-        } else {
-            sqlquery = sqlquery + caauthstring;
-        }
-
+        if (!StringUtils.isBlank(caauthstring)) {
+            if (StringUtils.isBlank(sqlquery)) {
+                sqlquery += caauthstring;
+            } else {
+                sqlquery = "(" + sqlquery + ") AND " + caauthstring;
+            }
+        } 
         if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-            if (endentityauth == null || endentityauth.trim().equals("")) {
+            if (endentityauth == null || StringUtils.isBlank(endentityauth)) {
                 authorizedtoanyprofile = false;
             } else {
-                if (caauthstring.trim().equals("") && query == null) {
-                    sqlquery = sqlquery + endentityauth;
+                if (StringUtils.isEmpty(sqlquery)) {
+                    sqlquery += endentityauth;
                 } else {
-                    sqlquery = sqlquery + " AND " + endentityauth;
+                    sqlquery = "(" + sqlquery + ") AND " + endentityauth;
                 }
             }
         }
