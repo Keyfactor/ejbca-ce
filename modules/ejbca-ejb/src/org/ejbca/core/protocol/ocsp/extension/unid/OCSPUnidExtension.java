@@ -13,30 +13,24 @@
 
 package org.ejbca.core.protocol.ocsp.extension.unid;
 
-import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
@@ -53,95 +47,25 @@ public class OCSPUnidExtension implements OCSPExtension {
 	private static final Logger log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private final CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
     private final UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
     
-    private String dataSourceJndi;
-    private Set<BigInteger> trustedCerts = new HashSet<BigInteger>();
-    private Certificate cacert = null;
     private int errCode = UnidFnrOCSPExtensionCode.ERROR_NO_ERROR.getValue();
     
 	@Override
 	public void init() {
-		// DataSource
-		dataSourceJndi = OcspConfiguration.getUnidDataSource();
-        if (StringUtils.isEmpty(dataSourceJndi)) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidDataSource");
-            log.error(errMsg);
-            throw new IllegalArgumentException(errMsg);
-        }
-        String trustDir = OcspConfiguration.getUnidTrustDir();
-        if (StringUtils.isEmpty(trustDir)) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidTrustDir");
-            log.error(errMsg);
-            throw new IllegalArgumentException(errMsg);
-        }
-        // read all files from trustDir, expect that they are PEM formatted certificates
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        File dir = new File(trustDir);
-        try {
-            if (dir == null || dir.isDirectory() == false) {
-                log.error(dir.getCanonicalPath()+ " is not a directory.");
-                throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
-            }
-            List<File> files = Arrays.asList(dir.listFiles());
-            if (files == null || files.isEmpty()) {
-        		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
-                log.error(errMsg);                
-            }
-            for (final File file : files) {
-                final String fileName = file.getCanonicalPath();
-                // Read the file, don't stop completely if one file has errors in it
-                try {
-                    final byte bFromFile[] = FileTools.readFiletoBuffer(fileName);
-                    byte[] bytes;
-                    try {
-                        bytes = FileTools.getBytesFromPEM(bFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-                    } catch( Exception t ) {
-                        bytes = bFromFile; // assume binary data (.der)
-                    }
-                    final X509Certificate  cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
-                    this.trustedCerts.add(cert.getSerialNumber());
-                } catch (CertificateException e) {
-            		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-                    log.error(errMsg, e);
-                } catch (IOException e) {
-            		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-                    log.error(errMsg, e);
-                }
-            }
-        } catch (IOException e) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingtrustfiles", e.getMessage());
-            log.error(errMsg, e);
-            throw new IllegalArgumentException(errMsg);
-        }
-        String cacertfile = OcspConfiguration.getUnidCaCert();
-        
-        if (StringUtils.isEmpty(cacertfile)) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidCACert");
-            log.error(errMsg);
-            throw new IllegalArgumentException(errMsg);
-        }
-        try {
-            byte[] bytes = FileTools.getBytesFromPEM(FileTools
-                    .readFiletoBuffer(cacertfile),
-                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-            cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
-        } catch (Exception e) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", "file", "cacertfile", e.getMessage());
-            log.error(errMsg, e);
-            throw new IllegalArgumentException(errMsg);
-        }
+        // Nothings need to be done here
 	}
 	
 	@Override
 	public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
-            X509Certificate cert, CertificateStatus status) {
+            X509Certificate cert, CertificateStatus status, InternalKeyBinding internalKeyBinding) {
 
 	    String serialNumber = null;
         String fnr = null;
         
         // Check authorization first
-        if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost)) {
+        if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost, internalKeyBinding.getTrustedCertificateReferences())) {
         	errCode = UnidFnrOCSPExtensionCode.ERROR_UNAUTHORIZED.getValue();
         	return generateUnidFnrOCSPResponce(fnr);
         }
@@ -151,7 +75,7 @@ public class OCSPUnidExtension implements OCSPExtension {
             return generateUnidFnrOCSPResponce(fnr);
         }
         
-        // The Unis is in the DN component serialNumber
+        // The Unid is in the DN component serialNumber
         serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
         if (serialNumber != null) {
             if (log.isDebugEnabled()) {
@@ -189,8 +113,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 		return errCode;
 	}
 	
-	private boolean checkAuthorization(X509Certificate[] certificates, String remoteAddress, String remoteHost) {
-        
+	private boolean checkAuthorization(X509Certificate[] certificates, String remoteAddress, String remoteHost, List<InternalKeyBindingTrustEntry> bindingTrustEntries) {
         if (certificates == null) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
             log.error(errMsg);
@@ -205,11 +128,20 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         
         // Check if the certificate is authorized to access the Fnr
-        if (this.trustedCerts.contains(cert.getSerialNumber())) {
+        boolean serialExists = false;
+        for (final InternalKeyBindingTrustEntry bindingTrustEntry : bindingTrustEntries) {
+            // Match
+            serialExists = bindingTrustEntry.fetchCertificateSerialNumber() == cert.getSerialNumber();
+        }
+        
+        if (serialExists) {
             // If we found in the hashmap the same key with issuer and serialnumber, we know we got it. 
             // Just verify it as well to be damn sure
+            final String issuerDN = CertTools.getIssuerDN(cert);
+            final CAInfo caInfo = caSession.getCAInfoInternal(issuerDN.hashCode());
+            final Certificate cacert = caInfo.getCertificateChain().get(0);
             try {
-                cert.verify(this.cacert.getPublicKey());
+                cert.verify(cacert.getPublicKey());
             } catch (Exception e) {
         		String errMsg = intres.getLocalizedMessage("ocsp.errorverifycert");
                 log.error(errMsg, e);

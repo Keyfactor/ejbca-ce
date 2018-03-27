@@ -67,7 +67,7 @@ public class OcspCertHashExtensionTest {
         OcspCertHashExtension ocspCertHashExtension = new OcspCertHashExtension();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate cert = CertTools.genSelfCert("CN=CertHashTest", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Map<ASN1ObjectIdentifier,Extension> result = ocspCertHashExtension.process(null, null, null, cert, null);
+        Map<ASN1ObjectIdentifier,Extension> result = ocspCertHashExtension.process(null, null, null, cert, null, null);
         Extension extension = result.get(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
         ASN1Encodable derSequence = extension.getParsedValue();
         CertHash certHash = CertHash.getInstance(derSequence);
