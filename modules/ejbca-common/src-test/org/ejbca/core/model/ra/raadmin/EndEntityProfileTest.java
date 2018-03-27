@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,6 +25,8 @@ import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for the EndEntityProfile class.
@@ -148,5 +146,35 @@ public class EndEntityProfileTest {
         map.put(RegexFieldValidator.class.getName(), regex);
         return map;
     }
-    
+
+    @Test
+    public void testFieldInstancesOrderedAndChained() {
+
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(DnComponents.COMMONNAME, 0, "field1");
+        profile.setValue(DnComponents.COMMONNAME, 1, "field2");
+        profile.setValue(DnComponents.COMMONNAME, 2, "field3");
+        profile.setValue(DnComponents.COMMONNAME, 3, "field4");
+        profile.setRequired(DnComponents.COMMONNAME, 0, false);
+        profile.setRequired(DnComponents.COMMONNAME, 1, false);
+        profile.setRequired(DnComponents.COMMONNAME, 2, true);
+        profile.setRequired(DnComponents.COMMONNAME, 3, false);
+
+
+        EndEntityProfile.Field field = profile.new Field(DnComponents.COMMONNAME);
+        assertEquals("field3", field.getInstances().get(0).getValue());
+        assertFalse(field.getInstances().get(1).isVisible());
+        assertFalse(field.getInstances().get(2).isVisible());
+        assertFalse(field.getInstances().get(3).isVisible());
+        assertEquals(field.getInstances().get(0).getNext(), field.getInstances().get(1));
+
+        profile.setRequired(DnComponents.COMMONNAME, 2, false);
+
+        field = profile.new Field(DnComponents.COMMONNAME);
+        assertEquals("field1", field.getInstances().get(0).getValue());
+        assertTrue(field.getInstances().get(0).isVisible());
+    }
 }
