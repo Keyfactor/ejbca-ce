@@ -48,14 +48,14 @@
 					value="#{msg.component_certdetails_field_issuerdn}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
 				<h:outputText id="issuerDn"
-					value="#{cc.attrs.raRequestPreview.issuerDn}"
+					value="#{cc.attrs.raRequestPreview.getUnescapedRdnValue(cc.attrs.raRequestPreview.issuerDn)}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 					
 				<h:outputLabel for="subjectDn"
 					value="#{msg.component_certdetails_field_subjectdn}"
 					styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
 				<h:outputText id="subjectDn"
-					value="#{cc.attrs.raRequestPreview.subjectDnUnescapedValue}"
+					value="#{cc.attrs.raRequestPreview.getUnescapedRdnValue(cc.attrs.raRequestPreview.subjectDn)}"
 					styleClass="#{cc.attrs.styleValue} #{cc.attrs.raRequestPreview.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace" />
 
 				<h:outputLabel for="subjectAlternativeName" rendered="#{cc.attrs.raRequestPreview.subjectAlternativeNameUsed}"
