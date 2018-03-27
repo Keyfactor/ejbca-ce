@@ -211,10 +211,10 @@ org.cesecore.keybind.InternalKeyBindingRules
 	    <div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
     </h:panelGroup>
     
-   	<h3><h:outputText value="OCSP Extensions" rendered="#{internalKeyBindingMBean.ocspKeyBinding}"/></h3>
+   	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPEXTENSIONHEADER}" rendered="#{internalKeyBindingMBean.ocspKeyBinding}"/></h3>
 	<h:dataTable id="ocspExtensions" value="#{internalKeyBindingMBean.ocspExtensions}" rendered="#{internalKeyBindingMBean.ocspKeyBinding}" var="extensionEntry">
 		<h:column>
-   			<f:facet name="header"><h:outputText value="Extension"/></f:facet>
+   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_OCSPOID}"/></f:facet>
 			<h:outputText value="#{internalKeyBindingMBean.ocspExtensionName}"/>
 			<f:facet name="footer">
 				<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode}"

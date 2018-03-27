@@ -13,12 +13,11 @@
 package org.cesecore.certificates.ocsp.cache;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
-import org.cesecore.config.OcspConfiguration;
 
 /**
  * Enum based singleton to contain a Map of OCSP extensions.
@@ -58,7 +57,6 @@ public enum OcspExtensionsCache {
      */
     private void reloadCache(Map<String, OCSPExtension> newExtensionMap) {
         extensionMap = newExtensionMap;
-
     }
 
     /**
@@ -70,26 +68,13 @@ public enum OcspExtensionsCache {
     
     private static Map<String, OCSPExtension> buildExtensionsMap() {
         Map<String, OCSPExtension> result = new HashMap<String, OCSPExtension>();
-        Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();
-        Iterator<String> extensionOids = OcspConfiguration.getExtensionOids().iterator();
-
-        while (extensionClasses.hasNext()) {
-            String clazz = extensionClasses.next();
-            String oid = extensionOids.next();
-            if (oid.startsWith("*")) {
-                oid = oid.substring(1, oid.length());
+        ServiceLoader<OCSPExtension> extensionLoader = ServiceLoader.load(OCSPExtension.class);
+        for (OCSPExtension extension : extensionLoader) {
+            result.put(extension.getOid(), extension);
+            if (log.isDebugEnabled()) {
+                log.debug("Added OCSP extension with OID: " + extension.getOid() + " to the OCSP extension map");
             }
-            OCSPExtension ext = null;
-            try {
-                ext = (OCSPExtension) Class.forName(clazz).newInstance();
-                ext.init();
-            } catch (Exception e) {
-                log.error("Can not create extension with class " + clazz, e);
-                continue;
-            }
-            result.put(oid, ext);
         }
         return result;
     }
-
 }

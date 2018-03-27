@@ -47,6 +47,11 @@ public class OcspCertHashExtension implements OCSPExtension{
     private static final Logger log = Logger.getLogger(OcspCertHashExtension.class);
     
     @Override
+    public String getOid() {
+        return CERT_HASH_OID;
+    }
+    
+    @Override
     public void init() {
        //Nothing much to do here.      
     }

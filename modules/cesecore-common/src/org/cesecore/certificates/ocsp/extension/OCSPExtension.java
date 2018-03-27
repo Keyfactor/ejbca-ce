@@ -64,4 +64,6 @@ public interface OCSPExtension {
      * @return error code as defined by implementing class
      */
     int getLastErrorCode();
+    
+    String getOid();
 }

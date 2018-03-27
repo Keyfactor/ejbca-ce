@@ -39,6 +39,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
+import org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -118,7 +119,7 @@ public class OcspExtensionsTest {
     @Test
     public void testRetrieveOcspUnidExtension() throws IOException {
         Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
-        OCSPExtension ocspUnidExtension = extensions.get(OCSP_UNID_OID);
+        OCSPExtension ocspUnidExtension = extensions.get(OCSPUnidExtension.OCSP_UNID_OID);
         assertNotNull("OCSP Unid extension was not loaded", ocspUnidExtension);
     }
 
@@ -130,6 +131,16 @@ public class OcspExtensionsTest {
         Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
         OCSPExtension ocspCertHashExtension = extensions.get(OcspCertHashExtension.CERT_HASH_OID);
         assertNotNull("OCSP CertHash extension was not loaded", ocspCertHashExtension);
+    }
+    
+    /**
+     * Tests retrieving an ocsp CT SCT extension. Actually processing the request falls under system testing.
+     */
+    @Test
+    public void testRetrieveOcspCtSstListExtension() {
+        Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
+        OCSPExtension ocspCtSstListExtension = extensions.get(OcspCtSctListExtension.OCSP_SCTLIST_OID);
+        assertNotNull("OCSP CtSct extension was not loaded", ocspCtSstListExtension);
     }
 
 }
