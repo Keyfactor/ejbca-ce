@@ -12,21 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import java.util.Collection;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
 
 /**
  * @version $Id$
@@ -47,9 +41,4 @@ public class EndEntityManagementProxySessionBean implements EndEntityManagementP
         return endEntityManagementSession.decRequestCounter(username);
     }
     
-    @Override
-    public Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
-            String endentityprofilestring, int numberofrows, final String endentityAccessRule) throws IllegalQueryException {
-        return endEntityAccessSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows, endentityAccessRule);
-    }
 }
