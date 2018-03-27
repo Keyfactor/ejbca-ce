@@ -20,7 +20,6 @@ package org.ejbca.unidfnr.ejb;
 public interface UnidfnrSession {
     
     static final String UNIDFNR_MODULE = "unidfnr-ejb";
-    
 
     /**
      * @param unid unique id to store in unid fnr database
@@ -35,5 +34,11 @@ public interface UnidfnrSession {
      * @return The fnr with serialNumber as id if a mapping found in db otherwise null
      */
     String fetchUnidFnrData(final String serialNumber);
-
+    
+    /**
+     * This method is used by ProtocolLookupServerHttpTest
+     * @param unid id of the object to remove from UnidFnrData table
+     * 
+     */
+    void removeUnidFnrDataIfPresent(final String unid);
 }
