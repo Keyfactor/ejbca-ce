@@ -168,6 +168,20 @@
 	margin-bottom: 1em;
 }
 
+.showNextButton {
+	display: inline-block;
+	background: none;
+	border: none;
+	font: inherit;
+	margin: 0;
+	padding: 10px;
+	outline: none;
+	outline-offset: 0;
+	color: #e9af13;
+	cursor: pointer;
+	line-height: inherit;
+}
+
 .toggleMoreButton {
     display: inline-block;
     background: none;

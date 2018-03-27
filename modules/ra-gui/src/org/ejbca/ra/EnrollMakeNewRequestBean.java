@@ -539,6 +539,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void renderCsrDetailedInfoToggle() {
         renderCsrDetailedInfo = !renderCsrDetailedInfo;
     }
+
+    public void renderNextInstance(final FieldInstance fieldInstance){
+        fieldInstance.getNext().setVisible(true);
+    }
     
     public void renderNonModifiableTemplatesToggle() {
         renderNonModifiableTemplates = !renderNonModifiableTemplates;
@@ -1616,13 +1620,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues()==null?0:fieldInstance.getSelectableValues().size()));
         }
         // For the email fields "used" means use EE email address
-        if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())) {
-            if (isRenderNonModifiableFields()) {
-                return true;
-            }
-            if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size() > 1)
-                    || (!fieldInstance.isModifiable() && (fieldInstance.getName().equals("RFC822NAME") || fieldInstance.getName().equals("UPN")))) {
-                return true;
+        if (fieldInstance.isVisible()) {
+            if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())) {
+                if (isRenderNonModifiableFields()) {
+                    return true;
+                }
+                if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size() > 1)
+                        || (!fieldInstance.isModifiable() && (fieldInstance.getName().equals("RFC822NAME") || fieldInstance.getName().equals("UPN")))) {
+                    return true;
+                }
             }
         }
         return false;

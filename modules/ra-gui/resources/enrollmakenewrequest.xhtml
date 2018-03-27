@@ -312,6 +312,13 @@
                                             </f:ajax>
 										</h:selectOneMenu>
 										<h:message for="subjectDnField" id="subjectDnFieldMessage" styleClass="subjectErrorMessage" errorClass="subjectErrorMessage showErrorMessage"/>
+										<h:commandButton
+												rendered="#{instance.hasInvisibleNext()}"
+												action="#{enrollMakeNewRequestBean.renderNextInstance(instance)}"
+														 value="#{msg.enroll_next_field}"
+														 styleClass="showNextButton" immediate="true">
+											<f:ajax execute="@this" render=":requestInfoForm" />
+										</h:commandButton>
 									</h:panelGroup>
 								</ui:repeat>
 							</fieldset>							
@@ -355,6 +362,13 @@
                                                 subjectAltNameFieldMessage"/>
                                         </h:selectOneMenu>
                                         <h:message for="subjectAltNameField" id="subjectAltNameFieldMessage" styleClass="showErrorMessage"/>
+										<h:commandButton
+												rendered="#{instance.hasInvisibleNext()}"
+												action="#{enrollMakeNewRequestBean.renderNextInstance(instance)}"
+												value="#{msg.enroll_next_field}"
+												styleClass="showNextButton" immediate="true">
+											<f:ajax execute="@this" render=":requestInfoForm" />
+										</h:commandButton>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{instance.rfcUseEmail}">
                                         <h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].rfcEmailUsed}">
@@ -413,6 +427,13 @@
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:selectOneMenu>
 									<h:message for="subjectDirectoryAttributes" id="subjectDirectoryAttributesMessage" styleClass="showErrorMessage"/>
+									<h:commandButton
+											rendered="#{instance.hasInvisibleNext()}"
+											action="#{enrollMakeNewRequestBean.renderNextInstance(instance)}"
+											value="#{msg.enroll_next_field}"
+											styleClass="showNextButton" immediate="true">
+										<f:ajax execute="@this" render=":requestInfoForm" />
+									</h:commandButton>
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
