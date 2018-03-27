@@ -171,11 +171,13 @@ public class RaAccessBean implements Serializable {
         }
         return auth;
     }
-
+     
     public boolean isAuthorizedToManageRequests() {
-        final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY) || isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION) || isAuthorized(AuditLogRules.VIEW.resource());
+        final boolean auth = isAuthorized(AccessRulesConstants.REGULAR_APPROVEENDENTITY) || isAuthorized(AccessRulesConstants.REGULAR_APPROVECAACTION) 
+                || isAuthorized(AccessRulesConstants.REGULAR_VIEWAPPROVALS) || isAuthorized(AuditLogRules.VIEW.resource());
         if (!auth && log.isDebugEnabled()) {
-            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY+", "+AccessRulesConstants.REGULAR_APPROVECAACTION+" or "+AuditLogRules.VIEW.resource());
+            log.debug(">isAuthorizedToManageRequests: Not authorized to "+AccessRulesConstants.REGULAR_APPROVEENDENTITY+", "+AccessRulesConstants.REGULAR_APPROVECAACTION+", "
+                +AccessRulesConstants.REGULAR_VIEWAPPROVALS+" or "+AuditLogRules.VIEW.resource()); 
         }
         return auth;
     }

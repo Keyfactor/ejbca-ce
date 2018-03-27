@@ -524,6 +524,29 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                     propertyClone.setPossibleValues(roleRepresentations);
                     updateEncodedValues(propertyClone, property);
                     break;
+                case ROLES_VIEW:
+                    final List<Role> allAuthorizedRolesForViewing = roleSession.getAuthorizedRoles(getAdmin());
+                    final List<RoleInformation> viewingRoleRepresentations = new ArrayList<>();
+                    for (final Role role : allAuthorizedRolesForViewing) {
+                        if (AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_VIEWAPPROVALS)
+                                || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVEENDENTITY)
+                                || AccessRulesHelper.hasAccessToResource(role.getAccessRules(), AccessRulesConstants.REGULAR_APPROVECAACTION)) {
+                            try {
+                                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(getAdmin(), role.getRoleId());
+                                viewingRoleRepresentations.add(RoleInformation.fromRoleMembers(role.getRoleId(), role.getNameSpace(), role.getRoleName(), roleMembers));
+                            } catch (AuthorizationDeniedException e) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Not authorized to members of authorized role '"+role.getRoleNameFull()+"' (?):" + e.getMessage());
+                                }
+                            }
+                        }
+                    }
+                    if(!viewingRoleRepresentations.contains(propertyClone.getDefaultValue())) {
+                        viewingRoleRepresentations.add(0, (RoleInformation) propertyClone.getDefaultValue());
+                    }
+                    propertyClone.setPossibleValues(viewingRoleRepresentations);
+                    updateEncodedValues(propertyClone, property);
+                    break;    
                 case NONE:
                     break;
                 default:
