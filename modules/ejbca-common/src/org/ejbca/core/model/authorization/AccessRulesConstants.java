@@ -82,6 +82,7 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_VIEWHARDTOKENS                     = REGULAR_RAFUNCTIONALITY + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = REGULAR_RAFUNCTIONALITY + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                        = REGULAR_RAFUNCTIONALITY + KEYRECOVERY_RIGHTS;
+    public static final String REGULAR_VIEWAPPROVALS                      = REGULAR_RAFUNCTIONALITY+"/view_approvals";
 
     /** EE version only, reference by String value */
     public static final String REGULAR_PEERCONNECTOR_VIEW                 = "/peer/view";   // org.ejbca.peerconnector.PeerAccessRules.VIEW
@@ -140,6 +141,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_REVOKEENDENTITY,
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
+                                                           REGULAR_VIEWAPPROVALS,
                                                            StandardRules.SYSTEMFUNCTIONALITY.resource(),
                                                            SERVICES_EDIT,
                                                            SERVICES_VIEW,

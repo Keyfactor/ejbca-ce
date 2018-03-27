@@ -405,7 +405,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
         canApprove = nextApprovalStep != null && (!request.isEditedByMe() || allowSelfEdit) && !request.isApprovedByMe() && !request.isRequestedByMe() && authorizedToRequestType;
         // Can only edit our own requests, or requests that we could approve irrespective of who made or edited them.
         canEdit = authorizedToRequestType && request.isEditable() && hasEditableData && (nextApprovalStep != null || isRequestedByMe());
-        canView = authorizedToRequestType && request.isVisibleToMe();
+        canView = request.isVisibleToMe();
         
         previousSteps = new ArrayList<>();
         for (final RaApprovalStepInfo stepInfo : request.getPreviousApprovalSteps()) {

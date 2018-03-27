@@ -19,5 +19,5 @@ package org.cesecore.util.ui;
  *
  */
 public enum DynamicUiPropertyCallback {
-    NONE, ROLES;
+    NONE, ROLES, ROLES_VIEW;
 }
