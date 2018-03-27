@@ -322,8 +322,11 @@ public class OcspConfiguration {
      * Specifies OCSP extension OIDs that will result in a call to an extension class, separate multiple entries with ';'.
      * For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
      * 
+     * Deprecated: May still be required for 6.12 upgrades
+     * 
      * @return a List<String> of extension OIDs, an empty list if none are found.
      */
+    @Deprecated
     public static List<String> getExtensionOids() {
         String value = ConfigurationHolder.getString("ocsp.extensionoid");
         if ("".equals(value)) {
@@ -335,8 +338,11 @@ public class OcspConfiguration {
     /**
      * Specifies classes implementing OCSP extensions matching OIDs in getExtensionOid(), separate multiple entries with ';'.
      * 
+     * Deprecated: May still be required for 6.12 upgrades
+     * 
      * @return a List<String> of extension classes
      */
+    @Deprecated
     public static List<String> getExtensionClasses() {
         String value = ConfigurationHolder.getString("ocsp.extensionclass");
         if ("".equals(value)) {
@@ -345,6 +351,14 @@ public class OcspConfiguration {
         return Arrays.asList(value.split(";"));
     }
 
+    /**
+     * Intended for debugging.
+     * @return OID of extension to always respond with, even if not requested.
+     */
+    public static String useAlwaysOid() {
+        return ConfigurationHolder.getString("ocsp.alwayssendcustomextension");
+    }
+    
     /**
      * DataSource for Unid-Fnr mapping OCSP extension.
      */

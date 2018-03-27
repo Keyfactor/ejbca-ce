@@ -1120,8 +1120,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
             long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
             Map<ASN1ObjectIdentifier, Extension> responseExtensions = new HashMap<>();
-            // Look for extension OIDs
-            final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
+            
             // Look over the status requests
             List<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
             boolean addExtendedRevokedExtension = false;
@@ -1204,7 +1203,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                 }
-      
+
+                Collection<String> extensionOids = new ArrayList<>();
+                if (ocspSigningCacheEntry.getOcspKeyBinding() != null) {
+                    extensionOids = ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions();
+                }
                 final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
                 // Check if the cacert (or the default responderid) is revoked
                 X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
@@ -1359,10 +1362,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         transactionLogger.writeln();
                     }
                 }
+                // Intended for debugging. Will usually be null
+                String alwaysUseOid = OcspConfiguration.useAlwaysOid();
                 for (String oidstr : extensionOids) {
                     boolean useAlways = false;
-                    if (oidstr.startsWith("*")) {
-                        oidstr = oidstr.substring(1, oidstr.length());
+                    if (oidstr.equals(alwaysUseOid)) {
                         useAlways = true;
                     }
                     ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(oidstr);

@@ -43,6 +43,7 @@
 		<pathelement location="${mod.ejbca-extensions.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws-ejb.jar}"/>
+		<pathelement location="${mod.ct.lib}"/>
 		<pathelement location="${mod.ejbca-db-cli.lib}"/>
 		<pathelement location="${mod.clientToolBox.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
