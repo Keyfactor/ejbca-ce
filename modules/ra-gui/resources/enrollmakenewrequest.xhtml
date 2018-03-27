@@ -150,65 +150,31 @@
 						<h:panelGroup layout="block"
 							rendered="#{enrollMakeNewRequestBean.renderCsrDetailedInfo}"
 							id="csrDetailedInfoPanel">
-						
-							<table class="ra-csrDetailsTable">
-								<tbody>
-									<tr>
-										<td>
-											<h:outputLabel value="#{msg.enroll_filename}" />
-										</td>
-										<td>
-											<div class="ra-csrDetailsTableCell">
-												<h:outputText id="fileName" value="#{enrollMakeNewRequestBean.csrFileName}"/>
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<div style="min-width:100px;">
-											<h:outputLabel value="#{msg.enroll_modulus}"/>
-											</div>
-										</td>
-										<td>
-											<div class="ra-csrDetailsTableCell">
-												<h:outputText id="publicKeyModulus" value="#{enrollMakeNewRequestBean.publicKeyModulus}"/>
-											</div>
-										</td>
-									</tr>
-								
-									<tr>
-										<td>
-											<h:outputLabel value="#{msg.enroll_exponent}"/>
-										</td>
-										<td>
-											<div class="ra-csrDetailsTableCell">
-												<h:outputText id="publicKeyExponent" value="#{enrollMakeNewRequestBean.publicKeyExponent}"/>
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<h:outputLabel value="#{msg.enroll_sha256_fingerprint}"/>
-										</td>
-										<td>
-											<div class="ra-csrDetailsTableCell">
-												<h:outputText id="sha256Fingerprint" value="#{enrollMakeNewRequestBean.sha256Fingerprint}"/>
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<h:outputLabel value="#{msg.enroll_signature}"/>
-										</td>
-										<td>
-											<div class="ra-csrDetailsTableCell">
-												<h:outputText id="signature" value="#{enrollMakeNewRequestBean.signature}"/>
-											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						
+							
+							<h:panelGroup styleClass="pure-control-group">
+								<h:outputLabel value="#{msg.enroll_filename}"/>
+								<h:outputText value="#{enrollMakeNewRequestBean.csrFileName}" styleClass="ra-csrDetailsLongText" />
+							</h:panelGroup>
+							
+							<h:panelGroup styleClass="pure-control-group">
+								<h:outputLabel value="#{msg.enroll_modulus}"/>
+								<h:outputText value="#{enrollMakeNewRequestBean.publicKeyModulus}" styleClass="ra-csrDetailsLongText" />
+							</h:panelGroup>
+							
+							<h:panelGroup styleClass="pure-control-group">
+								<h:outputLabel value="#{msg.enroll_exponent}"/>
+								<h:outputText value="#{enrollMakeNewRequestBean.publicKeyExponent}" styleClass="ra-csrDetailsLongText" />
+							</h:panelGroup>
+							
+							<h:panelGroup styleClass="pure-control-group">
+								<h:outputLabel value="#{msg.enroll_sha256_fingerprint}"/>
+								<h:outputText value="#{enrollMakeNewRequestBean.sha256Fingerprint}" styleClass="ra-csrDetailsLongText" />
+							</h:panelGroup>
+							
+							<h:panelGroup styleClass="pure-control-group">
+								<h:outputLabel value="#{msg.enroll_signature}"/>
+								<h:outputText value="#{enrollMakeNewRequestBean.signature}" styleClass="ra-csrDetailsLongText" />
+							</h:panelGroup>
 						</h:panelGroup>
 						
 						<br/>

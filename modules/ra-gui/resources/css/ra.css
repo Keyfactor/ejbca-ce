@@ -321,24 +321,12 @@ img.menu_logo {
     height: 40px !important;
 }
 
-
-.ra-csrDetailsTable {
-	cellspacing:3;
-	cellpadding:3;
-	border: 2px solid gray;
-	width:100%;	
-}
-
-.ra-csrDetailsTable td {
-	border: 1px solid gray;
-	padding:5px;
-}
-
-.ra-csrDetailsTableCell {
+.ra-csrDetailsLongText {
 	word-wrap:break-word; 
-	table-layout: fixed; 
-	display:table;
-	width:100%;"
+	table-layout: fixed;
+	display: inline-table;
+	width:70%;"
 	font-family: monospace;
 	color: #fff;
+	margin-bottom: 15px;
 }
