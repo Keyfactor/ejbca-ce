@@ -221,6 +221,7 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.REGULAR_KEYRECOVERY, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_APPROVEENDENTITY, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.REGULAR_VIEWPUKS, Role.STATE_ALLOW),
+                    new AccessRule(AccessRulesConstants.REGULAR_VIEWAPPROVALS, Role.STATE_ALLOW),
                     new AccessRule(AuditLogRules.VIEW.resource(), Role.STATE_ALLOW)
                     ),
             new AccessRulesTemplate("CAADMINISTRATOR",

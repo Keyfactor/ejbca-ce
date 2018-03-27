@@ -275,7 +275,7 @@ public class PartitionedApprovalProfile extends ApprovalProfileBase {
         //Will make this property into a multi-select instead of single select.
         viewRoles.setHasMultipleValues(true);
         //Tell whatever bean is using this property to fill it with authorized roles.
-        viewRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES);
+        viewRoles.setPropertyCallback(DynamicUiPropertyCallback.ROLES_VIEW);
         approvalPartition.addProperty(viewRoles);
         return approvalPartition;
     }
