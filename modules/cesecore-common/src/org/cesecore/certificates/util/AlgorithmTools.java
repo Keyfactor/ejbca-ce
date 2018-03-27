@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.util;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -38,8 +37,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -54,8 +53,6 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;

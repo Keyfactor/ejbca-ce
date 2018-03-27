@@ -1329,6 +1329,11 @@ public final class KeyTools {
         }
     }
     
+    /**
+     * Returns the modulus of the public key.
+     * @param public key
+     * @return modulus of the public key
+     */
     public static String getKeyModulus(final PublicKey publicKey) {
         String modulus = null;
         if ( publicKey instanceof RSAPublicKey ) {
@@ -1345,6 +1350,11 @@ public final class KeyTools {
         return modulus;
     }
     
+    /**
+     * Returns the exponent of the public key.
+     * @param public key
+     * @return modulus of the public key
+     */
     public static String getKeyPublicExponent(final PublicKey publicKey) {
         String exponent = null;
         if ( publicKey instanceof RSAPublicKey ) {
@@ -1353,11 +1363,21 @@ public final class KeyTools {
         return exponent;
     }
     
+    /**
+     * Generates the SHA256 fingerprint of the given text string.
+     * @param input on what to generate the fingerprint
+     * @return SHA256 fingerprint of given input string 
+     */
     public static String getSha256Fingerprint(String text) throws IOException {
         byte[] sha256Fingerprint = CertTools.generateSHA256Fingerprint(text.getBytes());
         return new String(Hex.encode(sha256Fingerprint));
     }
     
+    /**
+     * Returns the signature of the given JcaPKCS10CertificationRequest.
+     * @param BouncyCastle JcaPKCS10CertificationRequest certification request
+     * @return signature of given certification request
+     */
     public static String getCertificateRequestSignature(JcaPKCS10CertificationRequest certificationRequest) {
         return new String(Hex.encode(certificationRequest.getSignature()));
     }
