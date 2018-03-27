@@ -1389,7 +1389,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 final String remoteHost = remoteAddress;
                                 // Call the OCSP extension
                                 Map<ASN1ObjectIdentifier, Extension> retext = null;
-                                    retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
+                                    retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus, ocspSigningCacheEntry.getOcspKeyBinding());
                                 if (retext != null) {
                                     // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                     responseExtensions.putAll(retext);
