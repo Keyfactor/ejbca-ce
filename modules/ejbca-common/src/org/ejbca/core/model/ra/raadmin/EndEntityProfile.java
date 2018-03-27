@@ -17,19 +17,8 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -2471,6 +2460,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String defaultValue;
         private int profileId;
         private boolean rfcEmailUsed;
+        private boolean visible;
+        private FieldInstance next;
         String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
@@ -2496,11 +2487,29 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public boolean getRfcEmailUsed() {return rfcEmailUsed;}
         public void setRfcEmailUsed(boolean rfcEmailUsed) {this.rfcEmailUsed = rfcEmailUsed;}
+
+        public boolean isVisible() {
+            return visible || isRequired();
+        }
+
+        public void setVisible(boolean visible) {
+            this.visible = visible;
+        }
+
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
         public String getDefaultValue(){return defaultValue;}
         public void setDefaultValue(String value){this.defaultValue = value;}
         public String getName(){return name;}
+
+        public FieldInstance getNext() {
+            return next;
+        }
+
+        public void setNext(FieldInstance next) {
+            this.next = next;
+        }
+
         public String getRegexPattern(){return regexPattern;}
         public int getNumber(){return number;}
         public boolean isSelectable(){
@@ -2515,6 +2524,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         @Override
         public int hashCode(){return name.hashCode();}
         public int getProfileId(){return profileId;}
+
+        public boolean hasInvisibleNext() {
+            return getNext() != null && !getNext().isVisible();
+        }
     }
     
     /** 
@@ -2529,6 +2542,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             instances = new ArrayList<>(numberOfInstances);
             for(int i=0; i<numberOfInstances; i++){
                 instances.add(new FieldInstance(name, i));
+            }
+            Collections.sort(instances, new Comparator<FieldInstance>() {
+                @Override
+                public int compare(FieldInstance c1, FieldInstance c2) {
+                    if (c1.isRequired() == c2.isRequired()) {
+                        return 0;
+                    } else {
+                        if (c1.isRequired()) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    }
+                }
+            });
+            for (int i = 0; i < numberOfInstances; i++) {
+                FieldInstance instance = instances.get(i);
+                if (i > 0) {
+                    instances.get(i - 1).setNext(instance);
+                } else {
+                    instance.setVisible(true);
+                }
             }
         }
         public int getNumber(){return instances.size();}
