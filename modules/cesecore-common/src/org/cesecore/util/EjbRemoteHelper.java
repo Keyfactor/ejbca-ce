@@ -37,6 +37,9 @@ public enum EjbRemoteHelper {
     /** The EJB used by system tests. */
     public final static String MODULE_TEST = "systemtests-ejb";
     
+    /** The EJB used by system test ProtocolLookupServerHttpTest. */
+    public final static String MODULE_UNIDFNR = "unidfnr-ejb";
+    
     private Map<Class<?>, Object> interfaceCache; 
     
     /**
@@ -66,6 +69,8 @@ public enum EjbRemoteHelper {
             if (module == null) {
                 if (key.getName().startsWith("org.cesecore")) {
                     module = EjbRemoteHelper.MODULE_CESECORE;
+                } else if (key.getName().endsWith("UnidfnrSessionRemote")) {
+                    module = EjbRemoteHelper.MODULE_UNIDFNR;
                 } else {
                     module = EjbRemoteHelper.MODULE_EJBCA;
                 }
