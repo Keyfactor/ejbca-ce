@@ -1169,7 +1169,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final List<SelectItem> ocspExtensionItems = new ArrayList<>();
         ServiceLoader<OCSPExtension> serviceLoader = ServiceLoader.load(OCSPExtension.class);
         for (OCSPExtension extension : serviceLoader) {
-            ocspExtensionItems.add(new SelectItem(extension.getClass().getCanonicalName(), extension.getClass().getSimpleName()));
+            ocspExtensionItems.add(new SelectItem(extension.getOid(), extension.getClass().getSimpleName()));
         }
         if (currentOcspExtension == null && !ocspExtensionItems.isEmpty()) {
             currentOcspExtension = (String) ocspExtensionItems.get(0).getValue();
@@ -1210,8 +1210,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getOcspExtensionName() {
-        final String fullName = ocspExtensions.getRowData();
-        return fullName.substring(fullName.lastIndexOf(".")+1, fullName.length());
+        return ocspExtensions.getRowData();
     }
 
     public String getCurrentCertificateSerialNumber() {

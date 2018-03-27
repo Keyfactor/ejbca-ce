@@ -52,6 +52,11 @@ public class OCSPUnidExtension implements OCSPExtension {
     
     private int errCode = UnidFnrOCSPExtensionCode.ERROR_NO_ERROR.getValue();
     
+    @Override
+    public String getOid() {
+        return OCSP_UNID_OID;
+    }
+    
 	@Override
 	public void init() {
         // Nothings need to be done here
