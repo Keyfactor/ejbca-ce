@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.EJB;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -32,7 +34,6 @@ import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
@@ -47,8 +48,12 @@ public class OCSPUnidExtension implements OCSPExtension {
 	private static final Logger log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    private final CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
-    private final UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
+    
+    @EJB
+    private CaSessionLocal caSession;
+
+    @EJB
+    private UnidfnrSessionLocal unidfnrSession;
     
     private int errCode = UnidFnrOCSPExtensionCode.ERROR_NO_ERROR.getValue();
     
