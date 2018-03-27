@@ -26,7 +26,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -84,15 +83,11 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.util.query.BasicMatch;
-import org.ejbca.util.query.Query;
-import org.ejbca.util.query.UserMatch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -129,7 +124,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
     private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
@@ -403,27 +397,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         data = endEntityAccessSession.findUser(admin, notexistusername);
         assertNull(data);
         log.trace("<test03FindUser()");
-
-    }
-
-    /**
-     * tests query function
-     * 
-     * @throws Exception error
-     */
-    @Test
-    public void test03_1QueryUser() throws Exception {
-        addUser();
-
-        log.trace(">test03_1QueryUser()");
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
-        String caauthstring = null;
-        String eeprofilestr = null;
-        Collection<EndEntityInformation> col = endEntityManagementProxySession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.VIEW_END_ENTITY);
-        assertNotNull(col);
-        assertEquals(1, col.size());
-        log.trace("<test03_1QueryUser()");
 
     }
 
