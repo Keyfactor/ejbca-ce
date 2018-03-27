@@ -703,9 +703,7 @@ public class CertToolsTest {
 
         String dn12 = "CN=\"foo, OU=bar\", O=baz\\\\\\, quux,C=C";
         assertEquals("Extraction of CN from: "+dn12, "foo, OU=bar", CertTools.getPartFromDN(dn12, "CN"));
-        // This is the old test, that seems invalid
-        // assertEquals("Extraction of O from: "+dn12, "baz\\, quux", CertTools.getPartFromDN(dn12, "O"));
-        assertEquals("Extraction of O from: "+dn12, "baz\\\\\\, quux", CertTools.getPartFromDN(dn12, "O"));
+        assertEquals("Extraction of O from: "+dn12, "baz\\, quux", CertTools.getPartFromDN(dn12, "O"));
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
         String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
@@ -1260,6 +1258,10 @@ public class CertToolsTest {
         assertEquals("", CertTools.getPartsFromDN(dn3, "dNSName").get(0));
         assertEquals("", CertTools.getPartsFromDN(dn3, "dNSName").get(1));
         
+        String dn4 = "CN=test\\+with\\,escaped=characters";
+        assertEquals(1, CertTools.getPartsFromDN(dn4, "CN").size());
+        assertEquals("test+with,escaped=characters", CertTools.getPartsFromDN(dn4, "CN").get(0));
+        
         log.trace("<test12GetPartsFromDN()");
     }
 
@@ -1303,7 +1305,7 @@ public class CertToolsTest {
         altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCertWithSpecialCharacters, Certificate.class));
         // Note that the actual values in this particular certificate contains \, and \\, so that's why it looks like it's double escaped
         assertEquals("uniformResourceIdentifier=http://x/A\\\\\\,B\\\\\\\\, srvName=test\\\\\\,with\\\\\\\\special=characters, permanentIdentifier=test\\\\\\,with\\\\\\\\special=characters/", altNames);
-        assertEquals("test\\\\\\,with\\\\\\\\special=characters/", CertTools.getPartFromDN(altNames, CertTools.PERMANENTIDENTIFIER));
+        assertEquals("test\\,with\\\\special=characters/", CertTools.getPartFromDN(altNames, CertTools.PERMANENTIDENTIFIER));
         log.trace("<test13GetSubjectAltNameString()");
     }
 
@@ -2474,6 +2476,20 @@ public class CertToolsTest {
         assertEquals("DIRECTORYNAME=DESCRIPTION=Test\\\\test\\,O=PrimeKey", CertTools.escapeFieldValue("DIRECTORYNAME=DESCRIPTION=Test\\test,O=PrimeKey"));
         assertEquals("CN=123\\+456", CertTools.escapeFieldValue("CN=123+456"));
         assertEquals("CN=abc\\\"def", CertTools.escapeFieldValue("CN=abc\"def"));
+        assertEquals("CN=abc\\>def", CertTools.escapeFieldValue("CN=abc>def"));
+    }
+    
+    @Test
+    public void testUnescapeFieldValue() {
+        assertEquals(null, CertTools.unescapeFieldValue(null));
+        assertEquals("", CertTools.unescapeFieldValue(""));
+        assertEquals("CN=", CertTools.unescapeFieldValue("CN="));
+        assertEquals("DESCRIPTION=Test\\test,O=PrimeKey", CertTools.unescapeFieldValue("DESCRIPTION=Test\\\\test\\,O=PrimeKey"));
+        assertEquals("DIRECTORYNAME=DESCRIPTION=Test\\test,O=PrimeKey", CertTools.unescapeFieldValue("DIRECTORYNAME=DESCRIPTION=Test\\\\test\\,O=PrimeKey"));
+        assertEquals("CN=123+456", CertTools.unescapeFieldValue("CN=123\\+456"));
+        assertEquals("abc\"def", CertTools.unescapeFieldValue("abc\\\"def"));
+        assertEquals("abc>def", CertTools.unescapeFieldValue("abc\\>def"));
+        assertEquals("\\>\"abc ", CertTools.unescapeFieldValue("\\\\\\>\\\"abc\\ "));
     }
     
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
