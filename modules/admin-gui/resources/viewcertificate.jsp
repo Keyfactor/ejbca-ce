@@ -434,7 +434,7 @@ function confirmrepublish(){
        
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_ISSUERDN") %></td>
-		 <td><span class="dn"><%= certificatedata.getIssuerDN() %></span></td>
+		 <td><span class="dn"><%= certificatedata.getUnescapedRdnValue(certificatedata.getIssuerDN()) %></span></td>
        </tr>
        <tr id="Row<%=(row)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
@@ -446,7 +446,7 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>" class="title">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
-		 <td><strong class="dn"><%= certificatedata.getSubjectDnUnescapedRndValue() %></strong></td>
+		 <td><strong class="dn"><%= certificatedata.getUnescapedRdnValue(certificatedata.getSubjectDN()) %></strong></td>
        </tr>
        
       <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>

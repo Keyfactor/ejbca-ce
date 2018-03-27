@@ -22,6 +22,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
@@ -32,6 +33,7 @@ import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypeHolder;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.XmlSerializer;
 
@@ -233,6 +235,16 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
         this.searchDetail2 = searchDetail2;
     }
 
+    @Transient
+    public String getUnescapedRndValue(){
+        String value = getAdditionalDetails();
+        if (StringUtils.isNotEmpty(value)) {
+            return CertTools.getUnescapedRdnValue(value);
+        } else {
+            return value;
+        }
+    }
+
     /** @return additional details in raw format. */
     public String getAdditionalDetails() {
         return additionalDetails;
@@ -268,7 +280,7 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
 	@Override
     public Map<String, Object> getMapAdditionalDetails() {
     	// TODO: Decide on which implementation to use for serialization of the additional details
-        return XmlSerializer.decode(getAdditionalDetails());
+        return XmlSerializer.decode(getUnescapedRndValue());
     }
 
     /** @param additionalDetails additional details. */

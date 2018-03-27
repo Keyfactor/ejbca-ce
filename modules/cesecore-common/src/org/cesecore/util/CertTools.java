@@ -854,6 +854,18 @@ public abstract class CertTools {
     }
 
     /**
+     * @param value String to enescape
+     * @return value in unescaped RDN format
+     */
+    public static String getUnescapedRdnValue(final String value){
+        if (StringUtils.isNotEmpty(value)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(value);
+        } else {
+            return value;
+        }
+    }
+
+    /**
      * Gets issuer DN in the format we are sure about (BouncyCastle),supporting UTF8.
      * 
      * @param cert Certificate

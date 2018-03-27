@@ -110,14 +110,18 @@ public class RaRequestPreview {
         return subjectDn;
     }
 
-    /** @return the Subject DN string of the current certificate in unescaped RDN format */
-    public final String getSubjectDnUnescapedValue() {
-        if (StringUtils.isNotEmpty(subjectDn)) {
-            return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+    /**
+     * @param value String to enescape
+     * @return value in unescaped RDN format
+     */
+    public final String getUnescapedRdnValue(final String value){
+        if (StringUtils.isNotEmpty(value)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(value);
         } else {
-            return subjectDn;
+            return value;
         }
     }
+
     public void setSubjectDn(String subjectDn) {
         this.subjectDn = subjectDn;
     }

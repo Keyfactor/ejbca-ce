@@ -40,7 +40,7 @@
 	                    <h:panelGrid columns="1" styleClass="nopadding noborder" style="margin-#{raLocaleBean.indentionDirection}: #{10*caAndCrls.position}px;">
 	                        <h:outputText value="#{caAndCrls.name}"/>
 	                        <h:outputText styleClass="fineprintMono"
-	                            value="#{caAndCrls.subjectDn}"/>
+	                            value="#{caAndCrls.subjectDnUnescapedRndValue}"/>
 	                    </h:panelGrid>
 	                </h:column>
 	                <h:column rendered="#{raCasPageBean.atLeastOneCrlLinkPresent}">

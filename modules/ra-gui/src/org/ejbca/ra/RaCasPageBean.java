@@ -29,6 +29,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.CRLInfo;
@@ -77,6 +78,15 @@ public class RaCasPageBean implements Serializable {
         public int hashCode() { return subjectDn.hashCode(); }
         @Override
         public boolean equals(final Object obj) { return obj instanceof CaAndCrl && subjectDn.equals(((CaAndCrl)obj).subjectDn); }
+
+        /** @return the Subject DN string of the current certificate in unescaped RDN format */
+        public final String getSubjectDnUnescapedRndValue() {
+            if (StringUtils.isNotEmpty(subjectDn)) {
+                return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
+            } else {
+                return subjectDn;
+            }
+        }
     }
 
     private static final long serialVersionUID = 1L;
