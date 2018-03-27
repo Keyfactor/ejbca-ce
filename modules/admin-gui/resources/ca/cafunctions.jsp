@@ -235,7 +235,7 @@ function getPasswordAndSubmit(formname) {
               <%= ejbcawebbean.getText("ROOTCA") + ": "%> 
             </td>
             <td>
-               <% out.write(HTMLTools.htmlescape(CertTools.getSubjectDN(certificatechain[j]))); %>                  
+               <% out.write(HTMLTools.htmlescape(CertTools.getUnescapedRdnValue(CertTools.getSubjectDN(certificatechain[j])))); %>
             </td>
           </tr>
           <tr id="Row<%=row%2%>">

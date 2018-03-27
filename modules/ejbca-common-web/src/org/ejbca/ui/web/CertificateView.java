@@ -156,6 +156,18 @@ public class CertificateView implements Serializable {
     	return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
     }
 
+    /**
+     * @param value String to enescape
+     * @return value in unescaped RDN format
+     */
+    public final String getUnescapedRdnValue(final String value){
+        if (StringUtils.isNotEmpty(value)) {
+            return org.ietf.ldap.LDAPDN.unescapeRDN(value);
+        } else {
+            return value;
+        }
+    }
+
     /** @return the Subject DN string of the current certificate in unescaped RDN format */
     public final String getSubjectDnUnescapedRndValue() {
         String subjectDn = getSubjectDN();
