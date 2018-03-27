@@ -91,7 +91,7 @@ import org.junit.Test;
 
 /**
  * 
- * Tests http pages of ocsp lookup server. This test requires the follwing setup:  
+ * Tests http pages of ocsp lookup server. This test requires the following setup:  
  * 
  *  1- The unidfnr extension must be activated and deployed via ocsp.properties file.
  *  2- The lookup service (ocsp lookup) must be active. 
@@ -463,21 +463,21 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
 
         // POST it
         con.setRequestProperty("Content-Type", "application/ocsp-request");
-        OutputStream os = con.getOutputStream();
-        os.write(ocspPackage);
-        os.close();
+        OutputStream outputStream = con.getOutputStream();
+        outputStream.write(ocspPackage);
+        outputStream.close();
         assertEquals("Response code", 200, con.getResponseCode());
         assertEquals("Content-Type", "application/ocsp-response", con.getContentType());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and OCSP requests are small
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
+        try (InputStream inputStream = con.getInputStream()) {
+            int b = inputStream.read();
+            while (b != -1) {
+                baos.write(b);
+                b = inputStream.read();
+            }
+            baos.flush();
         }
-        baos.flush();
-        in.close();
         byte[] respBytes = baos.toByteArray();
         OCSPResp response = new OCSPResp(respBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
