@@ -1208,6 +1208,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (ocspSigningCacheEntry.getOcspKeyBinding() != null) {
                     extensionOids = ocspSigningCacheEntry.getOcspKeyBinding().getOcspExtensions();
                 }
+                
+                // Intended for debugging. Will usually be null
+                String alwaysUseOid = OcspConfiguration.useAlwaysOid();
+                if (alwaysUseOid != null && !extensionOids.contains(alwaysUseOid)) {
+                    extensionOids.add(alwaysUseOid);
+                }
+                
                 final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
                 // Check if the cacert (or the default responderid) is revoked
                 X509Certificate caCertificate = ocspSigningCacheEntry.getIssuerCaCertificate();
@@ -1362,8 +1369,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         transactionLogger.writeln();
                     }
                 }
-                // Intended for debugging. Will usually be null
-                String alwaysUseOid = OcspConfiguration.useAlwaysOid();
+ 
                 for (String oidstr : extensionOids) {
                     boolean useAlways = false;
                     if (oidstr.equals(alwaysUseOid)) {
