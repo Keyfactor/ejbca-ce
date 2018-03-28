@@ -931,14 +931,10 @@ Content-Type: text/html; charset=iso-8859-1
     @Test
     public void testUseAlwaysExtensions() throws Exception {
         log.trace(">testUseAlwaysExtensions");
-        final String EXTENSION_OID = "ocsp.extensionoid";
-        final String EXTENSION_CLASS = "ocsp.extensionclass";
-        final String oldOidValue = cesecoreConfigurationProxySession.getConfigurationValue(EXTENSION_OID);
-        final String oldClass = cesecoreConfigurationProxySession.getConfigurationValue(EXTENSION_CLASS);
+        final String ALWAYSUSE_EXT = "ocsp.alwayssendcustomextension";
+        final String oldAlwaysUseExt = cesecoreConfigurationProxySession.getConfigurationValue(ALWAYSUSE_EXT);
         try {
-            cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_OID, "*" + OcspCertHashExtension.CERT_HASH_OID);
-            cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_CLASS,
-                    "org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension");
+            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, OcspCertHashExtension.CERT_HASH_OID);
             ocspResponseGeneratorSession.reloadOcspExtensionsCache();
 
             // An OCSP request, ocspTestCert is already created in earlier tests
@@ -954,8 +950,7 @@ Content-Type: text/html; charset=iso-8859-1
             Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
             assertNotNull("No extension sent with reply", responseExtension);
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_OID, oldOidValue);
-            cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_CLASS, oldClass);
+            cesecoreConfigurationProxySession.setConfigurationValue(ALWAYSUSE_EXT, oldAlwaysUseExt);
             ocspResponseGeneratorSession.reloadOcspExtensionsCache();
             log.trace("<testUseAlwaysExtensions");
         }
