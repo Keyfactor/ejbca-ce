@@ -15,8 +15,8 @@
     <property name="project.name" value="ejbca"/>
     <property name="docs.tools.dest"    location="tmp/docs-tools"/>
     <property name="docs.src"     location="doc/xdocs/docs"/>
-    <property name="docs.legacy.dest"    location="tmp/htdocs/docs"/>
-    <property name="docs.dest"    location="tmp/docs"/>
+    <property name="docs.legacy.dest"    location="tmp/htdocs/docs-legacy"/>
+    <property name="docs.dest"    location="tmp/htdocs/docs"/>
     <property name="docs.dist"    location="doc/dist"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
@@ -187,7 +187,7 @@
         <echo message="Legacy documentation is now available in file://${docs.legacy.dest}/index.html"/> 
     </target>
     
-    <target name="doc" depends="doc-build-tool, doc-external-deps, site, doc-confluence, doc-legacy" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
+    <target name="doc" depends="prepare, doc-build-tool, doc-external-deps, site, doc-confluence, doc-legacy" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>
