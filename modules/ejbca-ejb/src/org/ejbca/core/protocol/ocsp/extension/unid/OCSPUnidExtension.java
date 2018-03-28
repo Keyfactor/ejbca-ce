@@ -139,16 +139,17 @@ public class OCSPUnidExtension implements OCSPExtension {
         
         // Check if the certificate is authorized to access the Fnr
         boolean serialExists = false;
+        final String issuerDN = CertTools.getIssuerDN(cert);
+        final CAInfo caInfo = caSession.getCAInfoInternal(issuerDN.hashCode());
+        
         for (final InternalKeyBindingTrustEntry bindingTrustEntry : bindingTrustEntries) {
             // Match
-            serialExists = bindingTrustEntry.fetchCertificateSerialNumber() == cert.getSerialNumber();
+            serialExists = bindingTrustEntry.fetchCertificateSerialNumber().equals(cert.getSerialNumber()) && caInfo.getCAId() == bindingTrustEntry.getCaId();
         }
         
         if (serialExists) {
             // If we found in the hashmap the same key with issuer and serialnumber, we know we got it. 
             // Just verify it as well to be damn sure
-            final String issuerDN = CertTools.getIssuerDN(cert);
-            final CAInfo caInfo = caSession.getCAInfoInternal(issuerDN.hashCode());
             final Certificate cacert = caInfo.getCertificateChain().get(0);
             try {
                 cert.verify(cacert.getPublicKey());
