@@ -81,12 +81,13 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.extension.unid.FnrFromUnidExtension;
-import org.ejbca.unidfnr.ejb.UnidfnrSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -144,19 +145,15 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private static UnidfnrSessionRemote unidfnrSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrSessionRemote.class);
+    private static UnidfnrProxySessionRemote unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
-        setupUnidFnrData();
-    }
-
-    private static void setupUnidFnrData() {
-        unidfnrSession.removeUnidFnrDataIfPresent(SAMPLE_UNID);
-        unidfnrSession.stroreUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
-        
+        unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
+        unidfnrProxySessionBean.stroreUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
     }
 
     @Before
@@ -183,6 +180,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
+    //@Ignore
     public void test01OcspGoodWithFnr() throws Exception {
         // Make user that we know...
         boolean userExists = false;
@@ -241,6 +239,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
+    @Ignore
     public void test02OcspBadWithFnr() throws Exception {
         // Change uses to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation("unidtest", "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest",
@@ -290,6 +289,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
+    @Ignore
     public void test03OcspGoodWithNoFnr() throws Exception {
         // Change uses to a Unid that we don't have mapping for
         EndEntityInformation userData = new EndEntityInformation("unidtest", "C=SE,O=AnaTom,surname=Jansson,serialNumber=12345678,CN=UNIDTest",
@@ -330,6 +330,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
+    @Ignore
     public void test04OcspGoodNoSerialNo() throws Exception {
         // Change uses to not have any serialNumber
         EndEntityInformation userData = new EndEntityInformation("unidtest", "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest",
@@ -370,6 +371,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void test05HttpsNotAuthorized() throws Exception {
         // Change uses to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation("unidtest", "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest",
@@ -411,6 +413,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void test06HttpNotAuthorized() throws Exception {
         // Change to use plain http, we should be able to get a OCSP response, but the FNR mapping
         // will not be returned because it requires https with client authentication
