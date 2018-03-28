@@ -77,12 +77,12 @@ public class OCSPUnidExtension implements OCSPExtension {
         // Check authorization first
         if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost, internalKeyBinding.getTrustedCertificateReferences())) {
         	errCode = UnidFnrOCSPExtensionCode.ERROR_UNAUTHORIZED.getValue();
-        	return generateUnidFnrOCSPResponce(fnr);
+        	return null;
         }
         // If the certificate is revoked, we must not return an FNR
         if (status != null) {
             errCode = UnidFnrOCSPExtensionCode.ERROR_CERT_REVOKED.getValue();
-            return generateUnidFnrOCSPResponce(fnr);
+            return null;
         }
         
         // The Unid is in the DN component serialNumber
@@ -98,19 +98,18 @@ public class OCSPUnidExtension implements OCSPExtension {
             String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
             log.error(errMsg);
             errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
-            return generateUnidFnrOCSPResponce(fnr);
+            return null;
         }
         
         if (fnr == null) {
 			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", serialNumber);
             log.error(errMsg);
         	errCode = UnidFnrOCSPExtensionCode.ERROR_NO_FNR_MAPPING.getValue();
-        	return generateUnidFnrOCSPResponce(fnr);
+        	return null;
         }
 
-        // TODO: Should we include fnr in the log here?!
-        String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
-        log.info(errMsg);
+        String successMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
+        log.info(successMsg);
         
         return generateUnidFnrOCSPResponce(fnr);
 	}
