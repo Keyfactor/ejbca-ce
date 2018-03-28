@@ -10,16 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.unidfnr.ejb;
-
-import javax.ejb.Local;
+package org.ejbca.core.ejb.unidfnr;
 
 /**
- * 
+ * Interface for handling unid-fnr logic.
  * @version $Id$
  *
  */
-@Local
-public interface UnidfnrSessionLocal extends UnidfnrSession {
+public interface UnidfnrSession {
+    
+    static final String UNIDFNR_MODULE = "unidfnr-ejb";
 
 }

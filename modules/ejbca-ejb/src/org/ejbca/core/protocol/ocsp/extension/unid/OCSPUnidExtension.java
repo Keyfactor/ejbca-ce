@@ -33,8 +33,8 @@ import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
