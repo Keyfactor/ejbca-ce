@@ -1302,6 +1302,13 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 }
 .alignmiddle { vertical-align: middle; }
 
+.warning-message {
+    font-family:FontAwesome;
+    display:table;
+    padding-top:0.2em;
+    color: black;
+}
+
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
 .expandOnClick:after { content: "..."; }
