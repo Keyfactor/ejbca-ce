@@ -477,7 +477,6 @@ public interface RaMasterApi {
      * @see CertificateStoreSession#getStatus(String, BigInteger)
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuerdn) is not handled by this instance, fail-fast 
      * @throws AuthorizationDeniedException in addition to the above throws if caller is not authorized to revoke certificates from the CA (from issuerdn)
-     * @throws AuthorizationDeniedException 
      */
     CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerDN, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException;
 
