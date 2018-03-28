@@ -65,6 +65,8 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.ejb.unidfnr.UnidfnrSession;
+import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -72,8 +74,6 @@ import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
-import org.ejbca.unidfnr.ejb.UnidfnrSession;
-import org.ejbca.unidfnr.ejb.UnidfnrSessionLocal;
 
 /**
  * Helper methods to get EJB session interfaces.
@@ -224,7 +224,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
         
         // Try using EJB 3.1 name
         try {
-            return (UnidfnrSessionLocal) getInitialContext().lookup("java:global/ejbca/"+UnidfnrSession.UNIDFNR_MODULE+"/UnidfnrSessionBean!org.ejbca.unidfnr.ejb.UnidfnrSessionLocal");
+            return (UnidfnrSessionLocal) getInitialContext().lookup("java:global/ejbca/"+UnidfnrSession.UNIDFNR_MODULE+"/UnidfnrSessionBean!org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal");
         } catch (NamingException e) {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }
