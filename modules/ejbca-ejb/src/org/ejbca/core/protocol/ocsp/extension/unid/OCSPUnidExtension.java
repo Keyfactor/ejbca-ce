@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.ocsp.extension.unid;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -143,7 +144,10 @@ public class OCSPUnidExtension implements OCSPExtension {
         
         for (final InternalKeyBindingTrustEntry bindingTrustEntry : bindingTrustEntries) {
             // Match
-            serialExists = bindingTrustEntry.fetchCertificateSerialNumber().equals(cert.getSerialNumber()) && caInfo.getCAId() == bindingTrustEntry.getCaId();
+            final BigInteger trustEntrySerial = bindingTrustEntry.fetchCertificateSerialNumber(); 
+            if ((trustEntrySerial == null || trustEntrySerial.equals(cert.getSerialNumber())) && caInfo.getCAId() == bindingTrustEntry.getCaId()) {
+                serialExists = true;
+            }
         }
         
         if (serialExists) {
