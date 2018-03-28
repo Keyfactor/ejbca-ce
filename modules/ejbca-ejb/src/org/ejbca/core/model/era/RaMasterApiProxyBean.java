@@ -1290,7 +1290,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 try {
                     raMasterApi.keyRecoverWS(authenticationToken, username, certSNinHex, issuerDN);
                     // If no exceptions were thrown, recovery is complete
-                    break;
+                    return;
                 } catch (EjbcaException e) {
                     // Save the exception and continue with next implementation
                     ejbcaException = e;
