@@ -1389,6 +1389,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (log.isDebugEnabled()) {
                             log.debug("Found OCSP extension oid: " + oidstr);
                         }
+                        // TODO Is this I/O operation necessary to perform for each extension, or even for each lookup?
                         OcspExtensionsCache.INSTANCE.reloadCache(); // Do a reload before getting the extension
                         OCSPExtension extObj = OcspExtensionsCache.INSTANCE.getExtensions().get(oidstr);
                         if (extObj != null) {
