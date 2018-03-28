@@ -1008,7 +1008,9 @@ function checkUseInBatch(){
   <div class="message info"><%=ejbcawebbean.getText("ENDENTITYSAVED") %></div> 
     <%     } %>
 
-  
+    
+
+    
 	<table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
 	<form name="changeprofile" action="<%= THIS_FILENAME %>" method="post">
 		<input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
@@ -1029,7 +1031,10 @@ function checkUseInBatch(){
 		            </option>
 		            <% 
 	            }%>
-		     </select>
+    	     </select>
+	         <div class="warning-message">
+                <%= ejbcawebbean.getText("WARNINGCHANGINGPROFILE")%>
+             </div>
 			</td>
 		  <td><%= ejbcawebbean.getText("REQUIRED") %></td>
 		</tr>
