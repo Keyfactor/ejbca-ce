@@ -737,6 +737,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
     private String currentCertificateSerialNumber = null;
+    private String currentTrustEntryDescription  = null;
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
     private ListDataModel<String> ocspExtensions = null;
@@ -1221,6 +1222,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         this.currentCertificateSerialNumber = currentCertificateSerialNumber;
     }
 
+    public String getCurrentTrustEntryDescription() {
+        return currentTrustEntryDescription;
+    }
+    
+    public void setCurrentTrustEntryDescription(String description) {
+        this.currentTrustEntryDescription = description;
+    }
+    
     public String getTrustedCertificatesCaName() {
         return caSession.getCAIdToNameMap().get(trustedCertificates.getRowData().getCaId());
     }
@@ -1255,10 +1264,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 .getWrappedData();
         final String currentCertificateSerialNumber = getCurrentCertificateSerialNumber();
         if (currentCertificateSerialNumber == null || currentCertificateSerialNumber.trim().length() == 0) {
-            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null));
+            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null, currentTrustEntryDescription));
         } else {
             trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(
-                    currentCertificateSerialNumber.trim(), 16)));
+                    currentCertificateSerialNumber.trim(), 16), currentTrustEntryDescription));
         }
         trustedCertificates.setWrappedData(trustedCertificateReferences);
     }

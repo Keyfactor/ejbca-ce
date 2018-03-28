@@ -180,6 +180,18 @@ org.cesecore.keybind.InternalKeyBindingRules
 			</f:facet>
 		</h:column>
 		<h:column>
+   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_DESCRIPTION}"/></f:facet>
+   			<h:outputText value="#{trustEntry.trustEntryDescription}"/>
+   			<f:facet name="footer">
+				<h:inputText id="trustEntryDescription" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
+					value="#{internalKeyBindingMBean.currentTrustEntryDescription}"
+					size="18" maxlength="255"
+					title="#{web.text.INTERNALKEYBINDING_TRUSTENTRY_TITLE}">
+   				</h:inputText>
+				<h:message for="trustEntryDescription" rendered="#{internalKeyBindingMBean.inEditMode}"/>
+			</f:facet>
+		</h:column>
+		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTIONS}"/></f:facet>
 			<h:commandButton value="#{web.text.REMOVE}" action="#{internalKeyBindingMBean.removeTrust}" rendered="#{internalKeyBindingMBean.inEditMode}"/>
 			<f:facet name="footer">
