@@ -10,35 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.unidfnr.ejb;
+package org.ejbca.core.ejb.unidfnr;
+
+import javax.ejb.Remote;
 
 /**
- * Interface for handling unid-fnr logic.
+ * 
  * @version $Id$
  *
  */
-public interface UnidfnrSession {
-    
-    static final String UNIDFNR_MODULE = "unidfnr-ejb";
+@Remote
+public interface UnidfnrSessionRemote extends UnidfnrSession {
 
-    /**
-     * @param unid unique id to store in unid fnr database
-     * @param fnr actual fnr to store in the database
-     */
-    void stroreUnidFnrData(final String unid, final String fnr);
-    
-    
-    /**
-     * Look up database and search for UnidFnrData object based on serial number
-     * @param serialNumber unique serial number of unid fnr row in table.
-     * @return The fnr with serialNumber as id if a mapping found in db otherwise null
-     */
-    String fetchUnidFnrData(final String serialNumber);
-    
-    /**
-     * This method is used by ProtocolLookupServerHttpTest
-     * @param unid id of the object to remove from UnidFnrData table
-     * 
-     */
-    void removeUnidFnrDataIfPresent(final String unid);
 }
