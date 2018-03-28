@@ -69,6 +69,15 @@ public abstract class JndiHelper {
         try {
             try {
                 ret = (T) getContext().lookup(jndiName);
+                System.out.println("The jndi name is " + jndiName);
+                
+                if (ret == null) {
+                    System.out.println("OOOOOOOOOOOOJ amin we have a null to return!!!!!!");
+                } else {
+                    System.out.println("The return is " + ret.getClass().getCanonicalName());
+                }
+                
+                
             } catch (NamingException e) {
                 if (!isJEE6) {
                     // If that did not work and we are trying with JEE5 jndi names, try with JEE6 naming
