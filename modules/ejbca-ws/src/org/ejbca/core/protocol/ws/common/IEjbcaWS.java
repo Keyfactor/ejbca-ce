@@ -647,7 +647,7 @@ public interface IEjbcaWS {
      *
      * @param username unique username i EJBCA
      * @param certSNinHex unique certificate serialnumber i EJBCA, hex encoded
-     * @param issuerDN DN of CA, i EJBCA, that issued the certificate
+     * @param issuerDN DN of CA, in EJBCA, that issued the certificate
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized.
      * @throws NotFoundException if user doesn't exist
@@ -674,16 +674,16 @@ public interface IEjbcaWS {
      * - /ra_functionality/view_end_entity
      * - /ra_functionality/keyrecovery
      * </pre>
-     * @param username
-     * @param certSNinHex
-     * @param issuerDN
-     * @param password
-     * @param hardTokenSN
+     * @param username unique username (end entity) i EJBCA
+     * @param certSNinHex unique certificate serialnumber i EJBCA, hex encoded
+     * @param issuerDN DN of CA, in EJBCA, that issued the certificate
+     * @param password new password
+     * @param hardTokenSN of the hardToken
      * @return the generated keystore
-     * @throws AuthorizationDeniedException
-     * @throws EjbcaException
-     * @throws CADoesntExistsException
-     * @throws WaitingForApprovalException
+     * @throws AuthorizationDeniedException if the requesting administrator is unauthorized to perform this operation
+     * @throws CADoesntExistsException referenced CA cannot be found in any EJBCA instance
+     * @throws WaitingForApprovalException request has bean added to list of tasks to be approved
+     * @throws EjbcaException other exceptions
      */
     KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException;
