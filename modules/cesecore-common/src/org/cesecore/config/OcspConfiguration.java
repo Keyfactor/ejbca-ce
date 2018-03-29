@@ -355,7 +355,7 @@ public class OcspConfiguration {
      * Intended for debugging.
      * @return OID of extension to always respond with, even if not requested.
      */
-    public static String useAlwaysOid() {
+    public static String getAlwaysSendCustomOCSPExtension() {
         return ConfigurationHolder.getString("ocsp.alwayssendcustomextension");
     }
     
@@ -380,6 +380,16 @@ public class OcspConfiguration {
         return ConfigurationHolder.getString("ocsp.unidcacert");
     }
 
+    /**
+     * @return true if UnidFnr is enabled in ocsp.properties
+     */
+    public static boolean isUnidEnabled() {
+        if (ConfigurationHolder.getString("unidfnr.enabled").equals("true")) {
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * When true, an audit log will be created.
      */
