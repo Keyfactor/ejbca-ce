@@ -14,7 +14,6 @@ package org.ejbca.ui.psm.jsf;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,6 +39,7 @@ import javax.faces.convert.FloatConverter;
 import javax.faces.convert.IntegerConverter;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
@@ -419,9 +419,15 @@ public class JsfDynamicUiPsmFactory {
             }
             final AjaxBehavior behavior = (AjaxBehavior) FacesContext.getCurrentInstance().getApplication().createBehavior(AjaxBehavior.BEHAVIOR_ID);
             behavior.addAjaxBehaviorListener(new JsfDynamicUiAjaxBehaviorListener(property, component));
-            behavior.setRender(Arrays.asList(new String[] {"@all"}));
+            final List<String> render = new ArrayList<String>();
+            if (CollectionUtils.isNotEmpty(property.getActionCallback().getRender())) {
+                render.addAll(property.getActionCallback().getRender());
+            } else {
+                render.add("@all");
+            }
+            behavior.setRender(render);
             behavior.setTransient(false);
-            behavior.setImmediate(true);
+            behavior.setImmediate(true); 
             component.addClientBehavior("change", behavior);
         }
     }

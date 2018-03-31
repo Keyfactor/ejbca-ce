@@ -153,6 +153,10 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                 uiModel.firePropertyChange(oldValues, newValues);
                 setTestCertificates(ListUtils.EMPTY_LIST);
             }
+            @Override
+            public List<String> getRender() {
+                return null;
+            }
         });
         uiModel.add(testButton);
         uiModel.add(testOut);
