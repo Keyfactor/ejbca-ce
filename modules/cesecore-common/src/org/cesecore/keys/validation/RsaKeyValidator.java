@@ -246,6 +246,10 @@ public class RsaKeyValidator extends KeyValidatorBase {
                 setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
                 uiModel.firePropertyChange(oldValues, data);
             }
+            @Override
+            public List<String> getRender() {
+                return null;
+            }
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> bitLengths = new DynamicUiProperty<String>(String.class, BIT_LENGTHS, getBitLengthsAsString(), (ArrayList<String>) getAvailableBitLengths(0)) {
