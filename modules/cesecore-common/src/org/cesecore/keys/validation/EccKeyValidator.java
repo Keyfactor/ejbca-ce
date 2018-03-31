@@ -99,6 +99,10 @@ public class EccKeyValidator extends KeyValidatorBase {
                 setKeyValidatorSettingsTemplate(KeyValidatorSettingsTemplate.optionOf(Integer.parseInt((String) parameter)));
                 uiModel.firePropertyChange(oldValues, data);
             }
+            @Override
+            public List<String> getRender() {
+                return null;
+            }
         });
         uiModel.add(settingsTemplate);
         final DynamicUiProperty<String> curves = new DynamicUiProperty<String>(String.class, CURVES, getCurvesAsString(), 
