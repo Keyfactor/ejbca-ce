@@ -36,6 +36,7 @@ import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
@@ -94,6 +95,11 @@ public class OCSPUnidExtension implements OCSPExtension {
             }
             String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, serialNumber);
             log.info(iMsg);
+
+            // Make sure unidfnrSession is loaded properly in all environments before using it.
+            if (unidfnrSession == null) {
+                unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
+            }
             fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
         } else {
             String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
@@ -140,6 +146,12 @@ public class OCSPUnidExtension implements OCSPExtension {
         // Check if the certificate is authorized to access the Fnr
         boolean serialExists = false;
         final String issuerDN = CertTools.getIssuerDN(cert);
+        
+        // Make sure caSession is loaded properly in all environments before using it.
+        if (caSession == null) {
+            caSession = new EjbLocalHelper().getCaSession();
+        }
+        
         final CAInfo caInfo = caSession.getCAInfoInternal(issuerDN.hashCode());
         
         for (final InternalKeyBindingTrustEntry bindingTrustEntry : bindingTrustEntries) {
@@ -169,7 +181,7 @@ public class OCSPUnidExtension implements OCSPExtension {
         log.error(errMsg);
 		return false;
 	}
-	
+
     private Map<ASN1ObjectIdentifier, Extension> generateUnidFnrOCSPResponce(final String fnr) {
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         HashMap<ASN1ObjectIdentifier, Extension> unidOCSPResponse = new HashMap<ASN1ObjectIdentifier, Extension>();
