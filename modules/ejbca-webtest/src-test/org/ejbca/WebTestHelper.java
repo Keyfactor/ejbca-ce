@@ -53,6 +53,12 @@ public final class WebTestHelper {
                         "/ejbca/adminweb/audit/search.jsf");
     }
 
+    /**
+     * Asserts that a specific event exists in the Audit Log.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param event the event to assert, e.g. "End Entity Profile Add"
+     */
     public static void assertAuditLogEvent(WebDriver webDriver, String event) {
         try {
             webDriver.findElement(By.xpath("//td[contains(text(), '" + event + "')]"));
@@ -215,7 +221,7 @@ public final class WebTestHelper {
     public static void assertEndEntityProfileExists(WebDriver webDriver, String eepName) {
         try {
             WebElement eepList = webDriver.findElement(By.xpath("//select[@name='selectprofile']"));
-            WebElement eep = eepList.findElement(By.xpath("//option[@value='" + eepName + "']"));
+            eepList.findElement(By.xpath("//option[@value='" + eepName + "']"));
         } catch (NoSuchElementException e) {
             fail(eepName + " was not found in the List of End Entity Profiles");
         }
