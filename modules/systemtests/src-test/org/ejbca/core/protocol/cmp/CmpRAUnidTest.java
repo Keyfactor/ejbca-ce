@@ -137,7 +137,6 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         this.cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
         this.cmpConfiguration.setCertReqHandlerClass(configAlias, UnidFnrHandler.class.getName());
-        this.cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
         this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
         
         // Configure a Certificate profile (CmpRA) using ENDUSER as template

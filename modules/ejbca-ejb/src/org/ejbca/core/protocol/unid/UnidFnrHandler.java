@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.unid;
 
-import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -28,8 +27,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
-import org.ejbca.util.JDBCUtil;
-import org.ejbca.util.JDBCUtil.Preparer;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
@@ -40,32 +37,29 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
-	private Storage storage;
-	private UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
+	private Storage mockStorage;
+	private UnidfnrSessionLocal unidfnrSession;
 
 	/**
 	 * Used by EJBCA
 	 */
 	public UnidFnrHandler() {
 		super();
-		this.storage = null;
+		mockStorage = null;
+		unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
 	}
 	/**
 	 * Used by unit test.
-	 * @param _storage
+	 * @param mockStorage Emulates the {@link UnidfnrSessionLocal#stroreUnidFnrData(String, String)} call.
 	 */
-	public UnidFnrHandler(Storage _storage) {
+	public UnidFnrHandler(final Storage mockStorage) {
 		super();
-		this.storage = _storage;
+		this.mockStorage = mockStorage;
+		unidfnrSession = null;
 	}
 	
 	@Override
-	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName, String unidDataSource) throws HandlerException {
-	    
-	    if(this.storage == null) {
-	        this.storage = new MyStorage(unidDataSource);
-	    }
-
+	public RequestMessage processRequestMessage(RequestMessage req, final String certificateProfileName) throws HandlerException {
 	    final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
@@ -126,9 +120,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	 * Returning null means that the handler should not do anything (SN in DN not changed and nothing stored to DB).
 	 * @throws HandlerException if unid-fnr can't be stored in DB. This will prevent any certificate to be created.
 	 */
-	private String storeUnidFrnAndGetNewSerialNr(String inputSerialNr, String unidPrefix) throws HandlerException {
+	private String storeUnidFrnAndGetNewSerialNr(final String inputSerialNr, final String unidPrefix) throws HandlerException {
 	    
-        if (this.unidfnrSession == null) {
+        if (unidfnrSession == null && mockStorage == null) {
             throw new HandlerException("Unidfnr session bean is null!");
         }	    
 	    
@@ -148,10 +142,21 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		}
 		final String random = new LettersAndDigitsPasswordGenerator().getNewPassword(6, 6);
 		final String unid = unidPrefix + lra + random;
-		unidfnrSession.stroreUnidFnrData(unid, fnr);
+		storeUnidFnrData(unid, fnr);
 		return unid;
-
 	}
+	
+	public void storeUnidFnrData(final String unid, final String fnr) throws HandlerException {
+	    if (unidfnrSession != null) {
+	        unidfnrSession.stroreUnidFnrData(unid, fnr);
+	    } else if (mockStorage != null) {
+	        mockStorage.storeIt(unid, fnr);
+	    } else {
+	        throw new IllegalStateException();
+	    }
+    }
+	
+	
 	/**
 	 * To be implemented by unit test.
 	 */
@@ -162,70 +167,5 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		 * @throws HandlerException
 		 */
 		void storeIt(String unid, String fnr) throws HandlerException;
-	}
-	/**
-	 * Runtime implementation. Junit test will have another implementation.
-	 *
-	 */
-	private static class MyStorage implements Storage {
-		private final String dataSource;
-
-		public MyStorage(String datasource) {
-			super();
-			this.dataSource = datasource;
-			try {
-				JDBCUtil.execute(
-						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",
-						new DoNothingPreparer(), this.dataSource );
-			} catch (Exception e) {
-				// table probably already created.
-			}
-		}
-		private class DoNothingPreparer implements Preparer {
-			public DoNothingPreparer() {
-				// do nothing
-			}
-			@Override
-			public void prepare(PreparedStatement ps) {
-				// do nothing
-			}
-			@Override
-			public String getInfoString() {
-				return null;
-			}
-		}
-		private class MyPreparer implements Preparer {
-			final private String unid;
-			final private String fnr;
-
-			MyPreparer(String _unid, String _fnr) {
-				this.unid = _unid;
-				this.fnr = _fnr;
-			}
-			
-			@Override
-			public void prepare(PreparedStatement ps) throws Exception {
-				ps.setString(1, this.unid);
-				ps.setString(2, this.fnr);
-			}
-			
-			@Override
-			public String getInfoString() {
-				return "Unid: '"+this.unid+" FNR: '"+this.fnr+"'";
-			}
-		}
-		
-		@Override
-		public void storeIt(String unid, String fnr) throws HandlerException {
-			try {
-				JDBCUtil.execute(
-						"INSERT INTO UnidFnrMapping (unid,fnr) VALUES (?,?)",
-						new MyPreparer(unid,fnr), this.dataSource );
-			} catch (Exception e) {
-				final HandlerException e1 = new HandlerException("Failed to store unid fnr data: "+unid+", "+fnr+". Datasource='"+this.dataSource+"'.");
-				e1.initCause(e);
-				throw e1;
-			}
-		}
 	}
 }
