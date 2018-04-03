@@ -305,6 +305,11 @@ public class OCSPServlet extends HttpServlet {
                     log.debug("Will not add RFC 5019 cache headers: \"clients MUST use the GET method (to enable OCSP response caching)\"");
                 }
             }
+            
+            if (HttpMethod.POST.equals(httpMethod)) {
+                addOscpPostHeaders(response, ocspResponseInformation);
+            }
+            
             response.getOutputStream().write(ocspResponseBytes);
             response.getOutputStream().flush();
         } catch (Exception e) {
@@ -313,7 +318,27 @@ public class OCSPServlet extends HttpServlet {
             auditLogger.flush();
         }
     }
-
+    
+    private void addOscpPostHeaders(HttpServletResponse response, OcspResponseInformation ocspResponseInformation) {
+        
+        if (!ocspResponseInformation.shouldAddCacheHeaders()) {
+            return;
+        }
+        
+        final long thisUpdate = ocspResponseInformation.getThisUpdate();
+        long nextUpdate = ocspResponseInformation.getNextUpdate();
+        String responseHeader = ocspResponseInformation.getResponseHeader();
+        
+        // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
+        response.setDateHeader("Last-Modified", thisUpdate);
+        // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
+        response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+        // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
+        response.setHeader("ETag", "\"" + responseHeader + "\"");
+    }
+    
+    
+    
     /**
      * RFC 2560 does not specify how cache headers should be used, but RFC 5019 does. Therefore we will only
      * add the headers if the requirements of RFC 5019 is fulfilled: A GET-request, a single embedded response,
