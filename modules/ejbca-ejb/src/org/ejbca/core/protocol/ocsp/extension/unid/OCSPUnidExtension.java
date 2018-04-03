@@ -46,6 +46,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 public class OCSPUnidExtension implements OCSPExtension {
 
     public static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
+    public static final String OCSP_UNID_NAME = "UnId";
     
 	private static final Logger log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
@@ -62,6 +63,11 @@ public class OCSPUnidExtension implements OCSPExtension {
     @Override
     public String getOid() {
         return OCSP_UNID_OID;
+    }
+    
+    @Override
+    public String getName() {
+        return OCSP_UNID_NAME;
     }
     
 	@Override
@@ -192,5 +198,4 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         return unidOCSPResponse;
     }
-
 }
