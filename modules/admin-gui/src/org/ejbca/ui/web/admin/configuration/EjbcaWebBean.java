@@ -999,11 +999,6 @@ public class EjbcaWebBean implements Serializable {
         }
     }
     
-    @Deprecated //Remove before release of 6.12
-    public String getLegacyHelpBaseURI() {
-            return getBaseUrl() + "doc_legacy";
-    }
-
     public String getHelpReference(String lastPart) {
         if (!isHelpEnabled()) {
             return "";
