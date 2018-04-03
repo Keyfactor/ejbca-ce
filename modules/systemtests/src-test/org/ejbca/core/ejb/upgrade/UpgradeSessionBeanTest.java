@@ -57,8 +57,16 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -87,6 +95,9 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
+import org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension;
+import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,6 +123,10 @@ public class UpgradeSessionBeanTest {
     private RoleMemberDataProxySessionRemote roleMemberProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberDataProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private UpgradeSessionRemote upgradeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class);
     private UpgradeTestSessionRemote upgradeTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CesecoreConfigurationProxySessionRemote cesecoreConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private InternalKeyBindingMgmtSessionRemote internalKeyBindingSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+
 
     private AuthenticationToken alwaysAllowtoken = new TestAlwaysAllowLocalAuthenticationToken("UpgradeSessionBeanTest");
     
@@ -133,7 +148,7 @@ public class UpgradeSessionBeanTest {
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gucBackup);
         globalConfigSession.saveConfiguration(alwaysAllowtoken, gcBackup);
     }
-
+    
     /**
      * This test will perform the upgrade step to 6.4.0, which is update of access rules, adding read-only rules to any roles which previously had them.
      * 
@@ -373,7 +388,6 @@ public class UpgradeSessionBeanTest {
        globalConfig.loadData(data);
        assertTrue("Statedump should be locked down in the default state", globalConfig.getStatedumpLockedDown());
    }
-   
    @Test
    public void testVersionUtil() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException, IllegalArgumentException, InstantiationException {
        assertTrue("Version util did not parse correctly.", isLesserThan("1", "2"));
@@ -392,7 +406,6 @@ public class UpgradeSessionBeanTest {
         return (Boolean) upgradeMethod.invoke(UpgradeSessionBean.class.newInstance(), firstVersion, secondVersion);
     }
     
-        
     /**
      * This test checks the automatic upgrade to 6.4.2, namely that:
      * 
@@ -633,7 +646,7 @@ public class UpgradeSessionBeanTest {
             deleteRole(null, roleName3);
         }
     }
-    
+
     /**
      * Test upgrading CAs to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
      * profile for all actions. Expected behavior is that the upgraded CA should have a map containing all actions mapped to the same (previously)
@@ -680,7 +693,7 @@ public class UpgradeSessionBeanTest {
             approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, requireTwoApprovalsId);
         }
     }
-    
+
     /**
      * Test upgrading Certificate Profiles to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
      * profile for all actions. Expected behavior is that the upgraded CP should have a map containing all actions mapped to the same (previously)
@@ -726,7 +739,7 @@ public class UpgradeSessionBeanTest {
             approvalProfileSession.removeApprovalProfile(alwaysAllowtoken, requireTwoApprovalsId);
         }
     }
-    
+
     /**
      * Tests upgrade from 6.9.0 to 6.10.1.
      * The tests expects all previous CT log selections in certificate profiles to be changed into corresponding CT Labels.
@@ -812,7 +825,7 @@ public class UpgradeSessionBeanTest {
             certificateProfileSession.removeCertificateProfile(alwaysAllowtoken, profileUseCtName2);
         }
     }
-    
+
     /**
      * Tests upgrade to 6.11.0. Expected behavior is roles with access to /ra_master/invoke_api before upgrade
      * should be granted 'Allow' access to the new set of rules controlling protocol access of remote RA 
@@ -871,6 +884,41 @@ public class UpgradeSessionBeanTest {
         }     
     }
     
+    @Test
+    public void testUpgradeOcspExtensions6120() throws Exception {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        List<String> ocspExtensionBackup = OcspConfiguration.getExtensionOids();
+        // Set OCSP extensions in conf file (OcspUnid, OcspCertHash, OcspCtSct -extension)
+        cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", "2.16.578.1.16.3.2;1.3.36.8.3.13;1.3.6.1.4.1.11129.2.4.5");
+        // Create test key binding and persist it
+        final int cryptoTokenId = cryptoTokenManagementSession.getCryptoTokenIds(alwaysAllowtoken).get(0);
+        final int internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(alwaysAllowtoken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                "ocspExtensionUpgradeTest", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        try {
+            // Perform upgrade
+            guc.setUpgradedFromVersion("6.11.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            upgradeSession.upgrade(null, "6.11.0", false);
+            
+            // Verify upgraded OcspKeyBinding
+            final InternalKeyBindingInfo ocspTestKeyBindingPostUpgrade = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
+            assertNotNull("Could not find ocsp key binding after upgrade", ocspTestKeyBindingPostUpgrade);
+            final List<String> ocspKeyExtensionOids = ocspTestKeyBindingPostUpgrade.getOcspExtensions();
+            assertEquals("Unexpected amount of extensionOids imported from ocsp.properties", 3, ocspKeyExtensionOids.size());
+            assertTrue("IKB did not contain Unid extension after upgrade", ocspKeyExtensionOids.contains(OCSPUnidExtension.OCSP_UNID_OID));
+            assertTrue("IKB did not contain CertHash extension after upgrade", ocspKeyExtensionOids.contains(OcspCertHashExtension.CERT_HASH_OID));
+            assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OcspCtSctListExtension.OCSP_SCTLIST_OID));
+        } finally {
+            // Delete test key binding and restore previous ocsp.extensionoid value
+            internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, internalKeyBindingId);
+            String ocspExtensionOidRestore = "";
+            for (String extension : ocspExtensionBackup) {
+                ocspExtensionOidRestore += extension + ";";
+            }
+            cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", ocspExtensionOidRestore);
+        }
+    }
+
     @Test
     public void testExternalScriptsSetting() throws AuthorizationDeniedException, PublisherExistsException {
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
