@@ -741,6 +741,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry>trustedCertificates = null;
     private ListDataModel<String> ocspExtensions = null;
+    private Map<String, String> ocspExtensionOidNameMap = new HashMap<>();
 
     public Integer getCurrentCertificateAuthority() {
         return currentCertificateAuthority;
@@ -1170,7 +1171,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final List<SelectItem> ocspExtensionItems = new ArrayList<>();
         ServiceLoader<OCSPExtension> serviceLoader = ServiceLoader.load(OCSPExtension.class);
         for (OCSPExtension extension : serviceLoader) {
-            ocspExtensionItems.add(new SelectItem(extension.getOid(), extension.getClass().getSimpleName()));
+            ocspExtensionItems.add(new SelectItem(extension.getOid(), extension.getName()));
+            ocspExtensionOidNameMap.put(extension.getOid(), extension.getName());
         }
         if (currentOcspExtension == null && !ocspExtensionItems.isEmpty()) {
             currentOcspExtension = (String) ocspExtensionItems.get(0).getValue();
@@ -1199,7 +1201,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     @SuppressWarnings("unchecked")
     public void addOcspExtension() {
         final List<String> ocspExtensionsCurrent = (List<String>) getOcspExtensions().getWrappedData();
-        ocspExtensionsCurrent.add(getCurrentOcspExtension());
+        if (!ocspExtensionsCurrent.contains(getCurrentOcspExtension())) {
+            ocspExtensionsCurrent.add(getCurrentOcspExtension());
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, ocspExtensionOidNameMap.get(getCurrentOcspExtension()) + " is already selected", null));
+        }
         ocspExtensions.setWrappedData(ocspExtensionsCurrent);
     }
 
@@ -1210,7 +1217,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         ocspExtensions.setWrappedData(ocspExtensionsCurrent);
     }
 
-    public String getOcspExtensionName() {
+    private String getOcspExtensionNameFromOid(String oid) {
+        return ocspExtensionOidNameMap.get(oid) == null ? "" : ocspExtensionOidNameMap.get(oid);
+    }
+    
+    public String getOcspExtensionDisplayName() {
+        return getOcspExtensionNameFromOid(getOcspExtensionOid());
+    }
+    
+    public String getOcspExtensionOid() {
         return ocspExtensions.getRowData();
     }
 

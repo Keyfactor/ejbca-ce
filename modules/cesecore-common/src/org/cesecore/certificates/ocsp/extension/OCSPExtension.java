@@ -65,5 +65,13 @@ public interface OCSPExtension {
      */
     int getLastErrorCode();
     
+    /**
+     * @return Extension OID
+     */
     String getOid();
+    
+    /**
+     * @return Human readable extension name
+     */
+    String getName();
 }
