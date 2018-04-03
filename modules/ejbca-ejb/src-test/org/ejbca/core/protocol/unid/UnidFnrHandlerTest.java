@@ -61,7 +61,7 @@ public class UnidFnrHandlerTest {
     	final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
     	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
-    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", cmpConfiguration.getUnidDataSource(configAlias));
+    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
     	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
     	
     	cmpConfiguration.removeAlias(configAlias);
@@ -72,7 +72,6 @@ public class UnidFnrHandlerTest {
         
         cmpConfiguration.addAlias(configAlias);
         cmpConfiguration.setCertReqHandlerClass(configAlias, "org.ejbca.core.protocol.unid.UnidFnrHandler");
-        cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
         
         final String unidPrefix = "1234-5678-";
         final String fnr = "90123456789";
@@ -80,7 +79,7 @@ public class UnidFnrHandlerTest {
         final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
         final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
         final UnidFnrHandler handler = new UnidFnrHandler(storage);
-        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", cmpConfiguration.getUnidDataSource(configAlias));
+        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
         assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
         
         cmpConfiguration.removeAlias(configAlias);
@@ -107,8 +106,8 @@ public class UnidFnrHandlerTest {
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
-        List<Certificate> additionalCaCertificates = new ArrayList<Certificate>();
-        List<Certificate> additionalExtraCertsCertificates = new ArrayList<Certificate>();
+        List<Certificate> additionalCaCertificates = new ArrayList<>();
+        List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
         
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
