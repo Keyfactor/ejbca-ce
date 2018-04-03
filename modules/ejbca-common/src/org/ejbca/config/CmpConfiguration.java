@@ -78,6 +78,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
     public static final String CONFIG_ALLOWSERVERGENERATEDKEYS  = "allowservergenkeys";
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
+    /** @deprecated since 6.12.0. Used for checking for non-default value in deprecated property. */
+    @Deprecated
     public static final String CONFIG_UNIDDATASOURCE          = "uniddatasource";
     
     public static final String PROFILE_USE_KEYID = "KeyId";
@@ -122,6 +124,8 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     private static final String DEFAULT_RA_OMITVERIFICATIONSINEEC = "false";
     private static final String DEFAULT_RACERT_PATH = "";
     private static final String DEFAULT_CERTREQHANDLER = ""; //"org.ejbca.core.protocol.unid.UnidFnrHandler";
+    /** @deprecated Since 6.12.0. This is now hard-coded */
+    @Deprecated
     private static final String DEFAULT_UNID_DATASOURCE = ""; //"java:/UnidDS";
 
     
@@ -612,13 +616,11 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
         setValue(key, certReqClass, alias);
     }
     
+    /** @deprecated since 6.12.0, used for checking for deprecated setting */
+    @Deprecated
     public String getUnidDataSource(String alias) {
         String key = alias + "." + CONFIG_UNIDDATASOURCE;
         return getValue(key, alias);
-    }
-    public void setUnidDataSource(String alias, String unidDataSource) {
-        String key = alias + "." + CONFIG_UNIDDATASOURCE;
-        setValue(key, unidDataSource, alias);
     }
     
     
