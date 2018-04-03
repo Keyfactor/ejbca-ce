@@ -82,7 +82,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
@@ -1350,8 +1349,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6120() {
-        log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file.");
+        log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file and UnidFnr trust dir (if available)");
         importOcspExtensions();
+        importUnidFnrTrustDir();
     }
     
     /**
@@ -1452,16 +1452,32 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             throw new IllegalStateException(errMsg);
         }
         
+        if (!CertTools.isCA(cacert)) {
+            log.error(cacertfile + " does not point to a CA Certificate");
+            return;
+        }
+        final String subjectdn = CertTools.getSubjectDN(cacert);
+        
+        final int caid = CertTools.stringToBCDNString(subjectdn).hashCode();
+        try {
+            caSession.verifyExistenceOfCA(caid);
+        } catch (CADoesntExistsException e) {
+            log.info("Could not add CA to OCSP Key Binding trusted certificates. " + subjectdn + " is not known by EJBCA.");
+            return;
+        }
         // Add all found certificate serial numbers to the IKB trust entries
         final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
         for (Integer ocspKbId : ocspKbIds) {
             InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
-            
             for (X509Certificate trustedCert : trustedCerts) {
-                
-                ikbToEdit.getTrustedCertificateReferences().add(new InternalKeyBindingTrustEntry(0, trustedCert.getSerialNumber()));
+                ikbToEdit.getTrustedCertificateReferences().add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber()));
+                try {
+                    internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
+                } catch (InternalKeyBindingNameInUseException e) {
+                    // Should not happen when merging
+                    log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
+                }
             }
-            
         }
     }
     
