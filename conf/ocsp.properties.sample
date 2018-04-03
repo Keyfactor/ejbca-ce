@@ -171,38 +171,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status.
 #ocsp.999.revoked.maxAge = 100
 
-# Specifies OCSP request extension oids that will result in a call to an extension class, 
-# separate multiple entries with ';'
-# For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
-# Leave out if you do not know what this is.
-# Example value: 2.16.578.1.16.3.2 (Unid)
-# Example value: *1.3.36.8.3.13 (CertHash)
-# Default: nothing 
-#ocsp.extensionoid=
-
-# Specifies classes implementing OCSP extensions matching oids above, 
-# separate multiple entries with ;"
-# Leave out if you do not know what this is.
-# Example value: org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension
-# Example value: org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
-# Default: nothing
-#ocsp.extensionclass=
-
-# Datasource for Unid-Fnr mapping OCSP extension. 
-# Leave out if you do not know what this is.
-# No default value, must be set if the extension is used
-#ocsp.uniddatsource=
-
-# Directory containing certificates of trusted entities allowed to query for Fnrs. 
-# Leave out if you do not know what this is.
-# No default value, must be set if the extension is used
-#ocsp.unidtrustdir=
-
-# File containing the CA-certificate, in PEM format, that signed the trusted clients. 
-# Leave out if you do not know what this is.
-# No default value, must be set if the extension is used
-#ocsp.unidcacert=
-
 # Specifies OCSP extension by OID that will result in a call to an extension class.
 # Intended for debugging post EJBCA 6.12.0.
 # All other extension configuration may be selected in the Admin Web for each Ocsp Key Binding.
