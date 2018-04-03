@@ -592,7 +592,7 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of users certificate>
 	 * </pre>
 	 *
-	 * @param username unique username i EJBCA
+	 * @param username unique username in EJBCA
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
 	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
@@ -619,7 +619,7 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of users certificate>
 	 * </pre>
 	 *
-	 * @param username unique username i EJBCA
+	 * @param username unique username in EJBCA
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist
@@ -645,8 +645,8 @@ public interface IEjbcaWS {
      * - /ra_functionality/view_end_entity
      * </pre>
      *
-     * @param username unique username i EJBCA
-     * @param certSNinHex unique certificate serialnumber i EJBCA, hex encoded
+     * @param username unique username in EJBCA
+     * @param certSNinHex unique certificate serialnumber in EJBCA, hex encoded
      * @param issuerDN DN of CA, in EJBCA, that issued the certificate
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized.
@@ -674,8 +674,8 @@ public interface IEjbcaWS {
      * - /ra_functionality/view_end_entity
      * - /ra_functionality/keyrecovery
      * </pre>
-     * @param username unique username (end entity) i EJBCA
-     * @param certSNinHex unique certificate serialnumber i EJBCA, hex encoded
+     * @param username unique username (end entity) in EJBCA
+     * @param certSNinHex unique certificate serialnumber in EJBCA, hex encoded
      * @param issuerDN DN of CA, in EJBCA, that issued the certificate
      * @param password new password
      * @param hardTokenSN of the hardToken
