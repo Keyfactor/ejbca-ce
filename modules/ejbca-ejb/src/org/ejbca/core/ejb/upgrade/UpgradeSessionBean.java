@@ -13,9 +13,13 @@
 
 package org.ejbca.core.ejb.upgrade;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -76,7 +80,13 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keybind.InternalKeyBindingRules;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.AccessRulesMigrator;
@@ -87,6 +97,8 @@ import org.cesecore.roles.management.RoleSessionLocal;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.DatabaseConfiguration;
@@ -159,6 +171,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
@@ -503,6 +517,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.11.0");
+        }
+        if (isLesserThan(oldVersion, "6.12.0")) {
+            try {
+                upgradeSession.migrateDatabase6120();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.12.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1316,6 +1338,130 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         } else {
             log.info("External scripts will be disabled, since there are no General Purpose Custom Publishers. The setting can be changed under the 'System Configuration' page.");
+        }
+    }
+    
+    
+    /**
+     * Upgrades to EJBCA 6.12.0
+     * @throws InternalKeyBindingNameInUseException 
+     * 
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase6120() {
+        log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file.");
+        importOcspExtensions();
+    }
+    
+    /**
+     * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this
+     * setting was global previously, it should be fair to add each extension to every OCSP key binding.
+     */
+    private void importOcspExtensions() {
+        final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
+        if (ocspExtensionOids.isEmpty()) {
+            log.debug("No OCSP extensions for import was found in ocsp.properties");
+            return;
+        }
+        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
+        for (Integer ocspKbId : ocspKbIds) {
+            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
+            for (String extension : ocspExtensionOids) {
+                if (!ikbToEdit.getOcspExtensions().contains(extension)) {
+                    ikbToEdit.getOcspExtensions().add(extension);
+                }
+            }
+            try {
+                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
+            } catch (InternalKeyBindingNameInUseException e) {
+                log.info("Could not update internal key binding: " + ikbToEdit.getName() + ". IKB is in use. ");
+            }
+        }
+    }
+    
+    private void importUnidFnrTrustDir() {
+        List<X509Certificate> trustedCerts = new ArrayList<>();
+        Certificate cacert = null;
+        boolean isUnidFnrEnabled = OcspConfiguration.isUnidEnabled();
+        String trustDir = OcspConfiguration.getUnidTrustDir();
+        String cacertfile = OcspConfiguration.getUnidCaCert();
+        if (StringUtils.isEmpty(trustDir)) {
+            // This installation is probably not using UnidFnr at all.
+            log.debug("No UnidFnr Trust directory found. Skipping import (expected for most installations).");
+            if (isUnidFnrEnabled) {
+                log.error("No UnidFnr Trust directory found. Cannot procede import");
+            }
+            return;
+        }
+        
+        // Read all files from trustDir, expect that they are PEM formatted certificates.
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        File dir = new File(trustDir);
+        try {
+            if (dir == null || dir.isDirectory() == false) {
+                log.error("Could not read UnidFnr Trust Directory: " + dir.getCanonicalPath()+ " is not a directory.\nImport interrupted");
+                return;                
+            }
+            File files[] = dir.listFiles();
+            if (files == null || files.length == 0) {
+                log.info("No files found in UnidFnr Trust directory: " + dir.getCanonicalPath() + ". Skipping import");
+                return;
+            }
+            for (int i=0; i < files.length; i++) {
+                final String fileName = files[i].getCanonicalPath();
+                // Read the file, don't stop completely if one file has errors in it.
+                try {
+                    final byte bytesFromFile[] = FileTools.readFiletoBuffer(fileName);
+                    byte[] bytes;
+                    try {
+                        bytes = FileTools.getBytesFromPEM(bytesFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
+                    } catch (Exception e) {
+                        bytes = bytesFromFile; // assume binary data (.der).
+                    }
+                    final X509Certificate  cert = CertTools.getCertfromByteArray(bytes, X509Certificate.class);
+                    trustedCerts.add(cert);
+                } catch (CertificateException | IOException e) {
+                    log.error("error reading '" + fileName + "' from trustDir: " + e.getMessage(), e);
+                }
+            }
+        } catch (IOException e) {
+            String errMsg = "Error reading files from trustDir: " + e.getMessage();
+            log.error(errMsg, e);
+            // Since the file exists but we can't read it. We should stop here and warn the user
+            throw new IllegalStateException(errMsg);
+        }
+        // Read the CA Certificate file
+        if (StringUtils.isEmpty(cacertfile)) {
+            // Since this MUST be set if UnidFnr Extension is used, we should skip import if not found
+            log.debug("No UnidFnr CA Cert directory found. Skipping import");
+            if (isUnidFnrEnabled) {
+                log.error("No UnidFnr CA Cert directory found. Cannot procede import");
+            }
+            return;
+        }
+        try {
+            byte[] bytes = FileTools.getBytesFromPEM(FileTools
+                    .readFiletoBuffer(cacertfile),
+                    CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
+            cacert = CertTools.getCertfromByteArray(bytes, Certificate.class);
+        } catch (Exception e) {
+            String errMsg = "Error reading CA Certificate from UnidFnr cacertfile";
+            log.error(errMsg, e);
+            // Since the file exists but we can't read it. We should stop here and warn the user
+            throw new IllegalStateException(errMsg);
+        }
+        
+        // Add all found certificate serial numbers to the IKB trust entries
+        final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
+        for (Integer ocspKbId : ocspKbIds) {
+            InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
+            
+            for (X509Certificate trustedCert : trustedCerts) {
+                
+                ikbToEdit.getTrustedCertificateReferences().add(new InternalKeyBindingTrustEntry(0, trustedCert.getSerialNumber()));
+            }
+            
         }
     }
     
