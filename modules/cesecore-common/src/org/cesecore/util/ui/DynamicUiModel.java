@@ -107,4 +107,16 @@ public interface DynamicUiModel {
      * @param newValues the map of new values.
      */
     void firePropertyChange(final Map<Object, Object> oldValues, final Map<Object, Object> newValues);
+
+    /**
+     * Gets if the dynamic UI input components shall be disabled.
+     * @return true if the dynamic UI input components shall be disabled (i.e. view only).
+     */
+    boolean isDisabled();
+    
+    /**
+     * Sets if the dynamic UI input components shall be disabled.
+     * @param disabled if the dynamic UI input components shall be disabled (i.e. view only). 
+     */
+    void setDisabled(boolean disabled);
 }

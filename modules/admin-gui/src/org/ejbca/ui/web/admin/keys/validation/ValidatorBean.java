@@ -139,7 +139,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      */
     public void validatorTypeChanged(final AjaxBehaviorEvent e) throws DynamicUiModelException {
         setValidatorType((String) ((HtmlSelectOneMenu) e.getComponent()).getValue());
-//        FacesContext.getCurrentInstance().renderResponse();
+        FacesContext.getCurrentInstance().renderResponse();
     }
     
     public String getValidatorType() {
@@ -183,13 +183,14 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
         // (Re-)initialize dynamic UI PSM.
         if (validator instanceof DynamicUiModelAware) {
-            if (((DynamicUiModelAware) validator).getDynamicUiModel() == null) {
+            if (uiModel == null || !uiModel.equals(((DynamicUiModelAware) validator).getDynamicUiModel())) {
+                ((DynamicUiModelAware) validator).initDynamicUiModel();
+                uiModel = ((DynamicUiModelAware) validator).getDynamicUiModel();
                 if (log.isDebugEnabled()) {
                     log.debug("Request dynamic UI properties for validator with (id=" + validator.getProfileId() + ") with properties " + validator.getDataMap());
                 }
-                ((DynamicUiModelAware) validator).initDynamicUiModel();
                 try {
-                    initGrid(((DynamicUiModelAware) validator).getDynamicUiModel(), validator.getClass().getSimpleName());
+                    initGrid(uiModel, validator.getClass().getSimpleName());
                 } catch (DynamicUiModelException e) {
                     log.warn("Could not initialize dynamic UI PSM: " + e.getMessage(), e);
                 }
@@ -228,12 +229,6 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @throws DynamicUiModelException if the PSM could not be initialized.
      */
     public HtmlPanelGrid getDataGrid() throws DynamicUiModelException {
-        if (dataGrid == null) {
-            dataGrid = new HtmlPanelGrid();
-            dataGrid.setId(getClass().getSimpleName()+"-dataGrid");
-            uiModel = ((DynamicUiModelAware) getValidator()).getDynamicUiModel();
-            initGrid(uiModel, getValidator().getClass().getSimpleName());
-        }
         return dataGrid;
     }
 
@@ -252,6 +247,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @throws DynamicUiModelException if the PSM could not be created.
      */
     private void initGrid(final DynamicUiModel pim, final String prefix) throws DynamicUiModelException {
+        if (dataGrid == null) {
+            dataGrid = new HtmlPanelGrid();
+            dataGrid.setId(getClass().getSimpleName()+"-dataGrid");
+        }
+        uiModel.setDisabled(validatorsBean.getViewOnly());
         JsfDynamicUiPsmFactory.initGridInstance(dataGrid, pim, prefix);
     }
 

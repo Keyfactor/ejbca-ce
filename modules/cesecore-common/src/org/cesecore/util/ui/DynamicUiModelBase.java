@@ -48,6 +48,9 @@ public class DynamicUiModelBase implements DynamicUiModel {
     
     protected Map<String,List<DynamicUiComponent>> viewComponents;
   
+    // True if the dynamic UI input components shall be disabled (i.e. view only).
+    protected boolean disabled = false;
+    
     /**
      * Default constructor, required for serialization.
      */
@@ -197,5 +200,15 @@ public class DynamicUiModelBase implements DynamicUiModel {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }
