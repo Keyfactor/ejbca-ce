@@ -308,7 +308,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static int getTestCAId() {
         return getTestCAId(getTestCAName());
     }
+    
+    /** @return the CA certificate */
+    public static Certificate getTestCACertUsingItsName(final String caName) throws CADoesntExistsException, AuthorizationDeniedException {
+        return getTestCACert(caName);
+    }
 
+    
     /** @return the CA certificate */
     public static Certificate getTestCACert() throws CADoesntExistsException, AuthorizationDeniedException {
         return getTestCACert(getTestCAName());
@@ -318,7 +324,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static Certificate getTestCACert(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
         Certificate cacert = null;
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
-        CAInfo cainfo = CaTestCase.getCaSession().getCAInfo(admin, getTestCAId(caName));
+        CAInfo cainfo = CaTestCase.getCaSession().getCAInfo(admin, caName);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -335,9 +341,17 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return "TEST";
     }
 
-    /** @return the caid of a test CA with subject DN CN=caName */
+    /** @return the caid of a test CA with subject DN CN=caName 
+     * @throws AuthorizationDeniedException */
     public static int getTestCAId(String caName) {
-        return ("CN=" + caName).hashCode();
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
+        CAInfo cainfo = null;
+        try {
+            cainfo = CaTestCase.getCaSession().getCAInfo(admin, caName);
+        } catch (AuthorizationDeniedException e) {
+            log.info("Authorization denied while getting the ca id by its name " + caName, e);
+        }
+        return cainfo.getCAId();
     }
 
     /**
