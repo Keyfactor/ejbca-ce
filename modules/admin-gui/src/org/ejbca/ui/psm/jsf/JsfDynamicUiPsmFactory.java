@@ -73,6 +73,7 @@ public class JsfDynamicUiPsmFactory {
         if (log.isDebugEnabled()) {
             log.debug("Build dynamic UI model PSM " + model + ", i18nPrefix is '" + i18nPrefix + "'.");
         }
+        panelGrid.clearInitialState();
         panelGrid.getFacets().clear();
         panelGrid.getChildren().clear();
         panelGrid.setColumns(2);
@@ -184,8 +185,8 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlSelectBooleanCheckbox result = new JsfDynamicUiHtmlSelectBooleanCheckbox();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
-        addAjaxListener(property, result);
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
+        addAjaxListener(property, result, "click");
         return result;
     }
 
@@ -198,7 +199,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputTextarea result = new JsfDynamicUiHtmlInputTextarea();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setCols(45);
         result.setRows(3);
         return result;
@@ -213,7 +214,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setSize(44);
         return result;
     }
@@ -227,7 +228,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setConverter(new IntegerConverter());
         result.setSize(12);
         return result;
@@ -242,7 +243,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setConverter(new BigIntegerConverter());
         result.setSize(44);
         return result;
@@ -257,7 +258,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlInputText result = new JsfDynamicUiHtmlInputText();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setConverter(new FloatConverter());
         result.setSize(12);
         return result;
@@ -272,7 +273,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlSelectOneMenu result = new JsfDynamicUiHtmlSelectOneMenu();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
@@ -281,7 +282,7 @@ public class JsfDynamicUiPsmFactory {
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
-        addAjaxListener(property, result);
+        addAjaxListener(property, result, "change");
         result.getChildren().add(selectItems);
         return result;
     }
@@ -295,7 +296,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlSelectOneMenu result = new JsfDynamicUiHtmlSelectOneMenu();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setConverter(new IntegerConverter());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
@@ -305,7 +306,7 @@ public class JsfDynamicUiPsmFactory {
         }
         final UISelectItems selectItems = new UISelectItems();
         selectItems.setValue(items);
-        addAjaxListener(property, result);
+        addAjaxListener(property, result, "change");
         result.getChildren().add(selectItems);
         return result;
     }
@@ -319,7 +320,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlSelectManyListbox result = new JsfDynamicUiHtmlSelectManyListbox();
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         final List<SelectItem> items = new ArrayList<SelectItem>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
@@ -342,7 +343,7 @@ public class JsfDynamicUiPsmFactory {
         final HtmlCommandButton result = new HtmlCommandButton();
         result.setId(property.getName());
         result.setRendered(true);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setValue(getText(i18nPrefix, (String) property.getValue()));
         result.addActionListener(new JsfDynamicUiActionListener(property));
         return result;
@@ -356,7 +357,7 @@ public class JsfDynamicUiPsmFactory {
     public static final HtmlInputFileUpload createFileChooserInstance(final DynamicUiProperty<?> property) {
         final HtmlInputFileUpload result = new HtmlInputFileUpload();
         setUIInputAttributes(result, property);
-        result.setDisabled(property.isDisabled());
+        result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setSize(44);
         return result;
     }
@@ -412,7 +413,7 @@ public class JsfDynamicUiPsmFactory {
      * @param property the dynamic UI property.
      * @param component the JSF UIInput component.
      */
-    private static final void addAjaxListener(final DynamicUiProperty<? extends Serializable> property, final UIInput component) {
+    private static final void addAjaxListener(final DynamicUiProperty<? extends Serializable> property, final UIInput component, final String eventName) {
         if (property.getActionCallback() != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Registered dynamic UI model action callback for component " + property.getName() + ".");
@@ -428,7 +429,7 @@ public class JsfDynamicUiPsmFactory {
             behavior.setRender(render);
             behavior.setTransient(false);
             behavior.setImmediate(true); 
-            component.addClientBehavior("change", behavior);
+            component.addClientBehavior(eventName, behavior);
         }
     }
 

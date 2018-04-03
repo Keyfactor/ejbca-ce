@@ -988,7 +988,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      */
     public void updateViewComponents() {
         for (DynamicUiComponent component : getDynamicUiModel().getViewComponents(name)) {
-            component.setDisabled(isDisabled());
+            component.setDisabled(getDynamicUiModel().isDisabled() || isDisabled());
         }
     }
 }
