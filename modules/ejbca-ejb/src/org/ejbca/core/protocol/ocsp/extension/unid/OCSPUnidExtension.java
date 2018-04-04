@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.EJB;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -52,10 +50,7 @@ public class OCSPUnidExtension implements OCSPExtension {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
-    @EJB
     private CaSessionLocal caSession;
-
-    @EJB
     private UnidfnrSessionLocal unidfnrSession;
     
     private int errCode = UnidFnrOCSPExtensionCode.ERROR_NO_ERROR.getValue();

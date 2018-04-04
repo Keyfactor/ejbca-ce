@@ -1153,12 +1153,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(intres.getLocalizedMessage("ocsp.inforeceivedrequestwxff", certId.getSerialNumber().toString(16), hash, remoteAddress, xForwardedFor));
                 }
                 // Locate the CA which gave out the certificate
-                reloadOcspSigningCache();
                 ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certId);
                 if(ocspSigningCacheEntry == null) {
                   //Could it be that we haven't updated the OCSP Signing Cache?
                     ocspSigningCacheEntry = findAndAddMissingCacheEntry(certId);
-                    reloadOcspSigningCache();
                 }         
                 if (ocspSigningCacheEntry != null) {
                     if (transactionLogger.isEnabled()) {

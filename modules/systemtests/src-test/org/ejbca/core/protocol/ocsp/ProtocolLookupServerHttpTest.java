@@ -225,8 +225,6 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Send the request and receive a BasicResponse
         BasicOCSPResp basicOCSPResp = sendOCSPPost(ocspReq.getEncoded(), true);
         
-        System.out.println("Basic OCSP request extension oids  " + basicOCSPResp.getExtensionOIDs());
-        
         assertEquals(SAMPLE_FNR, getFnrGood(basicOCSPResp));
         SingleResp[] singleResps = basicOCSPResp.getResponses();
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
@@ -245,7 +243,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      */
     @Test
     public void test02OcspBadWithFnr() throws Exception {
-        // Change uses to a Unid that is OK
+        // Change user to a Unid that is OK
         EndEntityInformation userData = new EndEntityInformation(TEST_USER_NAME, TEST_USER_SUBJECTDN_GOOD_SERIAL,
                 caid, null, TEST_USER_EMAIL, EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
