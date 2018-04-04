@@ -80,7 +80,7 @@ public class OcspSigningCacheEntry {
         this.signatureProviderName = signatureProviderName;
         this.ocspKeyBinding = ocspKeyBinding;
         this.issuerCaCertificate = issuerCaCertificate;
-        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(ocspSigningCertificate);
+        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(signingCertificate);
         this.issuerCaCertificateStatus = issuerCaCertificateStatus;
         this.responderIdType = responderIdType;
         if (signingCertificate==null) {
