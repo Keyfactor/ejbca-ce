@@ -381,7 +381,7 @@ public class OcspConfiguration {
      * @return true if UnidFnr is enabled in ocsp.properties
      */
     public static boolean isUnidEnabled() {
-        if (ConfigurationHolder.getString("unidfnr.enabled").equals("true")) {
+        if (ConfigurationHolder.getString("unidfnr.enabled") != null && ConfigurationHolder.getString("unidfnr.enabled").equals("true")) {
             return true;
         }
         return false;
