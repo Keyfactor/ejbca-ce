@@ -176,7 +176,9 @@ public class IntegratedOcspResponseTest {
     @After
     public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
         cryptoTokenRule.cleanUp();
-        internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
+        if (ocspCertificate != null) {
+            internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
+        }
         // Restore the default value
         setOcspDefaultResponderReference(originalDefaultResponder);
     }
