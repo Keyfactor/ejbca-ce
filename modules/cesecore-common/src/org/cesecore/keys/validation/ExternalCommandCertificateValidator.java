@@ -362,7 +362,14 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             message = intres.getLocalizedMessage("validator.certificate.externalcommand.testfilemissing", getExternalCommand());
             log.info(message);
         }
-        
+        // Delete temporary file (file is written because of file upload).
+        if (file != null && file.exists()) {
+            try {
+                file.delete();
+            } catch(Exception | Error e) {
+                log.trace("Could not delete temporary file: " + file.getAbsolutePath(), e);
+            }
+        }
         if (StringUtils.isNotBlank(message)) {
             throw new DynamicUiCallbackException(message);
         }
