@@ -75,7 +75,7 @@ public class OcspConfiguration {
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final int RESPONDERIDTYPE_KEYHASH = 2;
 
-    public static Set<String> acceptedSignatureAlgorithms = new HashSet<String>();
+    public static Set<String> acceptedSignatureAlgorithms = new HashSet<>();
     
     /**
      * Algorithm used by server to generate signature on OCSP responses
@@ -107,7 +107,7 @@ public class OcspConfiguration {
      * we need to clear this cache so it is reloaded.
      */
     public static void clearAcceptedSignatureAlgorithmCache() {
-        acceptedSignatureAlgorithms = new HashSet<String>();
+        acceptedSignatureAlgorithms = new HashSet<>();
     }
     
     /**
@@ -330,7 +330,7 @@ public class OcspConfiguration {
     public static List<String> getExtensionOids() {
         String value = ConfigurationHolder.getString("ocsp.extensionoid");
         if ("".equals(value)) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return Arrays.asList(value.split(";"));
     }
@@ -338,7 +338,7 @@ public class OcspConfiguration {
     /**
      * Specifies classes implementing OCSP extensions matching OIDs in getExtensionOid(), separate multiple entries with ';'.
      * 
-     * Deprecated: May still be required for 6.12 upgrades
+     * @deprecated since 6.12. May still be required for upgrades.
      * 
      * @return a List<String> of extension classes
      */
@@ -346,7 +346,7 @@ public class OcspConfiguration {
     public static List<String> getExtensionClasses() {
         String value = ConfigurationHolder.getString("ocsp.extensionclass");
         if ("".equals(value)) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return Arrays.asList(value.split(";"));
     }
@@ -358,24 +358,21 @@ public class OcspConfiguration {
     public static String getAlwaysSendCustomOCSPExtension() {
         return ConfigurationHolder.getString("ocsp.alwayssendcustomextension");
     }
-    
-    /**
-     * DataSource for Unid-Fnr mapping OCSP extension.
-     */
-    public static String getUnidDataSource() {
-        return ConfigurationHolder.getString("ocsp.uniddatsource");
-    }
 
     /**
      * Directory containing certificates of trusted entities allowed to query for Fnrs.
+     * @deprecated since 6.12. May still be required for upgrades. CA+serial of trusted certificates are now stored in the database, in internal key bindings.
      */
+    @Deprecated
     public static String getUnidTrustDir() {
         return ConfigurationHolder.getString("ocsp.unidtrustdir");
     }
 
     /**
      * File containing the CA-certificate, in PEM format, that signed the trusted clients.
+     * @deprecated since 6.12. May still be required for upgrades. CA+serial of trusted certificates are now stored in the database, in internal key bindings.
      */
+    @Deprecated
     public static String getUnidCaCert() {
         return ConfigurationHolder.getString("ocsp.unidcacert");
     }
@@ -674,9 +671,9 @@ public class OcspConfiguration {
     public static Set<String> getRekeyingTriggingHosts() {
         final String sHosts = ConfigurationHolder.getString(REKEYING_TRIGGERING_HOSTS);
         if (sHosts == null) {
-            return new HashSet<String>();
+            return new HashSet<>();
         } else {
-            return new HashSet<String>(Arrays.asList(StringUtils.split(sHosts.trim(), ';')));
+            return new HashSet<>(Arrays.asList(StringUtils.split(sHosts.trim(), ';')));
         }
     }
     /**
