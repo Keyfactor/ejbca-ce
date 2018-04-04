@@ -1367,11 +1367,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
         for (Integer ocspKbId : ocspKbIds) {
             InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
+            List<String> currentExtensions = ikbToEdit.getOcspExtensions();
             for (String extension : ocspExtensionOids) {
-                if (!ikbToEdit.getOcspExtensions().contains(extension)) {
-                    ikbToEdit.getOcspExtensions().add(extension);
+                if (!currentExtensions.contains(extension)) {
+                    currentExtensions.add(extension);
                 }
             }
+            ikbToEdit.setOcspExtensions(currentExtensions);
             try {
                 internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
             } catch (InternalKeyBindingNameInUseException e) {
@@ -1469,14 +1471,16 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
         for (Integer ocspKbId : ocspKbIds) {
             InternalKeyBinding ikbToEdit = internalKeyBindingDataSession.getInternalKeyBindingForEdit(ocspKbId);
+            List<InternalKeyBindingTrustEntry> currentTrustEntries = ikbToEdit.getTrustedCertificateReferences();
             for (X509Certificate trustedCert : trustedCerts) {
-                ikbToEdit.getTrustedCertificateReferences().add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber()));
-                try {
-                    internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
-                } catch (InternalKeyBindingNameInUseException e) {
-                    // Should not happen when merging
-                    log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
-                }
+                currentTrustEntries.add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber()));
+            }
+            ikbToEdit.setTrustedCertificateReferences(currentTrustEntries);
+            try {
+                internalKeyBindingDataSession.mergeInternalKeyBinding(ikbToEdit);
+            } catch (InternalKeyBindingNameInUseException e) {
+                // Should not happen when merging
+                log.info("Could not edit key binding: " + ikbToEdit.getName() + ". Name already in use");
             }
         }
     }
