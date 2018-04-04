@@ -341,25 +341,26 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return "TEST";
     }
 
-    /** @return the caid of a test CA with subject DN CN=caName 
-     * @throws AuthorizationDeniedException */
+    /** @return the CA ID of a test CA, and if not found it falls back to assuming subject DN CN=caNames */
     public static int getTestCAId(String caName) {
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         CAInfo cainfo = null;
         try {
             cainfo = CaTestCase.getCaSession().getCAInfo(admin, caName);
         } catch (AuthorizationDeniedException e) {
-            log.info("Authorization denied while getting the ca id by its name " + caName, e);
+            log.info("Authorization denied while getting the CA ID by its name " + caName, e);
         }
-        return cainfo.getCAId();
+        if (cainfo != null) {
+            return cainfo.getCAId();
+        } else {
+            return ("CN=" + caName).hashCode();
+        }
     }
 
     /**
      * Removes the Test-CA if it exists.
      * 
-     * @return true if successful
      * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException
      */
     public static void removeTestCA() throws AuthorizationDeniedException {
         removeTestCA(getTestCAName());
