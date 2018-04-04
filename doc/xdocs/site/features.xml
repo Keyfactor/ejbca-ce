@@ -131,7 +131,7 @@
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li>Support for EST protocol, <a href="https://tools.ietf.org/html/rfc7030">RFC7030</a>, Enrollment over Secure Transport.</li>
 <li>Support for Native <a href="https://www.primekey.com/products/software/ejbca-enterprise/#additionals">Autoenrollment in Windows environment</a> with add-on autoenrollment proxy module.</li>
-<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
+<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/CMP.html">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
 <li><a href="docs/CMP.html">CMP Proxy</a> to add an additional network layer, with message check, between the CA and CMP clients.</li>
 <li>Command line CMP client in Java useful for scripting, testing and prototyping.</li>
 <li><a href="docs/SCEP.html">SCEP RA mode</a>, using SCEP controlling entity creation from an RA.</li>
