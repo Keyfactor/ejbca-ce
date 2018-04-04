@@ -74,7 +74,6 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     private static final Logger log = Logger.getLogger(ScepMessageDispatcherSessionBean.class);
     
-    // TODO Change restriction in SVN
     private static final String SCEP_RA_MODE_EXTENSION_CLASSNAME = "org.ejbca.core.protocol.scep.ScepRaModeExtension";
     private static final String SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME = "org.ejbca.core.protocol.scep.ClientCertificateRenewalExtension";
     
