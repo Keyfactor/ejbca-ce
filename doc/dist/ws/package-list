@@ -1,0 +1,4 @@
+org.cesecore.certificates.util
+org.ejbca.core.protocol.ws.client.gen
+org.ejbca.core.protocol.ws.common
+org.ejbca.core.protocol.ws.objects
