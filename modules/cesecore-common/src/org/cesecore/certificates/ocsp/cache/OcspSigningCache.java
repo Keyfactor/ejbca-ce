@@ -75,10 +75,8 @@ public enum OcspSigningCache {
 
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
         List<CertificateID> certIDs = ocspSigningCacheEntry.getCertificateID();
-        if (certIDs != null) {
-            for (CertificateID certID : certIDs) {
-                staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);
-            }
+        for (CertificateID certID : certIDs) {
+            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);
         }
     }
 
@@ -226,25 +224,22 @@ public enum OcspSigningCache {
 
     /** @return the CertificateID's based on the provided certificate */
     public static List<CertificateID> getCertificateIDFromCertificate(final X509Certificate certificate) {
-        if (certificate != null) {
-            try {
-                if (log.isTraceEnabled()) {
-                    log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
-                }
-                List<CertificateID> ret = new ArrayList<CertificateID>();
-                ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate,
-                        certificate.getSerialNumber()));
-                ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
-                        certificate, certificate.getSerialNumber()));
-                return ret;
-            } catch (OCSPException e) {
-                throw new OcspFailureException(e);
-            } catch (CertificateEncodingException e) {
-                throw new OcspFailureException(e);
-            } catch (OperatorCreationException e) {
-                throw new OcspFailureException(e);
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
             }
+            List<CertificateID> ret = new ArrayList<CertificateID>();
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate,
+                    certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
+                    certificate, certificate.getSerialNumber()));
+            return ret;
+        } catch (OCSPException e) {
+            throw new OcspFailureException(e);
+        } catch (CertificateEncodingException e) {
+            throw new OcspFailureException(e);
+        } catch (OperatorCreationException e) {
+            throw new OcspFailureException(e);
         }
-        return null;
     }
 }
