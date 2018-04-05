@@ -12,10 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.ejb.Remote;
+
+import org.cesecore.certificates.certificate.CertificateWrapper;
 
 /**
  * @version $Id$
@@ -25,5 +26,5 @@ public interface OcspResponseGeneratorTestSessionRemote {
 
     void reloadOcspSigningCache();
 
-    List<X509Certificate> getCacheOcspCertificates();
+    List<CertificateWrapper> getCacheOcspCertificates();
 }

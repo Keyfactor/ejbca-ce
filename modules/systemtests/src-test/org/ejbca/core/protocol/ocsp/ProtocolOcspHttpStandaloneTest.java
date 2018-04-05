@@ -578,21 +578,21 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, "127.0.0.1");
         configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, "foo123");
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        List<X509Certificate> oldValues = ocspResponseGeneratorTestSession.getCacheOcspCertificates();
+        List<Certificate> oldValues = EJBTools.unwrapCertCollection(ocspResponseGeneratorTestSession.getCacheOcspCertificates());
         try {
             X509Certificate cert = getActiveTestCert();
             X509Certificate caCertificate = getCaCert(cert);
             helper.renewAllKeys();
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            List<X509Certificate> newValues = ocspResponseGeneratorTestSession.getCacheOcspCertificates();
+            List<Certificate> newValues = EJBTools.unwrapCertCollection(ocspResponseGeneratorTestSession.getCacheOcspCertificates());
             //Make sure that cache contains one and only one value
             assertEquals("Cache contains a different amount of values after rekeying than before. This indicates a test failure", oldValues.size(),
                     newValues.size());
             //Make check that the certificate has changed (sanity check)
             X509Certificate newSigningCertificate = null;
-            for(X509Certificate signingCertificate : newValues) {
+            for (Certificate signingCertificate : newValues) {
                 if(CertTools.getIssuerDN(signingCertificate).equals(CertTools.getSubjectDN(caCertificate))) {
-                    newSigningCertificate = signingCertificate;
+                    newSigningCertificate = (X509Certificate) signingCertificate;
                     break;
                 }
             }
