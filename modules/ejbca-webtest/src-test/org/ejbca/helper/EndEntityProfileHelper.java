@@ -11,84 +11,44 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca;
+package org.ejbca.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.ejbca.utils.WebTestUtils;
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
- * Helper class for EJBCA Web Tests.
+ * End Entity Profile helper class for EJBCA Web Tests.
  * 
  * @version $Id$
  */
-public final class WebTestHelper {
+public final class EndEntityProfileHelper {
 
     private static final String endEntityProfileSaveMessage = "End Entity Profile saved.";
 
-    private WebTestHelper() {};
+    private EndEntityProfileHelper() {}
 
-    /* --- Audit Log operations --- */
-    /**
-     * Opens the 'Audit Log' page.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param adminWebUrl the URL of the AdminWeb
-     */
-    public static void goToAuditLog(WebDriver webDriver, String adminWebUrl) {
-        webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'audit/search.jsf')]")).click();
-        assertEquals("Clicking 'View Log' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                        "/ejbca/adminweb/audit/search.jsf");
-    }
-
-    /**
-     * Asserts that a specific event exists in the Audit Log.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param event the event to assert, e.g. "End Entity Profile Add"
-     */
-    public static void assertAuditLogEvent(WebDriver webDriver, String event) {
-        try {
-            webDriver.findElement(By.xpath("//td[contains(text(), '" + event + "')]"));
-        } catch (NoSuchElementException e) {
-            fail("The event " + event + " was not found in the Audit Log");
-        }
-    }
-
-    /**
-     * Clicks the 'Reload' button on the 'Audit Log' page.
-     * 
-     * @param webDriver the WebDriver to use
-     */
-    public static void reloadAuditLog(WebDriver webDriver) {
-        webDriver.findElement(By.xpath("//input[@class='commandLink reload']")).click();
-    }
-
-    /* --- End Entity Profile operations --- */
     /**
      * Opens the 'Manage End Entity Profiles' page.
      * 
      * @param webDriver the WebDriver to use
      * @param adminWebUrl the URL of the AdminWeb
      */
-    public static void goToEndEntityProfiles(WebDriver webDriver, String adminWebUrl) {
+    public static void goTo(WebDriver webDriver, String adminWebUrl) {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href,'editendentityprofiles.jsp')]")).click();
         assertEquals("Clicking 'End Entity Profiles' link did not redirect to expected page",
                 WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                        "/ejbca/adminweb/ra/editendentityprofiles/editendentityprofiles.jsp");
+                "/ejbca/adminweb/ra/editendentityprofiles/editendentityprofiles.jsp");
     }
 
     /**
@@ -98,15 +58,15 @@ public final class WebTestHelper {
      * @param eepName the name of the End Entity Profile
      * @param assertSuccess true if an assertion should be made that the creation was successful
      */
-    public static void addEndEntityProfile(WebDriver webDriver, String eepName, Boolean assertSuccess) {
+    public static void add(WebDriver webDriver, String eepName, Boolean assertSuccess) {
         // Add End Entity Profile
         WebElement nameInput = webDriver.findElement(By.xpath("//input[@name='textfieldprofilename']"));
         nameInput.sendKeys(eepName);
         webDriver.findElement(By.xpath("//input[@name='buttonaddprofile']")).click();
-
+    
         if (assertSuccess) {
             // Assert add successful
-            assertEndEntityProfileExists(webDriver, eepName);
+            EndEntityProfileHelper.assertExists(webDriver, eepName);
         }
     }
 
@@ -116,7 +76,7 @@ public final class WebTestHelper {
      * @param webDriver the WebDriver to use
      * @param eepName the name of the End Entity Profile
      */
-    public static void selectEndEntityProfile(WebDriver webDriver, String eepName) {
+    public static void select(WebDriver webDriver, String eepName) {
         try {
             WebElement eepList = webDriver.findElement(By.xpath("//select[@name='selectprofile']"));
             WebElement eep = eepList.findElement(By.xpath("//option[@value='" + eepName + "']"));
@@ -133,13 +93,13 @@ public final class WebTestHelper {
      * @param webDriver the WebDriver to use
      * @param eepName the name of the End Entity Profile
      */
-    public static void editEndEntityProfile(WebDriver webDriver, String eepName) {
+    public static void edit(WebDriver webDriver, String eepName) {
         // Select End Entity Profile in list
-        selectEndEntityProfile(webDriver, eepName);
-
+        select(webDriver, eepName);
+    
         // Click edit button
         webDriver.findElement(By.xpath("//input[@name='buttoneditprofile']")).click();
-
+    
         // Assert correct edit page
         WebElement editTitle = webDriver.findElement(By.xpath("//div/h3"));
         assertEquals("Unexpected title in 'Edit End Entity Profile'",
@@ -153,10 +113,10 @@ public final class WebTestHelper {
      * @param eepName the name of the End Entity Profile
      * @param eepNameClone the name of the clone
      */
-    public static void cloneEndEntityProfile(WebDriver webDriver, String eepName, String eepNameClone) {
+    public static void clone(WebDriver webDriver, String eepName, String eepNameClone) {
         // Select End Entity Profile in list
-        selectEndEntityProfile(webDriver, eepName);
-
+        select(webDriver, eepName);
+    
         // Clone the End Entity Profile
         WebElement eepNameInput = webDriver.findElement(By.xpath("//input[@name='textfieldprofilename']"));
         eepNameInput.sendKeys(eepNameClone);
@@ -168,12 +128,12 @@ public final class WebTestHelper {
      * 
      * @param webDriver the WebDriver to use
      * @param eepName the name of the End Entity Profile
-     * @param eepRename the name of the clone
+     * @param eepRename the new name
      */
-    public static void renameEndEntityProfile(WebDriver webDriver, String eepName, String eepRename) {
+    public static void rename(WebDriver webDriver, String eepName, String eepRename) {
         // Select End Entity Profile in list
-        selectEndEntityProfile(webDriver, eepName);
-
+        select(webDriver, eepName);
+    
         // Clone the End Entity Profile
         WebElement eepNameInput = webDriver.findElement(By.xpath("//input[@name='textfieldprofilename']"));
         eepNameInput.sendKeys(eepRename);
@@ -186,10 +146,10 @@ public final class WebTestHelper {
      * @param webDriver the WebDriver to use
      * @param eepName the name of the End Entity Profile
      */
-    public static void deleteEndEntityProfile(WebDriver webDriver, String eepName) {
+    public static void delete(WebDriver webDriver, String eepName) {
         // Select End Entity Profile in list
-        selectEndEntityProfile(webDriver, eepName);
-
+        select(webDriver, eepName);
+    
         // Click 'Delete End Entity Profile'
         webDriver.findElement(By.xpath("//input[@name='buttondeleteprofile']")).click();
     }
@@ -200,7 +160,7 @@ public final class WebTestHelper {
      * @param webDriver the WebDriver to use
      * @param assertSuccess true if an assertion should be made that the save was successful
      */
-    public static void saveEndEntityProfile(WebDriver webDriver, boolean assertSuccess) {
+    public static void save(WebDriver webDriver, boolean assertSuccess) {
         webDriver.findElement(By.xpath("//input[@name='buttonsave']")).click();
         if (assertSuccess) {
             // Assert that the save was successful
@@ -218,7 +178,7 @@ public final class WebTestHelper {
      * @param webDriver the WebDriver to use
      * @param eepName the name of the End Entity Profile
      */
-    public static void assertEndEntityProfileExists(WebDriver webDriver, String eepName) {
+    public static void assertExists(WebDriver webDriver, String eepName) {
         try {
             WebElement eepList = webDriver.findElement(By.xpath("//select[@name='selectprofile']"));
             eepList.findElement(By.xpath("//option[@value='" + eepName + "']"));
@@ -235,14 +195,13 @@ public final class WebTestHelper {
      * @param attributeType either 'subjectdn', 'subjectaltname' or 'subjectdirattr'
      * @param attributeName the displayed name of the attribute, e.g. 'O, Organization'
      */
-    public static void addAttributeEndEntityProfile(WebDriver webDriver, String attributeType, String attributeName) {
+    public static void addAttribute(WebDriver webDriver, String attributeType, String attributeName) {
         // Select attribute in list
         Select attributeSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectadd" + attributeType + "']")));
         attributeSelect.selectByVisibleText(attributeName);
         WebElement attributeItem = attributeSelect.getFirstSelectedOption();
         assertEquals("The attribute " + attributeName + " was not found", attributeName, attributeItem.getText());
-        attributeItem.click();
-
+    
         // Add attribute and assert that it was added
         webDriver.findElement(By.xpath("//input[@name='buttonadd" + attributeType + "']")).click();
         try {
@@ -252,34 +211,73 @@ public final class WebTestHelper {
         }
     }
 
-    /* --- Miscellaneous operations --- */
     /**
-     * Used to assert that there was an alert, and optionally if there was a
-     * specific alert message.
+     * Sets the 'Default Certificate Profile' while editing an End Entity Profile.
      * 
      * @param webDriver the WebDriver to use
-     * @param expectedMessage the expected message from the alert (or null for no assertion)
-     * @param accept true if the alert should be accepted, false if it should be dismissed
+     * @param cpName the name of the Certificate Profile
      */
-    public static void assertAlert(WebDriver webDriver, String expectedMessage, boolean accept) {
-        Boolean alertExists = true;
-        try {
-            Alert alert = webDriver.switchTo().alert();
-            // Assert that the correct alert message is displayed (if not null)
-            if (expectedMessage != null) {
-                assertEquals("Unexpected alert message: " + alert.getText(), expectedMessage, alert.getText());
+    public static void setDefaultCertificateProfile(WebDriver webDriver, String cpName) {
+        Select cpSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultcertprofile']")));
+        cpSelect.selectByVisibleText(cpName);
+        WebElement cpOption = cpSelect.getFirstSelectedOption();
+        assertEquals("The Certificate Profile " + cpName + " was not found", cpName, cpOption.getText());
+    }
+
+    /**
+     * Sets the 'Available Certificate Profiles' while editing an End Entity Profile.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param cpNames the names of the Certificate Profiles
+     */
+    public static void setAvailableCertificateProfile(WebDriver webDriver, List<String> cpNames) {
+        Select cpSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectavailablecertprofiles']")));
+        cpSelect.deselectAll();
+        for (String cpName : cpNames) {
+            cpSelect.selectByVisibleText(cpName);
+            // Assert that there is a selected Certificate Profile with the name
+            boolean selected = false;
+            for (WebElement cpOption : cpSelect.getAllSelectedOptions()) {
+                if (cpOption.getText().equals(cpName)) {
+                    selected = true;
+                }
             }
-            // Accept or dismiss the alert message
-            if (accept) {
-                alert.accept();
-            } else {
-                alert.dismiss();
-            }
-            webDriver.switchTo().defaultContent();
-        } catch (NoAlertPresentException e) {
-            // No alert found
-            alertExists = false;
+            assertTrue("The Certificate Profile " + cpName + " was not found", selected);
         }
-        assertTrue("Expected an alert but there was none", alertExists);
+    }
+
+    /**
+     * Sets the 'Default CA' while editing an End Entity Profile.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param cpName the name of the CA
+     */
+    public static void setDefaultCA(WebDriver webDriver, String caName) {
+        Select caSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultca']")));
+        caSelect.selectByVisibleText(caName);
+        WebElement caOption = caSelect.getFirstSelectedOption();
+        assertEquals("The CA " + caName + " was not found", caName, caOption.getText());
+    }
+
+    /**
+     * Sets the 'Available CAs' while editing an End Entity Profile.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param caNames the names of the CAs
+     */
+    public static void setAvailableCAs(WebDriver webDriver, List<String> caNames) {
+        Select caSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectavailablecas']")));
+        caSelect.deselectAll();
+        for (String caName : caNames) {
+            caSelect.selectByVisibleText(caName);
+            // Assert that there is a selected CA with the name
+            boolean selected = false;
+            for (WebElement caOption : caSelect.getAllSelectedOptions()) {
+                if (caOption.getText().equals(caName)) {
+                    selected = true;
+                }
+            }
+            assertTrue("The CA " + caName + " was not found", selected);
+        }
     }
 }

@@ -19,8 +19,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.WebTestBase;
-import org.ejbca.WebTestHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.helper.EndEntityProfileHelper;
+import org.ejbca.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -71,8 +72,8 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
 
     @Test
     public void testA_addEEP() {
-        WebTestHelper.goToEndEntityProfiles(webDriver, getAdminWebUrl());
-        WebTestHelper.addEndEntityProfile(webDriver, eepName, true);
+        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
+        EndEntityProfileHelper.add(webDriver, eepName, true);
     }
 
     @Test
@@ -92,19 +93,19 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
 
     private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
         // Add the attribute, save it with Modifiable checked (should succeed)
-        WebTestHelper.editEndEntityProfile(webDriver, eepName);
-        WebTestHelper.addAttributeEndEntityProfile(webDriver, attributeType, attributeName);
-        WebTestHelper.saveEndEntityProfile(webDriver, true);
+        EndEntityProfileHelper.edit(webDriver, eepName);
+        EndEntityProfileHelper.addAttribute(webDriver, attributeType, attributeName);
+        EndEntityProfileHelper.save(webDriver, true);
 
         // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
-        WebTestHelper.editEndEntityProfile(webDriver, eepName);
+        EndEntityProfileHelper.edit(webDriver, eepName);
         triggerModifiable(attributeType, attributeIndex);
-        WebTestHelper.saveEndEntityProfile(webDriver, false);
+        EndEntityProfileHelper.save(webDriver, false);
         WebTestHelper.assertAlert(webDriver, alertMessage, true);
 
         // Add the test string to the attribute and save (should succeed)
         inputTestString(attributeType, attributeIndex, testString);
-        WebTestHelper.saveEndEntityProfile(webDriver, true);
+        EndEntityProfileHelper.save(webDriver, true);
     }
 
     private void triggerModifiable(String attributeType, int attributeIndex) {
