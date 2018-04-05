@@ -104,7 +104,6 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -174,7 +173,7 @@ public class IntegratedOcspResponseTest {
     }
 
     @After
-    public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
+    public void tearDown() throws AuthorizationDeniedException {
         cryptoTokenRule.cleanUp();
         if (ocspCertificate != null) {
             internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
@@ -736,7 +735,7 @@ public class IntegratedOcspResponseTest {
 
     @Test
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
-            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
+            MalformedRequestException, CertificateEncodingException {
         // Set a fake value
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         configuration.setOcspDefaultResponderReference("CN=FancyPants");
