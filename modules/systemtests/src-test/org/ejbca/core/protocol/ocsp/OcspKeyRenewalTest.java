@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
@@ -57,7 +56,6 @@ import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -131,7 +129,7 @@ public class OcspKeyRenewalTest {
     private static int authenticationKeyBindingId;
     private static X509Certificate clientSSLCertificate;
     private static int managementCaId = 0;
-    private static List<Integer> disabledAuthenticationKeyBindings = new ArrayList<Integer>();
+    private static List<Integer> disabledAuthenticationKeyBindings = new ArrayList<>();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -416,10 +414,10 @@ public class OcspKeyRenewalTest {
         // New certificate has RSA key right?
         assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(newOcspCertificate.getPublicKey()));
         // Check that OcspSigningCache has been updated
-        final List<X509Certificate> cachedOcspCertificates = standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates();
+        final List<Certificate> cachedOcspCertificates = EJBTools.unwrapCertCollection(standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates());
         assertNotEquals("No OCSP certificates in cache after renewal!", 0, cachedOcspCertificates);
         boolean newCertificateExistsInCache = false;
-        for (final X509Certificate cachedCertificate : cachedOcspCertificates) {
+        for (final Certificate cachedCertificate : cachedOcspCertificates) {
             if (CertTools.getFingerprintAsString(cachedCertificate).equals(newFingerprint)) {
                 newCertificateExistsInCache = true;
                 break;
@@ -450,10 +448,10 @@ public class OcspKeyRenewalTest {
         // New certificate has EC key right?
         assertEquals("Signing key algo should be ECC", AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(newOcspCertificate.getPublicKey()));
         // Check that OcspSigningCache has been updated
-        final List<X509Certificate> cachedOcspCertificates = standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates();
+        final List<Certificate> cachedOcspCertificates = EJBTools.unwrapCertCollection(standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates());
         assertNotEquals("No OCSP certificates in cache after renewal!", 0, cachedOcspCertificates);
         boolean newCertificateExistsInCache = false;
-        for (final X509Certificate cachedCertificate : cachedOcspCertificates) {
+        for (final Certificate cachedCertificate : cachedOcspCertificates) {
             if (CertTools.getFingerprintAsString(cachedCertificate).equals(newFingerprint)) {
                 newCertificateExistsInCache = true;
                 break;
@@ -469,7 +467,7 @@ public class OcspKeyRenewalTest {
     }
 
     @Test
-    public void testAutomaticKeyRenewal() throws InvalidKeyException, KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InterruptedException {
+    public void testAutomaticKeyRenewal() throws InvalidKeyException, AuthorizationDeniedException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InterruptedException {
         if (managementCaId == 0) {
             throw new RuntimeException("This test cannot run without a ManagementCA that issued the localhost SSL certificate.");
         }
@@ -485,10 +483,10 @@ public class OcspKeyRenewalTest {
         final Certificate newOcspCertificate = certificateStoreSession.findCertificateByFingerprint(newFingerprint);
         assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", newFingerprint, oldFingerprint);
         // Check that OcspSigningCache has been updated
-        final List<X509Certificate> cachedOcspCertificates = standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates();
+        final List<Certificate> cachedOcspCertificates = EJBTools.unwrapCertCollection(standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates());
         assertNotEquals("No OCSP certificates in cache after renewal!", 0, cachedOcspCertificates);
         boolean newCertificateExistsInCache = false;
-        for (final X509Certificate cachedCertificate : cachedOcspCertificates) {
+        for (final Certificate cachedCertificate : cachedOcspCertificates) {
             if (CertTools.getFingerprintAsString(cachedCertificate).equals(newFingerprint)) {
                 newCertificateExistsInCache = true;
                 break;
