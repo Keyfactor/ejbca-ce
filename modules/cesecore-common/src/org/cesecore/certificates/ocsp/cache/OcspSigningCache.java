@@ -62,7 +62,7 @@ public enum OcspSigningCache {
     public OcspSigningCacheEntry getDefaultEntry() {
         return defaultResponderCacheEntry;
     }
-    
+
     /** WARNING: This method potentially exports references to CAs private keys! */
     public Collection<OcspSigningCacheEntry> getEntries() {
         return cache.values();
@@ -76,7 +76,7 @@ public enum OcspSigningCache {
     public void stagingAdd(OcspSigningCacheEntry ocspSigningCacheEntry) {
         List<CertificateID> certIDs = ocspSigningCacheEntry.getCertificateID();
         for (CertificateID certID : certIDs) {
-            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);
+            staging.put(getCacheIdFromCertificateID(certID), ocspSigningCacheEntry);            
         }
     }
 
@@ -229,10 +229,8 @@ public enum OcspSigningCache {
                 log.trace("Building CertificateId's from certificate with subjectDN '" + CertTools.getSubjectDN(certificate) + "'.");
             }
             List<CertificateID> ret = new ArrayList<CertificateID>();
-            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate,
-                    certificate.getSerialNumber()));
-            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)),
-                    certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)), certificate, certificate.getSerialNumber()));
+            ret.add(new JcaCertificateID(new BcDigestCalculatorProvider().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256)), certificate, certificate.getSerialNumber()));
             return ret;
         } catch (OCSPException e) {
             throw new OcspFailureException(e);
