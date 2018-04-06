@@ -80,18 +80,17 @@ public class OcspSigningCacheEntry {
         this.signatureProviderName = signatureProviderName;
         this.ocspKeyBinding = ocspKeyBinding;
         this.issuerCaCertificate = issuerCaCertificate;
+        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(issuerCaCertificate);
         this.issuerCaCertificateStatus = issuerCaCertificateStatus;
         this.responderIdType = responderIdType;
         if (signingCertificate==null) {
             // This is just a placeholder cache entry
-            this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(issuerCaCertificate);
             respId = null;
             signingCertificateForOcspSigning = true;
             signingCertificateIssuerDn = null;
             signingCertificateIssuerDnRaw = null;
         } else {
             // Pre-calculate the Responder ID
-            this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(signingCertificate);
             if (OcspKeyBinding.ResponderIdType.NAME.equals(responderIdType)) {
                 respId = new JcaRespID(signingCertificate.getSubjectX500Principal());
             } else {
