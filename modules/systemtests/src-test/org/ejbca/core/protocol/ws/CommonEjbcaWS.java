@@ -1635,6 +1635,21 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             
             try {
                 this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+                {
+                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
+                    assertNotNull(revokestatus);
+                    assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+                    assertTrue(revokestatus.getCertificateSN().equals(serialNumber));
+                    assertTrue(revokestatus.getIssuerDN().equals(issuerDn));
+                    assertNotNull(revokestatus.getRevocationDate());
+                }
+                
+                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.NOT_REVOKED);
+                {
+                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
+                    assertNotNull(revokestatus);
+                    assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+                }
             } catch (NotFoundException_Exception e) {
                 fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
             }
