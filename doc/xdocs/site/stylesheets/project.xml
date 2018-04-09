@@ -30,7 +30,6 @@
             </menu>
 
             <menu name="Other Resources">
-                <item name="Guides"                href="/guides.html"/>
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
                 <item name="Release Cycle"        href="/releasecycle.html"/>
                 <item name="References"           href="/references.html"/>
