@@ -74,6 +74,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -1630,7 +1631,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check that the admin has revocation rights.
         if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
             String msg = intres.getLocalizedMessage("ra.errorauthrevoke");
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), null,
                     certserno.toString(16).toUpperCase(), null, details);
@@ -1638,20 +1639,44 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // To be fully backwards compatible we just use the first fingerprint found..
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
+        final CertificateData certificateData;
+        final int caid;
+        final String username;
+        final int revocationReason;
+        int certificateProfileId;
+        String certificateSubjectDN;
+        int endEntityProfileId;
+        final EndEntityInformation endEntityInformation;
         if (cdw == null) {
-            final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
-            log.info(msg);
-            throw new NoSuchEndEntityException(msg);
+            // Throw away CA or missing certificate
+            caid = issuerdn.hashCode();
+            final CAInfo cainfo;
+            cainfo = caSession.getCAInfo(admin, caid);
+            if (cainfo.isUseCertificateStorage()) {
+                final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
+                log.info(msg);
+                throw new NoSuchEndEntityException(msg);
+            }
+            certificateData = null;
+            assertAuthorizedToCA(admin, caid);
+            username = "";
+            revocationReason = RevocationReasons.NOT_REVOKED.getDatabaseValue();
+            certificateProfileId = CertificateProfileConstants.NO_CERTIFICATE_PROFILE; // TODO Should be configurable per CA (ECA-6743)
+            certificateSubjectDN = "";
+            endEntityProfileId = -1;
+            endEntityInformation = null;
+        } else {
+            certificateData = cdw.getCertificateData();
+            caid = certificateData.getIssuerDN().hashCode();
+            assertAuthorizedToCA(admin, caid);
+            username = certificateData.getUsername();
+            revocationReason = certificateData.getRevocationReason();
+            certificateProfileId = certificateData.getCertificateProfileId();
+            certificateSubjectDN = certificateData.getSubjectDnNeverNull();
+            endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
+            endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
         }
-        final CertificateData certificateData = cdw.getCertificateData();
-        final int caid = certificateData.getIssuerDN().hashCode();
-        final String username = certificateData.getUsername();
-        assertAuthorizedToCA(admin, caid);
-        int certificateProfileId = certificateData.getCertificateProfileId();
-        String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
-        int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
-        final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
         if (certReqHistory == null) {
             if (endEntityInformation!=null) {
                 // Get the EEP that is currently used as a fallback, if we can find it
@@ -1681,17 +1706,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (!RevokedCertInfo.isRevoked(reason)) {
-            if (certificateData.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
+            if (revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
                 final String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));
                 log.info(msg);
                 throw new AlreadyRevokedException(msg);
             }
         } else {
-            if (    certificateData.getRevocationReason()!=RevokedCertInfo.NOT_REVOKED &&
+            if (    revocationReason != RevokedCertInfo.NOT_REVOKED &&
                     // it should be possible to revoke a certificate on hold for good.
-                    certificateData.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
+                    revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD &&
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
-                    certificateData.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
+                    revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
                 final String msg = intres.getLocalizedMessage("ra.errorrevocationexists", issuerdn, certserno.toString(16));
                 log.info(msg);
                 throw new AlreadyRevokedException(msg);
@@ -1705,7 +1730,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
-                log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
+                log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+(certificateData != null ? certificateData.getIssuerDN() : issuerdn)+"'.");
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, 
