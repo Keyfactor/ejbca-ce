@@ -200,6 +200,7 @@ import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -1575,16 +1576,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void revokeCert() throws Exception {
-
-
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-
         final String issuerdn = cert.getIssuerDN().toString();
         final String serno = cert.getSerialNumber().toString(16);
-
+        
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-
         {
             final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
             assertNotNull(revokestatus);
@@ -1616,10 +1613,41 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
             assertTrue(false);
-        }catch(AlreadyRevokedException_Exception e){}
-
+        } catch (AlreadyRevokedException_Exception e){}
     }
 
+    protected void revokeThrowAwayCert() throws Exception {
+        final String issuerDn = "CN=" + CA1;
+        // This certificate doesn't exist in EJBCA Database. Though it should be possible to revoke with a throw away CA.
+        final String serialNumber = "1a1a1a1a1a1a1a1a";
+        
+        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-revokeThrowAwayCert"));
+        // Use throw away CA mode (don't store UserData, CertificateData or CertReqHistoryData)
+        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, CA1);
+        final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
+        final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
+        final boolean originalUseUserStorage = caInfo.isUseUserStorage();
+        try {
+            caInfo.setUseCertificateStorage(false);
+            caInfo.setUseCertReqHistory(false);
+            caInfo.setUseUserStorage(false);
+            caSession.editCA(authenticationToken, caInfo);
+            
+            try {
+                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            } catch (NotFoundException_Exception e) {
+                fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
+            }
+            
+        } finally {
+            final CAInfo caInfoToRestore = caSession.getCAInfo(authenticationToken, CA1);
+            caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
+            caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
+            caInfoToRestore.setUseUserStorage(originalUseUserStorage);
+            caSession.editCA(authenticationToken, caInfoToRestore);
+        }
+    }
+    
     protected void revokeCertBackdated() throws Exception {
 
         final P12TestUser p12TestUser = new P12TestUser();
@@ -1722,6 +1750,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final X509Certificate cert = p12TestUser.getCertificate("12345678");
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
+        
         // Newly issues, certificate is not revoked
         RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);

@@ -177,6 +177,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -562,6 +563,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         revokeCert();
     }
 
+    @Ignore // TODO Add when ECA-6727 is ready
+    @Test
+    public void test0601RevokeThrowAwayCert () throws Exception {
+        revokeThrowAwayCert();
+    }
+    
     @Test
     public void test061RevokeCertBackdated() throws Exception {
         revokeCertBackdated();
@@ -571,12 +578,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test07RevokeToken() throws Exception {
         revokeToken();
     }
-
+    
     @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();
     }
-
+    
     @Test
     public void test09Utf8EditUser() throws Exception {
         utf8EditUser();
