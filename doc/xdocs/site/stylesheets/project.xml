@@ -3,12 +3,8 @@
 
     <title>EJBCA - Open Source PKI Certificate Authority</title>
     <body>
-       <menusection name="Home" index="0"         href="/index.html">
-      		 <menu name="">
-       			<item name="Site Home" href="/index.html"/>
-       		</menu>
+       <menusection name="Home" index="0" href="/index.html">
             <menu name="EJBCA">
-               	<item name="Download" href="/download.html"/>
                 <item name="Features"              href="/features.html"/>
                 <item name="Screenshots"           href="/screenshots.html"/>
                 <item name="License"               href="/license.html"/>
@@ -19,16 +15,16 @@
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
             </menu>
-            
+            <menu name="Download">
+            	<item name="Community Download" href="/download.html"/>
+            </menu>
             <menu name="Support">
 				<item name="Community Support" href="https://jira.primekey.se/projects/COMMUNITY/"/>
             </menu>
-
             <menu name="Documentation">
                 <item name="Current Documentation" href="/docs/index.html"/>
                 <item name="Older Releases"     href="/older_releases/"/>
             </menu>
-
             <menu name="Other Resources">
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
                 <item name="Release Cycle"        href="/releasecycle.html"/>
@@ -37,10 +33,8 @@
                 <item name="Issue Tracker"          href="http://jira.primekey.se/"/>
                 <item name="SVN Repository"      href="/repository.html"/>
                 <item name="Jenkins CI" href="/hudson.html"/>
-            </menu>
-
-
+            </menu>			
         </menusection>
-
+		
     </body>
 </project>
