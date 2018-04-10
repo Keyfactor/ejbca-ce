@@ -70,6 +70,7 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -179,6 +180,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
+    @EJB
+    private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
@@ -1638,44 +1641,21 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new AuthorizationDeniedException(msg);
         }
         // To be fully backwards compatible we just use the first fingerprint found..
-        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
-        final CertificateData certificateData;
-        final int caid;
-        final String username;
-        final int revocationReason;
-        int certificateProfileId;
-        String certificateSubjectDN;
-        int endEntityProfileId;
-        final EndEntityInformation endEntityInformation;
+        CertificateDataWrapper cdw = noConflictCertificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
         if (cdw == null) {
-            // Throw away CA or missing certificate
-            caid = issuerdn.hashCode();
-            final CAInfo cainfo;
-            cainfo = caSession.getCAInfo(admin, caid);
-            if (cainfo.isUseCertificateStorage()) {
-                final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
-                log.info(msg);
-                throw new NoSuchEndEntityException(msg);
-            }
-            certificateData = null;
-            assertAuthorizedToCA(admin, caid);
-            username = "";
-            revocationReason = RevocationReasons.NOT_REVOKED.getDatabaseValue();
-            certificateProfileId = CertificateProfileConstants.NO_CERTIFICATE_PROFILE; // TODO Should be configurable per CA (ECA-6743)
-            certificateSubjectDN = "";
-            endEntityProfileId = -1;
-            endEntityInformation = null;
-        } else {
-            certificateData = cdw.getCertificateData();
-            caid = certificateData.getIssuerDN().hashCode();
-            assertAuthorizedToCA(admin, caid);
-            username = certificateData.getUsername();
-            revocationReason = certificateData.getRevocationReason();
-            certificateProfileId = certificateData.getCertificateProfileId();
-            certificateSubjectDN = certificateData.getSubjectDnNeverNull();
-            endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
-            endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
+            final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
+            log.info(msg);
+            throw new NoSuchEndEntityException(msg);
         }
+        final CertificateData certificateData = cdw.getCertificateData();
+        final int caid = certificateData.getIssuerDN().hashCode();
+        assertAuthorizedToCA(admin, caid);
+        final String username = certificateData.getUsername();
+        final int revocationReason = certificateData.getRevocationReason();
+        int certificateProfileId = certificateData.getCertificateProfileId();
+        String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
+        int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
+        final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         if (certReqHistory == null) {
             if (endEntityInformation!=null) {
@@ -1730,7 +1710,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // If CA does not exist, the certificate is a bit "weird", but things can happen in reality and CAs can disappear
                 // So the CA not existing should not prevent us from revoking the certificate.
                 // It may however affect the possible Approvals, but we probably need to be able to do this in order to clean up a bad situation 
-                log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+(certificateData != null ? certificateData.getIssuerDN() : issuerdn)+"'.");
+                log.info("Trying to revoke a certificate issued by a CA, with ID "+caid+", that does not exist. IssuerDN='"+certificateData.getIssuerDN()+"'.");
             }
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.REVOCATION, cainfo, 
@@ -1745,7 +1725,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Finally find the publishers for the certificate profileId that we found
-        Collection<Integer> publishers = new ArrayList<Integer>(0);
+        Collection<Integer> publishers = new ArrayList<>(0);
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileId);
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
