@@ -20,6 +20,6 @@ import javax.ejb.Remote;
  * @version $Id$
  */
 @Remote
-public interface NoConflictCertificateStoreSessionRemote extends CertificateStoreSession {
+public interface NoConflictCertificateStoreSessionRemote extends NoConflictCertificateStoreSession {
 
 }
