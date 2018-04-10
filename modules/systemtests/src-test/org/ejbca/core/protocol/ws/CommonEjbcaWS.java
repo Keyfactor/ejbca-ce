@@ -2272,13 +2272,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return crlNumber.intValue();
     }
 
-    protected void ejbcaVersion() throws Exception {
-        final String version = ejbcaraws.getEjbcaVersion();
-        // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 6.12";
-        assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString));
-    }
-
     protected void getLastCertChain() throws Exception {
         log.trace(">getLastCertChain");
         List<Certificate> foundcerts = ejbcaraws.getLastCertChain(CA1_WSTESTUSER1);
