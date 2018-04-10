@@ -23,18 +23,7 @@
     </p>  
   </section>
 
-  <section name="Donations">
-    <p>
-    You can donate to EJBCA in a number of ways:
-    <ul>
-    <li>By purchasing an Enterprise Support contract. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>, or see <a href="https://www.primekey.com/">www.primekey.com</a>.</li>
-    <li>By hiring us for integration, or sponsoring development of new features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
-    <li>Through <a href="donations.html">Donations</a>.</li>
-    </ul>
-    </p>
-  </section>
-
-  <section name="Contributor policy">
+  <section name="Contributor Policy">
   <p>We want to make EJBCA community friendly, yet secure and respectable. We therefore have a simple contributor policy. If you submit patches to EJBCA 
   you should comply with this simple policy.</p>
   <p>
@@ -53,7 +42,7 @@
 </ul>
   </section>
 
-<section name="How to contribute">
+<section name="How to Contribute">
 <p>
 If you are not a committer in SVN we are glad to accept patches. You can send us patches either
 in diff format (svn diff) or created with an IDE.
@@ -79,8 +68,8 @@ Contributors are asked if they want to have their name and optional contact info
 </p>
 </section>
 
-<section name="Getting started with EJBCA development">
-<subsection name="Development tools">
+<section name="Getting Started with EJBCA development">
+<subsection name="Development Tools">
 <ul>
 <li>An operating system that can run Java (Linux, OSX, Windows..). Most developers use Ubuntu/Debian.</li>
 <li>Eclipse JEE edition with an additional Subversion (SVN) plugin installed.</li>
@@ -117,7 +106,7 @@ If you are using Eclipse we recommend the Subversive plug-in, now part of eclips
 </subsection>
 </section>
 
-  <section name="Commit privileges policy">
+  <section name="Commit Privileges Policy">
 	<p>The purpose of the commit privileges policy is to maintain assurance that unauthorized modifications are not being done.</p>
 	<p>The policy for determining who have commit rights to the repositories are:</p>
 	<ul>
@@ -128,13 +117,13 @@ If you are using Eclipse we recommend the Subversive plug-in, now part of eclips
     </ul>
   </section>
   
-  <section name="Committer security policy">
+  <section name="Committer Security Policy">
   <p>
   EJBCA is a security project, Common Criteria certified. As such a few security policies are needed.
   In order for any contributor to get source code repository commit access the contributor must agree on some security policies.
   Contributors with no commit access are not bothered by this policy.
   </p>
-  <subsection name="Password usage">
+  <subsection name="Password Usage">
   <p>Passwords used need to comply with the following requirements:
   </p>
   <ul>
@@ -142,12 +131,12 @@ If you are using Eclipse we recommend the Subversive plug-in, now part of eclips
 	  <li>Include letters, numbers and special characters.</li>
   </ul>
   </subsection>
-  <subsection name="Workstation protection">
+  <subsection name="Workstation Protection">
   <p>The user is responsible for protecting the development workstation according to best practices and best effort. 
   This includes, but is not limited to, firewalls, virus and malware protection. 
   </p>
   </subsection>
-  <subsection name="User responsibilities">
+  <subsection name="User Responsibilities">
   <p>This policy applies to all users who are given physical and/or logical access to servers.
   </p>
   <p>Once a server account has been assigned, the user is then responsible for ensuring the adherence to all policies and guidelines. 
