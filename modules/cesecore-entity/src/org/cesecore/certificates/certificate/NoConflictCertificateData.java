@@ -271,17 +271,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     }
 
     /**
-     * DN of subject in certificate
-     *
-     * @return subject dn, never null
-     */
-    @Transient
-    public String getSubjectDnNeverNull() {
-        final String subjectDn = getSubjectDN();
-        return subjectDn == null ? "" : subjectDn;
-    }
-
-    /**
      * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
      *
      * @return value as it is stored in the database
@@ -676,11 +665,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         return endEntityProfileId;
     }
     
-    /** @return the end entity profile this certificate was issued under or 0 if the information is not available. */
-    @Transient
-    public int getEndEntityProfileIdOrZero() {
-        return endEntityProfileId==null ? EndEntityConstants.NO_END_ENTITY_PROFILE : endEntityProfileId;
-    }
     
     
     // Comparators

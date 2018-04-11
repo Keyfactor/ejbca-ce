@@ -24,6 +24,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -40,14 +41,13 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract String getSubjectDN();
     public abstract String getIssuerDN();
     public abstract String getSerialNumber();
-    
     public abstract String getUsername();
     public abstract Integer getCertificateProfileId();
     public abstract int getStatus();
     public abstract int getRevocationReason();
     public abstract long getRevocationDate();
     public abstract Long getUpdateTime();
-    
+    public abstract Integer getEndEntityProfileId();
     
     private static final Logger log = Logger.getLogger(BaseCertificateData.class);
     
@@ -133,6 +133,23 @@ public abstract class BaseCertificateData extends ProtectedData {
         } catch (NumberFormatException e) {
             return getSerialNumber();
         }
+    }
+    
+    /** @return the end entity profile this certificate was issued under or 0 if the information is not available. */
+    @Transient
+    public int getEndEntityProfileIdOrZero() {
+        return getEndEntityProfileId() == null ? EndEntityConstants.NO_END_ENTITY_PROFILE : getEndEntityProfileId();
+    }
+    
+    /**
+     * DN of subject in certificate
+     *
+     * @return subject dn. If it is null, return empty string
+     */
+    @Transient
+    public String getSubjectDnNeverNull() {
+        final String subjectDn = getSubjectDN();
+        return subjectDn == null ? "" : subjectDn;
     }
     
     
