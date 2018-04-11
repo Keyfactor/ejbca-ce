@@ -34,9 +34,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
@@ -209,6 +209,17 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     public CertificateData() {
         
+    }
+    
+    
+    /**
+     * return the current class name
+     *  
+     * @return name (without package info) of the current class
+     */
+    @Override
+    protected final String getClassName() {
+        return ClassUtils.getShortCanonicalName(this.getClass());
     }
     
     /**

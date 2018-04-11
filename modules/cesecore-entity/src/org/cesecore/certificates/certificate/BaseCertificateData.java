@@ -22,7 +22,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
@@ -51,6 +50,9 @@ public abstract class BaseCertificateData extends ProtectedData {
     
     private static final Logger log = Logger.getLogger(BaseCertificateData.class);
     
+
+    protected abstract String getClassName();
+    
     /**
      * Return the certificate. From this table if contained here. From {link Base64CertData} if contained there.
      * @param entityManager To be used if the cert is in the {@link Base64CertData} table.
@@ -63,8 +65,19 @@ public abstract class BaseCertificateData extends ProtectedData {
         }
         // try the other table.
         final Base64CertData res = Base64CertData.findByFingerprint(entityManager, getFingerprint());
-        if ( res==null ) {
-            log.info("No certificate found with fingerprint " + getFingerprint() + " for '" + getSubjectDN() + "' issued by '" + getIssuerDN() + "'.");
+        if (res == null) {
+            String message = new StringBuilder()
+                    .append("No ")
+                    .append(getClassName())
+                    .append(" found with fingerprint ")
+                    .append(getFingerprint())
+                    .append(" for '")
+                    .append(getSubjectDN())
+                    .append("' issued by '") 
+                    .append(getIssuerDN())
+                    .append("'.")
+                    .toString();
+            log.info(message);
             return null;
         }
         // it was in the other table.
@@ -82,9 +95,8 @@ public abstract class BaseCertificateData extends ProtectedData {
             String certEncoded = getBase64Cert(entityManager);
             if (certEncoded == null || certEncoded.isEmpty()) {
                 if (log.isDebugEnabled()) {
-                    log.debug(getClass().getName() + " data was null or empty. Fingerprint of certificate: " + getFingerprint());
-                } // TODO check if name without packagename can be had here
-                ClassUtils.getShortCanonicalName(this.getClass()); // <- check if this is what we want
+                    log.debug(getClassName() + " data was null or empty. Fingerprint of certificate: " + getFingerprint());
+                }
                 return null;
             }
             return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
@@ -110,13 +122,14 @@ public abstract class BaseCertificateData extends ProtectedData {
             }
             if (certEncoded==null || certEncoded.isEmpty()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Certificate data was null or empty. Fingerprint of certificate: " + getFingerprint());
+                    String message = getClassName() + " data was null or empty. Fingerprint of certificate: " + getFingerprint();
+                    log.debug(message);
                 }
                 return null;
             }
             return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
         } catch (CertificateException ce) {
-            log.error("Can't decode certificate.", ce);
+            log.error("Can't decode " + getClassName() + ".", ce);
             return null;
         }
     }
