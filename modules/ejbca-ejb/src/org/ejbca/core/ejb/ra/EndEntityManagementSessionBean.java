@@ -75,7 +75,6 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -1641,7 +1640,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new AuthorizationDeniedException(msg);
         }
         // To be fully backwards compatible we just use the first fingerprint found..
-        CertificateDataWrapper cdw = noConflictCertificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
+        final CertificateDataWrapper cdw = noConflictCertificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
         if (cdw == null) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);
@@ -1649,14 +1648,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final CertificateData certificateData = cdw.getCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
-        assertAuthorizedToCA(admin, caid);
         final String username = certificateData.getUsername();
+        assertAuthorizedToCA(admin, caid);
         final int revocationReason = certificateData.getRevocationReason();
         int certificateProfileId = certificateData.getCertificateProfileId();
         String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
+        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
         final EndEntityInformation endEntityInformation = endEntityInformationParam==null ? endEntityAccessSession.findUser(username) : endEntityInformationParam;
-        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         if (certReqHistory == null) {
             if (endEntityInformation!=null) {
                 // Get the EEP that is currently used as a fallback, if we can find it
