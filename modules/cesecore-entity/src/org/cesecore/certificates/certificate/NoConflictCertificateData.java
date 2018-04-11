@@ -222,6 +222,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      * @return name (without package info) of the current class
      */
     @Override
+    @Transient
     protected final String getClassName() {
         return ClassUtils.getShortCanonicalName(this.getClass());
     }
