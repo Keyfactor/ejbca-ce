@@ -35,11 +35,18 @@ import org.cesecore.util.CertTools;
  */
 public abstract class BaseCertificateData extends ProtectedData {
     
-    protected abstract String getBase64Cert();
-    protected abstract String getFingerprint();
-    protected abstract String getSubjectDN();
-    protected abstract String getIssuerDN();
-    protected abstract String getSerialNumber();
+    public abstract String getBase64Cert();
+    public abstract String getFingerprint();
+    public abstract String getSubjectDN();
+    public abstract String getIssuerDN();
+    public abstract String getSerialNumber();
+    
+    public abstract String getUsername();
+    public abstract Integer getCertificateProfileId();
+    public abstract int getStatus();
+    public abstract int getRevocationReason();
+    public abstract long getRevocationDate();
+    public abstract Long getUpdateTime();
     
     
     private static final Logger log = Logger.getLogger(BaseCertificateData.class);
