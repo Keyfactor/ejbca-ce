@@ -25,12 +25,19 @@ public final class ConfigdumpExportResult implements Serializable {
     
     private final List<String> reportedErrors;
     
-    public ConfigdumpExportResult(final List<String> reportedErrors) {
+    private final List<String> reportedWarnings;
+    
+    public ConfigdumpExportResult(final List<String> reportedErrors, final List<String> reportedWarnings) {
         this.reportedErrors = reportedErrors;
+        this.reportedWarnings = reportedWarnings;
     }
     
     public List<String> getReportedErrors() {
         return reportedErrors;
+    }
+    
+    public List<String> getReportedWarnings() {
+        return reportedWarnings;
     }
     
     public boolean isSuccessful() {

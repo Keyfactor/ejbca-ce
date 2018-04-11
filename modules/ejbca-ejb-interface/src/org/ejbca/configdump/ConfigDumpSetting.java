@@ -42,6 +42,7 @@ public class ConfigDumpSetting implements Serializable {
     private List<ConfigdumpPattern> includedAnyType = new ArrayList<>();
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
     private boolean ignoreErrors;
+    private boolean ignoreWarnings;
 
     public List<ConfigdumpPattern> getIncludedAnyType() {
         return includedAnyType;
@@ -87,14 +88,19 @@ public class ConfigDumpSetting implements Serializable {
         return ignoreErrors;
     }
 
+    public boolean getIgnoreWarnings() {
+        return ignoreWarnings;
+    }
+    
     public ConfigDumpSetting(final File location, final Map<ItemType, List<ConfigdumpPattern>> included, final Map<ItemType, List<ConfigdumpPattern>> excluded,
-            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors) {
+            final List<ConfigdumpPattern> includedAnyType, final List<ConfigdumpPattern> excludedAnyType, final boolean ignoreErrors, final boolean ignoreWarnings) {
         this.location = location;
         this.included = included;
         this.excluded = excluded;
         this.includedAnyType = includedAnyType;
         this.excludedAnyType = excludedAnyType;
         this.ignoreErrors = ignoreErrors;
+        this.ignoreWarnings = ignoreWarnings;
     }
 
     public boolean isIncluded(final ItemType type, final String nameStr) {
