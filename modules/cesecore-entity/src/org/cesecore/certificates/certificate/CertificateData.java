@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -28,9 +27,6 @@ import java.util.Set;
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
@@ -42,7 +38,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -76,7 +71,7 @@ import org.cesecore.util.ValueExtractor;
                 @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
-public class CertificateData extends ProtectedData implements Serializable {
+public class CertificateData extends ProtectedCertificateData implements Serializable {
 
     private static final long serialVersionUID = -8493105317760641442L;
 
@@ -213,14 +208,14 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     public CertificateData() {
+        
     }
-
+    
     /**
      * Fingerprint of certificate
      *
      * @return fingerprint
      */
-    // @Id @Column
     public String getFingerprint() {
         return fingerprint;
     }
@@ -239,7 +234,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return issuer dn
      */
-    // @Column
     public String getIssuerDN() {
         return issuerDN;
     }
@@ -270,7 +264,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return value as it is stored in the database
      */
-    // @Column(length=400)
     public String getSubjectDN() {
         return subjectDN;
     }
@@ -297,10 +290,10 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return value as it is stored in the database
      */
-    //@Column(length=2000)
     public String getSubjectAltName() {
         return subjectAltName;
     }
+    
     public void setSubjectAltName(final String subjectAltName) {
         this.subjectAltName = subjectAltName;
     }
@@ -310,7 +303,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return fingerprint
      */
-    // @Column
     public String getCaFingerprint() {
         return cAFingerprint;
     }
@@ -331,7 +323,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return status
      */
-    // @Column
     public int getStatus() {
         return status;
     }
@@ -350,7 +341,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return user type
      */
-    // @Column
     public int getType() {
         return type;
     }
@@ -369,25 +359,10 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return serial number
      */
-    // @Column
     public String getSerialNumber() {
         return serialNumber;
     }
-
-    /**
-     * Serialnumber formated as BigInteger.toString(16).toUpperCase(), or just as it is in DB if not encodable to hex.
-     *
-     * @return serial number in hex format
-     */
-    @Transient
-    public String getSerialNumberHex() throws NumberFormatException {
-        try {
-            return new BigInteger(serialNumber, 10).toString(16).toUpperCase();
-        } catch (NumberFormatException e) {
-            return serialNumber;
-        }
-    }
-
+    
     /**
      * Sets serial number (formated as BigInteger.toString())
      *
@@ -398,16 +373,15 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was issued or null if the information is not known. */
-    // @Column
     public Long getNotBefore() {
         return notBefore;
     }
+    
     public void setNotBefore(final Long notBefore) {
         this.notBefore = notBefore;
     }
 
     /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
-    // @Column
     public long getExpireDate() {
         return expireDate;
     }
@@ -426,7 +400,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return revocation date
      */
-    // @Column
     public long getRevocationDate() {
         return revocationDate;
     }
@@ -445,7 +418,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return revocation reason
      */
-    // @Column
     public int getRevocationReason() {
         return revocationReason;
     }
@@ -464,7 +436,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return base64 encoded certificate
      */
-    // @Column @Lob
     public String getBase64Cert() {
         return this.getZzzBase64Cert();
     }
@@ -488,6 +459,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     public String getZzzBase64Cert() {
         return base64Cert;
     }
+    
     /** @deprecated Use {@link #setBase64Cert(String)} instead */
     @Deprecated
     public void setZzzBase64Cert(final String zzzBase64Cert) {
@@ -499,7 +471,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return username
      */
-    // @Column
     public String getUsername() {
         return username;
     }
@@ -518,7 +489,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return tag
      */
-    // @Column
     public String getTag() {
         return tag;
     }
@@ -537,7 +507,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return certificateProfileId
      */
-    // @Column
     public Integer getCertificateProfileId() {
         return certificateProfileId;
     }
@@ -556,7 +525,6 @@ public class CertificateData extends ProtectedData implements Serializable {
      *
      * @return updateTime
      */
-    // @Column
     public Long getUpdateTime() {
         return updateTime;
     }
@@ -572,7 +540,6 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * The ID of the public key of the certificate
      */
-    // @Column
     public String getSubjectKeyId() {
         return subjectKeyId;
     }
@@ -583,8 +550,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     public void setSubjectKeyId(String subjectKeyId) {
         this.subjectKeyId = subjectKeyId;
     }
-
-    // @Version @Column
+    
     public int getRowVersion() {
         return rowVersion;
     }
@@ -592,8 +558,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     public void setRowVersion(int rowVersion) {
         this.rowVersion = rowVersion;
     }
-
-    // @Column @Lob
+    
     @Override
     public String getRowProtection() {
         return this.getZzzRowProtection();
@@ -614,82 +579,19 @@ public class CertificateData extends ProtectedData implements Serializable {
     public String getZzzRowProtection() {
         return rowProtection;
     }
+    
     /** @deprecated Use {@link #setRowProtection(String)} instead */
     @Deprecated
     public void setZzzRowProtection(final String zzzRowProtection) {
         this.rowProtection = zzzRowProtection;
     }
-
+    
+    
+    
     //
     // Public business methods used to help us manage certificates
     //
-
-    /**
-     * Return the certificate . From this table if contained here. From {link Base64CertData} if contained there.
-     * @param entityManager To be used if the cert is in the {@link Base64CertData} table.
-     * @return The certificate
-     */
-    @Transient
-    public String getBase64Cert(EntityManager entityManager) {
-        if ( this.base64Cert!=null && this.base64Cert.length()>0 ) {
-            return this.base64Cert; // the cert was in this table.
-        }
-        // try the other table.
-        final Base64CertData res = Base64CertData.findByFingerprint(entityManager, this.fingerprint);
-        if ( res==null ) {
-            log.info("No certificate found with fingerprint "+this.fingerprint+" for '"+this.subjectDN+"' issued by '"+this.issuerDN+"'.");
-            return null;
-        }
-        // it was in the other table.
-        return res.getBase64Cert();
-    }
-    /**
-     * Returns the certificate as an object.
-     *
-     * @return The certificate or null if it doesn't exist or is blank/null in the database
-     */
-    @Transient
-    public Certificate getCertificate(EntityManager entityManager) {
-        try {
-            String certEncoded = getBase64Cert(entityManager);
-            if (certEncoded == null || certEncoded.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Certificate data was null or empty. Fingerprint of certificate: " + this.fingerprint);
-                }
-                return null;
-            }
-            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
-        } catch (CertificateException ce) {
-            log.error("Can't decode certificate.", ce);
-            return null;
-        }
-    }
-    /**
-     * Returns the certificate as an object.
-     *
-     * @return The certificate or null if it doesn't exist or is blank/null in the database
-     */
-    @Transient
-    public Certificate getCertificate(final Base64CertData base64CertData) {
-        try {
-            String certEncoded = null;
-            if (base64Cert!=null && base64Cert.length()>0 ) {
-                certEncoded = base64Cert;
-            } else if (base64CertData!=null) {
-                certEncoded = base64CertData.getBase64Cert();
-            }
-            if (certEncoded==null || certEncoded.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Certificate data was null or empty. Fingerprint of certificate: " + fingerprint);
-                }
-                return null;
-            }
-            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()), Certificate.class);
-        } catch (CertificateException ce) {
-            log.error("Can't decode certificate.", ce);
-            return null;
-        }
-    }
+    
 
     /**
      * DN of issuer of certificate
@@ -738,17 +640,19 @@ public class CertificateData extends ProtectedData implements Serializable {
     public void setEndEntityProfileId(final Integer endEntityProfileId) {
         this.endEntityProfileId = endEntityProfileId;
     }
-    // @Column
+    
     /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
+    
     /** @return the end entity profile this certificate was issued under or 0 if the information is not available. */
     @Transient
     public int getEndEntityProfileIdOrZero() {
         return endEntityProfileId==null ? EndEntityConstants.NO_END_ENTITY_PROFILE : endEntityProfileId;
     }
-
+    
+    
     // Comparators
 
     @Override
@@ -902,6 +806,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         base64Cert = inclusionMode ? null : certificateData.base64Cert;
     }
 
+    
     //
     // Search functions.
     //
@@ -1406,7 +1311,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         // log.debug("findExpirationInfo: "+query.unwrap(org.hibernate.Query.class).getQueryString());
         return query.getResultList();
     }
-
+    
+    
+    
     //
     // Start Database integrity protection methods
     //
@@ -1447,30 +1354,6 @@ public class CertificateData extends ProtectedData implements Serializable {
         return build.toString();
     }
 
-    @Transient
-    @Override
-    protected int getProtectVersion() {
-        return 3;
-    }
-
-    @PrePersist
-    @PreUpdate
-    @Override
-    protected void protectData() {
-        super.protectData();
-    }
-
-    @PostLoad
-    @Override
-    protected void verifyData() {
-        super.verifyData();
-    }
-
-    @Override
-    @Transient
-    protected String getRowId() {
-        return getFingerprint();
-    }
     //
     // End Database integrity protection methods
     //
