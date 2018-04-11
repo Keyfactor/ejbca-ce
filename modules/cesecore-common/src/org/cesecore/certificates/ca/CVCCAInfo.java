@@ -65,7 +65,8 @@ public class CVCCAInfo extends CAInfo {
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 false, // useCertReqHistory
                 true, // useUserStorage
-                true // useCertificateStorage
+                true, // useCertificateStorage
+				false // acceptRevocationNonExistingEntry
             );
     }
 
@@ -82,7 +83,7 @@ public class CVCCAInfo extends CAInfo {
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry) {
 		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
 		this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
 		this.name = name;
@@ -114,6 +115,7 @@ public class CVCCAInfo extends CAInfo {
 		this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
 	}
 
 	/**
@@ -127,7 +129,7 @@ public class CVCCAInfo extends CAInfo {
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry) {
 		this.caid = caid;
 		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
@@ -148,5 +150,6 @@ public class CVCCAInfo extends CAInfo {
 		this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
 	}
 }
