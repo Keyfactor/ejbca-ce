@@ -29,9 +29,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -215,6 +215,16 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         
     }
 
+
+    /**
+     * return the current class name
+     *  
+     * @return name (without package info) of the current class
+     */
+    @Override
+    protected final String getClassName() {
+        return ClassUtils.getShortCanonicalName(this.getClass());
+    }
     
     /**
      * Generated GUID for the table entry
