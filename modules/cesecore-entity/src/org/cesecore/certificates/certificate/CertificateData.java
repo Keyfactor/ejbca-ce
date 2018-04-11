@@ -71,7 +71,7 @@ import org.cesecore.util.ValueExtractor;
                 @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
-public class CertificateData extends ProtectedCertificateData implements Serializable {
+public class CertificateData extends BaseCertificateData implements Serializable {
 
     private static final long serialVersionUID = -8493105317760641442L;
 

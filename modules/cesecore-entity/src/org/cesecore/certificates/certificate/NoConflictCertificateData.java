@@ -62,7 +62,7 @@ import org.cesecore.util.StringTools;
                 @ColumnResult(name = "certificateProfileId"), @ColumnResult(name = "endEntityProfileId"), @ColumnResult(name = "updateTime"),
                 @ColumnResult(name = "subjectKeyId"), @ColumnResult(name = "subjectAltName") }),
         @SqlResultSetMapping(name = "FingerprintUsernameSubset", columns = { @ColumnResult(name = "fingerprint"), @ColumnResult(name = "username") }) })
-public class NoConflictCertificateData extends ProtectedCertificateData implements Serializable {
+public class NoConflictCertificateData extends BaseCertificateData implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
