@@ -267,7 +267,8 @@ public class X509CA extends CA implements Serializable {
                 getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovals(),
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
-                isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret(), getKeepExpiredCertsOnCRL());
+                isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), isAcceptRevocationNonExistingEntry(), getCmpRaAuthSecret(),
+                getKeepExpiredCertsOnCRL());
         ((X509CAInfo)info).setExternalCdp(getExternalCdp());
         ((X509CAInfo)info).setNameChanged(getNameChanged());
         //These to settings were deprecated in 6.8.0, but are still set for upgrade reasons

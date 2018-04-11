@@ -800,6 +800,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
+	                            false,
 	                            sharedCmpRaSecret,
 	                            keepExpiredCertsOnCRL);
                         try {
@@ -846,6 +847,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
+	                            false,
 	                            null,
 	                            keepExpiredCertsOnCRL);
 	                    saveRequestInfo(x509cainfo);                
@@ -881,7 +883,8 @@ public class CAInterfaceBean implements Serializable {
 	                        isDoEnforceUniqueSubjectDNSerialnumber,
 	                        useCertReqHistory,
 	                        useUserStorage,
-	                        useCertificateStorage);
+	                        useCertificateStorage,
+                            false);
 	                if (buttonCreateCa) {
 	                    cadatahandler.createCA(cvccainfo);
 	                } else if (buttonMakeRequest) {
@@ -1004,7 +1007,7 @@ public class CAInterfaceBean implements Serializable {
 	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, 
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
 	        Map<ApprovalRequestType, Integer> approvals,
 	        String availablePublisherValues, String availableKeyValidatorValues,
 	        boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
@@ -1088,7 +1091,7 @@ public class CAInterfaceBean implements Serializable {
                         cadefinedfreshestcrl, finishUser, extendedcaservices, useutf8policytext, approvals,
                         useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                         isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
-                        useUserStorage, useCertificateStorage, sharedCmpRaSecret, keepExpiredCertsOnCRL);
+                        useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, sharedCmpRaSecret, keepExpiredCertsOnCRL);
             }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
@@ -1107,7 +1110,8 @@ public class CAInterfaceBean implements Serializable {
                        isDoEnforceUniqueSubjectDNSerialnumber,
                        useCertReqHistory,
                        useUserStorage,
-                       useCertificateStorage);
+                       useCertificateStorage,
+                       acceptRevocationNonExistingEntry);
            }
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(infoView.getCAInfo().getStatus());
