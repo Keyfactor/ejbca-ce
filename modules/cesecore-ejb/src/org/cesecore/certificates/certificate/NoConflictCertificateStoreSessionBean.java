@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import javax.ejb.EJB;
@@ -21,6 +22,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -28,6 +30,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 
 /**
  * @version $Id$
@@ -55,7 +58,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         // Throw away CA or missing certificate
         final int caid = issuerdn.hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo == null || cainfo.isUseCertificateStorage()) {
+        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || cainfo.isUseCertificateStorage()) {
             if (cainfo == null && log.isDebugEnabled()) {
                 log.debug("Tried to look up certificate " + certserno.toString(16) +", but neither certificate nor CA was found. CA Id: " + caid + ". Issuer DN: '" + issuerdn + "'");
             }
@@ -65,10 +68,19 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         // FIXME should try to look up in NoConflictCertificateData also, and take the latest result
         //final NoConflictCertificateData certificateData = new NoConflictCertificateData();
         final CertificateData certificateData = new CertificateData();
+        // See org.cesecore.certificates.certificate.CertificateStoreSessionBean.updateLimitedCertificateDataStatus
+        certificateData.setSerialNumber(certserno.toString());
+        // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
+        certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
         certificateData.setIssuerDN(cainfo.getSubjectDN());
-        certificateData.setUsername("");
-        certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
+        certificateData.setSubjectDN("CN=limited");
+        certificateData.setUsername(null);
         certificateData.setCertificateProfileId(CertificateProfileConstants.NO_CERTIFICATE_PROFILE); // TODO Should be configurable per CA (ECA-6743)
+        certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
+        certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
+        certificateData.setRevocationDate(-1L);
+        certificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
+        certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
         certificateData.setEndEntityProfileId(-1);
         return new CertificateDataWrapper(certificateData, null);
     }
@@ -80,7 +92,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         final String issuerdn = certificateData.getIssuerDN();
         final int caid = issuerdn.hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo == null || cainfo.isUseCertificateStorage()) {
+        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || cainfo.isUseCertificateStorage()) {
             // Not a throw away certificate. Go ahead with standard CertificateData logic.
             if (cainfo == null && log.isDebugEnabled()) {
                 log.debug("Certificate " + cdw.getCertificateData().getSubjectDN() +" references a CA that does not exist. CA Id: " + caid + ". Issuer DN: '" + issuerdn + "'");
@@ -88,6 +100,12 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
         }
         throw new UnsupportedOperationException("Throw away case is not implemented"); // TODO
+//        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);  // XXX Works with CertificateData, but remains to be tested with NoConflictCertificateData
+    }
+    
+    private static String generateDummyFingerprint(final String issuerdn, final BigInteger certserno) {
+        final byte[] fingerprintBytes = CertTools.generateSHA1Fingerprint((certserno.toString()+';'+issuerdn).getBytes(StandardCharsets.UTF_8));
+        return new String(Hex.encode(fingerprintBytes));
     }
 
 }
