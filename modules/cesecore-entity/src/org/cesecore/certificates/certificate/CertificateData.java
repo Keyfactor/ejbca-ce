@@ -218,6 +218,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
      * @return name (without package info) of the current class
      */
     @Override
+    @Transient
     protected final String getClassName() {
         return ClassUtils.getShortCanonicalName(this.getClass());
     }
